@@ -1,5 +1,5 @@
-[![build_deploy_test Actions Status](https://github.com/bharath-b-hpe/odimra/workflows/build_deploy_test/badge.svg)](https://github.com/bharath-b-hpe/odimra/actions)
-[![build_unittest Actions Status](https://github.com/bharath-b-hpe/odimra/workflows/build_unittest/badge.svg)](https://github.com/bharath-b-hpe/odimra/actions)
+[![build_deploy_test Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_deploy_test/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
+[![build_unittest Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_unittest/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
 
 # Deploying ODIMRA
 ## 1. Setting up OS, docker environment and other pre-requisites
@@ -373,4 +373,4 @@ This section provides a step-by-step procedure for deploying the resource aggreg
     
    **NOTE:**
    To Refer to the ODIMRA API Guide, click on the github page below:  
-   https://bharath-b-hpe.github.io/odimra/
+   https://odim-project.github.io/ODIM

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+service Managers {
+    rpc GetManagersCollection(ManagerRequest) returns (ManagerResponse) {}
+    rpc GetManager(ManagerRequest) returns (ManagerResponse) {}
+    rpc GetManagersResource(ManagerRequest) returns (ManagerResponse) {}
+}
+
+message ManagerRequest {
+    string sessionToken=1;
+    string managerID=2;
+    string URL=3;
+    string resourceID=4;
+}
+
+message ManagerResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    bytes body = 4;
+    map<string, string> header = 5;
+}

@@ -1,0 +1,17 @@
+[Unit]
+Description=ILO Plugin
+Requires=network-online.target
+After=network-online.target
+[Service]
+Type=forking
+Restart=always
+ExecStart=/bin/sh -c 'cd bin ; export PLUGIN_CONFIG_FILE_PATH=/etc/plugin_config/config_redfish_plugin.json ; sudo -E -u plugin nohup ./plugin-redfish >> /var/log/plugin_logs/plugin.log 2>&1 &'
+KillMode=process
+KillSignal=SIGTERM
+User=root
+StartLimitBurst=3
+RestartSec=3
+StartLimitInterval=300
+[Install]
+WantedBy=multi-user.target
+

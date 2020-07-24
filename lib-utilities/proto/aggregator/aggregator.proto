@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+service Aggregator {
+    rpc AddCompute(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAggregationService(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc DeleteCompute(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc Reset(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc SetDefaultBootOrder(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc RediscoverSystemInventory(RediscoverSystemInventoryRequest) returns (RediscoverSystemInventoryResponse) {}
+    rpc UpdateSystemState(UpdateSystemStateRequest) returns (UpdateSystemStateResponse) {}
+  }
+
+message AggregatorRequest {
+    string SessionToken = 1;
+    bytes RequestBody = 2;
+}
+
+
+message AggregatorResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}
+
+message RediscoverSystemInventoryRequest{
+    string SystemID=1;
+    string SystemURL=2;
+}
+message RediscoverSystemInventoryResponse{
+    string TaskURL=1;
+}
+
+message UpdateSystemStateRequest{
+	string SystemUUID=1;
+	string SystemID=2;
+	string SystemURI=3;
+	string UpdateKey=4;
+	string UpdateVal=5;
+}
+
+message UpdateSystemStateResponse{
+	string TaskURL=1;
+}

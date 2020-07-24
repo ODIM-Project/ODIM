@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+service Systems {
+ rpc GetSystemsCollection(GetSystemsRequest) returns (SystemsResponse){}
+ rpc GetSystemResource(GetSystemsRequest) returns (SystemsResponse){}
+ rpc GetSystems(GetSystemsRequest) returns (SystemsResponse) {}
+ rpc ComputerSystemReset(ComputerSystemResetRequest) returns (SystemsResponse) {}
+ rpc SetDefaultBootOrder(DefaultBootOrderRequest) returns (SystemsResponse) {}
+ rpc ChangeBiosSettings(BiosSettingsRequest) returns (SystemsResponse) {}
+ rpc ChangeBootOrderSettings(BootOrderSettingsRequest) returns (SystemsResponse) {}
+}
+
+message GetSystemsRequest{
+    string sessionToken=1;
+    string requestParam=2;
+    string URL=3;
+    string resourceID=4;
+}
+
+message SystemsResponse{
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string,string> header=3;
+    bytes body = 4;
+}
+
+message ComputerSystemResetRequest{
+    string sessionToken=1;
+    string SystemID=2;
+    string ResetType=3;
+}
+message DefaultBootOrderRequest{
+    string sessionToken=1;
+    string SystemID=2;
+}
+
+message BiosSettingsRequest{
+    string SessionToken = 1;
+    string SystemID = 2;
+    bytes RequestBody = 3;
+}
+
+message BootOrderSettingsRequest{
+    string SessionToken = 1;
+    string SystemID = 2;
+    bytes RequestBody = 3;
+}

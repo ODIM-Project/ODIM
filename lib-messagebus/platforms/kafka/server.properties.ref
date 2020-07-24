@@ -1,0 +1,88 @@
+################################################################################
+## ODIMRA - KAFKA Message Queue Communicator Configuration File
+
+## Copyright 2019 Hewlett Packard Enterprise LP
+
+## Licensed under the Apache License, Version 2.0 (the "License");
+## you may not use this file except in compliance with the License.
+## You may obtain a copy of the License at
+
+## http://www.apache.org/licenses/LICENSE-2.0
+
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+## or implied. See the License for the specific language governing
+## permissions and limitations under the License.
+
+################################################################################
+
+####		 			   #####
+# THESE VALUES WILL BE MERGED AS PART OF FILES:#
+#	server.properties                      #
+####					   #####
+
+#### ID of the Broker. Must be unique one ####
+broker.id=0						# Server / Broker ID
+
+port=9092						# Port KAFKA listen to clients connection
+host.name=localhost					# KAFKA Server host
+
+# advertised.host.name=	# Name that Apache ZooKeeper uses to advertise to clients and consumers. DEFAULT = Value of <java.net.InetAddress.getCanonicalHostName()> call
+# advertised.port=	# Port that publishes to Apache ZooKeeper that it uses to connect to the clients. DEFAULT = Same as Broker uses
+
+# Performance data information
+num.network.threads=8					# Number of threads to process incoming N/w requests
+num.io.threads=16					# Number of Threads used to do I/O Operations
+socket.send.buffer.bytes=1048576			# Each Socket Send Buffer size (SO_SNDBUF)
+socket.receive.buffer.bytes=1048576			# Each Socket Receive Buffer size (SO_RCVBUF)
+socket.request.max.bytes=104857600			# Socket Request Size (100 KB)
+queued.max.requests=16					# Network Thread Pool Size
+fetch.purgatory.purge.interval.requests=100		# Frequency (in Numbers) of Purging Fetch Requests
+producer.purgatory.purge.interval.requests=100		# Frequency (in Numbers) of Purging Producer Requests
+
+# Log File location and related configuration details
+log.dirs=/var/log/kafka_logs				# Log files path separated by commas
+num.partitions=8					# Half of the number of processor cores in the system
+num.recovery.threads.per.data.dir=1			# Number of recovery thread for each Log directory
+log.index.size.max.bytes=154624				# Size of offset in Bytes
+log.index.interval.bytes=4096				# Interval in Bytes added to Index
+message.max.bytes=1000000				# Message Size
+auto.create.topics.enable=true				# Topic Creation Mode
+
+# For Flushing, we may need to to use one of 3 parameters based on our requirement
+default.replication.factor=1				# Number of Replications for the created Topic
+log.flush.interval.messages=100000			# Threshold number of messages before purging the messages
+log.flush.interval.ms=50000				# Time based Logs flushing
+log.flush.scheduler.interval.ms=2000			# Frequency set for Log purging
+
+# Retention can be configured using one of the following parameters
+log.retention.hours=1					# Hours based
+log.retention.bytes=1073741824				# Size (Bytes) based
+log.segment.bytes=1073741824				# Segment size based
+log.retention.check.interval.ms=300000			# Frequency of Log deletion procedure comes alive
+log.cleaner.enable=false				# DEFAULT = Not enabled
+log.roll.hours=168					# Hours after which New Segment should be rolled
+
+# Zookeeper Related Configuration
+zookeeper.connect=localhost:2181			# Apache Zookeeper Host with Port
+zookeeper.connection.timeout.ms=1000000			# Timeout for Zookeeper
+zk.sync.time.ms=2000					# Zookeeper Sync Frequency
+
+# Replication configurations
+num.replica.fetchers=4					# Number of threads that are used to replicate messages from a source broker
+replica.fetch.max.bytes=1048576				# Bytes that are used in fetch requests for each partition
+replica.fetch.wait.max.ms=500				# Maximum wait time for each fetcher request that is issued by the follower replicas <Refer Conditions in Doc>
+replica.high.watermark.checkpoint.interval.ms=5000	# Interval at which the high watermark is saved to disk
+replica.socket.timeout.ms=30000				# Socket timeout value for network requests <Refer Conditions in Doc>
+replica.socket.receive.buffer.bytes=65536		# Buffer for the socket receiver
+replica.lag.time.max.ms=10000				# Time before the follower is removed
+replica.lag.max.messages=4000				# Number of messages before the follower is removed
+
+# Controller configurations
+controller.socket.timeout.ms=30000			# Socket timeout value for channels used to send messages from controllers to brokers
+controller.message.queue.size=10			# Controller size MQ size
+
+# Durability Parameters
+retries=0						# Number of times Message will be tried if delivery failed
+acks=all						# Number of ACKs that producer should receive before REQ is complete (In case of Multiple Consumers)

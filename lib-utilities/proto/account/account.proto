@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+service Account {
+    rpc Create(CreateAccountRequest) returns (AccountResponse) {}
+    rpc GetAllAccounts(AccountRequest) returns (AccountResponse) {}
+    rpc GetAccount(GetAccountRequest) returns (AccountResponse) {}
+    rpc GetAccountServices(AccountRequest) returns (AccountResponse) {}
+    rpc Update(UpdateAccountRequest) returns (AccountResponse) {}
+    rpc Delete(DeleteAccountRequest) returns (AccountResponse) {}
+}
+
+message AccountResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}
+
+message CreateAccountRequest {
+    string SessionToken = 1;
+    string UserName = 2;
+    string Password = 3;
+    string RoleId = 4;
+}
+
+message AccountRequest {
+    string SessionToken = 1;
+}
+
+message GetAccountRequest {
+    string SessionToken = 1;
+    string AccountID = 2;
+}
+
+message UpdateAccountRequest {
+    string SessionToken = 1;
+    string AccountID = 2;
+    string UserName = 3;
+    string Password = 4;
+    string RoleId = 5;
+}
+
+message DeleteAccountRequest {
+    string SessionToken = 1;
+    string AccountID = 2;
+}

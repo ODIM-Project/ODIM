@@ -1,0 +1,55 @@
+# Starting from the latest Golang image
+FROM odimra_builddep:tst as build-stage
+
+WORKDIR /odimra/
+
+COPY odimra/odimra .
+COPY odimra/build.sh .
+RUN ./build.sh
+
+FROM ubuntu:18.04
+
+RUN apt-get update
+RUN apt-get install uuid-runtime
+RUN apt-get install -y vim
+RUN apt-get update \
+    && apt-get install -y systemd systemd-sysv \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN mkdir /etc/odimra_certs
+RUN mkdir /etc/odimra_config
+RUN mkdir /var/odimra_config
+RUN mkdir /etc/registrystore
+RUN mkdir /var/log/odimra_logs
+RUN mkdir /var/tmp/encryptor
+COPY --from=build-stage /odimra/svc-api/svc-api /bin/
+COPY --from=build-stage /odimra/svc-account-session/svc-account-session /bin/
+COPY --from=build-stage /odimra/svc-aggregation/svc-aggregation /bin/
+COPY --from=build-stage /odimra/svc-events/svc-events /bin/
+COPY --from=build-stage /odimra/svc-fabrics/svc-fabrics /bin/
+COPY --from=build-stage /odimra/svc-systems/svc-systems /bin/
+COPY --from=build-stage /odimra/svc-task/svc-task /bin/
+COPY --from=build-stage /odimra/svc-managers/svc-managers /bin/
+COPY --from=build-stage /odimra/plugin-redfish/plugin-redfish /bin/
+
+COPY odimra/odimra_config/odimra_config.json /var/odimra_config/
+COPY odimra/odimra_config/platformconfig.toml /var/odimra_config/
+COPY odimra/odimra_config/schema.json /etc/
+COPY odimra/odimra_config/registrystore/* /etc/registrystore/
+COPY odimra/edit_config.sh /var/tmp/edit_config.sh
+COPY odimra/start_odimra.sh /bin/
+COPY odimra/command.sh /bin/
+RUN  groupadd -r -g 1234 odimra
+RUN  useradd -s /bin/bash -u 1234 -m -d /home/odimra -r -g odimra odimra
+RUN  apt update
+RUN  apt-get -y install sudo
+RUN  chown odimra:odimra /var/log/odimra_logs
+RUN  chown odimra:odimra /etc/schema.json
+RUN  chown -R odimra:odimra /etc/odimra_certs
+RUN  chown -R odimra:odimra /etc/odimra_config
+RUN  chown -R odimra:odimra /var/odimra_config
+RUN  chown -R odimra:odimra /etc/registrystore
+
+VOLUME [ "/sys/fs/cgroup" ]
+
+ENTRYPOINT  ["/lib/systemd/systemd"]

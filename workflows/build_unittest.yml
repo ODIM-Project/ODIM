@@ -1,0 +1,100 @@
+name: build_unittest
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-18.04
+    steps:
+
+    - name: Set up Go 1.13.8
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13.8
+      id: go
+          
+    - name: Setup Redis
+      run: |
+        sudo apt-get install -y build-essential
+        wget -c http://download.redis.io/releases/redis-5.0.8.tar.gz -P /var/tmp
+        sudo tar -C /var/tmp -xzf /var/tmp/redis-5.0.8.tar.gz
+        cd /var/tmp/redis-5.0.8
+        sudo make install
+        sudo utils/install_server.sh << HERE
+        
+        
+        
+        
+        
+        
+        
+        HERE
+        echo `sudo /etc/init.d/redis_6379 status`
+        sudo utils/install_server.sh << HERE
+        6380
+        
+        
+        
+        
+        
+        
+        HERE
+        echo `sudo /etc/init.d/redis_6380 status`
+        sleep 10s
+        
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    
+    - name: Build
+      run: |
+          LIST=`ls -R | grep -v 'svc-plugin-rest-client' | grep -E '^svc-|^plugin-'`
+          for i in $LIST; do
+            echo "Compiling $i"
+            cd $i
+            go mod download
+            go mod vendor
+            go build -i .
+            if [ $? -eq 0 ]; then
+              echo Build for odimra service/lib dependencies $i are Successful !!!!
+              arr1+=$i;
+            else
+              echo Build for odimra service/lib dependency $i Failed !!!!
+              arr2+=$i;
+              flag=0
+            fi
+            cd ..
+          done
+          		  
+    - name: Test
+      run: |
+          redis-cli -p 6380 << HERE
+          set roles:redfishdefined '{"List":["Administrator", "Operator", "ReadOnly"]}'
+          HERE
+          echo "-----" 
+          echo `redis-cli -p 6380 << HERE
+          keys *
+          HERE`
+          LIST="plugin-redfish svc-aggregation svc-events svc-fabrics svc-managers svc-task svc-systems svc-api svc-account-session"
+          echo $LIST
+          for i in $LIST; do
+            echo "Testing $i"
+            cd $i
+            go test ./... --cover
+            echo "Test Done"
+            if [ $? -eq 0 ]; then
+              echo Unit Testing for odimra service/lib dependencies $i is Successful !!!!
+              arr1+=$i;
+            else
+              echo Testing for odimra service/lib dependency $i Failed !!!!
+              arr2+=$i;
+              flag=0
+            fi
+            cd ..
+          done
+            
+          
+        

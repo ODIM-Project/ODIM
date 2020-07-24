@@ -1,0 +1,110 @@
+{
+   "searchKeys": [
+      {
+         "ProcessorSummary/Count": {
+            "type": "float64"
+         }
+      },
+      {
+         "ProcessorSummary/Model": {
+            "type": "string"
+         }
+      },
+      {
+         "SystemType": {
+            "type": "string"
+         }
+      },
+      {
+         "MemorySummary/TotalSystemMemoryGiB": {
+            "type": "float64"
+         }
+      },
+      {
+         "ProcessorSummary/sockets": {
+            "type": "float64"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/Compression": {
+            "type": "string"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/AudioProcessing": {
+            "type": "string"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/Encryption": {
+            "type": "string"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/PacketInspection": {
+            "type": "string"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/PacketSwitch": {
+            "type": "string"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/Scheduler": {
+            "type": "string"
+         }
+      },
+      {
+         "Processor/AccelerationFunctions/VideoProcessing": {
+            "type": "string"
+         }
+      },
+      {
+         "NetworkInterfaces/NetworkPorts": {
+            "type": "string"
+         }
+      },
+      {
+         "NetworkInterfaces/Model": {
+            "type": "string"
+         }
+      },
+      {
+         "NetworkInterfaces/Bandwidth": {
+            "type": "string"
+         }
+      },
+      {
+         "FirmwareVersion": {
+            "type": "string"
+         }
+      },
+      {
+         "Storage/Drives/Quantity": {
+            "type": "float64"
+         }
+      },
+      {
+         "Storage/Drives/Capacity": {
+            "type": "[]float64"
+         }
+      },
+      {
+         "Storage/Drives/Type": {
+            "type": "[]string"
+         }
+      }
+   ],
+   "conditionKeys": [
+      "eq",
+      "ne",
+      "gt",
+      "ge",
+      "lt",
+      "le"
+   ],
+   "queryKeys": [
+      "filter"
+   ]
+}

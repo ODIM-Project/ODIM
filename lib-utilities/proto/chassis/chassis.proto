@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+ service Chassis {
+ rpc GetChassisCollection(GetChassisRequest) returns (GetChassisResponse){}
+ rpc GetChassisResource(GetChassisRequest) returns (GetChassisResponse){}
+ rpc GetChassisInfo(GetChassisRequest) returns (GetChassisResponse){}
+ }
+
+ message GetChassisRequest{
+    string sessionToken=1;
+    string requestParam=2;
+    string URL=3;
+    string resourceID=4;
+}
+
+ message GetChassisResponse{
+    int32 statusCode=1;
+    string statusMessage=2;
+    map<string,string> header=3;
+    bytes body=4;
+} 

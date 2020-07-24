@@ -1,0 +1,133 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+// Package asmodel ...
+package asmodel
+
+import (
+	"encoding/json"
+
+	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
+	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+)
+
+// User is the model for User Account
+type User struct {
+	UserName     string   `json:"UserName"`
+	Password     string   `json:"Password"`
+	RoleID       string   `json:"RoleId"`
+	AccountTypes []string `json:"AccountTypes"`
+}
+
+// Create connects to the persistencemgr and creates a user in db
+func (u *User) Create() *errors.Error {
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	//Create a header for data entry
+	const table string = "User"
+	//Save data into Database
+	return conn.Create(table, u.UserName, u)
+}
+
+//GetAllUsers gets all the accounts from the db
+func GetAllUsers() ([]User, *errors.Error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keys, err := conn.GetAllDetails("User")
+	if err != nil {
+		return nil, err
+	}
+	var users []User
+	//users := make(map[string]User)
+	for _, key := range keys {
+		var user User
+		userdata, err := conn.Read("User", key)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal([]byte(userdata), &user); err != nil {
+			return nil, errors.PackError(errors.UndefinedErrorType, err)
+		}
+		users = append(users, user)
+
+	}
+	return users, nil
+}
+
+// GetUserDetails will fetch details of specific user from the db
+func GetUserDetails(userName string) (User, *errors.Error) {
+	var user User
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return user, err
+	}
+	userdata, err := conn.Read("User", userName)
+	if err != nil {
+		return user, errors.PackError(err.ErrNo(), "error while trying to get user: ", err.Error())
+	}
+	if jerr := json.Unmarshal([]byte(userdata), &user); jerr != nil {
+		return user, errors.PackError(errors.UndefinedErrorType, jerr)
+	}
+	return user, nil
+
+}
+
+//DeleteUser will delete the user entry from the database based on the uuid
+func DeleteUser(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if err = conn.Delete("User", key); err != nil {
+		return err
+	}
+	return nil
+}
+
+//UpdateUserDetails will modify the current details to given changes
+func (u *User) UpdateUserDetails(requestUser User) *errors.Error {
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	//Create a header for data entry
+	const table string = "User"
+	//Save data into Database
+
+	if requestUser.Password != "" {
+		u.Password = requestUser.Password
+	}
+	if requestUser.RoleID != "" {
+		if requestUser.RoleID == common.RoleAdmin {
+			u.RoleID = common.RoleAdmin
+		} else if requestUser.RoleID == common.RoleMonitor {
+			u.RoleID = common.RoleMonitor
+		} else if requestUser.RoleID == common.RoleClient {
+			u.RoleID = common.RoleClient
+		} else {
+			u.RoleID = requestUser.RoleID
+		}
+	}
+	if _, err = conn.Update(table, u.UserName, u); err != nil {
+		return err
+	}
+	return nil
+}

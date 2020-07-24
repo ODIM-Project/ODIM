@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+service Fabrics {
+    rpc GetFabricResource(FabricRequest) returns(FabricResponse) {}
+    rpc UpdateFabricResource(FabricRequest) returns (FabricResponse){}
+    rpc AddFabric(AddFabricRequest) returns (FabricResponse){}
+    rpc DeleteFabricResource(FabricRequest) returns (FabricResponse){}
+}
+
+message FabricRequest {
+    string sessionToken = 1;
+    string URL=2;
+    string Method=3;
+    bytes RequestBody=4;
+}
+
+message AddFabricRequest{
+    string originResource = 1;
+    string address =2;
+}
+message FabricResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}

@@ -1,0 +1,54 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+//Package models ...
+package models
+
+import (
+	"encoding/json"
+	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
+	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+	"log"
+)
+
+//GetRegistryFile fetches a resource from database using table and key
+func GetRegistryFile(Table, key string) ([]byte, *errors.Error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), err)
+	}
+	resourceData, err := conn.Read(Table, key)
+	log.Printf("Table Name: %s, Key : %s", Table, key)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+	//	log.Printf("Table Name: %s, Key : %s \n Data: %v",Table, key, resourceData)
+	//	return []byte(resourceData), nil
+
+	var resource string
+	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return []byte(resource), nil
+}
+
+//GetAllRegistryFileNamesFromDB return all key in given table
+func GetAllRegistryFileNamesFromDB(table string) ([]string, *errors.Error) {
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	return conn.GetAllDetails(table)
+}

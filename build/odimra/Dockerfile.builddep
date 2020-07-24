@@ -1,0 +1,8 @@
+# Starting from the latest Golang image
+FROM golang:1.13.8
+
+WORKDIR /odimra/
+
+COPY odimra/odimra .
+COPY odimra/builddep.sh .
+RUN ./builddep.sh

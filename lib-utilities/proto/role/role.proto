@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+
+service Roles{
+    rpc CreateRole(RoleRequest) returns (RoleResponse){}
+    rpc GetRole(GetRoleRequest)returns (RoleResponse){}
+    rpc GetAllRoles(GetRoleRequest) returns (RoleResponse){}
+    rpc DeleteRole(DeleteRoleRequest) returns (RoleResponse){}
+    rpc UpdateRole(UpdateRoleRequest) returns (RoleResponse){}
+    
+}
+
+// Message for Create and Update Role request 
+message RoleRequest {
+    string sessionToken=1;
+    string RoleId=2;
+    repeated string AssignedPrivileges=3;
+    repeated string OemPrivileges=4;
+}
+
+// Message for GetRole and GetAllRoles request
+message GetRoleRequest{
+    string sessionToken=1;
+    string Id=2;
+}
+
+// Message for sending response
+message RoleResponse{
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string,string> header=3;
+    bytes body = 4;
+}
+
+// Message for Delete Role request
+message DeleteRoleRequest{
+    string sessionToken=1;
+    string ID=2;
+}
+
+// Message for Update Role request
+message UpdateRoleRequest {
+    string sessionToken=1;
+    string Id=2;
+    bytes  updateRequest=3;
+}

@@ -1,0 +1,19 @@
+# This is odimra Message Queue Framework Configuration File. This file would or
+# should be placed under directory "/opt/odimra/config/".
+# This file contains KAFKA related configurations defined. 
+
+# TODO: This parser package / module may be made available to other components 
+# with-in odimra for their configuration file handling in the future for uniform
+# configuration management.
+
+[KAFKA]
+# Kafka Server List.
+KServers   = ""
+# Listening port.
+KLPort     = 9092
+# Timeout of KAFKA Server connection drop / Keepalive.
+KTimeout   = 10
+# TLS Configuration Data
+KAFKACertFile       = ""
+KAFKAKeyFile        = ""
+KAFKACAFile         = ""

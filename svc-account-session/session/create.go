@@ -1,0 +1,137 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+// Package session ...
+package session
+
+import (
+	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
+	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
+	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
+	"github.com/bharath-b-hpe/odimra/svc-account-session/asresponse"
+	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
+	uuid "github.com/satori/go.uuid"
+
+	"log"
+	"net/http"
+	"time"
+)
+
+// CreateNewSession is a method to to create a session
+// it will accepts the SessionCreateRequest which will have username and password
+// and check whether the credentials are correct also it will
+// check privileges. and then add the session details in DB
+// respond RPC response and error if there is.
+func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, string) {
+	commonResponse := response.Response{
+		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataID:   "/redfish/v1/SessionService/Sessions",
+		ID:        "Sessions",
+		Name:      "Session Service",
+	}
+	var resp response.RPC
+	errorArgs := []response.ErrArgs{
+		response.ErrArgs{
+			StatusMessage: "",
+			ErrorMessage:  "",
+			MessageArgs:   []interface{}{},
+		},
+	}
+	args := &response.Args{
+		Code:      response.GeneralError,
+		Message:   "",
+		ErrorArgs: errorArgs,
+	}
+
+	user, err := auth.CheckSessionCreationCredentials(req.UserName, req.Password)
+	if err != nil {
+		errorMessage := "error while authorizing session creation credentials: " + err.Error()
+		if err.ErrNo() == errors.DBConnFailed {
+			resp.StatusCode = http.StatusServiceUnavailable
+			resp.StatusMessage = response.CouldNotEstablishConnection
+			errorArgs[0].ErrorMessage = errorMessage
+			errorArgs[0].StatusMessage = resp.StatusMessage
+			errorArgs[0].MessageArgs = []interface{}{""}
+			resp.Body = args.CreateGenericErrorResponse()
+		} else {
+			return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil), ""
+		}
+		log.Printf(errorMessage)
+		return resp, ""
+	}
+
+	role, err := asmodel.GetRoleDetailsByID(user.RoleID)
+	if err != nil {
+		errorMessage := "error while trying to get role privileges for session creation: " + err.Error()
+		resp.CreateInternalErrorResponse(errorMessage)
+		log.Printf(errorMessage)
+		return resp, ""
+	}
+	rolePrivilege := make(map[string]bool)
+	for _, privilege := range role.AssignedPrivileges {
+		rolePrivilege[privilege] = true
+	}
+	//User requires Login privelege to create a session
+	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
+		errorMessage := "user doesn't have required privilege to create a session"
+		log.Println(errorMessage)
+		return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, errorMessage, nil, nil), ""
+	}
+
+	currentTime := time.Now()
+	sess := asmodel.Session{
+		ID:           uuid.NewV4().String(),
+		Token:        uuid.NewV4().String(),
+		UserName:     user.UserName,
+		RoleID:       user.RoleID,
+		Privileges:   rolePrivilege,
+		CreatedTime:  currentTime,
+		LastUsedTime: currentTime,
+	}
+
+	if err = sess.Persist(); err != nil {
+		errorMessage := "error while trying to insert session details: " + err.Error()
+		resp.CreateInternalErrorResponse(errorMessage)
+		resp.Header = map[string]string{
+			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
+		}
+		log.Printf(errorMessage)
+		return resp, ""
+	}
+
+	resp.StatusCode = http.StatusCreated
+	resp.StatusMessage = response.Created
+
+	resp.StatusCode = http.StatusCreated
+	resp.StatusMessage = response.Created
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Link":              "</redfish/v1/SessionService/Sessions/" + sess.ID + "/>; rel=self",
+		"Transfer-Encoding": "chunked",
+		"X-Auth-Token":      sess.Token,
+		"Content-type":      "application/json; charset=utf-8",
+	}
+
+	commonResponse.ID = sess.ID
+	commonResponse.OdataID = "/redfish/v1/SessionService/Sessions/" + commonResponse.ID
+	commonResponse.CreateGenericResponse(resp.StatusMessage)
+	resp.Body = asresponse.Session{
+		Response: commonResponse,
+		UserName: req.UserName,
+	}
+
+	return resp, commonResponse.ID
+}

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+service Authorization {
+    rpc IsAuthorized(AuthRequest) returns (AuthResponse){}
+}
+
+message AuthRequest{
+    string sessionToken = 1;
+    repeated string privileges = 2;
+    repeated string oemprivileges = 3;
+}
+
+message AuthResponse{
+    int32 statusCode = 1;
+    string statusMessage = 2;
+}

@@ -1,0 +1,102 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+//Package rpc ...
+package rpc
+
+import (
+	"context"
+	"encoding/json"
+
+	"log"
+	"net/http"
+
+	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
+	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabrics"
+)
+
+// Fabrics struct helps to register service
+type Fabrics struct {
+	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) (int32, string)
+	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+}
+
+// GetFabricResource defines the operation which handled the RPC request response
+// for getting the specified fabric resource information
+func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.FabricRequest, resp *fabricsproto.FabricResponse) error {
+	fab := fabrics.Fabrics{
+		Auth:          f.IsAuthorizedRPC,
+		ContactClient: f.ContactClientRPC,
+	}
+	data := fab.GetFabricResource(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
+// UpdateFabricResource defines  the operation which handles the RPC request response
+// for creating/updating the specific fabric resource
+func (f *Fabrics) UpdateFabricResource(ctx context.Context, req *fabricsproto.FabricRequest, resp *fabricsproto.FabricResponse) error {
+	fab := fabrics.Fabrics{
+		Auth:          f.IsAuthorizedRPC,
+		ContactClient: f.ContactClientRPC,
+	}
+	data := fab.UpdateFabricResource(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.Body = generateResponse(data.Body)
+	resp.StatusMessage = data.StatusMessage
+
+	return nil
+
+}
+
+// AddFabric defines  the operation which handles the RPC request response for Add fabric
+func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest, resp *fabricsproto.FabricResponse) error {
+
+	data := fabrics.AddFabric(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+
+	return nil
+
+}
+
+// DeleteFabricResource defines the operation which handled the RPC request response
+// for deleting the specified fabric resource information
+func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.FabricRequest, resp *fabricsproto.FabricResponse) error {
+	fab := fabrics.Fabrics{
+		Auth:          f.IsAuthorizedRPC,
+		ContactClient: f.ContactClientRPC,
+	}
+	data := fab.DeleteFabricResource(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+
+	return nil
+}
+
+func generateResponse(input interface{}) []byte {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		log.Println("error in unmarshalling response object from util-libs", err.Error())
+	}
+	return bytes
+}

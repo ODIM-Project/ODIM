@@ -44,7 +44,7 @@ jobs:
       run: |
         flag=0
         echo "Create Session using the URI /redfish/v1/Sessionservice/Sessions"
-          run=$(curl --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"Username": "admin","Password": "Od!m12$4"}' 'https://odimra.local.com:45000/redfish/v1/SessionService/Sessions')
+          run=$(curl --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://odimra.local.com:45000/redfish/v1/SessionService/Sessions')
         if [ $run -eq 201 ];
         then 
             echo "Session Created Sucessfully"

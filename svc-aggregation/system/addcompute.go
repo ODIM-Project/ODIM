@@ -22,12 +22,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	aggregatorproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/aggregator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmodel"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agresponse"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 	uuid "github.com/satori/go.uuid"
 )
 

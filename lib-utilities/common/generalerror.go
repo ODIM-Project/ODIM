@@ -17,7 +17,7 @@ package common
 import (
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // TaskData holds the response data which is been put into the task

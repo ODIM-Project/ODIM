@@ -17,16 +17,16 @@ import (
 	"log"
 	"os"
 
-	dc "github.com/bharath-b-hpe/odimra/lib-messagebus/datacommunicator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-events/consumer"
-	"github.com/bharath-b-hpe/odimra/svc-events/evcommon"
-	evt "github.com/bharath-b-hpe/odimra/svc-events/events"
-	"github.com/bharath-b-hpe/odimra/svc-events/rpc"
-	"github.com/bharath-b-hpe/odimra/svc-plugin-rest-client/pmbhandle"
+	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-events/consumer"
+	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
+	evt "github.com/ODIM-Project/ODIM/svc-events/events"
+	"github.com/ODIM-Project/ODIM/svc-events/rpc"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 func main() {

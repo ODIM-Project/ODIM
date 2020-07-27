@@ -15,17 +15,18 @@ package session
 
 import (
 	"encoding/base64"
-	"golang.org/x/crypto/sha3"
+	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asresponse"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
+	"golang.org/x/crypto/sha3"
 )
 
 func createMockUser(username, roleID string) error {
@@ -129,6 +130,21 @@ func TestCreateSession(t *testing.T) {
 	type args struct {
 		req *sessionproto.SessionCreateRequest
 	}
+
+	reqBodyCreateSession, _ := json.Marshal(asmodel.CreateSession{
+		UserName: "admin",
+		Password: "P@$$w0rd",
+	})
+	reqBodyInvalidCred, _ := json.Marshal(asmodel.CreateSession{
+		UserName: "admin",
+		Password: "HP1",
+	})
+	reqBodyNoPrivilege, _ := json.Marshal(asmodel.CreateSession{
+		UserName: "sample",
+		Password: "P@$$w0rd",
+	})
+	reqBodyEmpty, _ := json.Marshal(asmodel.CreateSession{})
+
 	tests := []struct {
 		name string
 		args args
@@ -138,8 +154,7 @@ func TestCreateSession(t *testing.T) {
 			name: "successful creation of session",
 			args: args{
 				req: &sessionproto.SessionCreateRequest{
-					UserName: "admin",
-					Password: "P@$$w0rd",
+					RequestBody: reqBodyCreateSession,
 				},
 			},
 		},
@@ -147,7 +162,9 @@ func TestCreateSession(t *testing.T) {
 		{
 			name: "Create session without user",
 			args: args{
-				req: &sessionproto.SessionCreateRequest{},
+				req: &sessionproto.SessionCreateRequest{
+					RequestBody: reqBodyEmpty,
+				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
@@ -162,8 +179,7 @@ func TestCreateSession(t *testing.T) {
 			name: "create session with an invalid credentials",
 			args: args{
 				req: &sessionproto.SessionCreateRequest{
-					UserName: "admin",
-					Password: "HP1",
+					RequestBody: reqBodyInvalidCred,
 				},
 			},
 			want: response.RPC{
@@ -179,8 +195,7 @@ func TestCreateSession(t *testing.T) {
 			name: "create session with an no login privilege",
 			args: args{
 				req: &sessionproto.SessionCreateRequest{
-					UserName: "sample",
-					Password: "P@$$w0rd",
+					RequestBody: reqBodyNoPrivilege,
 				},
 			},
 			want: response.RPC{

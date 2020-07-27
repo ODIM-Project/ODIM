@@ -21,13 +21,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
 	"github.com/stretchr/testify/assert"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrcommon"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrmodel"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrresponse"
 )
 
 func TestGetManagersCollection(t *testing.T) {

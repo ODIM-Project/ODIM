@@ -1,5 +1,5 @@
-module github.com/bharath-b-hpe/odimra/svc-plugin-rest-client
+module github.com/ODIM-Project/ODIM/svc-plugin-rest-client
 
 go 1.13
 
-require github.com/bharath-b-hpe/odimra/lib-utilities v0.0.0-20200616091802-15566ec90d02
+require github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727091052-cb7db65624ce

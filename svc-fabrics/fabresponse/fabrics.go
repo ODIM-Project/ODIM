@@ -16,7 +16,7 @@
 package fabresponse
 
 import (
-	dmtf "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
 // FabricCollection response which svc-fabric service return back

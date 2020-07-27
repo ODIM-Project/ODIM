@@ -20,16 +20,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabmodel"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 	"io/ioutil"
 	"net/http"
 	"testing"
 
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (int32, string) {

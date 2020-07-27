@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )
@@ -75,9 +75,6 @@ func TestSessionRPCs_CreateSession(t *testing.T) {
 	redfishRoutes := mockApp.Party("/redfish/v1")
 	redfishRoutes.Post("/SessionService/Sessions", s.CreateSession)
 	e := httptest.New(t, mockApp)
-	e.POST(
-		"/redfish/v1/SessionService/Sessions",
-	).WithJSON("").Expect().Status(http.StatusBadRequest)
 	e.POST(
 		"/redfish/v1/SessionService/Sessions",
 	).WithJSON(map[string]string{"admin": "Password"}).Expect().Status(http.StatusCreated)

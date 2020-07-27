@@ -27,10 +27,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-events/evmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.

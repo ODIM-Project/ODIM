@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	aggregatorproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/aggregator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // DoGetAggregationService defines the RPC call function for

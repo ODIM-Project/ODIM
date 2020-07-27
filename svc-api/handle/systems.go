@@ -20,9 +20,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 )
 

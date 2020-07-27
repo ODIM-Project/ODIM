@@ -24,9 +24,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
 )
 
 const (

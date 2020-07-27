@@ -17,10 +17,10 @@ package scommon
 import (
 	"bytes"
 	"fmt"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/stretchr/testify/assert"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/svc-systems/smodel"
 	"io/ioutil"
 	"net/http"
 	"testing"

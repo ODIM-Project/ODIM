@@ -17,10 +17,10 @@ package system
 import (
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	aggregatorproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/aggregator"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 func TestExternalInterface_UpdateSystemState(t *testing.T) {

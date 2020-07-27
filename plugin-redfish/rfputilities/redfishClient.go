@@ -23,9 +23,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	lutilconf "github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
+	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/gofrs/uuid"
 )
 

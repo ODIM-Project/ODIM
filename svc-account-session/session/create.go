@@ -16,13 +16,15 @@
 package session
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asresponse"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
+	"encoding/json"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	uuid "github.com/satori/go.uuid"
 
 	"log"
@@ -56,7 +58,29 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		ErrorArgs: errorArgs,
 	}
 
-	user, err := auth.CheckSessionCreationCredentials(req.UserName, req.Password)
+	// parsing the CreateSession
+	var createSession asmodel.CreateSession
+	genErr := json.Unmarshal(req.RequestBody, &createSession)
+	if genErr != nil {
+		errMsg := "unable to parse the create session request" + genErr.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)
+	if genErr != nil {
+		errMsg := "error while validating request parameters: " + genErr.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp, ""
+	}
+
+	user, err := auth.CheckSessionCreationCredentials(createSession.UserName, createSession.Password)
 	if err != nil {
 		errorMessage := "error while authorizing session creation credentials: " + err.Error()
 		if err.ErrNo() == errors.DBConnFailed {
@@ -130,7 +154,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = asresponse.Session{
 		Response: commonResponse,
-		UserName: req.UserName,
+		UserName: createSession.UserName,
 	}
 
 	return resp, commonResponse.ID

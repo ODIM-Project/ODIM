@@ -17,8 +17,8 @@ package rpc
 
 import (
 	"context"
-	authproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/auth"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
+	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Auth struct helps to register service

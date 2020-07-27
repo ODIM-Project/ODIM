@@ -16,7 +16,7 @@
 package common
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"os"
 	"strings"
 )
@@ -27,7 +27,7 @@ const localhost = "127.0.0.1"
 func SetUpMockConfig() error {
 	workingDir, _ := os.Getwd()
 
- path := strings.SplitAfter(workingDir, "odimra") 
+ path := strings.SplitAfter(workingDir, "ODIM") 
 	var basePath string
 		if len(path) > 2  {
 			for i:=0;i<len(path)-1;i++{

@@ -23,10 +23,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	dmtfmodel "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {

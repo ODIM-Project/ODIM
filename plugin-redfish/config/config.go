@@ -22,7 +22,7 @@ import (
 	"log"
 	"os"
 
-	lutilconf "github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 // Data will have the configuration data from config file

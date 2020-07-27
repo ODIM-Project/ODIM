@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

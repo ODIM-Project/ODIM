@@ -16,8 +16,8 @@
 package fabrics
 
 import (
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"net/http"
 )
 

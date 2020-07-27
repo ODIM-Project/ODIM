@@ -21,13 +21,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-api/router"
-	"github.com/bharath-b-hpe/odimra/svc-api/rpc"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-api/router"
+	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -70,9 +70,16 @@ func main() {
 				return
 			}
 
+			//Converting the request into a map
+			sessionReq := map[string]interface{}{
+				"UserName": username,
+				"Password": password,
+			}
+			//Marshalling input to get bytes since session create request accepts bytes
+			sessionReqData, err := json.Marshal(sessionReq)
+
 			var req sessionproto.SessionCreateRequest
-			req.UserName = username
-			req.Password = password
+			req.RequestBody = sessionReqData
 			resp, err := rpc.DoSessionCreationRequest(req)
 			if err != nil && resp == nil {
 				errorMessage := "error: something went wrong with the RPC calls: " + err.Error()

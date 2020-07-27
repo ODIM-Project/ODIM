@@ -16,7 +16,7 @@
 package asresponse
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // Account struct is used to ommit password for display purposes

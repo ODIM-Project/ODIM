@@ -16,10 +16,10 @@
 package router
 
 import (
-	srv "github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-api/handle"
-	"github.com/bharath-b-hpe/odimra/svc-api/middleware"
-	"github.com/bharath-b-hpe/odimra/svc-api/rpc"
+	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-api/handle"
+	"github.com/ODIM-Project/ODIM/svc-api/middleware"
+	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
 )
 

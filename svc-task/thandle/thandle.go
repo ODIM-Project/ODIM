@@ -24,14 +24,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
+	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-task/tmodel"
-	"github.com/bharath-b-hpe/odimra/svc-task/tresponse"
 )
 
 const (

@@ -29,10 +29,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	"github.com/bharath-b-hpe/odimra/svc-events/evmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
 

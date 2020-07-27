@@ -22,13 +22,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	roleproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/role"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/role"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
+	"github.com/ODIM-Project/ODIM/svc-account-session/role"
+	"github.com/ODIM-Project/ODIM/svc-account-session/session"
 )
 
 // Role struct helps to register service

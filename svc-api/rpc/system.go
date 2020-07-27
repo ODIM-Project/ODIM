@@ -18,8 +18,8 @@ package rpc
 import (
 	"context"
 	"fmt"
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 //GetSystemsCollection will do the rpc call to collect Systems from odimra

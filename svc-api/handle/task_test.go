@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

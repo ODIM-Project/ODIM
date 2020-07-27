@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 var sessionStore = common.InMemory
@@ -35,6 +35,12 @@ type Session struct {
 	Origin       string
 	CreatedTime  time.Time
 	LastUsedTime time.Time
+}
+
+//CreateSession will hold input request for creating a session
+type CreateSession struct {
+	UserName string `json:"UserName"`
+	Password string `json:"Password"`
 }
 
 // Persist will create a session in the DB

@@ -18,13 +18,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-systems/rpc"
-	"github.com/bharath-b-hpe/odimra/svc-systems/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
+	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 	"io/ioutil"
 )
 

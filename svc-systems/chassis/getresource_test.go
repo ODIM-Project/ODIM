@@ -22,11 +22,11 @@ import (
 	"reflect"
 	"testing"
 
-	dmtf "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-systems/sresponse"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 func mockChassisResourceData(body []byte, table, key string) error {

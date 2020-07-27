@@ -25,11 +25,11 @@ import (
 	"time"
 
 	iris "github.com/kataras/iris/v12"
-	//"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	pluginConfig "github.com/bharath-b-hpe/odimra/plugin-redfish/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpresponse"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfputilities"
+	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 )
 
 // GetPluginStatus defines the GetPluginStatus iris handler.

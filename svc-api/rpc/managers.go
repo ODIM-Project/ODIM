@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 //GetManagersCollection will do the rpc call to collect Managers

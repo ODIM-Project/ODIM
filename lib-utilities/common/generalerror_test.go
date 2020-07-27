@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // this flag is for checking whether the function call actually happened

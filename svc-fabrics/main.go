@@ -17,13 +17,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabrics"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/rpc"
-	"github.com/bharath-b-hpe/odimra/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/rpc"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 func main() {

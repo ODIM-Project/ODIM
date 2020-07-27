@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"time"
 
-	authproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/auth"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // Auth functinality will do the following

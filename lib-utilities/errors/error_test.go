@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 func TestCreateErrorResponse(t *testing.T) {

@@ -19,10 +19,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	authproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/auth"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
 
 func createSession(token, id string, privileges map[string]bool, createdTime, lastUsedTime time.Time) error {

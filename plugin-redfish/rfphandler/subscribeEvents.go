@@ -24,10 +24,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	evtConfig "github.com/bharath-b-hpe/odimra/plugin-redfish/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfputilities"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	evtConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 )
 

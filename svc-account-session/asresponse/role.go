@@ -16,7 +16,7 @@
 package asresponse
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // UserRole defines the response given back to the user regarding roles

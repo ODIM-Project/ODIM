@@ -101,7 +101,6 @@ jobs:
         else
           echo "ALL Sanity Tests Passed Sucessfully"
         fi
-
     - name: Prepare Build Artifacts
       run: |
         sudo mkdir /var/log/odim-infra
@@ -123,4 +122,3 @@ jobs:
         /var/log/DELL_PLUGIN
         /var/log/odim-plugins
         /var/log/odim-infra
-  

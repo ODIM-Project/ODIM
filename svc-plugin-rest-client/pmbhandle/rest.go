@@ -21,7 +21,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 //ContactPlugin is used to send a request to plugin to add a resource

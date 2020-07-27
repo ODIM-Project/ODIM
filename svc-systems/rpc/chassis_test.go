@@ -16,12 +16,12 @@ package rpc
 import (
 	"context"
 	"fmt"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"net/http"
 	"testing"
 
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 )
 
 func mockResourceData(body []byte, table, key string) error {

@@ -30,11 +30,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfputilities"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 
-	pluginConfig "github.com/bharath-b-hpe/odimra/plugin-redfish/config"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 )
 
 //ResetComputerSystem : reset computer system

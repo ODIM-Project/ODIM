@@ -18,8 +18,8 @@ package rfphandler
 import (
 	"encoding/base64"
 	"encoding/json"
-	pluginConfig "github.com/bharath-b-hpe/odimra/plugin-redfish/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	iris "github.com/kataras/iris/v12"
 	"github.com/satori/go.uuid"
 	"golang.org/x/crypto/sha3"

@@ -16,9 +16,9 @@
 package handle
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	accountproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/account"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 	"log"
 	"net/http"

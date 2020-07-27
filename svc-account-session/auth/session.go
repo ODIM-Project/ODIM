@@ -21,9 +21,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"golang.org/x/crypto/sha3"
 )
 

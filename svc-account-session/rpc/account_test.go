@@ -19,10 +19,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	accountproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/account"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	"golang.org/x/crypto/sha3"
 )
 

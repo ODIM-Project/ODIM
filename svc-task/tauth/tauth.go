@@ -16,8 +16,8 @@
 package auth
 
 import (
+	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	micro "github.com/micro/go-micro"
-	srv "github.com/bharath-b-hpe/odimra/lib-utilities/services"
 )
 
 var service micro.Service

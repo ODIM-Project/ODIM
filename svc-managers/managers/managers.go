@@ -21,15 +21,15 @@ import (
 	"net/http"
 	"strings"
 
-	dmtf "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrcommon"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrmodel"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrresponse"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
 )
 
 // DeviceContact struct to inject the contact device function into the handlers

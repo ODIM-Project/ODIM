@@ -18,19 +18,19 @@ package fabrics
 import (
 	"encoding/json"
 	"fmt"
-	dmtf "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabresponse"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabresponse"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
 // Fabrics struct helps to hold the behaviours

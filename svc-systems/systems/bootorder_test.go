@@ -22,12 +22,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
-	"github.com/bharath-b-hpe/odimra/svc-systems/smodel"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
 func mockSystemData(systemID string) error {

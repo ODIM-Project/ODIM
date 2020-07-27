@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // GetFabricResource defines the RPC call function for

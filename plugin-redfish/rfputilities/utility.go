@@ -37,8 +37,8 @@ import (
 	"encoding/pem"
 	"log"
 
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpresponse"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
 )
 
 // GetPlainText ...

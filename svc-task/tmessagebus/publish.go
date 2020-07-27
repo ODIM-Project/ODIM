@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"log"
 
+	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	uuid "github.com/satori/go.uuid"
-	dc "github.com/bharath-b-hpe/odimra/lib-messagebus/datacommunicator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
 )
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus

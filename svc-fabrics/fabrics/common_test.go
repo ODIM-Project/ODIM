@@ -18,10 +18,10 @@ package fabrics
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 	"github.com/stretchr/testify/assert"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabmodel"
 	"net/http"
 	"testing"
 )

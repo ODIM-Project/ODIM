@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // DoSessionCreationRequest will do the rpc calls for the auth

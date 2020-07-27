@@ -20,8 +20,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	pluginConfig "github.com/bharath-b-hpe/odimra/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	iris "github.com/kataras/iris/v12"
 	"strings"
 )
@@ -69,6 +69,6 @@ func writeEventToJobQueue(event common.Events) {
 	var events []interface{}
 	//events := make([]interface{}, 0)
 	events = append(events, event)
-	done:=make(chan bool)
-	go common.RunWriteWorkers(In, events, 1,done)
+	done := make(chan bool)
+	go common.RunWriteWorkers(In, events, 1, done)
 }

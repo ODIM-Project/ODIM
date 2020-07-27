@@ -29,8 +29,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpresponse"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // DeleteTaskRequest will do the rpc calls for the svc-task DeleteTask

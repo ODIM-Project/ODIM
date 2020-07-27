@@ -17,7 +17,7 @@ package session
 
 import (
 	"fmt"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"time"
 )
 

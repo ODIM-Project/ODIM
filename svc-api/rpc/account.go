@@ -18,8 +18,8 @@ package rpc
 import (
 	"context"
 	"fmt"
-	accountproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/account"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // DoGetAccountServiceRequest defines the RPC call function for

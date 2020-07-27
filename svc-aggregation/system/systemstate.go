@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"strings"
 
-	aggregatorproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/aggregator"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmodel"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 //UpdateSystemState is used for updating ComputerSystem table

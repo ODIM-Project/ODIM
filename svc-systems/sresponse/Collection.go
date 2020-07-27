@@ -16,7 +16,7 @@
 package sresponse
 
 import (
-	dmtf "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
 //Collection holds response  of System and ChassisCollection

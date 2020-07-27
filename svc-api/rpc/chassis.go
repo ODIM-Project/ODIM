@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 //GetChassisCollection will do the rpc call to collect all chassis

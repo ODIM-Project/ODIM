@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	roleproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/role"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // CreateRole defines the RPC call function for

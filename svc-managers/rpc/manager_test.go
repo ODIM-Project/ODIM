@@ -20,13 +20,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/stretchr/testify/assert"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrmodel"
 
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 )
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {

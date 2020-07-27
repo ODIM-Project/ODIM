@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	lutilconf "github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 var (

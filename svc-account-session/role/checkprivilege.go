@@ -20,8 +20,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
 
 // Status to handle the error code and message

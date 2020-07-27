@@ -15,7 +15,7 @@
 package agresponse
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // ListMember define the links for each account present in odimra

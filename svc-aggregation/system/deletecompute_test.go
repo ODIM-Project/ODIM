@@ -22,12 +22,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	aggregatorproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/aggregator"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 var successReq = map[string]interface{}{"parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}

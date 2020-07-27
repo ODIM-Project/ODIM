@@ -22,13 +22,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	accountproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/account"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/account"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/account"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
+	"github.com/ODIM-Project/ODIM/svc-account-session/session"
 )
 
 // Account struct helps to register service

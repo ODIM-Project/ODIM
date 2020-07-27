@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

@@ -18,8 +18,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/svc-api/models"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/svc-api/models"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

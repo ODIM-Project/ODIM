@@ -29,16 +29,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agcommon"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmessagebus"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 //Device struct to define the response from plugin for UUID

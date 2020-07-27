@@ -17,8 +17,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 )
 
 func TestSystems_GetSystemResource(t *testing.T) {

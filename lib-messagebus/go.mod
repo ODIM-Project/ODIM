@@ -1,4 +1,4 @@
-module github.com/bharath-b-hpe/odimra/lib-messagebus
+module github.com/ODIM-Project/ODIM/lib-messagebus
 
 go 1.13
 

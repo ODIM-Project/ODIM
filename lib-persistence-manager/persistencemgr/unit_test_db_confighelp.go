@@ -16,8 +16,8 @@
 package persistencemgr
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 // MockDBConnection provides a mock db for unit testing

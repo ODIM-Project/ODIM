@@ -77,9 +77,6 @@ func TestSessionRPCs_CreateSession(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/SessionService/Sessions",
-	).WithJSON("").Expect().Status(http.StatusBadRequest)
-	e.POST(
-		"/redfish/v1/SessionService/Sessions",
 	).WithJSON(map[string]string{"admin": "Password"}).Expect().Status(http.StatusCreated)
 }
 

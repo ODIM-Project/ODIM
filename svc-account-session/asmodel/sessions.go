@@ -37,6 +37,12 @@ type Session struct {
 	LastUsedTime time.Time
 }
 
+//CreateSession will hold input request for creating a session
+type CreateSession struct {
+	UserName string `json:"UserName"`
+	Password string `json:"Password"`
+}
+
 // Persist will create a session in the DB
 func (s *Session) Persist() *errors.Error {
 	connPool, err := common.GetDBConnection(sessionStore)

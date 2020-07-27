@@ -70,9 +70,16 @@ func main() {
 				return
 			}
 
+			//Converting the request into a map
+			sessionReq := map[string]interface{}{
+				"UserName": username,
+				"Password": password,
+			}
+			//Marshalling input to get bytes since session create request accepts bytes
+			sessionReqData, err := json.Marshal(sessionReq)
+
 			var req sessionproto.SessionCreateRequest
-			req.UserName = username
-			req.Password = password
+			req.RequestBody = sessionReqData
 			resp, err := rpc.DoSessionCreationRequest(req)
 			if err != nil && resp == nil {
 				errorMessage := "error: something went wrong with the RPC calls: " + err.Error()

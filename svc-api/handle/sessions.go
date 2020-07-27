@@ -16,6 +16,7 @@
 package handle
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -39,7 +40,7 @@ type SessionRPCs struct {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) CreateSession(ctx iris.Context) {
-	var req sessionproto.SessionCreateRequest
+	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the session create request body: %v" + err.Error()
@@ -49,7 +50,15 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := s.CreateSessionRPC(req)
+
+	// Marshalling the req to make session request
+	// Since session create request accepts []byte stream
+	request, err := json.Marshal(req)
+	createRequest := sessionproto.SessionCreateRequest{
+		RequestBody: request,
+	}
+
+	resp, err := s.CreateSessionRPC(createRequest)
 
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()

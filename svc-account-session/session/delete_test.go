@@ -14,6 +14,7 @@
 package session
 
 import (
+	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
@@ -21,6 +22,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
@@ -36,9 +38,13 @@ func createSession(t *testing.T, role, username string, privileges []string) (st
 	if errs != nil {
 		t.Fatalf("Error in creating mock admin user %v", errs)
 	}
-	req := &sessionproto.SessionCreateRequest{
+
+	reqBodyBytes, _ := json.Marshal(asmodel.CreateSession{
 		UserName: username,
 		Password: "P@$$w0rd",
+	})
+	req := &sessionproto.SessionCreateRequest{
+		RequestBody: reqBodyBytes,
 	}
 
 	resp, sessionID := CreateNewSession(req)

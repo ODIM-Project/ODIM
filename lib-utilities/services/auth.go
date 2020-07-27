@@ -20,9 +20,9 @@ import (
 	"log"
 	"net/http"
 
-	authproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/auth"
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
-	errResponse "github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // IsAuthorized is used to authorize the services using svc-account-session.

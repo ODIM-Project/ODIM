@@ -17,7 +17,7 @@ package errors
 
 import (
 	"fmt"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"net/http"
 )
 

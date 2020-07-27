@@ -18,7 +18,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 const (

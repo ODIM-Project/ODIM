@@ -1,9 +1,8 @@
-module github.com/bharath-b-hpe/odimra/lib-utilities
+module github.com/ODIM-Project/ODIM/lib-utilities
 
 go 1.13
 
 require (
-	github.com/bharath-b-hpe/odimra/lib-persistence-manager v0.0.0-20200616091211-27e68da08355
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect

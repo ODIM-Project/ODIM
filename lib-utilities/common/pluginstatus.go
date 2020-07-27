@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 // PluginStatus holds the data required for continuously checking the plugin health

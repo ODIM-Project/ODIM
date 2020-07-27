@@ -16,7 +16,7 @@ package services
 
 import (
 	"context"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"log"
 )
 

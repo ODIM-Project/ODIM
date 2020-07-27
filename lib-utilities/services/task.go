@@ -20,7 +20,7 @@ import (
 	"log"
 	"time"
 
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/golang/protobuf/ptypes"
 )
 

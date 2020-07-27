@@ -17,16 +17,16 @@ import (
 	"log"
 	"os"
 
-	dc "github.com/bharath-b-hpe/odimra/lib-messagebus/datacommunicator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	aggregatorproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/aggregator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agcommon"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/agmessagebus"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/rpc"
-	"github.com/bharath-b-hpe/odimra/svc-aggregation/system"
-	"github.com/bharath-b-hpe/odimra/svc-plugin-rest-client/pmbhandle"
+	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/rpc"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 // Schema is a struct to define search, condition and query keys

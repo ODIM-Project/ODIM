@@ -84,8 +84,8 @@ To install `Ubuntu Make`, run the following command:
    Main PID: 10096 (dockerd)
    Tasks: 16
    CGroup: /system.slice/docker.service
-   ├─10096 /usr/bin/dockerd -H fd://
-   └─10113 docker-containerd --config /var/run/docker/containerd/
+   +-10096 /usr/bin/dockerd -H fd://
+   +-10113 docker-containerd --config /var/run/docker/containerd/
    containerd.toml
    ```
      
@@ -108,17 +108,17 @@ To install `Ubuntu Make`, run the following command:
 This section provides a step-by-step procedure for deploying the resource aggregator for ODIM (odimra) and GRF plugin.
 
 > **NOTE:**
-  • All configuration parameters are set to default values in the configuration files for odimra and GRF plugin. 
-  • The following ports are used for deploying odimra and GRF plugin:
+  � All configuration parameters are set to default values in the configuration files for odimra and GRF plugin. 
+  � The following ports are used for deploying odimra and GRF plugin:
     45000, 45001, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
     Ensure that the above ports are not in use.
 
 **WARNING:** Do not run the commands provided in this section as root user unless mentioned.
 
 ### Procedure
-1. Clone the odimra repository form `https://github.com/bharath-b-hpe/odimra.git` to the home directory of the user.
+1. Clone the odimra repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user.
    ```
-   $ git clone https://github.com/bharath-b-hpe/odimra.git
+   $ git clone https://github.com/ODIM-Project/ODIM.git
    ```
 2. Choose a Fully Qualified Domain Name (FQDN) for the resource aggregator server. 
    Example: odim.local.com.
@@ -313,7 +313,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
 	``` 
 
 12. Refer to the following readme to add the Generic Redfish Plugin and then add the servers to ODIMRA.  
-    https://github.com/bharath-b-hpe/odimra/blob/master/svc-aggregation/README.md
+    https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
     
   
   #  Modifying default configuration parameters for the resource aggregator

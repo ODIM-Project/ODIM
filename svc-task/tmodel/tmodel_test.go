@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/satori/uuid"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
 	"golang.org/x/crypto/sha3"
 )
 

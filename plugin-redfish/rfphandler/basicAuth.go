@@ -21,10 +21,10 @@ import (
 	"net/http"
 	"time"
 
-	pluginConfig "github.com/bharath-b-hpe/odimra/plugin-redfish/config"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpmodel"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfpresponse"
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/rfputilities"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
 )
 

@@ -17,11 +17,11 @@ package handle
 
 import (
 	"encoding/json"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	roleproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/role"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	//"github.com/bharath-b-hpe/odimra/svc-api/rpc"
+	//"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"log"
 	"net/http"
 )

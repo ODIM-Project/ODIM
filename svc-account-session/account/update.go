@@ -20,12 +20,12 @@ package account
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/base64"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	accountproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/account"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"golang.org/x/crypto/sha3"
 	"log"
 	"net/http"

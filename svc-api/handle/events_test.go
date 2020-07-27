@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

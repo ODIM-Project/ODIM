@@ -24,10 +24,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-task/tmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
 func mockIsAuthorized(sessionToken string, privileges []string) (int32, string) {

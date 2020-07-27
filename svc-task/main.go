@@ -17,15 +17,15 @@ import (
 	"log"
 	"os"
 
-	dc "github.com/bharath-b-hpe/odimra/lib-messagebus/datacommunicator"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	auth "github.com/bharath-b-hpe/odimra/svc-task/tauth"
-	"github.com/bharath-b-hpe/odimra/svc-task/thandle"
-	"github.com/bharath-b-hpe/odimra/svc-task/tmessagebus"
-	"github.com/bharath-b-hpe/odimra/svc-task/tmodel"
+	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	auth "github.com/ODIM-Project/ODIM/svc-task/tauth"
+	"github.com/ODIM-Project/ODIM/svc-task/thandle"
+	"github.com/ODIM-Project/ODIM/svc-task/tmessagebus"
+	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
 func main() {

@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	roleproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/role"
+	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

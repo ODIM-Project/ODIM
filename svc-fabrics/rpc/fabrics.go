@@ -22,8 +22,8 @@ import (
 	"log"
 	"net/http"
 
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabrics"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 )
 
 // Fabrics struct helps to register service

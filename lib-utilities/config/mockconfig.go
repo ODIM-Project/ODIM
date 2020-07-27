@@ -159,7 +159,7 @@ func SetUpMockConfig(t *testing.T) error {
 	Data.FirmwareVersion = "1.0"
 	Data.SouthBoundRequestTimeoutInSecs = 10
 	Data.ServerRediscoveryBatchSize = 10
- path := strings.SplitAfter(workingDir, "odimra") 
+ path := strings.SplitAfter(workingDir, "ODIM") 
 	var basePath string
 		if len(path) > 2  {
 			for i:=0;i<len(path)-1;i++{

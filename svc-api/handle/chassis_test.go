@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"testing"
 
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	iris "github.com/kataras/iris/v12"
 )
 

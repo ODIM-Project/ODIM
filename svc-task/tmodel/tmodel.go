@@ -21,7 +21,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 )
 
 const (

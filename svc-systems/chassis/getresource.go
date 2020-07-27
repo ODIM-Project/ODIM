@@ -21,14 +21,14 @@ import (
 	"net/http"
 	"strings"
 
-	dmtf "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-systems/scommon"
-	"github.com/bharath-b-hpe/odimra/svc-systems/smodel"
-	"github.com/bharath-b-hpe/odimra/svc-systems/sresponse"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 //PluginContact struct to inject the pmb client function into the handlers

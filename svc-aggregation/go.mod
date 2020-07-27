@@ -1,13 +1,12 @@
-module github.com/bharath-b-hpe/odimra/svc-aggregation
+module github.com/ODIM-Project/ODIM/svc-aggregation
 
 go 1.13
 
 require (
-	github.com/bharath-b-hpe/odimra/lib-dmtf v0.0.0-20200616094643-3244bfd9e5ca
-	github.com/bharath-b-hpe/odimra/lib-messagebus v0.0.0-20200616094643-3244bfd9e5ca
-	github.com/bharath-b-hpe/odimra/lib-utilities v0.0.0-20200724060917-9afcd1a9c961
-	github.com/bharath-b-hpe/odimra/svc-plugin-rest-client v0.0.0-20200616094643-3244bfd9e5ca
-	github.com/nats-io/nats-server/v2 v2.1.4 // indirect
+	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20200727115727-33d557ff397c
+	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727103018-252e26a63065
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727133207-df3dfb728bd1
+	github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727110501-4599893e44fd
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.5.1
 )

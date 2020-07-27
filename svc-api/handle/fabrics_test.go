@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

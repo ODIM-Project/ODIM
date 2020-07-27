@@ -21,11 +21,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-systems/scommon"
-	"github.com/bharath-b-hpe/odimra/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
 // SetDefaultBootOrder defines the logic for setting the boot order to the default

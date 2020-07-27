@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"testing"
 
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

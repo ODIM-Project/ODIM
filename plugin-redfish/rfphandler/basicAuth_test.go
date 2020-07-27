@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 )

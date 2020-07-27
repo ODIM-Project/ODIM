@@ -17,14 +17,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	accountproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/account"
-	authproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/auth"
-	roleproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/role"
-	sessionproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/session"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/rpc"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
+	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
+	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-account-session/rpc"
 )
 
 func main() {

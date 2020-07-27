@@ -24,10 +24,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-events/evresponse"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
 )
 

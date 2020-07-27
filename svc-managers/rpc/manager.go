@@ -21,10 +21,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
-	"github.com/bharath-b-hpe/odimra/svc-managers/managers"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/svc-managers/managers"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 )
 
 // Managers struct helps to register service

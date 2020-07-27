@@ -22,10 +22,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	taskproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/task"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-task/tresponse"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-task/tresponse"
 )
 
 //GetTaskMonitor is an API end point to get the task details and response body.

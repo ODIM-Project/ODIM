@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
-	eventsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/events"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
 // DoGetEventService defines the RPC call function for

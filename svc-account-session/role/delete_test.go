@@ -20,10 +20,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	roleproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/role"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"golang.org/x/crypto/sha3"
 )
 

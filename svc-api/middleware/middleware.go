@@ -16,7 +16,7 @@
 package middleware
 
 import (
-	"github.com/bharath-b-hpe/odimra/svc-api/rpc"
+	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
 	"log"
 )

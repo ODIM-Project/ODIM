@@ -22,12 +22,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	errResponse "github.com/bharath-b-hpe/odimra/lib-utilities/response"
-	srv "github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-api/models"
-	"github.com/bharath-b-hpe/odimra/svc-api/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
+	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-api/models"
+	"github.com/ODIM-Project/ODIM/svc-api/response"
 
 	iris "github.com/kataras/iris/v12"
 )

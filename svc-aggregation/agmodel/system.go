@@ -21,10 +21,10 @@ import (
 	"io/ioutil"
 	"log"
 
-	dmtfmodel "github.com/bharath-b-hpe/odimra/lib-dmtf/model"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/errors"
+	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 //Schema model is used to iterate throgh the schema json for search/filter

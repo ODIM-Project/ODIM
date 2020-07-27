@@ -18,14 +18,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
-	managersproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/managers"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/services"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrcommon"
-	"github.com/bharath-b-hpe/odimra/svc-managers/mgrmodel"
-	"github.com/bharath-b-hpe/odimra/svc-managers/rpc"
-	"github.com/bharath-b-hpe/odimra/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 func main() {

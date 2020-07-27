@@ -19,13 +19,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"gotest.tools/assert"
 
-	//	"github.com/bharath-b-hpe/odimra/svc-fabrics/fabresponse"
-	fabricsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/fabrics"
-	//"github.com/bharath-b-hpe/odimra/svc-fabrics/fabmodel"
+	//	"github.com/ODIM-Project/ODIM/svc-fabrics/fabresponse"
+	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
+	//"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 )
 
 func TestAddFabric(t *testing.T) {

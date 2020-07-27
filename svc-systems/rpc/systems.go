@@ -20,10 +20,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	systemsproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/systems"
-	"github.com/bharath-b-hpe/odimra/svc-plugin-rest-client/pmbhandle"
-	"github.com/bharath-b-hpe/odimra/svc-systems/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
 // Systems struct helps to register service

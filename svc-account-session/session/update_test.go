@@ -14,8 +14,8 @@
 package session
 
 import (
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	"github.com/bharath-b-hpe/odimra/svc-account-session/auth"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	"testing"
 )
 

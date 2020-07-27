@@ -17,7 +17,7 @@ package consumer
 
 import (
 	"encoding/json"
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"sync"
 	"testing"
 	"time"

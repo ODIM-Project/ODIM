@@ -21,10 +21,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bharath-b-hpe/odimra/lib-utilities/common"
-	chassisproto "github.com/bharath-b-hpe/odimra/lib-utilities/proto/chassis"
-	"github.com/bharath-b-hpe/odimra/svc-plugin-rest-client/pmbhandle"
-	"github.com/bharath-b-hpe/odimra/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 )
 
 // ChassisRPC struct helps to register service

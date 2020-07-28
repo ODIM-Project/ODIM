@@ -87,9 +87,9 @@ jobs:
         
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
+      if: always()
       with:
        name: my-artifiact
-       if: always()
        path: |
         /var/log/odimra
         /var/log/GRF_PLUGIN

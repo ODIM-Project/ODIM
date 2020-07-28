@@ -395,7 +395,9 @@ func TestExternalInterface_AddComputeMultipleRequest(t *testing.T) {
 
 // TestExternalInterface_AddComputeDuplicate handles the test cases for getregistry and duplicate add server
 func TestExternalInterface_AddComputeDuplicate(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}

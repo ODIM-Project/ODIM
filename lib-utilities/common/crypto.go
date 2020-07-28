@@ -21,13 +21,21 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+)
+
+var (
+	// MuxLock is used for avoiding race conditions
+	MuxLock = &sync.Mutex{}
 )
 
 // DecryptWithPrivateKey is used to decrypt ciphered text to device password
 // with the private key whose path is available in the config file
 func DecryptWithPrivateKey(ciphertext []byte) ([]byte, error) {
+	MuxLock.Lock()
+	defer MuxLock.Unlock()
 	var err error
 	block, _ := pem.Decode(config.Data.KeyCertConf.RSAPrivateKey)
 	enc := x509.IsEncryptedPEMBlock(block)

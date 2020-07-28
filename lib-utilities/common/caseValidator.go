@@ -32,7 +32,7 @@ func RequestParamsCaseValidator(rawRequestBody []byte, reqStruct interface{}) (s
 	//Unmarshalling request body into a map
 	var rawReqBodyMap map[string]interface{}
 	json.Unmarshal([]byte(rawRequestBody), &rawReqBodyMap)
-	for key, _ := range rawReqBodyMap {
+	for key := range rawReqBodyMap {
 		if _, found := reqStructMap[key]; !found {
 			invalidProperties += getInvalidProperty(reqStructMap, key)
 		} else {
@@ -130,7 +130,7 @@ func convertStructToMap(reqStructure interface{}) (map[string]interface{}, error
 
 // Searches the key in map with ignore case
 func searchIgnoreCase(reqMap map[string]interface{}, searchKey string) bool {
-	for key, _ := range reqMap {
+	for key := range reqMap {
 		if strings.EqualFold(key, searchKey) {
 			return true
 		}

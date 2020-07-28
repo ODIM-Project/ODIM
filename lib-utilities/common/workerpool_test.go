@@ -28,6 +28,12 @@ func process(_ interface{}) bool {
 	return true
 }
 
+func getTestCounter() int {
+	testCounter.lock.Lock()
+	defer testCounter.lock.Unlock()
+	return testCounter.count
+}
+
 func TestRunReadWorkers(t *testing.T) {
 	in, out := CreateJobQueue()
 	defer close(in)
@@ -49,7 +55,7 @@ func TestRunReadWorkers(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	if testCounter.count != 500 {
+	if getTestCounter() != 500 {
 		t.Errorf("error: expected count is 500 but got %v", testCounter.count)
 	}
 }

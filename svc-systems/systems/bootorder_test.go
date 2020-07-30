@@ -320,7 +320,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			},
 		},
 	}
-	request, _ := json.Marshal(`{"Attributes": {"BootMode": "mode"}}`)
+	request := []byte(`{"Attributes": {"BootMode": "mode"}}`)
 	tests := []struct {
 		name string
 		p    *PluginContact

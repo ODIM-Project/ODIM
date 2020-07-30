@@ -320,7 +320,8 @@ func TestTsMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/TaskService", TsMethodNotAllowed)
-	redfishRoutes.Any("/TaskService/Tasks", TsMethodNotAllowed)	redfishRoutes.Any("/TaskService/Tasks/{TaskID}",TsMethodNotAllowed)
+	redfishRoutes.Any("/TaskService/Tasks", TsMethodNotAllowed)
+	redfishRoutes.Any("/TaskService/Tasks/{TaskID}",TsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
@@ -360,7 +361,7 @@ func TestAggMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/AggregationService", AggMethodNotAllowed)
-	redfishRoutes.Any("/AggregationService/Actions/AggregationService.Add",AggMethodNotAllowed)
+	redfishRoutes.Any("/AggregationService/Actions/AggregationService.Add", AggMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
@@ -478,7 +479,7 @@ func TestManagersMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/Managers", ManagersMethodNotAllowed)
-	redfishRoutes.Any("/v1/Managers/{id}",ManagersMethodNotAllowed)
+	redfishRoutes.Any("/v1/Managers/{id}", ManagersMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	e.PUT("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)

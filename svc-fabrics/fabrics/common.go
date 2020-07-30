@@ -60,6 +60,81 @@ type PluginToken struct {
 	lock   sync.Mutex
 }
 
+// Zones struct to check request body cases
+type Zones struct {
+	Name     string `json:"Name"`
+	ZoneType string `json:"ZoneType"`
+	Links    Links  `json:"Links"`
+}
+
+// Links struct to check request body cases in Zones
+type Links struct {
+	AddressPools     []OdataID `json:"AddressPools"`
+	ContainedByZones []OdataID `json:"ContainedByZones"`
+	Endpoints        []OdataID `json:"Endpoints"`
+	ConnectedPorts   []OdataID `json:"ConnectedPorts"`
+}
+
+// OdataID struct to check request body cases
+type OdataID struct {
+	OdataID string `json:"@odata.id"`
+}
+
+// AddressPools struct to check request body cases
+type AddressPools struct {
+	Name        string  `json:"Name"`
+	Description string  `json:"Description"`
+	IPv4        IPv4    `json:"IPv4"`
+	Ebgp        Ebgp    `json:"Ebgp"`
+	BgpEvpn     BgpEvpn `json:"BgpEvpn"`
+}
+
+// IPv4 struct to check request body cases in AddressPools
+type IPv4 struct {
+	VlanIdentifierAddressRange AddressRangeInt    `json:"VlanIdentifierAddressRange"`
+	IbgpAddressRange           AddressRangeString `json:"IbgpAddressRange"`
+	EbgpAddressRange           AddressRangeString `json:"EbgpAddressRange"`
+}
+
+//AddressRangeString struct to check request body cases
+type AddressRangeString struct {
+	Lower string `json:"Lower"`
+	Upper string `json:"Upper"`
+}
+
+//AddressRangeInt struct to check request body cases
+type AddressRangeInt struct {
+	Lower int `json:"Lower"`
+	Upper int `json:"Upper"`
+}
+
+//Ebgp struct to check request body cases
+type Ebgp struct {
+	AsNumberRange AddressRangeInt `json:"AsNumberRange"`
+}
+
+//BgpEvpn struct to check request body cases
+type BgpEvpn struct {
+	GatewayIPAddressList    []string `json:"GatewayIPAddressList"`
+	RouteDistinguisherList  []string `json:"RouteDistinguisherList"`
+	RouteTargetList         []string `json:"RouteTargetList"`
+	AnycastGatewayIPAddress string   `json:"AnycastGatewayIPAddress"`
+}
+
+//Endpoints struct to check request body cases
+type Endpoints struct {
+	Name        string       `json:"Name"`
+	Description string       `json:"Description"`
+	Redundancy  []Redundancy `json:"Redundancy"`
+	Links       Links        `json:"Links"`
+}
+
+//Redundancy struct to check request body cases
+type Redundancy struct {
+	Mode          string    `json:"Mode"`
+	RedundencySet []OdataID `json:"RedundencySet"`
+}
+
 // Token variable hold the all the XAuthToken  against the plguin ID
 var Token PluginToken
 
@@ -253,6 +328,15 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		}
 
 	}
+	
+	// Validating Post/Patch request properties are in uppercamelcase or not
+	if strings.EqualFold(req.Method, "POST") || strings.EqualFold(req.Method, "PATCH") {
+		valResp, err := validateReqParamsCase(req)
+		if err != nil {
+			return contactRequest, valResp, err
+		}
+	}
+
 	var reqURL string
 	var reqData string
 	//replacing the reruest url with south bound translation URL
@@ -375,4 +459,41 @@ func getFabricCollection() response.RPC {
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+// Validating if request properties are in uppercamelcase or not
+func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error) {
+	var resp response.RPC
+	var fabricRequest interface{}
+	//Checking the request type, whether it is Zones,AddressPool or Endpoints request
+	if strings.Contains(req.URL, "/Zones") {
+		fabricRequest = &Zones{}
+	} else if strings.Contains(req.URL, "/AddressPools") {
+		fabricRequest = &AddressPools{}
+	} else if strings.Contains(req.URL, "/Endpoints") {
+		fabricRequest = &Endpoints{}
+	}
+
+	// parsing the fabricRequest
+	err := json.Unmarshal(req.RequestBody, &fabricRequest)
+	if err != nil {
+		errMsg := "unable to parse the fabrics request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, fabricRequest)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response, fmt.Errorf(errorMessage)
+	}
+
+	return resp, nil
 }

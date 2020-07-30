@@ -55,8 +55,29 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 		errMsg := "error while trying to authenticate session: " + err.Error()
 		log.Printf(errMsg)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
-
 	}
+	
+	// parsing the event
+	var eventObj common.Event
+	err = json.Unmarshal(req.PostBody, &eventObj)
+	if err != nil {
+		errMsg := "unable to parse the event request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, eventObj)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}	
 
 	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
 	if statusMessage != response.Success {

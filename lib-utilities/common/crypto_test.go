@@ -14,17 +14,13 @@
 package common
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
-func generateCertKeyAndCAFiles(pubKeyFile, privKeyFile string, t *testing.T) {
-	var (
-		publicKey = `-----BEGIN PUBLIC KEY-----
+var (
+	publicKey = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8dbQu0GbdVU5TNykAmKp
 014wyjmUEJ7oiKOJKWBjfUb6UoH7/iutDr5wu0E0H6Rgup2rlDt+quEI/MgZ7Fdm
 4Jzp7n0Xc2Xs8Dc1Au7n0z+k70huGZqJcrB4giBnp5gIb1e1/gbPvCHiOYzhCVAS
@@ -33,7 +29,7 @@ cIirp6KKyRt2nREKd8WUECzFahKOnw6/yEEfPVjZJAtrxm4cGlMTRIEp3Nq3V0l+
 odP+YB3X40S8vnswtzBkvScQV1yg7u+rmK80c98LSLteAPpIukzqHYHBDxo35g6e
 5QIDAQAB
 -----END PUBLIC KEY-----`
-		privateKey = `-----BEGIN RSA PRIVATE KEY-----
+	privateKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEA8dbQu0GbdVU5TNykAmKp014wyjmUEJ7oiKOJKWBjfUb6UoH7
 /iutDr5wu0E0H6Rgup2rlDt+quEI/MgZ7Fdm4Jzp7n0Xc2Xs8Dc1Au7n0z+k70hu
 GZqJcrB4giBnp5gIb1e1/gbPvCHiOYzhCVAScIirp6KKyRt2nREKd8WUECzFahKO
@@ -60,38 +56,15 @@ zCuE08kCgYEAxgxjPCIoysB2yRHuScQjtKTfz5LdRmZ2uHOhxJMWxhvYmzqVBSm8
 TkuKsMlbg2EbYyhFAYb0GucRV/jTz6tWNLreW97dn5NkO4IU/I0FbnKWB0zgAqCp
 BLbLNzuwoImcammGEA3pXDNVzvYilBct3Mjr1no2wCQhUQbqp33vBls=
 -----END RSA PRIVATE KEY-----`
-	)
-
-	if err := ioutil.WriteFile(pubKeyFile, []byte(publicKey), 0644); err != nil {
-		t.Fatal("error :failed to create certificate file:", err)
-	}
-	if err := ioutil.WriteFile(privKeyFile, []byte(privateKey), 0644); err != nil {
-		t.Fatal("error :failed to create private key file:", err)
-	}
-}
-
-func removeCertKeyAndCAFiles(pubKeyFile, privKeyFile string, t *testing.T) {
-	if err := os.Remove(pubKeyFile); err != nil {
-		t.Error("error :failed to remove certificate file:", err)
-	}
-	if err := os.Remove(privKeyFile); err != nil {
-		t.Error("error :failed to remove private key file:", err)
-	}
-}
+)
 
 func TestEncryptWithPublicKey(t *testing.T) {
 	var err error
 
-	dataDir, err := os.Getwd()
-	if err != nil {
-		t.Fatal("error :failed to get current working directory:", err)
-	}
 	config.Data.KeyCertConf = &config.KeyCertConf{
-		RSAPublicKeyPath:  filepath.Join(dataDir, "pub.key"),
-		RSAPrivateKeyPath: filepath.Join(dataDir, "priv.key"),
+		RSAPublicKey:  []byte(publicKey),
+		RSAPrivateKey: []byte(privateKey),
 	}
-
-	generateCertKeyAndCAFiles(config.Data.KeyCertConf.RSAPublicKeyPath, config.Data.KeyCertConf.RSAPrivateKeyPath, t)
 
 	encryptedData, err := EncryptWithPublicKey([]byte("testData"))
 	if err != nil {
@@ -105,5 +78,4 @@ func TestEncryptWithPublicKey(t *testing.T) {
 		t.Errorf("Mismatch in data encrypted and the decrypted data, want = testData got = %v", string(decryptedData))
 	}
 
-	removeCertKeyAndCAFiles(config.Data.KeyCertConf.RSAPublicKeyPath, config.Data.KeyCertConf.RSAPrivateKeyPath, t)
 }

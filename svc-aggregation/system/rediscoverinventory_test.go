@@ -136,7 +136,9 @@ func TestExternalInterface_RediscoverResources(t *testing.T) {
 	}
 }
 func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

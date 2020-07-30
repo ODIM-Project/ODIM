@@ -70,7 +70,9 @@ func mockUpdateTask(task common.TaskData) error {
 }
 
 func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

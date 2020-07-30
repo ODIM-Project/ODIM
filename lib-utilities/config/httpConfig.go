@@ -43,7 +43,8 @@ type HTTPConfig struct {
 }
 
 var (
-	TlsConfMutex = &sync.Mutex{}
+	// TLSConfMutex is used for avoiding race conditions
+	TLSConfMutex = &sync.Mutex{}
 	// configuredCipherSuiteList contains the list of configured cipher suites
 	configuredCipherSuiteList = make([]uint16, 0)
 	// configuredTLSMinVersion is the configured TLS minimum version
@@ -75,10 +76,10 @@ func (config *HTTPConfig) GetHTTPClientObj() (*http.Client, error) {
 	}
 	Client.SetTLSConfig(tlsConfig)
 
-	TlsConfMutex.Lock()
+	TLSConfMutex.Lock()
 	DefaultHTTPTransport.TLSClientConfig = tlsConfig
 	DefaultHTTPClient.Transport = DefaultHTTPTransport
-	TlsConfMutex.Unlock()
+	TLSConfMutex.Unlock()
 
 	return DefaultHTTPClient, nil
 }

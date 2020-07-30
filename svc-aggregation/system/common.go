@@ -147,6 +147,9 @@ type ActiveRequestsSet struct {
 // ActiveReqSet is the global instance for tracking ongoing requests
 var ActiveReqSet ActiveRequestsSet
 
+var southBoundURL = "southboundurl"
+var northBoundURL = "northboundurl"
+
 func getIPAndPortFromAddress(address string) (string, string) {
 	ip, port, err := net.SplitHostPort(address)
 	if err != nil {
@@ -246,7 +249,7 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 
 	data := string(body)
 	//replacing the resposne with north bound translation URL
-	for key, value := range config.Data.URLTranslation.NorthBoundURL {
+	for key, value := range getTranslationURL(northBoundURL) {
 		data = strings.Replace(data, key, value, -1)
 	}
 	resp.StatusCode = int32(pluginResp.StatusCode)
@@ -910,7 +913,7 @@ func removeRetrievalLinks(retrievalLinks map[string]bool, parentoid string, reso
 
 func callPlugin(req getResourceRequest) (*http.Response, error) {
 	var oid string
-	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+	for key, value := range getTranslationURL(southBoundURL) {
 		oid = strings.Replace(req.OID, key, value, -1)
 	}
 	var reqURL = "https://" + req.Plugin.IP + ":" + req.Plugin.Port + oid
@@ -1018,4 +1021,13 @@ func isPluginTypeSupported(pluginType string) bool {
 		}
 	}
 	return false
+}
+
+func getTranslationURL(translationURL string) map[string]string {
+	common.MuxLock.Lock()
+	defer common.MuxLock.Unlock()
+	if translationURL == southBoundURL {
+		return config.Data.URLTranslation.SouthBoundURL
+	}
+	return config.Data.URLTranslation.NorthBoundURL
 }

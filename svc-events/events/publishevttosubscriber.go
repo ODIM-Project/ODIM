@@ -258,15 +258,15 @@ func postEvent(destination string, event []byte) {
 	var resp *http.Response
 	count := evcommon.DeliveryRetryAttempts + 1
 	for i := 0; i < count; i++ {
-		config.TlsConfMutex.Lock()
+		config.TLSConfMutex.Lock()
 		resp, err = httpClient.Do(req)
 		if err == nil {
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
-			config.TlsConfMutex.Unlock()
+			config.TLSConfMutex.Unlock()
 			return
 		}
-		config.TlsConfMutex.Unlock()
+		config.TLSConfMutex.Unlock()
 		log.Println("Retrying event posting")
 		time.Sleep(time.Second * evcommon.DeliveryRetryIntervalSeconds)
 	}

@@ -27,16 +27,16 @@ const localhost = "127.0.0.1"
 func SetUpMockConfig() error {
 	workingDir, _ := os.Getwd()
 
- path := strings.SplitAfter(workingDir, "ODIM") 
+	path := strings.SplitAfter(workingDir, "ODIM")
 	var basePath string
-		if len(path) > 2  {
-			for i:=0;i<len(path)-1;i++{
-				basePath = basePath + path[i]
-			}
-		} else {
-			basePath = path[0] 
+	if len(path) > 2 {
+		for i := 0; i < len(path)-1; i++ {
+			basePath = basePath + path[i]
 		}
-	config.Data.RegistryStorePath =  basePath + "/lib-utilities/etc/"
+	} else {
+		basePath = path[0]
+	}
+	config.Data.RegistryStorePath = basePath + "/lib-utilities/etc/"
 	config.Data.DBConf = &config.DBConf{
 		InMemoryPort:   "6379",
 		OnDiskPort:     "6380",

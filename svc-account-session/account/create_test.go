@@ -14,6 +14,7 @@
 package account
 
 import (
+	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
@@ -182,6 +183,67 @@ func TestCreate(t *testing.T) {
 		req     *accountproto.CreateAccountRequest
 		session *asmodel.Session
 	}
+	reqBodyValidAcc, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser",
+		Password: "Password@123",
+		RoleID:   "Administrator",
+	})
+	reqBodyInvalidRole, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser1",
+		Password: "Password@123",
+		RoleID:   "abc",
+	})
+	reqBodyExistingAcc, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser2",
+		Password: "Password@123",
+		RoleID:   "Administrator",
+	})
+	reqBodyInvalidPrivilegeAcc, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser3",
+		Password: "Password@123",
+		RoleID:   "Administrator",
+	})
+	reqBodyInvalidData, _ := json.Marshal(asmodel.Account{
+		UserName: "",
+		Password: "",
+		RoleID:   "",
+	})
+	reqBodyInvalidPwd, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "Password",
+		RoleID:   "Administrator",
+	})
+	reqBodySameUserPwd, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "testUser4",
+		RoleID:   "Administrator",
+	})
+	reqBodyPwdLenExceed, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "Password1234567890",
+		RoleID:   "Administrator",
+	})
+	reqBodyNoUpperCasePwd, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "password@123",
+		RoleID:   "Administrator",
+	})
+	reqBodyNoLowerCasePwd, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "PASSWORD@123",
+		RoleID:   "Administrator",
+	})
+	reqBodyNoNumPwd, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "Password@ABC",
+		RoleID:   "Administrator",
+	})
+	reqBodyInvalidSpeCharPwd, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser4",
+		Password: "P\\assword123",
+		RoleID:   "Administrator",
+	})
+
 	successResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser",
@@ -200,9 +262,7 @@ func TestCreate(t *testing.T) {
 			name: "successful account creation",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser",
-					Password: "Password@123",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyValidAcc,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -240,9 +300,7 @@ func TestCreate(t *testing.T) {
 			name: "request body with invalid role",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser1",
-					Password: "Password@123",
-					RoleId:   "abc",
+					RequestBody: reqBodyInvalidRole,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -264,9 +322,7 @@ func TestCreate(t *testing.T) {
 			name: "request for creating an existing user",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser2",
-					Password: "Password@123",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyExistingAcc,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -288,9 +344,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid privilege",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser3",
-					Password: "Password@123",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyInvalidPrivilegeAcc,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -312,9 +366,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid data",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "",
-					Password: "",
-					RoleId:   "",
+					RequestBody: reqBodyInvalidData,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -336,9 +388,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid password length",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "Password",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyInvalidPwd,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -360,9 +410,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid password with username in password",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "testUser4",
-					RoleId:   "Administrator",
+					RequestBody: reqBodySameUserPwd,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -384,9 +432,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with password exceeding length",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "Password1234567890",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyPwdLenExceed,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -408,9 +454,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid password with no uppercase character",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "password@123",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyNoUpperCasePwd,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -432,9 +476,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid password with no lowercase character",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "PASSWORD@123",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyNoLowerCasePwd,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -456,9 +498,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid password with no number",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "Password@ABC",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyNoNumPwd,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -480,9 +520,7 @@ func TestCreate(t *testing.T) {
 			name: "create request with invalid password with invalid special character",
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName: "testUser4",
-					Password: "P\\assword123",
-					RoleId:   "Administrator",
+					RequestBody: reqBodyInvalidSpeCharPwd,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{

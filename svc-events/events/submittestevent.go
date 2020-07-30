@@ -57,6 +57,13 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 	}
 	
+	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
+	if statusMessage != response.Success {
+		log.Printf(errMsg)
+		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
+	}
+
+
 	// parsing the event
 	var eventObj common.Event
 	err = json.Unmarshal(req.PostBody, &eventObj)
@@ -77,12 +84,6 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 		log.Println(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
-	}	
-
-	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
-	if statusMessage != response.Success {
-		log.Printf(errMsg)
-		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
 	}
 
 	// Find out all the subscription destinations of the requesting user

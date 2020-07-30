@@ -507,7 +507,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someID", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":"test"}`),
+					RequestBody:  []byte(`{"Parameters":"test"}`),
 				},
 			},
 			want: response.RPC{
@@ -521,7 +521,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someID", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"description":"sample"}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"description":"sample"}}}`),
 				},
 			},
 			want: response.RPC{
@@ -535,7 +535,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someID", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"Delay":1}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"Delay":1}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -549,7 +549,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someID", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -563,7 +563,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "taskWithoutChild", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -577,7 +577,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "subTaskWithSlash", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/subtask-with-slash:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/subtask-with-slash:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -591,7 +591,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/server:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/server:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -605,7 +605,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/no-target-device:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/no-target-device:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -619,7 +619,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/password-decrypt-fail:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/password-decrypt-fail:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -633,7 +633,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/invalid-plugin:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/invalid-plugin:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -647,7 +647,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/xauth-plugin:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/xauth-plugin:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -661,7 +661,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/xauth-plugin-fail:1"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/xauth-plugin-fail:1"}]}}}`),
 				},
 			},
 			want: response.RPC{
@@ -675,7 +675,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/contact-client-fail:2"}]}}}`),
+					RequestBody:  []byte(`{"Parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/contact-client-fail:2"}]}}}`),
 				},
 			},
 			want: response.RPC{

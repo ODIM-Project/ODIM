@@ -49,6 +49,19 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	var updateReq asmodel.Role
 	json.Unmarshal(req.UpdateRequest, &updateReq)
 
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.UpdateRequest, updateReq)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}
+
 	//Get redfish roles from database
 	redfishRoles, gerr := asmodel.GetRedfishRoles()
 	if gerr != nil {

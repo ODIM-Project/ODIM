@@ -274,5 +274,6 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, "On")
 	return resp
 }

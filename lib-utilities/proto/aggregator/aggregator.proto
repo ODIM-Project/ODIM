@@ -8,6 +8,7 @@ service Aggregator {
     rpc SetDefaultBootOrder(AggregatorRequest) returns (AggregatorResponse) {}
     rpc RediscoverSystemInventory(RediscoverSystemInventoryRequest) returns (RediscoverSystemInventoryResponse) {}
     rpc UpdateSystemState(UpdateSystemStateRequest) returns (UpdateSystemStateResponse) {}
+    rpc AddAggregationSource(AggregatorRequest) returns (AggregatorResponse){}
   }
 
 message AggregatorRequest {

@@ -577,3 +577,134 @@ func TestAggregator_ValidateManagerAddress(t *testing.T) {
 		})
 	}
 }
+
+func TestAggregator_AddAggreagationSource(t *testing.T) {
+	config.SetUpMockConfig(t)
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	mockPluginData(t, "ILO")
+
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	successReq, _ := json.Marshal(system.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: "password",
+		Links: &system.Links{
+			Oem: &system.AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
+		},
+	})
+	invalidReqBody, _ := json.Marshal(system.AggregationSource{
+		HostName: ":50000",
+		UserName: "admin",
+		Password: "password",
+		Links: &system.Links{
+			Oem: &system.AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
+		},
+	})
+	missingparamReq, _ := json.Marshal(system.AggregationSource{})
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive case",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "get session username fails",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "unable to create task",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "task with slash",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with invalid request",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Manager Address",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with missing parameters",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.AddAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Aggregator.AddAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

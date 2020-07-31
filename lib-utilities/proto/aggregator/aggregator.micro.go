@@ -41,6 +41,7 @@ type AggregatorService interface {
 	SetDefaultBootOrder(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, opts ...client.CallOption) (*RediscoverSystemInventoryResponse, error)
 	UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, opts ...client.CallOption) (*UpdateSystemStateResponse, error)
+	AddAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 }
 
 type aggregatorService struct {
@@ -131,6 +132,16 @@ func (c *aggregatorService) UpdateSystemState(ctx context.Context, in *UpdateSys
 	return out, nil
 }
 
+func (c *aggregatorService) AddAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.AddAggregationSource", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Aggregator service
 
 type AggregatorHandler interface {
@@ -141,6 +152,7 @@ type AggregatorHandler interface {
 	SetDefaultBootOrder(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	RediscoverSystemInventory(context.Context, *RediscoverSystemInventoryRequest, *RediscoverSystemInventoryResponse) error
 	UpdateSystemState(context.Context, *UpdateSystemStateRequest, *UpdateSystemStateResponse) error
+	AddAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
 }
 
 func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...server.HandlerOption) error {
@@ -152,6 +164,7 @@ func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...
 		SetDefaultBootOrder(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, out *RediscoverSystemInventoryResponse) error
 		UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, out *UpdateSystemStateResponse) error
+		AddAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 	}
 	type Aggregator struct {
 		aggregator
@@ -190,4 +203,8 @@ func (h *aggregatorHandler) RediscoverSystemInventory(ctx context.Context, in *R
 
 func (h *aggregatorHandler) UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, out *UpdateSystemStateResponse) error {
 	return h.AggregatorHandler.UpdateSystemState(ctx, in, out)
+}
+
+func (h *aggregatorHandler) AddAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.AddAggregationSource(ctx, in, out)
 }

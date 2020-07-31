@@ -27,7 +27,7 @@ message SystemsResponse{
 message ComputerSystemResetRequest{
     string sessionToken=1;
     string SystemID=2;
-    string ResetType=3;
+    bytes RequestBody=3;
 }
 message DefaultBootOrderRequest{
     string sessionToken=1;

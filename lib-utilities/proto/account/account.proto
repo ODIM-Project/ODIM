@@ -18,9 +18,7 @@ message AccountResponse {
 
 message CreateAccountRequest {
     string SessionToken = 1;
-    string UserName = 2;
-    string Password = 3;
-    string RoleId = 4;
+    bytes RequestBody = 2;
 }
 
 message AccountRequest {
@@ -35,9 +33,7 @@ message GetAccountRequest {
 message UpdateAccountRequest {
     string SessionToken = 1;
     string AccountID = 2;
-    string UserName = 3;
-    string Password = 4;
-    string RoleId = 5;
+    bytes RequestBody = 3;
 }
 
 message DeleteAccountRequest {

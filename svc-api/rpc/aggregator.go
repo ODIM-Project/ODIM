@@ -92,3 +92,17 @@ func DoSetDefaultBootOrderRequest(req aggregatorproto.AggregatorRequest) (*aggre
 
 	return resp, err
 }
+
+// DoAddAggregationSource defines the RPC call function for
+// the AddAggregationSource from aggregator micro service
+func DoAddAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.AddAggregationSource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

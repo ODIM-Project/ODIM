@@ -28,12 +28,14 @@ import (
 
 // AggregatorRPCs defines all the RPC methods in aggregator service
 type AggregatorRPCs struct {
-	GetAggregationServiceRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddComputeRPC            func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	DeleteComputeRPC         func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	ResetRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	SetDefaultBootOrderRPC   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddAggregationSourceRPC  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregationServiceRPC   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddComputeRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteComputeRPC           func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	ResetRPC                   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	SetDefaultBootOrderRPC     func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddAggregationSourceRPC    func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAllAggregationSourceRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregationSourceRPC    func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -328,4 +330,16 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// GetAllAggregationSource is the handler for getting all  AggregationSource details
+func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
+	//To be updated after the api handler is implemented
+	ctx.StatusCode(http.StatusNotImplemented)
+}
+
+// GetAggregationSource is the handler for getting  AggregationSource details
+func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
+	//To be updated after the api handler is implemented
+	ctx.StatusCode(http.StatusNotImplemented)
 }

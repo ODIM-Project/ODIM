@@ -152,12 +152,12 @@ This section provides a step-by-step procedure for deploying the resource aggreg
        - Append the Root CA used for signing the intermediate CA to the resource   aggregator CA file.
 
    ###### Procedure
-   a. Navigate to the path: `odimra/build/cert_generator`
+   a. Navigate to the path: `ODIM/build/cert_generator`
       ```
-       $ cd odimra/build/cert_generator
+       $ cd ODIM/build/cert_generator
       ```
 
-    > NOTE: `odimra/build/cert_generator` contains the automated scripts to        generate the resource aggregator and GRF plugin TLS and Kafka TLS  certificates.
+    > NOTE: `ODIM/build/cert_generator` contains the automated scripts to        generate the resource aggregator and GRF plugin TLS and Kafka TLS  certificates.
 
    b. Use the following command to generate the resource aggregator and the      GRF plugin certificates. Provide FQDN as a command-line argument.
       ```
@@ -195,7 +195,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
 
 7. Navigate to the odimra folder.
    ```
-   $ cd ~/odimra
+   $ cd ~/ODIM
    ```
 
 8. Use the following command to deploy and start the containers:

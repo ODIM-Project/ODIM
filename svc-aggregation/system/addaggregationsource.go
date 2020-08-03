@@ -137,7 +137,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 		"Connection":        "keep-alive",
 		"Content-type":      "application/json; charset=utf-8",
 		"Link":              "<" + aggregationSourceURI + "/>; rel=describedby",
-		"Location":          aggregationSourceURI + "/",
+		"Location":          aggregationSourceURI,
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}

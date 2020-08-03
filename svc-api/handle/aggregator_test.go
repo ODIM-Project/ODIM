@@ -262,6 +262,19 @@ func TestGetAggregationService(t *testing.T) {
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
+var oem = map[string]interface{}{
+	"PluginID": "ILO",
+}
+var links = map[string]interface{}{
+	"Oem": oem,
+}
+var addAggregationSourceRequest = map[string]interface{}{
+	"Host":     "10.24.0.14",
+	"UserName": "admin",
+	"Password": "Password1234",
+	"Links":    links,
+}
+
 func TestAddAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
 	a.AddAggregationSourceRPC = testAddAggregationSourceRPCCall

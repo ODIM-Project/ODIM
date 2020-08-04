@@ -939,3 +939,39 @@ func TestSystemReset(t *testing.T) {
 	err = DeleteSystemResetInfo("systemURI")
 	assert.NotNil(t, err, "Error Should not be nil")
 }
+func TestAggregationSource(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregationSourceURI := "/redfish/v1/AggregationService/AggregationSource/12345677651245-12341"
+	req := AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: []byte("password"),
+		Links: map[string]interface{}{
+			"Oem": map[string]string{
+				"PluginID": "GRF",
+			},
+		},
+	}
+	err := AddAggregationSource(req, aggregationSourceURI)
+	assert.Nil(t, err, "err should be nil")
+	err = AddAggregationSource(req, aggregationSourceURI)
+	assert.NotNil(t, err, "Error Should not be nil")
+	data, err := GetAggregationSourceInfo(aggregationSourceURI)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, data.HostName, req.HostName)
+	assert.Equal(t, data.UserName, req.UserName)
+	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/AggregationSource/12345677651245-123433")
+	assert.NotNil(t, err, "Error Should not be nil")
+
+}

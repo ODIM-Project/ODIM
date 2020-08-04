@@ -41,7 +41,9 @@ func mockSubscribeEMB(pluginID string, list []string) {
 	return
 }
 func TestExternalInterface_AddCompute(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
@@ -241,19 +243,25 @@ func TestExternalInterface_AddCompute(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			time.Sleep(2 * time.Second)
 			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
 			}
 		})
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
 func TestExternalInterface_AddComputeForPasswordEncryptFail(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
@@ -316,19 +324,25 @@ func TestExternalInterface_AddComputeForPasswordEncryptFail(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			time.Sleep(2 * time.Second)
 			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
 			}
 		})
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
 func TestExternalInterface_AddComputeMultipleRequest(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
@@ -381,7 +395,9 @@ func TestExternalInterface_AddComputeMultipleRequest(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			go p.AggregationServiceAdd("123", "validUserName", req)
 			time.Sleep(time.Second)
@@ -389,7 +405,9 @@ func TestExternalInterface_AddComputeMultipleRequest(t *testing.T) {
 				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
 			}
 		})
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
@@ -456,13 +474,17 @@ func TestExternalInterface_AddComputeDuplicate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			if got := p.AggregationServiceAdd("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
 			}
 		})
+		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 

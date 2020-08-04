@@ -150,6 +150,19 @@ var ActiveReqSet ActiveRequestsSet
 var southBoundURL = "southboundurl"
 var northBoundURL = "northboundurl"
 
+// AggregationSource  payload of adding a  AggregationSource
+type AggregationSource struct {
+	HostName string `json:"HostName"`
+	UserName string `json:"UserName"`
+	Password string `json:"Password"`
+	Links    *Links `json:"Links"`
+}
+
+// Links holds information of Oem
+type Links struct {
+	Oem *AddOEM `json:"Oem"`
+}
+
 func getIPAndPortFromAddress(address string) (string, string) {
 	ip, port, err := net.SplitHostPort(address)
 	if err != nil {

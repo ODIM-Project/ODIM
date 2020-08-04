@@ -42,6 +42,10 @@ type AggregatorService interface {
 	RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, opts ...client.CallOption) (*RediscoverSystemInventoryResponse, error)
 	UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, opts ...client.CallOption) (*UpdateSystemStateResponse, error)
 	AddAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	GetAllAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	GetAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 }
 
 type aggregatorService struct {
@@ -142,6 +146,46 @@ func (c *aggregatorService) AddAggregationSource(ctx context.Context, in *Aggreg
 	return out, nil
 }
 
+func (c *aggregatorService) GetAllAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.GetAllAggregationSource", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) GetAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.GetAggregationSource", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.UpdateAggregationSource", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.DeleteAggregationSource", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Aggregator service
 
 type AggregatorHandler interface {
@@ -153,6 +197,10 @@ type AggregatorHandler interface {
 	RediscoverSystemInventory(context.Context, *RediscoverSystemInventoryRequest, *RediscoverSystemInventoryResponse) error
 	UpdateSystemState(context.Context, *UpdateSystemStateRequest, *UpdateSystemStateResponse) error
 	AddAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	GetAllAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	GetAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	UpdateAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	DeleteAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
 }
 
 func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...server.HandlerOption) error {
@@ -165,6 +213,10 @@ func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...
 		RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, out *RediscoverSystemInventoryResponse) error
 		UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, out *UpdateSystemStateResponse) error
 		AddAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		GetAllAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		GetAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 	}
 	type Aggregator struct {
 		aggregator
@@ -207,4 +259,20 @@ func (h *aggregatorHandler) UpdateSystemState(ctx context.Context, in *UpdateSys
 
 func (h *aggregatorHandler) AddAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
 	return h.AggregatorHandler.AddAggregationSource(ctx, in, out)
+}
+
+func (h *aggregatorHandler) GetAllAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.GetAllAggregationSource(ctx, in, out)
+}
+
+func (h *aggregatorHandler) GetAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.GetAggregationSource(ctx, in, out)
+}
+
+func (h *aggregatorHandler) UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.UpdateAggregationSource(ctx, in, out)
+}
+
+func (h *aggregatorHandler) DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.DeleteAggregationSource(ctx, in, out)
 }

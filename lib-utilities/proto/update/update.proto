@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+service Update {
+    rpc GetUpdateService(UpdateRequest) returns (UpdateResponse) {}
+}
+
+message UpdateRequest {
+    string SessionToken = 1;
+    string URL = 2;
+    bytes RequestBody = 3;
+}
+
+
+message UpdateResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}

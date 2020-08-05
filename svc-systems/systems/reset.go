@@ -138,6 +138,6 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	smodel.AddSystemResetInfo("/redfish/v1/Systems/" + req.SystemID, resetCompSys.ResetType)
+	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	return resp
 }

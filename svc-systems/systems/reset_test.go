@@ -249,8 +249,10 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			name: "Valid Request",
 			p:    &pluginContact,
 			args: args{
-				SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-				RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+				&systemsproto.ComputerSystemResetRequest{
+					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,

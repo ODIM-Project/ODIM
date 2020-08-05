@@ -98,7 +98,7 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 		SessionToken: sessionToken,
 		RequestBody:  request,
 	}
-	
+
 	resp, err := r.CreateRoleRPC(roleRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
@@ -222,12 +222,4 @@ func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
-}
-
-func validateRoleRequest(req roleproto.RoleRequest) string {
-	param := ""
-	if req.RoleId == "" {
-		param = "RoleId "
-	}
-	return param
 }

@@ -226,7 +226,7 @@ func Router() *iris.Application {
 	systems.Get("/{id}/Bios/Settings", system.GetSystemResource)
 	systems.Patch("/{id}/Bios/Settings", system.ChangeBiosSettings)
 	systems.Any("/{id}/Bios", handle.SystemsMethodNotAllowed)
-	systems.Any("/{id}/Processors/{rid}",handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Processors/{rid}", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)
@@ -337,7 +337,7 @@ func Router() *iris.Application {
 	managers.Any("/{id}/LogServices/{rid}/Entries/{rid2}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Actions", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", handle.ManagersMethodNotAllowed)
-	managers.Any("/",handle.ManagersMethodNotAllowed)
-	managers.Any("/{id}",handle.ManagersMethodNotAllowed)
+	managers.Any("/", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}", handle.ManagersMethodNotAllowed)
 	return router
 }

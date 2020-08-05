@@ -493,3 +493,151 @@ func validateAddResoureRequest(req system.AddResourceRequest) string {
 func (a *Aggregator) UpdateSystemState(ctx context.Context, req *aggregatorproto.UpdateSystemStateRequest, resp *aggregatorproto.UpdateSystemStateResponse) error {
 	return a.connector.UpdateSystemState(req)
 }
+
+// AddAggregationSource function is for handling the RPC communication for AddAggregationSource
+func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+
+	var taskID string
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "error while trying to get the session username: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+
+	// parsing the AggregationSourceRequest
+	var addRequest system.AggregationSource
+	err = json.Unmarshal(req.RequestBody, &addRequest)
+	if err != nil {
+		errMsg := "unable to parse the add request" + err.Error()
+		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+
+	//validating the AggregationSourceRequest
+	invalidParam := validateAggregationSourceRequest(addRequest)
+	if invalidParam != "" {
+		errMsg := "error: Mandatory field " + invalidParam + " Missing"
+		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{invalidParam}, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	managerAddress := addRequest.HostName
+	err = validateManagerAddress(managerAddress)
+	if err != nil {
+		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{managerAddress, "ManagerAddress"}, nil), resp)
+		log.Printf(err.Error())
+		return nil
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := a.connector.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "error while trying to create the task: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	strArray := strings.Split(taskURI, "/")
+	if strings.HasSuffix(taskURI, "/") {
+		taskID = strArray[len(strArray)-2]
+	} else {
+		taskID = strArray[len(strArray)-1]
+	}
+	// spawn the thread here to process the action asynchronously
+	go a.connector.AddAggregationSource(taskID, sessionUserName, req)
+
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Content-type": "application/json; charset=utf-8",
+			"Location":     "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	generateResponse(rpcResp, resp)
+	return nil
+}
+
+func validateAggregationSourceRequest(req system.AggregationSource) string {
+	param := ""
+	if req.HostName == "" {
+		param = "HostName "
+	}
+	if req.Password == "" {
+		param = param + "Password "
+	}
+	if req.UserName == "" {
+		param = param + "UserName "
+	}
+	return param + validateLinks(req.Links)
+}
+
+func validateLinks(req *system.Links) string {
+	var param = ""
+	if req != nil {
+		if req.Oem != nil {
+			if req.Oem.PluginID == "" {
+				param = param + "PluginID"
+			}
+		} else {
+			param = param + "Oem"
+		}
+	} else {
+		param = "Links"
+	}
+	return param
+}
+
+// GetAllAggregationSource defines the operations which handles the RPC request response
+// for the GetAllAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}
+
+// GetAggregationSource defines the operations which handles the RPC request response
+// for the GetAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}
+
+// UpdateAggregationSource defines the operations which handles the RPC request response
+// for the UpdateAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}
+
+// DeleteAggregationSource defines the operations which handles the RPC request response
+// for the UpdateAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}

@@ -32,4 +32,6 @@ const (
 	Fabrics = "svc.fabrics"
 	// Managers holds the name for the Managers Micro Service
 	Managers = "svc.managers"
+	// Update holds the name for the Update Micro Service
+	Update = "svc.update"
 )

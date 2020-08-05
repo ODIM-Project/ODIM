@@ -46,6 +46,7 @@ func Router() *iris.Application {
 		DeleteComputeRPC:         rpc.DoDeleteComputeRequest,
 		ResetRPC:                 rpc.DoResetRequest,
 		SetDefaultBootOrderRPC:   rpc.DoSetDefaultBootOrderRequest,
+		AddAggregationSourceRPC:  rpc.DoAddAggregationSource,
 	}
 
 	s := handle.SessionRPCs{
@@ -241,6 +242,8 @@ func Router() *iris.Application {
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
 	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
+	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
+	aggregationSource.Post("/", pc.AddAggregationSource)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)

@@ -106,3 +106,31 @@ func DoAddAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorp
 
 	return resp, err
 }
+
+// DoGetAllAggregationSource defines the RPC call function for
+// the GetAllAggregationSource from aggregator micro service
+func DoGetAllAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.GetAllAggregationSource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGetAggregationSource defines the RPC call function for
+// the GetAggregationSource from aggregator micro service
+func DoGetAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.GetAggregationSource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

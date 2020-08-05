@@ -336,13 +336,13 @@ func TestGetAllAggregationSource(t *testing.T) {
 	// change the  status code after the code is added
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
 func TestGetAggregationSource(t *testing.T) {
@@ -355,11 +355,11 @@ func TestGetAggregationSource(t *testing.T) {
 	//  change the  status code after the code is added
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource/someid",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource/someid",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource/someid",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }

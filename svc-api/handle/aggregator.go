@@ -334,12 +334,57 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 
 // GetAllAggregationSource is the handler for getting all  AggregationSource details
 func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
-	//To be updated after the api handler is implemented
-	ctx.StatusCode(http.StatusNotImplemented)
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.GetAllAggregationSourceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }
 
 // GetAggregationSource is the handler for getting  AggregationSource details
 func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
-	//To be updated after the api handler is implemented
-	ctx.StatusCode(http.StatusNotImplemented)
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.GetAggregationSourceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }

@@ -24,7 +24,7 @@ search: true
  Welcome to Resource Aggregator for Open Distributed Infrastructure Management!
  
  
-Resource Aggregator for Open Distributed Infrastructure Management (ODIM) is a modular, open framework for
+Resource Aggregator for Open Distributed Infrastructure Management (ODIM™) is a modular, open framework for
 simplified management and orchestration of distributed workloads. It provides a unified management platform for
 converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and
 secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
@@ -46,7 +46,7 @@ Resource Aggregator for ODIM framework adopts a layered architecture and has man
 
 The following figure shows these functional layers of Resource Aggregator for ODIM deployed in a data center.
 
-![ODIM_architecture](images/arch.png)
+![ODIM_architecture](telco_bruce_arch.png)
 
 - **API layer**
 
@@ -65,13 +65,13 @@ through an extensible domain model (Redfish Data Model). Requests coming from th
 responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
 for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).
 
-![Redfish_data_model](images/redfish_data_model.png)
+![Redfish_data_model](telco_redfish_data_model.png)
 
 - **Event message bus layer**
 
 
 This layer hosts a message broker which acts as a communication channel between the upper layers and the
-plugin layer. It supports common messaging architecture and real-time streaming. Resource Aggregator for
+plugin layer. It supports common messaging architecture and real-time streaming. HPE Resource Aggregator for
 ODIM uses Kafka as the event message bus.
 The services and the event message bus layers host Redis data store.
 
@@ -84,7 +84,7 @@ to communicate with the resources. It uses REST-based communication which is bas
 v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
 event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding. To know how to develop plugins, refer to *Resource Aggregator for Open Distributed
+language binding. To know how to develop plugins, refer to *HPE Resource Aggregator for Open Distributed
 Infrastructure Management Plugin Developer's Guide*.
 
 
@@ -136,8 +136,8 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 The examples shown in this guide use curl to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. odimra
-supports HTTPS.
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. HPE
+Resource Aggregator for ODIM supports HTTPS.
 
 **curl command options (flags):**
 
@@ -203,7 +203,7 @@ curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
 
 		 
 <aside class="notice">
-To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
+NOTE: To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
 </aside>
 
 
@@ -634,7 +634,7 @@ curl -i POST \
 
 ```
 {
-"Username": "abc",
+"UserName": "abc",
 "Password": "abc123"
 }
 ```
@@ -1205,7 +1205,7 @@ curl -i POST \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
-'{"Username":"{username}","Password":"{password}","RoleId":"{roleId}"}
+'{"UserName":"{username}","Password":"{password}","RoleId":"{roleId}"}
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
 
@@ -1232,7 +1232,7 @@ curl -i POST \
 
 ```
 { 
-   "Username":"monitor32",
+   "UserName":"monitor32",
    "Password":"Abc1vent2020!",
    "RoleId":"CLIENT11"
 }
@@ -1588,7 +1588,7 @@ curl -i POST \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
-'{"ManagerAddress":"{BMC_address}:{port}",
+'{"ManagerAddress":"{plugin_host}:{port}",
   "UserName":"{plugin_userName}",
   "Password":"{plugin_password}",
   "Oem":{"PluginID":"{Redfish_PluginId}",
@@ -1625,9 +1625,9 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 
 ```
 { 
-   ​   "ManagerAddress":"{BMC_address}:45001",
-   ​   "UserName":"abc",
-   ​   "Password":"abc123",
+   ​   "ManagerAddress":"odim.local.com:45001",
+   ​   "UserName":"admin",
+   ​   "Password":"GRFPlug!n12$4",
    ​   "Oem":{ 
       ​      "PluginID":"GRF",
       ​      "PreferredAuthType":"BasicAuth(or)XAuthToken",
@@ -1640,7 +1640,7 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|ManagerAddress|String \(required\)<br> |A valid IP address or hostname and port of the baseboard management controller \(BMC\) where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>**NOTE:**<br> Ensure that the port is greater than `45000`.|
+|ManagerAddress|String \(required\)<br> |A valid IP address or FQDN of the resource aggregator server and port of the baseboard management controller \(BMC\) where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>**NOTE:**<br> Ensure that the port is greater than `45000`.|
 |Username|String \(required\)<br> |The plugin username. Example: Username for the Generic Redfish Plugin - `admin`|
 |Password|String \(required\)<br> |The plugin password. Example: Password for the Generic Redfish Plugin - `GRFPlug!n12$4`|
 |PluginID|String \(required\)<br> |The id of the plugin you want to add. Example: GRF|
@@ -1741,7 +1741,7 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 ```
 {
 	"ManagerAddress": "{BMC_address}",
-	"Username": "abc",
+	"UserName": "abc",
 	"Password": "abc1234",
 	"Oem": {
 		"PluginID": "GRF"
@@ -1821,9 +1821,9 @@ curl -i POST \
    -H "Content-Type:application/json" \
    -d \
 '{
-"parameters": {
+"Parameters": {
 "ResetCollection": {
-"description": "Collection of ResetTargets",
+"Description": "Collection of ResetTargets",
 "ResetTarget": [{
 "ResetType": "ForceRestart",
 "TargetUri": "/redfish/v1/Systems/{ComputerSystemId}",
@@ -1872,9 +1872,9 @@ You can perform reset on a group of servers by specifying multiple target URIs i
 
 ```
 {
-   "parameters":{
+   "Parameters":{
       "ResetCollection":{
-         "description":"Collection of ResetTargets",
+         "Description":"Collection of ResetTargets",
          "ResetTarget":[
             {
                "ResetType":"ForceRestart",
@@ -2000,7 +2000,7 @@ curl -i POST \
    -H "Content-Type:application/json" \
    -d \
 '{ 
-   "parameters":{ 
+   "Parameters":{ 
       "ServerCollection":[ 
          "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1",
          "/redfish/v1/Systems/76632110-1c75-5a86-9cc2-471325983653:1"
@@ -2044,7 +2044,7 @@ You can perform `setDefaultBootOrder` action on a group of servers by specifying
 
 ```
 { 
-   "parameters":{ 
+   "Parameters":{ 
       "ServerCollection":[ 
          "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1",
          "/redfish/v1/Systems/76632110-1c75-5a86-9cc2-471325983653:1"
@@ -2145,7 +2145,7 @@ curl -i POST \
    -H "Content-Type:application/json" \
    -d \
 '{
-"parameters": [
+"Parameters": [
 {
 "Name": "/redfish/v1/Systems/{ComputerSystemId}"
 }
@@ -2181,7 +2181,7 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 
 ```
 {
-   "parameters":[
+   "Parameters":[
       {
          "Name":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
       }
@@ -2250,7 +2250,7 @@ curl -i POST \
    -H "Content-Type:application/json" \
    -d \
 '{
-"parameters": [{
+"Parameters": [{
 "Name": "/redfish/v1/Managers/{managerId}"
 }
 ]
@@ -2290,7 +2290,7 @@ Before removing the plugin, ensure that the plugin container is stopped.
 
 ```
 {
-	"parameters": [
+	"Parameters": [
 		{
 	       "Name": "/redfish/v1/Managers/a6ddc4c0-2568-4e16-975d-fa771b0be853"
         }
@@ -3316,7 +3316,7 @@ curl -i GET \
                "Index":1,
                "MaximumCapWatts":96,
                "Model":"875241-B21",
-               "ProductName":"Smart Storage Battery ",
+               "ProductName":"HPE Smart Storage Battery ",
                "RemainingChargeTimeSeconds":7,
                "SerialNumber":"6WQXL0CB2BV63K",
                "SparePartNumber":"878643-001",
@@ -3770,7 +3770,7 @@ Some of the attributes include:
    -d \
 '{ 
    "Boot":{ 
-      "BootSourceOverrideTarget":"UefiHttp"
+      "BootSourceOverrideTarget":"Usb"
    }
 }' \
  'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}}'
@@ -3797,7 +3797,7 @@ Some of the attributes include:
 ```
 { 
    "Boot":{ 
-      "BootSourceOverrideTarget":"UefiHttp"
+      "BootSourceOverrideTarget":"Usb"
    }
 }
 ```
@@ -4358,7 +4358,7 @@ curl -i GET \
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
    "@odata.type":"#Switch.v1_2_0.Switch",
    "Id":"fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
-   "Manufacturer":"Aruba",
+   "Manufacturer":"HPE Aruba",
    "Model":"Aruba 8325",
    "Name":"Switch_172.10.20.1",
    "PartNumber":"JL636A",
@@ -7203,13 +7203,22 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryA40.v1_1_46"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
       },
       {
          "@odata.id":"/redfish/v1/Registries/iLO.2.13.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/iLOEvents.2.1.0"

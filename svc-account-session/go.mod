@@ -3,7 +3,7 @@ module github.com/ODIM-Project/ODIM/svc-account-session
 go 1.13
 
 require (
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727142308-3c44f51850f0
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200805061427-98ed1ba6a551
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37

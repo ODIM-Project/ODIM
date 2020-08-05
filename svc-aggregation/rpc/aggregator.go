@@ -601,3 +601,43 @@ func validateLinks(req *system.Links) string {
 	}
 	return param
 }
+
+// GetAllAggregationSource defines the operations which handles the RPC request response
+// for the GetAllAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}
+
+// GetAggregationSource defines the operations which handles the RPC request response
+// for the GetAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}
+
+// UpdateAggregationSource defines the operations which handles the RPC request response
+// for the UpdateAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}
+
+// DeleteAggregationSource defines the operations which handles the RPC request response
+// for the UpdateAggregationSource  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	return nil
+}

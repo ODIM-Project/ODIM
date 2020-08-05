@@ -69,6 +69,14 @@ type SystemOperation struct {
 	Operation string
 }
 
+// AggregationSource  payload of adding a AggregationSource
+type AggregationSource struct {
+	HostName string
+	UserName string
+	Password []byte
+	Links    interface{}
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -577,4 +585,43 @@ func DeleteSystemResetInfo(systemURI string) *errors.Error {
 		return err
 	}
 	return nil
+}
+
+// AddAggregationSource connects to the persistencemgr and Add the AggregationSource to db
+/* Inputs:
+1.req: AggregationSource info
+2.aggregationSourceURI : uri of AggregationSource
+*/
+func AddAggregationSource(req AggregationSource, aggregationSourceURI string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	//Create a header for data entry
+	const table string = "AggregationSource"
+	//Save data into Database
+	if err = conn.Create(table, aggregationSourceURI, req); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetAggregationSourceInfo fetches the AggregationSource info for the given aggregationSourceURI
+func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *errors.Error) {
+	var aggregationSource AggregationSource
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return aggregationSource, err
+	}
+
+	data, err := conn.Read("AggregationSource", aggregationSourceURI)
+	if err != nil {
+		return aggregationSource, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+	}
+
+	if err := json.Unmarshal([]byte(data), &aggregationSource); err != nil {
+		return aggregationSource, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+	return aggregationSource, nil
 }

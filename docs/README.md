@@ -121,6 +121,10 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 - {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the
     resource aggregator.
 	
+	To access the API endpoint using a REST client, do any one of the following:
+    - Use IP address of the system where the resource aggregator is installed as {odim_host}.
+    - To use FQDN as {odim_host}, add the HPE Resource Aggregator for ODIM server certificate to the browser where REST client is launched.
+	
 	**NOTE:**
      Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 

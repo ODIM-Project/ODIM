@@ -61,16 +61,14 @@ func RunWriteWorkers(jobChannel chan<- interface{}, dataBatch []interface{}, wor
 					done <- true
 					return
 				}
-				store.lock.Unlock()
 				data := store.getNextData()
 				jobChannel <- data
+        store.lock.Unlock()
 			}
 		}()
 	}
 }
 func (ds *dataBatchStore) getNextData() interface{} {
-	ds.lock.Lock()
-	defer ds.lock.Unlock()
 	data := ds.dataBatch[0]
 	ds.dataBatch = ds.dataBatch[1:]
 	return data

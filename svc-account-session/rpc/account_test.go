@@ -84,11 +84,11 @@ func TestAccount_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	
+
 	reqBodyCreateUser, _ := json.Marshal(asmodel.Account{
 		UserName: "testUser",
 		Password: "Password@123",
-		RoleId:   "admin",
+		RoleID:   "admin",
 	})
 
 	type args struct {
@@ -316,9 +316,9 @@ func TestAccount_Update(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
-	
-	reqBodyRoleIdReadOnly, _ := json.Marshal(asmodel.Account{
-		RoleId: common.RoleClient,
+
+	reqBodyRoleIDReadOnly, _ := json.Marshal(asmodel.Account{
+		RoleID: common.RoleClient,
 	})
 
 	type args struct {
@@ -339,7 +339,7 @@ func TestAccount_Update(t *testing.T) {
 				req: &accountproto.UpdateAccountRequest{
 					SessionToken: token,
 					AccountID:    accountID,
-					RequestBody:  reqBodyRoleIdReadOnly,
+					RequestBody:  reqBodyRoleIDReadOnly,
 				},
 				resp: &accountproto.AccountResponse{},
 			},
@@ -352,7 +352,7 @@ func TestAccount_Update(t *testing.T) {
 				req: &accountproto.UpdateAccountRequest{
 					SessionToken: "invalidSession",
 					AccountID:    accountID,
-					RequestBody:  reqBodyRoleIdReadOnly,
+					RequestBody:  reqBodyRoleIDReadOnly,
 				},
 				resp: &accountproto.AccountResponse{},
 			},

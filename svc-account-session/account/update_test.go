@@ -148,7 +148,7 @@ func TestUpdate(t *testing.T) {
 		req     *accountproto.UpdateAccountRequest
 		session *asmodel.Session
 	}
-	
+
 	reqBodyRoleIDOperator, _ := json.Marshal(asmodel.Account{
 		RoleID: "Operator",
 	})
@@ -214,8 +214,8 @@ func TestUpdate(t *testing.T) {
 			name: "update role to admin without privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RequestBody: reqBodyRoleIdAdmin,
-					AccountID: "testUser1",
+					RequestBody: reqBodyRoleIDAdmin,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -236,8 +236,8 @@ func TestUpdate(t *testing.T) {
 			name: "update non-existing account",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RequestBody: reqBodyRoleIdOperator,
-					AccountID: "xyz",
+					RequestBody: reqBodyRoleIDOperator,
+					AccountID:   "xyz",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -259,7 +259,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdateUsername,
-					AccountID: "testUser1",
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -281,7 +281,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyInvalidRole,
-					AccountID: "testUser1",
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -303,7 +303,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyInvalidPwd,
-					AccountID: "testUser1",
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -325,7 +325,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser1",
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -365,7 +365,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser1",
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -405,7 +405,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser1",
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -446,7 +446,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser2",
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -487,7 +487,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser2",
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -527,7 +527,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser2",
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -552,7 +552,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID: "testUser3",
+					AccountID:   "testUser3",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser3",
@@ -577,7 +577,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyRoleIDAdmin,
-					AccountID: "testUser3",
+					AccountID:   "testUser3",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser3",

@@ -81,7 +81,7 @@ func TestRole_CreateRole(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	mockRedfishRoles()
-	
+
 	reqBodyCreateRole, _ := json.Marshal(asmodel.Role{
 		ID:                 "testRole",
 		AssignedPrivileges: []string{common.PrivilegeLogin},
@@ -104,7 +104,7 @@ func TestRole_CreateRole(t *testing.T) {
 			args: args{
 				req: &roleproto.RoleRequest{
 					RequestBody:  reqBodyCreateRole,
-					SessionToken:       token,
+					SessionToken: token,
 				},
 				resp: &roleproto.RoleResponse{},
 			},
@@ -115,7 +115,7 @@ func TestRole_CreateRole(t *testing.T) {
 			args: args{
 				req: &roleproto.RoleRequest{
 					RequestBody:  reqBodyCreateRole,
-					SessionToken:       "testToken",
+					SessionToken: "testToken",
 				},
 				resp: &roleproto.RoleResponse{},
 			},

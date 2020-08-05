@@ -126,7 +126,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		log.Printf(errorMessage)
 		return resp
 	}
-	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OemPrivileges) == 0 {
+	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OEMPrivileges) == 0 {
 		errorMessage := "error: Both AssignedPrivileges and OemPrivileges cannot be empty."
 		args := response.Args{
 			Code:    response.GeneralError,

@@ -55,7 +55,7 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
-	
+
 	commonResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
@@ -64,7 +64,7 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 		Name:         "Account Service",
 	}
 	var resp response.RPC
-	
+
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
 	if err != nil {

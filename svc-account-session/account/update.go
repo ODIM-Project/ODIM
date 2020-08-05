@@ -62,7 +62,7 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	
+
 	requestUser := asmodel.User{
 		UserName:     updateAccount.UserName,
 		Password:     updateAccount.Password,

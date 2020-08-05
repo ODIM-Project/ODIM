@@ -12,20 +12,28 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-package agresponse
+package system
 
 import (
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-// ListMember define the links for each account present in odimra
-type ListMember struct {
-	OdataID string `json:"@odata.id"`
+// GetAggregationSourceCollection is to fetch all the AggregationSourceURI uri's and returns with created collection
+// of AggregationSource data from odim
+func GetAggregationSourceCollection() response.RPC {
+	// It need to be removed after the backend is implemented
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }
 
-// List defines the collection of resources like accounts, sessions, roles etc in svc-aggregation
-type List struct {
-	response.Response
-	MembersCount int          `json:"Members@odata.count"`
-	Members      []ListMember `json:"Members"`
+// GetAggregationSource is used  to fetch the AggregationSource with given aggregation source uri
+//and returns AggregationSource
+func GetAggregationSource(reqURI string) response.RPC {
+	// It need to be removed after the backend is implemented
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }

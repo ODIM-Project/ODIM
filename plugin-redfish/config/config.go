@@ -22,7 +22,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/google/uuid"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 

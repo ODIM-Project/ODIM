@@ -73,7 +73,7 @@ for event subscriptions, credentials, and tasks. It also hosts a message bus cal
 
 
 This layer hosts a message broker which acts as a communication channel between the upper layers and the
-plugin layer. It supports common messaging architecture and real-time streaming. HPE Resource Aggregator for
+plugin layer. It supports common messaging architecture and real-time streaming. Resource Aggregator for
 ODIM uses Kafka as the event message bus.
 The services and the event message bus layers host Redis data store.
 
@@ -86,8 +86,7 @@ to communicate with the resources. It uses REST-based communication which is bas
 v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
 event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding. To know how to develop plugins, refer to *HPE Resource Aggregator for Open Distributed
-Infrastructure Management Plugin Developer's Guide*.
+language binding. To know how to develop plugins, refer to the information provided at: https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md.
 
 
 # API usage and access guidelines
@@ -125,7 +124,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 	
 	To access the API endpoint using a REST client, do any one of the following:
     - Use IP address of the system where the resource aggregator is installed as {odim_host}.
-    - To use FQDN as {odim_host}, add the HPE Resource Aggregator for ODIM server certificate to the browser where REST client is launched.
+    - To use FQDN as {odim_host}, add the Resource Aggregator for ODIM server certificate to the browser where REST client is launched.
 	
 	**NOTE:**
      Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
@@ -138,8 +137,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 The examples shown in this guide use curl to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. HPE
-Resource Aggregator for ODIM supports HTTPS.
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. Resource Aggregator for ODIM supports HTTPS.
 
 **curl command options (flags):**
 

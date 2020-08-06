@@ -13,54 +13,6 @@ To ensure continued adoption of open technologies, the APIs for the plugins are 
 
 
 
-## Resource Aggregator for ODIM logical architecture
-
-Resource Aggregator for ODIM framework adopts a layered architecture and has many functional layers.
-
-
-The following figure shows these functional layers of Resource Aggregator for ODIM deployed in a data center.
-
-![ODIM_architecture](images/arch.png)
-
-- **API layer**
-
-
-This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from
-the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The
-northbound clients communicate with this layer through a REST-based protocol that is fully compliant with
-DMTF's Redfish® specifications (Schema 2019.3 and Specification 1.8.0).
-The API layer sends user requests to the plugins through the aggregation, event, and fabric services.
-
-- **Services layer**
-
-
-The services layer is where all the services are hosted. This layer implements service logic for all use cases
-through an extensible domain model (Redfish Data Model). Requests coming from the API layer and the
-responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
-for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).
-
-![Redfish_data_model](images/redfish_data_model.png)
-
-- **Event message bus layer**
-
-
-This layer hosts a message broker which acts as a communication channel between the upper layers and the
-plugin layer. It supports common messaging architecture and real-time streaming. Resource Aggregator for
-ODIM uses Kafka as the event message bus.
-The services and the event message bus layers host Redis data store.
-
-- **Plugin layer**
-
-
-This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper
-layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use
-to communicate with the resources. It uses REST-based communication which is based on OpenAPI Specification
-v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
-event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
-The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding.
-
-
 ## API accessibility
 
 The plugin layer uses JSON as the primary data format for communication. Standardizing on a well-known data-interchange format ensures consistency among plugins and simplifies the task for plugin developers. The API service uses [HATEOAS \(Hypermedia as the Engine of Application State\)](https://restfulapi.net/hateoas/) principles to link resources using the `href` key.

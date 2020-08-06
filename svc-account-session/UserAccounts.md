@@ -119,7 +119,7 @@ curl -i POST \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
-'{"Username":"{username}","Password":"{password}","RoleId":"{roleId}"}
+'{"UserName":"{username}","Password":"{password}","RoleId":"{roleId}"}
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
 
@@ -146,7 +146,7 @@ curl -i POST \
 
 ```
 { 
-   "Username":"monitor32",
+   "UserName":"monitor32",
    "Password":"Abc1vent2020!",
    "RoleId":"CLIENT11"
 }
@@ -156,7 +156,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Username|String \(required\)<br> |User name for the user account.|
+|UserName|String \(required\)<br> |User name for the user account.|
 |Password|String \(required\)<br> |Password for the user account. Before creating a password, see "Password Requirements" .|
 |RoleId|String \(required\)<br> |The role for this account. To know more about roles, see [User roles and privileges](#user-roles-and-privileges). Ensure that the `roleId` you want to assign to this user account exists. To check the existing roles, see [Listing Roles](#listing-roles). If you attempt to assign an unavailable role, you will receive an HTTP `400 Bad Request` error.|
 

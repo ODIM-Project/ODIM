@@ -22,6 +22,13 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
+// Account is the model for creating/updating an Account
+type Account struct {
+	UserName string `json:"UserName"`
+	Password string `json:"Password"`
+	RoleID   string `json:"RoleId"`
+}
+
 // User is the model for User Account
 type User struct {
 	UserName     string   `json:"UserName"`

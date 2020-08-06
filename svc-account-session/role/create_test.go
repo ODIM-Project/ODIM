@@ -14,6 +14,7 @@
 package role
 
 import (
+	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
@@ -127,10 +128,36 @@ func TestCreate(t *testing.T) {
 			},
 		},
 	}
+
 	errArgu := response.Args{
 		Code:    response.GeneralError,
 		Message: "error: role with name testRole already exists",
 	}
+	reqBodyCreateRole, _ := json.Marshal(asmodel.Role{
+		ID:                 "testRole",
+		AssignedPrivileges: []string{common.PrivilegeLogin},
+		OEMPrivileges:      []string{},
+	})
+	reqBodyRoleConfigure, _ := json.Marshal(asmodel.Role{
+		ID:                 "testRole",
+		AssignedPrivileges: []string{"Configure"},
+		OEMPrivileges:      []string{},
+	})
+	reqBodyInvalidRole, _ := json.Marshal(asmodel.Role{
+		ID:                 "@testRole",
+		AssignedPrivileges: []string{common.PrivilegeLogin},
+		OEMPrivileges:      []string{},
+	})
+	reqBodyRoleEmpPrivilege, _ := json.Marshal(asmodel.Role{
+		ID:                 "testRole",
+		AssignedPrivileges: []string{},
+		OEMPrivileges:      []string{},
+	})
+	reqBodyCreateAdminRole, _ := json.Marshal(asmodel.Role{
+		ID:                 common.RoleAdmin,
+		AssignedPrivileges: []string{common.PrivilegeLogin},
+		OEMPrivileges:      []string{},
+	})
 
 	type args struct {
 		req     *roleproto.RoleRequest
@@ -145,9 +172,7 @@ func TestCreate(t *testing.T) {
 			name: "request for successful role creation",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             "testRole",
-					AssignedPrivileges: []string{common.PrivilegeLogin},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyCreateRole,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -178,9 +203,7 @@ func TestCreate(t *testing.T) {
 			name: "request with insufficient privilege",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             "testRole",
-					AssignedPrivileges: []string{common.PrivilegeLogin},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyCreateRole,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -206,9 +229,7 @@ func TestCreate(t *testing.T) {
 			name: "request with invalid assigned privilege",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             "testRole",
-					AssignedPrivileges: []string{"Configure"},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyRoleConfigure,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -234,9 +255,7 @@ func TestCreate(t *testing.T) {
 			name: "request with invalid character in role",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             "@testRole",
-					AssignedPrivileges: []string{common.PrivilegeLogin},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyInvalidRole,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -262,9 +281,7 @@ func TestCreate(t *testing.T) {
 			name: "request with empty assigned privilege",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             "testRole",
-					AssignedPrivileges: []string{},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyRoleEmpPrivilege,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -290,9 +307,7 @@ func TestCreate(t *testing.T) {
 			name: "request for creating an existing role",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             "testRole",
-					AssignedPrivileges: []string{common.PrivilegeLogin},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyCreateRole,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -317,9 +332,7 @@ func TestCreate(t *testing.T) {
 			name: "request for creating an pre-existing role",
 			args: args{
 				req: &roleproto.RoleRequest{
-					RoleId:             common.RoleAdmin,
-					AssignedPrivileges: []string{common.PrivilegeLogin},
-					OemPrivileges:      []string{},
+					RequestBody: reqBodyCreateAdminRole,
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{

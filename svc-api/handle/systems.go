@@ -133,7 +133,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 
 //ComputerSystemReset resets the indivitual computer systems
 func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
-	var req systemsproto.ComputerSystemResetRequest
+	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
@@ -143,9 +143,9 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	req.SystemID = ctx.Params().Get("id")
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-	if req.SessionToken == "" {
+	systemID := ctx.Params().Get("id")
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -153,7 +153,16 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := sys.SystemResetRPC(req)
+
+	// Marshalling the req to make reset request
+	request, err := json.Marshal(req)
+	resetRequest := systemsproto.ComputerSystemResetRequest{
+		SessionToken: sessionToken,
+		SystemID:     systemID,
+		RequestBody:  request,
+	}
+
+	resp, err := sys.SystemResetRPC(resetRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		log.Println(errorMessage)

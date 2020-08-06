@@ -36,7 +36,7 @@ type DeleteRequest struct {
 	ID           string       `json:"Id"`
 	Name         string       `json:"Name"`
 	OEM          interface{}  `json:"Oem"`
-	Parameters   []Parameters `json:"parameters"`
+	Parameters   []Parameters `json:"Parameters"`
 }
 
 // Parameters is struct to have the delete request parameters
@@ -55,6 +55,20 @@ func (e *ExternalInterface) DeleteCompute(req *aggregatorproto.AggregatorRequest
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
 	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, deleteRequest)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}
+
 	if len(deleteRequest.Parameters) == 1 && deleteRequest.Parameters[0].Name != "" {
 		key := deleteRequest.Parameters[0].Name
 		// check if given resource is a manager

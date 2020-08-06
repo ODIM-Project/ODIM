@@ -402,7 +402,7 @@ func TestComputerSystemResetNegativeTestCases(t *testing.T) {
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	e.POST(
 		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Actions/ComputerSystem.Reset",
-	).WithJSON("Body").WithHeader("X-Auth-Token", "").Expect().Status(http.StatusBadRequest)
+	).WithJSON("Body").WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	e.POST(
 		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Actions/ComputerSystem.Reset",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)

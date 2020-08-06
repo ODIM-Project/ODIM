@@ -17,10 +17,12 @@ package systems
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
@@ -33,21 +35,43 @@ type PluginContact struct {
 }
 
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType
-func (p *PluginContact) ComputerSystemReset(systemID, resetType string) response.RPC {
+func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemResetRequest) response.RPC {
 	var resp response.RPC
 
+	// parsing the ResetComputerSystem
+	var resetCompSys ResetComputerSystem
+	err := json.Unmarshal(req.RequestBody, &resetCompSys)
+	if err != nil {
+		errMsg := "error: unable to parse the computer system reset request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetCompSys)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}
+
 	// spliting the uuid and system id
-	requestData := strings.Split(systemID, ":")
+	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", systemID}, nil)
+		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 
 	uuid := requestData[0]
 
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"ComputerSystem", "/redfish/v1/Systems/" + systemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"ComputerSystem", "/redfish/v1/Systems/" + req.SystemID}, nil)
 	}
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
 	if err != nil {
@@ -88,7 +112,7 @@ func (p *PluginContact) ComputerSystemReset(systemID, resetType string) response
 
 	}
 	postRequest := make(map[string]interface{})
-	postRequest["ResetType"] = resetType
+	postRequest["ResetType"] = resetCompSys.ResetType
 	postBody, _ := json.Marshal(postRequest)
 	target.PostBody = postBody
 	contactRequest.HTTPMethodType = http.MethodPost
@@ -114,6 +138,6 @@ func (p *PluginContact) ComputerSystemReset(systemID, resetType string) response
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+systemID, resetType)
+	smodel.AddSystemResetInfo("/redfish/v1/Systems/"+req.SystemID, resetCompSys.ResetType)
 	return resp
 }

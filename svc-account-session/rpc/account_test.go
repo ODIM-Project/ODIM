@@ -16,6 +16,7 @@ package rpc
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -83,6 +84,13 @@ func TestAccount_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
+
+	reqBodyCreateUser, _ := json.Marshal(asmodel.Account{
+		UserName: "testUser",
+		Password: "Password@123",
+		RoleID:   "admin",
+	})
+
 	type args struct {
 		ctx  context.Context
 		req  *accountproto.CreateAccountRequest
@@ -99,9 +107,7 @@ func TestAccount_Create(t *testing.T) {
 			a:    &Account{},
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName:     "testUser",
-					Password:     "Password@123",
-					RoleId:       "admin",
+					RequestBody:  reqBodyCreateUser,
 					SessionToken: token,
 				},
 				resp: &accountproto.AccountResponse{},
@@ -113,9 +119,7 @@ func TestAccount_Create(t *testing.T) {
 			a:    &Account{},
 			args: args{
 				req: &accountproto.CreateAccountRequest{
-					UserName:     "testUser",
-					Password:     "password",
-					RoleId:       "admin",
+					RequestBody:  reqBodyCreateUser,
 					SessionToken: "invalidSession",
 				},
 				resp: &accountproto.AccountResponse{},
@@ -312,6 +316,11 @@ func TestAccount_Update(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock admin user %v", err)
 	}
+
+	reqBodyRoleIDReadOnly, _ := json.Marshal(asmodel.Account{
+		RoleID: common.RoleClient,
+	})
+
 	type args struct {
 		ctx  context.Context
 		req  *accountproto.UpdateAccountRequest
@@ -330,7 +339,7 @@ func TestAccount_Update(t *testing.T) {
 				req: &accountproto.UpdateAccountRequest{
 					SessionToken: token,
 					AccountID:    accountID,
-					RoleId:       common.RoleClient,
+					RequestBody:  reqBodyRoleIDReadOnly,
 				},
 				resp: &accountproto.AccountResponse{},
 			},
@@ -343,7 +352,7 @@ func TestAccount_Update(t *testing.T) {
 				req: &accountproto.UpdateAccountRequest{
 					SessionToken: "invalidSession",
 					AccountID:    accountID,
-					RoleId:       common.RoleClient,
+					RequestBody:  reqBodyRoleIDReadOnly,
 				},
 				resp: &accountproto.AccountResponse{},
 			},

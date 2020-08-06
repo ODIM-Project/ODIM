@@ -838,8 +838,8 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 
 	resp5 := systemsCollection
 	resp5.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f:1"},
-		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1"}}
+		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1"},
+		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}}
 	resp5.MembersCount = len(resp5.Members)
 	type args struct {
 		req *systemsproto.GetSystemsRequest
@@ -996,7 +996,7 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body:          systemsCollection,
+				Body:          resp5,
 			},
 			wantErr: false,
 		},

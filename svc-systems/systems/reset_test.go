@@ -24,6 +24,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
@@ -198,8 +199,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		DevicePassword: stubDevicePassword,
 	}
 	type args struct {
-		systemID  string
-		resetType string
+		req *systemsproto.ComputerSystemResetRequest
 	}
 	tests := []struct {
 		name string
@@ -211,16 +211,20 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			name: "invalid uuid",
 			p:    &pluginContact,
 			args: args{
-				systemID:  "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
-				resetType: "ForceRestart",
+				&systemsproto.ComputerSystemResetRequest{
+					SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+				},
 			},
 			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1"}, nil),
 		}, {
 			name: "invalid uuid without system id",
 			p:    &pluginContact,
 			args: args{
-				systemID:  "24b243cf-f1e3-5318-92d9-2d6737d6b0b",
-				resetType: "ForceRestart",
+				&systemsproto.ComputerSystemResetRequest{
+					SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b",
+					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+				},
 			},
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
 		},
@@ -228,8 +232,10 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			name: "if plugin id is not there in the db",
 			p:    &pluginContact,
 			args: args{
-				systemID:  "7a2c6100-67da-5fd6-ab82-6870d29c727:1",
-				resetType: "ForceRestart",
+				&systemsproto.ComputerSystemResetRequest{
+					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c727:1",
+					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
@@ -243,8 +249,10 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			name: "Valid Request",
 			p:    &pluginContact,
 			args: args{
-				systemID:  "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-				resetType: "ForceRestart",
+				&systemsproto.ComputerSystemResetRequest{
+					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
+				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
@@ -262,7 +270,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.ComputerSystemReset(tt.args.systemID, tt.args.resetType); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.ComputerSystemReset(tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.ComputerSystemReset() = %v, want %v", got, tt.want)
 			}
 		})

@@ -20,6 +20,7 @@ package account
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/base64"
+	"encoding/json"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
@@ -35,7 +36,7 @@ import (
 // updated other than the UserName if the session parameter have sufficient privileges.
 //
 // For updating an account, two parameters need to be passed UpdateAccountRequest and Session.
-// New Password and RoleId will be part of UpdateAccountRequest,
+// New Password and RoleID will be part of UpdateAccountRequest,
 // and Session parameter will have all session related data, espically the privileges.
 //
 // Output is the RPC response, which contains the status code, status message, headers and body.
@@ -53,15 +54,23 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		err  error
 	)
 
+	// parsing the Account
+	var updateAccount asmodel.Account
+	err = json.Unmarshal(req.RequestBody, &updateAccount)
+	if err != nil {
+		errMsg := "unable to parse the update account request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
 	requestUser := asmodel.User{
-		UserName:     req.UserName,
-		Password:     req.Password,
-		RoleID:       req.RoleId,
+		UserName:     updateAccount.UserName,
+		Password:     updateAccount.Password,
+		RoleID:       updateAccount.RoleID,
 		AccountTypes: []string{"Redfish"},
 	}
 
 	id := req.AccountID
-
 	if requestUser.UserName != "" {
 		errorMessage := "error: username cannot be modified"
 		resp.StatusCode = http.StatusBadRequest
@@ -75,6 +84,19 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
+		return resp
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateAccount)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
 

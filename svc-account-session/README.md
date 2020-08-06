@@ -107,7 +107,7 @@ curl -i POST \
 
 ```
 {
-"Username": "abc",
+"UserName": "abc",
 "Password": "abc123"
 }
 ```
@@ -120,7 +120,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Username|String \(required\)|Username of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
+|UserName|String \(required\)|UserName of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
 |Password|String \(required\)<br> |Password of the user account for this session. For the first time, use the password of the default administrator account. Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br> |
 
 

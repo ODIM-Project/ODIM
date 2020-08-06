@@ -88,7 +88,7 @@ var request = map[string]interface{}{
 	"Id":             "RemoveActionInfo",
 	"Name":           "Remove Action Info",
 	"Oem":            "",
-	"parameters":     []params{{Name: "uri"}},
+	"Parameters":     []params{{Name: "uri"}},
 }
 
 func TestDeleteCompute(t *testing.T) {

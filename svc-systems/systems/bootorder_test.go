@@ -320,7 +320,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			},
 		},
 	}
-	request, _ := json.Marshal(`{"Attributes": {"BootMode": "mode"}}`)
+	request := []byte(`{"Attributes": {"BootMode": "mode"}}`)
 	tests := []struct {
 		name string
 		p    *PluginContact
@@ -529,7 +529,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		},
 	}
 
-	request, _ := json.Marshal(`{"Attributes": {"BootMode": "mode"}}`)
+	request := []byte(`{"Attributes": {"BootMode": "mode"}}`)
 	tests := []struct {
 		name string
 		p    *PluginContact
@@ -607,7 +607,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.ChangeBootOrderSettings(tt.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PluginContact.ChangeBiosSettings() = %v, want %v", got, tt.want)
+				t.Errorf("PluginContact.ChangeBootOrderSettings() = %v, want %v", got, tt.want)
 			}
 		})
 	}

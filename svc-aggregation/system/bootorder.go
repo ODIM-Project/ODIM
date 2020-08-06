@@ -31,7 +31,7 @@ import (
 
 // SetBootOrderRequest defines the request for the setting default boot order
 type SetBootOrderRequest struct {
-	Parameters BootOrderParameters `json:"parameters"`
+	Parameters BootOrderParameters `json:"Parameters"`
 }
 
 // BootOrderParameters defines the boot order parameters
@@ -58,6 +58,19 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 		errMsg := "error while trying to set default boot order: " + err.Error()
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, &SetBootOrderRequest{})
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return resp
 	}
 
 	partialResultFlag := false
@@ -124,7 +137,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	resp.Body = args.CreateGenericErrorResponse()
 
 	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err := e.UpdateTask(task)
+	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
 		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)

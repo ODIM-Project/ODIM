@@ -41,7 +41,7 @@ type AggregatorRequest struct {
 	ID           string    `json:"Id"`
 	Name         string    `json:"Name"`
 	Oem          OEM       `json:"Oem"`
-	Parameters   parameter `json:"parameters"`
+	Parameters   parameter `json:"Parameters"`
 }
 
 // OEM is a placeholder for the OEM block
@@ -60,7 +60,7 @@ type ResetTarget struct {
 }
 
 type resetCollection struct {
-	Description  string        `json:"description"`
+	Description  string        `json:"Description"`
 	ResetTargets []ResetTarget `json:"ResetTarget"`
 }
 
@@ -103,6 +103,19 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		errMsg := "error while trying to validate request fields: " + err.Error()
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, taskInfo)
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetRequest)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return resp
 	}
 
 	missedProperty, err := resetRequest.validateRequestFields()

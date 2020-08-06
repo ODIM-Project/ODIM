@@ -146,6 +146,20 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		return resp
 	}
 
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, postRequest)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		return resp
+	}
+
 	//check mandatory fields
 	statuscode, statusMessage, messageArgs, err := validateFields(&postRequest)
 	if err != nil {

@@ -133,6 +133,7 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Systems/{id}/Memory", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Processors", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Storage", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Processors/{rid}", SystemsMethodNotAllowed)
 
 	e := httptest.New(t, router)
 	systemID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
@@ -168,6 +169,11 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestMethodNotAllowedForLogServices is unit test method for
@@ -315,6 +321,7 @@ func TestTsMethodNotAllowed(t *testing.T) {
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/TaskService", TsMethodNotAllowed)
 	redfishRoutes.Any("/TaskService/Tasks", TsMethodNotAllowed)
+	redfishRoutes.Any("/TaskService/Tasks/{TaskID}", TsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
@@ -325,6 +332,9 @@ func TestTsMethodNotAllowed(t *testing.T) {
 	e.POST("/redfish/v1/TaskService/Tasks").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/TaskService/Tasks").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/TaskService/Tasks").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/TaskService/Tasks/{TaskID}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/TaskService/Tasks/{TaskID}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestEvtMethodNotAllowed is unittest method for EvtMethodNotAllowed func.
@@ -351,12 +361,17 @@ func TestAggMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/AggregationService", AggMethodNotAllowed)
+	redfishRoutes.Any("/AggregationService/Actions/AggregationService.Add", AggMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
 	e.POST("/redfish/v1/AggregationService").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/AggregationService").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/AggregationService").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/AggregationService/Actions/AggregationService.Add").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Actions/AggregationService.Add").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Actions/AggregationService.Add").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestFabricsMethodNotAllowed is unittest method for FabricsMethodNotAllowed func.
@@ -457,4 +472,21 @@ func TestRegMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/registries/" + file).Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/registries/" + file).Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/registries/" + file).Expect().Status(http.StatusMethodNotAllowed)
+}
+
+// TestManagersMethodNotAllowed is the unit test method for ManagerMethodNotAllowed func.
+func TestManagersMethodNotAllowed(t *testing.T) {
+	router := iris.New()
+	redfishRoutes := router.Party("/redfish")
+	redfishRoutes.Any("/v1/Managers", ManagersMethodNotAllowed)
+	redfishRoutes.Any("/v1/Managers/{id}", ManagersMethodNotAllowed)
+	e := httptest.New(t, router)
+
+	e.PUT("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.PUT("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
 }

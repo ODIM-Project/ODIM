@@ -16,10 +16,12 @@
 package role
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -38,9 +40,18 @@ import (
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
+	// parsing the request body
+	var createRoleReq asmodel.Role
+	err := json.Unmarshal(req.RequestBody, &createRoleReq)
+	if err != nil {
+		errMsg := "unable to parse the add request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
 	commonResponse := response.Response{
 		OdataType: "#Role.v1_2_4.Role",
-		OdataID:   "/redfish/v1/AccountService/Roles/" + req.RoleId,
+		OdataID:   "/redfish/v1/AccountService/Roles/" + createRoleReq.ID,
 		Name:      "User Role",
 	}
 	var resp response.RPC
@@ -53,11 +64,28 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		"OData-Version":     "4.0",
 	}
 
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createRoleReq)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}
+
 	// register the validator package
 	validate := validator.New()
 	// create validation to check if the ID field contains whitespaces when creating role.
 	validate.RegisterValidation("is-empty", CheckWhitespace)
-	if err := validate.Var(req.RoleId, "required,is-empty,excludesall=!@#?%&$*"); err != nil {
+	if err := validate.Var(createRoleReq.ID, "required"); err != nil {
+		errorMessage := "error: Mandatory field RoleId is empty"
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errorMessage, []interface{}{"RoleId"}, nil)
+		return response
+	} else if err := validate.Var(createRoleReq.ID, "required,is-empty,excludesall=!@#?%&$*"); err != nil {
 		errorMessage := "error: Invalid Request"
 		args := response.Args{
 			Code:    response.GeneralError,
@@ -66,7 +94,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 				response.ErrArgs{
 					StatusMessage: response.PropertyValueNotInList,
 					ErrorMessage:  errorMessage,
-					MessageArgs:   []interface{}{req.RoleId, "RoleId"},
+					MessageArgs:   []interface{}{createRoleReq.ID, "RoleId"},
 				},
 			},
 		}
@@ -98,7 +126,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		log.Printf(errorMessage)
 		return resp
 	}
-	if len(req.AssignedPrivileges) == 0 && len(req.OemPrivileges) == 0 {
+	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OEMPrivileges) == 0 {
 		errorMessage := "error: Both AssignedPrivileges and OemPrivileges cannot be empty."
 		args := response.Args{
 			Code:    response.GeneralError,
@@ -118,8 +146,8 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		return resp
 	}
 
-	if len(req.AssignedPrivileges) != 0 {
-		status, messageArgs, err := validateAssignedPrivileges(req.AssignedPrivileges)
+	if len(createRoleReq.AssignedPrivileges) != 0 {
+		status, messageArgs, err := validateAssignedPrivileges(createRoleReq.AssignedPrivileges)
 		if err != nil {
 			errorMessage := err.Error()
 			resp.StatusCode = int32(status.Code)
@@ -140,8 +168,8 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 			return resp
 		}
 	}
-	if len(req.OemPrivileges) != 0 {
-		status, messageArgs, err := validateOEMPrivileges(req.OemPrivileges)
+	if len(createRoleReq.OEMPrivileges) != 0 {
+		status, messageArgs, err := validateOEMPrivileges(createRoleReq.OEMPrivileges)
 		if err != nil {
 			errorMessage := err.Error()
 			resp.StatusCode = int32(status.Code)
@@ -174,7 +202,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	//check if request role is predefined redfish role and set isPredfined to true
 	isPredefined := false
 	for _, redfishrole := range redfishRoles.List {
-		if req.RoleId == redfishrole {
+		if createRoleReq.ID == redfishrole {
 			isPredefined = true
 		}
 	}
@@ -199,10 +227,10 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	}
 	//Response for Create role
 	role := asmodel.Role{
-		ID:                 req.RoleId,
+		ID:                 createRoleReq.ID,
 		IsPredefined:       isPredefined,
-		AssignedPrivileges: req.AssignedPrivileges,
-		OEMPrivileges:      req.OemPrivileges,
+		AssignedPrivileges: createRoleReq.AssignedPrivileges,
+		OEMPrivileges:      createRoleReq.OEMPrivileges,
 	}
 
 	//Persist role in database
@@ -230,7 +258,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	resp.StatusMessage = response.ResourceCreated
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
-	commonResponse.ID = req.RoleId
+	commonResponse.ID = createRoleReq.ID
 
 	resp.Body = asresponse.UserRole{
 		Response:           commonResponse,

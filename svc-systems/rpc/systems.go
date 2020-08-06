@@ -141,7 +141,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
-	data := pc.ComputerSystemReset(req.SystemID, req.ResetType)
+	data := pc.ComputerSystemReset(req)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header

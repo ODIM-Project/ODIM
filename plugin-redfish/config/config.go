@@ -115,6 +115,9 @@ func SetConfiguration() error {
 
 // ValidateConfiguration will validate configurations read and assign default values, where required
 func ValidateConfiguration() error {
+	if err := lutilconf.CheckRootServiceuuid(Data.RootServiceUUID); err != nil {
+		return err
+	}
 	if Data.FirmwareVersion == "" {
 		log.Println("warn: no value set for FirmwareVersion, setting default value")
 		Data.FirmwareVersion = "1.0"

@@ -245,7 +245,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.ComputerSystemResetRequest{
-					ResetType:    "ForceRestart",
+					RequestBody:  []byte(`{"ResetType": "ForceRestart"}`),
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken: "validToken",
 				},
@@ -257,7 +257,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.ComputerSystemResetRequest{
-					ResetType:    "ForceRestart",
+					RequestBody:  []byte(`{"ResetType": "ForceRestart"}`),
 					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken: "invalidToken",
 				},

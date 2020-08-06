@@ -174,6 +174,7 @@ func Router() *iris.Application {
 	task.Delete("/Tasks/{TaskID}", ts.DeleteTask)
 	task.Any("/", handle.TsMethodNotAllowed)
 	task.Any("/Tasks", handle.TsMethodNotAllowed)
+	task.Any("/Tasks/{TaskID}", handle.TsMethodNotAllowed)
 
 	systems := v1.Party("/Systems", middleware.SessionDelMiddleware)
 	systems.SetRegisterRule(iris.RouteSkip)
@@ -225,6 +226,7 @@ func Router() *iris.Application {
 	systems.Get("/{id}/Bios/Settings", system.GetSystemResource)
 	systems.Patch("/{id}/Bios/Settings", system.ChangeBiosSettings)
 	systems.Any("/{id}/Bios", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Processors/{rid}", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)
@@ -239,6 +241,7 @@ func Router() *iris.Application {
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
+	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
 	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 
@@ -334,5 +337,7 @@ func Router() *iris.Application {
 	managers.Any("/{id}/LogServices/{rid}/Entries/{rid2}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Actions", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", handle.ManagersMethodNotAllowed)
+	managers.Any("/", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}", handle.ManagersMethodNotAllowed)
 	return router
 }

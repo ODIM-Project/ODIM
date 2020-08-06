@@ -66,7 +66,7 @@ jobs:
             flag=1
         fi
         echo "POST Admin creating account - (args - username, password, roleID)"
-        run2=$(curl --user admin:Od\!m12\$4 --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"Username":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://odimra.local.com:45000/redfish/v1/AccountService/Accounts')
+        run2=$(curl --user admin:Od\!m12\$4 --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://odimra.local.com:45000/redfish/v1/AccountService/Accounts')
         if [ $run2 -eq 201 ];
         then 
             echo "Account Created Sucessfully"

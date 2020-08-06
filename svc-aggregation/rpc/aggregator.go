@@ -609,6 +609,20 @@ func validateLinks(req *system.Links) string {
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	data := system.GetAggregationSourceCollection()
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	generateResponse(data, resp)
 	return nil
 }
 
@@ -619,6 +633,20 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	data := system.GetAggregationSource(req.URL)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	generateResponse(data, resp)
 	return nil
 }
 

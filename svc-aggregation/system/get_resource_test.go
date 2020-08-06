@@ -57,10 +57,9 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSourceCollection..v1_0_0.AggregationSourceCollection.",
+	  OdataType:    "#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSource",
-		OdataContext: "/redfish/v1/$metadata#AggregationSourceCollection..AggregationSourceCollection.",
-		ID:           "Aggregation Source",
+		OdataContext: "/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
 		Name:         "Aggregation Source",
 	}
 	var resp1 = response.RPC{
@@ -75,7 +74,10 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
-
+  commonResponse.Message = ""
+	commonResponse.ID = ""
+	commonResponse.MessageID = ""
+	commonResponse.Severity = ""
 	resp1.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: 1,
@@ -87,9 +89,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 	}{
 		{
 			name: "Postive Case",
-			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //replace with resp1 after the implementation is completed
-			},
+			want: resp1,
 		},
 	}
 	for _, tt := range tests {
@@ -124,7 +124,7 @@ func TestGetAggregationSource(t *testing.T) {
 		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSource/123455",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
-		ID:           "121234",
+		ID:           "123455",
 		Name:         "Aggregation Source",
 	}
 	var resp1 = response.RPC{
@@ -139,14 +139,17 @@ func TestGetAggregationSource(t *testing.T) {
 		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
-
+  commonResponse.Message = ""
+	commonResponse.MessageID = ""
+	commonResponse.Severity = ""
 	resp1.Body = agresponse.AggregationSourceResponse{
 		Response: commonResponse,
 		HostName: req.HostName,
 		UserName: req.UserName,
 		Links:    req.Links,
 	}
-
+	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSource/12355 found"
+	resp2 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSource/12355"}, nil)
 	type args struct {
 		reqURI string
 	}
@@ -160,18 +163,14 @@ func TestGetAggregationSource(t *testing.T) {
 			args: args{
 				reqURI: "/redfish/v1/AggregationService/AggregationSource/123455",
 			},
-			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //replace with resp1 after the implementation is completed
-			},
+			want: resp1,
 		},
 		{
 			name: "Invalid Aggregation Source URI",
 			args: args{
 				reqURI: "/redfish/v1/AggregationService/AggregationSource/12355",
 			},
-			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //update the status code to http.StatusNotFound after implementation added
-			},
+			want: resp2,
 		},
 	}
 	for _, tt := range tests {

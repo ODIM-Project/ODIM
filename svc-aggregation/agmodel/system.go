@@ -617,11 +617,24 @@ func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *
 
 	data, err := conn.Read("AggregationSource", aggregationSourceURI)
 	if err != nil {
-		return aggregationSource, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+		return aggregationSource, errors.PackError(err.ErrNo(), "error: while trying to fetch Aggregation Source data: ", err.Error())
 	}
 
 	if err := json.Unmarshal([]byte(data), &aggregationSource); err != nil {
 		return aggregationSource, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
 	return aggregationSource, nil
+}
+
+//GetAllKeysFromTable fetches all keys in a given table
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
 }

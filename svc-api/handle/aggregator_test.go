@@ -96,6 +96,25 @@ func testGetAllAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*agg
 	return response, nil
 }
 
+func testUpdateAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	var response = &aggregatorproto.AggregatorResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusOK,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "token" {
+		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
+}
+
 func testGetAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
@@ -307,10 +326,16 @@ var links = map[string]interface{}{
 	"Oem": oem,
 }
 var addAggregationSourceRequest = map[string]interface{}{
-	"Host":     "10.24.0.14",
+	"Host":     "9.9.9.0",
 	"UserName": "admin",
 	"Password": "Password1234",
 	"Links":    links,
+}
+
+var updateAggregationSourceRequest = map[string]interface{}{
+	"Host":     "9.9.9.0",
+	"UserName": "admin",
+	"Password": "Password1234",
 }
 
 func TestAddAggregationSource(t *testing.T) {
@@ -362,4 +387,17 @@ func TestGetAggregationSource(t *testing.T) {
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource/someid",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestUpdateAggregationSource(t *testing.T) {
+	var a AggregatorRPCs
+	a.UpdateAggregationSourceRPC = testUpdateAggregationSourceRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes.Patch("/{id}", a.UpdateAggregationSource)
+	test := httptest.New(t, testApp)
+	//  update status code after the code is added
+	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusNotImplemented)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusNotImplemented)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusNotImplemented)
 }

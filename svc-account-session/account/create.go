@@ -105,10 +105,6 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 		log.Printf(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
- roles,err1:=asmodel.GetAllRoles()
- users,err2:=asmodel.GetAllUsers()
-  fmt.Println("============roles==============",roles, "============users==============",users)
-  fmt.Println("============err1==============",err1,err2)
 	if _, gerr := asmodel.GetRoleDetailsByID(user.RoleID); gerr != nil {
 		errorMessage := "error: invalid RoleID present " + gerr.Error()
 		log.Printf(errorMessage)

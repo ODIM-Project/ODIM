@@ -13,6 +13,7 @@ service Aggregator {
     rpc GetAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
     rpc UpdateAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
     rpc DeleteAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc CreateAggregate(AggregatorRequest) returns (AggregatorResponse) {}
   }
 
 message AggregatorRequest {

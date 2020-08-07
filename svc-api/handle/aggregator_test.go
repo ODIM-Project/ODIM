@@ -134,6 +134,25 @@ func testGetAggregationSourceRPC(req aggregatorproto.AggregatorRequest) (*aggreg
 	return response, nil
 }
 
+func testDeleteAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	var response = &aggregatorproto.AggregatorResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusOK,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "token" {
+		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
+}
+
 type params struct {
 	Name string
 }
@@ -396,4 +415,17 @@ func TestUpdateAggregationSource(t *testing.T) {
 	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusOK)
 	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
 	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
+}
+
+func TestDeleteAggregationSource(t *testing.T) {
+	var a AggregatorRPCs
+	a.UpdateAggregationSourceRPC = testDeleteAggregationSourceRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes.Delete("/{id}", a.DeleteAggregationSource)
+	test := httptest.New(t, testApp)
+	//  update status code after the code is added
+	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusNotImplemented)
 }

@@ -37,6 +37,7 @@ type AggregatorRPCs struct {
 	GetAllAggregationSourceRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	GetAggregationSourceRPC    func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	UpdateAggregationSourceRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteAggregationSourceRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -436,4 +437,10 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
 
+}
+
+// DeleteAggregationSource is the handler for updating  AggregationSource details
+func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
 }

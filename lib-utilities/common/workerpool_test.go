@@ -96,8 +96,10 @@ func TestRunWriteWorkers(t *testing.T) {
 	}
 	done := make(chan bool)
 	RunWriteWorkers(in, dataBatch, 2, done)
-	<-done
-	close(in)
+	ok:=<-done
+	if ok {
+		close(in)
+	}
 	wg.Wait()
 
 	if dt.getData() != 5 {

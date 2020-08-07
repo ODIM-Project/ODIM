@@ -47,6 +47,13 @@ type AggregatorService interface {
 	UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	CreateAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	GetAllAggregates(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	GetAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	DeleteAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	AddElementsToAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 }
 
 type aggregatorService struct {
@@ -197,6 +204,76 @@ func (c *aggregatorService) CreateAggregate(ctx context.Context, in *AggregatorR
 	return out, nil
 }
 
+func (c *aggregatorService) GetAllAggregates(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.GetAllAggregates", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) GetAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.GetAggregate", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) DeleteAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.DeleteAggregate", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) AddElementsToAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.AddElementsToAggregate", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.RemoveElementsFromAggregate", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.ResetElementsOfAggregate", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.SetDefaultBootOrderElementsOfAggregate", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Aggregator service
 
 type AggregatorHandler interface {
@@ -213,6 +290,13 @@ type AggregatorHandler interface {
 	UpdateAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	DeleteAggregationSource(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	CreateAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	GetAllAggregates(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	GetAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	DeleteAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	AddElementsToAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	RemoveElementsFromAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	ResetElementsOfAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	SetDefaultBootOrderElementsOfAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
 }
 
 func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...server.HandlerOption) error {
@@ -230,6 +314,13 @@ func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...
 		UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		CreateAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		GetAllAggregates(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		GetAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		DeleteAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		AddElementsToAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 	}
 	type Aggregator struct {
 		aggregator
@@ -292,4 +383,32 @@ func (h *aggregatorHandler) DeleteAggregationSource(ctx context.Context, in *Agg
 
 func (h *aggregatorHandler) CreateAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
 	return h.AggregatorHandler.CreateAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) GetAllAggregates(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.GetAllAggregates(ctx, in, out)
+}
+
+func (h *aggregatorHandler) GetAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.GetAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) DeleteAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.DeleteAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) AddElementsToAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.AddElementsToAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.RemoveElementsFromAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.ResetElementsOfAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.SetDefaultBootOrderElementsOfAggregate(ctx, in, out)
 }

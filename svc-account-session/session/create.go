@@ -125,7 +125,8 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		CreatedTime:  currentTime,
 		LastUsedTime: currentTime,
 	}
-
+  auth.Lock.Lock()
+	defer auth.Lock.Unlock()
 	if err = sess.Persist(); err != nil {
 		errorMessage := "error while trying to insert session details: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)

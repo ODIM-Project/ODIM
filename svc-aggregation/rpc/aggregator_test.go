@@ -839,3 +839,102 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 		})
 	}
 }
+
+func TestAggregator_UpdateAggreagationSource(t *testing.T) {
+	config.SetUpMockConfig(t)
+
+	mockPluginData(t, "ILO")
+	req := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"Oem": map[string]interface{}{
+				"PluginID": "ILO",
+			},
+		},
+	}
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	successReq, _ := json.Marshal(system.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: "password",
+	})
+	invalidReqBody, _ := json.Marshal(system.AggregationSource{
+		HostName: ":50000",
+		UserName: "admin",
+		Password: "password",
+	})
+	missingparamReq, _ := json.Marshal(system.AggregationSource{})
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive case",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with invalid request",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Manager Address",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with missing parameters",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.UpdateAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Aggregator.UpdateAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

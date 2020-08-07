@@ -57,7 +57,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	commonResponse := response.Response{
-	  OdataType:    "#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+		OdataType:    "#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSource",
 		OdataContext: "/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
 		Name:         "Aggregation Source",
@@ -74,7 +74,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
-  commonResponse.Message = ""
+	commonResponse.Message = ""
 	commonResponse.ID = ""
 	commonResponse.MessageID = ""
 	commonResponse.Severity = ""
@@ -139,7 +139,7 @@ func TestGetAggregationSource(t *testing.T) {
 		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
-  commonResponse.Message = ""
+	commonResponse.Message = ""
 	commonResponse.MessageID = ""
 	commonResponse.Severity = ""
 	resp1.Body = agresponse.AggregationSourceResponse{

@@ -142,7 +142,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Created)
-  commonResponse.Message = ""
+	commonResponse.Message = ""
 	commonResponse.MessageID = ""
 	commonResponse.Severity = ""
 	resp.Body = agresponse.AggregationSourceResponse{

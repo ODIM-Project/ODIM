@@ -345,7 +345,6 @@ func TestAddAggregationSource(t *testing.T) {
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
 	redfishRoutes.Post("/", a.AddAggregationSource)
 	test := httptest.New(t, testApp)
-	//  update status code after the code is added
 	test.POST("/redfish/v1/AggregationService/AggregationSource").WithHeader("X-Auth-Token", "ValidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusAccepted)
 	test.POST("/redfish/v1/AggregationService/AggregationSource").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
 	test.POST("/redfish/v1/AggregationService/AggregationSource").WithHeader("X-Auth-Token", "token").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
@@ -358,7 +357,6 @@ func TestGetAllAggregationSource(t *testing.T) {
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
 	redfishRoutes.Get("/", a.GetAllAggregationSource)
 	test := httptest.New(t, testApp)
-	// change the  status code after the code is added
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
@@ -377,7 +375,6 @@ func TestGetAggregationSource(t *testing.T) {
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
 	redfishRoutes.Get("/{id}", a.GetAggregationSource)
 	test := httptest.New(t, testApp)
-	//  change the  status code after the code is added
 	test.GET(
 		"/redfish/v1/AggregationService/AggregationSource/someid",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
@@ -396,8 +393,7 @@ func TestUpdateAggregationSource(t *testing.T) {
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
 	redfishRoutes.Patch("/{id}", a.UpdateAggregationSource)
 	test := httptest.New(t, testApp)
-	//  update status code after the code is added
-	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusNotImplemented)
-	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusNotImplemented)
-	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusNotImplemented)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusOK)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
 }

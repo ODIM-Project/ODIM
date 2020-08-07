@@ -134,3 +134,17 @@ func DoGetAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorp
 
 	return resp, err
 }
+
+// DoUpdateAggregationSource defines the RPC call function for
+// the UpdateAggregationSource from aggregator micro service
+func DoUpdateAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.UpdateAggregationSource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

@@ -392,6 +392,48 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 
 // UpdateAggregationSource is the handler for updating  AggregationSource details
 func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	var req interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	// marshalling the req to make aggregator add request
+	// Since aggregator add request accepts []byte stream
+	request, err := json.Marshal(req)
+
+	updateRequest := aggregatorproto.AggregatorRequest{
+		SessionToken: sessionToken,
+		RequestBody:  request,
+	}
+	resp, err := a.UpdateAggregationSourceRPC(updateRequest)
+	if err != nil {
+		errorMessage := "RPC error: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+
 }

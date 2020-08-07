@@ -13,6 +13,14 @@ service Aggregator {
     rpc GetAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
     rpc UpdateAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
     rpc DeleteAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc CreateAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAllAggregates(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc DeleteAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc AddElementsToAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc RemoveElementsFromAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc ResetElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc SetDefaultBootOrderElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
   }
 
 message AggregatorRequest {

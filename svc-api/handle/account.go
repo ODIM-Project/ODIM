@@ -16,6 +16,7 @@
 package handle
 
 import (
+	"encoding/json"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -73,7 +74,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
-	var req accountproto.CreateAccountRequest
+	var req interface{}
 
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -85,9 +86,9 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		return
 	}
 
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
-	if req.SessionToken == "" {
+	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -96,7 +97,15 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		return
 	}
 
-	resp, err := a.CreateRPC(req)
+	// Marshalling the req to make account request
+	// Since create request accepts byte stream
+	request, err := json.Marshal(req)
+	createRequest := accountproto.CreateAccountRequest{
+		SessionToken: sessionToken,
+		RequestBody:  request,
+	}
+
+	resp, err := a.CreateRPC(createRequest)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Println(errorMessage)
@@ -188,7 +197,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
-	var req accountproto.UpdateAccountRequest
+	var req interface{}
 
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -200,10 +209,10 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 		return
 	}
 
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-	req.AccountID = ctx.Params().Get("id")
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	accountID := ctx.Params().Get("id")
 
-	if req.SessionToken == "" {
+	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -212,7 +221,16 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 		return
 	}
 
-	resp, err := a.UpdateRPC(req)
+	// Marshalling the req to make account request
+	// Since account update request accepts byte stream
+	request, err := json.Marshal(req)
+	updateRequest := accountproto.UpdateAccountRequest{
+		SessionToken: sessionToken,
+		AccountID:    accountID,
+		RequestBody:  request,
+	}
+
+	resp, err := a.UpdateRPC(updateRequest)
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Println(errorMessage)

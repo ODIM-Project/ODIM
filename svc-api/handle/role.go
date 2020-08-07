@@ -21,7 +21,6 @@ import (
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	//"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"log"
 	"net/http"
 )
@@ -71,7 +70,7 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) CreateRole(ctx iris.Context) {
-	var req roleproto.RoleRequest
+	var req interface{}
 	//Read Body from Request
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -83,8 +82,8 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 		return
 	}
 
-	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
-	if req.SessionToken == "" {
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -93,16 +92,14 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 		return
 	}
 
-	//Request body validation
-	invalidParams := validateRoleRequest(req)
-	if invalidParams != "" {
-		errorMessage := "error: Mandatory fields " + invalidParams + " are empty"
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errorMessage, []interface{}{invalidParams}, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
-		ctx.JSON(&response.Body)
-		return
+	// Marshalling the req to make role request
+	request, err := json.Marshal(req)
+	roleRequest := roleproto.RoleRequest{
+		SessionToken: sessionToken,
+		RequestBody:  request,
 	}
-	resp, err := r.CreateRoleRPC(req)
+
+	resp, err := r.CreateRoleRPC(roleRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		log.Println(errorMessage)
@@ -225,12 +222,4 @@ func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
-}
-
-func validateRoleRequest(req roleproto.RoleRequest) string {
-	param := ""
-	if req.RoleId == "" {
-		param = "RoleId "
-	}
-	return param
 }

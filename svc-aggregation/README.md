@@ -185,7 +185,7 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 |Parameter|Type|Description|
 |---------|----|-----------|
 |ManagerAddress|String \(required\)<br> |A valid IP address or hostname and port of the baseboard management controller \(BMC\) where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>**NOTE:**<br> Ensure that the port is greater than `45000`.|
-|Username|String \(required\)<br> |The plugin username. Example: Username for the Generic Redfish Plugin - Default admin username is `admin`|
+|UserName|String \(required\)<br> |The plugin username. Example: UserName for the Generic Redfish Plugin - Default admin username is `admin`|
 |Password|String \(required\)<br> |The plugin password. Example: Password for the Generic Redfish Plugin - Default admin password is `GRFPlug!n12$4`|
 |PluginID|String \(required\)<br> |The id of the plugin you want to add. Example: GRF|
 |PreferredAuthType|String \(required\)<br> |Preferred authentication method to connect to the plugin - `BasicAuth` or `XAuthToken`.|
@@ -285,7 +285,7 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 ```
 {
 	"ManagerAddress": "{BMC_address}",
-	"Username": "abc",
+	"UserName": "abc",
 	"Password": "abc1234",
 	"Oem": {
 		"PluginID": "GRF"
@@ -298,7 +298,7 @@ It is performed as a task. To know the progress of this action, perform `GET` on
 |Parameter|Type|Description|
 |---------|----|-----------|
 |ManagerAddress|String \(required\)<br> |A valid IP address or hostname of a baseboard management controller \(BMC\).|
-|Username|String \(required\)<br> |The username of the server BMC administrator account.|
+|UserName|String \(required\)<br> |The username of the server BMC administrator account.|
 |Password|String \(required\)<br> |The password of the server BMC administrator account.|
 |PluginID|String \(required\)<br> |The plugin id of the plugin. Example: "GRF"<br>**NOTE:**<br> Before specifying the plugin Id, ensure that the installed plugin is added in the Resource Aggregator for ODIM inventory. To know how to add a plugin, see [Adding a Plugin](#adding-a-plugin).|
 

@@ -14,6 +14,7 @@
 package account
 
 import (
+	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
@@ -147,6 +148,26 @@ func TestUpdate(t *testing.T) {
 		req     *accountproto.UpdateAccountRequest
 		session *asmodel.Session
 	}
+
+	reqBodyRoleIDOperator, _ := json.Marshal(asmodel.Account{
+		RoleID: "Operator",
+	})
+	reqBodyUpdateUsername, _ := json.Marshal(asmodel.Account{
+		UserName: "xyz",
+	})
+	reqBodyInvalidRole, _ := json.Marshal(asmodel.Account{
+		RoleID: "xyz",
+	})
+	reqBodyInvalidPwd, _ := json.Marshal(asmodel.Account{
+		Password: "xyz",
+	})
+	reqBodyUpdatePwd, _ := json.Marshal(asmodel.Account{
+		Password: "P@$$w0rd@123",
+	})
+	reqBodyRoleIDAdmin, _ := json.Marshal(asmodel.Account{
+		RoleID: "Administrator",
+	})
+
 	tests := []struct {
 		name string
 		args args
@@ -156,8 +177,8 @@ func TestUpdate(t *testing.T) {
 			name: "successful updation of account as admin",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "Operator",
-					AccountID: "testUser1",
+					RequestBody: reqBodyRoleIDOperator,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -193,8 +214,8 @@ func TestUpdate(t *testing.T) {
 			name: "update role to admin without privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    common.RoleAdmin,
-					AccountID: "testUser1",
+					RequestBody: reqBodyRoleIDAdmin,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -215,8 +236,8 @@ func TestUpdate(t *testing.T) {
 			name: "update non-existing account",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "Operator",
-					AccountID: "xyz",
+					RequestBody: reqBodyRoleIDOperator,
+					AccountID:   "xyz",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -237,8 +258,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account name",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					UserName:  "xyz",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdateUsername,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -259,8 +280,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account with invalid role",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "xyz",
-					AccountID: "testUser1",
+					RequestBody: reqBodyInvalidRole,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -281,8 +302,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account with invalid password",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "xyz",
-					AccountID: "testUser1",
+					RequestBody: reqBodyInvalidPwd,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -303,8 +324,8 @@ func TestUpdate(t *testing.T) {
 			name: "update own password with ConfigureSelf privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -343,8 +364,8 @@ func TestUpdate(t *testing.T) {
 			name: "update own password with ConfigureUsers privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -383,8 +404,8 @@ func TestUpdate(t *testing.T) {
 			name: "update own password with both ConfigureSelf and ConfigureUsers privileges",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -424,8 +445,8 @@ func TestUpdate(t *testing.T) {
 			name: "update other account password with both ConfigureUsers and ConfigureSelf priveleges",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser2",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -465,8 +486,8 @@ func TestUpdate(t *testing.T) {
 			name: "update other account password with only ConfigureUsers privelege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser2",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -505,8 +526,8 @@ func TestUpdate(t *testing.T) {
 			name: "update other account password with only ConfigureSelf privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser2",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -530,8 +551,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account password with only Login privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser3",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser3",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser3",
@@ -555,8 +576,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account roleid with only Login privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "Administrator",
-					AccountID: "testUser3",
+					RequestBody: reqBodyRoleIDAdmin,
+					AccountID:   "testUser3",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser3",

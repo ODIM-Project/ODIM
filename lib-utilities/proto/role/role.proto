@@ -13,9 +13,7 @@ service Roles{
 // Message for Create and Update Role request 
 message RoleRequest {
     string sessionToken=1;
-    string RoleId=2;
-    repeated string AssignedPrivileges=3;
-    repeated string OemPrivileges=4;
+    bytes RequestBody=2;
 }
 
 // Message for GetRole and GetAllRoles request

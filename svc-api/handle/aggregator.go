@@ -33,6 +33,7 @@ type AggregatorRPCs struct {
 	DeleteComputeRPC         func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	ResetRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	SetDefaultBootOrderRPC   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddAggregationSourceRPC  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -273,6 +274,53 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// AddAggregationSource is the handler for adding  AggregationSource details
+func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
+	var req interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	// marshalling the req to make aggregator add request
+	// Since aggregator add request accepts []byte stream
+	request, err := json.Marshal(req)
+
+	addRequest := aggregatorproto.AggregatorRequest{
+		SessionToken: sessionToken,
+		RequestBody:  request,
+	}
+	resp, err := a.AddAggregationSourceRPC(addRequest)
+	if err != nil {
+		errorMessage := "RPC error: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}

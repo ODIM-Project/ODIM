@@ -44,6 +44,8 @@ github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200731094302-2bd1a3ce170e h1
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200731094302-2bd1a3ce170e/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200804064518-25d53d9bd75f h1:twwrYuyxpguSMLTixRKg1rLTulyiUMZFb9lGrEFq43E=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200804064518-25d53d9bd75f/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200807053748-33b760ab7c77 h1:BPvme7EFxW/jfj7QpVJfJp/2sWttEGf03662myOmuVE=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200807053748-33b760ab7c77/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727110501-4599893e44fd h1:O+hQFrN5qBeQ0eC/BJ3aPgNOFVAWfC+WonDRh/Jj4Ss=
 github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727110501-4599893e44fd/go.mod h1:FJG5L0GBEffhhnil+FGlLOwEax8U3SekjQiU9QrfY0I=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

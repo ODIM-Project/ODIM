@@ -650,6 +650,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to create an aggregate
 	return nil
 }
 
@@ -660,6 +661,7 @@ func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.A
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality get aggregate collection
 	return nil
 }
 
@@ -670,6 +672,7 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to get an aggregate
 	return nil
 }
 
@@ -680,6 +683,7 @@ func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.Aggr
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to delete an aggregate
 	return nil
 }
 
@@ -690,6 +694,7 @@ func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.A
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to adding elements to an aggregate
 	return nil
 }
 
@@ -700,6 +705,7 @@ func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregator
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to remove elements from an aggregate
 	return nil
 }
 
@@ -710,6 +716,7 @@ func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggre
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to reset of elements from an aggregate
 	return nil
 }
 
@@ -720,5 +727,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to set default boot order elements of aggregate
 	return nil
 }
+

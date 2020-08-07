@@ -641,3 +641,93 @@ func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregato
 func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	return nil
 }
+
+
+// CreateAggregate defines the operations which handles the RPC request response
+// for the CreateAggregate  service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to create an aggregate
+	return nil
+}
+
+// GetAllAggregates defines the operations which handles the RPC request response
+// for the GetAllAggregates service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality get aggregate collection
+	return nil
+}
+
+// GetAggregate defines the operations which handles the RPC request response
+// for the GetAggregate service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to get an aggregate
+	return nil
+}
+
+// DeleteAggregate defines the operations which handles the RPC request response
+// for the DeleteAggregate service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to delete an aggregate
+	return nil
+}
+
+// AddElementsToAggregate defines the operations which handles the RPC request response
+// for the AddElementsToAggregate service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to adding elements to an aggregate
+	return nil
+}
+
+// RemoveElementsFromAggregate defines the operations which handles the RPC request response
+// for the RemoveElementsFromAggregate service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to remove elements from an aggregate
+	return nil
+}
+
+// ResetElementsOfAggregate defines the operations which handles the RPC request response
+// for the ResetElementsOfAggregate service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to reset of elements from an aggregate
+	return nil
+}
+
+// SetDefaultBootOrderElementsOfAggregate defines the operations which handles the RPC request response
+// for the SetDefaultBootOrderElementsOfAggregate service of aggregation micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the util-lib package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to set default boot order elements of aggregate
+	return nil
+}
+

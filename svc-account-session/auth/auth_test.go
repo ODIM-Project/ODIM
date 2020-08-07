@@ -40,7 +40,9 @@ func createSession(token, id string, privileges map[string]bool, createdTime, la
 }
 
 func TestAuth(t *testing.T) {
+	Lock.Lock()
 	common.SetUpMockConfig()
+	Lock.Unlock()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

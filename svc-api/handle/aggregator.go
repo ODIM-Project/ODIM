@@ -441,6 +441,29 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 
 // DeleteAggregationSource is the handler for updating  AggregationSource details
 func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.DeleteAggregationSourceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }

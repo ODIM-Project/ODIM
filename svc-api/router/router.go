@@ -50,6 +50,7 @@ func Router() *iris.Application {
 		GetAllAggregationSourceRPC: rpc.DoGetAllAggregationSource,
 		GetAggregationSourceRPC:    rpc.DoGetAggregationSource,
 		UpdateAggregationSourceRPC: rpc.DoUpdateAggregationSource,
+		DeleteAggregationSourceRPC: rpc.DoDeleteAggregationSource,
 	}
 
 	s := handle.SessionRPCs{
@@ -252,8 +253,11 @@ func Router() *iris.Application {
 	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregationSource.Get("/", pc.GetAllAggregationSource)
+	aggregationSource.Any("/", handle.AggMethodNotAllowed)
 	aggregationSource.Get("/{id}", pc.GetAggregationSource)
 	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)
+	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)
+	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)

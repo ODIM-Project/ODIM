@@ -138,7 +138,7 @@ func testDeleteAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusOK,
+			StatusCode:    http.StatusAccepted,
 			StatusMessage: "Success",
 			Body:          []byte(`{"Response":"Success"}`),
 		}
@@ -419,13 +419,12 @@ func TestUpdateAggregationSource(t *testing.T) {
 
 func TestDeleteAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
-	a.UpdateAggregationSourceRPC = testDeleteAggregationSourceRPCCall
+	a.DeleteAggregationSourceRPC = testDeleteAggregationSourceRPCCall
 	testApp := iris.New()
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
 	redfishRoutes.Delete("/{id}", a.DeleteAggregationSource)
 	test := httptest.New(t, testApp)
-	//  update status code after the code is added
-	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented)
-	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented)
-	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusNotImplemented)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusAccepted)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }

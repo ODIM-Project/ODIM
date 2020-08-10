@@ -106,3 +106,17 @@ func DoAddAggregationSource(req aggregatorproto.AggregatorRequest) (*aggregatorp
 
 	return resp, err
 }
+
+// DoCreateAggregate defines the RPC call function for
+// the CreateAggregate from aggregator micro service
+func DoCreateAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.CreateAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

@@ -649,7 +649,6 @@ func GetSystem(systemid string) (string, *errors.Error) {
 	return system, nil
 }
 
-
 //CreateAggregate will create aggregate on disk
 func CreateAggregate(aggregate Aggregate, aggregateURI string) *errors.Error {
 

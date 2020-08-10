@@ -998,7 +998,6 @@ func TestGetSystemByUUID(t *testing.T) {
 	assert.NotNil(t, err, "There should be an error")
 }
 
-
 func TestCreateAggregate(t *testing.T) {
 	common.SetUpMockConfig()
 	defer func() {
@@ -1010,7 +1009,7 @@ func TestCreateAggregate(t *testing.T) {
 
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
-		Elements : []string{
+		Elements: []string{
 			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
 		},

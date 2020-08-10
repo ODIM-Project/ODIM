@@ -77,7 +77,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	p := &ExternalInterface{
-		Auth:            mockIsAuthorized,
+		Auth: mockIsAuthorized,
 	}
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
@@ -109,7 +109,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusCreated, 
+				StatusCode: http.StatusCreated,
 			},
 		},
 		{
@@ -147,7 +147,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
 			},
-		},	
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

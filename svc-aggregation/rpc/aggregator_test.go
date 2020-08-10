@@ -16,9 +16,9 @@ package rpc
 
 import (
 	"context"
- "net/http"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"

@@ -34,6 +34,7 @@ type AggregatorRPCs struct {
 	ResetRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	SetDefaultBootOrderRPC   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	AddAggregationSourceRPC  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	CreateAggregateRPC       func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -328,4 +329,10 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// CreateAggregate is the handler for creating an aggregate
+func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
 }

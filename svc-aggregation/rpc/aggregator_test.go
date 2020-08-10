@@ -17,11 +17,13 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
 )
 
@@ -706,6 +708,126 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.a.AddAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.AddAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func mockSystemResourceData(body []byte, table, key string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.Create(table, key, string(body)); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
+	}
+	return nil
+}
+
+func TestAggregator_CreateAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
+	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	if err != nil {
+		t.Fatalf("Error in creating mock resource data :%v", err)
+	}
+
+	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1"})
+	err = mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	if err != nil {
+		t.Fatalf("Error in creating mock resource data :%v", err)
+	}
+
+	successReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	})
+	successReq1, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{},
+	})
+	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/123456",
+		},
+	})
+	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name           string
+		a              *Aggregator
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "positive case",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusCreated
+		},
+		{
+			name: "positive case with empty elements",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq1},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusCreated
+		},
+		{
+			name: "auth fail",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusUnauthorized
+		},
+		{
+			name: "with invalid request",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+		},
+		{
+			name: "Invalid System",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+		},
+		{
+			name: "with missing parameters",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.CreateAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.CreateAggregate() status code = %v, wantStatusCode %v", err, tt.wantStatusCode)
 			}
 		})
 	}

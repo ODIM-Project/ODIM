@@ -642,7 +642,6 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	return nil
 }
 
-
 // CreateAggregate defines the operations which handles the RPC request response
 // for the CreateAggregate  service of aggregation micro service.
 // The functionality retrives the request and return backs the response to
@@ -730,4 +729,3 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	// TODO: add functionality to set default boot order elements of aggregate
 	return nil
 }
-

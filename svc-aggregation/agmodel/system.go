@@ -77,6 +77,11 @@ type AggregationSource struct {
 	Links    interface{}
 }
 
+// Aggregate payload is used for perform the operations on Aggregate
+type Aggregate struct {
+	Elements []string `json:"Elements"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)

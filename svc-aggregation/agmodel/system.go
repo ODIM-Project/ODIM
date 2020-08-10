@@ -77,7 +77,7 @@ type AggregationSource struct {
 	Links    interface{}
 }
 
-// Aggregate payload of adding a Aggregate
+// Aggregate payload is used for perform the operations on Aggregate
 type Aggregate struct {
 	Elements []string `json:"Elements"`
 }

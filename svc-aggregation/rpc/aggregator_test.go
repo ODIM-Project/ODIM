@@ -827,7 +827,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.a.CreateAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.CreateAggregate() status code = %v, wantStatusCode %v", err, tt.wantStatusCode)
+				t.Errorf("Aggregator.CreateAggregate() status code = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

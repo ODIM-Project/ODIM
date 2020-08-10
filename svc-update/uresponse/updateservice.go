@@ -26,7 +26,7 @@ type Status struct {
 	HealthRollup string `json:"HealthRollup"`
 }
 
-// FirmwareInventory defines the links to BMC firmware inventory 
+// FirmwareInventory defines the links to BMC firmware inventory
 type FirmwareInventory struct {
 	OdataID string `json:"@odata.id"`
 }

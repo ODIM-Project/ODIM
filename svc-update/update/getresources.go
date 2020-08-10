@@ -26,7 +26,7 @@ import (
 )
 
 // GetUpdateService defines the functionality for knowing whether
-// the account service is enabled or not
+// the update service is enabled or not
 //
 // As return parameters RPC response, which contains status code, message, headers and data,
 // error will be passed back.

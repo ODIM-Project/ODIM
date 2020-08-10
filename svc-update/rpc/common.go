@@ -37,7 +37,7 @@ func generateResponse(rpcResp response.RPC, uResp *updateproto.UpdateResponse) {
 	}
 }
 
-// GetUpdater intializes all the required connection functions for the aggregation execution
+// GetUpdater intializes all the required connection functions for the updater execution
 func GetUpdater() *Updater {
 	return &Updater{
 		connector: &update.ExternalInterface{

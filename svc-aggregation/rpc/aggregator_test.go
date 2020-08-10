@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"context"
+ "net/http"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -776,7 +777,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: 0, // to be replaced http.StatusCreated
+			wantStatusCode: http.StatusCreated,
 		},
 		{
 			name: "positive case with empty elements",
@@ -785,7 +786,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq1},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: 0, // to be replaced http.StatusCreated
+			wantStatusCode: http.StatusCreated,
 		},
 		{
 			name: "auth fail",
@@ -794,7 +795,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: 0, // to be replaced http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "with invalid request",
@@ -803,7 +804,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name: "Invalid System",
@@ -812,7 +813,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name: "with missing parameters",
@@ -821,12 +822,12 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.CreateAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+			if tt.a.CreateAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
 				t.Errorf("Aggregator.CreateAggregate() status code = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
 			}
 		})

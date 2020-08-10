@@ -39,8 +39,14 @@ func mockSystemResourceData(body []byte, table, key string) error {
 
 func TestExternalInterface_CreateAggregate(t *testing.T) {
 	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
 	}()
 	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
 	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
@@ -71,7 +77,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
+		Auth:            mockIsAuthorized,
 	}
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
@@ -91,7 +97,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusCreated,
 			},
 		},
 		{
@@ -103,7 +109,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusCreated, 
 			},
 		},
 		{
@@ -115,7 +121,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusNotFound
+				StatusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -127,7 +133,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusBadRequest
+				StatusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -139,13 +145,13 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusBadRequest
+				StatusCode: http.StatusBadRequest,
 			},
-		},
+		},	
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.CreateAggregate(tt.args.req); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.e.CreateAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.CreateAggregate() = %v, want %v", got, tt.want)
 			}
 		})

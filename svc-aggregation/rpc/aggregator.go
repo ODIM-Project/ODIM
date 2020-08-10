@@ -649,7 +649,17 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to create an aggregate
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	rpcResponce := a.connector.CreateAggregate(req)
+	generateResponse(rpcResponce, resp)
 	return nil
 }
 

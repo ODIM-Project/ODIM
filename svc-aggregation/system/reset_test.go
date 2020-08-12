@@ -61,6 +61,7 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "BasicAuth",
+		ManagerUUID:       "1s7sda8asd-asdas8as0",
 	}
 	switch pluginID {
 	case "XAuthPlugin":

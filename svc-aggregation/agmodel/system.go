@@ -52,6 +52,7 @@ type Plugin struct {
 	ID                string
 	PluginType        string
 	PreferredAuthType string
+	ManagerUUID       string
 }
 
 //Target is for sending the requst to south bound/plugin
@@ -637,4 +638,40 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
 	}
 	return keysArray, nil
+}
+
+// UpdateSystemData updates the bmc details
+func UpdateSystemData(system SaveSystem, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("System", key, system); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdatePluginData updates the plugin details
+func UpdatePluginData(plugin Plugin, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("Plugin", key, plugin); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateAggregtionSource updates the aggregation details
+func UpdateAggregtionSource(aggregationSource AggregationSource, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("AggregationSource", key, aggregationSource); err != nil {
+		return err
+	}
+	return nil
 }

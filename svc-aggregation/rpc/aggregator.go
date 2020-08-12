@@ -610,7 +610,7 @@ func validateLinks(req *system.Links) string {
 // which is present in the request.
 func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
-	privileges := []string{common.PrivilegeLogin}
+	privileges := []string{common.PrivilegeConfigureComponents}
 	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authStatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
@@ -634,7 +634,7 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 // which is present in the request.
 func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
-	privileges := []string{common.PrivilegeLogin}
+	privileges := []string{common.PrivilegeConfigureComponents}
 	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authStatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
@@ -657,6 +657,20 @@ func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorpr
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	data := a.connector.UpdateAggregationSource(req)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	generateResponse(data, resp)
 	return nil
 }
 
@@ -669,7 +683,6 @@ func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregato
 func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	return nil
 }
-
 
 // CreateAggregate defines the operations which handles the RPC request response
 // for the CreateAggregate  service of aggregation micro service.
@@ -758,4 +771,3 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	// TODO: add functionality to set default boot order elements of aggregate
 	return nil
 }
-

@@ -422,6 +422,7 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 	updateRequest := aggregatorproto.AggregatorRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,
+               URL:          ctx.Request().RequestURI,
 	}
 	resp, err := a.UpdateAggregationSourceRPC(updateRequest)
 	if err != nil {

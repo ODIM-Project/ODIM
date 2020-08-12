@@ -120,3 +120,45 @@ func DoCreateAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.
 
 	return resp, err
 }
+
+// DoGetAggregateCollection defines the RPC call function for
+// the get aggregate collections from aggregator micro service
+func DoGetAggregateCollection(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.GetAllAggregates(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGeteAggregate defines the RPC call function for
+// the get aggregate from aggregator micro service
+func DoGeteAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.GetAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoDeleteAggregate defines the RPC call function for
+// the delete aggregate from aggregator micro service
+func DoDeleteAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.DeleteAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

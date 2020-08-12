@@ -41,13 +41,16 @@ func Router() *iris.Application {
 		DeleteRPC:         rpc.DoAccountDeleteRequest,
 	}
 	pc := handle.AggregatorRPCs{
-		GetAggregationServiceRPC: rpc.DoGetAggregationService,
-		AddComputeRPC:            rpc.DoAddComputeRequest,
-		DeleteComputeRPC:         rpc.DoDeleteComputeRequest,
-		ResetRPC:                 rpc.DoResetRequest,
-		SetDefaultBootOrderRPC:   rpc.DoSetDefaultBootOrderRequest,
-		AddAggregationSourceRPC:  rpc.DoAddAggregationSource,
-		CreateAggregateRPC:       rpc.DoCreateAggregate,
+		GetAggregationServiceRPC:  rpc.DoGetAggregationService,
+		AddComputeRPC:             rpc.DoAddComputeRequest,
+		DeleteComputeRPC:          rpc.DoDeleteComputeRequest,
+		ResetRPC:                  rpc.DoResetRequest,
+		SetDefaultBootOrderRPC:    rpc.DoSetDefaultBootOrderRequest,
+		AddAggregationSourceRPC:   rpc.DoAddAggregationSource,
+		CreateAggregateRPC:        rpc.DoCreateAggregate,
+		GetAggregateCollectionRPC: rpc.DoGetAggregateCollection,
+		GetAggregateRPC:           rpc.DoGeteAggregate,
+		DeleteAggregateRPC:        rpc.DoDeleteAggregate,
 	}
 
 	s := handle.SessionRPCs{
@@ -247,6 +250,9 @@ func Router() *iris.Application {
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)
+	aggregates.Get("/", pc.GetAggregateCollection)
+	aggregates.Get("/{id}", pc.GetAggregate)
+	aggregates.Get("/{id}", pc.DeleteAggregate)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)

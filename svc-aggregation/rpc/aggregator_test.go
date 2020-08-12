@@ -835,3 +835,183 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 		})
 	}
 }
+
+func TestAggregator_GetAllAggregates(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusOK
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusUnauthorized
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.GetAllAggregates(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAllAggregates() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func TestAggregator_GetAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusOK
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusUnauthorized
+		},
+		{
+			name: "Invalid aggregate id",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/1"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.GetAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func TestAggregator_DeleteAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusOK
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusUnauthorized
+		},
+		{
+			name: "Invalid aggregate id",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/1"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: 0, // to be replaced http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.DeleteAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.DeleteAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}

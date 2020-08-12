@@ -176,7 +176,7 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
 curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
 ```
        
-	   {path} is where you have generated certificates during the deployment of the resource aggregator.
+{path} is where you have generated certificates during the deployment of the resource aggregator.
 	
     
 

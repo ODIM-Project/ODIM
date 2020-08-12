@@ -45,9 +45,9 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 	}
 	//empty request check
 	if reflect.DeepEqual(agmodel.Aggregate{}, createRequest) {
-		errMsg := "unable to parse the create request"
+		errMsg := "empty request can not be processed"
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Elements"}, nil)
 	}
 
 	err = validateElements(createRequest.Elements)

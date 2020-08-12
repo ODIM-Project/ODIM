@@ -726,7 +726,9 @@ func mockSystemResourceData(body []byte, table, key string) error {
 }
 
 func TestAggregator_CreateAggregate(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)

@@ -672,8 +672,8 @@ func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
 	if err != nil {
 		return aggregate, err
 	}
-
-	data, err := conn.Read("Aggregate", aggregateURI)
+	const table string = "Aggregate"
+	data, err := conn.Read(table, aggregateURI)
 	if err != nil {
 		return aggregate, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
 	}

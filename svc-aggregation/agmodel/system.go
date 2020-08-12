@@ -630,3 +630,56 @@ func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *
 	}
 	return aggregationSource, nil
 }
+
+//GetSystem fetches computer system details by UUID from database
+func GetSystem(systemid string) (string, *errors.Error) {
+	var system string
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		// connection error
+		return system, err
+	}
+	systemData, err := conn.Read("ComputerSystem", systemid)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to get system details: ", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(systemData), &system); errs != nil {
+		return "", errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return system, nil
+}
+
+//CreateAggregate will create aggregate on disk
+func CreateAggregate(aggregate Aggregate, aggregateURI string) *errors.Error {
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	const table string = "Aggregate"
+	if err := conn.Create(table, aggregateURI, aggregate); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to create aggregate: ", err.Error())
+	}
+
+	return nil
+}
+
+// GetAggregate fetches the aggregate info for the given aggregateURI
+func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
+	var aggregate Aggregate
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return aggregate, err
+	}
+	const table string = "Aggregate"
+	data, err := conn.Read(table, aggregateURI)
+	if err != nil {
+		return aggregate, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+	}
+
+	if err := json.Unmarshal([]byte(data), &aggregate); err != nil {
+		return aggregate, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+	return aggregate, nil
+}

@@ -165,40 +165,47 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
 certificate problem. Provide the root CA certificate to curl for secure SSL communication.
 
 	
-```curl
-curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
- ```
+
  
 **1.** If you are running curl commands on the server where the resource aggregator is deployed, provide the
     `rootCA.crt` file as shown in the curl command:
-
 	
-    {path} is where you have generated certificates during the deployment of the resource aggregator.
+	
+	
+```curl
+curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
+```
+       
+	   {path} is where you have generated certificates during the deployment of the resource aggregator.
+	
+    
 
 **2.** If you are running curl commands on a different server, perform the following steps to provide the rootCA.crt file.
       
-      a. Navigate to `~/ODIM_v1.0/configuration/Odim/certificates` on the server where the resource
+    a. Navigate to `~/ODIM_v1.0/configuration/Odim/certificates` on the server where the resource
          aggregator is deployed.
 
 
-      b. Copy the `rootCA.crt` file.
+    b. Copy the `rootCA.crt` file.
 
 
-      c. Log in to your server and paste the `rootCA.crt` file in a folder.
+    c. Log in to your server and paste the `rootCA.crt` file in a folder.
 
 
-      d. Open the `/etc/hosts` file to edit.
+    d. Open the `/etc/hosts` file to edit.
 
 
-      e. Scroll to the end of the file, add the following line, and save:
+    e. Scroll to the end of the file, add the following line, and save:
 	  
          `{odim_server_ipv4_address} {FQDN}`
 
+
+ 
+    f. Check if curl is working using the curl command:
+	
 ```curl
 curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
  ```
- 
-      f. Check if curl is working using the curl command:
 	     
 
 		 
@@ -503,13 +510,15 @@ To authenticate requests with the Redfish services, implement any one of the fol
 
        Initially, use the username and the password of the default administrator account. Later, you can create additional [user accounts](#user-accounts) and use their details to implement authentication.
 
+
+     
+	 2. Provide the base64 encoded string in an HTTP `Authorization:Basic` header as shown in the curl command:
+	 
 ```
 curl -i --cacert {path}/rootCA.crt GET\
 -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
 'https://{odimra_host}:{port}/redfish/v1/AccountService'
  ```
-     
-	 2. Provide the base64 encoded string in an HTTP `Authorization:Basic` header as shown in the curl command:
 
         
 

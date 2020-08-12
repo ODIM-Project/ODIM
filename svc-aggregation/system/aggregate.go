@@ -101,3 +101,29 @@ func validateElements(elements []string) error {
 	}
 	return nil
 }
+
+// GetAllAggregates is the handler for getting collection of aggregates
+func (e *ExternalInterface) GetAllAggregates(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}
+
+// GetAggregate is the handler for getting an aggregate
+//if the aggregate id is present then return aggregate details else return an error.
+func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}
+
+// DeleteAggregate is the handler for deleting an aggregate
+// if the aggregate id is present then delete from the db else return an error.
+func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}

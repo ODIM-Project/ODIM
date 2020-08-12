@@ -157,3 +157,220 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 		})
 	}
 }
+
+func TestExternalInterface_GetAllAggregates(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+		{
+			name: "Invalid Token",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "invalidToken",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.GetAllAggregates(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.GetAllAggregates() = %v, want %v", got.StatusCode, tt.want.StatusCode)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_GetAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+		{
+			name: "Invalid Token",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "invalidToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+		{
+			name: "Invalid aggregate id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/1",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.GetAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.GetAggregate() = %v, want %v", got.StatusCode, tt.want.StatusCode)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_DeleteAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+		{
+			name: "Invalid Token",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "invalidToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+		{
+			name: "Invalid aggregate id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/1",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.DeleteAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.DeleteAggregate() = %v, want %v", got.StatusCode, tt.want.StatusCode)
+			}
+		})
+	}
+}
+

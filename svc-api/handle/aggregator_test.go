@@ -81,7 +81,7 @@ func testAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorpro
 	var response = &aggregatorproto.AggregatorResponse{}
 	if req.SessionToken == "ValidToken" {
 		response = &aggregatorproto.AggregatorResponse{
-			StatusCode:    http.StatusOK,
+			StatusCode:    http.StatusCreated,
 			StatusMessage: "Success",
 			Body:          []byte(`{"Response":"Success"}`),
 		}
@@ -329,25 +329,25 @@ func TestCreateAggregate(t *testing.T) {
 	// test with valid token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusCreated)
 
 	// test with Invalid token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "InValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
 
 	// test without token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
 
 	// test without RequestBody
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
 
 	// test for RPC Error
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates",
-	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented)
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
 }

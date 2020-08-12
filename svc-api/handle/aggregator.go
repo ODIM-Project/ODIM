@@ -28,13 +28,16 @@ import (
 
 // AggregatorRPCs defines all the RPC methods in aggregator service
 type AggregatorRPCs struct {
-	GetAggregationServiceRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddComputeRPC            func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	DeleteComputeRPC         func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	ResetRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	SetDefaultBootOrderRPC   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddAggregationSourceRPC  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	CreateAggregateRPC       func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregationServiceRPC  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddComputeRPC             func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteComputeRPC          func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	ResetRPC                  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	SetDefaultBootOrderRPC    func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddAggregationSourceRPC   func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	CreateAggregateRPC        func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregateCollectionRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregateRPC           func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteAggregateRPC        func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -375,4 +378,22 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// GetAggregateCollection is the handler for getting collection of aggregates
+func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
+}
+
+// GetAggregate is the handler for getting an aggregate
+func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
+}
+
+// DeleteAggregate is the handler for deleting an aggregate
+func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
 }

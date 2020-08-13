@@ -592,6 +592,7 @@ These APIs are fully Redfish-compliant.</p>
 
 <p><img src="images/arch.png" alt="ODIM_architecture" /></p>
 
+
 <ul>
 <li><strong>API layer</strong></li>
 </ul>
@@ -632,8 +633,7 @@ to communicate with the resources. It uses REST-based communication which is bas
 v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
 event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding. To know how to develop plugins, refer to <em>HPE Resource Aggregator for Open Distributed
-Infrastructure Management Plugin Developer&#39;s Guide</em>.</p>
+language binding. To know how to develop plugins, To know how to develop plugins, refer to <a href="https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md">Plugin Developer&#39;s Guide</a>.</p>
 <h1 id='api-usage-and-access-guidelines'>API usage and access guidelines</h1>
 <p>To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web
 browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line
@@ -4877,4 +4877,4828 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
                "MaximumCapWatts":96,
                "Model":"875241-B21",
                "ProductName":"HPE Smart Storage Battery ",
-               "Remaini
+               "RemainingChargeTimeSeconds":7,
+               "SerialNumber":"6WQXL0CB2BV63K",
+               "SparePartNumber":"878643-001",
+               "Status":{ 
+                  "Health":"OK",
+                  "State":"Enabled"
+               }
+            }
+         ],
+         "SystemMaintenanceSwitches":{ 
+            "Sw1":"Off",
+            "Sw10":"Off",
+            "Sw11":"Off",
+            "Sw12":"Off",
+            "Sw2":"Off",
+            "Sw3":"Off",
+            "Sw4":"Off",
+            "Sw5":"Off",
+            "Sw6":"Off",
+            "Sw7":"Off",
+            "Sw8":"Off",
+            "Sw9":"Off"
+         }
+      }
+   },
+   "Power":{ 
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Power"
+   },
+   "SKU":"868704-B21",
+   "SerialNumber":"2M291101JX",
+   "Status":{ 
+      "Health":"OK",
+      "State":"Disabled"
+   },
+   "Thermal":{ 
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Thermal"
+   }
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Chassis/{ChassisId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation fetches information on a specific chassis.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema representing this chassis instance.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td>On success, <code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='thermal-metrics'>Thermal metrics</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Thermal'
+
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Chassis/{ChassisId}/Thermal</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation discovers information on the temperature and cooling of a specific chassis.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li>List of links to Fans</li><li>List of links to Temperatures</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='network-adapters'>Network adapters</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
+
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Chassis/{ChassisId}/NetworkAdapters</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Use this endpoint to discover information on network adapters. Some examples of network adapters include Ethernet, fibre channel, and converged network adapters.<br> A <code>NetworkAdapter</code> represents the physical network adapter capable of connecting to a computer network.<br></td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to network adapter instances available in this chassis.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='power'>Power</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Power'
+
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Chassis/{ChassisId}/Power</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation retrieves power metrics specific to a server.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Information on power consumption and power limiting.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='searching-the-inventory'>Searching the inventory</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Use this endpoint to search servers based on a filter - combination of a keyword, a condition, and a value.<br> Two ore more filters can be combined in a single request with the help of logical operands.<br><strong>NOTE:</strong><br> Only a user with <code>Login</code> privilege can perform this operation.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Server endpoints based on the specified filter.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample usage </p>
+</blockquote>
+<pre class="highlight plaintext"><code>curl -i GET \
+      -H "X-Auth-Token:{X-Auth-Token}" \
+    'http://{odimra_host}:{port}/redfish/v1/Systems?$filter=MemorySummary/TotalSystemMemoryGiB%20eq%20384'
+
+</code></pre><h3 id='request-uri-parameters-4'>Request URI parameters</h3>
+<ul>
+<li><p><code>{searchkeys}</code> refers to <code>ComputerSystem</code> parameters. Following are the allowed search keys:</p>
+
+<ul>
+<li>   <code>ProcessorSummary/Count</code> </li>
+<li>  <code>ProcessorSummary/Model</code> </li>
+<li>  <code>ProcessorSummary/sockets</code> </li>
+<li>   <code>SystemType</code> </li>
+<li>  <code>MemorySummary/TotalSystemMemoryGiB</code> </li>
+<li>  <code>FirmwareVersion</code> </li>
+<li>  <code>Storage/Drives/Quantity</code> </li>
+<li>  <code>Storage/Drives/Capacity</code> </li>
+<li>  <code>Storage/Drives/Type</code> </li>
+</ul></li>
+<li><p><code>{conditionKeys}</code> refers to Redfish-specified conditions. Following are the allowed condition keys:</p>
+
+<table><thead>
+<tr>
+<th>Condition Key</th>
+<th>Meaning</th>
+<th>Supported data type</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>&quot;eq&quot;</td>
+<td>Equal to</td>
+<td>All data types</td>
+</tr>
+<tr>
+<td>&quot;ne&quot;</td>
+<td>Not equal to</td>
+<td>All data types</td>
+</tr>
+<tr>
+<td>&quot;gt&quot;</td>
+<td>Greater than</td>
+<td>All numeric data types</td>
+</tr>
+<tr>
+<td>&quot;ge&quot;</td>
+<td>Greater than or equal to</td>
+<td>All numeric data types</td>
+</tr>
+<tr>
+<td>&quot;le&quot;</td>
+<td>Lesser than or equal to</td>
+<td>All numeric data types</td>
+</tr>
+<tr>
+<td>&quot;lt&quot;</td>
+<td>Lesser than</td>
+<td>All numeric data types</td>
+</tr>
+</tbody></table></li>
+<li><p><code>{value}</code> refers to the actual value of the search parameter or a regular expression. Allowed regular expressions are as follows:</p>
+
+<p><code>*, ?, ., $,%,^,&amp;, /,!</code> </p>
+
+<p>Examples:</p>
+
+<p>1. <code>$filter=TotalSystemMemoryGiB%20eq%20**384**</code> </p>
+
+<p>2. <code>$filter=ProcessorSummary/Model%20eq%20**int\***</code> </p>
+
+<p>3. <code>$filter=Storage/Drives/Type%20eq%20HDD</code> </p></li>
+<li><p><code>{logicalOperands}</code> refers to the logical operands that are used to combine two or more filters in a request. Allowed logical operands are <code>and</code>, <code>or</code>, and <code>not</code>.</p></li>
+</ul>
+
+<p><strong>Sample filters</strong></p>
+
+<p><strong>Simple filter examples:</strong></p>
+
+<ol>
+<li><p><code>$filter=TotalSystemMemoryGiB%20eq%20384</code></p>
+
+<p>This filter searches a server having total physical memory of 384 GB.</p></li>
+<li><p><code>$filter=ProcessorSummary/Model%20eq%20int*</code></p>
+
+<p>This filter searches a server whose processor model name starts with <code>int</code> and ends with any combination of letters/numbers/special characters.</p></li>
+</ol>
+
+<p><strong>Compound filter example:</strong></p>
+
+<p><code>$filter=(ProcessorSummary/Count%20eq%202%20and%20ProcessorSummary/Model%20eq%20intel)%20and%20(TotalSystemMemoryGiB%20eq%20384)</code></p>
+
+<p>This filter searches a server having total physical memory of 384 GB and two Intel processors.</p>
+
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.context":"/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
+   "@odata.id":"/redfish/v1/Systems/",
+   "@odata.type":"#ComputerSystemCollection.ComputerSystemCollection",
+   "Description":"Computer Systems view",
+   "Name":"Computer Systems",
+   "Members":[ 
+      { 
+         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+      }
+   ],
+   "Members@odata.count":1
+}
+</code></pre><h1 id='actions-on-a-computer-system'>Actions on a computer system</h1><h2 id='resetting-a-computer-system'>Resetting a computer system</h2><pre class="highlight plaintext"><code> curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "ResetType":"ForceRestart"
+}
+' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This action shuts down, powers up, and restarts a specific system.<br><strong>NOTE:</strong><br> To reset an aggregate of systems, use this URI:<br><code>/redfish/v1/AggregationService/Actions/AggregationService.Reset</code> <br> See <a href="#resetting-servers">Resetting servers</a>.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id. Example registry file name: Base.1.4). See <a href="#message-registries">Message Registries</a>.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "ResetType":"ForceRestart"
+}
+</code></pre><h3 id='request-parameters-7'>Request parameters</h3>
+<p>Refer to <a href="#resetting-servers">Resetting Servers</a> to know about <code>ResetType.</code> </p>
+
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "error": {
+        "@Message.ExtendedInfo": [{
+            "MessageId": "Base.1.4.Success"
+        }],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+</code></pre><h2 id='changing-the-boot-order-of-a-computer-system-to-default-settings'>Changing the boot order of a computer system to default settings</h2><pre class="highlight plaintext"><code> curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+   -d \
+'' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "error": {
+        "@Message.ExtendedInfo": [{
+            "MessageId": "Base.1.4.Success"
+        }],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This action changes the boot order of a specific system to default settings.<br><strong>NOTE:</strong><br> To change the boot order of an aggregate of systems, use this URI:<br> <code>/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder</code> <br> See <a href="#changing-the-boot-order-of-servers-to-default-settings">Changing the Boot Order of Servers to Default Settings</a>.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id. Example registry file name: Base.1.4). See <a href="#message-registries">Message Registries</a>.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='changing-bios-settings'>Changing BIOS settings</h2><pre class="highlight plaintext"><code> curl -i -X PATCH \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+   -d \
+'{"Attributes": {"BootMode": "LegacyBios"}}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{system_id}/Bios/Settings'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>PATCH</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This action changes BIOS configuration.<br><strong>NOTE:</strong><br> Any change in BIOS configuration will be reflected only after the system resets. To see the change, <a href="#resetting-a-computer-system">reset the computer system</a>.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id). See <a href="#message-registries">Message registries</a>. For example,<code>MessageId</code> in the sample response body is <code>iLO.2.8.SystemResetRequired</code>. The registry to look up is <code>iLO.2.8</code>.<br></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "Attributes": {
+        "BootMode": "LegacyBios"
+    }
+}
+</code></pre><h3 id='request-parameters-8'>Request parameters</h3>
+<p><code>Attributes</code> are the list of BIOS attributes specific to the manufacturer or provider. To get a full list of attributes, perform <code>GET</code> on:</p>
+
+<p><code>https://{odimra_host}:{port}/redfish/v1/Systems/1/Bios/Settings</code>. </p>
+
+<p>Some of the attributes include:</p>
+
+<ul>
+<li><p><code>BootMode</code> </p></li>
+<li><p><code>NicBoot1</code> </p></li>
+<li><p><code>PowerProfile</code> </p></li>
+<li><p><code>AdminPhone</code> </p></li>
+<li><p><code>ProcCoreDisable</code> </p></li>
+<li><p><code>UsbControl</code> </p></li>
+</ul>
+
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "error":{ 
+      "@Message.ExtendedInfo":[ 
+         { 
+            "MessageId":"iLO.2.8.SystemResetRequired"
+         }
+      ],
+      "code":"iLO.0.10.ExtendedInfo",
+      "message":"See @Message.ExtendedInfo for more information."
+   }
+}
+</code></pre><h2 id='changing-the-boot-order-settings'>Changing the boot order settings</h2><pre class="highlight plaintext"><code> curl -i -X PATCH \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+   -d \
+'{ 
+   "Boot":{ 
+      "BootSourceOverrideTarget":"Usb"
+   }
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>PATCH</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Systems/{ComputerSystemId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This action changes the boot order settings of a specific system.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id). See <a href="#message-registries">Message Registries</a>. For example,<code>MessageId</code> in the sample response body is <code>Base.1.0.Success</code>. The registry to look up is <code>Base.1.0</code>.<br></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "Boot":{ 
+      "BootSourceOverrideTarget":"Usb"
+   }
+}
+</code></pre><h3 id='request-parameters-9'>Request parameters</h3>
+<p>To get a full list of boot attributes that you can update, perform <code>GET</code> on:</p>
+
+<p><code>https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}</code>.</p>
+
+<p>Check attributes under <code>Boot</code> in the JSON response. </p>
+
+<p>Some of the attributes include:</p>
+
+<ul>
+<li><p><code>BootSourceOverrideTarget</code> </p></li>
+<li><p><code>UefiTargetBootSourceOverride</code> </p></li>
+</ul>
+
+<p>For possible values, see values listed under <code>{attribute}.AllowableValues</code>. </p>
+
+<blockquote>
+<p>Example:</p>
+</blockquote>
+<pre class="highlight plaintext"><code>BootSourceOverrideTarget@Redfish.AllowableValues":[
+"None",
+"Cd",
+"Hdd",
+"Usb",
+"SDCard",
+"Utilities",
+"Diags",
+"BiosSetup",
+"Pxe",
+"UefiShell",
+"UefiHttp",
+"UefiTarget"
+],
+"UefiTargetBootSourceOverride@Redfish.AllowableValues":[
+"HD(1,GPT,A6AC4D57-9D6D-46C8-8533-E7787450280D,0x800,0x4E2000)/\\EFI\\redhat\\shimx64.efi",
+"PciRoot(0x3)/Pci(0x0,0x0)/Pci(0x0,0x0)/Scsi(0x0,0x0)",
+"PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(ECEBB89E9928,0x1)/IPv4(0.0.0.0)",
+"UsbClass(0xFFFF,0xFFFF,0xFF,0xFF,0xFF)",
+"PciRoot(0x0)/Pci(0x14,0x0)/USB(0x13,0x0)",
+"PciRoot(0x1)/Pci(0x0,0x0)/Pci(0x0,0x0)/MAC(48DF374FA220,0x1)/IPv4(0.0.0.0)/Uri()",
+"PciRoot(0x1)/Pci(0x0,0x0)/Pci(0x0,0x0)/MAC(48DF374FA220,0x1)/IPv4(0.0.0.0)",
+"PciRoot(0x1)/Pci(0x0,0x0)/Pci(0x0,0x0)/MAC(48DF374FA220,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
+"PciRoot(0x1)/Pci(0x0,0x0)/Pci(0x0,0x0)/MAC(48DF374FA220,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
+"PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(ECEBB89E9928,0x1)/IPv4(0.0.0.0)/Uri()",
+"PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(ECEBB89E9928,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)/Uri()",
+"PciRoot(0x3)/Pci(0x2,0x0)/Pci(0x0,0x0)/MAC(ECEBB89E9928,0x1)/IPv6(0000:0000:0000:0000:0000:0000:0000:0000)",
+"HD(1,GPT,F998DA94-45F7-4877-B907-10EDB6E65B07,0x800,0x64000)/\\EFI\\ubuntu\\shimx64.efi",
+"HD(2,GPT,0AF5A707-BBEB-4D8A-8016-D840C2516753,0x40800,0x7700000)/\\EFI\\Microsoft\\Boot\\bootmgfw.efi"
+]
+}
+</code></pre>
+<p><strong>NOTE:</strong></p>
+
+<p>If you attempt to update <code>BootSourceOverrideTarget</code> to <code>UefiTarget</code>, when <code>UefiTargetBootSourceOverride</code> is set to <code>None</code>, you will receive an HTTP <code>400 Bad Request</code> error. Update <code>UefiTargetBootSourceOverride</code> before setting <code>BootSourceOverrideTarget</code> to <code>UefiTarget</code>.</p>
+
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "error":{ 
+      "@Message.ExtendedInfo":[ 
+         { 
+            "MessageId":"Base.1.0.Success"
+         }
+      ],
+      "code":"iLO.0.10.ExtendedInfo",
+      "message":"See @Message.ExtendedInfo for more information."
+   }
+</code></pre><h1 id='managers'>Managers</h1>
+<p>Resource Aggregator for ODIM exposes APIs to retrieve information about managers. Examples of managers include:</p>
+
+<ul>
+<li><p>Resource Aggregator for ODIM itself</p></li>
+<li><p>Baseboard Management Controllers (BMC)</p></li>
+<li><p>Enclosure Managers</p></li>
+<li><p>Management Controller</p></li>
+<li><p>Other subsystems like plugins</p></li>
+</ul>
+
+<p><strong>Supported endpoints</strong></p>
+
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td>/redfish/v1/Managers</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Managers/{managerId}</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Managers/{managerId}/EthernetInterfaces</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Managers/{managerId}/HostInterfaces</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Managers/{managerId}/LogServices</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Managers/{managerId}/NetworkProtocol</td>
+<td><code>GET</code></td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-managers'>Collection of managers</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Managers'
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>​{
+   "@odata.context":"/redfish/v1/$metadata#ManagerCollection.ManagerCollection",
+   "@odata.id":"/redfish/v1/Managers",
+   "@odata.type":"#ManagerCollection.ManagerCollection",
+   "Description":"Managers view",
+   "Name":"Managers",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c:1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/0e778112-4684-433d-9998-ca6f399c031f:1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/a6ddc4c0-2568-4e16-975d-fa771b0be853"
+      }
+   ],
+   "Members@odata.count":6
+}
+
+​
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Managers</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of managers.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the manager instances. This collection includes a manager for Resource Aggregator for ODIM itself and other managers.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-manager'>Single manager</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Managers/{managerId}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body for a system (BMC) manager </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
+   "@odata.etag":"W/\"2D2866FD\"",
+   "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
+   "@odata.type":"#Manager.v1_3_3.Manager",
+   "Actions":{ 
+      "#Manager.Reset":{ 
+         "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/Actions/Manager.Reset"
+      }
+   },
+   "CommandShell":{ 
+      "ConnectTypesSupported":[ 
+         "SSH",
+         "Oem"
+      ],
+      "MaxConcurrentSessions":9,
+      "ServiceEnabled":true
+   },
+   "EthernetInterfaces":{ 
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/EthernetInterfaces"
+   },
+   "FirmwareVersion":"iLO 5 v1.40",
+   "GraphicalConsole":{ 
+      "ConnectTypesSupported":[ 
+         "KVMIP"
+      ],
+      "MaxConcurrentSessions":10,
+      "ServiceEnabled":true
+   },
+   "HostInterfaces":{ 
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/HostInterfaces"
+   },
+   "Id":"1",
+   "Links":{ 
+      "ManagerForChassis":[ 
+         { 
+            "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+         }
+      ],
+      "ManagerForServers":[ 
+         { 
+            "@odata.id":"/redfish/v1/Systems/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+         }
+      ],
+      "ManagerInChassis":{ 
+         "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+      }
+   },
+   "LogServices":{ 
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/LogServices"
+   },
+   "ManagerType":"BMC",
+   "Name":"Manager",
+   "NetworkProtocol":{ 
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/NetworkProtocol"
+   },
+   "Oem":{},
+
+   "SerialConsole":{ 
+      "ConnectTypesSupported":[ 
+         "SSH",
+         "IPMI",
+         "Oem"
+      ],
+      "MaxConcurrentSessions":13,
+      "ServiceEnabled":true
+   },
+   "Status":{ 
+      "State":"Absent"
+   },
+   "UUID":"a964d6a9-a45c-57aa-90ec-08b38850b2f3",
+   "VirtualMedia":{ 
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/VirtualMedia"
+   }
+}
+</code></pre>
+<blockquote>
+<p>Sample response body for Resource Aggregator for ODIM manager </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
+   "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
+   "@odata.type":"#Manager.v1_3_3.Manager",
+   "Name":"ODIMRA",
+   "ManagerType":"Service",
+   "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
+   "UUID":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
+   "FirmwareVersion":"1.0",
+   "Status":{
+      "State":"Enabled"
+   }
+}
+</code></pre>
+<blockquote>
+<p>Sample response body for a plugin manager</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
+   "@odata.etag":"W/\"AA6D42B0\"",
+   "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
+   "@odata.type":"#Manager.v1_3_3.Manager",
+   "FirmwareVersion":"1.0",
+   "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
+   "ManagerType":"Service",
+   "Name":"GRF",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Managers/{managerId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A single manager.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Information about a specific management control system or a plugin or Resource Aggregator for ODIM itself. In the JSON schema representing a system (BMC) manager, there are links to the managers for:<ul><li>EthernetInterfaces:<br><code>/redfish/v1/Managers/{managerId}/EthernetInterfaces</code></li><li>HostInterfaces:<br><code>/redfish/v1/Managers/{managerId}/HostInterfaces</code> </li><li>LogServices:<br><code>/redfish/v1/Managers/{managerId}/LogServices</code> </li><li>NetworkProtocol:<br><code>/redfish/v1/Managers/{managerId}/NetworkProtocol</code> <br> To know more about each manager, perform HTTP <code>GET</code> on these links.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h1 id='host-to-fabric-networking'>Host to fabric networking</h1>
+<p>Resource Aggregator for ODIM exposes Redfish APIs to view and manage simple fabrics. A fabric is a network topology consisting of interconnecting switches, zones, endpoints, and address pools.</p>
+
+<p><strong>NOTE:</strong></p>
+
+<ul>
+<li><p>Before using the <code>Fabrics</code> APIs, ensure that the fabric manager is installed and its plugin is deployed and added into the Resource Aggregator for ODIM framework.</p></li>
+<li><p>Ensure to create fabric entities in the following order:</p></li>
+</ul>
+
+<p>1.  Zone-specific address pools</p>
+
+<p>2.  Address pools for zone of zones</p>
+
+<p>3.  Zone of zones</p>
+
+<p>4.  Endpoints</p>
+
+<p>5.  Zone of endpoints</p>
+
+<ul>
+<li> Ensure to delete fabric entities in the following order:</li>
+</ul>
+
+<p>1.  Zone of endpoints</p>
+
+<p>2.  Endpoints</p>
+
+<p>3.  Zone of zones</p>
+
+<p>4.  Address pools for zone of zones</p>
+
+<p>5.  Zone-specific address pools</p>
+
+<p><strong>Supported endpoints</strong></p>
+
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td>/redfish/v1/Fabrics</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Switches</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}/Ports<br></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Switches/{switchId}/Ports/{portid}<br></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Zones</td>
+<td><code>GET</code>, <code>POST</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Zones/{zoneId}</td>
+<td><code>GET</code>, <code>PATCH</code>, <code>DELETE</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/AddressPools</td>
+<td><code>GET</code>, <code>POST</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/AddressPools/{addresspoolid}</td>
+<td><code>GET</code>, <code>DELETE</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Endpoints</td>
+<td><code>GET</code>, <code>POST</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics/{fabricId}/Endpoints/{endpointId}</td>
+<td><code>GET</code>, <code>DELETE</code></td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-fabrics'>Collection of fabrics</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics",
+   "Id":"FabricCollection",
+   "Members":[ 
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"Fabric Collection",
+   "RedfishVersion":"1.8.0",
+   "@odata.type":"#FabricCollection.FabricCollection"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of simple fabrics.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the fabric instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-fabric'>Single fabric</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}'
+
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5",
+   "@odata.type":"#Fabric.v1_0_4.Fabric",
+   "AddressPools":{ 
+      "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/AddressPools"
+   },
+   "Description":"test",
+   "Endpoints":{ 
+      "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Endpoints"
+   },
+   "FabricType":"Ethernet",
+   "Id":"f4d1578a-d16f-43f2-bb81-cd6db8866db5",
+   "Name":"cfm-test",
+   "Status":{ 
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "Switches":{ 
+      "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches"
+   },
+   "Zones":{ 
+      "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Zones"
+   }
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Schema representing a specific fabric.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to various components contained in this fabric instance - address pools, endpoints, switches, and zones.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-switches'>Collection of switches</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches",
+   "Id":"SwitchCollection",
+   "Members":[ 
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/e97a3f0b-cc89-40d8-af3f-9b9bdd793d73"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/bc95a9aa-8447-4b89-a99d-25235f7bae92"
+      }
+   ],
+   "Members@odata.count":4,
+   "Name":"Switch Collection",
+   "@odata.type":"#SwitchCollection.SwitchCollection"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Switches</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of switches located in this fabric.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the switch instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-switch'>Single switch</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
+   "@odata.type":"#Switch.v1_2_0.Switch",
+   "Id":"fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
+   "Manufacturer":"HPE Aruba",
+   "Model":"Aruba 8325",
+   "Name":"Switch_172.10.20.1",
+   "PartNumber":"JL636A",
+   "Ports":{ 
+      "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7/Ports"
+   },
+   "SerialNumber":"TW8BKM302H",
+   "Status":{ 
+      "Health":"Ok",
+      "State":"Enabled"
+   },
+   "SwitchType":"Ethernet"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>JSON schema representing a particular fabric switch.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Details of this switch and links to its ports.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-ports'>Collection of ports</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports",
+   "Id":"PortCollection",
+   "Members":[ 
+      "/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports/0cb2ff96-b7a7-4627-a7b4-274d915f2524",
+      "/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports/54096ea1-cfb8-4a6c-b7a3-d6263db729a6",
+      "/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports/699b8f82-a6bf-47fa-a594-d73c95a8f81e",
+      "/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports/7dd6b8c6-de72-4499-98dc-568a16e28a88",
+      "/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports/9d097004-e034-4772-98c5-fa695688cc4d",
+      "/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/Switches/c1b0ac48-e003-4d70-a707-450b128977d9/Ports/b82e663b-6d1e-43c9-9d49-63b68b2a5b06"
+   ],
+   "Members@odata.count":6,
+   "Name":"PortCollection",
+   "@odata.type":"#PortCollection.PortCollection"
+}
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of ports of this switch.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the port instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-port'>Single port</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports/{portid}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0/Ports/80b5f999-25e9-4b37-992c-de2f065ee0e3",
+   "@odata.type":"#Port.v1_1_3.Port",
+   "CurrentSpeedGbps":0,
+   "Description":"single port",
+   "Id":"80b5f999-25e9-4b37-992c-de2f065ee0e3",
+   "Links":{ 
+      "ConnectedPorts":[ 
+         { 
+            "@odata.id":"/redfish/v1/Systems/768f9da7-56fc-4f13-b6f8-a1cd241e2313:1/EthernetInterfaces/3"
+         }
+      ],
+      "ConnectedSwitches":[ 
+
+      ]
+   },
+   "MaxSpeedGbps":25,
+   "Name":"1/1/3",
+   "PortId":"1/1/3",
+   "PortProtocol":"Ethernet",
+   "PortType":"UpstreamPort",
+   "Status":{ 
+      "Health":"Ok",
+      "State":"Enabled"
+   },
+   "Width":1
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports/{portid}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>JSON schema representing a specific switch port.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Properties of this port.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-address-pools'>Collection of address pools</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools",
+    "Id": "AddressPool Collection",
+    "Members": [{
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/54a6d41b-6ed2-460b-90c7-cc5fdd74e6ad"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/f936ba02-fa82-456b-a7d7-3d006228f63c"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/95dec77a-c393-4391-8943-29e3ce03c6ca"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/21d4c00e-0c7c-4af3-af76-fd66df5d5831"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/35698e79-a765-4052-86ed-e290d7b6fd01"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/612aeda9-5cca-4f51-b755-b90008467bad"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/470515c8-6089-4d97-ba4f-e7dabc9d7e6a"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/062f6464-4f0e-4a6b-bb6b-c1857bba1533"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/7b740372-2f88-46d8-af84-7b66fee87695"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/7a98eb5d-99e9-4924-b647-057e3ad772bf"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/9f33f532-0796-42fc-819c-7938a4d6de7c"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/AddressPools/3a821e9d-901a-4469-913b-917351d6eef7"
+        }
+    ],
+    "Members@odata.count": 12,
+    "Name": "AddressPool Collection",
+    "RedfishVersion": "1.8.0",
+    "@odata.type": "#AddressPoolCollection.AddressPoolCollection"
+}
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/AddressPools</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of address pools.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the address pool instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-address-pool'>Single address pool</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/AddressPools/44c44b52-a784-48e5-9f26-b833d42cf455",
+   "@odata.type":"#AddressPool.vxx.AddressPool",
+   "BgpEvpn":{ 
+      "BgpEvpnEviNumberLowerAddress":200,
+      "BgpEvpnEviNumberUpperAddress":220
+   },
+   "Description":"",
+   "ExternalBgp":{ 
+      "EbgpAsNumberLowerAddress":65000,
+      "EbgpAsNumberUpperAddress":65100
+   },
+   "IPv4":{ 
+      "IPv4FabricLinkLowerAddress":"172.10.20.1",
+      "IPv4FabricLinkUpperAddress":"172.10.20.10",
+      "IPv4GatewayAddress":"",
+      "IPv4HostLowerAddress":"",
+      "IPv4HostUpperAddress":"",
+      "IPv4LoopbackLowerAddress":"172.10.20.1",
+      "IPv4LoopbackUpperAddress":"172.10.20.10",
+      "NativeVlan":0,
+      "VlanIdentifierLowerAddress":0,
+      "VlanIdentifierUpperAddress":0
+   },
+   "Id":"44c44b52-a784-48e5-9f26-b833d42cf455",
+   "Links":{ 
+      "Zones":[ 
+
+      ]
+   },
+   "MultiProtocolIbgp":{ 
+      "MPIbgpAsNumberLowerAddress":1,
+      "MPIbgpAsNumberUpperAddress":1
+   },
+   "Name":""
+}
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>JSON schema representing a specific address pool.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Properties of this address pool.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-endpoints'>Collection of endpoints</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/Endpoints",
+ "@odata.type": "#EndpointCollection.EndpointCollection",
+    "Members": [{
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/Endpoints/f59d59f3-d2ec-4cc1-9255-f35b5b09a31a"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/Endpoints/952f0049-d639-4a00-820a-353a95564d37"
+        },
+        {
+            "@odata.id": "/redfish/v1/Fabrics/edbd1da7-7e2c-4ad0-aa9e-930292619d5f/Endpoints/8a9c27b0-d4d7-4eef-a731-f92aedc49c69"
+        }
+    ],
+    "Members@odata.count": 3,
+    "Name": "Endpoint Collection"
+
+}
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Endpoints</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of fabric endpoints.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the endpoint instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-endpoint'>Single endpoint</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
+   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "Description":"NK Endpoint Collection Description",
+   "EndpointProtocol":"Ethernet",
+   "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
+   "Links":{ 
+      "ConnectedPorts":[ 
+         { 
+            "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Switches/3f4ac957-90ec-4676-91b9-90f9d78ef56c/Ports/7f708d4f-795d-401d-8bc1-c797fb3ce20b"
+         }
+      ],
+      "Zones":[ 
+
+      ]
+   },
+   "Name":"NK Endpoint Collection1",
+   "Redundancy":[ 
+      { 
+         "MaxNumSupported":2,
+         "MemberId":"Bond0",
+         "MinNumNeeded":1,
+         "Mode":"",
+         "RedundancySet":[ 
+            [ 
+
+            ]
+         ],
+         "Status":{ 
+            "Health":"",
+            "State":""
+         }
+      }
+   ]
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>JSON schema representing a specific fabric endpoint.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Details of this endpoint.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='collection-of-zones'>Collection of zones</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones",
+   "Members":[ 
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/afa007b7-7ea6-4ab3-b5f1-ad37c8aebed7"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/85462c4f-028d-45d6-99d8-73c7889ea263"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/e906a6ab-18ef-4617-a151-420265e7d0f9"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/f310bf40-5163-4cbf-be5b-ac574fe87863"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/5c0b60a0-55f7-43f0-9b23-bfbba9130743"
+      },
+      { 
+         "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/ac424042-7524-4c04-acbd-2d1af0a4832f"
+      }
+   ],
+   "Members@odata.count":6,
+   "Name":"Zone Collection",
+   "@odata.type":"#ZoneCollection.ZoneCollection"
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Zones</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of fabric zones.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the zone instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='single-zone'>Single zone</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/f310bf40-5163-4cbf-be5b-ac574fe87863",
+   "@odata.type":"#Zone.v1_3_0.Zone",
+   "DefaultRoutingEnabled":false,
+   "Description":"",
+   "Id":"f310bf40-5163-4cbf-be5b-ac574fe87863",
+   "Links":{ 
+      "AddressPools":[ 
+         { 
+            "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/AddressPools/e8edcc87-81f9-43a9-b1ce-20a895a60014"
+         }
+      ],
+      "ContainedByZones":[ 
+         { 
+            "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/ac424042-7524-4c04-acbd-2d1af0a4832f"
+         }
+      ],
+      "ContainsZones":[ 
+
+      ],
+      "Endpoints":[ 
+         { 
+            "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Endpoints/a9a41a01-ac4c-460d-923e-98ad9cc7abef"
+         }
+      ],
+      "InvolvedSwitches":[ 
+
+      ]
+   },
+   "Name":"NK Zone 1",
+   "ZoneType":"ZoneOfEndpoints"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>JSON schema representing a specific fabric zone.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Details of this zone.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='creating-a-zone-specific-address-pool'>Creating a zone-specific address pool</h2><pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+    -d \
+'{
+   "Name":"FC 18 vlan_102 - AddressPools",
+   "Description":"vlan_102",
+   "IPv4":{
+      "VlanIdentifierAddressRange":{
+         "Lower":102,
+         "Upper":102
+      }
+   },
+   "BgpEvpn":{
+      "GatewayIPAddressList":[
+         "10.18.102.2/24",
+         "10.18.102.3/24"
+      ],
+      "AnycastGatewayIPAddress":"10.18.102.1"
+   }
+}
+'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/AddressPools</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation creates an address pool that can be used by a zone of endpoints.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li>Link to the created address pool in the <code>Location</code> header.</li><li>JSON schema representing the created address pool.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>201 Created</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Name":"FC 18 vlan_102 - AddressPools",
+   "Description":"vlan_102",
+   "IPv4":{
+      "VlanIdentifierAddressRange":{
+         "Lower":102,
+         "Upper":102
+      }
+   },
+   "BgpEvpn":{
+      "GatewayIPAddressList":[
+         "10.18.102.2/24",
+         "10.18.102.3/24"
+      ],
+      "AnycastGatewayIPAddress":"10.18.102.1"
+   }
+}
+</code></pre><h3 id='request-parameters-10'>Request parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Name</td>
+<td>String (optional)<br></td>
+<td>Name for the address pool.</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>String (optional)<br></td>
+<td>Description for the address pool.</td>
+</tr>
+<tr>
+<td>IPv4{</td>
+<td>(required)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>VlanIdentifierAddressRange{</td>
+<td>(optional)<br></td>
+<td>A single VLAN to assign on the ports or lags.<br></td>
+</tr>
+<tr>
+<td>Lower</td>
+<td>Integer (required)<br></td>
+<td>VLAN lower address.</td>
+</tr>
+<tr>
+<td>Upper}}</td>
+<td>Integer (required)<br></td>
+<td>VLAN upper address.<br><strong>NOTE:</strong><br> <code>Lower</code> and <code>Upper</code> must have the same value. Ensure that IP range is accurate and it does not overlap with other pools.</td>
+</tr>
+<tr>
+<td>BgpEvpn{</td>
+<td>(required)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>GatewayIPAddressList</td>
+<td>Array (required)<br></td>
+<td>IP pool to assign IPv4 address to the IP interface for VLAN per switch.<br></td>
+</tr>
+<tr>
+<td>AnycastGatewayIPAddress}</td>
+<td>String (required)<br></td>
+<td>A single active gateway IP address for the IP interface.<br></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header</p>
+</blockquote>
+<pre class="highlight plaintext"><code>HTTP/1.1 201 Created
+Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
+Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Thu, 14 May 2020 16:18:54 GMT
+Transfer-Encoding:chunked
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
+  "@odata.type": "#AddressPool.vxx.AddressPool",
+  "BgpEvpn": {
+    "AnycastGatewayIPAddress": "10.18.102.1",
+    "AnycastGatewayMACAddress": "",
+    "GatewayIPAddressList": [
+      "10.18.102.2/24",
+      "10.18.102.3/24"
+    ],
+    "RouteDistinguisherList": "",
+    "RouteTargetList": [
+
+    ]
+  },
+  "Description": "vlan_102",
+  "Ebgp": {
+
+  },
+  "IPv4": {
+    "EbgpAddressRange": {
+      "Lower": "",
+      "Upper": ""
+    },
+    "FabricLinkAddressRange": {
+      "Lower": "",
+      "Upper": ""
+    },
+    "IbgpAddressRange": {
+      "Lower": "",
+      "Upper": ""
+    },
+    "LoopbackAddressRange": {
+      "Lower": "",
+      "Upper": ""
+    },
+    "NativeVlan": 0,
+    "VlanIdentifierAddressRange": {
+      "Lower": 102,
+      "Upper": 102
+    }
+  },
+  "Id": "e2ec196d-4b55-44b3-b928-8273de9fb8bf",
+  "Links": {
+    "Zones": [
+
+    ]
+  },
+  "Name": "FC 18 vlan_102 - AddressPools"
+}
+
+</code></pre><h2 id='creating-an-address-pool-for-zone-of-zones'>Creating an address pool for zone of zones</h2><pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+    -d \
+'{
+  "Name": "AddressPool for ZoneOfZones - Vlan3002",
+  "IPv4": {  
+    "VlanIdentifierAddressRange": {
+        "Lower": 3002,
+        "Upper": 3002
+    },
+    "IbgpAddressRange": {
+              "Lower": "192.12.1.10",
+              "Upper": "192.12.1.15"
+    },
+    "EbgpAddressRange": {
+              "Lower": "172.12.1.10",
+              "Upper": "172.12.1.15"
+    }
+  },
+  "Ebgp": {
+    "AsNumberRange": {
+              "Lower": 65120,
+              "Upper": 65125
+    }
+  },
+  "BgpEvpn": {
+    "RouteDistinguisherList": ["65002:102"],  
+    "RouteTargetList": ["65002:102", "65002:102"],
+    "GatewayIPAddressList": ["192.168.18.122/31", "192.168.18.123/31"]
+  }
+}'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/AddressPools</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation creates an address pool for a zone of zones in a specific fabric.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li>Link to the created address pool in the <code>Location</code> header.</li><li>JSON schema representing the created address pool.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>201 Created</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+  "Name": "AddressPool for ZoneOfZones - Vlan3002",
+  "IPv4": {  
+    "VlanIdentifierAddressRange": {
+        "Lower": 3002,
+        "Upper": 3002
+    },
+    "IbgpAddressRange": {
+              "Lower": "192.12.1.10",
+              "Upper": "192.12.1.15"
+    },
+    "EbgpAddressRange": {
+              "Lower": "172.12.1.10",
+              "Upper": "172.12.1.15"
+    }
+  },
+  "Ebgp": {
+    "AsNumberRange": {
+              "Lower": 65120,
+              "Upper": 65125
+    }
+  },
+  "BgpEvpn": {
+    "RouteDistinguisherList": ["65002:102"],  
+    "RouteTargetList": ["65002:102", "65002:102"],
+    "GatewayIPAddressList": ["192.168.18.122/31", "192.168.18.123/31"]
+  }
+}
+
+</code></pre><h3 id='request-parameters-11'>Request parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Name</td>
+<td>String</td>
+<td>Name for the address pool.</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>String (optional)<br></td>
+<td>Description for the address pool.</td>
+</tr>
+<tr>
+<td>IPv4{</td>
+<td>(required)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>VlanIdentifierAddressRange{</td>
+<td>(required)<br></td>
+<td>A single VLAN (virtual LAN) used for creating the IP interface for the user Virtual Routing and Forwarding (VRF).<br></td>
+</tr>
+<tr>
+<td>Lower</td>
+<td>Integer (required)<br></td>
+<td>VLAN lower address</td>
+</tr>
+<tr>
+<td>Upper}</td>
+<td>Integer (required)<br></td>
+<td>VLAN upper address</td>
+</tr>
+<tr>
+<td>IbgpAddressRange{</td>
+<td>(required)<br></td>
+<td>IPv4 address used as the Router Id for the VRF per switch.<br></td>
+</tr>
+<tr>
+<td>Lower</td>
+<td>String (required)<br></td>
+<td>IPv4 lower address</td>
+</tr>
+<tr>
+<td>Upper}</td>
+<td>String (required)<br></td>
+<td>IPv4 upper address</td>
+</tr>
+<tr>
+<td>EbgpAddressRange{</td>
+<td>(optional)<br></td>
+<td>External neighbor IPv4 addresses.</td>
+</tr>
+<tr>
+<td>Lower</td>
+<td>String (required)<br></td>
+<td>IPv4 lower address</td>
+</tr>
+<tr>
+<td>Upper} }</td>
+<td>String (required)<br></td>
+<td>IPv4 upper address</td>
+</tr>
+<tr>
+<td>Ebgp{</td>
+<td>(optional)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>AsNumberRange{</td>
+<td>(optional)<br></td>
+<td>External neighbor ASN.<br><strong>NOTE:</strong><br> <code>EbgpAddressRange</code> and <code>AsNumberRange</code> values should be a matching sequence and should be of same length.</td>
+</tr>
+<tr>
+<td>Lower</td>
+<td>Integer (optional)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>Upper} }</td>
+<td>Integer (optional)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>BgpEvpn{</td>
+<td>(required)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>RouteDistinguisherList</td>
+<td>Array (required)<br></td>
+<td>Single route distinguisher value for the VRF.<br></td>
+</tr>
+<tr>
+<td>RouteTargetList</td>
+<td>Array (optional)<br></td>
+<td>Route targets. By default, the route targets will be configured as both import and export.<br></td>
+</tr>
+<tr>
+<td>GatewayIPAddressList}</td>
+<td>Array (required)<br></td>
+<td>IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br></td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header </p>
+</blockquote>
+<pre class="highlight plaintext"><code>HTTP/1.1 201 Created
+Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
+Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Thu, 14 May 2020 16:18:58 GMT
+Transfer-Encoding:chunked
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d",
+   "@odata.type":"#AddressPool.vxx.AddressPool",
+   "BgpEvpn":{
+      "AnycastGatewayIPAddress":"",
+      "AnycastGatewayMACAddress":"",
+      "GatewayIPAddressList":[
+         "192.168.18.122/31",
+         "192.168.18.123/31"
+      ],
+      "RouteDistinguisherList":[
+         "65002:102"
+      ],
+      "RouteTargetList":[
+         "65002:102",
+         "65002:102"
+      ]
+   },
+   "Description":"",
+   "Ebgp":{
+      "AsNumberRange":{
+         "Lower":65120,
+         "Upper":65125
+      }
+   },
+   "IPv4":{
+      "EbgpAddressRange":{
+         "Lower":"172.12.1.10",
+         "Upper":"172.12.1.15"
+      },
+      "FabricLinkAddressRange":{
+         "Lower":"",
+         "Upper":""
+      },
+      "IbgpAddressRange":{
+         "Lower":"192.12.1.10",
+         "Upper":"192.12.1.15"
+      },
+      "LoopbackAddressRange":{
+         "Lower":"",
+         "Upper":""
+      },
+      "NativeVlan":0,
+      "VlanIdentifierAddressRange":{
+         "Lower":3002,
+         "Upper":3002
+      }
+   },
+   "Id":"84766158-cbac-4f69-8ed5-fa5f2b331b9d",
+   "Links":{
+      "Zones":[
+
+      ]
+   },
+   "Name":"AddressPool for ZoneOfZones - Vlan3002"
+}
+</code></pre><h2 id='adding-a-zone-of-zones'>Adding a zone of zones</h2>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Zones</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation creates an empty container zone for all the other zones in a specific fabric. To assign address pools, endpoints, other zones, or switches to this zone, perform HTTP <code>PATCH</code> on this zone. See <a href="#updating-a-zone">Updating a Zone</a>.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema representing the created zone.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>201 Created</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+    -d \
+'{
+   "Name":"Fabric Zone of Zones:",
+   "ZoneType":"ZoneOfZones",
+   "Links":{
+      "AddressPools":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d"
+         }
+      ]
+   }
+}
+'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones'
+
+</code></pre>
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Name":"Fabric Zone of Zones:",
+   "ZoneType":"ZoneOfZones",
+   "Links":{
+      "AddressPools":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d"
+         }
+      ]
+   }
+}
+</code></pre><h3 id='request-parameters-12'>Request parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Name</td>
+<td>String (optional)<br></td>
+<td>Name for the zone.</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>String (optional)<br></td>
+<td>Description for the zone.</td>
+</tr>
+<tr>
+<td>ZoneType</td>
+<td>String</td>
+<td>The type of the zone to be created. Options include: <code>ZoneofZones</code> and <code>ZoneofEndpoints</code><br> The type of the zone for a zone of zones is <code>ZoneofZones</code>.<br></td>
+</tr>
+<tr>
+<td>Links{</td>
+<td>(optional)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>AddressPools</td>
+<td>Array (optional)<br></td>
+<td><code>AddressPool</code> links supported for the Zone of Zones (<code>AddressPool</code> links created for <code>ZoneofZones</code>).<br></td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header</p>
+</blockquote>
+<pre class="highlight plaintext"><code>HTTP/1.1 201 Created
+Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
+Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Thu, 14 May 2020 16:19:00 GMT
+Transfer-Encoding:chunked
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98",
+   "@odata.type":"#Zone.v1_3_0.Zone",
+   "Description":"",
+   "Id":"a2dc8760-ea05-4cab-8f95-866c1c380f98",
+   "Links":{
+      "AddressPools":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d"
+         }
+      ],
+      "ContainedByZones":[
+
+      ],
+      "ContainsZones":[
+
+      ],
+      "Endpoints":[
+
+      ],
+      "InvolvedSwitches":[
+
+      ]
+   },
+   "Name":"Fabric Zone of Zones:",
+   "ZoneType":"ZoneOfZones"
+}
+</code></pre><h2 id='adding-an-endpoint'>Adding an endpoint</h2>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Endpoints</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation creates an endpoint in a specific fabric.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li>Link to the created endpoint in the <code>Location</code> header.</li><li>JSON schema representing the created endpoint.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>201 Created</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+    -d \
+'{
+   "Name":"Host 2 Endpoint 1 Collection",
+   "Description":"Host 2 Endpoint 1 Collection Description",
+   "Redundancy":[
+      {
+         "Mode":"Sharing",
+         "RedundancySet":[
+            {
+               "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Switches/81f5ed9a-a4a1-4383-a450-a7f98b792ca2/Ports/29f077b0-e7a5-495f-a3d2-643937f600de"
+            },
+            {
+               "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Switches/b7ba4ece-1716-4d8d-af2c-7aea1682bf91/Ports/62a32f83-c7b1-4cb7-9b47-2f444588d29b"
+            }
+         ]
+      }
+   ]
+}
+'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints'
+
+</code></pre>
+<blockquote>
+<p>Sample request body for a single endpoint</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Name":"NK Endpoint Collection",
+   "Description":"NK Endpoint Collection Description",
+   "Links":{
+      "ConnectedPorts":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/113a30e3-f312-4221-8f7f-49943c5ff07d/Switches/f4a37f55-be1e-400b-93be-7d7c0afd4cbd/Ports/0d22b201-30d5-43e8-90ab-277c87624c05"
+         }
+      ]
+   }
+}
+</code></pre>
+<blockquote>
+<p>Sample request body for a redundant endpoint</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Name":"Host 2 Endpoint 1 Collection",
+   "Description":"Host 2 Endpoint 1 Collection Description",
+   "Redundancy":[
+      {
+         "Mode":"Sharing",
+         "RedundancySet":[
+            {
+               "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Switches/81f5ed9a-a4a1-4383-a450-a7f98b792ca2/Ports/29f077b0-e7a5-495f-a3d2-643937f600de"
+            },
+            {
+               "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Switches/b7ba4ece-1716-4d8d-af2c-7aea1682bf91/Ports/62a32f83-c7b1-4cb7-9b47-2f444588d29b"
+            }
+         ]
+      }
+   ]
+}
+</code></pre><h3 id='request-parameters-13'>Request parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Name</td>
+<td>String (optional)<br></td>
+<td>Name for the endpoint.</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>String (optional)<br></td>
+<td>Description for the endpoint.</td>
+</tr>
+<tr>
+<td>Links{</td>
+<td>(required)<br></td>
+<td></td>
+</tr>
+<tr>
+<td>ConnectedPorts</td>
+<td>Array (required)<br></td>
+<td>Switch port connected to the switch.<br>  <br></td>
+</tr>
+<tr>
+<td>Zones}</td>
+<td>Array (optional)<br></td>
+<td>Endpoint is part of <code>ZoneofEndpoints</code> and only one zone is permitted in the zones list.<br></td>
+</tr>
+<tr>
+<td>Redundancy[</td>
+<td>Array</td>
+<td></td>
+</tr>
+<tr>
+<td>Mode</td>
+<td>String</td>
+<td>Redundancy mode.</td>
+</tr>
+<tr>
+<td>RedundancySet]</td>
+<td>Array</td>
+<td>Set of redundancy ports connected to the switches.<br></td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header</p>
+</blockquote>
+<pre class="highlight plaintext"><code>HTTP/1.1 201 Created
+Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
+Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Thu, 14 May 2020 16:19:02 GMT
+Transfer-Encoding:chunked
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
+   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "Description":"Host 2 Endpoint 1 Collection Description",
+   "EndpointProtocol":"Ethernet",
+   "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
+   "Links":{
+      "ConnectedPorts":[
+
+      ],
+      "Zones":[
+
+      ]
+   },
+   "Name":"Host 2 Endpoint 1 Collection",
+   "Redundancy":[
+      {
+         "MaxNumSupported":2,
+         "MemberId":"Bond0",
+         "MinNumNeeded":1,
+         "Mode":"Sharing",
+         "RedundancySet":[
+            {
+               "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Switches/81f5ed9a-a4a1-4383-a450-a7f98b792ca2/Ports/29f077b0-e7a5-495f-a3d2-643937f600de"
+            },
+            {
+               "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Switches/b7ba4ece-1716-4d8d-af2c-7aea1682bf91/Ports/62a32f83-c7b1-4cb7-9b47-2f444588d29b"
+            }
+         ],
+         "Status":{
+            "Health":"",
+            "State":""
+         }
+      }
+   ]
+}
+</code></pre><h2 id='creating-a-zone-of-endpoints'>Creating a zone of endpoints</h2><pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+    -d \
+'{
+   "Name":"Fabric ZoneofEndpoint",
+   "ZoneType":"ZoneOfEndpoints",
+   "Links":{
+      "ContainedByZones":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98"
+         }
+      ],
+      "AddressPools":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf"
+         }
+      ],
+      "Endpoints":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97"
+         }
+      ]
+   }
+}
+'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Zones</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation creates a zone of endpoints in a specific fabric.<br><strong>NOTE:</strong><br> Ensure that the endpoints are created first before assigning them to the zone of endpoints.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema representing the created zone.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>201 Created</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Name":"Fabric ZoneofEndpoint",
+   "ZoneType":"ZoneOfEndpoints",
+   "Links":{
+      "ContainedByZones":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98"
+         }
+      ],
+      "AddressPools":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf"
+         }
+      ],
+      "Endpoints":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97"
+         }
+      ]
+   }
+}
+</code></pre><h3 id='request-parameters-14'>Request parameters</h3>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Name</td>
+<td>String (optional)<br></td>
+<td>The name for the zone.</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>String (optional)<br></td>
+<td>The description for the zone.</td>
+</tr>
+<tr>
+<td>DefaultRoutingEnabled</td>
+<td>Boolean (required)<br></td>
+<td>Set to <code>false</code>.</td>
+</tr>
+<tr>
+<td>ZoneType</td>
+<td>String (required)<br></td>
+<td>The type of the zone to be created. Options include: <code>ZoneofZones</code>and <code>ZoneofEndpoints</code><br> The type of the zone for a zone of endpoints is <code>ZoneofEndpoints</code>.<br></td>
+</tr>
+<tr>
+<td>Links{</td>
+<td>Object (optional)<br></td>
+<td>Contains references to other resources that are related to the zone.</td>
+</tr>
+<tr>
+<td>ContainedByZones [{</td>
+<td>Array (optional)<br></td>
+<td>Represents an array of <code>ZoneofZones</code> for the zone being created (applicable when creating a zone of endpoints).</td>
+</tr>
+<tr>
+<td>@odata.id }]</td>
+<td>String</td>
+<td>Link to a Zone of zones.</td>
+</tr>
+<tr>
+<td>AddressPools [{</td>
+<td>Array (optional)<br></td>
+<td>Represents an array of address pools linked with the zone (zone-specific address pools).</td>
+</tr>
+<tr>
+<td>@odata.id }]</td>
+<td>String</td>
+<td>Link to an address pool.</td>
+</tr>
+<tr>
+<td>Endpoints [{</td>
+<td>Array (optional)<br></td>
+<td>Represents an array of endpoints to be included in the zone.</td>
+</tr>
+<tr>
+<td>@odata.id }]</td>
+<td>String</td>
+<td>Link to an endpoint.</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header</p>
+</blockquote>
+<pre class="highlight plaintext"><code>HTTP/1.1 201 Created
+Allow: "GET", "PUT", "POST", "PATCH", "DELETE"
+Cache-Control: no-cache
+Connection: keep-alive
+Content-Type: application/json; charset=utf-8
+Location: /redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f
+Odata-Version: 4.0
+X-Frame-Options: sameorigin
+Date: Thu, 14 May 2020 16:19:37 GMT
+Transfer-Encoding: chunked
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f",
+   "@odata.type":"#Zone.v1_3_0.Zone",
+   "Description":"",
+   "Id":"06d344bb-cce1-4b0c-8414-6f6df1ea373f",
+   "Links":{
+      "AddressPools":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf"
+         }
+      ],
+      "ContainedByZones":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98"
+         }
+      ],
+      "ContainsZones":[
+
+      ],
+      "Endpoints":[
+         {
+            "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97"
+         }
+      ],
+      "InvolvedSwitches":[
+
+      ]
+   },
+   "Name":"Fabric ZoneofEndpoint",
+   "ZoneType":"ZoneOfEndpoints"
+}
+</code></pre><h2 id='updating-a-zone'>Updating a zone</h2><pre class="highlight plaintext"><code>curl -i -X PATCH \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+    -d \
+'{
+    "Links": {
+        "Endpoints": [{
+            "@odata.id": "/redfish/v1/Fabrics/d76f4c66-aa60-4693-bea1-feac44fb9f81/Endpoints/a9d7f926-fc3c-465f-9724-928ba9becdb2"
+        }]
+    }
+}
+'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>PATCH</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation assigns or unassigns a collection of endpoints, address pools, zone of zones, or switches to a zone of endpoints or a collection of address pools to a zone of zones in a specific fabric.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema representing an updated zone.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample request body (assigning links for a zone of endpoints)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "Links": {
+        "Endpoints": [{
+            "@odata.id": "/redfish/v1/Fabrics/d76f4c66-aa60-4693-bea1-feac44fb9f81/Endpoints/a9d7f926-fc3c-465f-9724-928ba9becdb2"
+        }]
+    }
+}
+</code></pre>
+<blockquote>
+<p>Sample request body (unassigning links for a zone of endpoints)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+    "Links": {
+        "Endpoints": []
+    }
+}
+</code></pre>
+<blockquote>
+<p>Sample request body (assigning links for a zone of zone)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Links":{
+      "AddressPools":[
+        "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d"
+      ]
+   }
+}
+</code></pre>
+<blockquote>
+<p>Sample request body (unassigning links for a zone of zone)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Links":{
+      "AddressPools":[
+
+      ]
+   }
+}
+</code></pre>
+<blockquote>
+<p>Sample response body (assigned links in a zone of endpoints)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
+   "@odata.type":"#Zone.v1_3_0.Zone",
+   "Description":"NK Zone Collection Description",
+   "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
+   "Links":{ 
+      "AddressPools":[ 
+
+      ],
+      "ContainedByZones":[ 
+
+      ],
+      "ContainsZones":[ 
+
+      ],
+      "Endpoints":[ 
+         { 
+            "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Endpoints/e8edcc87-81f9-43a9-b1ce-20a895a60014"
+         }
+      ],
+      "InvolvedSwitches":[ 
+
+      ]
+   },
+   "Name":"SS Zone Collection default",
+   "ZoneType":"ZoneOfEndpoints"
+}
+</code></pre>
+<blockquote>
+<p>Sample response body (unassigned links in a zone of endpoints)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
+   "@odata.type":"#Zone.v1_3_0.Zone",
+   "Description":"NK Zone Collection Description",
+   "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
+   "Links":{ 
+      "AddressPools":[ 
+
+      ],
+      "ContainedByZones":[ 
+
+      ],
+      "ContainsZones":[ 
+
+      ],
+      "Endpoints":[ 
+
+      ],
+      "InvolvedSwitches":[ 
+
+      ]
+   },
+   "Name":"SS Zone Collection default",
+   "ZoneType":"ZoneOfEndpoints"
+}
+</code></pre><h2 id='deleting-a-zone'>Deleting a zone</h2><pre class="highlight plaintext"><code>curl -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>DELETE</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation deletes a zone in a specific fabric.<br><strong>NOTE:</strong><br> If you delete a non-empty zone (a zone which contains links to address pools, other zones, endpoints, or switches), you will receive an HTTP <code>400</code> error. Before attempting to delete, unassign all links in the zone. See <a href="#updating-a-zone">updating a zone</a>.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='deleting-an-endpoint'>Deleting an endpoint</h2><pre class="highlight plaintext"><code>curl -i DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odim_hosts}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>DELETE</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation deletes an endpoint in a specific fabric.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='deleting-an-address-pool'>Deleting an address pool</h2><pre class="highlight plaintext"><code>curl -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>DELETE</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation deletes an address pool in a specific fabric.<br><strong>NOTE:</strong><br> If you delete an address pool that is being used in any zone, you will receive an HTTP <code>400</code> error. Before attempting to delete, ensure that the address pool you want to delete is not present in any zone. To get the list of address pools in a zone, see links to <code>addresspools</code> in the sample response body for a <a href="#single-zone">single zone</a>.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h1 id='tasks'>Tasks</h1>
+<p>A task represents an operation that takes more time than a user typically wants to wait and is carried out asynchronously.</p>
+
+<p>An example of a task is resetting an aggregate of servers. Resetting all the servers in a group is a time-consuming operation; the user waiting for the result would be blocked from performing other operations. Resource Aggregator for ODIM creates Redfish tasks for such long-duration operations and exposes Redfish <code>TaskService</code> APIs and <code>Task monitor</code> API. Use these APIs to manage and monitor the tasks until their completion, while performing other operations.</p>
+
+<aside class="notice">
+To view the tasks and the task monitor, ensure that the user has `Login` privilege at the minimum.
+</aside>
+
+<p><strong>Supported endpoints</strong></p>
+
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td>/redfish/v1/TaskService</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/TaskService/Tasks</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/TaskService/Tasks/{taskId}</td>
+<td><code>GET</code>, <code>DELETE</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/ TaskService/Tasks/{taskId}/SubTasks<br></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/ TaskService/Tasks/{taskId}/SubTasks/ {subTaskId}<br></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/taskmon/{taskId}</td>
+<td><code>GET</code></td>
+</tr>
+</tbody></table>
+<h2 id='taskservice-root'>TaskService root</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/TaskService'
+
+
+</code></pre>
+<blockquote>
+<p>Sample response header </p>
+</blockquote>
+<pre class="highlight plaintext"><code>Allow:GET
+Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Date:Sun,17 May 2020 15:11:12 GMT+5m 13s
+Link:&lt;/redfish/v1/SchemaStore/en/TaskService.json&gt;; rel=describedby
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Transfer-Encoding":chunked
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#TaskService.v1_1_4.TaskService",
+   "@odata.id":"/redfish/v1/TaskService",
+   "@odata.context":"/redfish/v1/$metadata#TaskService.TaskService",
+   "Description":"TaskService",
+   "Id":"TaskService",
+   "Name":"TaskService",
+   "CompletedTaskOverWritePolicy":"Oldest",
+   "DateTime":"2020-04-17T09:42:04.547136227Z",
+   "LifeCycleEventOnTaskStateChange":true,
+   "ServiceEnabled":true,
+   "Status":{
+      "Health":"OK",
+      "HealthRollup":"OK",
+      "Oem":{
+
+      },
+      "State":"Enabled"
+   },
+   "Tasks":{
+      "@odata.id":"/redfish/v1/TaskService/Tasks"
+   }
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/TaskService</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Schema for the Redfish <code>TaskService</code> root.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li> Links to tasks</li><li>Properties of <code>TaskService</code>.<br> Following are a few important properties of <code>TaskService</code> returned in the JSON response:<br><ul><li><code>CompletedTaskOverWritePolicy</code> : This property indicates the overwrite policy for completed tasks and is set to <code>oldest</code> by default - Older completed tasks will be removed automatically.</li><li><code>LifeCycleEventOnTaskStateChange</code>: This property indicates if the task state change event will be sent to the clients who have subscribed to it. It is set to <code>true</code> by default.</li></ul></li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='viewing-a-collection-of-tasks'>Viewing a collection of tasks</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/TaskService/Tasks'
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.type":"#TaskCollection.TaskCollection",
+   "@odata.id":"/redfish/v1/TaskService/Tasks",
+   "@odata.context":"/redfish/v1/$metadata#TaskCollection.TaskCollection",
+   "Name":"Task Collection",
+   "Members@odata.count":3,
+   "Members":[ 
+      { 
+         "@odata.id":"/redfish/v1/TaskService/Tasks/taskc8cf2e2e-6cb2-4e24-8512-247fa5d606b0"
+      },
+      { 
+         "@odata.id":"/redfish/v1/TaskService/Tasks/taskc15aca5a-30a6-4618-adca-c25c889dc409"
+      },
+      { 
+         "@odata.id":"/redfish/v1/TaskService/Tasks/task38d6df20-989f-4c05-ad0e-5939774bab7c"
+      }
+   ]
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><strong>GET</strong></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/TaskService/Tasks</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>List of tasks scheduled by or being executed by Redfish <code>TaskService</code>.<br><strong>NOTE:</strong><br>Only an admin or a user with <code>ConfigureUsers</code> privilege can view all the running and scheduled tasks in Resource Aggregator for ODIM at any given time. Other users can view tasks created only for their operations with <code>Login</code> privilege.<br></blockquote></td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>A list of task endpoints with task Ids.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='viewing-information-about-a-specific-task'>Viewing information about a specific task</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/TaskService/Tasks/{TaskID}'
+
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "Name":"Task task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "TaskState":"Completed",
+   "StartTime":"2020-04-17T06:52:15.632439043Z",
+   "EndTime":"2020-04-17T06:52:15.947796761Z",
+   "TaskStatus":"OK",
+   "SubTasks":"",
+   "TaskMonitor":"/taskmon/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "PercentComplete":100,
+   "Payload":{
+      "HttpHeaders":{
+         "Cache-Control":"no-cache",
+         "Connection":"keep-alive",
+         "Content-type":"application/json; charset=utf-8",
+         "Location":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1",
+         "OData-Version":"4.0",
+         "Transfer-Encoding":"chunked"
+      },
+      "HttpOperation":"POST",
+      "JsonBody":{
+         "code":"Base.1.6.1.Success",
+         "message":"Request completed successfully."
+      },
+      "TargetUri":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1"
+   },
+   "Messages":[
+
+   ]
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/TaskService/Tasks/{TaskID}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A specific task scheduled by or being executed by Redfish <code>TaskService</code>.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema having the details of this task - task Id, name, state of the task, start time and end time of this task, completion percentage, URI of the task monitor associated with this task, subtasks if any. The sample response body given in this section is a JSON response for a task which adds a server.<br></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='task-monitor'>Task monitor</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+ 'https://{odimra_host}:{port}/taskmon/{TaskID}'
+
+</code></pre>
+<blockquote>
+<p>Sample response header</p>
+</blockquote>
+<pre class="highlight plaintext"><code>Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/taskmon/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
+Content-Length:491 bytes
+</code></pre>
+<blockquote>
+<p>Sample response body (ongoing task)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
+   "Name":"Task taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
+   "Message":"The task with id taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70 has started.",
+   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageArgs":[
+      "taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70"
+   ],
+   "NumberOfArgs":1,
+   "Severity":"OK",
+   "TaskState":"Running",
+   "StartTime":"2020-04-17T09:39:22.713860589Z",
+   "EndTime":"0001-01-01T00:00:00Z",
+   "TaskStatus":"OK",
+   "SubTasks":"/redfish/v1/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70/SubTasks",
+   "TaskMonitor":"/taskmon/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
+   "PercentComplete":8,
+   "Payload":{
+      "HttpHeaders":null,
+      "HttpOperation":"",
+      "JsonBody":null,
+      "TargetUri":""
+   },
+   "Messages":[
+
+   ]
+}
+</code></pre>
+<blockquote>
+<p>Sample response body (completed task)</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+"code": "Base.1.6.1.Success",
+"message": "Request completed successfully."
+}
+</code></pre>
+<blockquote>
+<p>Sample error response</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "error":{ 
+      "code":"Base.1.6.1.GeneralError",
+      "message":"one or more of the reset actions failed, check sub tasks for more info."
+   }
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/taskmon/{TaskID}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A task monitor allows for polling a specific task for its completion. Perform <code>GET</code> on a task monitor URI to view the progress of a specific task (until it is complete).</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li>Details of the task and its progress in the JSON response such as:<br> Link to the task,<br>Id of the task,<br>Task state and status,<br>Percentage of completion,<br>Start time and end time,<br>Link to subtasks (if any).<br>To know the status of a subtask, perform <code>GET</code> on the respective subtask link.<br><strong>NOTE:</strong><br><ul><li>Note down the task Id. If the task completes with an error, it is required to know which subtask has failed.To get the list of subtasks, perform HTTP <code>GET</code> on <code>/redfish/v1/TaskService/Tasks/{taskId}</code>.</li><li><code>EndTime</code> of an ongoing task has <code>0001-01-01T00:00:00Z</code> as value, which is equivalent to zero time stamp value. It is updated only after the completion of the task.</li></ul></li><li>On failure, an error message. See &quot;Sample error response&quot;.<br> To get the list of subtasks, perform <code>GET</code> on the task URI having the Id of the failed task. To know which subtasks have failed, perform <code>GET</code> on subtask links individually.</li><li>On successful completion, result of the operation carried out by the task. See &quot;Sample response body (completed task)&quot;.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><ul><li><code>202 Accepted</code> until the task is complete.</li><li><code>200 OK</code>, <code>201 Created</code> on success.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='deleting-a-task'>Deleting a task</h2><pre class="highlight plaintext"><code>curl -i DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/TaskService/Tasks/{TaskID}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task52589fad-22fb-4505-86fd-cf845d500a33",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"task52589fad-22fb-4505-86fd-cf845d500a33",
+   "Name":"Task task52589fad-22fb-4505-86fd-cf845d500a33",
+   "Message":"The task with id task52589fad-22fb-4505-86fd-cf845d500a33 has started.",
+   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageArgs":[
+      "task52589fad-22fb-4505-86fd-cf845d500a33"
+   ],
+   "NumberOfArgs":1,
+   "Severity":"OK",
+   "TaskState":"Completed",
+   "StartTime":"2020-04-13T10:29:21.406470494Z",
+   "EndTime":"2020-04-13T10:29:21.927909927Z",
+   "TaskStatus":"OK",
+   "SubTasks":"",
+   "TaskMonitor":"/taskmon/task52589fad-22fb-4505-86fd-cf845d500a33",
+   "PercentComplete":100,
+   "Payload":{
+      "HttpHeaders":{
+         "Content-type":"application/json; charset=utf-8",
+         "Location":"/redfish/v1/Managers/a6ddc4c0-2568-4e16-975d-fa771b0be853"
+      },
+      "HttpOperation":"POST",
+      "JsonBody":{
+         "code":"Base.1.6.1.Success",
+         "message":"Request completed successfully."
+      },
+      "TargetUri":"/redfish/v1/AggregationService/Actions/AggregationService.Add"
+   },
+   "Messages":[
+
+   ]
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>DELETE</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/TaskService/Tasks/{TaskID}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation deletes a specific task. Deleting a running task aborts the operation being carried out.<br><strong>NOTE:</strong><br> Only a user having <code>ConfigureComponents</code> privilege is authorized to delete a task. If you do not have the necessary privileges, you will receive an HTTP <code>403 Forbidden</code> error.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema representing the deleted task.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>202 Accepted</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h1 id='events'>Events</h1>
+<p>Resource Aggregator for ODIM offers an event interface that allows northbound clients to interact and receive notifications such as alerts and alarms from multiple resources, including Resource Aggregator for ODIM itself. It exposes Redfish <code>EventService</code> APIs for managing events.</p>
+
+<p>An event is a way of asynchronously notifying the client of some significant state change or error condition, usually of a time critical nature.</p>
+
+<p>Use these APIs to subscribe a northbound client to southbound events by creating a subscription entry in the service.</p>
+
+<p><strong>Supported endpoints</strong></p>
+
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td>/redfish/v1/EventService</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/EventService/Subscriptions</td>
+<td><code>POST</code>, <code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/EventService/Actions/EventService.SubmitTestEvent</td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/EventService/Subscriptions/{subscriptionId}</td>
+<td><code>GET</code>, <code>DELETE</code></td>
+</tr>
+</tbody></table>
+<h2 id='eventservice-root'>EventService root</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService'
+
+
+</code></pre>
+<blockquote>
+<p>Sample response header </p>
+</blockquote>
+<pre class="highlight plaintext"><code>Allow:GET
+Cache-Control:no-cache
+Connection:Keep-alive
+Content-Type:application/json; charset=utf-8
+Link:/v1/SchemaStore/en/EventService.json&gt;; rel=describedby
+Odata-Version:4.0
+X-Frame-Options:"sameorigin
+Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
+Transfer-Encoding:chunked
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.context":"/redfish/v1/$metadata#EventService.EventService",
+   "Id":"EventService",
+   "@odata.id":"/redfish/v1/EventService",
+   "@odata.type":"#EventService.v1_5_0.EventService",
+   "Name":"EventService",
+   "Description":"EventService",
+   "Actions":{
+      "#EventService.SubmitTestEvent":{
+         "target":"/redfish/v1/EventService/Actions/EventService.SubmitTestEvent",
+         "EventType@Redfish.AllowableValues":[
+            "StatusChange",
+            "ResourceUpdated",
+            "ResourceAdded",
+            "ResourceRemoved",
+            "Alert"
+         ]
+      },
+      "Oem":{
+
+      }
+   },
+   "DeliveryRetryAttempts":3,
+   "DeliveryRetryIntervalSeconds":60,
+   "EventFormatTypes":[
+      "Event"
+   ],
+   "EventTypesForSubscription":[
+      "StatusChange",
+      "ResourceUpdated",
+      "ResourceAdded",
+      "ResourceRemoved",
+      "Alert"
+   ],
+   "RegistryPrefixes":[
+
+   ],
+   "ResourceTypes":[
+      "ManagerAccount",
+      "Switch",
+      "EventService",
+      "LogService",
+      "ManagerNetworkProtocol",
+      "ProcessorMetrics",
+      "Task",
+      "Drive",
+      "EthernetInterface",
+      "Protocol",
+      "Redundancy",
+      "Storage",
+      "Bios",
+      "EventDestination",
+      "MessageRegistry",
+      "Role",
+      "Thermal",
+      "VLanNetworkInterface",
+      "IPAddresses",
+      "NetworkInterface",
+      "Volume",
+      "Memory",
+      "PCIeDevice",
+      "PrivilegeRegistry",
+      "Privileges",
+      "Processor",
+      "Sensor",
+      "Endpoint",
+      "MessageRegistryFile",
+      "Session",
+      "Assembly",
+      "Fabric",
+      "Job",
+      "Manager",
+      "MemoryDomain",
+      "Port",
+      "Power",
+      "ProcessorCollection",
+      "Zone",
+      "ComputerSystem",
+      "MemoryChunks",
+      "MemoryMetrics",
+      "NetworkDeviceFunction",
+      "NetworkPort",
+      "PCIeFunction",
+      "AddressPool",
+      "HostInterface",
+      "NetworkAdapter",
+      "PhysicalContext",
+      "SecureBoot",
+      "SerialInterface",
+      "AccelerationFunction",
+      "Chassis",
+      "JobService",
+      "Message",
+      "Event",
+      "LogEntry",
+      "PCIeSlots",
+      "Resource",
+      "BootOption"
+   ],
+   "ServiceEnabled":true,
+   "Status":{
+      "Health":"OK",
+      "HealthRollup":"OK",
+      "State":"Enabled"
+   },
+   "SubordinateResourcesSupported":true,
+   "Subscriptions":{
+      "@odata.id":"/redfish/v1/EventService/Subscriptions"
+   },
+   "Oem":{
+
+   }
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>redfish/v1/EventService</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>The URI for the <code>EventService</code> root.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Properties for managing event subscriptions such as allowed event types and a link to the actual collection of subscriptions.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='creating-an-event-subscription'>Creating an event subscription</h2><pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json; charset=utf-8" \
+   -d \
+'{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{Valid_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "SubscriptionType":"RedfishEvent",
+   "EventFormatType":"Event",
+   "SubordinateResources":true,
+   "OriginResources":[
+      { 
+        "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
+      },
+      {
+        "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
+      }
+   ]
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/EventService/Subscriptions</code></td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td><ul><li><code>Location</code> URI of the task monitor associated with this operation in the response header.</li><li> Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP <code>GET</code> on the task URI. See &quot;Sample response body (HTTP 202 status)&quot;.<br><strong>IMPORTANT:</strong><br> Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP <code>GET</code> on <code>/redfish/v1/TaskService/Tasks/{taskId}</code>.</li><li>On success, a <code>Location</code> header that contains a link to the newly created subscription and a message in the JSON response body saying that the subscription is created. See &quot;Sample response body (HTTP 201 status)&quot;.</li></ul></td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><ul><li><code>202 Accepted</code></li><li><code>201 Created</code></li></ul></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<p><strong>Description</strong> </p>
+
+<p>This endpoint subscribes a northbound client to events originating from a set of resources (southbound devices, managers, Resource Aggregator for ODIM itself) by creating a subscription entry. For use cases, see <a href="#event-subscription-use-cases">Subscription use cases</a>.</p>
+
+<p>It is performed as a task. If there is more than one resource that is sending a specific event, the task is further divided into subasks. To know the progress of this action, perform HTTP <code>GET</code> on the <a href="#task-monitor">task monitor</a> returned in the response header (until the task is complete).</p>
+
+<p>To get the list of subtask URIs, perform HTTP <code>GET</code> on the task URI returned in the JSON response body. See &quot;Sample response body (HTTP 202 status)&quot;. The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of this operation (subtask) on a specific server, perform HTTP <code>GET</code> on the task monitor associated with the respective subtask.</p>
+
+<aside class="notice">
+Only a user with `ConfigureComponents` privilege is authorized to create event subscriptions. If you perform this action without necessary privileges, you will receive an HTTP`403 Forbidden` error.
+</aside>
+
+<blockquote>
+<p>Sample request body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "SubscriptionType":"RedfishEvent",
+   "EventFormatType":"Event",
+   "SubordinateResources":true,
+   "OriginResources":[ 
+      { 
+        "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
+      },
+      {
+        "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}"
+      }
+   ]
+}
+
+
+</code></pre>
+<p><strong>Request parameters</strong></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Attributes</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Name</td>
+<td>String</td>
+<td>(Optional)<br></td>
+<td>Name for the subscription.</td>
+</tr>
+<tr>
+<td>Destination</td>
+<td>String</td>
+<td>Read-only (Required on create)<br></td>
+<td>The URL of the destination event listener that listens to events (Fault management system or any northbound client).<br><strong>NOTE:</strong><br> <code>Destination</code> is unique to a subscription: There can be only one subscription for a destination event listener.<br>To change the parameters of an existing subscription , delete it and then create again with the new parameters and a new destination URL.<br></td>
+</tr>
+<tr>
+<td>EventTypes</td>
+<td>Array (string (enum))</td>
+<td>Read-only (Optional)<br></td>
+<td>The types of events that are sent to the destination. For possible values, see &quot;Event types&quot; table.</td>
+</tr>
+<tr>
+<td>ResourceTypes</td>
+<td>Array (string, null)</td>
+<td>Read-only (Optional)<br></td>
+<td>The list of resource type values (Schema names) that correspond to the <code>OriginResources</code>. For possible values, perform <code>GET</code> on <code>redfish/v1/EventService</code> and check values listed under <code>ResourceTypes</code> in the JSON response.<br> Examples: &quot;ComputerSystem&quot;, &quot;Storage&quot;, &quot;Task&quot;<br></td>
+</tr>
+<tr>
+<td>Context</td>
+<td>String</td>
+<td>Read/write Required (null)<br></td>
+<td>A string that is stored with the event destination subscription.</td>
+</tr>
+<tr>
+<td>MessageId</td>
+<td>String</td>
+<td>Read-only (Optional)<br></td>
+<td>The key used to find the message in a Message Registry.</td>
+</tr>
+<tr>
+<td>Protocol</td>
+<td>String (enum)</td>
+<td>Read-only (Required on create)<br></td>
+<td>The protocol type of the event connection. For possible values, see &quot;Protocol&quot; table.</td>
+</tr>
+<tr>
+<td>SubscriptionType</td>
+<td>String (enum)</td>
+<td>Read-only Required (null)<br></td>
+<td>Indicates the subscription type for events. For possible values, see &quot;Subscription type&quot; table.</td>
+</tr>
+<tr>
+<td>EventFormatType</td>
+<td>String (enum)</td>
+<td>Read-only (Optional)<br></td>
+<td>Indicates the content types of the message that this service can send to the event destination. For possible values, see &quot;EventFormat&quot; type table.</td>
+</tr>
+<tr>
+<td>SubordinateResources</td>
+<td>Boolean</td>
+<td>Read-only (null)</td>
+<td>Indicates whether the service supports the <code>SubordinateResource</code> property on event subscriptions or not. If it is set to <code>true</code>, the service creates subscription for an event originating from the specified <code>OriginResoures</code> and also from its subordinate resources. For example, by setting this property to <code>true</code>, you can receive specified events from a compute node: <code>/redfish/v1/Systems/{ComputerSystemId}</code> and from its subordinate resources such as:<br> <code>/redfish/v1/Systems/{ComputerSystemId}/Memory</code>,<br> <code>/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces</code>,<br> <code>/redfish/v1/Systems/{ComputerSystemId}/Bios</code>,<br> <code>/redfish/v1/Systems/{ComputerSystemId}/Storage</code></td>
+</tr>
+<tr>
+<td>OriginResources</td>
+<td>Array</td>
+<td>Required (null)<br></td>
+<td>Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource will be sent to the subscriber. For possible values, see &quot;Origin resources&quot; table.</td>
+</tr>
+</tbody></table>
+<h3 id='origin-resources'>Origin resources</h3>
+<table><thead>
+<tr>
+<th>String</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>A single resource</td>
+<td>A specific resource for which the service sends only related events.</td>
+</tr>
+<tr>
+<td>A list of resources. Supported collections:<br></td>
+<td>A collection of resources for which the service will send only related events.</td>
+</tr>
+<tr>
+<td>/redfish/v1/Systems</td>
+<td>All computer system resources available in Resource Aggregator for ODIM for which the service sends only related events. By setting <code>EventType</code> property in the request payload to <code>ResourceAdded</code> or <code>ResourceRemoved</code> and <code>OriginResources</code> property to <code>/redfish/v1/Systems</code>, you can receive notifications when a system is added or removed in Resource Aggregator for ODIM.</td>
+</tr>
+<tr>
+<td>/redfish/v1/Chassis</td>
+<td>All chassis resources available in Resource Aggregator for ODIM for which the service sends only related events.</td>
+</tr>
+<tr>
+<td>/redfish/v1/Fabrics</td>
+<td>All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.</td>
+</tr>
+<tr>
+<td>/redfish/v1/TaskService/Tasks</td>
+<td>All tasks scheduled by or being executed by Redfish <code>TaskService</code>. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as <code>OriginResources</code> and <code>EventTypes</code> as <code>StatusChange</code>, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP <code>GET</code> on its task monitor until the task is complete.<br></td>
+</tr>
+</tbody></table>
+<h3 id='event-types'>Event types</h3>
+<table><thead>
+<tr>
+<th>String</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Alert</td>
+<td>A condition exists which requires attention.</td>
+</tr>
+<tr>
+<td>ResourceAdded</td>
+<td>A resource has been added.</td>
+</tr>
+<tr>
+<td>ResourceRemoved</td>
+<td>A resource has been removed.</td>
+</tr>
+<tr>
+<td>ResourceUpdated</td>
+<td>The value of this resource has been updated.</td>
+</tr>
+<tr>
+<td>StatusChange</td>
+<td>The status of this resource has changed.</td>
+</tr>
+</tbody></table>
+<h3 id='eventformat-type'>EventFormat type</h3>
+<table><thead>
+<tr>
+<th>String</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Event</td>
+<td>The subscription destination will receive JSON bodies of the Resource Type Event.</td>
+</tr>
+</tbody></table>
+<h3 id='subscription-type'>Subscription type</h3>
+<table><thead>
+<tr>
+<th>String</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>RedfishEvent</td>
+<td>The subscription follows the Redfish specification for event notifications, which is done by a service sending an HTTP <code>POST</code> to the destination URI of the subscriber.</td>
+</tr>
+</tbody></table>
+<h3 id='protocol'>Protocol</h3>
+<table><thead>
+<tr>
+<th>String</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Redfish</td>
+<td>The destination follows the Redfish specification for event notifications.</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header (HTTP 202 status) </p>
+</blockquote>
+<pre class="highlight plaintext"><code>Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/taskmon/taska9702e20-884c-41e2-bd9c-d779a4dd2e6e
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Fri, 08 Nov 2019 07:49:42 GMT+7m 9s
+Content-Length:0 byte
+
+</code></pre>
+<blockquote>
+<p>Sample response header (HTTP 201 status) </p>
+</blockquote>
+<pre class="highlight plaintext"><code>Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/redfish/v1/EventService/Subscriptions/76088e1c-4654-4eec-a3f6-60bc33b77cdb
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
+Transfer-Encoding:chunked
+</code></pre>
+<blockquote>
+<p>Sample response body (HTTP 202 status) </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
+   "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
+   "Message":"The task with id taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad has started.",
+   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageArgs":[
+      "taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad"
+   ],
+   "NumberOfArgs":1,
+   "Severity":"OK"
+}
+</code></pre>
+<blockquote>
+<p>Sample response body (subtask) </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#SubTask.v1_4_2.SubTask",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a/SubTasks/task22a98864-5dd8-402b-bfe0-0d61e265391e",
+   "@odata.context":"/redfish/v1/$metadata#SubTask.SubTask",
+   "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
+   "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
+   "Message":"Successfully Completed Request",
+   "MessageId":"Base.1.6.1.Success",
+   "Severity":"OK",
+   "Members@odata.count":0,
+   "Members":null,
+   "TaskState":"Completed",
+   "StartTime":"2020-05-13T13:33:59.917329733Z",
+   "EndTime":"2020-05-13T13:34:00.320539988Z",
+   "TaskStatus":"OK",
+   "SubTasks":"",
+   "TaskMonitor":"/taskmon/task22a98864-0dd8-402b-bfe0-0d61e265391e",
+   "PercentComplete":100,
+   "Payload":{
+      "HttpHeaders":null,
+      "HttpOperation":"POST",
+      "JsonBody":"",
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+   },
+   "Messages":null
+}
+</code></pre>
+<blockquote>
+<p>Sample response body (HTTP 201 status) </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "error":{
+      "@Message.ExtendedInfo":[
+         {
+            "MessageId":"Base.1.4.Created"
+         }
+      ],
+      "code":"iLO.0.10.ExtendedInfo",
+      "message":"See @Message.ExtendedInfo for more information."
+   }
+}
+</code></pre><h2 id='submitting-a-test-event'>Submitting a test event</h2><pre class="highlight plaintext"><code>curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json; charset=utf-8" \
+   -d \
+'{ 
+   "EventGroupId":{Group_Id_Integer},
+   "EventId":"{Unique_Positive_Integer}",
+   "EventTimestamp":"{Event_Time_Stamp}",
+   "EventType":"{Event_Type_String}",
+   "Message":"{Message_String}",
+   "ResourceTypes":[{resource_type_string}],
+   "MessageArgs":[ 
+
+   ],
+   "MessageId":"{message_id_for_messageRegistry}",
+   "OriginOfCondition":"/redfish/v1/Systems/{ComputerSystemId}",
+   "Severity":"Critical"
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Actions/EventService.SubmitTestEvent'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>POST</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/EventService/Actions/EventService.SubmitTestEvent</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>Once the subscription is successfully created, you can post a test event to Resource Aggregator for ODIM to check whether you are able to receive events. If the event is successfully posted, you will receive a JSON payload of the event response on the client machine (destination) that is listening to events. To know more about this event, look up the message registry using the <code>MessageId</code> received in the payload. See &quot;Sample message registry (Alert.1.0.0)&quot;. For more information on message registries, see <a href="#message-registries">Message registries</a>.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample event payload </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "EventGroupId":1,
+   "EventId":"132489713478812346",
+   "EventTimestamp":"2020-02-17T17:17:42-0600",
+   "EventType":"Alert",
+   "Message":"The LAN has been disconnected",
+   "ResourceTypes":["EthernetInterface"],
+   "MessageArgs":[ 
+       "EthernetInterface 1",
+            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
+   ],
+   "MessageId":"Alert.1.0.LanDisconnect",
+   "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1/EthernetInterfaces/1",
+   "Severity":"Critical"
+}
+
+</code></pre>
+<p><strong>Request parameters</strong> </p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Attributes</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>EventGroupId</td>
+<td>Integer</td>
+<td>Optional</td>
+<td>The group Id for the event.</td>
+</tr>
+<tr>
+<td>EventId</td>
+<td>String</td>
+<td>Optional</td>
+<td>The Id for the event to add. This Id is a string of a unique positive integer. Generate a random positive integer and use it as the Id.</td>
+</tr>
+<tr>
+<td>EventTimestamp</td>
+<td>String</td>
+<td>Optional</td>
+<td>The date and time stamp for the event to add. When the event is received, it translates as the time the event occurred.</td>
+</tr>
+<tr>
+<td>EventType</td>
+<td>String (enum)</td>
+<td>Optional</td>
+<td>The type for the event to add. For possible property values, see &quot;EventType&quot; in <a href="#creating-an-event-subscription">Creating an event subscription</a>.</td>
+</tr>
+<tr>
+<td>Message</td>
+<td>String</td>
+<td>Optional</td>
+<td>The human-readable message for the event to add.</td>
+</tr>
+<tr>
+<td>ResourceTypes</td>
+<td>Array (string, null)</td>
+<td>Read-only  <br></td>
+<td>The list of resource type values (Schema names) that correspond to <code>OriginOfCondition</code>. For possible values, perform <code>GET</code> on <code>redfish/v1/EventService</code> and check values listed under <code>ResourceTypes</code> in the JSON response.<br> Examples: &quot;ComputerSystem&quot;, &quot;Storage&quot;, &quot;Task&quot;<br></td>
+</tr>
+<tr>
+<td>MessageArgs [ ]</td>
+<td>Array (string)</td>
+<td>Optional</td>
+<td>An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, <code>MessageArgs</code> in &quot;Sample event payload&quot; has the following two substitution variables:<br><ul><li><code>EthernetInterface 1</code></li><li><code>/redfish/v1/Systems/{ComputerSystemId}</code></li></ul><br><code>Description</code> and <code>Message</code> values in &quot;Sample message registry&quot; are substituted with the above-mentioned variables. They translate to &quot;A LAN Disconnect on <code>EthernetInterface 1</code> was detected on system <code>/redfish/v1/Systems/{ComputerSystemId}.</code></td>
+</tr>
+<tr>
+<td>MessageId</td>
+<td>String</td>
+<td>Required</td>
+<td>The Message Id for the event to add. It is the key used to find the message in a message registry. It has <code>RegistryPrefix</code> concatenated with the version, and the unique identifier for the message registry entry. The <code>RegistryPrefix</code> concatenated with the version is the name of the message registry. To get the names of available message registries, perform HTTP <code>GET</code> on <code>/redfish/v1/Registries</code>. The message registry mentioned in the sample request payload is <code>Alert.1.0</code>.</td>
+</tr>
+<tr>
+<td>OriginOfCondition</td>
+<td>String</td>
+<td>Optional</td>
+<td>The URL in the <code>OriginOfCondition</code> property of the event to add. It is not a reference object. It is the resource that originated the condition that caused the event to be generated. For possible values, see &quot;Origin resources&quot; in <a href="#creating-an-event-subscription">Creating an event subscription</a>.</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>String</td>
+<td>Optional</td>
+<td>The severity for the event to add. For possible values, see &quot;Severity&quot; table.</td>
+</tr>
+</tbody></table>
+<h3 id='severity'>Severity</h3>
+<table><thead>
+<tr>
+<th>String</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Critical</td>
+<td>A critical condition that requires immediate attention.</td>
+</tr>
+<tr>
+<td>OK</td>
+<td>Informational or operating normally.</td>
+</tr>
+<tr>
+<td>Warning</td>
+<td>A condition that requires attention.</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<p>Sample response header </p>
+</blockquote>
+<pre class="highlight plaintext"><code>Cache-Control:no-cache
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Fri,15 May 2020 07:42:59 GMT+5m 11s
+Transfer-Encoding:chunked
+
+</code></pre>
+<blockquote>
+<p>Sample event response </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   "@odata.context":"/redfish/v1/$metadata#Event.Event",
+   "@odata.id":"/redfish/v1/EventService/Events/1",
+   "@odata.type":"#Event.v1_1_0.Event ",
+   "Id":"1",
+   "Name":"Event Array",
+   "Context":"ODIMRA_Event",
+   "Events":[ 
+      { 
+         "EventType":"Alert",
+         "EventId":"132489713478812346",
+         "Severity":"Critical",
+         "Message":"The LAN has been disconnected",
+         "MessageId":"Alert.1.0.LanDisconnect",
+         "MessageArgs":[ 
+            "EthernetInterface 1",
+            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
+         ],
+         "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1/EthernetInterfaces/1",
+         "Context":"Event Subscription"
+}
+]
+}
+</code></pre>
+<blockquote>
+<p>Sample message registry (Alert.1.0.0) </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+"@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
+"Id": “Alert.1.0.0",
+"Name": "Base Message Registry",
+"Language": "en",
+"Description": "This registry is a sample Redfish alert message registry",
+"RegistryPrefix": "Alert",
+"RegistryVersion": "1.0.0",
+"OwningEntity": "Contoso",
+"Messages": {
+     "LanDisconnect": {
+     "Description": "A LAN Disconnect on %1 was detected on system %2.",
+     "Message": "A LAN Disconnect on %1 was detected on system %2.",
+     "Severity": "Warning",
+     "NumberOfArgs": 2,
+     "Resolution": "None"
+},
+...
+</code></pre><h2 id='event-subscription-use-cases'>Event subscription use cases</h2><h3 id='subscribing-to-resource-addition-notification'>Subscribing to resource addition notification</h3>
+<blockquote>
+<p>Resource addition notification payload</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   ​   "Name":"EventSubscription",
+   ​   "Destination":"https://{Valid_destination_IP_Address}:{Port}/EventListener",
+   ​   "EventTypes":[ 
+      "ResourceAdded"
+   ],
+   ​   "MessageIds":[ 
+      "ResourceEvent.1.0.2.ResourceAdded"
+   ],
+   ​   "ResourceTypes":[ 
+       "ComputerSystem",
+       "Fabric"
+   ],
+   ​   "Protocol":"Redfish",
+   ​   "Context":"Event Subscription",
+   ​   "SubscriptionType":"RedfishEvent",
+   ​   "EventFormatType":"Event",
+   ​   "SubordinateResources":true,
+   ​   "OriginResources":[
+            { 
+      ​        "@odata.id":"/redfish/v1/Systems"
+            },
+            {
+              "@odata.id":"/redfish/v1/Fabrics" 
+            }     ​
+   ]   ​
+}​
+</code></pre>
+<p>To get notified whenever a new resource is added in Resource Aggregator for ODIM, subscribe to <code>ResourceAdded</code> event originating from any collection (Systems, Chassis, Fabrics). </p>
+
+<p>To create this subscription, perform HTTP <code>POST</code> on <code>/redfish/v1/EventService/Subscriptions</code> with the sample request payload:</p>
+<h3 id='subscribing-to-resource-removal-notification'>Subscribing to resource removal notification</h3>
+<blockquote>
+<p>Resource removal notification payload</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   ​   "Name":"EventSubscription",
+   ​   "Destination":"https://{Valid_destination_IP_Address}:{Port}/EventListener",
+   ​   "EventTypes":[ 
+      "ResourceRemoved"
+   ],
+   ​   "MessageIds":[ 
+      "ResourceEvent.1.0.2.ResourceRemoved"
+   ],
+   ​   "ResourceTypes":[ 
+      "ComputerSystem",
+      "Fabric"
+   ],
+   ​   "Protocol":"Redfish",
+   ​   "Context":"Event Subscription",
+   ​   "SubscriptionType":"RedfishEvent",
+   ​   "EventFormatType":"Event",
+   ​   "SubordinateResources":true,
+   ​   "OriginResources":[ 
+      ​      { 
+      ​        "@odata.id":"/redfish/v1/Systems"
+            },
+            {
+              "@odata.id":"/redfish/v1/Fabrics" 
+            }     ​
+   ]   ​
+}​
+</code></pre>
+<p>To get notified whenever an existing resource is removed from Resource Aggregator for ODIM, subscribe to <code>ResourceRemoved</code> event originating from any collection (Systems, Chassis, Fabrics). </p>
+
+<p>To create this subscription, perform HTTP <code>POST</code> on <code>/redfish/v1/EventService/Subscriptions</code> with the sample request payload:</p>
+<h3 id='subscribing-to-task-status-notifications'>Subscribing to task status notifications</h3>
+<blockquote>
+<p>Task status notification payload</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{ 
+   ​   "Name":"EventSubscription",
+   ​   "Destination":"https://{Valid_destination_IP_Address}:{Port}/EventListener",
+   ​   "EventTypes":[ 
+      "StatusChange"
+
+   ],
+   ​   "MessageIds":[ 
+      "ResourceEvent.1.0.2.StatusChange"
+   ],
+   ​   "ResourceTypes":[ 
+      "Task"
+   ],
+   ​   "Protocol":"Redfish",
+   ​   "Context":"Event Subscription",
+   ​   "SubscriptionType":"RedfishEvent",
+   ​   "EventFormatType":"Event",
+   ​   "SubordinateResources":true,
+   ​   "OriginResources":[ 
+            {
+      ​       "@odata.id":"/redfish/v1/TaskService/Tasks" 
+            }     ​
+   ]   ​
+}​
+</code></pre>
+<p>There are two ways of checking the task completion status in Resource Aggregator for ODIM: keep polling a task until its completion or simply subscribe to an event notification for task status change (to receive changes in the task status asynchronously).</p>
+
+<p>To get notified of the task completion status, subscribe to <code>StatusChange</code> event on <code>/redfish/v1/TaskService/Tasks</code>. To create this subscription, perform HTTP <code>POST</code> on <code>/redfish/v1/EventService/Subscriptions</code> with the sample request payload:</p>
+<h2 id='viewing-a-collection-of-event-subscriptions'>Viewing a collection of event subscriptions</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.context":"/redfish/v1/$metadata#EventDestinationCollection.EventDestinationCollection",
+   "@odata.id":"/redfish/v1/EventService/Subscriptions",
+   "@odata.type":"#EventDestinationCollection.EventDestinationCollection",
+   "Name":"EventSubscriptions",
+   "Description":"Event Subscriptions",
+   "Members@odata.count":4,
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf/"
+      },
+      {
+         "@odata.id":"/redfish/v1/EventService/Subscriptions/72251989-f5e4-453f-9422-bb36d1d94dec/"
+      },
+      {
+         "@odata.id":"/redfish/v1/EventService/Subscriptions/d43babde-c34e-40b8-8a8c-c57b502b9980/"
+      },
+      {
+         "@odata.id":"/redfish/v1/EventService/Subscriptions/6fe7d515-215c-4aba-8ed5-1faed5a91c87/"
+      }
+   ]
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/EventService/Subscriptions</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation lists all the event subscriptions created by the user.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>A collection of event subscription links.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='viewing-information-about-a-specific-event-subscription'>Viewing information about a specific event subscription</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions/{subscriptionId}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
+   "@odata.context":"/redfish/v1/$metadata#EventDestination.EventDestination",
+   "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
+   "Name":"ODIM_NBI_client",
+   "Destination":"https://{Valid_IP_Address}:{port}/EventListener",
+   "Context":"ODIMRA_Event",
+   "Protocol":"Redfish",
+   "EventTypes":[
+      "Alert"
+   ],
+   "SubscriptionType":"RedfishEvent",
+   "MessageIds":[
+
+   ],
+   "ResourceTypes":[
+      "ComputerSystem"
+   ],
+   "OriginResources":[
+      "@odata.id":"/redfish/v1/Systems/936f4838-9ce5-4e2a-9e2d-34a45422a389:1"
+   ]
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/EventService/Subscriptions/{subscriptionId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>This operation fetches information about a particular event subscription created by the user.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>JSON schema having the details of this subscription–subscription Id, destination, event types, origin resource, and so on.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='deleting-an-event-subscription'>Deleting an event subscription</h2><pre class="highlight plaintext"><code>curl -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions/{subscriptionId}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body </p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
+   "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
+   "Name":"Event Subscription",
+   "Message":"The resource has been removed successfully.",
+   "MessageId":"ResourceEvent.1.0.2.ResourceRemoved",
+   "Severity":"OK"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>DELETE</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/EventService/Subscriptions/{subscriptionId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>To unsubscribe from an event, delete the corresponding subscription entry. Perform <code>DELETE</code> on this URI to remove an event subscription entry.<br><strong>NOTE:</strong><br> Only a user with <code>ConfigureComponents</code> privilege is authorized to delete event subscriptions. If you perform this action without necessary privileges, you will receive an HTTP<code>403 Forbidden</code> error.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>A message in the JSON response body saying that the subscription is removed.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h1 id='message-registries'>Message registries</h1>
+<p>A <code>MessageRegistry</code> represents the properties for a message registry.</p>
+
+<p>A message registry is an array of messages and their attributes organized by <code>MessageId</code>. Each entry has</p>
+
+<ul>
+<li><p>Description</p></li>
+<li><p>The message this Id translates to.</p></li>
+<li><p>Severity</p></li>
+<li><p>The number and type of arguments</p></li>
+<li><p>Proposed resolution</p></li>
+</ul>
+
+<p>The arguments are the substitution variables for the message. The <code>MessageId</code> is formed according to the Redfish specification. It consists of the <code>RegistryPrefix</code> concatenated with the version and the unique identifier for the message registry entry.</p>
+
+<aside class="notice">
+To access Redfish message registries, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
+</aside>
+
+<p><strong>Supported endpoints</strong></p>
+
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td>/redfish/v1/Registries</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/Registries/{registryId}</td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td>/redfish/v1/registries/{registryFileId}</td>
+<td><code>GET</code></td>
+</tr>
+</tbody></table>
+<h2 id='viewing-a-collection-of-registries'>Viewing a collection of registries</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Registries'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "@odata.context":"/redfish/v1/$metadata#MessageRegistryFileCollection.MessageRegistryFileCollection",
+   "@odata.id":"/redfish/v1/Registries/",
+   "@odata.type":"#MessageRegistryFileCollection.MessageRegistryFileCollection",
+   "Name":"Registry File Repository",
+   "Description":"Registry Repository",
+   "Members@odata.count":27,
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.2.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.3.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.3.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.4.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.5.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.6.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.6.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.1_PrivilegeRegistry"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.2_PrivilegeRegistry"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.3_PrivilegeRegistry"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.0.4_PrivilegeRegistry"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryA40.v1_1_46"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/iLO.2.13.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.1.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_00"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU30.v1_2_00"
+      }
+   ]
+}
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Registries</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A collection of Redfish-provided registries and custom registries.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Links to the registry instances.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='viewing-a-single-registry'>Viewing a single registry</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Registries/{registryId}'
+
+</code></pre>
+<blockquote>
+<p>Sample response body</p>
+</blockquote>
+<pre class="highlight plaintext"><code>{
+   "Id":"Base.1.6.1",
+   "@odata.context":"/redfish/v1/https://10.24.1.95:45000/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
+   "@odata.id":"/redfish/v1/Registries/Base.1.6.1",
+   "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
+   "Name":"Registry File Repository",
+   "Description":"Base Message Registry File Locations",
+   "Languages":[
+      "en"
+   ],
+   "Location":[
+      {
+         "Language":"en",
+         "Uri":"/redfish/v1/registries/Base.1.6.1.json"
+      }
+   ],
+   "Registry":"Base.1.6.1"
+}
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/Registries/{registryId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A single registry.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Link to the file inside this registry.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td>On success, <code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h2 id='viewing-a-file-in-a-registry'>Viewing a file in a registry</h2><pre class="highlight plaintext"><code>curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/registries/{jsonFileId}'
+
+</code></pre>
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><strong>Method</strong></td>
+<td><code>GET</code></td>
+</tr>
+<tr>
+<td><strong>URI</strong></td>
+<td><code>/redfish/v1/registries/{registryFileId}</code></td>
+</tr>
+<tr>
+<td><strong>Description</strong></td>
+<td>A file in a registry.</td>
+</tr>
+<tr>
+<td><strong>Returns</strong></td>
+<td>Content of this file.</td>
+</tr>
+<tr>
+<td><strong>Response code</strong></td>
+<td><code>200 OK</code></td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="curl">curl</a>
+                <a href="#" data-language-name="json">JSON</a>
+                <a href="#" data-language-name="html">HTML</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>

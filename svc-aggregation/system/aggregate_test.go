@@ -133,7 +133,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
+				StatusCode: http.StatusNotFound,
 			},
 		},
 		{
@@ -163,7 +163,7 @@ func TestExternalInterface_GetAllAggregates(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	
+
 	req := agmodel.Aggregate{
 		Elements: []string{
 			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
@@ -195,19 +195,7 @@ func TestExternalInterface_GetAllAggregates(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
-			},
-		},
-		{
-			name: "Invalid Token",
-			e:    p,
-			args: args{
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "invalidToken",
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusOK, // to be replaced http.StatusOK
 			},
 		},
 	}
@@ -225,7 +213,7 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	
+
 	req := agmodel.Aggregate{
 		Elements: []string{
 			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
@@ -254,24 +242,11 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
-			},
-		},
-		{
-			name: "Invalid Token",
-			e:    p,
-			args: args{
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "invalidToken",
-					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
@@ -280,11 +255,11 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					URL: "/redfish/v1/AggregationService/Aggregates/1",
+					URL:          "/redfish/v1/AggregationService/Aggregates/1",
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusNotFound,
 			},
 		},
 	}
@@ -302,7 +277,7 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	
+
 	req := agmodel.Aggregate{
 		Elements: []string{
 			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
@@ -331,24 +306,11 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
-			},
-		},
-		{
-			name: "Invalid Token",
-			e:    p,
-			args: args{
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "invalidToken",
-					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
@@ -357,11 +319,11 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					URL: "/redfish/v1/AggregationService/Aggregates/1",
+					URL:          "/redfish/v1/AggregationService/Aggregates/1",
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, // to be replaced http.StatusOK
+				StatusCode: http.StatusNotFound,
 			},
 		},
 	}
@@ -373,4 +335,3 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 		})
 	}
 }
-

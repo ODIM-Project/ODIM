@@ -670,7 +670,17 @@ func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.A
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality get aggregate collection
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	rpcResponce := a.connector.GetAllAggregates(req)
+	generateResponse(rpcResponce, resp)
 	return nil
 }
 
@@ -681,7 +691,17 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to get an aggregate
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	rpcResponce := a.connector.GetAggregate(req)
+	generateResponse(rpcResponce, resp)
 	return nil
 }
 
@@ -692,7 +712,17 @@ func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.Aggr
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to delete an aggregate
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	rpcResponce := a.connector.DeleteAggregate(req)
+	generateResponse(rpcResponce, resp)
 	return nil
 }
 

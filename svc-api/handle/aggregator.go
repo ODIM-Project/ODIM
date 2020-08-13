@@ -382,18 +382,86 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 
 // GetAggregateCollection is the handler for getting collection of aggregates
 func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.GetAggregateCollectionRPC(req)
+	if err != nil {
+		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }
 
 // GetAggregate is the handler for getting an aggregate
 func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.GetAggregateRPC(req)
+	if err != nil {
+		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }
 
 // DeleteAggregate is the handler for deleting an aggregate
 func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	req := aggregatorproto.AggregatorRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := a.DeleteAggregateRPC(req)
+	if err != nil {
+		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }

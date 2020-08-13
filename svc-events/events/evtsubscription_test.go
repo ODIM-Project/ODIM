@@ -560,9 +560,11 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 }
 
 func TestFabricEventSubscription(t *testing.T) {
-//	common.MuxLock.Lock()
-    	common.SetUpMockConfig()
-//	common.MuxLock.Unlock()
+	if config.Data.URLTranslation == nil {
+		common.MuxLock.Lock()
+		common.SetUpMockConfig()
+		common.MuxLock.Unlock()
+	}
 
 	defer func() {
 		err := common.TruncateDB(common.InMemory)

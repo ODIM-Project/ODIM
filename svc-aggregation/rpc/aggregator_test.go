@@ -986,7 +986,7 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusOK,
+			wantStatusCode: http.StatusNoContent,
 		},
 		{
 			name: "Invalid Token",

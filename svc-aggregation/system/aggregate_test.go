@@ -310,7 +310,7 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusOK,
+				StatusCode: http.StatusNoContent,
 			},
 		},
 		{

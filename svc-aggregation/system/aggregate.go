@@ -225,17 +225,7 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
-	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
-	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
-		OdataID:      req.URL,
-		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
-		ID:           data[1],
-		Name:         "Aggregate",
-	}
-
-	resp.StatusCode = http.StatusOK
-	resp.StatusMessage = response.ResourceRemoved
+	resp.StatusCode = http.StatusNoContent
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",
 		"Connection":        "keep-alive",
@@ -243,7 +233,5 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	commonResponse.CreateGenericResponse(resp.StatusMessage)
-	resp.Body = commonResponse
 	return resp
 }

@@ -412,7 +412,7 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		URL:          ctx.Params().Get("id"),
+		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -441,7 +441,7 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 	req := aggregatorproto.AggregatorRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		URL:          ctx.Params().Get("id"),
+		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"

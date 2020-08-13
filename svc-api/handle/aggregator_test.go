@@ -119,7 +119,7 @@ func testGetAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregator
 		}
 	} else if req.SessionToken == "token" {
 		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
-	} 
+	}
 	return response, nil
 }
 
@@ -458,4 +458,3 @@ func TestDeleteAggregate(t *testing.T) {
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
-

@@ -129,7 +129,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 		}, nil
 
 	} else if url == "https://localhost:9091/ODIM/v1/Managers/1" {
-		body := `{"@odata.id":"/ODIM/v1/Managers/1", "UUID": "1s7sda8asd-asdas8as0", "Id": "1","FirmwareVersion": "iLO 5 v2.12"}`
+		body := `{"@odata.id":"/ODIM/v1/Managers/1", "UUID": "1234877451-1234", "Id": "1","FirmwareVersion": "iLO 5 v2.12"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -177,7 +177,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 		}, nil
 
 	} else if url == host+"/ODIM/v1/Managers/1" {
-		body := `{"@odata.id":"/ODIM/v1/Managers/1", "UUID": "1s7sda8asd-asdas8as0", "Id": "1"}`
+		body := `{"@odata.id":"/ODIM/v1/Managers/1", "UUID": "1234877451-1234", "Id": "1"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),

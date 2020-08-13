@@ -681,6 +681,98 @@ func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregato
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	var oemprivileges []string
+	// Task Service using RPC and get the taskID
+	targetURI := req.URL
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "error while trying to get the session username: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := a.connector.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "error while trying to create the task: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	var taskID string
+	strArray := strings.Split(taskURI, "/")
+	if strings.HasSuffix(taskURI, "/") {
+		taskID = strArray[len(strArray)-2]
+	} else {
+		taskID = strArray[len(strArray)-1]
+	}
+	go deleteAggregationSource(taskID, targetURI, a, req)
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Content-type": "application/json; charset=utf-8",
+			"Location":     "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	generateResponse(rpcResp, resp)
+	return nil
+}
+
+func deleteAggregationSource(taskID string, targetURI string, a *Aggregator, req *aggregatorproto.AggregatorRequest) error {
+	err := a.connector.UpdateTask(common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       targetURI,
+		TaskState:       common.Running,
+		TaskStatus:      common.OK,
+		PercentComplete: 0,
+		HTTPMethod:      http.MethodDelete,
+	})
+	if err != nil && (err.Error() == common.Cancelling) {
+		// We cant do anything here as the task has done it work completely, we cant reverse it.
+		//Unless if we can do opposite/reverse action for delete server which is add server.
+		a.connector.UpdateTask(common.TaskData{
+			TaskID:          taskID,
+			TargetURI:       targetURI,
+			TaskState:       common.Cancelled,
+			TaskStatus:      common.OK,
+			PercentComplete: 0,
+			HTTPMethod:      http.MethodDelete,
+		})
+		go runtime.Goexit()
+	}
+	data := a.connector.DeleteAggregationSource(req)
+	err = a.connector.UpdateTask(common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       targetURI,
+		TaskState:       common.Completed,
+		TaskStatus:      common.OK,
+		Response:        data,
+		PercentComplete: 100,
+		HTTPMethod:      http.MethodDelete,
+	})
+	if err != nil && (err.Error() == common.Cancelling) {
+		a.connector.UpdateTask(common.TaskData{
+			TaskID:          taskID,
+			TargetURI:       targetURI,
+			TaskState:       common.Cancelled,
+			TaskStatus:      common.OK,
+			PercentComplete: 100,
+			HTTPMethod:      http.MethodDelete,
+		})
+		go runtime.Goexit()
+	}
 	return nil
 }
 

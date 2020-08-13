@@ -675,3 +675,24 @@ func UpdateAggregtionSource(aggregationSource AggregationSource, key string) *er
 	}
 	return nil
 }
+
+//GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return []string{}, err
+	}
+	return conn.GetAllMatchingDetails(table, pattern)
+}
+
+//DeleteAggregationSource will delete the AggregationSource entry from the database based on the aggregtionSourceURI
+func DeleteAggregationSource(aggregtionSourceURI string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if err = conn.Delete("AggregationSource", aggregtionSourceURI); err != nil {
+		return err
+	}
+	return nil
+}

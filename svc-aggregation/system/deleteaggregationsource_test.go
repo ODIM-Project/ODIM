@@ -141,7 +141,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/123456",
 				},
 			},
-			want: http.StatusNotImplemented, // To be changed to http.StatusNoContent
+			want: http.StatusNoContent,
 		},
 		{
 			name: "deletion of plugin with mangaged devices",
@@ -151,7 +151,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/123455",
 				},
 			},
-			want: http.StatusNotImplemented, // To be changed to http.StatusNotAcceptable
+			want: http.StatusNotAcceptable,
 		},
 		{
 			name: "deletion of plugin with invalid aggregation source id",
@@ -161,7 +161,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/123434",
 				},
 			},
-			want: http.StatusNotImplemented, //  To be changed to http.StatusNotFound
+			want: http.StatusNotFound,
 		},
 		{
 			name: "plugin status check failure",
@@ -171,7 +171,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/123457",
 				},
 			},
-			want: http.StatusNotImplemented, // To be  changed StatusNotAcceptable
+			want: http.StatusNotAcceptable,
 		},
 	}
 	for _, tt := range tests {
@@ -223,6 +223,9 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			},
 		},
 	}
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1")
+
 	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -247,7 +250,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831",
 				},
 			},
-			want: http.StatusNotImplemented, // To be changed to http.StatusNoContent
+			want: http.StatusNoContent,
 		},
 		{
 			name: "delete subscription failure",
@@ -257,7 +260,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db832",
 				},
 			},
-			want: http.StatusNotImplemented, // To be changed to http.StatusInternalServerError
+			want: http.StatusInternalServerError,
 		},
 	}
 	for _, tt := range tests {
@@ -302,6 +305,8 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 			},
 		},
 	}
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+
 	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -324,7 +329,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831",
 				},
 			},
-			want: http.StatusNotImplemented, // To be  changed StatusNotAcceptable
+			want: http.StatusNotAcceptable,
 		},
 	}
 	for _, tt := range tests {

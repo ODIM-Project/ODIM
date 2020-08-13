@@ -683,3 +683,29 @@ func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
 	}
 	return aggregate, nil
 }
+
+//DeleteAggregate will delete the aggregate
+func DeleteAggregate(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	const table string = "Aggregate"
+	if err = conn.Delete(table, key); err != nil {
+		return err
+	}
+	return nil
+}
+
+//GetAllKeysFromTable retrun all matching data give table name
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}

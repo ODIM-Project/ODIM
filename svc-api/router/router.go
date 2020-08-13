@@ -252,7 +252,7 @@ func Router() *iris.Application {
 	aggregates.Post("/", pc.CreateAggregate)
 	aggregates.Get("/", pc.GetAggregateCollection)
 	aggregates.Get("/{id}", pc.GetAggregate)
-	aggregates.Get("/{id}", pc.DeleteAggregate)
+	aggregates.Delete("/{id}", pc.DeleteAggregate)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)

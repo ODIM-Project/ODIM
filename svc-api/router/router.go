@@ -104,6 +104,10 @@ func Router() *iris.Application {
 		GetManagersResourceRPC:   rpc.GetManagersResource,
 	}
 
+	update := handle.UpdateRPCs{
+		GetUpdateServiceRPC: rpc.DoGetUpdateService,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -201,8 +205,8 @@ func Router() *iris.Application {
 	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
 	systems.Get("/{id}/Storage", system.GetSystemResource)
 	systems.Get("/{id}/Storage/{rid}", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}/{id2}/Drives", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}/{id2}/Drives/{rid2}", system.GetSystemResource)
+	systems.Get("/{id}/Storage/{rid}/Drives", system.GetSystemResource)
+	systems.Get("/{id}/Storage/{rid}/Drives/{rid2}", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Any("/", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/EthernetInterfaces", handle.SystemsMethodNotAllowed)
@@ -339,5 +343,9 @@ func Router() *iris.Application {
 	managers.Any("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", handle.ManagersMethodNotAllowed)
 	managers.Any("/", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}", handle.ManagersMethodNotAllowed)
+
+	updateService := v1.Party("/UpdateService", middleware.SessionDelMiddleware)
+	updateService.SetRegisterRule(iris.RouteSkip)
+	updateService.Get("/", update.GetUpdateService)
 	return router
 }

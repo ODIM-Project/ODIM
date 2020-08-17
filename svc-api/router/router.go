@@ -41,16 +41,18 @@ func Router() *iris.Application {
 		DeleteRPC:         rpc.DoAccountDeleteRequest,
 	}
 	pc := handle.AggregatorRPCs{
-		GetAggregationServiceRPC:  rpc.DoGetAggregationService,
-		AddComputeRPC:             rpc.DoAddComputeRequest,
-		DeleteComputeRPC:          rpc.DoDeleteComputeRequest,
-		ResetRPC:                  rpc.DoResetRequest,
-		SetDefaultBootOrderRPC:    rpc.DoSetDefaultBootOrderRequest,
-		AddAggregationSourceRPC:   rpc.DoAddAggregationSource,
-		CreateAggregateRPC:        rpc.DoCreateAggregate,
-		GetAggregateCollectionRPC: rpc.DoGetAggregateCollection,
-		GetAggregateRPC:           rpc.DoGeteAggregate,
-		DeleteAggregateRPC:        rpc.DoDeleteAggregate,
+		GetAggregationServiceRPC:       rpc.DoGetAggregationService,
+		AddComputeRPC:                  rpc.DoAddComputeRequest,
+		DeleteComputeRPC:               rpc.DoDeleteComputeRequest,
+		ResetRPC:                       rpc.DoResetRequest,
+		SetDefaultBootOrderRPC:         rpc.DoSetDefaultBootOrderRequest,
+		AddAggregationSourceRPC:        rpc.DoAddAggregationSource,
+		CreateAggregateRPC:             rpc.DoCreateAggregate,
+		GetAggregateCollectionRPC:      rpc.DoGetAggregateCollection,
+		GetAggregateRPC:                rpc.DoGeteAggregate,
+		DeleteAggregateRPC:             rpc.DoDeleteAggregate,
+		AddElementsToAggregateRPC:      rpc.DoAddElementsToAggregate,
+		RemoveElementsFromAggregateRPC: rpc.DoRemoveElementsFromAggregate,
 	}
 
 	s := handle.SessionRPCs{
@@ -251,8 +253,14 @@ func Router() *iris.Application {
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)
 	aggregates.Get("/", pc.GetAggregateCollection)
+	aggregates.Any("/", handle.AggregateMethodNotAllowed)
 	aggregates.Get("/{id}", pc.GetAggregate)
 	aggregates.Delete("/{id}", pc.DeleteAggregate)
+	aggregates.Any("/{id}", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.AddElements/", pc.AddElementsToAggregate)
+	aggregates.Any("/{id}/Actions/Aggregate.AddElements/", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.RemoveElements/", pc.RemoveElementsFromAggregate)
+	aggregates.Any("/{id}/Actions/Aggregate.RemoveElements/", handle.AggregateMethodNotAllowed)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)

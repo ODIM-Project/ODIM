@@ -965,3 +965,23 @@ func FabricsMethodNotAllowed(ctx iris.Context) {
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
+
+// AggregateMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregate URLs and returns 405 error.
+func AggregateMethodNotAllowed(ctx iris.Context) {
+	url := ctx.Request().URL
+	path := url.Path
+	systemID := ctx.Params().Get("id")
+	// Extend switch case, when each path, requires different handling
+	switch path {
+	case "/redfish/v1/AggregationService/Aggregates/":
+			ctx.ResponseWriter().Header().Set("Allow",  "GET, POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + systemID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	case "/redfish/v1/AggregationService/Aggregates/" + systemID + "Actions/Aggregate.AddElements/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + systemID + "Actions/Aggregate.RemoveElements/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	}
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}

@@ -734,6 +734,7 @@ func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.A
 // which is present in the request.
 func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	// TODO: add functionality to adding elements to an aggregate
+	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }
 
@@ -745,6 +746,7 @@ func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregator
 // which is present in the request.
 func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	// TODO: add functionality to remove elements from an aggregate
+	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }
 

@@ -335,3 +335,312 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 		})
 	}
 }
+
+func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d"})
+	err1 := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d")
+	if err1 != nil {
+		t.Fatalf("Error in creating mock resource data :%v", err1)
+	}
+
+	successReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+		},
+	})
+
+	badReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+		},
+	})
+
+	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+		},
+	})
+
+	emptyReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{},
+	})
+
+	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/123456",
+		},
+	})
+
+	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
+
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+					RequestBody: successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusOK
+		},
+		{
+			name: "Adding elements already present",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+					RequestBody: badReq},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Adding duplicate elements",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+					RequestBody: duplicateReq},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Adding empty elements",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+					RequestBody: emptyReq},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Invalid element",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+					RequestBody: invalidReqBody,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Invalid aggregate id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusNotFound
+		},
+		{
+			name: "with missing parameters",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: missingparamReq},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.AddElementsToAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+				t.Errorf("ExternalInterface.AddElementsToAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	successReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	})
+
+	badReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+		},
+	})
+
+	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",		},
+	})
+
+	emptyReq, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{},
+	})
+
+	invalidReqBody, _ := json.Marshal(agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/123456",
+		},
+	})
+
+	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
+
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusOK
+		},
+		{
+			name: "Removing elements not present in aggregate",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: badReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Removing duplicate elements",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: duplicateReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Removing without elements",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: emptyReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Invalid element",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: invalidReqBody,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+		{
+			name: "Invalid aggregate id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusNotFound
+		},
+		{
+			name: "with missing parameters",
+			e:    p,
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken", 
+					URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+					RequestBody: missingparamReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.RemoveElementsFromAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+				t.Errorf("ExternalInterface.RemoveElementsFromAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+

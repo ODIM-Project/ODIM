@@ -235,3 +235,19 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 	}
 	return resp
 }
+
+// AddElementsToAggregate is the handler for adding elements to an aggregate
+func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}
+
+// RemoveElementsFromAggregate is the handler for removing elements from an aggregate
+func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}

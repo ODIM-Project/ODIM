@@ -227,6 +227,6 @@ func TestUpdateUserDetailsNegativeTestCase(t *testing.T) {
 	user := User{}
 	mockData(common.OnDisk, "User", "successID", "user")
 	userData := User{UserName: "successID"}
-	err := user.UpdateUserDetails(userData)
+	err := UpdateUserDetails(user, userData)
 	assert.NotNil(t, err, "There should be an error")
 }

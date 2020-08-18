@@ -1,12 +1,12 @@
 package account
 
 import (
-	"testing"
 	"encoding/base64"
-	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	"golang.org/x/crypto/sha3"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"golang.org/x/crypto/sha3"
+	"testing"
 )
 
 func TestGetExternalInterface(t *testing.T) {
@@ -27,8 +27,8 @@ func TestGetExternalInterface(t *testing.T) {
 }
 
 func getMockExternalInterface() *ExternalInterface {
-	return &ExternalInterface {
-		GetUserDetails: mockGetUserDetails,
+	return &ExternalInterface{
+		GetUserDetails:     mockGetUserDetails,
 		GetRoleDetailsByID: asmodel.GetRoleDetailsByID,
 	}
 }

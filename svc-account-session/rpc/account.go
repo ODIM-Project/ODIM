@@ -346,7 +346,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	}
 
 	acc := account.GetExternalInterface()
-	
+
 	data := acc.Update(req, sess)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {

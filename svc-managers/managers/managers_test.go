@@ -396,18 +396,14 @@ func TestGetManagerResourcewithInvalidURL(t *testing.T) {
 }
 
 func TestGetPluginManagerResource(t *testing.T) {
+	config.SetUpMockConfig(t)
+common.TruncateDB(common.InMemory)
+                common.TruncateDB(common.OnDisk)
 	mgrcommon.Token.Tokens = make(map[string]string)
 
-	config.SetUpMockConfig(t)
 	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
+		common.TruncateDB(common.InMemory)
+		common.TruncateDB(common.OnDisk)
 	}()
 	err := mockPluginData(t, "CFM", "XAuthToken", "9091")
 	if err != nil {
@@ -497,15 +493,12 @@ func TestGetPluginManagerResourceInvalidPluginSessions(t *testing.T) {
 	mgrcommon.Token.Tokens = make(map[string]string)
 
 	config.SetUpMockConfig(t)
+common.TruncateDB(common.InMemory)
+                common.TruncateDB(common.OnDisk)
+
 	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
+		common.TruncateDB(common.InMemory)
+		common.TruncateDB(common.OnDisk)
 	}()
 	err := mockPluginData(t, "CFM", "XAuthToken", "9092")
 	if err != nil {

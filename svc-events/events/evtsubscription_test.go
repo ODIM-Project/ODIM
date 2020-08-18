@@ -561,9 +561,7 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 
 func TestFabricEventSubscription(t *testing.T) {
 	if config.Data.URLTranslation == nil {
-		//	common.MuxLock.Lock()
 		config.SetUpMockConfig(t)
-		//	common.MuxLock.Unlock()
 	}
 
 	defer func() {

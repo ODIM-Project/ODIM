@@ -359,7 +359,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
-	if !checkElementsPresent(removeRequest.Elements, aggregate.Elements) {
+	if !checkRemovingElementsPresent(removeRequest.Elements, aggregate.Elements) {
 		errMsg := "Elements not present in aggregate"
 		log.Println(errMsg)
 		errArgs := []interface{}{"RemoveElements", "Elements", removeRequest.Elements}
@@ -410,4 +410,23 @@ func checkElementsPresent(requestElements, presentElements []string) bool {
 		}
 	}
 	return false
+}
+
+func checkRemovingElementsPresent(requestElements, presentElements []string) bool {
+	for _, element := range requestElements {
+		var present bool
+		front := 0
+		rear := len(presentElements) - 1
+		for front <= rear {
+			if presentElements[front] == element || presentElements[rear] == element {
+				present = true
+			}
+			front++
+			rear--
+		}
+		if !present {
+			return false
+		}
+	}
+	return true
 }

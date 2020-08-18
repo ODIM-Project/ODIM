@@ -712,16 +712,17 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 
 //AddElementsToAggregate add elements to the aggregate
 func AddElementsToAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
 	agg, err := GetAggregate(aggregateURL)
 	if err != nil {
 		return err
 	}
 	aggregate.Elements = append(aggregate.Elements, agg.Elements...)
-
-	if err := DeleteAggregate(aggregateURL); err != nil {
-		return err
-	}
-	if err := CreateAggregate(aggregate, aggregateURL); err != nil {
+	const table string = "Aggregate"
+	if _, err := conn.Update(table, aggregateURL, aggregate); err != nil {
 		return err
 	}
 	return nil
@@ -729,15 +730,18 @@ func AddElementsToAggregate(aggregate Aggregate, aggregateURL string) *errors.Er
 
 //RemoveElementsFromAggregate remove elements from an aggregate
 func RemoveElementsFromAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
 	agg, err := GetAggregate(aggregateURL)
 	if err != nil {
 		return err
 	}
 	aggregate.Elements = removeElements(aggregate.Elements, agg.Elements)
-	if err := DeleteAggregate(aggregateURL); err != nil {
-		return err
-	}
-	if err := CreateAggregate(aggregate, aggregateURL); err != nil {
+
+	const table string = "Aggregate"
+	if _, err := conn.Update(table, aggregateURL, aggregate); err != nil {
 		return err
 	}
 	return nil

@@ -1,0 +1,20 @@
+package account
+
+import(
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+)
+
+// ExternalInterface holds all the external connections account package functions uses
+type ExternalInterface struct {
+	GetUserDetails func(string) (asmodel.User, *errors.Error)
+	GetRoleDetailsByID func(string) (asmodel.Role, *errors.Error)
+}
+
+// GetExternalInterface retrieves all the external connections account package functions uses
+func GetExternalInterface () *ExternalInterface {
+	return &ExternalInterface {
+		GetUserDetails: asmodel.GetUserDetails,
+		GetRoleDetailsByID: asmodel.GetRoleDetailsByID,
+	}
+}

@@ -974,7 +974,7 @@ func AggregateMethodNotAllowed(ctx iris.Context) {
 	// Extend switch case, when each path, requires different handling
 	switch path {
 	case "/redfish/v1/AggregationService/Aggregates/":
-			ctx.ResponseWriter().Header().Set("Allow",  "GET, POST")
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	case "/redfish/v1/AggregationService/Aggregates/" + systemID:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	case "/redfish/v1/AggregationService/Aggregates/" + systemID + "Actions/Aggregate.AddElements/":

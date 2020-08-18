@@ -345,7 +345,9 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		return nil
 	}
 
-	data := account.Update(req, sess)
+	acc := account.GetExternalInterface()
+
+	data := acc.Update(req, sess)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError

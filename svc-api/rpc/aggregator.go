@@ -162,3 +162,31 @@ func DoDeleteAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.
 
 	return resp, err
 }
+
+// DoAddElementsToAggregate defines the RPC call function for
+// the add elements to an aggregate from aggregator micro service
+func DoAddElementsToAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.AddElementsToAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoRemoveElementsFromAggregate defines the RPC call function for
+// the remove elements from an aggregate from aggregator micro service
+func DoRemoveElementsFromAggregate(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.RemoveElementsFromAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

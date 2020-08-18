@@ -490,3 +490,34 @@ func TestManagersMethodNotAllowed(t *testing.T) {
 	e.PATCH("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
 }
+
+//TestAggregateMethodNotAllowed is unittest method for AggregateMethodNotAllowed func.
+func TestAggregateMethodNotAllowed(t *testing.T) {
+	router := iris.New()
+	redfishRoutes := router.Party("/redfish/v1/AggregationService/Aggregates")
+	redfishRoutes.Any("/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.AddElements/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.RemoveElements/", AggregateMethodNotAllowed)
+	e := httptest.New(t, router)
+	id := "74116e00-0a4a-53e6-a959-e6a7465d6358"
+	//Check for status code 405 for http methods which are not allowed
+	e.PUT("/redfish/v1/AggregationService/Aggregates").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/AggregationService/Aggregates/" + id).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id).Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id).Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+
+}

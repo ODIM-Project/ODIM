@@ -211,7 +211,7 @@ func TestUpdateUserDetails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := user.UpdateUserDetails(tt.args.userData); (err != nil) != tt.wantErr {
+			if err := UpdateUserDetails(user, tt.args.userData); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateUserDetails() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

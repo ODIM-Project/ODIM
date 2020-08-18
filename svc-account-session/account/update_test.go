@@ -24,22 +24,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
-	//	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 func TestUpdate(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
 	acc := getMockExternalInterface()
 
 	successResponse := response.Response{
@@ -69,23 +56,6 @@ func TestUpdate(t *testing.T) {
 	successResponse.CreateGenericResponse(response.AccountModified)
 	successResponse2.CreateGenericResponse(response.AccountModified)
 	operatorSuccessResponse.CreateGenericResponse(response.AccountModified)
-
-	//err := createMockRole("PrivilegeLogin", []string{common.PrivilegeLogin}, []string{}, false)
-	//if err != nil {
-	//	t.Fatalf("Error in creating mock admin user %v", err)
-	//}
-	// err = createMockUser("testUser1", common.RoleAdmin)
-	// if err != nil {
-	// 	t.Fatalf("Error in creating mock admin user1 %v", err)
-	// }
-	// err = createMockUser("testUser2", common.RoleAdmin)
-	// if err != nil {
-	// 	t.Fatalf("Error in creating mock admin user2 %v", err)
-	// }
-	// err = createMockUser("testUser3", "PrivilegeLogin")
-	// if err != nil {
-	// 	t.Fatalf("Error in creating mock user3 %v", err)
-	// }
 
 	errArg := response.Args{
 		Code:    response.GeneralError,

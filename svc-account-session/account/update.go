@@ -268,7 +268,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		requestUser.Password = hashedPassword
 	}
 
-	if uerr := asmodel.UpdateUserDetails(user, requestUser); uerr != nil {
+	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
 		errorMessage := "error while trying to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		resp.Header = map[string]string{

@@ -29,7 +29,8 @@ func TestGetExternalInterface(t *testing.T) {
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		GetUserDetails:     mockGetUserDetails,
-		GetRoleDetailsByID: asmodel.GetRoleDetailsByID,
+		GetRoleDetailsByID: mockGetRoleDetailsByID,
+		UpdateUserDetails: mockUpdateUserDetails,
 	}
 }
 
@@ -54,6 +55,10 @@ func mockGetUserDetails(userName string) (asmodel.User, *errors.Error) {
 	return user, nil
 }
 
-//func mockGetRoleDetailsByID(roleID string) (Role, *errors.Error) {
+func mockUpdateUserDetails(user, newData asmodel.User) *errors.Error {
+	return nil
+}
 
-//}
+func mockGetRoleDetailsByID(roleID string) (asmodel.Role, *errors.Error) {
+	return _, nil
+}

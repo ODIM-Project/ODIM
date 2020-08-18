@@ -1032,7 +1032,7 @@ func TestCreateAggregate(t *testing.T) {
 	data, err := GetAggregate(aggregateURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.Elements, req.Elements)
-	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/Aggregates/123456")
+	_, err = GetAggregate("/redfish/v1/AggregationService/Aggregates/123456")
 	assert.NotNil(t, err, "Error Should not be nil")
 
 }
@@ -1083,4 +1083,70 @@ func TestDeleteAggregate(t *testing.T) {
 
 	err = DeleteAggregate(aggregateURI)
 	assert.NotNil(t, err, "err should not be nil")
+}
+
+func TestAddElementsToAggregate(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
+	req := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := CreateAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	req1 := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/9119e175-36ad-4b27-99a6-4c3a149fc7da:1",
+		},
+	}
+	err = AddElementsToAggregate(req1, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	invalidAggregateURI := "/redfish/v1/AggregationService/Aggregates/12345"
+	err = AddElementsToAggregate(req1, invalidAggregateURI)
+	assert.NotNil(t, err, "err should not be nil")
+
+}
+
+func TestRemoveElementsFromAggregate(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
+	req := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := CreateAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	req1 := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d4:1",
+		},
+	}
+	err = RemoveElementsFromAggregate(req1, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	invalidAggregateURI := "/redfish/v1/AggregationService/Aggregates/12345"
+	err = RemoveElementsFromAggregate(req1, invalidAggregateURI)
+	assert.NotNil(t, err, "err should not be nil")
+
 }

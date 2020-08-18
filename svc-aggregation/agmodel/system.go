@@ -709,3 +709,56 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	}
 	return keysArray, nil
 }
+
+//AddElementsToAggregate add elements to the aggregate
+func AddElementsToAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
+	agg, err := GetAggregate(aggregateURL)
+	if err != nil {
+		return err
+	}
+	aggregate.Elements = append(aggregate.Elements, agg.Elements...)
+
+	if err := DeleteAggregate(aggregateURL); err != nil {
+		return err
+	}
+	if err := CreateAggregate(aggregate, aggregateURL); err != nil {
+		return err
+	}
+	return nil
+}
+
+//RemoveElementsFromAggregate remove elements from an aggregate
+func RemoveElementsFromAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
+	agg, err := GetAggregate(aggregateURL)
+	if err != nil {
+		return err
+	}
+	aggregate.Elements = removeElements(aggregate.Elements, agg.Elements)
+	if err := DeleteAggregate(aggregateURL); err != nil {
+		return err
+	}
+	if err := CreateAggregate(aggregate, aggregateURL); err != nil {
+		return err
+	}
+	return nil
+}
+
+func removeElements(requestElements, presentElements []string) []string {
+	newElements := []string{}
+	var present bool
+	for _, presentElement := range presentElements {
+		front := 0
+		rear := len(requestElements) - 1
+		for front <= rear {
+			if requestElements[front] == presentElement || requestElements[rear] == presentElement {
+				present = true
+			}
+			front++
+			rear--
+		}
+		if !present {
+			newElements = append(newElements, presentElement)
+		}
+	}
+	return newElements
+}

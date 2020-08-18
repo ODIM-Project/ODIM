@@ -238,16 +238,176 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 
 // AddElementsToAggregate is the handler for adding elements to an aggregate
 func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
-	// TODO add functionality to create an aggregate
-	return response.RPC{
-		StatusCode: http.StatusNotImplemented,
+	var resp response.RPC
+	// parsing the aggregate request
+	var addRequest agmodel.Aggregate
+	err := json.Unmarshal(req.RequestBody, &addRequest)
+	if err != nil {
+		errMsg := "unable to parse the create request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
 	}
+	//empty request check
+	if reflect.DeepEqual(agmodel.Aggregate{}, addRequest) || reflect.DeepEqual(addRequest.Elements, []string{}) {
+		errMsg := "empty request can not be processed"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Elements"}, nil)
+	}
+
+	statuscode, err := validateElements(addRequest.Elements)
+	if err != nil {
+		errMsg := "invalid elements for create an aggregate" + err.Error()
+		log.Println(errMsg)
+		errArgs := []interface{}{"Elements", addRequest}
+		return common.GeneralError(statuscode, response.ResourceNotFound, errMsg, errArgs, nil)
+	}
+
+	if req.URL == "" {
+		errMsg := "request uri is not provided"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request uri"}, nil)
+	}
+	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
+	aggregateID := strings.Split(url[1], "/")[0]
+	aggregateURL := "/redfish/v1/AggregationService/Aggregates/" + aggregateID
+	aggregate, err1 := agmodel.GetAggregate(aggregateURL)
+	if err1 != nil {
+		log.Printf("error getting  Aggregate : %v", err1)
+		errorMessage := err1.Error()
+		if errors.DBKeyNotFound == err1.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Aggregate", aggregateURL}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	if checkElementsPresent(addRequest.Elements, aggregate.Elements) {
+		errMsg := "Elements present in aggregate"
+		log.Println(errMsg)
+		errArgs := []interface{}{"AddElements", "Elements", addRequest.Elements}
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, errArgs, nil)
+	}
+
+	dbErr := agmodel.AddElementsToAggregate(addRequest, aggregateURL)
+	if dbErr != nil {
+		errMsg := dbErr.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	commonResponse := response.Response{
+		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataID:      aggregateURL,
+		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
+		ID:           aggregateID,
+		Name:         "Aggregate",
+	}
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Link":              "<" + aggregateURL + "/>; rel=describedby",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	aggregate, _ = agmodel.GetAggregate(aggregateURL)
+	commonResponse.CreateGenericResponse(response.Created)
+	resp.Body = agresponse.AggregateResponse{
+		Response: commonResponse,
+		Elements: aggregate.Elements,
+	}
+	resp.StatusCode = http.StatusOK
+	return resp
 }
 
 // RemoveElementsFromAggregate is the handler for removing elements from an aggregate
 func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
-	// TODO add functionality to create an aggregate
-	return response.RPC{
-		StatusCode: http.StatusNotImplemented,
+	var resp response.RPC
+	// parsing the aggregate request
+	var removeRequest agmodel.Aggregate
+	err := json.Unmarshal(req.RequestBody, &removeRequest)
+	if err != nil {
+		errMsg := "unable to parse the create request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
 	}
+
+	//empty request check
+	if reflect.DeepEqual(agmodel.Aggregate{}, removeRequest) || reflect.DeepEqual(removeRequest.Elements, []string{}) {
+		errMsg := "empty request can not be processed"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Elements"}, nil)
+	}
+
+	if req.URL == "" {
+		errMsg := "request uri is not provided"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request uri"}, nil)
+	}
+	if checkDuplicateElements(removeRequest.Elements) {
+		errMsg := "duplicate elements present"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.ResourceCannotBeDeleted, errMsg, nil, nil)
+	}
+	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
+	aggregateID := strings.Split(url[1], "/")[0]
+
+	aggregateURL := "/redfish/v1/AggregationService/Aggregates/" + aggregateID
+	aggregate, err1 := agmodel.GetAggregate(aggregateURL)
+	if err != nil {
+		log.Printf("error getting aggregate : %v", err1)
+		errorMessage := err1.Error()
+		if errors.DBKeyNotFound == err1.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Aggregate", req.URL}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	if !checkElementsPresent(removeRequest.Elements, aggregate.Elements) {
+		errMsg := "Elements not present in aggregate"
+		log.Println(errMsg)
+		errArgs := []interface{}{"RemoveElements", "Elements", removeRequest.Elements}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, errArgs, nil)
+	}
+
+	dbErr := agmodel.RemoveElementsFromAggregate(removeRequest, aggregateURL)
+	if dbErr != nil {
+		errMsg := dbErr.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	commonResponse := response.Response{
+		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataID:      aggregateURL,
+		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
+		ID:           aggregateID,
+		Name:         "Aggregate",
+	}
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Link":              "<" + aggregateURL + "/>; rel=describedby",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	aggregate, _ = agmodel.GetAggregate(aggregateURL)
+	commonResponse.CreateGenericResponse(response.Created)
+	resp.Body = agresponse.AggregateResponse{
+		Response: commonResponse,
+		Elements: aggregate.Elements,
+	}
+	resp.StatusCode = http.StatusOK
+	return resp
+}
+
+func checkElementsPresent(requestElements, presentElements []string) bool {
+	for _, element := range requestElements {
+		front := 0
+		rear := len(presentElements) - 1
+		for front <= rear {
+			if presentElements[front] == element || presentElements[rear] == element {
+				return true
+			}
+			front++
+			rear--
+		}
+	}
+	return false
 }

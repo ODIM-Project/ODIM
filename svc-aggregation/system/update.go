@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 
@@ -75,6 +76,12 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 		updateRequest["HostName"] = aggregationSource.HostName
 
 	} else {
+		err := validateManagerAddress(updateRequest["HostName"].(string))
+		if err != nil {
+			log.Printf(err.Error())
+			return common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{updateRequest["HostName"].(string), "HostName"}, nil)
+
+		}
 		hostNameUpdated = true
 	}
 	if _, ok := updateRequest["Password"]; !ok {
@@ -413,4 +420,18 @@ func (e *ExternalInterface) updateBMCAggregationSource(aggregationSourceID strin
 	return response.RPC{
 		StatusCode: http.StatusOK,
 	}
+}
+
+func validateManagerAddress(managerAddress string) error {
+	// if the manager address is of the form <IP/FQDN>:<port>
+	// will split address to obtain only IP/FQDN. If obtained
+	// value is empty, then will use the actual address passed
+	addr, _, _ := net.SplitHostPort(managerAddress)
+	if addr == "" {
+		addr = managerAddress
+	}
+	if _, err := net.ResolveIPAddr("ip", addr); err != nil {
+		return fmt.Errorf("error: failed to resolve ManagerAddress: %v", err)
+	}
+	return nil
 }

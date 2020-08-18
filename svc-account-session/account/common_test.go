@@ -29,10 +29,15 @@ func TestGetExternalInterface(t *testing.T) {
 
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
+		CreateUser:	mockCreateUser,
 		GetUserDetails:     mockGetUserDetails,
 		GetRoleDetailsByID: mockGetRoleDetailsByID,
 		UpdateUserDetails:  mockUpdateUserDetails,
 	}
+}
+
+func mockCreateUser(user asmodel.User) *errors.Error {
+	return nil
 }
 
 func mockGetUserDetails(userName string) (asmodel.User, *errors.Error) {

@@ -37,8 +37,8 @@ type User struct {
 	AccountTypes []string `json:"AccountTypes"`
 }
 
-// Create connects to the persistencemgr and creates a user in db
-func (u *User) Create() *errors.Error {
+// CreateUser connects to the persistencemgr and creates a user in db
+func CreateUser(user User) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -47,7 +47,7 @@ func (u *User) Create() *errors.Error {
 	//Create a header for data entry
 	const table string = "User"
 	//Save data into Database
-	return conn.Create(table, u.UserName, u)
+	return conn.Create(table, user.UserName, user)
 }
 
 //GetAllUsers gets all the accounts from the db

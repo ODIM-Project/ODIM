@@ -40,24 +40,25 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 	return nil
 }
 func TestCreate(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	testRole := "Administrator"
-	if err := createMockRole(testRole, []string{common.PrivilegeConfigureUsers}, []string{}, false); err != nil {
-		t.Fatalf("Error in creating mock role %v", err)
-	}
-	if err := createMockUser("testUser2", testRole); err != nil {
-		t.Fatalf("Error in creating mock admin user %v", err)
-	}
+	acc := getMockExternalInterface()
+	// common.SetUpMockConfig()
+	// defer func() {
+	// 	err := common.TruncateDB(common.OnDisk)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// 	err = common.TruncateDB(common.InMemory)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// }()
+	// testRole := "Administrator"
+	// if err := createMockRole(testRole, []string{common.PrivilegeConfigureUsers}, []string{}, false); err != nil {
+	// 	t.Fatalf("Error in creating mock role %v", err)
+	// }
+	// if err := createMockUser("testUser2", testRole); err != nil {
+	// 	t.Fatalf("Error in creating mock admin user %v", err)
+	// }
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -541,7 +542,7 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Create(tt.args.req, tt.args.session)
+			got, err := acc.Create(tt.args.req, tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -26,6 +26,13 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 )
 
+func getMockExternalInterface() *ExternalInterface {
+	return &ExternalInterface {
+		GetUserDetails: asmodel.GetUserDetails,
+		GetRoleDetailsByID: asmodel.GetRoleDetailsByID,
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	common.SetUpMockConfig()
 	defer func() {
@@ -38,6 +45,9 @@ func TestUpdate(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+
+	acc := getMockExternalInterface()
+
 	successResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
@@ -600,7 +610,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Update(tt.args.req, tt.args.session)
+			got := acc.Update(tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Update() = %v, want %v", got, tt.want)
 			}

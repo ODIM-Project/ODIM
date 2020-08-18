@@ -29,7 +29,7 @@ func TestGetExternalInterface(t *testing.T) {
 
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
-		CreateUser:	mockCreateUser,
+		CreateUser:         mockCreateUser,
 		GetUserDetails:     mockGetUserDetails,
 		GetRoleDetailsByID: mockGetRoleDetailsByID,
 		UpdateUserDetails:  mockUpdateUserDetails,
@@ -37,6 +37,9 @@ func getMockExternalInterface() *ExternalInterface {
 }
 
 func mockCreateUser(user asmodel.User) *errors.Error {
+	if user.UserName == "existingUser" {
+		return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key existingUser already exists")
+	}
 	return nil
 }
 
@@ -69,7 +72,7 @@ func mockUpdateUserDetails(user, newData asmodel.User) *errors.Error {
 
 func mockGetRoleDetailsByID(roleID string) (asmodel.Role, *errors.Error) {
 	if roleID == "xyz" {
-		return asmodel.Role{}, errors.PackError(errors.DBKeyNotFound, "error while trying to get user: ", fmt.Sprintf("error: Invalid RoleID %v present", roleID))
+		return asmodel.Role{}, errors.PackError(errors.DBKeyNotFound, "error while trying to get role details: ", fmt.Sprintf("error: Invalid RoleID %v present", roleID))
 	}
 	return asmodel.Role{}, nil
 }

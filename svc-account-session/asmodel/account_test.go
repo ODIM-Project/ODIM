@@ -41,7 +41,7 @@ func TestCreate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	err := asmodel.CreateUser(user)
+	err := CreateUser(user)
 	assert.Nil(t, err, "There should be no error")
 }
 

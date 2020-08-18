@@ -41,24 +41,7 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 }
 func TestCreate(t *testing.T) {
 	acc := getMockExternalInterface()
-	// common.SetUpMockConfig()
-	// defer func() {
-	// 	err := common.TruncateDB(common.OnDisk)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// 	err = common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
-	// testRole := "Administrator"
-	// if err := createMockRole(testRole, []string{common.PrivilegeConfigureUsers}, []string{}, false); err != nil {
-	// 	t.Fatalf("Error in creating mock role %v", err)
-	// }
-	// if err := createMockUser("testUser2", testRole); err != nil {
-	// 	t.Fatalf("Error in creating mock admin user %v", err)
-	// }
+	common.SetUpMockConfig()
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -164,8 +147,8 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceAlreadyExists,
-				ErrorMessage:  "error while trying to add new user: error: data with key testUser2 already exists",
-				MessageArgs:   []interface{}{"ManagerAccount", "Id", "testUser2"},
+				ErrorMessage:  "error while trying to add new user: error: data with key existingUser already exists",
+				MessageArgs:   []interface{}{"ManagerAccount", "Id", "existingUser"},
 			},
 		},
 	}
@@ -175,8 +158,8 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: invalid RoleID present error while trying to get role details: no data with the with key abc found",
-				MessageArgs:   []interface{}{"Role", "abc"},
+				ErrorMessage:  "error: invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
+				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
 	}
@@ -192,10 +175,10 @@ func TestCreate(t *testing.T) {
 	reqBodyInvalidRole, _ := json.Marshal(asmodel.Account{
 		UserName: "testUser1",
 		Password: "Password@123",
-		RoleID:   "abc",
+		RoleID:   "xyz",
 	})
 	reqBodyExistingAcc, _ := json.Marshal(asmodel.Account{
-		UserName: "testUser2",
+		UserName: "existingUser",
 		Password: "Password@123",
 		RoleID:   "Administrator",
 	})

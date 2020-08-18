@@ -56,9 +56,15 @@ func mockGetUserDetails(userName string) (asmodel.User, *errors.Error) {
 }
 
 func mockUpdateUserDetails(user, newData asmodel.User) *errors.Error {
+	if newData.Password != "" {
+		user.Password = newData.Password
+	}
+	if newData.RoleID != "" {
+		user.RoleID = newData.RoleID
+	}
 	return nil
 }
 
 func mockGetRoleDetailsByID(roleID string) (asmodel.Role, *errors.Error) {
-	return _, nil
+	return asmodel.Role{}, nil
 }

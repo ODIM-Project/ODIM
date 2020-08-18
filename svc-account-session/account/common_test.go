@@ -2,6 +2,7 @@ package account
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
@@ -30,7 +31,7 @@ func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		GetUserDetails:     mockGetUserDetails,
 		GetRoleDetailsByID: mockGetRoleDetailsByID,
-		UpdateUserDetails: mockUpdateUserDetails,
+		UpdateUserDetails:  mockUpdateUserDetails,
 	}
 }
 
@@ -49,22 +50,21 @@ func mockGetUserDetails(userName string) (asmodel.User, *errors.Error) {
 		user.RoleID = common.RoleAdmin
 	} else if userName == "testUser3" {
 		user.RoleID = "PrivilegeLogin"
+	} else if userName == "operatorUser" {
+		user.RoleID = common.RoleMonitor
 	} else {
-		return user, errors.PackError(errors.DBKeyNotFound, "error while trying to get user: ", "fdfdfdfdfdfdfdf")
+		return user, errors.PackError(errors.DBKeyNotFound, "error while trying to get user: ", fmt.Sprintf("no data with the with key %v found", userName))
 	}
 	return user, nil
 }
 
 func mockUpdateUserDetails(user, newData asmodel.User) *errors.Error {
-	if newData.Password != "" {
-		user.Password = newData.Password
-	}
-	if newData.RoleID != "" {
-		user.RoleID = newData.RoleID
-	}
 	return nil
 }
 
 func mockGetRoleDetailsByID(roleID string) (asmodel.Role, *errors.Error) {
+	if roleID == "xyz" {
+		return asmodel.Role{}, errors.PackError(errors.DBKeyNotFound, "error while trying to get user: ", fmt.Sprintf("error: Invalid RoleID %v present", roleID))
+	}
 	return asmodel.Role{}, nil
 }

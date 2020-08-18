@@ -9,7 +9,7 @@ import (
 type ExternalInterface struct {
 	GetUserDetails     func(string) (asmodel.User, *errors.Error)
 	GetRoleDetailsByID func(string) (asmodel.Role, *errors.Error)
-	UpdateUserDetails	func(asmodel.User, asmodel.User) *errors.Error
+	UpdateUserDetails  func(asmodel.User, asmodel.User) *errors.Error
 }
 
 // GetExternalInterface retrieves all the external connections account package functions uses
@@ -17,6 +17,6 @@ func GetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		GetUserDetails:     asmodel.GetUserDetails,
 		GetRoleDetailsByID: asmodel.GetRoleDetailsByID,
-		UpdateUserDetails:	asmodel.UpdateUserDetails,
+		UpdateUserDetails:  asmodel.UpdateUserDetails,
 	}
 }

@@ -290,7 +290,9 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-
+	if requestUser.RoleID != "" {
+		user.RoleID = requestUser.RoleID
+	}
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = asresponse.Account{
 		Response:     commonResponse,

@@ -49,11 +49,11 @@ func mockGetUserDetails(userName string) (asmodel.User, *errors.Error) {
 	} else if userName == "testUser3" {
 		user.RoleID = "PrivilegeLogin"
 	} else {
-		return user, errors.PackError(errors.DBKeyNotFound, "error while trying to get user: ", err.Error())
+		return user, errors.PackError(errors.DBKeyNotFound, "error while trying to get user: ", "fdfdfdfdfdfdfdf")
 	}
 	return user, nil
 }
 
-func mockGetRoleDetailsByID(roleID string) (Role, *errors.Error) {
+//func mockGetRoleDetailsByID(roleID string) (Role, *errors.Error) {
 
-}
+//}

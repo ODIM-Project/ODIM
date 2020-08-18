@@ -970,16 +970,16 @@ func FabricsMethodNotAllowed(ctx iris.Context) {
 func AggregateMethodNotAllowed(ctx iris.Context) {
 	url := ctx.Request().URL
 	path := url.Path
-	systemID := ctx.Params().Get("id")
+	aggregateID := ctx.Params().Get("id")
 	// Extend switch case, when each path, requires different handling
 	switch path {
 	case "/redfish/v1/AggregationService/Aggregates/":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/AggregationService/Aggregates/" + systemID:
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
-	case "/redfish/v1/AggregationService/Aggregates/" + systemID + "Actions/Aggregate.AddElements/":
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.AddElements/":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
-	case "/redfish/v1/AggregationService/Aggregates/" + systemID + "Actions/Aggregate.RemoveElements/":
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.RemoveElements/":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)

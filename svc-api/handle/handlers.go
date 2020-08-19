@@ -981,6 +981,10 @@ func AggregateMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.RemoveElements/":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.Reset/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.SetDefaultBootOrder/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return

@@ -33,6 +33,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+//ResetRequest is struct for reset of elements of an aggregate
+type ResetRequest struct {
+	BatchSize                    int    `json:"BatchSize"`
+	DelayBetweenBatchesInSeconds int    `json:"DelayBetweenBatchesInSeconds"`
+	ResetType                    string `json:"ResetType"`
+}
+
 // CreateAggregate is the handler for creating an aggregate
 // check if the elelments/resources added into odimra if not then return an error.
 // else add an entry of an aggregayte in db
@@ -429,4 +436,20 @@ func checkRemovingElementsPresent(requestElements, presentElements []string) boo
 		}
 	}
 	return true
+}
+
+// ResetElementsOfAggregate is the handler for reseting elements of an aggregate
+func (e *ExternalInterface) ResetElementsOfAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}
+
+// SetDefaultBootOrderElementsOfAggregate is the handler for set default boot order elements of an aggregate
+func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to create an aggregate
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }

@@ -776,6 +776,7 @@ func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggre
 // which is present in the request.
 func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	// TODO: add functionality to reset of elements from an aggregate
+	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }
 
@@ -787,5 +788,6 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 // which is present in the request.
 func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	// TODO: add functionality to set default boot order elements of aggregate
+	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }

@@ -32,12 +32,12 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
 )
 
-// DeviceContact struct to inject the contact device function into the handlers
-type DeviceContact struct {
-	GetDeviceInfo         func(mgrcommon.ResourceInfoRequest) (string, error)
-	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DecryptDevicePassword func([]byte) ([]byte, error)
-}
+// // DeviceContact struct to inject the contact device function into the handlers
+// type DeviceContact struct {
+// 	GetDeviceInfo         func(mgrcommon.ResourceInfoRequest) (string, error)
+// 	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+// 	DecryptDevicePassword func([]byte) ([]byte, error)
+// }
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
 func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
@@ -91,7 +91,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 	}
 
 	if req.ManagerID == config.Data.RootServiceUUID {
-		manager, err := getManagerDetails(req.ManagerID)
+		manager, err := e.getManagerDetails(req.ManagerID)
 		if err != nil {
 			log.Printf("error getting manager details : %v", err.Error())
 			errArgs := []interface{}{"Managers", req.ManagerID}
@@ -189,11 +189,11 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 	return resp
 }
 
-func getManagerDetails(id string) (mgrmodel.Manager, error) {
+func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
 	var name, managerType, firmwareVersion, managerid, uuid, state string
 
-	mgrData, err := mgrmodel.GetManagerData(id)
+	mgrData, err := e.DB.GetManagerData(id)
 	if err != nil {
 		return mgr, err
 	}
@@ -297,7 +297,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	}
 	var pluginID = managerData["Name"].(string)
 	// Get the Plugin info
-	plugin, gerr := mgrmodel.GetPluginData(pluginID)
+	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
 		log.Printf("error getting manager details : %v", gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}

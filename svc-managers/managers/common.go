@@ -41,6 +41,8 @@ type DB struct {
 	GetAllKeysFromTable func(string) ([]string, error)
 	GetManagerData      func(string) (mgrmodel.RAManager, error)
 	GetManagerByURL     func(string) (string, *errors.Error)
+	GetPluginData func(string) (mgrmodel.Plugin, *errors.Error)
+	UpdateManagersData func(string, map[string]interface{}) error
 }
 
 // GetExternalInterface retrieves all the external connections managers package functions uses
@@ -55,6 +57,8 @@ func GetExternalInterface() *ExternalInterface {
 			GetAllKeysFromTable: mgrmodel.GetAllKeysFromTable,
 			GetManagerData:      mgrmodel.GetManagerData,
 			GetManagerByURL:     mgrmodel.GetManagerByURL,
+			GetPluginData: mgrmodel.GetPluginData,
+			UpdateManagersData: mgrmodel.UpdateManagersData,
 		},
 	}
 }

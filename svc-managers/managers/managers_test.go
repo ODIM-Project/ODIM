@@ -14,10 +14,8 @@
 package managers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"testing"
 
@@ -31,18 +29,18 @@ import (
 )
 
 func TestGetManagersCollection(t *testing.T) {
-	config.SetUpMockConfig(t)
-	common.TruncateDB(common.InMemory)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	body := []byte(`body`)
-	table := "Managers"
-	key := "/redfish/v1/Managers/uuid:1"
-	mgrmodel.GenericSave(body, table, key)
+	// config.SetUpMockConfig(t)
+	// common.TruncateDB(common.InMemory)
+	// defer func() {
+	// 	err := common.TruncateDB(common.InMemory)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// }()
+	// body := []byte(`body`)
+	// table := "Managers"
+	// key := "/redfish/v1/Managers/uuid:1"
+	// mgrmodel.GenericSave(body, table, key)
 
 	req := &managersproto.ManagerRequest{}
 	e := mockGetExternalInterface()
@@ -52,67 +50,6 @@ func TestGetManagersCollection(t *testing.T) {
 	manager := response.Body.(mgrresponse.ManagersCollection)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 	assert.Equal(t, manager.MembersCount, 2, "Status code should be StatusOK.")
-}
-
-func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
-	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
-		return "", fmt.Errorf("error")
-	}
-	manager := mgrmodel.Manager{
-		Status: &mgrmodel.Status{
-			State: "Enabled",
-		},
-	}
-	dataByte, err := json.Marshal(manager)
-	return string(dataByte), err
-}
-
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
-
-	if url == "https://localhost:9091/ODIM/v1/Sessions" {
-		body := `{"Token": "12345"}`
-		return &http.Response{
-			StatusCode: http.StatusCreated,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-			Header: http.Header{
-				"X-Auth-Token": []string{"12345"},
-			},
-		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Sessions" {
-		body := `{"Token": ""}`
-		return &http.Response{
-			StatusCode: http.StatusUnauthorized,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	}
-	if url == "https://localhost:9091/ODIM/v1/Managers/uuid/EthernetInterfaces" && token == "12345" {
-		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:9093/ODIM/v1/Managers/uuid1/EthernetInterfaces" {
-		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Managers/uuid/EthernetInterfaces" && token == "23456" {
-		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
-		return &http.Response{
-			StatusCode: http.StatusUnauthorized,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	}
-	return nil, fmt.Errorf("InvalidRequest")
-}
-
-func getEncryptedKey(t *testing.T, key []byte) []byte {
-	cryptedKey, err := common.EncryptWithPublicKey(key)
-	if err != nil {
-		t.Fatalf("error: failed to encrypt data: %v", err)
-	}
-	return cryptedKey
 }
 
 func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) error {

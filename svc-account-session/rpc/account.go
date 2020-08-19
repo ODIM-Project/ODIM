@@ -84,7 +84,8 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		return nil
 	}
 
-	data, err := account.Create(req, sess)
+	acc := account.GetExternalInterface()
+	data, err := acc.Create(req, sess)
 	var jsonErr error // jsonErr is created to protect the data in err
 	resp.Body, jsonErr = json.Marshal(data.Body)
 	if jsonErr != nil {

@@ -15,17 +15,17 @@
 package managers
 
 import (
-	"net/http"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"net/http"
 )
 
 // ExternalInterface holds all the external connections managers package functions uses
 type ExternalInterface struct {
 	Device Device
-	DB	DB
+	DB     DB
 }
 
 // Device struct to inject the contact device function into the handlers

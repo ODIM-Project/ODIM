@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"io/ioutil"
@@ -45,9 +46,14 @@ func TestGetExternalInterface(t *testing.T) {
 
 func mockGetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
-		Device: Device{},
+		Device: Device{
+			GetDeviceInfo:         mockGetDeviceInfo,
+			ContactClient:         mockContactClient,
+		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
+			GetManagerData: mockGetManagerData,
+			GetManagerByURL: mockGetManagerByURL,
 		},
 	}
 }
@@ -65,6 +71,11 @@ func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 		UUID:            "someUUID",
 		State:           "Enabled",
 	}, nil
+}
+
+func mockGetManagerByURL(url string) (string, *errors.Error) {
+	
+	return "", nil
 }
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {

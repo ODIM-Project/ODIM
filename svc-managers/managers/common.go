@@ -16,6 +16,7 @@ package managers
 
 import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
@@ -39,6 +40,7 @@ type Device struct {
 type DB struct {
 	GetAllKeysFromTable func(string) ([]string, error)
 	GetManagerData func(string) (mgrmodel.RAManager, error)
+	GetManagerByURL func(string) (string, *errors.Error)
 }
 
 // GetExternalInterface retrieves all the external connections managers package functions uses
@@ -52,6 +54,7 @@ func GetExternalInterface() *ExternalInterface {
 		DB: DB{
 			GetAllKeysFromTable: mgrmodel.GetAllKeysFromTable,
 			GetManagerData: mgrmodel.GetManagerData,
+			GetManagerByURL: mgrmodel.GetManagerByURL,
 		},
 	}
 }

@@ -79,7 +79,7 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 }
 
 // GetManagers will fetch individual manager details with the given ID
-func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.RPC {
+func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -105,11 +105,11 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 
 		requestData := strings.Split(req.ManagerID, ":")
 		if len(requestData) <= 1 {
-			resp = d.getPluginManagerResoure(requestData[0], req.URL)
+			resp = e.getPluginManagerResoure(requestData[0], req.URL)
 			return resp
 		}
 		uuid := requestData[0]
-		data, err := mgrmodel.GetManagerByURL(req.URL)
+		data, err := e.DB.GetManagerByURL(req.URL)
 		if err != nil {
 			log.Printf("error getting manager details : %v", err.Error())
 			var errArgs = []interface{}{}
@@ -145,7 +145,7 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 		}
 
 		if managerType != common.ManagerTypeService && managerType != "" {
-			deviceData, err := d.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
+			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
 				log.Printf("warning: Device %v is unreachable: %v", req.URL, err)
 				// Updating the state
@@ -224,7 +224,7 @@ func getManagerDetails(id string) (mgrmodel.Manager, error) {
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
+func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -237,7 +237,7 @@ func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) r
 
 	requestData := strings.Split(req.ManagerID, ":")
 	if len(requestData) <= 1 {
-		resp = d.getPluginManagerResoure(requestData[0], req.URL)
+		resp = e.getPluginManagerResoure(requestData[0], req.URL)
 		return resp
 	}
 	uuid := requestData[0]
@@ -254,7 +254,7 @@ func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) r
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error
-			if data, err = d.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
+			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
 				errorMessage := "error while getting details from device: " + err.Error()
 				log.Println(errorMessage)
 				errArgs := []interface{}{tableName, req.ManagerID}
@@ -275,9 +275,9 @@ func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) r
 
 	return resp
 }
-func (d *DeviceContact) getPluginManagerResoure(managerID, reqURI string) response.RPC {
+func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
 	var resp response.RPC
-	data, dberr := mgrmodel.GetManagerByURL("/redfish/v1/Managers/" + managerID)
+	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
 	if dberr != nil {
 		log.Printf("error getting manager details : %v", dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
@@ -308,7 +308,7 @@ func (d *DeviceContact) getPluginManagerResoure(managerID, reqURI string) respon
 	}
 	var req mgrcommon.PluginContactRequest
 
-	req.ContactClient = d.ContactClient
+	req.ContactClient = e.Device.ContactClient
 	req.Plugin = plugin
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
@@ -378,7 +378,7 @@ func fillResponse(body []byte) response.RPC {
 
 }
 
-func (d *DeviceContact) getResourceInfoFromDevice(reqURL, uuid, systemID string) (string, error) {
+func (e *ExternalInterface) getResourceInfoFromDevice(reqURL, uuid, systemID string) (string, error) {
 	var getDeviceInfoRequest = mgrcommon.ResourceInfoRequest{
 		URL:                   reqURL,
 		UUID:                  uuid,
@@ -386,6 +386,6 @@ func (d *DeviceContact) getResourceInfoFromDevice(reqURL, uuid, systemID string)
 		ContactClient:         d.ContactClient,
 		DecryptDevicePassword: d.DecryptDevicePassword,
 	}
-	return d.GetDeviceInfo(getDeviceInfoRequest)
+	return e.Device.GetDeviceInfo(getDeviceInfoRequest)
 
 }

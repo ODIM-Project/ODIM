@@ -60,6 +60,7 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 }
 
 func TestGetManagerRootUUIDNotFound(t *testing.T) {
+	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
 		ManagerID: "someUUID",
 	}
@@ -73,7 +74,7 @@ func TestGetManagerRootUUIDNotFound(t *testing.T) {
 }
 
 func TestGetManager(t *testing.T) {
-	// config.SetUpMockConfig(t)
+	config.SetUpMockConfig(t)
 	// defer func() {
 	// 	err := common.TruncateDB(common.InMemory)
 	// 	if err != nil {

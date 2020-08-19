@@ -78,12 +78,12 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 		log.Printf(errorMessage)
 		return nil
 	}
-	var d = managers.DeviceContact{
-		GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
-		ContactClient:         m.ContactClientRPC,
-		DecryptDevicePassword: common.DecryptWithPrivateKey,
-	}
-	data := d.GetManagers(req)
+	// var d = managers.DeviceContact{
+	// 	GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
+	// 	ContactClient:         m.ContactClientRPC,
+	// 	DecryptDevicePassword: common.DecryptWithPrivateKey,
+	// }
+	data := m.EI.GetManagers(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -110,12 +110,12 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 		log.Printf(errorMessage)
 		return nil
 	}
-	var d = managers.DeviceContact{
-		GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
-		ContactClient:         m.ContactClientRPC,
-		DecryptDevicePassword: common.DecryptWithPrivateKey,
-	}
-	data := d.GetManagersResource(req)
+	// var d = managers.DeviceContact{
+	// 	GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
+	// 	ContactClient:         m.ContactClientRPC,
+	// 	DecryptDevicePassword: common.DecryptWithPrivateKey,
+	// }
+	data := m.EI.GetManagersResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage

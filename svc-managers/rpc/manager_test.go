@@ -11,6 +11,7 @@
 //WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 //License for the specific language governing permissions and limitations
 // under the License.
+
 package rpc
 
 import (
@@ -22,11 +23,11 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-managers/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/stretchr/testify/assert"
-
-	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 )
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
@@ -42,8 +43,8 @@ func mockContactClient(url, method, token string, odataID string, body interface
 
 func mockGetExternalInterface() *managers.ExternalInterface {
 	return &managers.ExternalInterface{
-		Device: Device{},
-		DB: DB{
+		Device: managers.Device{},
+		DB: managers.DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
 		},
 	}
@@ -54,16 +55,9 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 }
 
 func TestGetManagerCollection(t *testing.T) {
-	// common.SetUpMockConfig()
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
-	mgr.EI = mockGetExternalInterface
+	mgr.EI = mockGetExternalInterface()
 	type args struct {
 		ctx  context.Context
 		req  *managersproto.ManagerRequest

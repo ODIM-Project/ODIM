@@ -15,15 +15,15 @@
 package managers
 
 import (
-	"testing"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"io/ioutil"
 	"net/http"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+	"testing"
 )
 
 func TestGetExternalInterface(t *testing.T) {
@@ -55,7 +55,6 @@ func mockGetExternalInterface() *ExternalInterface {
 func mockGetAllKeysFromTable(table string) ([]string, error) {
 	return []string{"/redfish/v1/Managers/uuid:1"}, nil
 }
-
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {

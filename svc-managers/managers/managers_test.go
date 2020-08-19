@@ -29,19 +29,6 @@ import (
 )
 
 func TestGetManagersCollection(t *testing.T) {
-	// config.SetUpMockConfig(t)
-	// common.TruncateDB(common.InMemory)
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
-	// body := []byte(`body`)
-	// table := "Managers"
-	// key := "/redfish/v1/Managers/uuid:1"
-	// mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{}
 	e := mockGetExternalInterface()
 	response, err := e.GetManagersCollection(req)
@@ -73,16 +60,8 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 }
 
 func TestGetManagerRootUUIDNotFound(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
 	req := &managersproto.ManagerRequest{
-		ManagerID: config.Data.RootServiceUUID,
+		ManagerID: "someUUID",
 	}
 	d := DeviceContact{
 		GetDeviceInfo: mockGetDeviceInfo,
@@ -94,24 +73,24 @@ func TestGetManagerRootUUIDNotFound(t *testing.T) {
 }
 
 func TestGetManager(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mngr := mgrmodel.RAManager{
-		Name:            "odimra",
-		ManagerType:     "Service",
-		FirmwareVersion: config.Data.FirmwareVersion,
-		ID:              config.Data.RootServiceUUID,
-		UUID:            config.Data.RootServiceUUID,
-		State:           "Enabled",
-	}
-	mngr.AddManagertoDB()
+	// config.SetUpMockConfig(t)
+	// defer func() {
+	// 	err := common.TruncateDB(common.InMemory)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// }()
+	// mngr := mgrmodel.RAManager{
+	// 	Name:            "odimra",
+	// 	ManagerType:     "Service",
+	// 	FirmwareVersion: config.Data.FirmwareVersion,
+	// 	ID:              config.Data.RootServiceUUID,
+	// 	UUID:            config.Data.RootServiceUUID,
+	// 	State:           "Enabled",
+	// }
+	// mngr.AddManagertoDB()
 	req := &managersproto.ManagerRequest{
-		ManagerID: "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+		ManagerID: "someUUID",
 	}
 	d := DeviceContact{
 		GetDeviceInfo: mockGetDeviceInfo,

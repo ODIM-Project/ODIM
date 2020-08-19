@@ -38,6 +38,7 @@ type Device struct {
 // DB struct to inject the contact DB function into the handlers
 type DB struct {
 	GetAllKeysFromTable func(string) ([]string, error)
+	GetManagerData func(string) (mgrmodel.RAManager, error)
 }
 
 // GetExternalInterface retrieves all the external connections managers package functions uses
@@ -50,6 +51,7 @@ func GetExternalInterface() *ExternalInterface {
 		},
 		DB: DB{
 			GetAllKeysFromTable: mgrmodel.GetAllKeysFromTable,
+			GetManagerData: mgrmodel.GetManagerData,
 		},
 	}
 }

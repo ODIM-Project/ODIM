@@ -56,6 +56,17 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 	return []string{"/redfish/v1/Managers/uuid:1"}, nil
 }
 
+func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
+	return mgrmodel.RAManager{
+		Name:            "odimra",
+		ManagerType:     "Service",
+		FirmwareVersion: "1.0",
+		ID:              "someUUID",
+		UUID:            "someUUID",
+		State:           "Enabled",
+	}, nil
+}
+
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
 		return "", fmt.Errorf("error")

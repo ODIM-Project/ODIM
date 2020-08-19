@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/svc-managers/managers"
 )
 
 func main() {
@@ -63,6 +64,7 @@ func registerHandlers() {
 
 	managers.IsAuthorizedRPC = services.IsAuthorized
 	managers.ContactClientRPC = pmbhandle.ContactPlugin
+	managers.EI = managers.GetExternalInterface()
 
 	managersproto.RegisterManagersHandler(services.Service.Server(), managers)
 }

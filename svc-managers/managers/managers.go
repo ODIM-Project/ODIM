@@ -40,7 +40,7 @@ type DeviceContact struct {
 }
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
-func GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
+func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -63,7 +63,7 @@ func GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, err
 	members = append(members, dmtf.Link{Oid: oid})
 
 	// Add servers as manager in manager collection
-	managersCollectionKeysArray, err := mgrmodel.GetAllKeysFromTable("Managers")
+	managersCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Managers")
 	if err != nil || len(managersCollectionKeysArray) == 0 {
 		log.Printf("odimra Doesnt have Servers")
 	}

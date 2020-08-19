@@ -45,7 +45,8 @@ func TestGetManagersCollection(t *testing.T) {
 	mgrmodel.GenericSave(body, table, key)
 
 	req := &managersproto.ManagerRequest{}
-	response, err := GetManagersCollection(req)
+	e := mockGetExternalInterface()
+	response, err := e.GetManagersCollection(req)
 	assert.Nil(t, err, "There should be no error")
 
 	manager := response.Body.(mgrresponse.ManagersCollection)

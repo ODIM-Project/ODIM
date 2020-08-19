@@ -31,6 +31,7 @@ import (
 type Managers struct {
 	IsAuthorizedRPC  func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
 	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	EI *managers.ExternalInterface
 }
 
 //GetManagersCollection defines the operation which hasnled the RPC request response
@@ -50,7 +51,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 		log.Printf(errorMessage)
 		return nil
 	}
-	data, _ := managers.GetManagersCollection(req)
+	data, _ := m.EI.GetManagersCollection(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage

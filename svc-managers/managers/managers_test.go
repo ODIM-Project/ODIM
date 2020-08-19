@@ -237,6 +237,7 @@ func TestGetManagerResourcewithBadManagerID(t *testing.T) {
 	// 	GetDeviceInfo: mockGetDeviceInfo,
 	// 	ContactClient: mockContactClient,
 	// }
+	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusBadRequest.")
 }
@@ -286,7 +287,6 @@ func TestGetManagerResourcewithValidURL(t *testing.T) {
 	// 	GetDeviceInfo: mockGetDeviceInfo,
 	// 	ContactClient: mockContactClient,
 	// }
-	e := mockGetExternalInterface()
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
@@ -413,6 +413,7 @@ func TestGetPluginManagerResourceInvalidPlugin(t *testing.T) {
 	// 	GetDeviceInfo: mockGetDeviceInfo,
 	// 	ContactClient: mockContactClient,
 	// }
+	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusOK.")
 }
@@ -450,6 +451,7 @@ func TestGetPluginManagerResourceInvalidPluginSessions(t *testing.T) {
 	// 	GetDeviceInfo: mockGetDeviceInfo,
 	// 	ContactClient: mockContactClient,
 	// }
+	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusOK.")
 	mgrcommon.Token.Tokens = map[string]string{

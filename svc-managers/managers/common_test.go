@@ -47,13 +47,13 @@ func TestGetExternalInterface(t *testing.T) {
 func mockGetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		Device: Device{
-			GetDeviceInfo:         mockGetDeviceInfo,
-			ContactClient:         mockContactClient,
+			GetDeviceInfo: mockGetDeviceInfo,
+			ContactClient: mockContactClient,
 		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
-			GetManagerData: mockGetManagerData,
-			GetManagerByURL: mockGetManagerByURL,
+			GetManagerData:      mockGetManagerData,
+			GetManagerByURL:     mockGetManagerByURL,
 		},
 	}
 }
@@ -74,7 +74,7 @@ func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 }
 
 func mockGetManagerByURL(url string) (string, *errors.Error) {
-	
+
 	return "", nil
 }
 

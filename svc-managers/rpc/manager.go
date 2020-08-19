@@ -24,7 +24,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 )
 
 // Managers struct helps to register service

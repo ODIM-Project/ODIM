@@ -383,8 +383,8 @@ func (e *ExternalInterface) getResourceInfoFromDevice(reqURL, uuid, systemID str
 		URL:                   reqURL,
 		UUID:                  uuid,
 		SystemID:              systemID,
-		ContactClient:         d.ContactClient,
-		DecryptDevicePassword: d.DecryptDevicePassword,
+		ContactClient:         e.Device.ContactClient,
+		DecryptDevicePassword: e.Device.DecryptDevicePassword,
 	}
 	return e.Device.GetDeviceInfo(getDeviceInfoRequest)
 

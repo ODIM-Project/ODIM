@@ -40,16 +40,30 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
+func mockGetExternalInterface() *managers.ExternalInterface {
+	return &managers.ExternalInterface{
+		Device: Device{},
+		DB: DB{
+			GetAllKeysFromTable: mockGetAllKeysFromTable,
+		},
+	}
+}
+
+func mockGetAllKeysFromTable(table string) ([]string, error) {
+	return []string{"/redfish/v1/Managers/uuid:1"}, nil
+}
+
 func TestGetManagerCollection(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
+	// common.SetUpMockConfig()
+	// defer func() {
+	// 	err := common.TruncateDB(common.InMemory)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// }()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.EI = mockGetExternalInterface
 	type args struct {
 		ctx  context.Context
 		req  *managersproto.ManagerRequest

@@ -117,7 +117,13 @@ func Router() *iris.Application {
 	}
 
 	update := handle.UpdateRPCs{
-		GetUpdateServiceRPC: rpc.DoGetUpdateService,
+		GetUpdateServiceRPC:               rpc.DoGetUpdateService,
+		SimpleUpdateRPC:                   rpc.DoSimpleUpdate,
+		StartUpdateRPC:                    rpc.DoStartUpdate,
+		GetFirmwareInventoryRPC:           rpc.DoGetFirmwareInventory,
+		GetFirmwareInventoryCollectionRPC: rpc.DoGetFirmwareInventoryCollection,
+		GetSoftwareInventoryRPC:           rpc.DoGetSoftwareInventory,
+		GetSoftwareInventoryCollectionRPC: rpc.DoGetSoftwareInventoryCollection,
 	}
 
 	registryFile := handle.Registry{
@@ -261,12 +267,6 @@ func Router() *iris.Application {
 	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
 	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
-	aggregationSource.Get("/", pc.GetAllAggregationSource)
-	aggregationSource.Any("/", handle.AggMethodNotAllowed)
-	aggregationSource.Get("/{id}", pc.GetAggregationSource)
-	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)
-	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)
-	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
 
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)
@@ -383,5 +383,10 @@ func Router() *iris.Application {
 	updateService := v1.Party("/UpdateService", middleware.SessionDelMiddleware)
 	updateService.SetRegisterRule(iris.RouteSkip)
 	updateService.Get("/", update.GetUpdateService)
+	updateService.Post("/Actions/UpdateService.SimpleUpdate", update.SimpleUpdate)
+	updateService.Get("/FirmwareInventory", update.GetFirmwareInventoryCollection)
+	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
+	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)
+	updateService.Get("/SoftwareInventory/{softwareInventory_id}", update.GetSoftwareInventory)
 	return router
 }

@@ -3,7 +3,7 @@ module github.com/ODIM-Project/ODIM/svc-api
 go 1.13
 
 require (
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200807110514-4651503cc1a8
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200820090301-0f8b79f2a5e4
 	github.com/kataras/iris/v12 v12.1.9-0.20200616210209-a85c83b70ad0
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.14.0 // indirect

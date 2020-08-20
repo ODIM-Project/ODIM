@@ -190,3 +190,31 @@ func DoRemoveElementsFromAggregate(req aggregatorproto.AggregatorRequest) (*aggr
 
 	return resp, err
 }
+
+// DoResetAggregateElements defines the RPC call function for
+// the reset elements of an aggregate from aggregator micro service
+func DoResetAggregateElements(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.ResetElementsOfAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoSetDefaultBootOrderAggregateElements defines the RPC call function for
+// the set default boot order elements of an aggregate from aggregator micro service
+func DoSetDefaultBootOrderAggregateElements(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.SetDefaultBootOrderElementsOfAggregate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

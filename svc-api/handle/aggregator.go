@@ -568,12 +568,81 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 
 // ResetAggregateElements is the handler for resetting elements of an aggregate
 func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	var req interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	// marshalling the req to make aggregator reset elements request
+	request, _ := json.Marshal(req)
+
+	resetRequest := aggregatorproto.AggregatorRequest{
+		SessionToken: sessionToken,
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  request,
+	}
+
+	resp, err := a.ResetAggregateElementsRPC(resetRequest)
+	if err != nil {
+		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }
 
 // SetDefaultBootOrderAggregateElements is the handler for SetDefaultBootOrder elements of an aggregate
 func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	bootOrderRequest := aggregatorproto.AggregatorRequest{
+		SessionToken: sessionToken,
+		URL:          ctx.Request().RequestURI,
+	}
+
+	resp, err := a.SetDefaultBootOrderAggregateElementsRPC(bootOrderRequest)
+	if err != nil {
+		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }

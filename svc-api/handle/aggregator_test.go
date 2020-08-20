@@ -562,27 +562,27 @@ func TestResetAggregateElements(t *testing.T) {
 	// test with valid token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusOK
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusOK)
 
 	// test with Invalid token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
-	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
 
 	// test without token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
-	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
 
 	// test without request body
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusBadRequest
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
 
 	// test for RPC Error
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
-	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusInternalServerError
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
 }
 
 func TestSetDefaultBootOrderAggregateElements(t *testing.T) {
@@ -600,25 +600,20 @@ func TestSetDefaultBootOrderAggregateElements(t *testing.T) {
 	// test with valid token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusOK
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusOK)
 
 	// test with Invalid token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
 
 	// test without token
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
-
-	// test without request body
-	test.POST(
-		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusBadRequest
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
 
 	// test for RPC Error
 	test.POST(
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusInternalServerError
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
 }

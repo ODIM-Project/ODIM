@@ -12,7 +12,6 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
 package rpc
 
 import (
@@ -28,9 +27,8 @@ import (
 
 // Managers struct helps to register service
 type Managers struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
-//	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	EI               *managers.ExternalInterface
+	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	EI              *managers.ExternalInterface
 }
 
 //GetManagersCollection defines the operation which hasnled the RPC request response
@@ -77,11 +75,6 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 		log.Printf(errorMessage)
 		return nil
 	}
-	// var d = managers.DeviceContact{
-	// 	GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
-	// 	ContactClient:         m.ContactClientRPC,
-	// 	DecryptDevicePassword: common.DecryptWithPrivateKey,
-	// }
 	data := m.EI.GetManagers(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
@@ -109,11 +102,6 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 		log.Printf(errorMessage)
 		return nil
 	}
-	// var d = managers.DeviceContact{
-	// 	GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
-	// 	ContactClient:         m.ContactClientRPC,
-	// 	DecryptDevicePassword: common.DecryptWithPrivateKey,
-	// }
 	data := m.EI.GetManagersResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode

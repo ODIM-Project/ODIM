@@ -27,8 +27,8 @@ import (
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +42,6 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (
 func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
-
 
 func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 	if id == "nonExistingUUID" {
@@ -142,7 +141,6 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	return string(dataByte), err
 }
 
-
 func mockGetExternalInterface() *managers.ExternalInterface {
 	return &managers.ExternalInterface{
 		Device: managers.Device{
@@ -211,12 +209,6 @@ func TestGetManagerCollection(t *testing.T) {
 
 func TestGetManagerwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
@@ -231,22 +223,6 @@ func TestGetManagerwithInValidtoken(t *testing.T) {
 }
 func TestGetManagerwithValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
-	// mngr := mgrmodel.RAManager{
-	// 	Name:            "odimra",
-	// 	ManagerType:     "Service",
-	// 	FirmwareVersion: config.Data.FirmwareVersion,
-	// 	ID:              config.Data.RootServiceUUID,
-	// 	UUID:            config.Data.RootServiceUUID,
-	// 	State:           "Enabled",
-	// }
-	// mngr.AddManagertoDB()
-
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
@@ -271,12 +247,6 @@ func TestGetManagerwithValidtoken(t *testing.T) {
 
 func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
@@ -291,21 +261,10 @@ func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 }
 func TestGetManagerResourcewithValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
-
-	// body := []byte(`body`)
-	// table := "EthernetInterfaces"
-	// key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
-	// mgrmodel.GenericSave(body, table, key)
 
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid:1",

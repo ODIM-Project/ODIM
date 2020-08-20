@@ -644,3 +644,224 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 		})
 	}
 }
+
+func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	successReq, _ := json.Marshal(ResetRequest{
+		BatchSize : 2,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:"ForceOff",
+	})
+
+	badReq, _ := json.Marshal(ResetRequest{
+		BatchSize : 2,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:"",
+	})
+
+	missingparamReq, _ := json.Marshal(ResetRequest{})
+
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+		taskID          string
+		sessionUserName string
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name           string
+		e              *ExternalInterface
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+		},
+		{
+			name: "reset without child task",
+			e:    p,
+			args: args{
+				taskID: "taskWithoutChild", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+		},
+		{
+			name: "reset without slash in subtask",
+			e:    p,
+			args: args{
+				taskID: "subTaskWithSlash", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+		},
+		{
+			name: "Invalid aggregate id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+		},
+		{
+			name: "Empty Reset Type",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  badReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+		},
+		{
+			name: "with missing parameters",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  missingparamReq,
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.ResetElementsOfAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+				t.Errorf("ExternalInterface.ResetElementsOfAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	p := &ExternalInterface{
+		Auth: mockIsAuthorized,
+	}
+	type args struct {
+ 	taskID          string
+		sessionUserName string
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name           string
+		e              *ExternalInterface
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+		},
+		{
+			name: "subtask creation failure",
+			e:    p,
+			args: args{
+				taskID: "taskWithoutChild", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+		},
+		{
+			name: "Invalid aggregate id",
+			e:    p,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+		},
+		{
+			name: "with missing parameters",
+			e:    p,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+				},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.SetDefaultBootOrderElementsOfAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+				t.Errorf("ExternalInterface.SetDefaultBootOrderElementsOfAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+

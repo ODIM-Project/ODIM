@@ -1357,3 +1357,267 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 		})
 	}
 }
+
+func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	successReq, _ := json.Marshal(system.ResetRequest{
+		BatchSize:                    2,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceOff",
+	})
+
+	badReq, _ := json.Marshal(system.ResetRequest{
+		BatchSize:                    2,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "",
+	})
+
+	missingparamReq, _ := json.Marshal(system.ResetRequest{})
+
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name           string
+		a              *Aggregator
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusAccepted
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "invalidToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+		},
+		{
+			name: "Invalid aggregate id ",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusAccepted
+		},
+		{
+			name: "get session username fails",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "noDetailsToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+		},
+		{
+			name: "unable to create task",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "noTaskToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+		},
+		{
+			name: "task with slash",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "taskWithSlashToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
+					RequestBody:  successReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+		},
+		{
+			name: "Empty Reset Type",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  badReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusAccepted
+		},
+		{
+			name: "with missing parameters",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+					RequestBody:  missingparamReq,
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.ResetElementsOfAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.ResetElementsOfAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}
+
+func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name           string
+		a              *Aggregator
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "invalidToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+		},
+		{
+			name: "get session username fails",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "noDetailsToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+		},
+		{
+			name: "unable to create task",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "noTaskToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+		},
+		{
+			name: "task with slash",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "taskWithSlashToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+		},
+		{
+			name: "Invalid aggregate id ",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.SetDefaultBootOrder",
+				},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.SetDefaultBootOrderElementsOfAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.SetDefaultBootOrderElementsOfAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}

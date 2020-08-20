@@ -967,11 +967,95 @@ func TestAggregationSource(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	err = AddAggregationSource(req, aggregationSourceURI)
 	assert.NotNil(t, err, "Error Should not be nil")
+	keys, dbErr := GetAllKeysFromTable("AggregationSource")
+	assert.Nil(t, dbErr, "err should be nil")
+	assert.Equal(t, 1, len(keys), "length should be matching")
 	data, err := GetAggregationSourceInfo(aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
 	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/AggregationSource/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
+	err = UpdateAggregtionSource(req, aggregationSourceURI)
+	assert.Nil(t, err, "err should be nil")
+	err = UpdateAggregtionSource(req, "/redfish/v1/AggregationService/AggregationSource/12345677651245-123433")
+	assert.NotNil(t, err, "Error Should not be nil")
+	data, err = GetAggregationSourceInfo(aggregationSourceURI)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, data.HostName, req.HostName)
+	assert.Equal(t, data.UserName, req.UserName)
+	keys, err = GetAllMatchingDetails("AggregationSource", "/redfish/v1/AggregationService/AggregationSource/12345677651245-", common.OnDisk)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, 1, len(keys), "length should be matching")
+	err = DeleteAggregationSource(aggregationSourceURI)
+	assert.Nil(t, err, "err should be nil")
+	err = DeleteAggregationSource(aggregationSourceURI)
+	assert.NotNil(t, err, "Error Should not be nil")
+}
 
+func TestUpdatePluginData(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	validPasswordEnc := getEncryptedKey(t, []byte("password"))
+
+	pluginData := Plugin{
+		IP:                "localhost",
+		Port:              "45001",
+		Username:          "admin",
+		Password:          validPasswordEnc,
+		ID:                "GRF",
+		PluginType:        "RF-GENERIC",
+		PreferredAuthType: "BasicAuth",
+		ManagerUUID:       "123453414-1223441",
+	}
+	mockData(t, common.OnDisk, "Plugin", "GRF", pluginData)
+	pluginData.Username = "admin1"
+	pluginData.IP = "9.9.9.0"
+	err := UpdatePluginData(pluginData, "GRF")
+	assert.Nil(t, err, "err should be nil")
+	err = UpdatePluginData(pluginData, "GRF1")
+	assert.NotNil(t, err, "Error Should not be nil")
+}
+
+func TestUpdateSystemData(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	req := SaveSystem{
+		UserName:   "admin",
+		Password:   []byte("12345"),
+		DeviceUUID: "1234567678-12331",
+		PluginID:   "GRF",
+	}
+	mockData(t, common.OnDisk, "System", "1234567678-12331", &req)
+	req.UserName = "admin"
+	req.Password = []byte("12346")
+	dbErr := UpdateSystemData(req, "1234567678-12331")
+	assert.Nil(t, dbErr, "err should be nil")
+	data, err := GetTarget("1234567678-12331")
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, req.UserName, data.UserName, "UserName should be same")
+	assert.Equal(t, req.Password, data.Password, "Password should be same")
+	assert.Equal(t, req.PluginID, data.PluginID, "PluginID should be same")
+	assert.Equal(t, req.DeviceUUID, data.DeviceUUID, "DeviceUUID should be same")
+
+	dbErr = UpdateSystemData(req, "1234567678-12332")
+	assert.NotNil(t, dbErr, "Error Should not be nil")
 }

@@ -89,7 +89,10 @@ func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 }
 
 func mockGetManagerByURL(url string) (string, *errors.Error) {
-	managerData := map[string]interface{}{"Name": "somePlugin"}
+	managerData := make(map[string]interface{})
+	managerData["ManagerType"] = "BMC"
+	managerData["Status"] = `{"State":"Enabled"}}`
+	managerData["Name"] = "somePlugin"
 	data, _ := json.Marshal(managerData)
 	return string(data), nil
 }

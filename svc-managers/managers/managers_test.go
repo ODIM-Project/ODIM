@@ -105,8 +105,8 @@ func TestGetManagerWithDeviceAbsent(t *testing.T) {
 	mgrmodel.GenericSave(body, table, key)
 
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid:1",
-		URL:       "/redfish/v1/Managers/deviceAbsent:1",
+		ManagerID: "noDeviceManager:1",
+		URL:       "/redfish/v1/Managers/noDevice:1",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)

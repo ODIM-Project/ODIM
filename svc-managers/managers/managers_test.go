@@ -150,7 +150,7 @@ func TestGetManagerResourcewithBadManagerID(t *testing.T) {
 	}()
 */
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid",
+		ManagerID: "invalidURL",
 		URL:       "/redfish/v1/Managers/uuid",
 	}
 	e := mockGetExternalInterface()

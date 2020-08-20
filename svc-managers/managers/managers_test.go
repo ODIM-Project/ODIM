@@ -92,21 +92,9 @@ func TestGetManager(t *testing.T) {
 }
 
 func TestGetManagerWithDeviceAbsent(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	body := []byte(`{"ManagerType":"BMC","Status":{"State":"Enabled"}}`)
-	table := "Managers"
-	key := "/redfish/v1/Managers/deviceAbsent:1"
-	mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "noDeviceManager:1",
-		URL:       "/redfish/v1/Managers/noDevice:1",
+		URL:       "/redfish/v1/Managers/deviceAbsent:1",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
@@ -121,22 +109,9 @@ func TestGetManagerWithDeviceAbsent(t *testing.T) {
 }
 
 func TestGetManagerwithInvalidURL(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	body := []byte(`{"Status":{"State":"Enabled"}}`)
-	table := "Managers"
-	key := "/redfish/v1/Managers/uuid:1"
-	mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid:1",
-		URL:       "/redfish/v1/Managers/uuid1:1",
+		URL:       "/redfish/v1/Managers/invalidURL:1",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
@@ -145,19 +120,6 @@ func TestGetManagerwithInvalidURL(t *testing.T) {
 }
 
 func TestGetManagerwithValidURL(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	body := []byte(`{"ManagerType":"BMC","Status":{"State":"Enabled"}}`)
-	table := "Managers"
-	key := "/redfish/v1/Managers/uuid:1"
-	mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid:1",
 		URL:       "/redfish/v1/Managers/uuid:1",
@@ -169,14 +131,6 @@ func TestGetManagerwithValidURL(t *testing.T) {
 }
 
 func TestGetManagerInvalidID(t *testing.T) {
-	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "invalidID",
 	}
@@ -187,14 +141,14 @@ func TestGetManagerInvalidID(t *testing.T) {
 }
 
 func TestGetManagerResourcewithBadManagerID(t *testing.T) {
-	config.SetUpMockConfig(t)
+/*	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-
+*/
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid",

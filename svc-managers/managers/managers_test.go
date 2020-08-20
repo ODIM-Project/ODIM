@@ -60,8 +60,10 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 }
 
 func TestGetManagerRootUUIDNotFound(t *testing.T) {
+	config.SetUpMockConfig(t)
+	config.Data.RootServiceUUID = "nonExistingUUID"
 	req := &managersproto.ManagerRequest{
-		ManagerID: "nonExistingUUID",
+		ManagerID: config.Data.RootServiceUUID,
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
@@ -87,7 +89,7 @@ func TestGetManager(t *testing.T) {
 	// }
 	// mngr.AddManagertoDB()
 	req := &managersproto.ManagerRequest{
-		ManagerID: "someUUID",
+		ManagerID: config.Data.RootServiceUUID,
 	}
 	// d := DeviceContact{
 	// 	GetDeviceInfo: mockGetDeviceInfo,

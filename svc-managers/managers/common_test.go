@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
@@ -54,8 +55,8 @@ func mockGetExternalInterface() *ExternalInterface {
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
 			GetManagerData:      mockGetManagerData,
 			GetManagerByURL:     mockGetManagerByURL,
-			GetPluginData: mockGetPluginData,
-			UpdateManagersData: mockUpdateManagersData,
+			GetPluginData:       mockGetPluginData,
+			UpdateManagersData:  mockUpdateManagersData,
 		},
 	}
 }
@@ -67,13 +68,19 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 	if id == "nonExistingUUID" {
 		return mgrmodel.RAManager{}, fmt.Errorf("not found")
+	} else if id == "noDevice" {
+		return mgrmodel.Manager{
+			Status: &mgrmodel.Status{
+				State: "Absent",
+			},
+		}, nil
 	}
 	return mgrmodel.RAManager{
 		Name:            "odimra",
 		ManagerType:     "Service",
 		FirmwareVersion: "1.0",
-		ID:              "someUUID",
-		UUID:            "someUUID",
+		ID:              config.Data.RootServiceUUID,
+		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
 	}, nil
 }

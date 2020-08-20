@@ -187,37 +187,37 @@ func TestGetPluginManagerResource(t *testing.T) {
 	mgrcommon.Token.Tokens = make(map[string]string)
 
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	err := mockPluginData(t, "CFM", "XAuthToken", "9091")
-	if err != nil {
-		t.Fatalf("Error in creating mock DeviceData :%v", err)
-	}
-	err = mockPluginData(t, "GRF", "BasicAuth", "9093")
-	if err != nil {
-		t.Fatalf("Error in creating mock DeviceData :%v", err)
-	}
-	body, _ := json.Marshal(map[string]string{
-		"Name": "CFM",
-	})
-	table := "Managers"
-	key := "/redfish/v1/Managers/uuid"
-	mgrmodel.GenericSave(body, table, key)
+	// defer func() {
+	// 	err := common.TruncateDB(common.InMemory)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// 	err = common.TruncateDB(common.OnDisk)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// }()
+	// err := mockPluginData(t, "CFM", "XAuthToken", "9091")
+	// if err != nil {
+	// 	t.Fatalf("Error in creating mock DeviceData :%v", err)
+	// }
+	// err = mockPluginData(t, "GRF", "BasicAuth", "9093")
+	// if err != nil {
+	// 	t.Fatalf("Error in creating mock DeviceData :%v", err)
+	// }
+	// body, _ := json.Marshal(map[string]string{
+	// 	"Name": "someOtherID",
+	// })
+	// table := "Managers"
+	// key := "/redfish/v1/Managers/uuid"
+	// mgrmodel.GenericSave(body, table, key)
 
-	body, _ = json.Marshal(map[string]string{
-		"Name": "GRF",
-	})
-	table = "Managers"
-	key = "/redfish/v1/Managers/uuid1"
-	mgrmodel.GenericSave(body, table, key)
+	// body, _ = json.Marshal(map[string]string{
+	// 	"Name": "somePlugin",
+	// })
+	// table = "Managers"
+	// key = "/redfish/v1/Managers/uuid1"
+	// mgrmodel.GenericSave(body, table, key)
 
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid",

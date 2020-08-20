@@ -162,7 +162,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 					return resp
 				}
 			}
-			err = mgrmodel.UpdateManagersData(req.URL, managerData)
+			err = e.DB.UpdateManagersData(req.URL, managerData)
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
 				log.Println(errorMessage)

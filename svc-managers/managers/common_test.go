@@ -76,11 +76,20 @@ func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 }
 
 func mockGetManagerByURL(url string) (string, *errors.Error) {
-	return "", nil
+	managerData := map[string]interface{}{"Name": "somePlugin"}
+	data, _ := json.Marshal(managerData)
+	return string(data), nil
 }
 
 func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
-	return mgrmodel.Plugin{}, nil
+	return mgrmodel.Plugin{
+		IP:                "localhost",
+		Port:              "9093",
+		Username:          "admin",
+		Password:          []byte("password"),
+		ID:                "somePlugin",
+		PreferredAuthType: "BasicAuth",
+	}, nil
 }
 
 func mockUpdateManagersData(key string, managerData map[string]interface{}) error {

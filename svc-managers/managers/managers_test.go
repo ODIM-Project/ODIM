@@ -183,42 +183,10 @@ func TestGetManagerResourcewithInvalidURL(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
 }
 
-func TestGetPluginManagerResource(t *testing.T) {
+func TestGetPluginManagerResourceSuccess(t *testing.T) {
 	mgrcommon.Token.Tokens = make(map[string]string)
 
 	config.SetUpMockConfig(t)
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// 	err = common.TruncateDB(common.OnDisk)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
-	// err := mockPluginData(t, "CFM", "XAuthToken", "9091")
-	// if err != nil {
-	// 	t.Fatalf("Error in creating mock DeviceData :%v", err)
-	// }
-	// err = mockPluginData(t, "GRF", "BasicAuth", "9093")
-	// if err != nil {
-	// 	t.Fatalf("Error in creating mock DeviceData :%v", err)
-	// }
-	// body, _ := json.Marshal(map[string]string{
-	// 	"Name": "someOtherID",
-	// })
-	// table := "Managers"
-	// key := "/redfish/v1/Managers/uuid"
-	// mgrmodel.GenericSave(body, table, key)
-
-	// body, _ = json.Marshal(map[string]string{
-	// 	"Name": "somePlugin",
-	// })
-	// table = "Managers"
-	// key = "/redfish/v1/Managers/uuid1"
-	// mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid/EthernetInterfaces",
@@ -237,45 +205,24 @@ func TestGetPluginManagerResource(t *testing.T) {
 
 }
 
-func TestGetPluginManagerResourceInvalidPlugin(t *testing.T) {
+func TestGetPluginManagerResourceInvalidPluginFail(t *testing.T) {
 	mgrcommon.Token.Tokens = make(map[string]string)
 
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	err := mockPluginData(t, "CFM1", "XAuthToken", "9091")
-	if err != nil {
-		t.Fatalf("Error in creating mock DeviceData :%v", err)
-	}
-	body, _ := json.Marshal(map[string]string{
-		"Name": "CFM",
-	})
-	table := "Managers"
-	key := "/redfish/v1/Managers/uuid"
-	mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid",
-		URL:       "/redfish/v1/Managers/uuid/EthernetInterfaces",
+		ManagerID: "noPlugin",
+		URL:       "/redfish/v1/Managers/noPlugin/EthernetInterfaces",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
-	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
 }
 
 func TestGetPluginManagerResourceInvalidPluginSessions(t *testing.T) {
 	mgrcommon.Token.Tokens = make(map[string]string)
 
 	config.SetUpMockConfig(t)
-	defer func() {
+/*	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
 			t.Fatalf("error: %v", err)
@@ -295,18 +242,18 @@ func TestGetPluginManagerResourceInvalidPluginSessions(t *testing.T) {
 	table := "Managers"
 	key := "/redfish/v1/Managers/uuid"
 	mgrmodel.GenericSave(body, table, key)
-
+*/
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid/EthernetInterfaces",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
-	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusUnauthorized.")
 	mgrcommon.Token.Tokens = map[string]string{
 		"CFM": "23456",
 	}
 	response = e.GetManagersResource(req)
-	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusUnauthorized.")
 
 }

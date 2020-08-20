@@ -101,6 +101,8 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 		managerData["Name"] = "someOtherID"
 	} else if url == "/redfish/v1/Managers/noPlugin" {
 		managerData["Name"] = "noPlugin"
+	} else if url == "/redfish/v1/Managers/noToken" {
+		managerData["Name"] = "noToken"
 	}
 	data, _ := json.Marshal(managerData)
 	return string(data), nil
@@ -114,6 +116,15 @@ func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
 			Username:          "admin",
 			Password:          []byte("password"),
 			ID:                "CFM",
+			PreferredAuthType: "XAuthToken",
+		}, nil
+	} else if pluginID == "noToken" {
+		return mgrmodel.Plugin{
+			IP:                "localhost",
+			Port:              "9092",
+			Username:          "admin",
+			Password:          []byte("password"),
+			ID:                "noToken",
 			PreferredAuthType: "XAuthToken",
 		}, nil
 	} else if pluginID == "noPlugin" {

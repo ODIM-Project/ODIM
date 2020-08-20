@@ -43,6 +43,7 @@ type DB struct {
 	GetManagerByURL     func(string) (string, *errors.Error)
 	GetPluginData       func(string) (mgrmodel.Plugin, *errors.Error)
 	UpdateManagersData  func(string, map[string]interface{}) error
+	GetResource func(string, string) (string, *errors.Error)
 }
 
 // GetExternalInterface retrieves all the external connections managers package functions uses
@@ -59,6 +60,7 @@ func GetExternalInterface() *ExternalInterface {
 			GetManagerByURL:     mgrmodel.GetManagerByURL,
 			GetPluginData:       mgrmodel.GetPluginData,
 			UpdateManagersData:  mgrmodel.UpdateManagersData,
+			GetResource: mgrmodel.GetResource,
 		},
 	}
 }

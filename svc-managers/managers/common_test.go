@@ -57,6 +57,7 @@ func mockGetExternalInterface() *ExternalInterface {
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateManagersData:  mockUpdateManagersData,
+			GetResource: mockGetResource,
 		},
 	}
 }
@@ -113,6 +114,10 @@ func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
 
 func mockUpdateManagersData(key string, managerData map[string]interface{}) error {
 	return nil
+}
+
+func mockGetResource(table, key string) (string, *errors.Error) {
+	return "body", nil
 }
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {

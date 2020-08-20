@@ -250,7 +250,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 		tableName = urlData[len(urlData)-2]
 	}
 
-	data, err := mgrmodel.GetResource(tableName, req.URL)
+	data, err := e.DB.GetResource(tableName, req.URL)
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error

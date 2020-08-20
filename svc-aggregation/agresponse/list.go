@@ -23,7 +23,7 @@ type ListMember struct {
 	OdataID string `json:"@odata.id"`
 }
 
-// List defines the collection of resources like accounts, sessions, roles etc in svc-account-session
+// List defines the collection of resources like accounts, sessions, roles etc in svc-aggregation
 type List struct {
 	response.Response
 	MembersCount int          `json:"Members@odata.count"`

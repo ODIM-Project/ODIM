@@ -29,7 +29,7 @@ import (
 // Managers struct helps to register service
 type Managers struct {
 	IsAuthorizedRPC  func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
-	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+//	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	EI               *managers.ExternalInterface
 }
 

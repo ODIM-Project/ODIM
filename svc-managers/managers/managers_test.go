@@ -15,11 +15,9 @@ package managers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
@@ -37,26 +35,6 @@ func TestGetManagersCollection(t *testing.T) {
 	manager := response.Body.(mgrresponse.ManagersCollection)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 	assert.Equal(t, manager.MembersCount, 2, "Status code should be StatusOK.")
-}
-
-func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) error {
-	password := getEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
-	plugin := mgrmodel.Plugin{
-		IP:                "localhost",
-		Port:              port,
-		Username:          "admin",
-		Password:          password,
-		ID:                pluginID,
-		PreferredAuthType: PreferredAuthType,
-	}
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	if err = connPool.Create("Plugin", pluginID, plugin); err != nil {
-		return fmt.Errorf("error while trying to create new %v resource: %v", "Plugin", err.Error())
-	}
-	return nil
 }
 
 func TestGetManagerRootUUIDNotFound(t *testing.T) {
@@ -141,7 +119,6 @@ func TestGetManagerInvalidID(t *testing.T) {
 }
 
 func TestGetManagerResourcewithBadManagerID(t *testing.T) {
-
 	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
 		ManagerID: "invalidURL",

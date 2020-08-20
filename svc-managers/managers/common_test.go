@@ -117,6 +117,9 @@ func mockUpdateManagersData(key string, managerData map[string]interface{}) erro
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
+	if key == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	}
 	return "body", nil
 }
 

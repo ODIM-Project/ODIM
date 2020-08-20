@@ -154,28 +154,6 @@ func TestGetManagerResourcewithBadManagerID(t *testing.T) {
 
 func TestGetManagerResourcewithValidURL(t *testing.T) {
 	config.SetUpMockConfig(t)
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
-
-	// body := []byte(`body`)
-	// table := "Managers"
-	// key := "/redfish/v1/Managers/uuid:1"
-	// mgrmodel.GenericSave(body, table, key)
-
-	// body = []byte(`body`)
-	// table = "EthernetInterfacesCollection"
-	// key = "/redfish/v1/Managers/uuid:1/EthernetInterfaces"
-	// mgrmodel.GenericSave(body, table, key)
-
-	// body = []byte(`body`)
-	// table = "EthernetInterfaces"
-	// key = "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
-	// mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid:1",
 		URL:       "/redfish/v1/Managers/uuid:1/EthernetInterfaces",
@@ -196,17 +174,6 @@ func TestGetManagerResourcewithValidURL(t *testing.T) {
 
 func TestGetManagerResourcewithInvalidURL(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	body := []byte(`body`)
-	table := "EthernetInterfacesCollection"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces"
-	mgrmodel.GenericSave(body, table, key)
-
 	req := &managersproto.ManagerRequest{
 		ManagerID: "uuid1:1",
 		URL:       "/redfish/v1/Managers/uuid1:1/Ethernet",

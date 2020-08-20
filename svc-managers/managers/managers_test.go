@@ -60,14 +60,13 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 }
 
 func TestGetManagerRootUUIDNotFound(t *testing.T) {
-	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
-		ManagerID: "someUUID",
+		ManagerID: "nonExistingUUID",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 
-	assert.Equal(t, int(response.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound")
+	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound")
 }
 
 func TestGetManager(t *testing.T) {
@@ -101,11 +100,11 @@ func TestGetManager(t *testing.T) {
 	data, _ := json.Marshal(response.Body)
 	json.Unmarshal(data, &manager)
 
-	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
-	assert.Equal(t, manager.Name, "odimra", "Status code should be StatusOK.")
-	assert.Equal(t, manager.ManagerType, "Service", "Status code should be StatusOK.")
-	assert.Equal(t, manager.ID, req.ManagerID, "Status code should be StatusOK.")
-	assert.Equal(t, manager.FirmwareVersion, "1.0", "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, "odimra", manager.Name, "Status code should be StatusOK.")
+	assert.Equal(t, "Service", manager.ManagerType, "Status code should be StatusOK.")
+	assert.Equal(t, req.ManagerID, manager.ID, "Status code should be StatusOK.")
+	assert.Equal(t, "1.0", manager.FirmwareVersion, "Status code should be StatusOK.")
 
 }
 
@@ -137,8 +136,8 @@ func TestGetManagerWithDeviceAbsent(t *testing.T) {
 	data, _ := json.Marshal(response.Body)
 	json.Unmarshal(data, &manager)
 
-	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
-	assert.Equal(t, manager.Status.State, "Absent", "Status state should be Absent.")
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, "Absent", manager.Status.State, "Status state should be Absent.")
 
 }
 
@@ -166,7 +165,7 @@ func TestGetManagerwithInvalidURL(t *testing.T) {
 	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
-	assert.Equal(t, int(response.StatusCode), http.StatusNotFound, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusOK.")
 
 }
 
@@ -217,7 +216,7 @@ func TestGetManagerInvalidID(t *testing.T) {
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 
-	assert.Equal(t, int(response.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound")
+	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound")
 }
 
 func TestGetManagerResourcewithBadManagerID(t *testing.T) {

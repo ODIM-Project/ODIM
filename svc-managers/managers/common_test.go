@@ -65,6 +65,9 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 }
 
 func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
+	if id == "nonExistingUUID" {
+		return mgrmodel.RAManager{}, fmt.Errorf("not found")
+	}
 	return mgrmodel.RAManager{
 		Name:            "odimra",
 		ManagerType:     "Service",

@@ -141,8 +141,8 @@ func TestGetManagerInvalidID(t *testing.T) {
 }
 
 func TestGetManagerResourcewithBadManagerID(t *testing.T) {
-/*	config.SetUpMockConfig(t)
-	defer func() {
+	config.SetUpMockConfig(t)
+/*	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
 			t.Fatalf("error: %v", err)

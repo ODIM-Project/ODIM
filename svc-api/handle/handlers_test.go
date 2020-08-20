@@ -499,6 +499,9 @@ func TestAggregateMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/{id}", AggregateMethodNotAllowed)
 	redfishRoutes.Any("/{id}/Actions/Aggregate.AddElements/", AggregateMethodNotAllowed)
 	redfishRoutes.Any("/{id}/Actions/Aggregate.RemoveElements/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.Reset/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.SetDefaultBootOrder/", AggregateMethodNotAllowed)
+
 	e := httptest.New(t, router)
 	id := "74116e00-0a4a-53e6-a959-e6a7465d6358"
 	//Check for status code 405 for http methods which are not allowed
@@ -520,4 +523,13 @@ func TestAggregateMethodNotAllowed(t *testing.T) {
 	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
 
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
 }

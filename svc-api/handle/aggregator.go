@@ -28,18 +28,20 @@ import (
 
 // AggregatorRPCs defines all the RPC methods in aggregator service
 type AggregatorRPCs struct {
-	GetAggregationServiceRPC       func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddComputeRPC                  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	DeleteComputeRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	ResetRPC                       func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	SetDefaultBootOrderRPC         func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddAggregationSourceRPC        func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	CreateAggregateRPC             func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAggregateCollectionRPC      func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	GetAggregateRPC                func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	DeleteAggregateRPC             func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	AddElementsToAggregateRPC      func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
-	RemoveElementsFromAggregateRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregationServiceRPC                func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddComputeRPC                           func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteComputeRPC                        func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	ResetRPC                                func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	SetDefaultBootOrderRPC                  func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddAggregationSourceRPC                 func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	CreateAggregateRPC                      func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregateCollectionRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAggregateRPC                         func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	DeleteAggregateRPC                      func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	AddElementsToAggregateRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	RemoveElementsFromAggregateRPC          func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	ResetAggregateElementsRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	SetDefaultBootOrderAggregateElementsRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -562,4 +564,16 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// ResetAggregateElements is the handler for resetting elements of an aggregate
+func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
+}
+
+// SetDefaultBootOrderAggregateElements is the handler for SetDefaultBootOrder elements of an aggregate
+func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
 }

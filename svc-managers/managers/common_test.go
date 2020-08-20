@@ -69,10 +69,13 @@ func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 	if id == "nonExistingUUID" {
 		return mgrmodel.RAManager{}, fmt.Errorf("not found")
 	} else if id == "noDevice" {
-		return mgrmodel.Manager{
-			Status: &mgrmodel.Status{
-				State: "Absent",
-			},
+		return mgrmodel.RAManager{
+			Name:            "odimra",
+			ManagerType:     "Service",
+			FirmwareVersion: "1.0",
+			ID:              "noDevice",
+			UUID:            "noDevice",
+			State:           "Absent",
 		}, nil
 	}
 	return mgrmodel.RAManager{

@@ -275,6 +275,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 
 	return resp
 }
+
 func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)

@@ -73,28 +73,9 @@ func TestGetManagerRootUUIDNotFound(t *testing.T) {
 
 func TestGetManager(t *testing.T) {
 	config.SetUpMockConfig(t)
-	// defer func() {
-	// 	err := common.TruncateDB(common.InMemory)
-	// 	if err != nil {
-	// 		t.Fatalf("error: %v", err)
-	// 	}
-	// }()
-	// mngr := mgrmodel.RAManager{
-	// 	Name:            "odimra",
-	// 	ManagerType:     "Service",
-	// 	FirmwareVersion: config.Data.FirmwareVersion,
-	// 	ID:              config.Data.RootServiceUUID,
-	// 	UUID:            config.Data.RootServiceUUID,
-	// 	State:           "Enabled",
-	// }
-	// mngr.AddManagertoDB()
 	req := &managersproto.ManagerRequest{
 		ManagerID: config.Data.RootServiceUUID,
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 
@@ -127,10 +108,6 @@ func TestGetManagerWithDeviceAbsent(t *testing.T) {
 		ManagerID: "uuid:1",
 		URL:       "/redfish/v1/Managers/deviceAbsent:1",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 
@@ -161,10 +138,6 @@ func TestGetManagerwithInvalidURL(t *testing.T) {
 		ManagerID: "uuid:1",
 		URL:       "/redfish/v1/Managers/uuid1:1",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusOK.")
@@ -189,10 +162,6 @@ func TestGetManagerwithValidURL(t *testing.T) {
 		ManagerID: "uuid:1",
 		URL:       "/redfish/v1/Managers/uuid:1",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
@@ -211,10 +180,6 @@ func TestGetManagerInvalidID(t *testing.T) {
 	req := &managersproto.ManagerRequest{
 		ManagerID: "invalidID",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
 
@@ -234,10 +199,6 @@ func TestGetManagerResourcewithBadManagerID(t *testing.T) {
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusBadRequest.")
@@ -271,10 +232,6 @@ func TestGetManagerResourcewithValidURL(t *testing.T) {
 		ManagerID: "uuid:1",
 		URL:       "/redfish/v1/Managers/uuid:1/EthernetInterfaces",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
@@ -284,10 +241,6 @@ func TestGetManagerResourcewithValidURL(t *testing.T) {
 		ResourceID: "1",
 		URL:        "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1",
 	}
-	// d = DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
@@ -310,10 +263,6 @@ func TestGetManagerResourcewithInvalidURL(t *testing.T) {
 		ManagerID: "uuid1:1",
 		URL:       "/redfish/v1/Managers/uuid1:1/Ethernet",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
@@ -359,10 +308,6 @@ func TestGetPluginManagerResource(t *testing.T) {
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid/EthernetInterfaces",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
@@ -372,10 +317,6 @@ func TestGetPluginManagerResource(t *testing.T) {
 		ResourceID: "1",
 		URL:        "/redfish/v1/Managers/uuid1/EthernetInterfaces",
 	}
-	// d = DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
@@ -410,10 +351,6 @@ func TestGetPluginManagerResourceInvalidPlugin(t *testing.T) {
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid/EthernetInterfaces",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusOK.")
@@ -448,10 +385,6 @@ func TestGetPluginManagerResourceInvalidPluginSessions(t *testing.T) {
 		ManagerID: "uuid",
 		URL:       "/redfish/v1/Managers/uuid/EthernetInterfaces",
 	}
-	// d := DeviceContact{
-	// 	GetDeviceInfo: mockGetDeviceInfo,
-	// 	ContactClient: mockContactClient,
-	// }
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusOK.")

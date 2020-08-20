@@ -61,6 +61,7 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "BasicAuth",
+		ManagerUUID:       "1s7sda8asd-asdas8as0",
 	}
 	switch pluginID {
 	case "XAuthPlugin":
@@ -70,6 +71,11 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		plugin.Username = "incorrectusername"
 	case "NoStatusPlugin":
 		plugin.Username = "noStatusUser"
+		plugin.ManagerUUID = "1234877451-1235"
+	case "GRF":
+		plugin.ManagerUUID = "1234877451-1234"
+	case "ILO":
+		plugin.ManagerUUID = "1234877451-1233"
 	}
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {

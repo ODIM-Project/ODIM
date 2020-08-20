@@ -52,6 +52,7 @@ type Plugin struct {
 	ID                string
 	PluginType        string
 	PreferredAuthType string
+	ManagerUUID       string
 }
 
 //Target is for sending the requst to south bound/plugin
@@ -617,11 +618,81 @@ func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *
 
 	data, err := conn.Read("AggregationSource", aggregationSourceURI)
 	if err != nil {
-		return aggregationSource, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+		return aggregationSource, errors.PackError(err.ErrNo(), "error: while trying to fetch Aggregation Source data: ", err.Error())
 	}
 
 	if err := json.Unmarshal([]byte(data), &aggregationSource); err != nil {
 		return aggregationSource, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
 	return aggregationSource, nil
+}
+
+//GetAllKeysFromTable fetches all keys in a given table
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}
+
+// UpdateSystemData updates the bmc details
+func UpdateSystemData(system SaveSystem, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("System", key, system); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdatePluginData updates the plugin details
+func UpdatePluginData(plugin Plugin, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("Plugin", key, plugin); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateAggregtionSource updates the aggregation details
+func UpdateAggregtionSource(aggregationSource AggregationSource, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("AggregationSource", key, aggregationSource); err != nil {
+		return err
+	}
+	return nil
+}
+
+//GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return []string{}, err
+	}
+	return conn.GetAllMatchingDetails(table, pattern)
+}
+
+//DeleteAggregationSource will delete the AggregationSource entry from the database based on the aggregtionSourceURI
+func DeleteAggregationSource(aggregtionSourceURI string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if err = conn.Delete("AggregationSource", aggregtionSourceURI); err != nil {
+		return err
+	}
+	return nil
 }

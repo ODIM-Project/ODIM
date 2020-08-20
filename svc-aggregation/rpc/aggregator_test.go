@@ -1,15 +1,27 @@
 // (C) Copyright [2020] Hewlett Packard Enterprise Development LP
+
 //
+
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
+
 // not use this file except in compliance with the License. You may obtain
+
 // a copy of the License at
+
 //
+
 //    http://www.apache.org/licenses/LICENSE-2.0
+
 //
+
 // Unless required by applicable law or agreed to in writing, software
+
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+
 // License for the specific language governing permissions and limitations
+
 // under the License.
 
 package rpc
@@ -22,6 +34,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
 )
 
@@ -706,6 +719,308 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.a.AddAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.AddAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestAggregator_GetAllAggregationSource(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.AggregationSource{
+		HostName: "9.9.9.0",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"Oem": map[string]interface{}{
+				"PluginID": "ILO",
+			},
+		},
+	}
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.GetAllAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Aggregator.GetAllAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestAggregator_GetAggregationSource(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	req := agmodel.AggregationSource{
+		HostName: "9.9.9.0",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"Oem": map[string]interface{}{
+				"PluginID": "ILO",
+			},
+		},
+	}
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSource/123454564"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSource/123454564"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.GetAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Aggregator.GetAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestAggregator_UpdateAggreagationSource(t *testing.T) {
+	config.SetUpMockConfig(t)
+
+	mockPluginData(t, "ILO")
+	req := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"Oem": map[string]interface{}{
+				"PluginID": "ILO",
+			},
+		},
+	}
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	successReq, _ := json.Marshal(system.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: "password",
+	})
+	invalidReqBody, _ := json.Marshal(system.AggregationSource{
+		HostName: ":50000",
+		UserName: "admin",
+		Password: "password",
+	})
+	missingparamReq, _ := json.Marshal(system.AggregationSource{})
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive case",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "auth fail",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with invalid request",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Manager Address",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "with missing parameters",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.UpdateAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Aggregator.UpdateAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestAggregator_DeleteAggregationSource(t *testing.T) {
+	mockPluginData(t, "ILO")
+	req := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"Oem": map[string]interface{}{
+				"PluginID": "ILO",
+			},
+		},
+	}
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name    string
+		a       *Aggregator
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "positive case",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+
+		{
+			name: "auth fail",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "get session username fails",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "unable to create task",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "task with slash",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.DeleteAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Aggregator.DeleteAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -30,14 +30,14 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
-var successReq = map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}
+var successReq = map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}
 
 func deleteComputeforTest(index int, key string) *errors.Error {
-	if key == "/redfish/v1/systems/del-comp-internal-err:1" {
+	if key == "/redfish/v1/Systems/del-comp-internal-err:1" {
 		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
 	}
-	if key != "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/systems/" &&
-		key != "/redfish/v1/systems/del-sys-internal-err:1" && key != "/redfish/v1/systems/sys-not-found:1" {
+	if key != "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/Systems/" &&
+		key != "/redfish/v1/Systems/del-sys-internal-err:1" && key != "/redfish/v1/Systems/sys-not-found:1" {
 		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
 	}
 	return nil
@@ -54,9 +54,9 @@ func deleteSystemforTest(key string) *errors.Error {
 }
 
 func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
-	if uuid == "/redfish/v1/systems/delete-subscription-error:1" {
+	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
-	} else if uuid == "/redfish/v1/systems/unexpected-statuscode:1" {
+	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode:1" {
 		return &eventsproto.EventSubResponse{
 			StatusCode: http.StatusCreated,
 		}, nil
@@ -97,7 +97,7 @@ func mockSystemOperationInfo() *errors.Error {
 	systemOperation := agmodel.SystemOperation{
 		Operation: "InventoryRediscovery ",
 	}
-	return systemOperation.AddSystemOperationInfo("/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
 }
 func TestDeleteCompute(t *testing.T) {
 	d := &ExternalInterface{
@@ -108,11 +108,11 @@ func TestDeleteCompute(t *testing.T) {
 		DecryptPassword:         stubDevicePassword,
 	}
 	successReq, _ := json.Marshal(successReq)
-	subDeleteErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/delete-subscription-error:1"}}})
-	delCompSysInternalErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/del-comp-internal-err:1"}}})
-	keyWithoutUUIDReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/"}}})
-	delSysInternalErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/del-sys-internal-err:1"}}})
-	sysNotFoundErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/sys-not-found:1"}}})
+	subDeleteErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1"}}})
+	delCompSysInternalErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/del-comp-internal-err:1"}}})
+	keyWithoutUUIDReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/"}}})
+	delSysInternalErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/del-sys-internal-err:1"}}})
+	sysNotFoundErrReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/sys-not-found:1"}}})
 	invalidJSONErrReq, _ := json.Marshal(map[string]interface{}{"sample": "test"})
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
@@ -218,7 +218,7 @@ func TestDeleteComputeInvalidUUID(t *testing.T) {
 		EventNotification:       mockEventNotification,
 		DecryptPassword:         stubDevicePassword,
 	}
-	successReq["Parameters"] = []Parameters{{Name: "/redfish/v1/systems/uuid:1"}}
+	successReq["Parameters"] = []Parameters{{Name: "/redfish/v1/Systems/uuid:1"}}
 	req, _ := json.Marshal(successReq)
 	deleteReq := &aggregatorproto.AggregatorRequest{
 		SessionToken: "SessionToken",
@@ -271,7 +271,7 @@ func TestDeletePlugin(t *testing.T) {
 		"Name": "invalid-Plugin",
 		"UUID": "1234877451-1233",
 	})
-	mockManagersData("/redfish/v1/Managers/no-status-plugin", map[string]interface{}{
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
 		"Name": "NoStatusPlugin",
 		"UUID": "1234877451-1233",
 	})
@@ -281,7 +281,7 @@ func TestDeletePlugin(t *testing.T) {
 	managedDeviceReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Managers/1234877451-1233"}}})
 	invalidPluginReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Managers/invalid-plugin"}}})
 	invalidManagerReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Managers/invalid-manager"}}})
-	noStatusPluginReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Managers/no-status-plugin"}}})
+	noStatusPluginReq, _ := json.Marshal(map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Managers/1234877451-1233"}}})
 
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
@@ -360,7 +360,7 @@ func TestDeleteComputeWithRediscovery(t *testing.T) {
 		EventNotification:       mockEventNotification,
 		DecryptPassword:         stubDevicePassword,
 	}
-	successReq = map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}
+	successReq = map[string]interface{}{"Parameters": []Parameters{{Name: "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}
 
 	successReq, _ := json.Marshal(successReq)
 	type args struct {

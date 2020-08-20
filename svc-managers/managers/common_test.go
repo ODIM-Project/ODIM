@@ -57,7 +57,7 @@ func mockGetExternalInterface() *ExternalInterface {
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateManagersData:  mockUpdateManagersData,
-			GetResource: mockGetResource,
+			GetResource:         mockGetResource,
 		},
 	}
 }
@@ -90,7 +90,7 @@ func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
 }
 
 func mockGetManagerByURL(url string) (string, *errors.Error) {
-	if url == "/redfish/v1/Managers/invalidURL:1" || url == "/redfish/v1/Managers/invalidURL" {
+	if url == "/redfish/v1/Managers/invalidURL:1" || url == "/redfish/v1/Managers/invalidURL" || url == "/redfish/v1/Managers/invalidID" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	managerData := make(map[string]interface{})

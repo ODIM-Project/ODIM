@@ -48,7 +48,6 @@ type Parameters struct {
 // at first chech is token authorized and has privileges
 // if its verified then delete the compute system and send success response
 func (e *ExternalInterface) DeleteCompute(req *aggregatorproto.AggregatorRequest) response.RPC {
-	var resp response.RPC
 	var deleteRequest DeleteRequest
 	if err := json.Unmarshal(req.RequestBody, &deleteRequest); err != nil {
 		errMsg := "error while trying to delete compute system: " + err.Error()
@@ -77,81 +76,7 @@ func (e *ExternalInterface) DeleteCompute(req *aggregatorproto.AggregatorRequest
 		}
 		index := strings.LastIndexAny(key, "/")
 		if index > 0 {
-			// check whether the any system operation is under progress
-			systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
-			if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-				log.Println(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
-				errMsg := "error while trying to delete compute system: " + dbErr.Error()
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
-			if systemOperation.Operation != "" {
-				log.Println("Delete operation or system  ", key, " can't be processed,", systemOperation.Operation, " operation  is under progress")
-				errMsg := systemOperation.Operation + " operation  is under progress"
-				return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
-			}
-			systemOperation.Operation = "Delete"
-			dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
-			if dbErr != nil {
-				log.Println(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
-				errMsg := "error while trying to delete compute system: " + dbErr.Error()
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
-			defer func() {
-				agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/"))
-			}()
-			// Delete Subscription on odimra and also on device
-			subResponse, err := e.DeleteEventSubscription(key)
-			if err != nil && subResponse == nil {
-				errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
-				log.Println(errMsg)
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
-			// If the DeleteEventSubscription call return status code other than http.StatusNoContent, http.StatusNotFound.
-			//Then return with error(delete event subscription failed).
-			if subResponse.StatusCode != http.StatusNoContent {
-				log.Println("error while deleting the event subscription for ", key, " :", subResponse.Body)
-			}
-			// Delete Compute System Details from InMemory
-			if derr := e.DeleteComputeSystem(index, key); derr != nil {
-				errMsg := "error while trying to delete compute system: " + derr.Error()
-				log.Println(errMsg)
-				if errors.DBKeyNotFound == derr.ErrNo() {
-					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{index, key}, nil)
-				}
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
-
-			// Split the key by : (uuid:1) so we will get [uuid 1]
-			k := strings.Split(key[index+1:], ":")
-			if len(k) < 2 {
-				errMsg := fmt.Sprintf("key %v doesn't have system details", key)
-				log.Println(errMsg)
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
-			uuid := k[0]
-			// Delete System Details from OnDisk
-			if derr := e.DeleteSystem(uuid); derr != nil {
-				errMsg := "error while trying to delete system: " + derr.Error()
-				log.Println(errMsg)
-				if errors.DBKeyNotFound == derr.ErrNo() {
-					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"System", uuid}, nil)
-				}
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
-			e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
-			resp.Header = map[string]string{
-				"Cache-Control":     "no-cache",
-				"Transfer-Encoding": "chunked",
-				"Content-type":      "application/json; charset=utf-8",
-			}
-			resp.StatusCode = http.StatusOK
-			resp.StatusMessage = response.ResourceRemoved
-			args := response.Args{
-				Code:    resp.StatusMessage,
-				Message: "Request completed successfully",
-			}
-			resp.Body = args.CreateGenericErrorResponse()
-			return resp
+			return e.deleteCompute(key, index)
 		}
 	}
 
@@ -254,6 +179,85 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 
+	args := response.Args{
+		Code:    resp.StatusMessage,
+		Message: "Request completed successfully",
+	}
+	resp.Body = args.CreateGenericErrorResponse()
+	return resp
+}
+
+func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
+	var resp response.RPC
+	// check whether the any system operation is under progress
+	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
+	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
+		log.Println(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
+		errMsg := "error while trying to delete compute system: " + dbErr.Error()
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	if systemOperation.Operation != "" {
+		log.Println("Delete operation or system  ", key, " can't be processed,", systemOperation.Operation, " operation  is under progress")
+		errMsg := systemOperation.Operation + " operation  is under progress"
+		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
+	}
+	systemOperation.Operation = "Delete"
+	dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
+	if dbErr != nil {
+		log.Println(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
+		errMsg := "error while trying to delete compute system: " + dbErr.Error()
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	defer func() {
+		agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/"))
+	}()
+	// Delete Subscription on odimra and also on device
+	subResponse, err := e.DeleteEventSubscription(key)
+	if err != nil && subResponse == nil {
+		errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	// If the DeleteEventSubscription call return status code other than http.StatusNoContent, http.StatusNotFound.
+	//Then return with error(delete event subscription failed).
+	if subResponse.StatusCode != http.StatusNoContent {
+		log.Println("error while deleting the event subscription for ", key, " :", subResponse.Body)
+	}
+	// Delete Compute System Details from InMemory
+	if derr := e.DeleteComputeSystem(index, key); derr != nil {
+		errMsg := "error while trying to delete compute system: " + derr.Error()
+		log.Println(errMsg)
+		if errors.DBKeyNotFound == derr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{index, key}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
+	// Split the key by : (uuid:1) so we will get [uuid 1]
+	k := strings.Split(key[index+1:], ":")
+	if len(k) < 2 {
+		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	uuid := k[0]
+	// Delete System Details from OnDisk
+	if derr := e.DeleteSystem(uuid); derr != nil {
+		errMsg := "error while trying to delete system: " + derr.Error()
+		log.Println(errMsg)
+		if errors.DBKeyNotFound == derr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"System", uuid}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Transfer-Encoding": "chunked",
+		"Content-type":      "application/json; charset=utf-8",
+	}
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.ResourceRemoved
 	args := response.Args{
 		Code:    resp.StatusMessage,
 		Message: "Request completed successfully",

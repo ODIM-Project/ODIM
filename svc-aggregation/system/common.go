@@ -155,7 +155,7 @@ type AggregationSource struct {
 	HostName string `json:"HostName"`
 	UserName string `json:"UserName"`
 	Password string `json:"Password"`
-	Links    *Links `json:"Links"`
+	Links    *Links `json:"Links,omitempty"`
 }
 
 // Links holds information of Oem

@@ -32,13 +32,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
 )
 
-// // DeviceContact struct to inject the contact device function into the handlers
-// type DeviceContact struct {
-// 	GetDeviceInfo         func(mgrcommon.ResourceInfoRequest) (string, error)
-// 	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-// 	DecryptDevicePassword func([]byte) ([]byte, error)
-// }
-
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
 func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
 	var resp response.RPC

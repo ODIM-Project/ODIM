@@ -277,7 +277,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	str := strings.Split(oid, "/")
 	var key []string
 	for i, id := range str {
-		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers")) {
+		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
 			key = append(key, DeviceUUID+":"+id)
 			continue
 		}

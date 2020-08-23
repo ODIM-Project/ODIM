@@ -19,10 +19,19 @@ package update
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-update/uresponse"
+	"encoding/json"
+	"log"
 	"net/http"
+	"strings"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-update/umodel"
+	"github.com/ODIM-Project/ODIM/svc-update/uresponse"
 )
 
 // GetUpdateService defines the functionality for knowing whether
@@ -83,6 +92,164 @@ func GetUpdateService() response.RPC {
 			OdataID: "/redfish/v1/UpdateService/SoftwareInventory",
 		},
 	}
+
+	return resp
+
+}
+
+// GetAllFirmwareInventory is a functioanlity to retrive all the available inventory
+// resources from the added BMC's
+func GetAllFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{
+		"Allow":             `"GET"`,
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	firmwareCollection := uresponse.Collection{
+		OdataContext: "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
+		OdataID:      "/redfish/v1/UpdateService/FirmwareInventory",
+		OdataType:    "#FirmwareInventoryCollection.FirmwareInventoryCollection",
+		Description:  "FirmwareInventory view",
+		Name:         "FirmwareInventory",
+	}
+	var members []dmtf.Link
+
+	firmwareCollectionKeysArray, err := umodel.GetAllKeysFromTable("FirmwareInventory")
+	if err != nil || len(firmwareCollectionKeysArray) == 0 {
+		log.Printf("odimra Doesnt have Servers")
+	}
+
+	for _, key := range firmwareCollectionKeysArray {
+		members = append(members, dmtf.Link{Oid: key})
+	}
+	firmwareCollection.Members = members
+	firmwareCollection.MembersCount = len(members)
+	resp.Body = firmwareCollection
+	resp.StatusCode = http.StatusOK
+	return resp
+}
+
+// GetFirmwareInventory is used to fetch resource data. The function is supposed to be used as part of RPC
+// For getting firmware inventory resource information,  parameters need to be passed Request .
+// Request holds the  Uuid and Url ,
+// Url will be parsed from that search key will created
+// There will be two return values for the fuction. One is the RPC response, which contains the
+// status code, status message, headers and body and the second value is error.
+func GetFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{
+		"Allow":             `"GET"`,
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+
+	requestData := strings.Split(req.ResourceID, ":")
+	if len(requestData) <= 1 {
+		errorMessage := "error: SystemUUID not found"
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.ResourceID}, nil)
+	}
+	data, gerr := umodel.GetResource("FirmwareInventory", req.URL)
+	if gerr != nil {
+		log.Printf("error getting firmware inventory details : %v", gerr.Error())
+		errorMessage := gerr.Error()
+		if errors.DBKeyNotFound == gerr.ErrNo() {
+			resp.StatusCode = http.StatusNotFound
+			resp.StatusMessage = errors.ResourceNotFound
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.URL}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	var resource map[string]interface{}
+	json.Unmarshal([]byte(data), &resource)
+	resp.Body = resource
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+
+	return resp
+
+}
+
+// GetAllSoftwareInventory is a functioanlity to retrive all the available inventory
+// resources from the added BMC's
+func GetAllSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{
+		"Allow":             `"GET"`,
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	softwareCollection := uresponse.Collection{
+		OdataContext: "/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
+		OdataID:      "/redfish/v1/UpdateService/SoftwareInventory",
+		OdataType:    "#SoftwareInventoryCollection.SoftwareInventoryCollection",
+		Description:  "SoftwareInventory view",
+		Name:         "SoftwareInventory",
+	}
+	var members []dmtf.Link
+
+	softwareCollectionKeysArray, err := umodel.GetAllKeysFromTable("SoftwareInventory")
+	if err != nil || len(softwareCollectionKeysArray) == 0 {
+		log.Printf("odimra Doesnt have Servers")
+	}
+
+	for _, key := range softwareCollectionKeysArray {
+		members = append(members, dmtf.Link{Oid: key})
+	}
+	softwareCollection.Members = members
+	softwareCollection.MembersCount = len(members)
+	resp.Body = softwareCollection
+	resp.StatusCode = http.StatusOK
+	return resp
+}
+
+// GetSoftwareInventory is used to fetch resource data. The function is supposed to be used as part of RPC
+// For getting software inventory resource information,  parameters need to be passed Request .
+// Request holds the  Uuid and Url ,
+// Url will be parsed from that search key will created
+// There will be two return values for the fuction. One is the RPC response, which contains the
+// status code, status message, headers and body and the second value is error.
+func GetSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{
+		"Allow":             `"GET"`,
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+
+	requestData := strings.Split(req.ResourceID, ":")
+	if len(requestData) <= 1 {
+		errorMessage := "error: SystemUUID not found"
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.ResourceID}, nil)
+	}
+	data, gerr := umodel.GetResource("SoftwareInventory", req.URL)
+	if gerr != nil {
+		log.Printf("error getting software inventory details : %v", gerr.Error())
+		errorMessage := gerr.Error()
+		if errors.DBKeyNotFound == gerr.ErrNo() {
+			resp.StatusCode = http.StatusNotFound
+			resp.StatusMessage = errors.ResourceNotFound
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.URL}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	var resource map[string]interface{}
+	json.Unmarshal([]byte(data), &resource)
+	resp.Body = resource
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
 
 	return resp
 

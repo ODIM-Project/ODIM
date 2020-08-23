@@ -15,6 +15,14 @@
 // Package umodel ...
 package umodel
 
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+)
+
 // Plugin defines plugin configuration
 type Plugin struct {
 	IP                string
@@ -24,4 +32,34 @@ type Plugin struct {
 	ID                string
 	PluginType        string
 	PreferredAuthType string
+}
+
+//GetAllKeysFromTable fetches all keys in a given table
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}
+
+//GetResource fetches a resource from database using table and key
+func GetResource(Table, key string) (string, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return "", err
+	}
+	resourceData, err := conn.Read(Table, key)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+	var resource string
+	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
+		return "", errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return resource, nil
 }

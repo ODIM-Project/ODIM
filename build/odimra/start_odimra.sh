@@ -22,7 +22,7 @@ export logFolder="/var/log/odimra_logs"
 
 cd /bin
 
-for i in api account_session aggregation event systems task fabrics managers
+for i in api account_session aggregation event systems task fabrics managers update
 do
         systemctl enable $i
         while [ $? -ne 0 ]

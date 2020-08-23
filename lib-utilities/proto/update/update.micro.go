@@ -35,6 +35,12 @@ var _ server.Option
 
 type UpdateService interface {
 	GetUpdateService(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	GetFirmwareInventory(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	GetFirmwareInventoryCollection(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	GetSoftwareInventory(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	GetSoftwareInventoryCollection(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	SimepleUpdate(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
+	StartUpdate(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
 }
 
 type updateService struct {
@@ -65,15 +71,87 @@ func (c *updateService) GetUpdateService(ctx context.Context, in *UpdateRequest,
 	return out, nil
 }
 
+func (c *updateService) GetFirmwareInventory(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Update.GetFirmwareInventory", in)
+	out := new(UpdateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *updateService) GetFirmwareInventoryCollection(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Update.GetFirmwareInventoryCollection", in)
+	out := new(UpdateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *updateService) GetSoftwareInventory(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Update.GetSoftwareInventory", in)
+	out := new(UpdateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *updateService) GetSoftwareInventoryCollection(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Update.GetSoftwareInventoryCollection", in)
+	out := new(UpdateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *updateService) SimepleUpdate(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Update.SimepleUpdate", in)
+	out := new(UpdateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *updateService) StartUpdate(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error) {
+	req := c.c.NewRequest(c.name, "Update.StartUpdate", in)
+	out := new(UpdateResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Update service
 
 type UpdateHandler interface {
 	GetUpdateService(context.Context, *UpdateRequest, *UpdateResponse) error
+	GetFirmwareInventory(context.Context, *UpdateRequest, *UpdateResponse) error
+	GetFirmwareInventoryCollection(context.Context, *UpdateRequest, *UpdateResponse) error
+	GetSoftwareInventory(context.Context, *UpdateRequest, *UpdateResponse) error
+	GetSoftwareInventoryCollection(context.Context, *UpdateRequest, *UpdateResponse) error
+	SimepleUpdate(context.Context, *UpdateRequest, *UpdateResponse) error
+	StartUpdate(context.Context, *UpdateRequest, *UpdateResponse) error
 }
 
 func RegisterUpdateHandler(s server.Server, hdlr UpdateHandler, opts ...server.HandlerOption) error {
 	type update interface {
 		GetUpdateService(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		GetFirmwareInventory(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		GetFirmwareInventoryCollection(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		GetSoftwareInventory(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		GetSoftwareInventoryCollection(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		SimepleUpdate(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
+		StartUpdate(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error
 	}
 	type Update struct {
 		update
@@ -88,4 +166,28 @@ type updateHandler struct {
 
 func (h *updateHandler) GetUpdateService(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
 	return h.UpdateHandler.GetUpdateService(ctx, in, out)
+}
+
+func (h *updateHandler) GetFirmwareInventory(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.UpdateHandler.GetFirmwareInventory(ctx, in, out)
+}
+
+func (h *updateHandler) GetFirmwareInventoryCollection(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.UpdateHandler.GetFirmwareInventoryCollection(ctx, in, out)
+}
+
+func (h *updateHandler) GetSoftwareInventory(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.UpdateHandler.GetSoftwareInventory(ctx, in, out)
+}
+
+func (h *updateHandler) GetSoftwareInventoryCollection(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.UpdateHandler.GetSoftwareInventoryCollection(ctx, in, out)
+}
+
+func (h *updateHandler) SimepleUpdate(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.UpdateHandler.SimepleUpdate(ctx, in, out)
+}
+
+func (h *updateHandler) StartUpdate(ctx context.Context, in *UpdateRequest, out *UpdateResponse) error {
+	return h.UpdateHandler.StartUpdate(ctx, in, out)
 }

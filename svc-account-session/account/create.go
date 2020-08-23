@@ -46,7 +46,7 @@ import (
 //
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (response.RPC, error) {
+func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (response.RPC, error) {
 	// parsing the CreateAccount
 	var createAccount asmodel.Account
 	err := json.Unmarshal(req.RequestBody, &createAccount)
@@ -129,7 +129,7 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 		log.Printf(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
-	if _, gerr := asmodel.GetRoleDetailsByID(user.RoleID); gerr != nil {
+	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
 		errorMessage := "error: invalid RoleID present " + gerr.Error()
 		log.Printf(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
@@ -163,7 +163,7 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	user.Password = hashedPassword
 	user.AccountTypes = []string{"Redfish"}
-	if cerr := user.Create(); cerr != nil {
+	if cerr := e.CreateUser(user); cerr != nil {
 		errorMessage := "error while trying to add new user: " + cerr.Error()
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict

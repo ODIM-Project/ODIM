@@ -37,8 +37,8 @@ type User struct {
 	AccountTypes []string `json:"AccountTypes"`
 }
 
-// Create connects to the persistencemgr and creates a user in db
-func (u *User) Create() *errors.Error {
+// CreateUser connects to the persistencemgr and creates a user in db
+func CreateUser(user User) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -47,7 +47,7 @@ func (u *User) Create() *errors.Error {
 	//Create a header for data entry
 	const table string = "User"
 	//Save data into Database
-	return conn.Create(table, u.UserName, u)
+	return conn.Create(table, user.UserName, user)
 }
 
 //GetAllUsers gets all the accounts from the db
@@ -108,8 +108,8 @@ func DeleteUser(key string) *errors.Error {
 	return nil
 }
 
-//UpdateUserDetails will modify the current details to given changes
-func (u *User) UpdateUserDetails(requestUser User) *errors.Error {
+// UpdateUserDetails will modify the current details to given changes
+func UpdateUserDetails(user, newData User) *errors.Error {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -119,21 +119,13 @@ func (u *User) UpdateUserDetails(requestUser User) *errors.Error {
 	const table string = "User"
 	//Save data into Database
 
-	if requestUser.Password != "" {
-		u.Password = requestUser.Password
+	if newData.Password != "" {
+		user.Password = newData.Password
 	}
-	if requestUser.RoleID != "" {
-		if requestUser.RoleID == common.RoleAdmin {
-			u.RoleID = common.RoleAdmin
-		} else if requestUser.RoleID == common.RoleMonitor {
-			u.RoleID = common.RoleMonitor
-		} else if requestUser.RoleID == common.RoleClient {
-			u.RoleID = common.RoleClient
-		} else {
-			u.RoleID = requestUser.RoleID
-		}
+	if newData.RoleID != "" {
+		user.RoleID = newData.RoleID
 	}
-	if _, err = conn.Update(table, u.UserName, u); err != nil {
+	if _, err = conn.Update(table, user.UserName, user); err != nil {
 		return err
 	}
 	return nil

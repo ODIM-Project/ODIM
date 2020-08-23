@@ -41,7 +41,7 @@ func TestCreate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	err := user.Create()
+	err := CreateUser(user)
 	assert.Nil(t, err, "There should be no error")
 }
 
@@ -211,7 +211,7 @@ func TestUpdateUserDetails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := user.UpdateUserDetails(tt.args.userData); (err != nil) != tt.wantErr {
+			if err := UpdateUserDetails(user, tt.args.userData); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateUserDetails() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -227,6 +227,6 @@ func TestUpdateUserDetailsNegativeTestCase(t *testing.T) {
 	user := User{}
 	mockData(common.OnDisk, "User", "successID", "user")
 	userData := User{UserName: "successID"}
-	err := user.UpdateUserDetails(userData)
+	err := UpdateUserDetails(user, userData)
 	assert.NotNil(t, err, "There should be an error")
 }

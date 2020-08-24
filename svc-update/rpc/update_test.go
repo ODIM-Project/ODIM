@@ -20,10 +20,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/update"
+	"github.com/stretchr/testify/assert"
 )
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
@@ -38,7 +40,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
-	if key == "/redfish/v1/UpdateService/FirmwareInentory/uuid:1" {
+	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b:1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b:1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
@@ -101,4 +103,150 @@ func TestUpdate_GetUpdateService(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	type args struct {
+		ctx  context.Context
+		req  *updateproto.UpdateRequest
+		resp *updateproto.UpdateResponse
+	}
+	tests := []struct {
+		name       string
+		a          *Updater
+		args       args
+		StatusCode int
+	}{
+		{
+			name: "Request with valid token",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+				},
+				resp: &updateproto.UpdateResponse{},
+			}, StatusCode: 200,
+		},
+		{
+			name: "Request with invalid token",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{
+					SessionToken: "invalidToken",
+				},
+				resp: &updateproto.UpdateResponse{},
+			}, StatusCode: 401,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.GetFirmwareInventoryCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
+				t.Errorf("Update.GetFirmwareInventoryCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			}
+		})
+	}
+}
+
+func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	type args struct {
+		ctx  context.Context
+		req  *updateproto.UpdateRequest
+		resp *updateproto.UpdateResponse
+	}
+	tests := []struct {
+		name       string
+		a          *Updater
+		args       args
+		StatusCode int
+	}{
+		{
+			name: "Request with valid token",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+				},
+				resp: &updateproto.UpdateResponse{},
+			}, StatusCode: 200,
+		},
+		{
+			name: "Request with invalid token",
+			a:    update,
+			args: args{
+				req: &updateproto.UpdateRequest{
+					SessionToken: "invalidToken",
+				},
+				resp: &updateproto.UpdateResponse{},
+			}, StatusCode: 401,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.a.GetSoftwareInventoryCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
+				t.Errorf("Update.GetSoftwareInventoryCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			}
+		})
+	}
+}
+
+func TestGetFirmwareInventorywithInValidtoken(t *testing.T) {
+	common.SetUpMockConfig()
+	var ctx context.Context
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	req := &updateproto.UpdateRequest{
+		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+		SessionToken: "InvalidToken",
+	}
+	var resp = &updateproto.UpdateResponse{}
+	update.GetFirmwareInventory(ctx, req, resp)
+	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusOK.")
+}
+
+func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
+	var ctx context.Context
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	req := &updateproto.UpdateRequest{
+		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b:1",
+		SessionToken: "validToken",
+	}
+	var resp = &updateproto.UpdateResponse{}
+	err := update.GetFirmwareInventory(ctx, req, resp)
+	assert.Nil(t, err, "There should be no error")
+
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+}
+
+func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
+	common.SetUpMockConfig()
+	var ctx context.Context
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	req := &updateproto.UpdateRequest{
+		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+		SessionToken: "InvalidToken",
+	}
+	var resp = &updateproto.UpdateResponse{}
+	update.GetSoftwareInventory(ctx, req, resp)
+	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusOK.")
+}
+
+func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
+	var ctx context.Context
+	update := new(Updater)
+	update.connector = mockGetExternalInterface()
+	req := &updateproto.UpdateRequest{
+		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b:1",
+		SessionToken: "validToken",
+	}
+	var resp = &updateproto.UpdateResponse{}
+	err := update.GetSoftwareInventory(ctx, req, resp)
+	assert.Nil(t, err, "There should be no error")
+
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 }

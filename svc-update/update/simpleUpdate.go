@@ -24,7 +24,7 @@ import (
 )
 
 // SimpleUpdate function handler for simpe update process
-func SimpleUpdate(req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 
 	return resp

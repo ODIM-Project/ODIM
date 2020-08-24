@@ -22,12 +22,11 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
-	"github.com/ODIM-Project/ODIM/svc-update/update"
 )
 
 // GetUpdateService is an rpc handler, it gets invoked during GET on UpdateService API (/redfis/v1/UpdateService/)
 func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
-	response := update.GetUpdateService()
+	response := a.connector.GetUpdateService()
 	body, err := json.Marshal(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
@@ -42,7 +41,7 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 	return nil
 }
 
-// GetFirmwareInventoryCollections an rpc handler which is invoked during GET on firmware inventory collection
+// GetFirmwareInventoryCollection an rpc handler which is invoked during GET on firmware inventory collection
 func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
 	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -60,7 +59,7 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 		log.Printf(errorMessage)
 		return nil
 	}
-	response := update.GetAllFirmwareInventory(req)
+	response := a.connector.GetAllFirmwareInventory(req)
 	resp.StatusCode = response.StatusCode
 	resp.StatusMessage = response.StatusMessage
 	resp.Header = response.Header
@@ -90,7 +89,7 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 		log.Printf(errorMessage)
 		return nil
 	}
-	response := update.GetFirmwareInventory(req)
+	response := a.connector.GetFirmwareInventory(req)
 	body, err := json.Marshal(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
@@ -123,7 +122,7 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 		log.Printf(errorMessage)
 		return nil
 	}
-	response := update.GetAllSoftwareInventory(req)
+	response := a.connector.GetAllSoftwareInventory(req)
 	body, err := json.Marshal(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
@@ -156,7 +155,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 		log.Printf(errorMessage)
 		return nil
 	}
-	response := update.GetSoftwareInventory(req)
+	response := a.connector.GetSoftwareInventory(req)
 	body, err := json.Marshal(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
@@ -189,7 +188,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		log.Printf(errorMessage)
 		return nil
 	}
-	response := update.SimpleUpdate(req)
+	response := a.connector.SimpleUpdate(req)
 	body, err := json.Marshal(response.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError

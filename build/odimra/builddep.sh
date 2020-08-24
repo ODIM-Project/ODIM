@@ -22,7 +22,7 @@ for i in $LIST; do
 	cd $i
 	go mod download
 	go mod vendor
-	go build -i .
+	go build -i -race .
 	if [ $? -eq 0 ]; then
 		echo Build for odimra service/lib dependencies $i are Successful !!!!
 		arr1+=$i;

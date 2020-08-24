@@ -40,7 +40,7 @@ import (
 // and Session parameter will have all session related data, espically the privileges.
 //
 // Output is the RPC response, which contains the status code, status message, headers and body.
-func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
+func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + req.AccountID,
@@ -104,7 +104,7 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		if requestUser.RoleID != common.RoleAdmin {
 			if requestUser.RoleID != common.RoleMonitor {
 				if requestUser.RoleID != common.RoleClient {
-					_, err := asmodel.GetRoleDetailsByID(requestUser.RoleID)
+					_, err := e.GetRoleDetailsByID(requestUser.RoleID)
 					if err != nil {
 						errorMessage := "error: Invalid RoleID " + requestUser.RoleID + " present"
 						resp.StatusCode = http.StatusBadRequest
@@ -133,7 +133,7 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 
 	}
 
-	user, gerr := asmodel.GetUserDetails(id)
+	user, gerr := e.GetUserDetails(id)
 	if gerr != nil {
 		errorMessage := "error while trying to get  account: " + gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
@@ -268,7 +268,7 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		requestUser.Password = hashedPassword
 	}
 
-	if uerr := user.UpdateUserDetails(requestUser); uerr != nil {
+	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
 		errorMessage := "error while trying to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		resp.Header = map[string]string{
@@ -290,7 +290,9 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-
+	if requestUser.RoleID != "" {
+		user.RoleID = requestUser.RoleID
+	}
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = asresponse.Account{
 		Response:     commonResponse,

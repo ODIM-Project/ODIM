@@ -79,6 +79,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
+	var managerUUID string
 
 	ipData := strings.Split(req.ManagerAddress, ":")
 	var plugin = agmodel.Plugin{
@@ -165,6 +166,17 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 			log.Println(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 		}
+		managerData := make(map[string]interface{})
+		err = json.Unmarshal([]byte(body), &managerData)
+		if err != nil {
+			errMsg := "unable to parse the managers resposne" + err.Error()
+			log.Println(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+		}
+		if uuid, ok := managerData["UUID"]; ok {
+			managerUUID = uuid.(string)
+		}
+
 		managersData[pluginContactRequest.OID] = body
 	}
 	e.SubscribeToEMB(plugin.ID, queueList)
@@ -184,6 +196,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 	// store encrypted password
 	plugin.Password = ciphertext
+	plugin.ManagerUUID = managerUUID
 	// saving the pluginData
 	dbErr := agmodel.SavePluginData(plugin)
 	if dbErr != nil {

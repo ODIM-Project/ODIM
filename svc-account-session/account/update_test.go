@@ -27,17 +27,8 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
+	acc := getMockExternalInterface()
+
 	successResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
@@ -45,6 +36,15 @@ func TestUpdate(t *testing.T) {
 		ID:           "testUser1",
 		Name:         "Account Service",
 	}
+
+	operatorSuccessResponse := response.Response{
+		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataID:      "/redfish/v1/AccountService/Accounts/operatorUser",
+		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
+		ID:           "operatorUser",
+		Name:         "Account Service",
+	}
+
 	successResponse2 := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser2",
@@ -52,24 +52,10 @@ func TestUpdate(t *testing.T) {
 		ID:           "testUser2",
 		Name:         "Account Service",
 	}
+
 	successResponse.CreateGenericResponse(response.AccountModified)
 	successResponse2.CreateGenericResponse(response.AccountModified)
-	err := createMockRole("PrivilegeLogin", []string{common.PrivilegeLogin}, []string{}, false)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user %v", err)
-	}
-	err = createMockUser("testUser1", common.RoleAdmin)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user1 %v", err)
-	}
-	err = createMockUser("testUser2", common.RoleAdmin)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user2 %v", err)
-	}
-	err = createMockUser("testUser3", "PrivilegeLogin")
-	if err != nil {
-		t.Fatalf("Error in creating mock user3 %v", err)
-	}
+	operatorSuccessResponse.CreateGenericResponse(response.AccountModified)
 
 	errArg := response.Args{
 		Code:    response.GeneralError,
@@ -325,12 +311,12 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID:   "testUser1",
+					AccountID:   "operatorUser",
 				},
 				session: &asmodel.Session{
-					ID:       "testUser1",
-					UserName: "testUser1",
-					RoleID:   "Operator",
+					ID:       "operatorUser",
+					UserName: "operatorUser",
+					RoleID:   common.RoleMonitor,
 					Privileges: map[string]bool{
 						common.PrivilegeConfigureSelf: true,
 					},
@@ -343,14 +329,14 @@ func TestUpdate(t *testing.T) {
 					"Cache-Control":     "no-cache",
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
 				Body: asresponse.Account{
-					Response: successResponse,
-					UserName: "testUser1",
+					Response: operatorSuccessResponse,
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
@@ -365,11 +351,11 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID:   "testUser1",
+					AccountID:   "operatorUser",
 				},
 				session: &asmodel.Session{
-					ID:       "testUser1",
-					UserName: "testUser1",
+					ID:       "operatorUser",
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Privileges: map[string]bool{
 						common.PrivilegeConfigureUsers: true,
@@ -383,14 +369,14 @@ func TestUpdate(t *testing.T) {
 					"Cache-Control":     "no-cache",
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
 				Body: asresponse.Account{
-					Response: successResponse,
-					UserName: "testUser1",
+					Response: operatorSuccessResponse,
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
@@ -405,11 +391,11 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
 					RequestBody: reqBodyUpdatePwd,
-					AccountID:   "testUser1",
+					AccountID:   "operatorUser",
 				},
 				session: &asmodel.Session{
-					ID:       "testUser1",
-					UserName: "testUser1",
+					ID:       "operatorUser",
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Privileges: map[string]bool{
 						common.PrivilegeConfigureSelf:  true,
@@ -424,14 +410,14 @@ func TestUpdate(t *testing.T) {
 					"Cache-Control":     "no-cache",
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
 				Body: asresponse.Account{
-					Response: successResponse,
-					UserName: "testUser1",
+					Response: operatorSuccessResponse,
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
@@ -600,7 +586,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Update(tt.args.req, tt.args.session)
+			got := acc.Update(tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Update() = %v, want %v", got, tt.want)
 			}

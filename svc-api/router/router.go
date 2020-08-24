@@ -47,6 +47,10 @@ func Router() *iris.Application {
 		ResetRPC:                                rpc.DoResetRequest,
 		SetDefaultBootOrderRPC:                  rpc.DoSetDefaultBootOrderRequest,
 		AddAggregationSourceRPC:                 rpc.DoAddAggregationSource,
+		GetAllAggregationSourceRPC:              rpc.DoGetAllAggregationSource,
+		GetAggregationSourceRPC:                 rpc.DoGetAggregationSource,
+		UpdateAggregationSourceRPC:              rpc.DoUpdateAggregationSource,
+		DeleteAggregationSourceRPC:              rpc.DoDeleteAggregationSource,
 		CreateAggregateRPC:                      rpc.DoCreateAggregate,
 		GetAggregateCollectionRPC:               rpc.DoGetAggregateCollection,
 		GetAggregateRPC:                         rpc.DoGeteAggregate,
@@ -110,6 +114,10 @@ func Router() *iris.Application {
 		GetManagersCollectionRPC: rpc.GetManagersCollection,
 		GetManagersRPC:           rpc.GetManagers,
 		GetManagersResourceRPC:   rpc.GetManagersResource,
+	}
+
+	update := handle.UpdateRPCs{
+		GetUpdateServiceRPC: rpc.DoGetUpdateService,
 	}
 
 	registryFile := handle.Registry{
@@ -209,10 +217,11 @@ func Router() *iris.Application {
 	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
 	systems.Get("/{id}/Storage", system.GetSystemResource)
 	systems.Get("/{id}/Storage/{rid}", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}/{id2}/Drives", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}/{id2}/Drives/{rid2}", system.GetSystemResource)
+	systems.Get("/{id}/Storage/{rid}/Drives", system.GetSystemResource)
+	systems.Get("/{id}/Storage/{rid}/Drives/{rid2}", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Any("/", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/EthernetInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/EthernetInterfaces/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot", handle.SystemsMethodNotAllowed)
@@ -252,6 +261,13 @@ func Router() *iris.Application {
 	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
 	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
+	aggregationSource.Get("/", pc.GetAllAggregationSource)
+	aggregationSource.Any("/", handle.AggMethodNotAllowed)
+	aggregationSource.Get("/{id}", pc.GetAggregationSource)
+	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)
+	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)
+	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
+
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)
 	aggregates.Get("/", pc.GetAggregateCollection)
@@ -362,5 +378,9 @@ func Router() *iris.Application {
 	managers.Any("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", handle.ManagersMethodNotAllowed)
 	managers.Any("/", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}", handle.ManagersMethodNotAllowed)
+
+	updateService := v1.Party("/UpdateService", middleware.SessionDelMiddleware)
+	updateService.SetRegisterRule(iris.RouteSkip)
+	updateService.Get("/", update.GetUpdateService)
 	return router
 }

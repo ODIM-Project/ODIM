@@ -30,6 +30,7 @@ import (
 	"golang.org/x/crypto/sha3"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 // Update defines the updation of the account details. Every account details can be
@@ -68,6 +69,13 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		Password:     updateAccount.Password,
 		RoleID:       updateAccount.RoleID,
 		AccountTypes: []string{"Redfish"},
+	}
+
+	//empty request check
+	if reflect.DeepEqual(asmodel.Account{}, updateAccount) {
+		errMsg := "empty request can not be processed"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request body"}, nil)
 	}
 
 	id := req.AccountID

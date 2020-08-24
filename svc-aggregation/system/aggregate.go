@@ -21,7 +21,10 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"runtime"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -439,17 +442,381 @@ func checkRemovingElementsPresent(requestElements, presentElements []string) boo
 }
 
 // ResetElementsOfAggregate is the handler for reseting elements of an aggregate
-func (e *ExternalInterface) ResetElementsOfAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
-	// TODO add functionality to create an aggregate
-	return response.RPC{
-		StatusCode: http.StatusNotImplemented,
+func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
+	var resp response.RPC
+	var percentComplete int32
+	targetURI := req.URL
+	percentComplete = 0
+
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+
+	var resetRequest ResetRequest
+	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
+		errMsg := "error while trying to validate request fields: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, taskInfo)
 	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetRequest)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
+		return resp
+	}
+
+	missedProperty, err := resetRequest.validateRequestFields()
+	if err != nil {
+		errMsg := "error while trying to validate request fields: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{missedProperty}, taskInfo)
+	}
+
+	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
+	aggregateID := strings.Split(url[1], "/")[0]
+
+	aggregateURL := "/redfish/v1/AggregationService/Aggregates/" + aggregateID
+	aggregate, err1 := agmodel.GetAggregate(aggregateURL)
+	if err1 != nil {
+		log.Printf("error getting aggregate : %v", err1)
+		errorMessage := err1.Error()
+		if errors.DBKeyNotFound == err1.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err1.Error(), []interface{}{"Aggregate", req.URL}, taskInfo)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+	}
+
+	// subTaskChan is a buffered channel with buffer size equal to total number of elements.
+	// this also helps while cancelling the task. even if the reader is not available for reading
+	// the channel buffer will collect them and allows gracefull exit for already spanned goroutines.
+	subTaskChan := make(chan int32, len(aggregate.Elements))
+	resp.StatusCode = http.StatusOK
+	var cancelled, partialResultFlag bool
+	go func() {
+		for i := 0; i < len(aggregate.Elements); i++ {
+			if cancelled == false { // task cancelled check to determine whether to collect status codes.
+				select {
+				case statusCode := <-subTaskChan:
+					if statusCode != http.StatusOK {
+						partialResultFlag = true
+						if resp.StatusCode < statusCode {
+							resp.StatusCode = statusCode
+						}
+					}
+
+					if i < len(aggregate.Elements)-1 {
+						percentComplete = int32(((i + 1) / len(aggregate.Elements)) * 100)
+						var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+						err := e.UpdateTask(task)
+						if err != nil && err.Error() == common.Cancelling {
+							task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+							e.UpdateTask(task)
+							cancelled = true
+						}
+					}
+				}
+			}
+		}
+	}()
+	var wg sync.WaitGroup
+	var tempIndex int
+	for _, element := range aggregate.Elements {
+		wg.Add(1)
+		// tempIndex is for checking batch size, its increment on each iteration
+		// if its equal to batch size then reinitilise.
+		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
+		tempIndex = tempIndex + 1
+		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
+			go e.resetSystem(taskID, subTaskChan, sessionUserName, element, resetRequest.ResetType, &wg)
+		}
+
+		if tempIndex == resetRequest.BatchSize && resetRequest.BatchSize != 0 {
+			tempIndex = 0
+			time.Sleep(time.Second * time.Duration(resetRequest.DelayBetweenBatchesInSeconds))
+		}
+
+	}
+	wg.Wait()
+	taskStatus := common.OK
+	if partialResultFlag {
+		taskStatus = common.Warning
+	}
+	percentComplete = 100
+	var args response.Args
+	if resp.StatusCode != http.StatusOK {
+		errMsg := "one or more of the reset actions failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
+		log.Printf(errMsg)
+		return common.GeneralError(resp.StatusCode, resp.StatusMessage, errMsg, nil, taskInfo)
+	}
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	log.Println("all reset actions are successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	args = response.Args{
+		Code:    resp.StatusMessage,
+		Message: "Request completed successfully",
+	}
+	resp.Body = args.CreateGenericErrorResponse()
+	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	err = e.UpdateTask(task)
+	if err != nil && err.Error() == common.Cancelling {
+		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		e.UpdateTask(task)
+		runtime.Goexit()
+	}
+	return resp
+}
+
+func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32, sessionUserName, element, resetType string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	log.Printf("INFO: reset(type: %v) of the target %v has been started.", resetType, element)
+	var resp response.RPC
+	var percentComplete int32
+	//Create the child Task
+	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
+	if err != nil {
+		subTaskChan <- http.StatusInternalServerError
+		log.Println("error while trying to create sub task")
+		return
+	}
+	var subTaskID string
+	strArray := strings.Split(subTaskURI, "/")
+	if strings.HasSuffix(subTaskURI, "/") {
+		subTaskID = strArray[len(strArray)-2]
+	} else {
+		subTaskID = strArray[len(strArray)-1]
+	}
+	systemID := element[strings.LastIndexAny(element, "/")+1:]
+	var targetURI = element
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	data := strings.Split(systemID, ":")
+	if len(data) <= 1 {
+		subTaskChan <- http.StatusNotFound
+		errMsg := "error: SystemUUID not found"
+		log.Printf(errMsg)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemUUID", ""}, taskInfo)
+		return
+	}
+
+	uuid, sysID := data[0], data[1]
+	// Get target device Credentials from using device UUID
+	target, err := agmodel.GetTarget(uuid)
+	if err != nil {
+		subTaskChan <- http.StatusNotFound
+		errMsg := err.Error()
+		log.Printf(errMsg)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, taskInfo)
+		return
+	}
+	decryptedPasswordByte, err := e.DecryptPassword(target.Password)
+	if err != nil {
+		errMsg := "error while trying to decrypt device password: " + err.Error()
+		subTaskChan <- http.StatusInternalServerError
+		log.Printf(errMsg)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
+	}
+	target.Password = decryptedPasswordByte
+	// Get the Plugin info
+	plugin, errs := agmodel.GetPluginData(target.PluginID)
+	if errs != nil {
+		subTaskChan <- http.StatusNotFound
+		errMsg := errs.Error()
+		log.Printf(errMsg)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", target.PluginID}, taskInfo)
+		return
+	}
+
+	var pluginContactRequest getResourceRequest
+	pluginContactRequest.ContactClient = e.ContactClient
+	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
+	pluginContactRequest.Plugin = plugin
+	pluginContactRequest.StatusPoll = true
+
+	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		var err error
+		pluginContactRequest.HTTPMethodType = http.MethodPost
+		pluginContactRequest.DeviceInfo = map[string]interface{}{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while logging in to plugin: ")
+		if err != nil {
+			subTaskChan <- getResponse.StatusCode
+			errMsg := err.Error()
+			log.Println(errMsg)
+			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
+			return
+		}
+		pluginContactRequest.Token = token
+	} else {
+		pluginContactRequest.LoginCredentials = map[string]string{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+
+	}
+	// Adding system state entry to db
+	postRequest := make(map[string]interface{})
+	postRequest["ResetType"] = resetType
+	postBody, _ := json.Marshal(postRequest)
+	target.PostBody = postBody
+	pluginContactRequest.DeviceInfo = target
+	pluginContactRequest.OID = "/ODIM/v1/Systems/" + sysID + "/Actions/ComputerSystem.Reset"
+	pluginContactRequest.HTTPMethodType = http.MethodPost
+	_, _, getResponse, err := contactPlugin(pluginContactRequest, "error while reseting the computer system: ")
+
+	if err != nil {
+		subTaskChan <- getResponse.StatusCode
+		errMsg := err.Error()
+		log.Println(errMsg)
+		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
+		return
+	}
+
+	resp.StatusMessage = response.Success
+	resp.Body = response.ErrorClass{
+		Code:    resp.StatusMessage,
+		Message: "Request completed successfully.",
+	}
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+		"Location":          element,
+	}
+	resp.StatusCode = getResponse.StatusCode
+	percentComplete = 100
+	subTaskChan <- int32(getResponse.StatusCode)
+	var task = fillTaskData(subTaskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	err = e.UpdateTask(task)
+	if err != nil && err.Error() == common.Cancelling {
+		var task = fillTaskData(subTaskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		err = e.UpdateTask(task)
+	}
+	if getResponse.StatusCode == http.StatusOK {
+		agmodel.AddSystemResetInfo(element, resetType)
+	}
+	return
+}
+
+// validateRequestFields validate each field in the request against default value of field type
+func (validateReq ResetRequest) validateRequestFields() (string, error) {
+	if reflect.DeepEqual(validateReq, ResetRequest{}) {
+		return "ResetRequest", fmt.Errorf("ResetRequest is empty")
+	}
+
+	if validateReq.ResetType == "" {
+		return "ResetType", fmt.Errorf("property ResetType missing in the reset request")
+	}
+	return "", nil
 }
 
 // SetDefaultBootOrderElementsOfAggregate is the handler for set default boot order elements of an aggregate
-func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(req *aggregatorproto.AggregatorRequest) response.RPC {
-	// TODO add functionality to create an aggregate
-	return response.RPC{
-		StatusCode: http.StatusNotImplemented,
+func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
+	var resp response.RPC
+	var percentComplete int32 = 100
+	targetURI := req.URL
+
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+
+	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
+	aggregateID := strings.Split(url[1], "/")[0]
+
+	aggregateURL := "/redfish/v1/AggregationService/Aggregates/" + aggregateID
+	aggregate, err1 := agmodel.GetAggregate(aggregateURL)
+	if err1 != nil {
+		log.Printf("error getting aggregate : %v", err1)
+		errorMessage := err1.Error()
+		if errors.DBKeyNotFound == err1.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err1.Error(), []interface{}{"Aggregate", req.URL}, taskInfo)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
 	}
+
+	partialResultFlag := false
+	subTaskChan := make(chan int32, len(aggregate.Elements))
+	for _, element := range aggregate.Elements {
+		go e.collectAndSetDefaultOrder(taskID, element, subTaskChan, sessionUserName)
+	}
+	resp.StatusCode = http.StatusOK
+	for i := 0; i < len(aggregate.Elements); i++ {
+		select {
+		case statusCode := <-subTaskChan:
+			if statusCode != http.StatusOK {
+				partialResultFlag = true
+				if resp.StatusCode < statusCode {
+					resp.StatusCode = statusCode
+				}
+			}
+			if i < len(aggregate.Elements)-1 {
+				percentComplete := int32(((i + 1) / len(aggregate.Elements)) * 100)
+				var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+				err := e.UpdateTask(task)
+				if err != nil && err.Error() == common.Cancelling {
+					task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+					e.UpdateTask(task)
+					runtime.Goexit()
+				}
+
+			}
+		}
+	}
+
+	taskStatus := common.OK
+	if partialResultFlag {
+		taskStatus = common.Warning
+	}
+	percentComplete = 100
+	if resp.StatusCode != http.StatusOK {
+		errMsg := "one or more of the SetDefaultBootOrder requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
+		log.Println(errMsg)
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
+			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{aggregate.Elements}, taskInfo)
+		case http.StatusNotFound:
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SetDefaultBootOrder"}, taskInfo)
+		default:
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		}
+	}
+
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	log.Println("all SetDefaultBootOrder requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	resp.StatusMessage = response.Success
+	resp.StatusCode = http.StatusOK
+	args := response.Args{
+		Code:    resp.StatusMessage,
+		Message: "Request completed successfully",
+	}
+	resp.Body = args.CreateGenericErrorResponse()
+
+	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	err := e.UpdateTask(task)
+	if err != nil && err.Error() == common.Cancelling {
+		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		e.UpdateTask(task)
+		runtime.Goexit()
+	}
+	return resp
 }

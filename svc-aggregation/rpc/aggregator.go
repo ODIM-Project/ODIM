@@ -775,8 +775,74 @@ func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggre
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to reset of elements from an aggregate
-	resp.StatusCode = http.StatusNotImplemented
+
+	// Verfy the credentials here
+	var oemprivileges []string
+
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "error while trying to get the session username: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+
+	// Task Service using RPC and get the taskID
+	taskURI, err := a.connector.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "error while trying to create task: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
+	go a.resetElements(ctx, taskID, sessionUserName, req)
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Content-type": "application/json; charset=utf-8",
+			"Location":     "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	generateResponse(rpcResp, resp)
+	return nil
+}
+
+func (a *Aggregator) resetElements(ctx context.Context, taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) error {
+	// Update the task status here
+	// PercentComplete: 0% Completed
+	// TaskState: Running - This value shall represent that the operation is executing.
+	err := a.connector.UpdateTask(common.TaskData{
+		TaskID:          taskID,
+		TaskState:       common.Running,
+		TaskStatus:      common.OK,
+		PercentComplete: 0,
+		HTTPMethod:      http.MethodPost,
+	})
+	if err != nil && (err.Error() == common.Cancelling) {
+		// We cant do anything here as the task has done it work completely, we cant reverse it.
+		//Unless if we can do opposite/reverse action for delete server which is add server.
+		a.connector.UpdateTask(common.TaskData{
+			TaskID:          taskID,
+			TaskState:       common.Cancelled,
+			TaskStatus:      common.OK,
+			PercentComplete: 0,
+			HTTPMethod:      http.MethodPost,
+		})
+	}
+
+	a.connector.ResetElementsOfAggregate(taskID, sessionUserName, req)
 	return nil
 }
 
@@ -787,7 +853,61 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to set default boot order elements of aggregate
-	resp.StatusCode = http.StatusNotImplemented
+	var oemprivileges []string
+
+	privileges := []string{common.PrivilegeConfigureComponents}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "error while trying to get the session username: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	taskURI, err := a.connector.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "error while trying to create task: " + err.Error()
+		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	strArray := strings.Split(taskURI, "/")
+	var taskID string
+	if strings.HasSuffix(taskURI, "/") {
+		taskID = strArray[len(strArray)-2]
+	} else {
+		taskID = strArray[len(strArray)-1]
+	}
+	err = a.connector.UpdateTask(common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       taskURI,
+		TaskState:       common.Running,
+		TaskStatus:      common.OK,
+		PercentComplete: 0,
+		HTTPMethod:      http.MethodPost,
+	})
+	if err != nil {
+		// print error as we are unable to communicate with svc-task and then return
+		log.Printf("error while contacting task-service with UpdateTask RPC : %v", err)
+	}
+	go a.connector.SetDefaultBootOrderElementsOfAggregate(taskID, sessionUserName, req)
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Content-type": "application/json; charset=utf-8",
+			"Location":     "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	generateResponse(rpcResp, resp)
+
 	return nil
 }

@@ -1410,7 +1410,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusAccepted
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "Invalid Token",
@@ -1423,7 +1423,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "Invalid aggregate id ",
@@ -1436,7 +1436,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusAccepted
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "get session username fails",
@@ -1449,7 +1449,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "unable to create task",
@@ -1462,7 +1462,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "task with slash",
@@ -1475,7 +1475,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "Empty Reset Type",
@@ -1488,7 +1488,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusAccepted
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "with missing parameters",
@@ -1501,7 +1501,7 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+			wantStatusCode: http.StatusAccepted,
 		},
 	}
 	for _, tt := range tests {
@@ -1550,7 +1550,7 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "Invalid Token",
@@ -1562,7 +1562,7 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "get session username fails",
@@ -1574,7 +1574,7 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "unable to create task",
@@ -1586,7 +1586,7 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "task with slash",
@@ -1598,7 +1598,7 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusUnauthorized
+			wantStatusCode: http.StatusAccepted,
 		},
 		{
 			name: "Invalid aggregate id ",
@@ -1610,7 +1610,7 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 				},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+			wantStatusCode: http.StatusAccepted,
 		},
 	}
 	for _, tt := range tests {

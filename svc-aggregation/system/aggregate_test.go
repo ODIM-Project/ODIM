@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -646,10 +647,33 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 }
 
 func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
+	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1"})
+	device1 := agmodel.Target{
+		ManagerAddress: "100.0.0.1",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+		PluginID:       "GRF",
+	}
+	device2 := agmodel.Target{
+		ManagerAddress: "100.0.0.2",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "c14d91b5-3333-48bb-a7b7-75f74a137d48",
+		PluginID:       "GRF",
+	}
+
+	mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device2)
+	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device1)
+	mockPluginData(t, "GRF")
 
 	req := agmodel.Aggregate{
 		Elements: []string{
@@ -663,26 +687,31 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 	}
 
 	successReq, _ := json.Marshal(ResetRequest{
-		BatchSize : 2,
+		BatchSize:                    2,
 		DelayBetweenBatchesInSeconds: 2,
-		ResetType:"ForceOff",
+		ResetType:                    "ForceOff",
 	})
 
 	badReq, _ := json.Marshal(ResetRequest{
-		BatchSize : 2,
+		BatchSize:                    2,
 		DelayBetweenBatchesInSeconds: 2,
-		ResetType:"",
+		ResetType:                    "",
 	})
 
 	missingparamReq, _ := json.Marshal(ResetRequest{})
 
 	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
+		ContactClient:   mockContactClient,
+		Auth:            mockIsAuthorized,
+		CreateChildTask: mockCreateChildTask,
+		UpdateTask:      mockUpdateTask,
+		DecryptPassword: stubDevicePassword,
+		GetPluginStatus: GetPluginStatusForTesting,
 	}
 	type args struct {
 		taskID          string
 		sessionUserName string
-		req *aggregatorproto.AggregatorRequest
+		req             *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -701,7 +730,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 					RequestBody:  successReq,
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "reset without child task",
@@ -714,7 +743,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 					RequestBody:  successReq,
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "reset without slash in subtask",
@@ -727,7 +756,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 					RequestBody:  successReq,
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusInternalServerError
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "Invalid aggregate id",
@@ -739,7 +768,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 					RequestBody:  successReq,
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+			wantStatusCode: http.StatusNotFound,
 		},
 		{
 			name: "Empty Reset Type",
@@ -751,7 +780,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 					RequestBody:  badReq,
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name: "with missing parameters",
@@ -763,12 +792,12 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 					RequestBody:  missingparamReq,
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.ResetElementsOfAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+			if got := tt.e.ResetElementsOfAggregate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
 				t.Errorf("ExternalInterface.ResetElementsOfAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})
@@ -776,10 +805,32 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 }
 
 func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer func() {
-		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
+		common.TruncateDB(common.OnDisk)
 	}()
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
+	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1"})
+	device1 := agmodel.Target{
+		ManagerAddress: "100.0.0.1",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+		PluginID:       "GRF",
+	}
+	device2 := agmodel.Target{
+		ManagerAddress: "100.0.0.2",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "c14d91b5-3333-48bb-a7b7-75f74a137d48",
+		PluginID:       "GRF",
+	}
+	mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	mockPluginData(t, "GRF")
+	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device2)
+	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device1)
 
 	req := agmodel.Aggregate{
 		Elements: []string{
@@ -793,12 +844,17 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 	}
 
 	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
+		ContactClient:   mockContactClient,
+		Auth:            mockIsAuthorized,
+		CreateChildTask: mockCreateChildTask,
+		UpdateTask:      mockUpdateTask,
+		DecryptPassword: stubDevicePassword,
+		GetPluginStatus: GetPluginStatusForTesting,
 	}
 	type args struct {
- 	taskID          string
+		taskID          string
 		sessionUserName string
-		req *aggregatorproto.AggregatorRequest
+		req             *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -816,7 +872,7 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "subtask creation failure",
@@ -828,7 +884,7 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+			wantStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "Invalid aggregate id",
@@ -840,28 +896,14 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
 				},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
-		},
-		{
-			name: "with missing parameters",
-			e:    p,
-			args: args{
-				taskID: "someID", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
-				},
-			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+			wantStatusCode: http.StatusNotFound,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.e.SetDefaultBootOrderElementsOfAggregate(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
+			if got := tt.e.SetDefaultBootOrderElementsOfAggregate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.wantStatusCode) {
 				t.Errorf("ExternalInterface.SetDefaultBootOrderElementsOfAggregate() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
 }
-
-

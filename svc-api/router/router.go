@@ -41,18 +41,20 @@ func Router() *iris.Application {
 		DeleteRPC:         rpc.DoAccountDeleteRequest,
 	}
 	pc := handle.AggregatorRPCs{
-		GetAggregationServiceRPC:       rpc.DoGetAggregationService,
-		AddComputeRPC:                  rpc.DoAddComputeRequest,
-		DeleteComputeRPC:               rpc.DoDeleteComputeRequest,
-		ResetRPC:                       rpc.DoResetRequest,
-		SetDefaultBootOrderRPC:         rpc.DoSetDefaultBootOrderRequest,
-		AddAggregationSourceRPC:        rpc.DoAddAggregationSource,
-		CreateAggregateRPC:             rpc.DoCreateAggregate,
-		GetAggregateCollectionRPC:      rpc.DoGetAggregateCollection,
-		GetAggregateRPC:                rpc.DoGeteAggregate,
-		DeleteAggregateRPC:             rpc.DoDeleteAggregate,
-		AddElementsToAggregateRPC:      rpc.DoAddElementsToAggregate,
-		RemoveElementsFromAggregateRPC: rpc.DoRemoveElementsFromAggregate,
+		GetAggregationServiceRPC:                rpc.DoGetAggregationService,
+		AddComputeRPC:                           rpc.DoAddComputeRequest,
+		DeleteComputeRPC:                        rpc.DoDeleteComputeRequest,
+		ResetRPC:                                rpc.DoResetRequest,
+		SetDefaultBootOrderRPC:                  rpc.DoSetDefaultBootOrderRequest,
+		AddAggregationSourceRPC:                 rpc.DoAddAggregationSource,
+		CreateAggregateRPC:                      rpc.DoCreateAggregate,
+		GetAggregateCollectionRPC:               rpc.DoGetAggregateCollection,
+		GetAggregateRPC:                         rpc.DoGeteAggregate,
+		DeleteAggregateRPC:                      rpc.DoDeleteAggregate,
+		AddElementsToAggregateRPC:               rpc.DoAddElementsToAggregate,
+		RemoveElementsFromAggregateRPC:          rpc.DoRemoveElementsFromAggregate,
+		ResetAggregateElementsRPC:               rpc.DoResetAggregateElements,
+		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 	}
 
 	s := handle.SessionRPCs{
@@ -261,6 +263,10 @@ func Router() *iris.Application {
 	aggregates.Any("/{id}/Actions/Aggregate.AddElements/", handle.AggregateMethodNotAllowed)
 	aggregates.Post("/{id}/Actions/Aggregate.RemoveElements/", pc.RemoveElementsFromAggregate)
 	aggregates.Any("/{id}/Actions/Aggregate.RemoveElements/", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.Reset/", pc.ResetAggregateElements)
+	aggregates.Any("/{id}/Actions/Aggregate.Reset/", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.SetDefaultBootOrder/", pc.SetDefaultBootOrderAggregateElements)
+	aggregates.Any("/{id}/Actions/Aggregate.SetDefaultBootOrder/", handle.AggregateMethodNotAllowed)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)

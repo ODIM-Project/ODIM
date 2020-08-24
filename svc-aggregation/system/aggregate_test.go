@@ -647,7 +647,9 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 }
 
 func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
@@ -805,7 +807,9 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 }
 
 func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		common.TruncateDB(common.InMemory)
 		common.TruncateDB(common.OnDisk)

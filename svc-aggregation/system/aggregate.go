@@ -497,6 +497,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	resp.StatusCode = http.StatusOK
 	var cancelled, partialResultFlag bool
+	var wg,writeWG sync.WaitGroup
 	go func() {
 		for i := 0; i < len(aggregate.Elements); i++ {
 			if cancelled == false { // task cancelled check to determine whether to collect status codes.
@@ -521,12 +522,14 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 					}
 				}
 			}
+			writeWG.Done()
 		}
 	}()
-	var wg sync.WaitGroup
+
 	var tempIndex int
 	for _, element := range aggregate.Elements {
 		wg.Add(1)
+		writeWG.Add(1)
 		// tempIndex is for checking batch size, its increment on each iteration
 		// if its equal to batch size then reinitilise.
 		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
@@ -542,6 +545,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 
 	}
 	wg.Wait()
+	writeWG.Wait()
 	taskStatus := common.OK
 	if partialResultFlag {
 		taskStatus = common.Warning

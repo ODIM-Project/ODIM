@@ -128,6 +128,7 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/Systems", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/EthernetInterfaces", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/EthernetInterfaces/{rid}", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Memory", SystemsMethodNotAllowed)
@@ -144,6 +145,10 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/Systems").Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Systems").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Systems").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID).Expect().Status(http.StatusMethodNotAllowed)
 
 	e.POST("/redfish/v1/Systems/" + systemID + "/EthernetInterfaces").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/Systems/" + systemID + "/EthernetInterfaces").Expect().Status(http.StatusMethodNotAllowed)

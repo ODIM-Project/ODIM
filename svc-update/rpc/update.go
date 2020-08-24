@@ -42,10 +42,10 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 	return nil
 }
 
-// iGetFirmwareInventoryCollections an rpc handler which is invoked during GET on firmware inventory collection
+// GetFirmwareInventoryCollections an rpc handler which is invoked during GET on firmware inventory collection
 func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode
@@ -75,7 +75,7 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 // GetFirmwareInventory is an rpc handler which is invoked during GET on firmware inventory
 func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode
@@ -108,7 +108,7 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 // GetSoftwareInventoryCollection is an rpc handler which is invoked during GET on software inventory collection
 func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode
@@ -141,7 +141,7 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 // GetSoftwareInventory is an rpc handler which is invoked during GET on software inventory
 func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode
@@ -174,7 +174,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 // SimepleUpdate is an rpc handler, it gets involked during POST on UpdateService API actions (/Actions/UpdateService.SimpleUpdate)
 func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode

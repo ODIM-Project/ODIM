@@ -23,7 +23,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
+// SimpleUpdate function handler for simpe update process
 func SimpleUpdate(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
+
 	return resp
 }

@@ -19,6 +19,7 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
+// Collection struct defines the values for a collection of resources
 type Collection struct {
 	OdataContext string      `json:"@odata.context"`
 	Etag         string      `json:"@odata.etag,omitempty"`

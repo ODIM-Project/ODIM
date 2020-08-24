@@ -15,9 +15,9 @@
 package update
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"net/http"
 )
@@ -29,29 +29,40 @@ type Device struct {
 	DeviceUUID string `json:"device_UUID"`
 }
 
-// ExternalInterface struct holds the function pointers all outboud services
+// ExternalInterface sruct holds the structs to which hold function pointers to outboud calls
 type ExternalInterface struct {
-	ContactClient           func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                    func(string, []string, []string) (int32, string)
-	GetSessionUserName      func(string) (string, error)
-	CreateChildTask         func(string, string) (string, error)
-	CreateTask              func(string) (string, error)
-	UpdateTask              func(common.TaskData) error
-	CreateSubcription       func([]string)
-	PublishEvent            func([]string, string)
-	PublishEventMB          func(string, string, string)
-	GetPluginStatus         func(umodel.Plugin) bool
-	SubscribeToEMB          func(string, []string)
-	EncryptPassword         func([]byte) ([]byte, error)
-	DecryptPassword         func([]byte) ([]byte, error)
-	DeleteComputeSystem     func(int, string) *errors.Error
-	DeleteSystem            func(string) *errors.Error
-	DeleteEventSubscription func(string) (*eventsproto.EventSubResponse, error)
-	EventNotification       func(string, string, string)
+	External External
+	DB       DB
+}
+
+// External struct holds the function pointers all outboud services
+type External struct {
+	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth          func(string, []string, []string) (int32, string)
 }
 
 type responseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 	MsgArgs       []interface{}
+}
+
+// DB struct holds the function pointers to database operations
+type DB struct {
+	GetAllKeysFromTable func(string) ([]string, error)
+	GetResource         func(string, string) (string, *errors.Error)
+}
+
+// GetExternalInterface retrieves all the external connections update package functions uses
+func GetExternalInterface() *ExternalInterface {
+	return &ExternalInterface{
+		External: External{
+			ContactClient: pmbhandle.ContactPlugin,
+			Auth:          services.IsAuthorized,
+		},
+		DB: DB{
+			GetAllKeysFromTable: umodel.GetAllKeysFromTable,
+			GetResource:         umodel.GetResource,
+		},
+	}
 }

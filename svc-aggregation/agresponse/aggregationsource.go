@@ -25,3 +25,9 @@ type AggregationSourceResponse struct {
 	UserName string      `json:"UserName"`
 	Links    interface{} `json:"Links"`
 }
+
+// AggregateResponse defines the response for aggregate
+type AggregateResponse struct {
+	response.Response
+	Elements []string `json:"Elements"`
+}

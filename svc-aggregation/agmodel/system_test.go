@@ -53,6 +53,17 @@ func mockIndex(dbType common.DbType, index, key string) {
 	connPool.CreateIndex(form, "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
 }
 
+func mockSystemResourceData(body []byte, table, key string) error {
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if err = connPool.Create(table, key, string(body)); err != nil {
+		return err
+	}
+	return nil
+}
+
 func TestGetResource(t *testing.T) {
 	config.SetUpMockConfig(t)
 	defer func() {
@@ -1058,4 +1069,176 @@ func TestUpdateSystemData(t *testing.T) {
 
 	dbErr = UpdateSystemData(req, "1234567678-12332")
 	assert.NotNil(t, dbErr, "Error Should not be nil")
+}
+
+func TestGetSystemByUUID(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	body := `{"Id":"1","Status":{"State":"Enabled"}}`
+	table := "ComputerSystem"
+	key := "/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1"
+	GenericSave([]byte(body), table, key)
+	data, _ := GetSystem("/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1")
+	assert.Equal(t, data, body, "should be same")
+	_, err := GetSystem("/redfish/v1/Systems/12345")
+	assert.NotNil(t, err, "There should be an error")
+}
+
+func TestCreateAggregate(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
+	req := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := CreateAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+	err = CreateAggregate(req, aggregateURI)
+	assert.NotNil(t, err, "Error Should not be nil")
+	data, err := GetAggregate(aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, data.Elements, req.Elements)
+	_, err = GetAggregate("/redfish/v1/AggregationService/Aggregates/123456")
+	assert.NotNil(t, err, "Error Should not be nil")
+
+}
+
+func TestGetAllKeysFromTable(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	var reqData = `{"Elements":["/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"]}`
+	table := "Aggregate"
+	key := "/redfish/v1/AggregationService/Aggregates/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"
+	mockSystemResourceData([]byte(reqData), table, key)
+
+	resp, err := GetAllKeysFromTable(table)
+	assert.Nil(t, err, "Error Should be nil")
+	assert.Equal(t, 1, len(resp), "response should be same as reqData")
+}
+
+func TestDeleteAggregate(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
+	req := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := CreateAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	err = DeleteAggregate(aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	err = DeleteAggregate(aggregateURI)
+	assert.NotNil(t, err, "err should not be nil")
+}
+
+func TestAddElementsToAggregate(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
+	req := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := CreateAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	req1 := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/9119e175-36ad-4b27-99a6-4c3a149fc7da:1",
+		},
+	}
+	err = AddElementsToAggregate(req1, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	data, err := GetAggregate(aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, 3, len(data.Elements), "there should be one element")
+
+	invalidAggregateURI := "/redfish/v1/AggregationService/Aggregates/12345"
+	err = AddElementsToAggregate(req1, invalidAggregateURI)
+	assert.NotNil(t, err, "err should not be nil")
+
+}
+
+func TestRemoveElementsFromAggregate(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
+	req := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err := CreateAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	req1 := Aggregate{
+		Elements: []string{
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	}
+	err = RemoveElementsFromAggregate(req1, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+
+	data, err := GetAggregate(aggregateURI)
+	assert.Nil(t, err, "err should be nil")
+	assert.Equal(t, 1, len(data.Elements), "there should be one element")
+
+	invalidAggregateURI := "/redfish/v1/AggregationService/Aggregates/12345"
+	err = RemoveElementsFromAggregate(req1, invalidAggregateURI)
+	assert.NotNil(t, err, "err should not be nil")
+
 }

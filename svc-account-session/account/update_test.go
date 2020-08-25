@@ -167,7 +167,7 @@ func TestUpdate(t *testing.T) {
 		RoleID: "Administrator",
 	})
 
-	emptyPayload, _ := json.Marshal(asmodel.Account{})
+	emptyPayload, _ := json.Marshal(map[string]interface{}{})
 
 	tests := []struct {
 		name string

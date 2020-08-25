@@ -15,6 +15,7 @@
 package update
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
@@ -37,8 +38,9 @@ type ExternalInterface struct {
 
 // External struct holds the function pointers all outboud services
 type External struct {
-	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth          func(string, []string, []string) (int32, string)
+	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth           func(string, []string, []string) (int32, string)
+	DevicePassword func([]byte) ([]byte, error)
 }
 
 type responseStatus struct {
@@ -57,8 +59,9 @@ type DB struct {
 func GetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		External: External{
-			ContactClient: pmbhandle.ContactPlugin,
-			Auth:          services.IsAuthorized,
+			ContactClient:  pmbhandle.ContactPlugin,
+			Auth:           services.IsAuthorized,
+			DevicePassword: common.DecryptWithPrivateKey,
 		},
 		DB: DB{
 			GetAllKeysFromTable: umodel.GetAllKeysFromTable,

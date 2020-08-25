@@ -30,6 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/uresponse"
 )
 
@@ -159,11 +160,20 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 		log.Printf("error getting firmware inventory details : %v", gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
-			resp.StatusCode = http.StatusNotFound
-			resp.StatusMessage = errors.ResourceNotFound
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.URL}, nil)
+			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
+				URL:            req.URL,
+				UUID:           requestData[0],
+				SystemID:       requestData[1],
+				ContactClient:  e.External.ContactClient,
+				DevicePassword: e.External.DevicePassword,
+			}
+			var err error
+			if data, err = ucommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"FirmwareInventory", req.URL}, nil)
+			}
+		} else {
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
@@ -238,11 +248,20 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 		log.Printf("error getting software inventory details : %v", gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
-			resp.StatusCode = http.StatusNotFound
-			resp.StatusMessage = errors.ResourceNotFound
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.URL}, nil)
+			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
+				URL:            req.URL,
+				UUID:           requestData[0],
+				SystemID:       requestData[1],
+				ContactClient:  e.External.ContactClient,
+				DevicePassword: e.External.DevicePassword,
+			}
+			var err error
+			if data, err = ucommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"SoftwareInventory", req.URL}, nil)
+			}
+		} else {
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)

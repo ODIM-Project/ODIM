@@ -18,10 +18,21 @@ package umodel
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
+
+//Target is for sending the requst to south bound/plugin
+type Target struct {
+	ManagerAddress string `json:"ManagerAddress"`
+	Password       []byte `json:"Password"`
+	UserName       string `json:"UserName"`
+	PostBody       []byte `json:"PostBody"`
+	DeviceUUID     string `json:"DeviceUUID"`
+	PluginID       string `json:"PluginID"`
+}
 
 // Plugin defines plugin configuration
 type Plugin struct {
@@ -62,4 +73,63 @@ func GetResource(Table, key string) (string, *errors.Error) {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
 	return resource, nil
+}
+
+//GenericSave will save any resource data into the database
+func GenericSave(body []byte, table string, key string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.AddResourceData(table, key, string(body)); err != nil {
+		if errors.DBKeyAlreadyExist == err.ErrNo() {
+			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
+		}
+		log.Printf("warning: skipped saving of duplicate data with key %v", key)
+	}
+	return nil
+}
+
+//GetTarget fetches the System(Target Device Credentials) table details
+func GetTarget(deviceUUID string) (*Target, *errors.Error) {
+	var target Target
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	data, err := conn.Read("System", deviceUUID)
+	if err != nil {
+		return nil, errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(data), &target); errs != nil {
+		return nil, errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return &target, nil
+}
+
+//GetPluginData will fetch plugin details
+func GetPluginData(pluginID string) (Plugin, *errors.Error) {
+	var plugin Plugin
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return plugin, err
+	}
+
+	plugindata, err := conn.Read("Plugin", pluginID)
+	if err != nil {
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to fetch plugin data: ", err.Error())
+	}
+
+	if err := json.Unmarshal([]byte(plugindata), &plugin); err != nil {
+		return plugin, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+
+	bytepw, errs := common.DecryptWithPrivateKey([]byte(plugin.Password))
+	if errs != nil {
+		return Plugin{}, errors.PackError(errors.DecryptionFailed, "error: "+pluginID+" plugin password decryption failed: "+errs.Error())
+	}
+	plugin.Password = bytepw
+
+	return plugin, nil
 }

@@ -324,6 +324,7 @@ func Router() *iris.Application {
 	events.Any("/", handle.EvtMethodNotAllowed)
 	events.Any("/Actions", handle.EvtMethodNotAllowed)
 	events.Any("/Actions/EventService.SubmitTestEvent", handle.EvtMethodNotAllowed)
+	events.Any("/Subscriptions", handle.EvtMethodNotAllowed)
 
 	fabrics := v1.Party("/Fabrics", middleware.SessionDelMiddleware)
 	fabrics.SetRegisterRule(iris.RouteSkip)

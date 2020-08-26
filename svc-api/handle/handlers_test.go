@@ -349,6 +349,7 @@ func TestEvtMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/EventService", EvtMethodNotAllowed)
 	redfishRoutes.Any("/EventService/Actions", EvtMethodNotAllowed)
 	redfishRoutes.Any("/EventService/Actions/EventService.SubmitTestEvent", EvtMethodNotAllowed)
+	redfishRoutes.Any("/EventService/Subscriptions/", EvtMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
@@ -359,6 +360,10 @@ func TestEvtMethodNotAllowed(t *testing.T) {
 	e.GET("/redfish/v1/EventService/Actions/EventService.SubmitTestEvent").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/EventService/Actions/EventService.SubmitTestEvent").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/EventService/Actions/EventService.SubmitTestEvent").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.DELETE("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestAggMethodNotAllowed is unittest method for AggMethodNotAllowed func.

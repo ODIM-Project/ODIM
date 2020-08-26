@@ -70,6 +70,13 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		AccountTypes: []string{"Redfish"},
 	}
 
+	//empty request check
+	if isEmptyRequest(req.RequestBody) {
+		errMsg := "empty request can not be processed"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request body"}, nil)
+	}
+
 	id := req.AccountID
 	if requestUser.UserName != "" {
 		errorMessage := "error: username cannot be modified"
@@ -307,4 +314,13 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	}
 
 	return resp
+}
+
+func isEmptyRequest(requestBody []byte) bool {
+	var updateRequest map[string]interface{}
+	json.Unmarshal(requestBody, &updateRequest)
+	if len(updateRequest) <= 0 {
+		return true
+	}
+	return false
 }

@@ -126,6 +126,19 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 	}
+
+	errArg5 := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.PropertyMissing,
+				ErrorMessage:  "empty request can not be processed",
+				MessageArgs:   []interface{}{"request body"},
+			},
+		},
+	}
+
 	genArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "error: username cannot be modified",
@@ -153,6 +166,8 @@ func TestUpdate(t *testing.T) {
 	reqBodyRoleIDAdmin, _ := json.Marshal(asmodel.Account{
 		RoleID: "Administrator",
 	})
+
+	emptyPayload, _ := json.Marshal(map[string]interface{}{})
 
 	tests := []struct {
 		name string
@@ -581,6 +596,28 @@ func TestUpdate(t *testing.T) {
 					"Content-type": "application/json; charset=utf-8",
 				},
 				Body: errArgs1.CreateGenericErrorResponse(),
+			},
+		},
+		{
+			name: "update account without payload",
+			args: args{
+				req: &accountproto.UpdateAccountRequest{
+					RequestBody: emptyPayload,
+					AccountID:   "testUser1",
+				},
+				session: &asmodel.Session{
+					Privileges: map[string]bool{
+						common.PrivilegeConfigureSelf: true,
+					},
+				},
+			},
+			want: response.RPC{
+				StatusCode:    http.StatusBadRequest,
+				StatusMessage: response.PropertyMissing,
+				Header: map[string]string{
+					"Content-type": "application/json; charset=utf-8",
+				},
+				Body: errArg5.CreateGenericErrorResponse(),
 			},
 		},
 	}

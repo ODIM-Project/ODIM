@@ -30,7 +30,7 @@ type Device struct {
 	DeviceUUID string `json:"device_UUID"`
 }
 
-// ExternalInterface sruct holds the structs to which hold function pointers to outboud calls
+// ExternalInterface struct holds the structs to which hold function pointers to outboud calls
 type ExternalInterface struct {
 	External External
 	DB       DB

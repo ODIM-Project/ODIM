@@ -520,6 +520,36 @@ func TestCreateErrorResponse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: PropertyValueConflict,
+			args: Args{
+				Code:    PropertyValueConflict,
+				Message: PropertyValueConflict,
+				ErrorArgs: []ErrArgs{
+					ErrArgs{
+						StatusMessage: PropertyValueConflict,
+						ErrorMessage:  errMsg,
+						MessageArgs:   []interface{}{"test1", "test2"},
+					},
+				},
+			},
+			want: CommonError{
+				Error: ErrorClass{
+					Code:    PropertyValueConflict,
+					Message: PropertyValueConflict,
+					MessageExtendedInfo: []Msg{
+						Msg{
+							OdataType:   ErrorMessageOdataType,
+							MessageID:   PropertyValueConflict,
+							Message:     fmt.Sprintf("The property '%v' could not be written because its value would conflict with the value of the '%v' property, %v", "test1", "test2", errMsg),
+							Severity:    "Warning",
+							MessageArgs: []interface{}{"test1", "test2"},
+							Resolution:  "No resolution is required.",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

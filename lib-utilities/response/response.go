@@ -69,6 +69,8 @@ const (
 	ActionParameterNotSupported = "Base.1.6.1.ActionParameterNotSupported"
 	// ResourceCannotBeDeleted indicates the requested delete operation cannot be performed
 	ResourceCannotBeDeleted = "Base.1.6.1.ResourceCannotBeDeleted"
+	// PropertyValueConflict indicates that the requested write of a property value could not be completed, because of a conflict with another property value.
+	PropertyValueConflict = "Base.1.6.1.PropertyValueConflict"
 )
 
 // Response holds the generic response from odimra

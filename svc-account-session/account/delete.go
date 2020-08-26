@@ -39,6 +39,7 @@ import (
 func Delete(session *asmodel.Session, accountID string) response.RPC {
 	var resp response.RPC
 
+	// Default admin user account should not be deleted
 	if accountID == defaultAdminAccount {
 		errorMessage := "default user account can not be deleted"
 		resp.StatusCode = http.StatusBadRequest

@@ -758,4 +758,3 @@ func TestSetDefaultBootOrderAggregateElements(t *testing.T) {
 		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
 	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
 }
-

@@ -135,6 +135,28 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		return resp
 	}
 
+	// check any duplicate roles present in the request
+	privelege, duplicatePresent := isDuplicatePrivilegesPresent(updateReq)
+	if duplicatePresent {
+		errorMessage := "Duplicate privileges can not be updated"
+		log.Println(errorMessage)
+		resp.StatusCode = http.StatusBadRequest
+		resp.StatusMessage = response.PropertyValueConflict
+		args := response.Args{
+			Code:    response.GeneralError,
+			Message: errorMessage,
+			ErrorArgs: []response.ErrArgs{
+				response.ErrArgs{
+					StatusMessage: resp.StatusMessage,
+					ErrorMessage:  errorMessage,
+					MessageArgs:   []interface{}{privelege, privelege},
+				},
+			},
+		}
+		resp.Body = args.CreateGenericErrorResponse()
+		return resp
+	}
+
 	errorMessage := validateUpdateRequest(&updateReq, &role, map[string]bool{
 		"AssignedPrivileges": true,
 		"OEMPrivileges":      true,
@@ -265,4 +287,33 @@ func validateUpdateRequest(req, data *asmodel.Role, exceptFields map[string]bool
 		errorMessage = errorMessage + field[i] + " "
 	}
 	return errorMessage
+}
+
+func isDuplicatePrivilegesPresent(updateReq asmodel.Role) (string, bool) {
+	// check assigned priveleges have duplicate privelege
+	privilege, duplicatePresent := checkDuplicatePrivileges(updateReq.AssignedPrivileges)
+	if duplicatePresent {
+		return privilege, true
+	}
+	// check OEM priveleges have duplicate privelege
+	privilege, duplicatePresent = checkDuplicatePrivileges(updateReq.OEMPrivileges)
+	if duplicatePresent {
+		return privilege, true
+	}
+	return "", false
+}
+
+//check if the privileges have duplicate privilege
+func checkDuplicatePrivileges(privileges []string) (string, bool) {
+	duplicate := make(map[string]int)
+	for _, privilege := range privileges {
+		// check if the item/privilege exist in the duplicate map
+		_, exist := duplicate[privilege]
+		if exist {
+			return privilege, true
+		}
+		duplicate[privilege] = 1
+
+	}
+	return "", false
 }

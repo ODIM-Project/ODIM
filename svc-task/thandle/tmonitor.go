@@ -144,7 +144,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		PercentComplete: task.PercentComplete,
 	}
 	if task.ParentID == "" {
-		taskResponse.SubTasks = "/redfish/v1/Tasks/" + task.ID + "/SubTasks"
+		taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
 	}
 	rsp.Body = generateResponse(taskResponse)
 	//    end

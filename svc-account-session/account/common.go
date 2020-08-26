@@ -19,6 +19,10 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 )
 
+const (
+	defaultAdminAccount = "admin"
+)
+
 // ExternalInterface holds all the external connections account package functions uses
 type ExternalInterface struct {
 	CreateUser         func(asmodel.User) *errors.Error

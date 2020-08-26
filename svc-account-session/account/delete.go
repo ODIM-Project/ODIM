@@ -39,6 +39,29 @@ import (
 func Delete(session *asmodel.Session, accountID string) response.RPC {
 	var resp response.RPC
 
+	// Default admin user account should not be deleted
+	if accountID == defaultAdminAccount {
+		errorMessage := "default user account can not be deleted"
+		resp.StatusCode = http.StatusBadRequest
+		resp.StatusMessage = response.ResourceCannotBeDeleted
+		args := response.Args{
+			Code:    response.GeneralError,
+			Message: "",
+			ErrorArgs: []response.ErrArgs{
+				response.ErrArgs{
+					StatusMessage: resp.StatusMessage,
+					ErrorMessage:  errorMessage,
+				},
+			},
+		}
+		resp.Body = args.CreateGenericErrorResponse()
+		resp.Header = map[string]string{
+			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
+		}
+		log.Printf(errorMessage)
+		return resp
+	}
+
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		errorMessage := "error: " + session.UserName + " does not have the privilege to delete user"
 		resp.StatusCode = http.StatusForbidden

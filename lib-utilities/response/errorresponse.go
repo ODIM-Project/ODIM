@@ -37,6 +37,7 @@ const (
 	resourceAlreadyExistsArgCount       = 3
 	actionParameterNotSupportedArgCount = 2
 	propertyUnknownArgCount             = 1
+	propertyValueConflict               = 2
 )
 
 //ValidateParamTypes will compare string slices and returns bool
@@ -394,6 +395,28 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Message:    "The delete request failed because the resource requested cannot be deleted." + errArg.ErrorMessage,
 					Severity:   "Critical",
 					Resolution: "Do not attempt to delete a non-deletable resource.",
+				})
+		case PropertyValueConflict:
+			if len(errArg.MessageArgs) != propertyValueConflict {
+				log.Println("warning: MessageArgs in PropertyValueConflict response is missing")
+			}
+			ParamTypes := []string{"string", "string"}
+			actualParamTypes := []string{}
+			for i := 0; i < len(errArg.MessageArgs); i++ {
+				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
+			}
+			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
+				log.Println("warning: Paramtypes in PropertyValueConflict response is missing")
+			}
+
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:   ErrorMessageOdataType,
+					MessageID:   errArg.StatusMessage,
+					Message:     fmt.Sprintf("The property '%v' could not be written because its value would conflict with the value of the '%v' property, %v", errArg.MessageArgs[0], errArg.MessageArgs[1], errArg.ErrorMessage),
+					Severity:    "Warning",
+					MessageArgs: errArg.MessageArgs,
+					Resolution:  "No resolution is required.",
 				})
 		}
 	}

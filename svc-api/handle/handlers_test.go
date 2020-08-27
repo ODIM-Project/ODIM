@@ -134,6 +134,7 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Systems/{id}/Memory", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Processors", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Storage", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Processors/{rid}", SystemsMethodNotAllowed)
 
 	e := httptest.New(t, router)

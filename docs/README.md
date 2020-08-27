@@ -6095,7 +6095,7 @@ Content-Length:491 bytes
    "StartTime":"2020-04-17T09:39:22.713860589Z",
    "EndTime":"0001-01-01T00:00:00Z",
    "TaskStatus":"OK",
-   "SubTasks":"/redfish/v1/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70/SubTasks",
+   "SubTasks":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70/SubTasks",
    "TaskMonitor":"/taskmon/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "PercentComplete":8,
    "Payload":{

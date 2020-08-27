@@ -26,6 +26,7 @@ type TaskData struct {
 	TaskID          string
 	TargetURI       string
 	Response        response.RPC
+	TaskRequest		string
 	TaskState       string
 	TaskStatus      string
 	PercentComplete int32

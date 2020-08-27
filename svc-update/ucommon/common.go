@@ -57,14 +57,20 @@ type ResourceInfoRequest struct {
 	ResourceName   string
 }
 
+// Interface holds the pointers for functions with DB opearations
+type Interface struct {
+	GetTarget     func(string) (*umodel.Target, *errors.Error)
+	GetPluginData func(string) (umodel.Plugin, *errors.Error)
+}
+
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
-func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
-	target, gerr := umodel.GetTarget(req.UUID)
+func (i *Interface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
+	target, gerr := i.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
 	}
 	// Get the Plugin info
-	plugin, gerr := umodel.GetPluginData(target.PluginID)
+	plugin, gerr := i.GetPluginData(target.PluginID)
 	if gerr != nil {
 		return "", gerr
 	}

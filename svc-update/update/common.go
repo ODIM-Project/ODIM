@@ -19,8 +19,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
-	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
+	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"net/http"
 )
 
@@ -54,8 +54,8 @@ type External struct {
 	Auth           func(string, []string, []string) (int32, string)
 	DevicePassword func([]byte) ([]byte, error)
 	GetPluginData  func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin  func(ucommon.PluginContactRequest, string)([]byte, string, ucommon.ResponseStatus, error)
-	GetTarget      func(string)(*umodel.Target, *errors.Error)
+	ContactPlugin  func(ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
+	GetTarget      func(string) (*umodel.Target, *errors.Error)
 }
 
 type responseStatus struct {
@@ -72,20 +72,19 @@ type DB struct {
 
 // UpdateRequestBody struct defines the request body for update action
 type UpdateRequestBody struct {
-	ImageURI	string	`json:"ImageURI"`
-	Password	string	`json:"Password,omitempty"`
-	Targets		[]string	`json:"Targets"`
-	TransferProtocol	string	`json:"TransferProtocol,omitempty"`
-	Username	string	`json:"Username,omitempty"`
-	RedfishOperationApplyTimeSupport	RedfishOperationApplyTimeSupport
+	ImageURI                         string   `json:"ImageURI"`
+	Password                         string   `json:"Password,omitempty"`
+	Targets                          []string `json:"Targets"`
+	TransferProtocol                 string   `json:"TransferProtocol,omitempty"`
+	Username                         string   `json:"Username,omitempty"`
+	RedfishOperationApplyTimeSupport RedfishOperationApplyTimeSupport
 }
 
 // RedfishOperationApplyTimeSupport struct defines the apply time for the action in place
-type RedfishOperationApplyTimeSupport struct{
-	OdataType    string       `json:"@odata.type,omitempty"`
-	SupportedValues	[]string	`json:"SupportedValues,omitempty"`
+type RedfishOperationApplyTimeSupport struct {
+	OdataType       string   `json:"@odata.type,omitempty"`
+	SupportedValues []string `json:"SupportedValues,omitempty"`
 }
-
 
 // GetExternalInterface retrieves all the external connections update package functions uses
 func GetExternalInterface() *ExternalInterface {
@@ -96,7 +95,7 @@ func GetExternalInterface() *ExternalInterface {
 			DevicePassword: common.DecryptWithPrivateKey,
 			GetPluginData:  umodel.GetPluginData,
 			ContactPlugin:  ucommon.ContactPlugin,
-			GetTarget:	umodel.GetTarget,
+			GetTarget:      umodel.GetTarget,
 		},
 		DB: DB{
 			GetAllKeysFromTable: umodel.GetAllKeysFromTable,

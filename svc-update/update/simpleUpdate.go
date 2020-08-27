@@ -19,14 +19,14 @@ package update
 // IMPORT Section
 //
 import (
-	"strings"
-	"net/http"
-	"log"
 	"encoding/json"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
+	"log"
+	"net/http"
+	"strings"
 )
 
 // SimpleUpdate function handler for simpe update process

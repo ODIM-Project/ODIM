@@ -52,6 +52,10 @@ func TestUpdate(t *testing.T) {
 		AssignedPrivileges: []string{"Configue"},
 		OEMPrivileges:      []string{},
 	})
+	duplicateRoleReq, _ := json.Marshal(asmodel.Role{
+		AssignedPrivileges: []string{common.PrivilegeLogin, common.PrivilegeLogin},
+		OEMPrivileges:      []string{},
+	})
 	errArg := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -89,6 +93,18 @@ func TestUpdate(t *testing.T) {
 		Code:    response.GeneralError,
 		Message: "Updating predefined role is restricted",
 	}
+	errArgGen1 := response.Args{
+		Code:    response.GeneralError,
+		Message: "Duplicate privileges can not be updated",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.PropertyValueConflict,
+				ErrorMessage:  "Duplicate privileges can not be updated",
+				MessageArgs:   []interface{}{common.PrivilegeLogin, common.PrivilegeLogin},
+			},
+		},
+	}
+
 	type args struct {
 		req     *roleproto.UpdateRoleRequest
 		session *asmodel.Session
@@ -236,6 +252,33 @@ func TestUpdate(t *testing.T) {
 					"OData-Version":     "4.0",
 				},
 				Body: errArgGen.CreateGenericErrorResponse(),
+			},
+		},
+		{
+			name: "update duplicate privileges",
+			args: args{
+				req: &roleproto.UpdateRoleRequest{
+					Id:            "MockRole",
+					UpdateRequest: duplicateRoleReq,
+				},
+				session: &asmodel.Session{
+					Privileges: map[string]bool{
+						common.PrivilegeConfigureUsers: true,
+					},
+				},
+			},
+			want: response.RPC{
+				StatusCode:    http.StatusBadRequest,
+				StatusMessage: response.PropertyValueConflict,
+				Header: map[string]string{
+					"Allow":             `"GET"`,
+					"Cache-Control":     "no-cache",
+					"Connection":        "keep-alive",
+					"Content-type":      "application/json; charset=utf-8",
+					"Transfer-Encoding": "chunked",
+					"OData-Version":     "4.0",
+				},
+				Body: errArgGen1.CreateGenericErrorResponse(),
 			},
 		},
 	}

@@ -135,6 +135,7 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Systems/{id}/Processors", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Storage", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}/Drives/{rid2}", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Processors/{rid}", SystemsMethodNotAllowed)
 
 	e := httptest.New(t, router)
@@ -176,10 +177,17 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
 
+
 	e.POST("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+
 
 	e.POST("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)

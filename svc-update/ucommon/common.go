@@ -57,14 +57,21 @@ type ResourceInfoRequest struct {
 	ResourceName   string
 }
 
+// Interface holds the pointers for functions with DB opearations
+type Interface struct {
+	GetTarget     func(string) (*umodel.Target, *errors.Error)
+	GetPluginData func(string) (umodel.Plugin, *errors.Error)
+	ContactPlugin func(PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
+}
+
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
-func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
-	target, gerr := umodel.GetTarget(req.UUID)
+func (i *Interface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
+	target, gerr := i.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
 	}
 	// Get the Plugin info
-	plugin, gerr := umodel.GetPluginData(target.PluginID)
+	plugin, gerr := i.GetPluginData(target.PluginID)
 	if gerr != nil {
 		return "", gerr
 	}
@@ -81,7 +88,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+		_, token, _, err := i.ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 		if err != nil {
 
 			return "", err
@@ -109,7 +116,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 	//replace the uuid:system id with the system to the @odata.id from request url
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
-	body, _, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
+	body, _, _, err := i.ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
 		return "", err
 	}

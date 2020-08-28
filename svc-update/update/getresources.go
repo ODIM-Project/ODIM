@@ -168,7 +168,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 				DevicePassword: e.External.DevicePassword,
 			}
 			var err error
-			if data, err = ucommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = i.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"FirmwareInventory", req.URL}, nil)
 			}
 		} else {
@@ -256,7 +256,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 				DevicePassword: e.External.DevicePassword,
 			}
 			var err error
-			if data, err = ucommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = i.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"SoftwareInventory", req.URL}, nil)
 			}
 		} else {

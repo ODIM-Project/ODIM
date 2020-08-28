@@ -171,6 +171,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 			i := ucommon.Interface{
 				GetTarget:     e.External.GetTarget,
 				GetPluginData: e.External.GetPluginData,
+				ContactPlugin: e.External.ContactPlugin,
 			}
 			if data, err = i.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"FirmwareInventory", req.URL}, nil)
@@ -263,6 +264,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 			i := ucommon.Interface{
 				GetTarget:     e.External.GetTarget,
 				GetPluginData: e.External.GetPluginData,
+				ContactPlugin: e.External.ContactPlugin,
 			}
 			if data, err = i.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"SoftwareInventory", req.URL}, nil)

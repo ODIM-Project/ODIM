@@ -20,6 +20,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -50,8 +51,8 @@ func mockGetPluginData(id string) (umodel.Plugin, *errors.Error) {
 
 func mockContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
-	resp.StatusCode = 200
-	resp.StatusMessage = "OK"
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
 
 	reqBody := &http.Response{
 		StatusCode: http.StatusOK,
@@ -61,8 +62,8 @@ func mockContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, s
 	return body, "1234", resp, nil
 }
 
-func mockInterface() *Interface {
-	return &Interface{
+func mockInterface() *CommonInterface {
+	return &CommonInterface{
 		GetTarget:     mockGetTarget,
 		GetPluginData: mockGetPluginData,
 		ContactPlugin: mockContactPlugin,

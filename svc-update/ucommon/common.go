@@ -57,15 +57,15 @@ type ResourceInfoRequest struct {
 	ResourceName   string
 }
 
-// Interface holds the pointers for functions with DB opearations
-type Interface struct {
+// CommonInterface holds the pointers for functions with DB opearations
+type CommonInterface struct {
 	GetTarget     func(string) (*umodel.Target, *errors.Error)
 	GetPluginData func(string) (umodel.Plugin, *errors.Error)
 	ContactPlugin func(PluginContactRequest, string) ([]byte, string, ResponseStatus, error)
 }
 
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
-func (i *Interface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
+func (i *CommonInterface) GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 	target, gerr := i.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -165,7 +165,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	str := strings.Split(oid, "/")
 	var key []string
 	for i, id := range str {
-		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
+		if id == systemID && (strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
 			key = append(key, DeviceUUID+":"+id)
 			continue
 		}

@@ -168,7 +168,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 				DevicePassword: e.External.DevicePassword,
 			}
 			var err error
-			i := ucommon.Interface{
+			i := ucommon.CommonInterface{
 				GetTarget:     e.External.GetTarget,
 				GetPluginData: e.External.GetPluginData,
 				ContactPlugin: e.External.ContactPlugin,
@@ -261,7 +261,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 				DevicePassword: e.External.DevicePassword,
 			}
 			var err error
-			i := ucommon.Interface{
+			i := ucommon.CommonInterface{
 				GetTarget:     e.External.GetTarget,
 				GetPluginData: e.External.GetPluginData,
 				ContactPlugin: e.External.ContactPlugin,

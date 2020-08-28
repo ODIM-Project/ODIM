@@ -204,7 +204,7 @@ func TestGetFirmwareInventorywithInValidtoken(t *testing.T) {
 	}
 	var resp = &updateproto.UpdateResponse{}
 	update.GetFirmwareInventory(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
@@ -218,8 +218,7 @@ func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
 	var resp = &updateproto.UpdateResponse{}
 	err := update.GetFirmwareInventory(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
@@ -233,7 +232,7 @@ func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
 	}
 	var resp = &updateproto.UpdateResponse{}
 	update.GetSoftwareInventory(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
@@ -247,6 +246,5 @@ func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
 	var resp = &updateproto.UpdateResponse{}
 	err := update.GetSoftwareInventory(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }

@@ -24,8 +24,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-update/uresponse"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
+	"github.com/ODIM-Project/ODIM/svc-update/uresponse"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,28 +51,28 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid:1"}, nil
 }
 func mockGetTarget(id string) (*umodel.Target, *errors.Error) {
-        var target umodel.Target
-        target.PluginID = id
-        target.DeviceUUID = "uuid"
-        target.UserName = "admin"
-        target.Password = []byte("password")
-        target.ManagerAddress = "ip"
-        return &target, nil
+	var target umodel.Target
+	target.PluginID = id
+	target.DeviceUUID = "uuid"
+	target.UserName = "admin"
+	target.Password = []byte("password")
+	target.ManagerAddress = "ip"
+	return &target, nil
 }
 
 func mockGetPluginData(id string) (umodel.Plugin, *errors.Error) {
-        var plugin umodel.Plugin
-        plugin.IP = "ip"
-        plugin.Port = "port"
-        plugin.Username = "plugin"
-        plugin.Password = []byte("password")
-        plugin.PluginType = "Redfish"
-        plugin.PreferredAuthType = "basic"
-        return plugin, nil
+	var plugin umodel.Plugin
+	plugin.IP = "ip"
+	plugin.Port = "port"
+	plugin.Username = "plugin"
+	plugin.Password = []byte("password")
+	plugin.PluginType = "Redfish"
+	plugin.PreferredAuthType = "basic"
+	return plugin, nil
 }
 
 func stubDevicePassword(password []byte) ([]byte, error) {
-        return password, nil
+	return password, nil
 }
 
 func mockGetExternalInterface() *ExternalInterface {

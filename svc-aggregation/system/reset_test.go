@@ -965,7 +965,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusOK
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
@@ -979,7 +979,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusNotFound
+				StatusCode: http.StatusNotFound,
 			},
 		},
 		{
@@ -993,7 +993,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusNotFound
+				StatusCode: http.StatusNotFound,
 			},
 		},
 		{
@@ -1007,7 +1007,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusBadRequest, //TODO: need to be change as http.StatusBadRequest
+				StatusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -1021,7 +1021,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusBadRequest
+				StatusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -1035,7 +1035,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusBadRequest
+				StatusCode: http.StatusBadRequest,
 			},
 		},
 		{
@@ -1049,7 +1049,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusInternalServerError
+				StatusCode: http.StatusInternalServerError,
 			},
 		},
 		{
@@ -1063,7 +1063,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusOK
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
@@ -1077,7 +1077,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusInternalServerError
+				StatusCode: http.StatusInternalServerError,
 			},
 		},
 		{
@@ -1091,7 +1091,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusNotFound
+				StatusCode: http.StatusNotFound,
 			},
 		},
 		{
@@ -1105,7 +1105,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusOK
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
@@ -1119,7 +1119,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusUnauthorized
+				StatusCode: http.StatusUnauthorized,
 			},
 		},
 	}

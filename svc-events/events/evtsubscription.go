@@ -942,14 +942,16 @@ func saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
 	if deviceSubscription != nil {
 
 		save = true
-		// currently there will be only one element in origin resources
-		// when we add support for multiple origin resources will have to change this.
-		originResource := deviceSubscription.OriginResources[0]
 		// if the origin resource is present in device subscription details then dont add
-		if evtSubscription.OriginResource == originResource {
-			save = false
-		}
+		for _, originResource := range deviceSubscription.OriginResources {
+			if evtSubscription.OriginResource == originResource {
 
+				save = false
+			} else {
+				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, evtSubscription.OriginResource)
+				save = false
+			}
+		}
 		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
 		if err != nil {
 			return err
@@ -976,9 +978,10 @@ func getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse,
 	target, err := evmodel.GetTarget(uuid)
 	if err != nil {
 		// Frame the RPC response body and response Header below
-		errorMessage := "error while getting System(Target device Credentials) table details: " + err.Error()
+
+		errorMessage := "error while getting Systems(Target device Credentials) table details: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
-			&resp, []interface{}{"System", origin})
+			&resp, []interface{}{"Systems", origin})
 		log.Printf(errorMessage)
 		return nil, resp, err
 	}
@@ -1112,10 +1115,20 @@ func checkCollection(origin string) ([]string, string, bool, error) {
 		collection, err := evmodel.GetAllKeysFromTable("ComputerSystem")
 		return collection, "SystemsCollection", true, err
 	case "/redfish/v1/Chassis":
-		return []string{}, "ChassisCollection", true, nil
+		collection, err := evmodel.GetAllKeysFromTable("Chassis")
+		return collection, "ChassisCollection", true, err
 	case "/redfish/v1/Managers":
-		//TODO:After Managers implemention need to get all Managers data
-		return []string{}, "ManagerCollection", true, nil
+		collection, err := evmodel.GetAllKeysFromTable("Managers")
+		mgrsList := make([]string, 0)
+		if err == nil {
+			for i := 0; i < len(collection); i++ {
+				if strings.Contains(collection[i], ":") {
+					mgrsList = append(mgrsList, collection[i])
+				}
+
+			}
+		}
+		return mgrsList, "ManagerCollection", true, err
 	case "/redfish/v1/Fabrics":
 		collection, err := evmodel.GetAllFabrics()
 		return collection, "FabricsCollection", true, err
@@ -1140,21 +1153,29 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	//Creating key to get all the System Collection subscription
 
 	var searchKey string
+	var bmcFlag bool
 	if strings.Contains(origin, "Fabrics") {
 		searchKey = "/redfish/v1/Fabrics"
 	} else {
+		bmcFlag = true
 		searchKey = "/redfish/v1/Systems"
 	}
 	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return
 	}
-
+	var chassisSubscriptions, managersSubscriptions []evmodel.Subscription
+	if bmcFlag {
+		chassisSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Chassis")
+		subscriptions = append(subscriptions, chassisSubscriptions...)
+		managersSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Managers")
+		subscriptions = append(subscriptions, managersSubscriptions...)
+	}
 	// Checking the collection based subscription
 	var collectionSubscription = make([]evmodel.Subscription, 0)
 	for _, evtSubscription := range subscriptions {
 		for _, originResource := range evtSubscription.OriginResources {
-			if strings.Contains(origin, "Systems") && originResource == "/redfish/v1/Systems" {
+			if strings.Contains(origin, "Systems") && (originResource == "/redfish/v1/Systems" || originResource == "/redfish/v1/Chassis" || originResource == "/redfish/v1/Managers") {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			} else if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
 				collectionSubscription = append(collectionSubscription, evtSubscription)

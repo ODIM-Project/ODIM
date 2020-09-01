@@ -320,6 +320,11 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	}
 	pluginContactRequest.CreateSubcription(h.SystemURL)
 	pluginContactRequest.PublishEvent(h.SystemURL, "SystemsCollection")
+	// get all managers and chassis info
+	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", saveSystem.DeviceUUID, common.InMemory)
+	managersList, _ := agmodel.GetAllMatchingDetails("Managers", saveSystem.DeviceUUID, common.InMemory)
+	pluginContactRequest.PublishEvent(chassisList, "ChassisCollection")
+	pluginContactRequest.PublishEvent(managersList, "ManagerCollection")
 
 	h.PluginResponse = strings.Replace(h.PluginResponse, `/redfish/v1/Systems/`, `/redfish/v1/Systems/`+saveSystem.DeviceUUID+`:`, -1)
 	var list agresponse.List

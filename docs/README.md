@@ -182,7 +182,7 @@ curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
 
 **2.** If you are running curl commands on a different server, perform the following steps to provide the rootCA.crt file.
       
-  a. Navigate to `~/ODIM_v1.0/configuration/Odim/certificates` on the server where the resource
+  a. Navigate to `~/ODIM/build/cert_generator` on the server where the resource
          aggregator is deployed.
 
 

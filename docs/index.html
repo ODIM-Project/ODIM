@@ -590,7 +590,7 @@ These APIs are fully Redfish-compliant.</p>
 
 <p>The following figure shows these functional layers of Resource Aggregator for ODIM deployed in a data center.</p>
 
-<p><img src="images/arch.png" alt="ODIM_architecture" /></p>
+<p><img src="images/images/arch.png" alt="ODIM_architecture" /></p>
 
 <ul>
 <li><strong>API layer</strong></li>
@@ -611,8 +611,7 @@ through an extensible domain model (Redfish Data Model). Requests coming from th
 responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
 for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).</p>
 
-<p><img src="images/redfish_data_model.png" alt="Redfish_data_model" /></p>
-
+<p><img src="images/images/redfish_data_model.png" alt="Redfish_data_model" /></p>
 
 <ul>
 <li><strong>Event message bus layer</strong></li>
@@ -721,7 +720,7 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
 
 <p><strong>2.</strong> If you are running curl commands on a different server, perform the following steps to provide the rootCA.crt file.</p>
 
-<p>a. Navigate to <code>~/ODIM_v1.0/configuration/Odim/certificates</code> on the server where the resource aggregator is deployed.</p>
+<p>a. Navigate to <code>~/ODIM/build/cert_generator</code> on the server where the resource aggregator is deployed.</p>
 
 <p>b. Copy the <code>rootCA.crt</code> file.</p>
 

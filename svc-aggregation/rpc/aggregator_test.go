@@ -49,10 +49,10 @@ func TestAggregator_GetAggregationService(t *testing.T) {
 		resp *aggregatorproto.AggregatorResponse
 	}
 	tests := []struct {
-		name    string
-		a       *Aggregator
-		args    args
-		wantErr bool
+		name           string
+		a              *Aggregator
+		args           args
+		wantStatusCode int32
 	}{
 		{
 			name: "positive GetAggregationService",
@@ -61,7 +61,7 @@ func TestAggregator_GetAggregationService(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantErr: false,
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "auth fail",
@@ -70,13 +70,13 @@ func TestAggregator_GetAggregationService(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantErr: false,
+			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetAggregationService(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
-				t.Errorf("Aggregator.GetAggregationService() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.a.GetAggregationService(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAggregationService() got = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

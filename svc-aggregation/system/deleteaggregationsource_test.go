@@ -42,7 +42,9 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 		ContactClient:     mockContactClientForDelete,
 		DecryptPassword:   stubDevicePassword,
 	}
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {

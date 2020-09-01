@@ -64,6 +64,14 @@ type resetCollection struct {
 	ResetTargets []ResetTarget `json:"ResetTarget"`
 }
 
+// AggregationResetRequest struct for reset the BMC
+type AggregationResetRequest struct {
+	BatchSize                    int      `json:"BatchSize"`
+	DelayBetweenBatchesInSeconds int      `json:"DelayBetweenBatchesInSeconds"`
+	ResetType                    string   `json:"ResetType"`
+	TargetURIs                   []string `json:"TargetURIs"`
+}
+
 // validateRequestFields validate each field in the request against default value of field type
 func (validateReq AggregatorRequest) validateRequestFields() (string, error) {
 	if reflect.DeepEqual(validateReq.Parameters, parameter{}) {
@@ -97,7 +105,14 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 	percentComplete = 0
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
-
+	// if the request has new type of request having batchsize and delay
+	// unmarshall request to map[string]interface{} and call the funtcion
+	// if it has BatchSize then unmarshall to AggregatorRequest
+	var request map[string]interface{}
+	json.Unmarshal(req.RequestBody, &request)
+	if _, ok := request["BatchSize"]; ok {
+		return e.resetAggregationServiceSystem(taskID, sessionUserName, req)
+	}
 	var resetRequest AggregatorRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
 		errMsg := "error while trying to validate request fields: " + err.Error()
@@ -405,4 +420,10 @@ func (e *ExternalInterface) resetComputerSystem(taskID string, subTaskChan chan<
 		agmodel.AddSystemResetInfo(req.TargetURI, req.ResetType)
 	}
 	return
+}
+
+func (e *ExternalInterface) resetAggregationServiceSystem(taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }

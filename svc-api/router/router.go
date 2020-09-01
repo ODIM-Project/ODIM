@@ -230,6 +230,8 @@ func Router() *iris.Application {
 	systems.Any("/{id}/Memory", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Processors", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Storage", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Storage/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Storage/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/LogServices", handle.SystemsMethodNotAllowed)

@@ -39,6 +39,16 @@ type BootOrderParameters struct {
 	ServerCollection []string `json:"ServerCollection"`
 }
 
+// AggregationSetDefaultBootOrderRequest struct for set default boot order the BMC
+type AggregationSetDefaultBootOrderRequest struct {
+	Systems []OdataID `json:"Systems"`
+}
+
+//OdataID struct definition for @odata.id
+type OdataID struct {
+	OdataID string `json:"@odata.id"`
+}
+
 type responseHolder struct {
 	response   []interface{}
 	anyFailure bool
@@ -52,6 +62,15 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder"
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+
+	// if the request has new type of request having Systems
+	// unmarshall request to map[string]interface{} and call the funtcion
+	// if it has Systems then unmarshall to AggregationSetDefaultBootOrderRequest
+	var request map[string]interface{}
+	json.Unmarshal(req.RequestBody, &request)
+	if _, ok := request["Systems"]; ok {
+		return e.setDefaultBootOrderRequest(taskID, sessionUserName, req)
+	}
 
 	var setOrderReq SetBootOrderRequest
 	if err := json.Unmarshal(req.RequestBody, &setOrderReq); err != nil {
@@ -270,4 +289,10 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 		err = e.UpdateTask(task)
 	}
 	return
+}
+
+func (e *ExternalInterface) setDefaultBootOrderRequest(taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }

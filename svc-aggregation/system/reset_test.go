@@ -784,3 +784,350 @@ func Test_checkAndCorrectPriorityAndDelay(t *testing.T) {
 		})
 	}
 }
+
+// this test case for new reset request
+func TestPluginContact_ResetComputerSystem(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	device1 := agmodel.Target{
+		ManagerAddress: "100.0.0.1",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
+		PluginID:       "GRF",
+	}
+	device2 := agmodel.Target{
+		ManagerAddress: "100.0.0.2",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279",
+		PluginID:       "GRF",
+	}
+	device3 := agmodel.Target{
+		ManagerAddress: "100.0.0.6",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+		PluginID:       "SOME-INVALID-PLUGIN",
+	}
+	device4 := agmodel.Target{
+		ManagerAddress: "100.0.0.5",
+		Password:       []byte("passwordWithInvalidEncryption"),
+		UserName:       "admin",
+		DeviceUUID:     "c14d91b5-3333-48bb-a7b7-75f74a137d48",
+		PluginID:       "GRF",
+	}
+
+	device5 := agmodel.Target{
+		ManagerAddress: "100.0.0.7",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "8e896459-a8f9-4c83-95b7-7b316b4908e1",
+		PluginID:       "XAuthPlugin",
+	}
+	device6 := agmodel.Target{
+		ManagerAddress: "100.0.0.8",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "9dd6e488-31b2-475a-9304-d5f193a6a7cd",
+		PluginID:       "XAuthPluginFail",
+	}
+	mockPluginData(t, "GRF")
+	mockPluginData(t, "XAuthPlugin")
+	mockPluginData(t, "XAuthPluginFail")
+	mockDeviceData("24b243cf-f1e3-5318-92d9-2d6737d6b0b9", device1)
+	mockDeviceData("7a2c6100-67da-5fd6-ab82-6870d29c7279", device2)
+	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device3)
+	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device4)
+	mockDeviceData("8e896459-a8f9-4c83-95b7-7b316b4908e1", device5)
+	mockDeviceData("9dd6e488-31b2-475a-9304-d5f193a6a7cd", device6)
+	mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
+	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
+	mockSystemData("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	mockSystemData("/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1")
+	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1")
+
+	type args struct {
+		taskID          string
+		sessionUserName string
+		req             *aggregatorproto.AggregatorRequest
+	}
+
+	pluginContact := ExternalInterface{
+		ContactClient:   mockContactClient,
+		Auth:            mockIsAuthorized,
+		CreateChildTask: mockCreateChildTask,
+		UpdateTask:      mockUpdateTask,
+		DecryptPassword: stubDevicePassword,
+		GetPluginStatus: GetPluginStatusForTesting,
+	}
+
+	successReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+		},
+	})
+
+	invalidUUIDReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+		},
+	})
+
+	invalidSysIDReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b",
+		},
+	})
+
+	emptyResetTypeReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+		},
+	})
+
+	emptyTargetURIsReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs:                   []string{},
+	})
+
+	InvalidPasswordReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	})
+
+	invalidPluginReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		},
+	})
+
+	XAuthPluginReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1",
+		},
+	})
+
+	XAuthPluginFailedReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1",
+		},
+	})
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "postive test Case",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  successReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusOK
+			},
+		},
+		{
+			name: "invalid uuid id",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  invalidUUIDReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusNotFound
+			},
+		},
+		{
+			name: "invalid system id",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  invalidSysIDReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusNotFound
+			},
+		},
+		{
+			name: "invalid req body",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  []byte("some invalid request"),
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusBadRequest, //TODO: need to be change as http.StatusBadRequest
+			},
+		},
+		{
+			name: "request missing TargetURIs",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  emptyTargetURIsReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusBadRequest
+			},
+		},
+		{
+			name: "request missisng ResetTYpe",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  emptyResetTypeReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusBadRequest
+			},
+		},
+		{
+			name: "reset without child task",
+			p:    &pluginContact,
+			args: args{
+				taskID: "taskWithoutChild", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  successReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusInternalServerError
+			},
+		},
+		{
+			name: "reset without slash in subtask",
+			p:    &pluginContact,
+			args: args{
+				taskID: "subTaskWithSlash", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  successReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusOK
+			},
+		},
+		{
+			name: "device password decryption fails",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someId", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  InvalidPasswordReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusInternalServerError
+			},
+		},
+		{
+			name: "invalid plugin",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someId", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  invalidPluginReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusNotFound
+			},
+		},
+		{
+			name: "xauth plugin",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someId", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  XAuthPluginReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusOK
+			},
+		},
+		{
+			name: "xauth fails",
+			p:    &pluginContact,
+			args: args{
+				taskID: "someId", sessionUserName: "someUser",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  XAuthPluginFailedReq,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO: need to be change as http.StatusUnauthorized
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.Reset(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.Reset() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

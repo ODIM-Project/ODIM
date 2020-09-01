@@ -83,7 +83,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		// return with the actual status code, along with response header and response body
 		//Build the respose Body
 		rsp.Header = task.Payload.HTTPHeaders
-		rsp.Body = task.Payload.JSONBody
+		rsp.Body = task.TaskResponse
 		rsp.StatusCode = task.StatusCode
 		// Delete the task from db as it is completed and user requested for the details.
 		// return the user with task details by deleting the task from db

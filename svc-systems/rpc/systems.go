@@ -241,3 +241,15 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	resp.Body = generateResponse(data.Body)
 	return nil
 }
+
+// CreateVolume defines the operations which handles the RPC request response
+// for the CreateVolume service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolumeRequest, resp *systemsproto.SystemsResponse) error {
+	// This function yet to be implemented
+	resp.StatusCode = http.StatusNotImplemented
+	return nil
+}

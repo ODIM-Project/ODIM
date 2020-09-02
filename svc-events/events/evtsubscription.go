@@ -948,7 +948,7 @@ func saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
 
 				save = false
 			} else {
-				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, evtSubscription.OriginResource)
+				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, originResource)
 				save = false
 			}
 		}
@@ -1244,6 +1244,27 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 			log.Println("Error while Updating event subscription : ", err)
 		}
 	}
+	// Get Device Subscription Details if collection is bmc and update chassis and managers uri
+	if bmcFlag {
+		searchKey = host
+		deviceSubscription, _ := evmodel.GetDeviceSubscriptions(searchKey)
+		data := strings.Split(origin, "/redfish/v1/Systems/")
+		chassisList, _ := evmodel.GetAllMatchingDetails("Chassis", data[1], common.InMemory)
+		managersList, _ := evmodel.GetAllMatchingDetails("Managers", data[1], common.InMemory)
+		var newDevSubscription = evmodel.DeviceSubscription{
+			EventHostIP:     deviceSubscription.EventHostIP,
+			Location:        deviceSubscription.Location,
+			OriginResources: deviceSubscription.OriginResources,
+		}
+		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, chassisList...)
+		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, managersList...)
+
+		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
+		if err != nil {
+			log.Println("Error while Updating Device subscription : ", err)
+		}
+	}
+
 	return
 }
 

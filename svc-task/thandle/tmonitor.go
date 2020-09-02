@@ -136,10 +136,10 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		Messages:    messageList,
 		TaskMonitor: task.TaskMonitor,
 		Payload: tresponse.Payload{
-			RespHTTPHeaders: httpHeaders,
-			HTTPOperation:   task.Payload.HTTPOperation,
-			RespJSONBody:    string(task.Payload.JSONBody),
-			TargetURI:       task.Payload.TargetURI,
+			HTTPHeaders:   httpHeaders,
+			HTTPOperation: task.Payload.HTTPOperation,
+			JSONBody:      string(task.Payload.JSONBody),
+			TargetURI:     task.Payload.TargetURI,
 		},
 		PercentComplete: task.PercentComplete,
 	}
@@ -147,10 +147,6 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
 	}
 	rsp.Body = generateResponse(taskResponse)
-	//    end
-	// return 202
-	// build response header
-	// return with empty response body
 
 	rsp.Header["location"] = task.TaskMonitor
 	return nil

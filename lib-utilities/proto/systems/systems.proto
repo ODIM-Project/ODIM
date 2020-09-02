@@ -23,6 +23,8 @@ service Systems {
  rpc ChangeBiosSettings(BiosSettingsRequest) returns (SystemsResponse) {}
  rpc ChangeBootOrderSettings(BootOrderSettingsRequest) returns (SystemsResponse) {}
  rpc CreateVolume(CreateVolumeRequest) returns (SystemsResponse) {}
+ rpc GetVolume(GetVolumeRequest) returns(SystemsResponse){}
+ rpc GetAllVolumes(VolumeRequest) returns(SystemsResponse){}
 }
 
 message GetSystemsRequest{
@@ -66,4 +68,15 @@ message CreateVolumeRequest{
     string SystemID = 2;
     string StorageInstance = 3;
     bytes RequestBody = 4;   
+}
+message GetVolumeRequest{
+    string SessionToken = 1;
+    string SystemID = 2;
+    string StorageInstance = 3;
+	string VolumeID =4;
+}
+message VolumeRequest{
+    string SessionToken = 1;
+    string SystemID = 2;
+    string StorageInstance = 3;   
 }

@@ -319,4 +319,5 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 // and do rpc call and send response back
 func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	// This function yet to be implemented
+	ctx.StatusCode(int(http.StatusNotImplemented))
 }

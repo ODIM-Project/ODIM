@@ -73,7 +73,7 @@ message GetVolumeRequest{
     string SessionToken = 1;
     string SystemID = 2;
     string StorageInstance = 3;
-	string VolumeID =4;
+    string VolumeID =4;
 }
 message VolumeRequest{
     string SessionToken = 1;

@@ -258,7 +258,7 @@ func Router() *iris.Application {
 	aggregation.Post("/Actions/AggregationService.Add/", pc.AddCompute)
 	aggregation.Post("/Actions/AggregationService.Remove/", pc.DeleteCompute)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
-  aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
+	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)

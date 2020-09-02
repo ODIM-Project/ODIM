@@ -42,6 +42,8 @@ type SystemsService interface {
 	ChangeBiosSettings(ctx context.Context, in *BiosSettingsRequest, opts ...client.CallOption) (*SystemsResponse, error)
 	ChangeBootOrderSettings(ctx context.Context, in *BootOrderSettingsRequest, opts ...client.CallOption) (*SystemsResponse, error)
 	CreateVolume(ctx context.Context, in *CreateVolumeRequest, opts ...client.CallOption) (*SystemsResponse, error)
+	GetVolume(ctx context.Context, in *GetVolumeRequest, opts ...client.CallOption) (*SystemsResponse, error)
+	GetAllVolumes(ctx context.Context, in *VolumeRequest, opts ...client.CallOption) (*SystemsResponse, error)
 }
 
 type systemsService struct {
@@ -142,6 +144,26 @@ func (c *systemsService) CreateVolume(ctx context.Context, in *CreateVolumeReque
 	return out, nil
 }
 
+func (c *systemsService) GetVolume(ctx context.Context, in *GetVolumeRequest, opts ...client.CallOption) (*SystemsResponse, error) {
+	req := c.c.NewRequest(c.name, "Systems.GetVolume", in)
+	out := new(SystemsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemsService) GetAllVolumes(ctx context.Context, in *VolumeRequest, opts ...client.CallOption) (*SystemsResponse, error) {
+	req := c.c.NewRequest(c.name, "Systems.GetAllVolumes", in)
+	out := new(SystemsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Systems service
 
 type SystemsHandler interface {
@@ -153,6 +175,8 @@ type SystemsHandler interface {
 	ChangeBiosSettings(context.Context, *BiosSettingsRequest, *SystemsResponse) error
 	ChangeBootOrderSettings(context.Context, *BootOrderSettingsRequest, *SystemsResponse) error
 	CreateVolume(context.Context, *CreateVolumeRequest, *SystemsResponse) error
+	GetVolume(context.Context, *GetVolumeRequest, *SystemsResponse) error
+	GetAllVolumes(context.Context, *VolumeRequest, *SystemsResponse) error
 }
 
 func RegisterSystemsHandler(s server.Server, hdlr SystemsHandler, opts ...server.HandlerOption) error {
@@ -165,6 +189,8 @@ func RegisterSystemsHandler(s server.Server, hdlr SystemsHandler, opts ...server
 		ChangeBiosSettings(ctx context.Context, in *BiosSettingsRequest, out *SystemsResponse) error
 		ChangeBootOrderSettings(ctx context.Context, in *BootOrderSettingsRequest, out *SystemsResponse) error
 		CreateVolume(ctx context.Context, in *CreateVolumeRequest, out *SystemsResponse) error
+		GetVolume(ctx context.Context, in *GetVolumeRequest, out *SystemsResponse) error
+		GetAllVolumes(ctx context.Context, in *VolumeRequest, out *SystemsResponse) error
 	}
 	type Systems struct {
 		systems
@@ -207,4 +233,12 @@ func (h *systemsHandler) ChangeBootOrderSettings(ctx context.Context, in *BootOr
 
 func (h *systemsHandler) CreateVolume(ctx context.Context, in *CreateVolumeRequest, out *SystemsResponse) error {
 	return h.SystemsHandler.CreateVolume(ctx, in, out)
+}
+
+func (h *systemsHandler) GetVolume(ctx context.Context, in *GetVolumeRequest, out *SystemsResponse) error {
+	return h.SystemsHandler.GetVolume(ctx, in, out)
+}
+
+func (h *systemsHandler) GetAllVolumes(ctx context.Context, in *VolumeRequest, out *SystemsResponse) error {
+	return h.SystemsHandler.GetAllVolumes(ctx, in, out)
 }

@@ -520,13 +520,7 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 		},
 		PercentComplete: task.PercentComplete,
 	}
-	/*
-		if task.ParentID == "" {
-			taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
-		}else if len(task.ChildTaskIDs){
-			taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
-		}
-	*/
+	
 	// Check the state of the task
 	if task.TaskState == "Completed" || task.TaskState == "Cancelled" || task.TaskState == "Killed" || task.TaskState == "Exception" {
 		// return with the 200 OK, along with response header and response body

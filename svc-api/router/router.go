@@ -87,6 +87,7 @@ func Router() *iris.Application {
 		SetDefaultBootOrderRPC:     rpc.SetDefaultBootOrder,
 		ChangeBiosSettingsRPC:      rpc.ChangeBiosSettings,
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
+		CreateVolumeRPC:            rpc.CreateVolume,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -219,6 +220,7 @@ func Router() *iris.Application {
 	systems.Get("/{id}/Storage/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/Storage/{rid}/Drives", system.GetSystemResource)
 	systems.Get("/{id}/Storage/{rid}/Drives/{rid2}", system.GetSystemResource)
+	systems.Post("/{id}/Storage/{rid}/Volumes", system.CreateVolume)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Any("/", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}", handle.SystemsMethodNotAllowed)
@@ -232,6 +234,7 @@ func Router() *iris.Application {
 	systems.Any("/{id}/Storage", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Storage/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Storage/{rid}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Storage/{rid}/Volumes", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/LogServices", handle.SystemsMethodNotAllowed)

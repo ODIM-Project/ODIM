@@ -80,14 +80,14 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	}
 
 	partialResultFlag := false
-	subTaskChan := make(chan int32, len(setOrderReq.Systems))
+	subTaskChannel := make(chan int32, len(setOrderReq.Systems))
 	for _, serverURI := range setOrderReq.Systems {
-		go e.collectAndSetDefaultOrder(taskID, serverURI.OdataID, subTaskChan, sessionUserName)
+		go e.collectAndSetDefaultOrder(taskID, serverURI.OdataID, subTaskChannel, sessionUserName)
 	}
 	resp.StatusCode = http.StatusOK
 	for i := 0; i < len(setOrderReq.Systems); i++ {
 		select {
-		case statusCode := <-subTaskChan:
+		case statusCode := <-subTaskChannel:
 			if statusCode != http.StatusOK {
 				partialResultFlag = true
 				if resp.StatusCode < statusCode {
@@ -153,11 +153,11 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 
 }
 
-func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, subTaskChan chan<- int32, sessionUserName string) {
+func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, subTaskChannel chan<- int32, sessionUserName string) {
 	var resp response.RPC
 	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
-		subTaskChan <- http.StatusInternalServerError
+		subTaskChannel <- http.StatusInternalServerError
 		log.Println("error while trying to create sub task")
 		return
 	}
@@ -174,7 +174,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	var percentComplete int32
 	uuid, systemID, err := getIDsFromURI(serverURI)
 	if err != nil {
-		subTaskChan <- http.StatusNotFound
+		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while trying to get system ID from " + serverURI + ": " + err.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemID", serverURI}, taskInfo)
@@ -183,7 +183,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	// Get target device Credentials from using device UUID
 	target, err := agmodel.GetTarget(uuid)
 	if err != nil {
-		subTaskChan <- http.StatusNotFound
+		subTaskChannel <- http.StatusNotFound
 		errMsg := err.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, taskInfo)
@@ -191,7 +191,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	}
 	decryptedPasswordByte, err := e.DecryptPassword(target.Password)
 	if err != nil {
-		subTaskChan <- http.StatusInternalServerError
+		subTaskChannel <- http.StatusInternalServerError
 		errMsg := "error while trying to decrypt device password: " + err.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
@@ -202,7 +202,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	// Get the Plugin info
 	plugin, errs := agmodel.GetPluginData(target.PluginID)
 	if errs != nil {
-		subTaskChan <- http.StatusNotFound
+		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while getting plugin data: " + errs.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
@@ -224,7 +224,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
-			subTaskChan <- getResponse.StatusCode
+			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
 			log.Println(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
@@ -246,7 +246,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	pluginContactRequest.HTTPMethodType = http.MethodPost
 	_, _, getResponse, err := contactPlugin(pluginContactRequest, "error while setting the default boot order: ")
 	if err != nil {
-		subTaskChan <- getResponse.StatusCode
+		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
 		log.Println(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
@@ -268,7 +268,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	}
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
-	subTaskChan <- int32(getResponse.StatusCode)
+	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, serverURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {

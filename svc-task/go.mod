@@ -13,5 +13,3 @@ require (
 	github.com/satori/uuid v1.2.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
-
-replace github.com/ODIM-Project/ODIM/lib-utilities => /home/arjun/go/src/github.com/a-ajith/ODIM/lib-utilities

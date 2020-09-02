@@ -41,6 +41,7 @@ type SystemsService interface {
 	SetDefaultBootOrder(ctx context.Context, in *DefaultBootOrderRequest, opts ...client.CallOption) (*SystemsResponse, error)
 	ChangeBiosSettings(ctx context.Context, in *BiosSettingsRequest, opts ...client.CallOption) (*SystemsResponse, error)
 	ChangeBootOrderSettings(ctx context.Context, in *BootOrderSettingsRequest, opts ...client.CallOption) (*SystemsResponse, error)
+	CreateVolume(ctx context.Context, in *CreateVolumeRequest, opts ...client.CallOption) (*SystemsResponse, error)
 }
 
 type systemsService struct {
@@ -131,6 +132,16 @@ func (c *systemsService) ChangeBootOrderSettings(ctx context.Context, in *BootOr
 	return out, nil
 }
 
+func (c *systemsService) CreateVolume(ctx context.Context, in *CreateVolumeRequest, opts ...client.CallOption) (*SystemsResponse, error) {
+	req := c.c.NewRequest(c.name, "Systems.CreateVolume", in)
+	out := new(SystemsResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Systems service
 
 type SystemsHandler interface {
@@ -141,6 +152,7 @@ type SystemsHandler interface {
 	SetDefaultBootOrder(context.Context, *DefaultBootOrderRequest, *SystemsResponse) error
 	ChangeBiosSettings(context.Context, *BiosSettingsRequest, *SystemsResponse) error
 	ChangeBootOrderSettings(context.Context, *BootOrderSettingsRequest, *SystemsResponse) error
+	CreateVolume(context.Context, *CreateVolumeRequest, *SystemsResponse) error
 }
 
 func RegisterSystemsHandler(s server.Server, hdlr SystemsHandler, opts ...server.HandlerOption) error {
@@ -152,6 +164,7 @@ func RegisterSystemsHandler(s server.Server, hdlr SystemsHandler, opts ...server
 		SetDefaultBootOrder(ctx context.Context, in *DefaultBootOrderRequest, out *SystemsResponse) error
 		ChangeBiosSettings(ctx context.Context, in *BiosSettingsRequest, out *SystemsResponse) error
 		ChangeBootOrderSettings(ctx context.Context, in *BootOrderSettingsRequest, out *SystemsResponse) error
+		CreateVolume(ctx context.Context, in *CreateVolumeRequest, out *SystemsResponse) error
 	}
 	type Systems struct {
 		systems
@@ -190,4 +203,8 @@ func (h *systemsHandler) ChangeBiosSettings(ctx context.Context, in *BiosSetting
 
 func (h *systemsHandler) ChangeBootOrderSettings(ctx context.Context, in *BootOrderSettingsRequest, out *SystemsResponse) error {
 	return h.SystemsHandler.ChangeBootOrderSettings(ctx, in, out)
+}
+
+func (h *systemsHandler) CreateVolume(ctx context.Context, in *CreateVolumeRequest, out *SystemsResponse) error {
+	return h.SystemsHandler.CreateVolume(ctx, in, out)
 }

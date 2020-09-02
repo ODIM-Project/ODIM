@@ -171,10 +171,11 @@ func getIPAndPortFromAddress(address string) (string, string) {
 	return ip, port
 }
 
-func fillTaskData(taskID string, targetURI string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
+func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
 	return common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
+		TaskRequest: request,
 		Response:        resp,
 		TaskState:       taskState,
 		TaskStatus:      taskStatus,
@@ -198,9 +199,10 @@ func UpdateTaskData(taskData common.TaskData) error {
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      respBody,
+		JSONBody:      taskData.TaskRequest,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
+		ResponseBody: respBody,
 	}
 
 	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())

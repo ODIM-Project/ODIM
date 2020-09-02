@@ -911,6 +911,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 			task.Payload.JSONBody = payLoad.JSONBody
 			task.Payload.TargetURI = payLoad.TargetURI
 			task.StatusCode = payLoad.StatusCode
+			task.TaskResponse = payLoad.ResponseBody
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
@@ -981,6 +982,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 			task.Payload.JSONBody = payLoad.JSONBody
 			task.Payload.TargetURI = payLoad.TargetURI
 			task.StatusCode = payLoad.StatusCode
+			task.TaskResponse = payLoad.ResponseBody
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification

@@ -354,7 +354,7 @@ func TestExternalInterface_AddComputeMultipleRequest(t *testing.T) {
 	mockPluginData(t, "GRF")
 
 	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.1",
+		ManagerAddress: "100.0.0.3",
 		UserName:       "admin",
 		Password:       "password",
 		Oem: &AddOEM{
@@ -490,6 +490,31 @@ func TestExternalInterface_AddComputeDuplicate(t *testing.T) {
 
 func testContactClientWithDelay(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	time.Sleep(4 * time.Second)
+	if strings.Contains(url, "/ODIM/v1/Systems/1") {
+		uid := "24b243cf-f1e3-5318-92d9-2d6737d6b0b9"
+		body := `{"@odata.id":"/ODIM/v1/Systems/1", "UUID": "` + uid + `", "Id": "1",
+		    "MemorySummary":{
+			"Status":{
+			"HealthRollup": "OK"
+			},
+			"TotalSystemMemoryGiB": 384,
+			"TotalSystemPersistentMemoryGiB": 0
+			},
+			"PowerState": "On",
+			"ProcessorSummary":{
+				"Count": 2,
+				"Model": "Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz",
+				"Status":{
+					"HealthRollup": "OK"
+				}
+			},
+			"SystemType": "Physical",
+		}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
 	fBody := `{"Members":[{"@odata.id":"/ODIM/v1/Systems/1"}]}`
 	return &http.Response{
 		StatusCode: http.StatusOK,

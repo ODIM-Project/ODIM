@@ -12,33 +12,19 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-package rpc
+//Package update ...
+package update
 
+// ---------------------------------------------------------------------------------------
+// IMPORT Section
+//
 import (
-	"encoding/json"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-update/update"
 )
 
-// Updater struct helps to register service
-type Updater struct {
-	connector *update.ExternalInterface
-}
-
-func generateResponse(rpcResp response.RPC, uResp *updateproto.UpdateResponse) {
-	bytes, _ := json.Marshal(rpcResp.Body)
-	*uResp = updateproto.UpdateResponse{
-		StatusCode:    rpcResp.StatusCode,
-		StatusMessage: rpcResp.StatusMessage,
-		Header:        rpcResp.Header,
-		Body:          bytes,
-	}
-}
-
-// GetUpdater intializes all the required connection functions for the updater execution
-func GetUpdater() *Updater {
-	return &Updater{
-		connector: update.GetExternalInterface(),
-	}
+// SimpleUpdate function handler for simpe update process
+func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) response.RPC {
+	var resp response.RPC
+	return resp
 }

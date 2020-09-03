@@ -497,7 +497,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	resp.StatusCode = http.StatusOK
 	var cancelled, partialResultFlag bool
-	var wg,writeWG sync.WaitGroup
+	var wg, writeWG sync.WaitGroup
 	go func() {
 		for i := 0; i < len(aggregate.Elements); i++ {
 			if cancelled == false { // task cancelled check to determine whether to collect status codes.

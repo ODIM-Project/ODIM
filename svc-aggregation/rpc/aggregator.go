@@ -80,14 +80,6 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 		OdataContext: "/redfish/v1/$metadata#AggregationService.AggregationService",
 		OdataID:      "/redfish/v1/AggregationService",
 		Actions: agresponse.Actions{
-			Add: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Add/",
-				ActionInfo: "/redfish/v1/AggregationService/AddActionInfo",
-			},
-			Remove: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Remove/",
-				ActionInfo: "/redfish/v1/AggregationService/RemoveActionInfo",
-			},
 			Reset: agresponse.Action{
 				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
 				ActionInfo: "/redfish/v1/AggregationService/ResetActionInfo",
@@ -96,6 +88,12 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
 				ActionInfo: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
 			},
+		},
+		Aggregates: agresponse.OdataID{
+			OdataID: "/redfish/v1/AggregationService/Aggregates",
+		},
+		AggregationSources: agresponse.OdataID{
+			OdataID: "/redfish/v1/AggregationService/AggregationSources",
 		},
 		ServiceEnabled: isServiceEnabled,
 		Status: agresponse.Status{

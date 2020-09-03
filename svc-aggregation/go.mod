@@ -10,3 +10,5 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.5.1
 )
+
+replace github.com/ODIM-Project/ODIM/lib-utilities => /home/arjun/go/src/github.com/a-ajith/ODIM/lib-utilities

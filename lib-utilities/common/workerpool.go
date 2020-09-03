@@ -63,7 +63,7 @@ func RunWriteWorkers(jobChannel chan<- interface{}, dataBatch []interface{}, wor
 				}
 				data := store.getNextData()
 				jobChannel <- data
-        store.lock.Unlock()
+				store.lock.Unlock()
 			}
 		}()
 	}

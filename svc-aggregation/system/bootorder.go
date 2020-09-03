@@ -147,7 +147,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 
 }
 
-func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI reqJSON string, subTaskChan chan<- int32, sessionUserName string) {
+func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON string, subTaskChan chan<- int32, sessionUserName string) {
 	var resp response.RPC
 	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
 	if err != nil {

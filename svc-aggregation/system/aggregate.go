@@ -741,7 +741,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
 	}
 	reqJSON := string(reqBody)
 
@@ -749,12 +749,12 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	aggregateID := strings.Split(url[1], "/")[0]
 
 	aggregateURL := "/redfish/v1/AggregationService/Aggregates/" + aggregateID
-	aggregate, err1 := agmodel.GetAggregate(aggregateURL)
-	if err1 != nil {
-		log.Printf("error getting aggregate : %v", err1)
-		errorMessage := err1.Error()
-		if errors.DBKeyNotFound == err1.ErrNo() {
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err1.Error(), []interface{}{"Aggregate", req.URL}, taskInfo)
+	aggregate, aggErr := agmodel.GetAggregate(aggregateURL)
+	if aggErr != nil {
+		log.Printf("error getting aggregate : %v", aggErr)
+		errorMessage := aggErr.Error()
+		if errors.DBKeyNotFound == aggErr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, aggErr.Error(), []interface{}{"Aggregate", req.URL}, taskInfo)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
 	}
@@ -823,7 +823,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	resp.Body = args.CreateGenericErrorResponse()
 
 	var task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err := e.UpdateTask(task)
+	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
 		task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)

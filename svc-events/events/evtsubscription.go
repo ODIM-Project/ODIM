@@ -1115,20 +1115,10 @@ func checkCollection(origin string) ([]string, string, bool, error) {
 		collection, err := evmodel.GetAllKeysFromTable("ComputerSystem")
 		return collection, "SystemsCollection", true, err
 	case "/redfish/v1/Chassis":
-		collection, err := evmodel.GetAllKeysFromTable("Chassis")
-		return collection, "ChassisCollection", true, err
+		return []string{}, "ChassisCollection", true, nil
 	case "/redfish/v1/Managers":
-		collection, err := evmodel.GetAllKeysFromTable("Managers")
-		mgrsList := make([]string, 0)
-		if err == nil {
-			for i := 0; i < len(collection); i++ {
-				if strings.Contains(collection[i], ":") {
-					mgrsList = append(mgrsList, collection[i])
-				}
-
-			}
-		}
-		return mgrsList, "ManagerCollection", true, err
+		//TODO:After Managers implemention need to get all Managers data
+		return []string{}, "ManagerCollection", true, nil
 	case "/redfish/v1/Fabrics":
 		collection, err := evmodel.GetAllFabrics()
 		return collection, "FabricsCollection", true, err

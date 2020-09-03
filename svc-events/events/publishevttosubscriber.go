@@ -66,12 +66,11 @@ func PublishEventsToDestination(data interface{}) bool {
 		log.Printf("error: Failed to unmarshal the event: %v", err)
 		return false
 	}
-	//log.Println("Event", requestData)
-   prettyJSON, err := json.MarshalIndent(&message, "", "    ")
-  if err != nil {
-        log.Fatal("Failed to generate json", err)
-    }       
-log.Println("Event ",string(prettyJSON))
+	prettyJSON, err := json.MarshalIndent(&message, "", "    ")
+	if err != nil {
+		log.Fatal("Failed to generate json", err)
+	}
+	log.Println("Event ", string(prettyJSON))
 	if strings.EqualFold(message.Events[0].EventType, "ResourceAdded") &&
 		strings.HasPrefix(message.Events[0].OriginOfCondition, "/redfish/v1/Fabrics") {
 		addFabricRPCCall(message.Events[0].OriginOfCondition, host)

@@ -88,7 +88,7 @@ type getResourceRequest struct {
 	ContactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	OemFlag           bool
 	Plugin            agmodel.Plugin
-	TaskRequest		string
+	TaskRequest       string
 	HTTPMethodType    string
 	Token             string
 	StatusPoll        bool
@@ -176,7 +176,7 @@ func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskStat
 	return common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
-		TaskRequest: request,
+		TaskRequest:     request,
 		Response:        resp,
 		TaskState:       taskState,
 		TaskStatus:      taskStatus,
@@ -203,7 +203,7 @@ func UpdateTaskData(taskData common.TaskData) error {
 		JSONBody:      taskData.TaskRequest,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
-		ResponseBody: respBody,
+		ResponseBody:  respBody,
 	}
 
 	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())

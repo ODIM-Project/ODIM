@@ -497,7 +497,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	resp.StatusCode = http.StatusOK
 	var cancelled, partialResultFlag bool
-	var wg,writeWG sync.WaitGroup
+	var wg, writeWG sync.WaitGroup
 	go func() {
 		for i := 0; i < len(aggregate.Elements); i++ {
 			if cancelled == false { // task cancelled check to determine whether to collect status codes.
@@ -648,7 +648,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 	pluginContactRequest.Plugin = plugin
 	pluginContactRequest.StatusPoll = true
 	pluginContactRequest.TaskRequest = reqBody
-	
+
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		pluginContactRequest.HTTPMethodType = http.MethodPost
@@ -763,7 +763,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	partialResultFlag := false
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	for _, element := range aggregate.Elements {
-		go e.collectAndSetDefaultOrder(taskID, element, subTaskChan, sessionUserName)
+		go e.collectAndSetDefaultOrder(taskID, element, reqJSON, subTaskChan, sessionUserName)
 	}
 	resp.StatusCode = http.StatusOK
 	for i := 0; i < len(aggregate.Elements); i++ {

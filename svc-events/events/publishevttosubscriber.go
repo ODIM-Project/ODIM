@@ -158,10 +158,7 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte,
 		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, message.Events[0].OriginOfCondition, subscription.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
-		log.Println("Origin of Resoureces", originResources)
 		for _, origin := range originResources {
-			log.Println("Origin ", origin)
-			log.Println("Oirgin of Condition", originCondition)
 			if subscription.SubordinateResources == true {
 				if strings.Contains(originCondition, origin) {
 					log.Println("Filtered Event =: ", message)

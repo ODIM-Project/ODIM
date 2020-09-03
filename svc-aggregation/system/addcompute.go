@@ -44,7 +44,7 @@ func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	// parsing the AddResourceRequest
 	var addResourceRequest AddResourceRequest
@@ -146,7 +146,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	var resp response.RPC
 	log.Printf("started adding system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, addResourceRequest.Oem.PluginID)
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
 	var task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 

@@ -51,7 +51,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	var percentComplete int32
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder"
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var setOrderReq SetBootOrderRequest
 	if err := json.Unmarshal(req.RequestBody, &setOrderReq); err != nil {
@@ -163,7 +163,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 		subTaskID = strArray[len(strArray)-1]
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.UpdateTask, TaskRequest: reqJSON}
 
 	var percentComplete int32
 	uuid, systemID, err := getIDsFromURI(serverURI)

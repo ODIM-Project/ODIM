@@ -448,7 +448,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 	targetURI := req.URL
 	percentComplete = 0
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest ResetRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
@@ -603,7 +603,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 	}
 	systemID := element[strings.LastIndexAny(element, "/")+1:]
 	var targetURI = element
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
 	data := strings.Split(systemID, ":")
 	if len(data) <= 1 {
 		subTaskChan <- http.StatusNotFound
@@ -744,6 +744,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
 	}
 	reqJSON := string(reqBody)
+	taskInfo.TaskRequest = reqJSON
 
 	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
 	aggregateID := strings.Split(url[1], "/")[0]

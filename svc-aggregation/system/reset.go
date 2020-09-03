@@ -96,7 +96,7 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Reset/" // this will removed later and passed as input param in req struct
 	percentComplete = 0
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest AggregatorRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
@@ -292,7 +292,7 @@ func (e *ExternalInterface) resetComputerSystem(taskID, reqJSON string, subTaskC
 	}
 	systemID := req.TargetURI[strings.LastIndexAny(req.TargetURI, "/")+1:]
 	var targetURI = req.TargetURI
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: reqJSON}
 	data := strings.Split(systemID, ":")
 	if len(data) <= 1 {
 		subTaskChan <- http.StatusNotFound

@@ -469,3 +469,94 @@ func TestSetDefaultBootOrderWithValidData(t *testing.T) {
 		"/redfish/v1/Systems/123:1/Actions/ComputerSystem.SetDefaultBootOrder",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 }
+
+// Create volume unit tests
+func mockCreateVolume(req systemsproto.CreateVolumeRequest) (*systemsproto.SystemsResponse, error) {
+	var response = &systemsproto.SystemsResponse{}
+	if req.SessionToken == "" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    501, //change to 401 after logic implementation,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    501, //change to 401 after logic implementation,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "ValidToken" && req.SystemID == "" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    501, //change to 400 after logic implementation,
+			StatusMessage: "BadRequest",
+			Body:          []byte(`{"Response":"BadRequest"}`),
+		}
+	} else if req.SessionToken == "TokenRPC" {
+		return &systemsproto.SystemsResponse{}, errors.New("Unable to RPC Call")
+	} else {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    501, //change to 401 after logic implementation,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	}
+	return response, nil
+}
+
+func TestCreateVolume(t *testing.T) {
+	var sys SystemRPCs
+	sys.CreateVolumeRPC = mockCreateVolume
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
+	redfishRoutes.Post("/{rid}/Volumes", sys.CreateVolume)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusOK after logic implementation,
+}
+
+func TestCreateVolumeWithoutToken(t *testing.T) {
+	var sys SystemRPCs
+	sys.CreateVolumeRPC = mockCreateVolume
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
+	redfishRoutes.Patch("/{rid}/Volumes", sys.CreateVolume)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotFound)
+}
+
+func TestCreateVolumeWithInvalidToken(t *testing.T) {
+	var sys SystemRPCs
+	sys.CreateVolumeRPC = mockCreateVolume
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
+	redfishRoutes.Post("/{rid}/Volumes", sys.CreateVolume)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusUnauthorized after logic implementation,
+}
+
+func TestCreateVolumeNegativeTestCases(t *testing.T) {
+	var sys SystemRPCs
+	sys.CreateVolumeRPC = mockCreateVolume
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
+	redfishRoutes.Post("/{rid}/Volumes", sys.CreateVolume)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage//Volumes",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusNotFound after logic implementation,
+	e.POST(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusBadRequest after logic implementation,
+	e.POST(
+		"/redfish/v1/Systems//Storage/ArrayControllers-0/Volumes",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusNotImplemented) //change to http.StatusInternalServerError after logic implementation,
+}

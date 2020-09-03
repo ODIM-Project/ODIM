@@ -35,6 +35,7 @@ type SystemRPCs struct {
 	SetDefaultBootOrderRPC     func(req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error)
 	ChangeBiosSettingsRPC      func(req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error)
 	ChangeBootOrderSettingsRPC func(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error)
+	CreateVolumeRPC            func(req systemsproto.CreateVolumeRequest) (*systemsproto.SystemsResponse, error)
 }
 
 //GetSystemsCollection fetches all systems
@@ -311,4 +312,12 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// CreateVolume is the handler to create a volume under storage
+// from iris context will get the request and check sessiontoken
+// and do rpc call and send response back
+func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
+	// This function yet to be implemented
+	ctx.StatusCode(int(http.StatusNotImplemented))
 }

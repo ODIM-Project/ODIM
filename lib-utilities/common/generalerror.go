@@ -37,6 +37,7 @@ type TaskData struct {
 type TaskUpdateInfo struct {
 	TaskID     string
 	TargetURI  string
+	TaskRequest     string
 	UpdateTask func(TaskData) error
 }
 
@@ -68,6 +69,7 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 			TaskID:          t.TaskID,
 			TargetURI:       t.TargetURI,
 			Response:        resp,
+			TaskRequest: t.TaskRequest,
 			TaskState:       Exception,
 			TaskStatus:      Critical,
 			PercentComplete: 100,

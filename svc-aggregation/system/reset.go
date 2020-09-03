@@ -155,10 +155,10 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 
 					if i < len(resetRequest.Parameters.ResetCollection.ResetTargets)-1 {
 						percentComplete = int32(((i + 1) / len(resetRequest.Parameters.ResetCollection.ResetTargets)) * 100)
-						var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+						var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 						err := e.UpdateTask(task)
 						if err != nil && err.Error() == common.Cancelling {
-							task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+							task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 							e.UpdateTask(task)
 							cancelled = true
 						}
@@ -174,7 +174,7 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		if cancelled == false { // task cancelled check to determine whether to schedule next reset action
 			wg.Add(1)
 			executionCounter[resetTarget.Priority]++
-			go e.resetComputerSystem(taskID, subTaskChan, sessionUserName, resetTarget, time.NewTimer(time.Duration(resetTarget.Delay)*time.Second), &wg)
+			go e.resetComputerSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, resetTarget, time.NewTimer(time.Duration(resetTarget.Delay)*time.Second), &wg)
 			if executionCounter[resetTarget.Priority] == prioriyCounter[resetTarget.Priority] {
 				wg.Wait() // waiting for all reset actions in same priority level to get finished
 			}
@@ -209,10 +209,10 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		Message: "Request completed successfully",
 	}
 	resp.Body = args.CreateGenericErrorResponse()
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}
@@ -270,7 +270,7 @@ func sortTargetsWithPriorityAndDelay(resetTargets []ResetTarget) ([]ResetTarget,
 	return orderedTargets, priorityCounter
 }
 
-func (e *ExternalInterface) resetComputerSystem(taskID string, subTaskChan chan<- int32, sessionUserName string, req ResetTarget, timer *time.Timer, wg *sync.WaitGroup) {
+func (e *ExternalInterface) resetComputerSystem(taskID, reqJSON string, subTaskChan chan<- int32, sessionUserName string, req ResetTarget, timer *time.Timer, wg *sync.WaitGroup) {
 	defer wg.Done()
 	<-timer.C
 	log.Printf("INFO: reset(type: %v) of the target %v with priority level %v has been started after a delay of %v seconds.", req.ResetType, req.TargetURI, req.Priority, req.Delay)
@@ -395,10 +395,10 @@ func (e *ExternalInterface) resetComputerSystem(taskID string, subTaskChan chan<
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
 	subTaskChan <- int32(getResponse.StatusCode)
-	var task = fillTaskData(subTaskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	var task = fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		var task = fillTaskData(subTaskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		var task = fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		err = e.UpdateTask(task)
 	}
 	if getResponse.StatusCode == http.StatusOK {

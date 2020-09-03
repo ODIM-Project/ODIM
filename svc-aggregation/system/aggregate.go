@@ -512,10 +512,10 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 
 					if i < len(aggregate.Elements)-1 {
 						percentComplete = int32(((i + 1) / len(aggregate.Elements)) * 100)
-						var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+						var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 						err := e.UpdateTask(task)
 						if err != nil && err.Error() == common.Cancelling {
-							task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+							task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 							e.UpdateTask(task)
 							cancelled = true
 						}
@@ -535,7 +535,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
 		tempIndex = tempIndex + 1
 		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
-			go e.resetSystem(taskID, subTaskChan, sessionUserName, element, resetRequest.ResetType, &wg)
+			go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, element, resetRequest.ResetType, &wg)
 		}
 
 		if tempIndex == resetRequest.BatchSize && resetRequest.BatchSize != 0 {
@@ -572,17 +572,17 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 		Message: "Request completed successfully",
 	}
 	resp.Body = args.CreateGenericErrorResponse()
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}
 	return resp
 }
 
-func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32, sessionUserName, element, resetType string, wg *sync.WaitGroup) {
+func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan<- int32, sessionUserName, element, resetType string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	log.Printf("INFO: reset(type: %v) of the target %v has been started.", resetType, element)
 	var resp response.RPC
@@ -647,7 +647,8 @@ func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32,
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.Plugin = plugin
 	pluginContactRequest.StatusPoll = true
-
+	pluginContactRequest.TaskRequest = reqBody
+	
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		pluginContactRequest.HTTPMethodType = http.MethodPost
@@ -706,10 +707,10 @@ func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32,
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
 	subTaskChan <- int32(getResponse.StatusCode)
-	var task = fillTaskData(subTaskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	var task = fillTaskData(subTaskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		var task = fillTaskData(subTaskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		var task = fillTaskData(subTaskID, targetURI, reqBody, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		err = e.UpdateTask(task)
 	}
 	if getResponse.StatusCode == http.StatusOK {
@@ -737,6 +738,12 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	targetURI := req.URL
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+
+	reqBody, err := json.Marshal(req)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
+	}
+	reqJSON := string(reqBody)
 
 	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
 	aggregateID := strings.Split(url[1], "/")[0]
@@ -769,10 +776,10 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 			}
 			if i < len(aggregate.Elements)-1 {
 				percentComplete := int32(((i + 1) / len(aggregate.Elements)) * 100)
-				var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+				var task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 				err := e.UpdateTask(task)
 				if err != nil && err.Error() == common.Cancelling {
-					task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+					task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 					e.UpdateTask(task)
 					runtime.Goexit()
 				}
@@ -815,10 +822,10 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
 	err := e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}

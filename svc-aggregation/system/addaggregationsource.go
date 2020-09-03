@@ -35,7 +35,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var resp response.RPC
 	var percentComplete int32
-	var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err := e.UpdateTask(task)
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
@@ -95,7 +95,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
-		e.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
+		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
 	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.Oem.PluginID
@@ -167,7 +167,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	resp.StatusCode = http.StatusCreated
 	percentComplete = 100
 
-	task = fillTaskData(taskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 	return resp
 }

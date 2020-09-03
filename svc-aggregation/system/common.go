@@ -88,6 +88,7 @@ type getResourceRequest struct {
 	ContactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	OemFlag           bool
 	Plugin            agmodel.Plugin
+	TaskRequest		string
 	HTTPMethodType    string
 	Token             string
 	StatusPoll        bool
@@ -830,11 +831,11 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 
 	progress = progress + alottedWork
-	var task = fillTaskData(taskID, req.TargetURI, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
+	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	err = req.UpdateTask(task)
 
 	if err != nil && (err.Error() == common.Cancelling) {
-		var task = fillTaskData(taskID, req.TargetURI, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
+		var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
 		req.UpdateTask(task)
 
 	}

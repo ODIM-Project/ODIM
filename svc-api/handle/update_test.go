@@ -42,6 +42,38 @@ func testGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateRes
 	return response, nil
 }
 
+func mockGetInventory(updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	return &updateproto.UpdateResponse{
+		StatusCode: http.StatusOK,
+	}, nil
+}
+
+func mockSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	var response = &updateproto.UpdateResponse{}
+	if req.SessionToken == "" {
+		response = &updateproto.UpdateResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &updateproto.UpdateResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "TokenRPC" {
+		return &updateproto.UpdateResponse{}, errors.New("Unable to RPC Call")
+	} else {
+		response = &updateproto.UpdateResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	}
+	return response, nil
+}
+
 func TestGetUpdateService(t *testing.T) {
 	var a UpdateRPCs
 	a.GetUpdateServiceRPC = testGetUpdateService
@@ -58,4 +90,113 @@ func TestGetUpdateService(t *testing.T) {
 	test.GET(
 		"/redfish/v1/UpdateService",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestGetFirmwareInventoryCollection(t *testing.T) {
+	var a UpdateRPCs
+	a.GetFirmwareInventoryCollectionRPC = testGetUpdateService
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/UpdateService/FirmwareInventory")
+	redfishRoutes.Get("/", a.GetFirmwareInventoryCollection)
+	test := httptest.New(t, testApp)
+	test.GET(
+		"/redfish/v1/UpdateService/FirmwareInventory",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/UpdateService/FirmwareInventory",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/UpdateService/FirmwareInventory",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestGetSoftwareInventoryCollection(t *testing.T) {
+	var a UpdateRPCs
+	a.GetSoftwareInventoryCollectionRPC = testGetUpdateService
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/UpdateService/SoftwareInventory")
+	redfishRoutes.Get("/", a.GetSoftwareInventoryCollection)
+	test := httptest.New(t, testApp)
+	test.GET(
+		"/redfish/v1/UpdateService/SoftwareInventory",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/UpdateService/SoftwareInventory",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/UpdateService/SoftwareInventory",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestGetFirmwareInventory(t *testing.T) {
+	var a UpdateRPCs
+	a.GetFirmwareInventoryRPC = mockGetInventory
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService/FirmwareInventory")
+	redfishRoutes.Get("/{id}", a.GetFirmwareInventory)
+
+	e := httptest.New(t, mockApp)
+	e.GET(
+		"/redfish/v1/UpdateService/FirmwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+}
+
+func TestGetSoftwareInventory(t *testing.T) {
+	var a UpdateRPCs
+	a.GetSoftwareInventoryRPC = mockGetInventory
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService/SoftwareInventory")
+	redfishRoutes.Get("/{id}", a.GetSoftwareInventory)
+
+	e := httptest.New(t, mockApp)
+	e.GET(
+		"/redfish/v1/UpdateService/SoftwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+}
+
+func TestSimpleUpdateWithValidToken(t *testing.T) {
+	var a UpdateRPCs
+	a.SimpleUpdateRPC = mockSimpleUpdate
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService")
+	redfishRoutes.Post("/Actions/UpdateService.SimpleUpdate", a.SimpleUpdate)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+}
+
+func TestSimpleUpdateWithoutToken(t *testing.T) {
+	var a UpdateRPCs
+	a.SimpleUpdateRPC = mockSimpleUpdate
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService")
+	redfishRoutes.Post("/Actions/UpdateService.SimpleUpdate", a.SimpleUpdate)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+}
+
+func TestSimpleUpdateWithInvalidToken(t *testing.T) {
+	var a UpdateRPCs
+	a.SimpleUpdateRPC = mockSimpleUpdate
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService")
+	redfishRoutes.Post("/Actions/UpdateService.SimpleUpdate", a.SimpleUpdate)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+}
+
+func TestSimpleUpdateNegativeTestCases(t *testing.T) {
+	//ToDo
+}
+
+func TestStartUpdate(t *testing.T) {
+	//ToDo
 }

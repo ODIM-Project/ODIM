@@ -108,6 +108,7 @@ func routers() *iris.Application {
 		systems.Get("", rfphandler.GetResource)
 		systems.Get("/{id}", rfphandler.GetResource)
 		systems.Get("/{id}/Storage", rfphandler.GetResource)
+		systems.Post("/{id}/Storage/{rid}/Volumes", rfphandler.CreateVolume)
 		systems.Get("/{id}/BootOptions", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/Processors", rfphandler.GetResource)

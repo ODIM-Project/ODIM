@@ -51,7 +51,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	var percentComplete int32
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder"
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var setOrderReq SetBootOrderRequest
 	if err := json.Unmarshal(req.RequestBody, &setOrderReq); err != nil {
@@ -76,7 +76,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	partialResultFlag := false
 	subTaskChan := make(chan int32, len(setOrderReq.Parameters.ServerCollection))
 	for _, serverURI := range setOrderReq.Parameters.ServerCollection {
-		go e.collectAndSetDefaultOrder(taskID, serverURI, subTaskChan, sessionUserName)
+		go e.collectAndSetDefaultOrder(taskID, serverURI, string(req.RequestBody), subTaskChan, sessionUserName)
 	}
 	resp.StatusCode = http.StatusOK
 	for i := 0; i < len(setOrderReq.Parameters.ServerCollection); i++ {
@@ -90,10 +90,10 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 			}
 			if i < len(setOrderReq.Parameters.ServerCollection)-1 {
 				percentComplete := int32(((i + 1) / len(setOrderReq.Parameters.ServerCollection)) * 100)
-				var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+				var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 				err := e.UpdateTask(task)
 				if err != nil && err.Error() == common.Cancelling {
-					task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+					task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 					e.UpdateTask(task)
 					runtime.Goexit()
 				}
@@ -136,10 +136,10 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}
@@ -147,7 +147,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 
 }
 
-func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, subTaskChan chan<- int32, sessionUserName string) {
+func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON string, subTaskChan chan<- int32, sessionUserName string) {
 	var resp response.RPC
 	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
@@ -163,7 +163,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 		subTaskID = strArray[len(strArray)-1]
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.UpdateTask, TaskRequest: reqJSON}
 
 	var percentComplete int32
 	uuid, systemID, err := getIDsFromURI(serverURI)
@@ -208,6 +208,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.Plugin = plugin
 	pluginContactRequest.StatusPoll = true
+	pluginContactRequest.TaskRequest = reqJSON
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		pluginContactRequest.HTTPMethodType = http.MethodPost
@@ -263,10 +264,10 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI string, 
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
 	subTaskChan <- int32(getResponse.StatusCode)
-	var task = fillTaskData(subTaskID, serverURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	var task = fillTaskData(subTaskID, serverURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		var task = fillTaskData(subTaskID, serverURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		var task = fillTaskData(subTaskID, serverURI, reqJSON, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		err = e.UpdateTask(task)
 	}
 	return

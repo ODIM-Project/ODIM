@@ -36,7 +36,7 @@ func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName
 	var resp response.RPC
 	var percentComplete int32
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Add"
-	var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err := e.UpdateTask(task)
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
@@ -44,7 +44,7 @@ func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	// parsing the AddResourceRequest
 	var addResourceRequest AddResourceRequest
@@ -95,7 +95,7 @@ func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName
 		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
-		e.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
+		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
 	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.Oem.PluginID
@@ -114,6 +114,7 @@ func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.TargetURI = targetURI
 	pluginContactRequest.UpdateTask = e.UpdateTask
+	pluginContactRequest.TaskRequest = string(req.RequestBody)
 
 	if addResourceRequest.Oem.PluginType != "" || addResourceRequest.Oem.PreferredAuthType != "" {
 		resp, _, _ = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest)
@@ -132,7 +133,7 @@ func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName
 	}
 	percentComplete = 100
 
-	task = fillTaskData(taskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 
 	return resp
@@ -145,8 +146,9 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	var resp response.RPC
 	log.Printf("started adding system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, addResourceRequest.Oem.PluginID)
 
-	var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
+
+	var task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 
 	plugin, errs := agmodel.GetPluginData(addResourceRequest.Oem.PluginID)
 	if errs != nil {
@@ -253,7 +255,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 		}
 	}
 	percentComplete = progress
-	task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 
 	// Lets Discover/gather registry files of this server and store them in DB
@@ -267,7 +269,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	registriesEstimatedWork := int32(15)
 	progress = h.getAllRegistries(taskID, progress, registriesEstimatedWork, pluginContactRequest)
 	percentComplete = progress
-	task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && (err.Error() == common.Cancelling) {
 		go e.rollbackInMemory(resourceURI)
@@ -292,7 +294,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	chassisEstimatedWork := int32(15)
 	progress = h.getAllChassisInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest)
 	percentComplete = progress
-	task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && (err.Error() == common.Cancelling) {
 		go e.rollbackInMemory(resourceURI)

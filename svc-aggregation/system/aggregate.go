@@ -448,7 +448,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 	targetURI := req.URL
 	percentComplete = 0
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest ResetRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
@@ -497,7 +497,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	resp.StatusCode = http.StatusOK
 	var cancelled, partialResultFlag bool
-	var wg,writeWG sync.WaitGroup
+	var wg, writeWG sync.WaitGroup
 	go func() {
 		for i := 0; i < len(aggregate.Elements); i++ {
 			if cancelled == false { // task cancelled check to determine whether to collect status codes.
@@ -512,10 +512,10 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 
 					if i < len(aggregate.Elements)-1 {
 						percentComplete = int32(((i + 1) / len(aggregate.Elements)) * 100)
-						var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+						var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 						err := e.UpdateTask(task)
 						if err != nil && err.Error() == common.Cancelling {
-							task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+							task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 							e.UpdateTask(task)
 							cancelled = true
 						}
@@ -535,7 +535,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
 		tempIndex = tempIndex + 1
 		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
-			go e.resetSystem(taskID, subTaskChan, sessionUserName, element, resetRequest.ResetType, &wg)
+			go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, element, resetRequest.ResetType, &wg)
 		}
 
 		if tempIndex == resetRequest.BatchSize && resetRequest.BatchSize != 0 {
@@ -572,17 +572,17 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 		Message: "Request completed successfully",
 	}
 	resp.Body = args.CreateGenericErrorResponse()
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}
 	return resp
 }
 
-func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32, sessionUserName, element, resetType string, wg *sync.WaitGroup) {
+func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan<- int32, sessionUserName, element, resetType string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	log.Printf("INFO: reset(type: %v) of the target %v has been started.", resetType, element)
 	var resp response.RPC
@@ -603,7 +603,7 @@ func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32,
 	}
 	systemID := element[strings.LastIndexAny(element, "/")+1:]
 	var targetURI = element
-	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
 	data := strings.Split(systemID, ":")
 	if len(data) <= 1 {
 		subTaskChan <- http.StatusNotFound
@@ -647,6 +647,7 @@ func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32,
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.Plugin = plugin
 	pluginContactRequest.StatusPoll = true
+	pluginContactRequest.TaskRequest = reqBody
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
@@ -706,10 +707,10 @@ func (e *ExternalInterface) resetSystem(taskID string, subTaskChan chan<- int32,
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
 	subTaskChan <- int32(getResponse.StatusCode)
-	var task = fillTaskData(subTaskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	var task = fillTaskData(subTaskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		var task = fillTaskData(subTaskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		var task = fillTaskData(subTaskID, targetURI, reqBody, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		err = e.UpdateTask(task)
 	}
 	if getResponse.StatusCode == http.StatusOK {
@@ -738,16 +739,23 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
 
+	reqBody, err := json.Marshal(req)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, taskInfo)
+	}
+	reqJSON := string(reqBody)
+	taskInfo.TaskRequest = reqJSON
+
 	url := strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
 	aggregateID := strings.Split(url[1], "/")[0]
 
 	aggregateURL := "/redfish/v1/AggregationService/Aggregates/" + aggregateID
-	aggregate, err1 := agmodel.GetAggregate(aggregateURL)
-	if err1 != nil {
-		log.Printf("error getting aggregate : %v", err1)
-		errorMessage := err1.Error()
-		if errors.DBKeyNotFound == err1.ErrNo() {
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err1.Error(), []interface{}{"Aggregate", req.URL}, taskInfo)
+	aggregate, aggErr := agmodel.GetAggregate(aggregateURL)
+	if aggErr != nil {
+		log.Printf("error getting aggregate : %v", aggErr)
+		errorMessage := aggErr.Error()
+		if errors.DBKeyNotFound == aggErr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, aggErr.Error(), []interface{}{"Aggregate", req.URL}, taskInfo)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, taskInfo)
 	}
@@ -755,7 +763,7 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	partialResultFlag := false
 	subTaskChan := make(chan int32, len(aggregate.Elements))
 	for _, element := range aggregate.Elements {
-		go e.collectAndSetDefaultOrder(taskID, element, subTaskChan, sessionUserName)
+		go e.collectAndSetDefaultOrder(taskID, element, reqJSON, subTaskChan, sessionUserName)
 	}
 	resp.StatusCode = http.StatusOK
 	for i := 0; i < len(aggregate.Elements); i++ {
@@ -769,10 +777,10 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 			}
 			if i < len(aggregate.Elements)-1 {
 				percentComplete := int32(((i + 1) / len(aggregate.Elements)) * 100)
-				var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+				var task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 				err := e.UpdateTask(task)
 				if err != nil && err.Error() == common.Cancelling {
-					task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+					task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 					e.UpdateTask(task)
 					runtime.Goexit()
 				}
@@ -815,10 +823,10 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
-	err := e.UpdateTask(task)
+	var task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, reqJSON, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}

@@ -963,7 +963,7 @@ func TestAggregationSource(t *testing.T) {
 		}
 	}()
 
-	aggregationSourceURI := "/redfish/v1/AggregationService/AggregationSource/12345677651245-12341"
+	aggregationSourceURI := "/redfish/v1/AggregationService/AggregationSources/12345677651245-12341"
 	req := AggregationSource{
 		HostName: "localhost:9091",
 		UserName: "admin",
@@ -985,17 +985,17 @@ func TestAggregationSource(t *testing.T) {
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
-	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/AggregationSource/12345677651245-123433")
+	_, err = GetAggregationSourceInfo("/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
 	err = UpdateAggregtionSource(req, aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
-	err = UpdateAggregtionSource(req, "/redfish/v1/AggregationService/AggregationSource/12345677651245-123433")
+	err = UpdateAggregtionSource(req, "/redfish/v1/AggregationService/AggregationSources/12345677651245-123433")
 	assert.NotNil(t, err, "Error Should not be nil")
 	data, err = GetAggregationSourceInfo(aggregationSourceURI)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, data.HostName, req.HostName)
 	assert.Equal(t, data.UserName, req.UserName)
-	keys, err = GetAllMatchingDetails("AggregationSource", "/redfish/v1/AggregationService/AggregationSource/12345677651245-", common.OnDisk)
+	keys, err = GetAllMatchingDetails("AggregationSource", "/redfish/v1/AggregationService/AggregationSources/12345677651245-", common.OnDisk)
 	assert.Nil(t, err, "err should be nil")
 	assert.Equal(t, 1, len(keys), "length should be matching")
 	err = DeleteAggregationSource(aggregationSourceURI)

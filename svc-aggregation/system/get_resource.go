@@ -45,7 +45,7 @@ func GetAggregationSourceCollection() response.RPC {
 	}
 	commonResponse := response.Response{
 		OdataType:    "#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
-		OdataID:      "/redfish/v1/AggregationService/AggregationSource",
+		OdataID:      "/redfish/v1/AggregationService/AggregationSources",
 		OdataContext: "/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
 		ID:           "AggregationSource",
 		Name:         "Aggregation Source",
@@ -82,7 +82,7 @@ func GetAggregationSource(reqURI string) response.RPC {
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
-	var data = strings.Split(reqURI, "/redfish/v1/AggregationService/AggregationSource/")
+	var data = strings.Split(reqURI, "/redfish/v1/AggregationService/AggregationSources/")
 	commonResponse := response.Response{
 		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
 		OdataID:      reqURI,

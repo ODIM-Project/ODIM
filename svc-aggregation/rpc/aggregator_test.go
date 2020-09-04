@@ -741,7 +741,7 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 			},
 		},
 	}
-	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -799,7 +799,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 			},
 		},
 	}
-	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -818,7 +818,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSource/123454564"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSources/123454564"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,
@@ -827,7 +827,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSource/123454564"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSources/123454564"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,
@@ -856,7 +856,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 			},
 		},
 	}
-	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -953,7 +953,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			},
 		},
 	}
-	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSource/123455")
+	err := agmodel.AddAggregationSource(req, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -976,7 +976,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,
@@ -986,7 +986,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,
@@ -995,7 +995,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "get session username fails",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,
@@ -1004,7 +1004,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "unable to create task",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,
@@ -1013,7 +1013,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "task with slash",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", URL: "/redfish/v1/AggregationService/AggregationSource/123455"},
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantErr: false,

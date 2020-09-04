@@ -54,7 +54,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		// delete the manager
 		resp = e.deletePlugin("/redfish/v1/Managers/" + plugin.ManagerUUID)
 	} else {
-		var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSource/")
+		var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 		systemList, dbErr := agmodel.GetAllMatchingDetails("ComputerSystem", data[1], common.InMemory)
 		if dbErr != nil {
 			errMsg := dbErr.Error()

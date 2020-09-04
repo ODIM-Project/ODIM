@@ -64,12 +64,11 @@ func mockSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateRespons
 		}
 	} else if req.SessionToken == "TokenRPC" {
 		return &updateproto.UpdateResponse{}, errors.New("Unable to RPC Call")
-	} else {
-		response = &updateproto.UpdateResponse{
-			StatusCode:    200,
-			StatusMessage: "Success",
-			Body:          []byte(`{"Response":"Success"}`),
-		}
+	}
+	response = &updateproto.UpdateResponse{
+		StatusCode:    200,
+		StatusMessage: "Success",
+		Body:          []byte(`{"Response":"Success"}`),
 	}
 	return response, nil
 }

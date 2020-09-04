@@ -271,6 +271,12 @@ func Router() *iris.Application {
 	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
 	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
+	aggregationSource.Get("/", pc.GetAllAggregationSource)	
+	aggregationSource.Any("/", handle.AggMethodNotAllowed)	
+	aggregationSource.Get("/{id}", pc.GetAggregationSource)	
+	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)	
+	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)	
+	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
 
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)

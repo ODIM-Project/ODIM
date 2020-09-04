@@ -74,7 +74,7 @@ func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskS
 	return common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
-		Response:            resp,
+		Response:        resp,
 		TaskRequest:     request,
 		TaskState:       taskState,
 		TaskStatus:      taskStatus,
@@ -1069,17 +1069,19 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 	var (
 		subTaskURI      string
 		subTaskID       string
-		reqJSON			string
+		reqBody         []byte
+		reqJSON         string
 		err             error
 		resp            errResponse.RPC
 		percentComplete int32
 	)
 	defer wg.Done()
 
-	reqJSON, err = json.Marshal(postRequest)
+	reqBody, err = json.Marshal(request)
 	if err != nil {
 		log.Println("error while trying to marshal create event request: ", err.Error())
 	}
+	reqJSON = string(reqBody)
 
 	if taskID != "" {
 		subTaskURI, err = p.CreateChildTask(reqSessionToken, taskID)

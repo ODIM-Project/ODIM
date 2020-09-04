@@ -58,18 +58,6 @@ type PluginContact struct {
 	GetSessionUserName func(sessionToken string) (string, error)
 }
 
-// // TaskData holds the data of the Task
-// type TaskData struct {
-// 	TaskID          string
-// 	TargetURI       string
-// 	Resp            errResponse.RPC
-// 	TaskRequest     string
-// 	TaskState       string
-// 	TaskStatus      string
-// 	PercentComplete int32
-// 	HTTPMethod      string
-// }
-
 func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
 	return common.TaskData{
 		TaskID:          taskID,

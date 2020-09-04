@@ -24,12 +24,92 @@ import (
 )
 
 // DoGetUpdateService defines the RPC call function for
-// the GetUpdateService from aggregator micro service
+// the GetUpdateService from update micro service
 func DoGetUpdateService(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 
 	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
 
 	resp, err := update.GetUpdateService(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGetFirmwareInventory defines the RPC call function for
+// the GetFirmwareInventory from update micro service
+func DoGetFirmwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
+	resp, err := update.GetFirmwareInventory(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGetSoftwareInventory defines the RPC call function for
+// the GetSoftwareInventory from update micro service
+func DoGetSoftwareInventory(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
+	resp, err := update.GetSoftwareInventory(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGetFirmwareInventoryCollection defines the RPC call function for
+// the GetFirmwareInventory from update micro service
+func DoGetFirmwareInventoryCollection(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
+	resp, err := update.GetFirmwareInventoryCollection(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGetSoftwareInventoryCollection defines the RPC call function for
+// the GetSoftwareInventory from update micro service
+func DoGetSoftwareInventoryCollection(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
+	resp, err := update.GetSoftwareInventoryCollection(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoSimpleUpdate defines the RPC call for
+// SimpleUpdate from update micro service
+func DoSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
+
+	resp, err := update.SimepleUpdate(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoStartUpdate defines the RPC call for
+// StartUpdate from update micro service
+func DoStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	update := updateproto.NewUpdateService(services.Update, services.Service.Client())
+
+	resp, err := update.StartUpdate(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

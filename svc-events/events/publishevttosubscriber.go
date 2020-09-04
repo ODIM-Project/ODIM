@@ -66,8 +66,11 @@ func PublishEventsToDestination(data interface{}) bool {
 		log.Printf("error: Failed to unmarshal the event: %v", err)
 		return false
 	}
-	log.Println("Event", requestData)
-
+	prettyJSON, err := json.MarshalIndent(&message, "", "    ")
+	if err != nil {
+		log.Fatal("Failed to generate json", err)
+	}
+	log.Println("Event ", string(prettyJSON))
 	if strings.EqualFold(message.Events[0].EventType, "ResourceAdded") &&
 		strings.HasPrefix(message.Events[0].OriginOfCondition, "/redfish/v1/Fabrics") {
 		addFabricRPCCall(message.Events[0].OriginOfCondition, host)
@@ -118,7 +121,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		// filter and send evemts to destination if destination is not empty
 		// in case of default event subscription destination will be empty
 		if sub.Destination != "" {
-			if filterEventsToBeForwarded(sub, eventRequest, originResource) {
+			if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
 				log.Printf("Destination: %v\n", sub.Destination)
 				go postEvent(sub.Destination, eventRequest)
 				flag = true
@@ -139,7 +142,7 @@ func PublishEventsToDestination(data interface{}) bool {
 	return flag
 }
 
-func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, origin string) bool {
+func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, originResources []string) bool {
 	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
@@ -155,15 +158,17 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte,
 		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, message.Events[0].OriginOfCondition, subscription.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
-		if subscription.SubordinateResources == true {
-			if strings.Contains(originCondition, origin) {
-				log.Println("Filtered Event =: ", message)
-				return true
-			}
-		} else {
-			if origin == originCondition {
-				log.Println("Filtered Event: ", message)
-				return true
+		for _, origin := range originResources {
+			if subscription.SubordinateResources == true {
+				if strings.Contains(originCondition, origin) {
+					log.Println("Filtered Event =: ", message)
+					return true
+				}
+			} else {
+				if origin == originCondition {
+					log.Println("Filtered Event: ", message)
+					return true
+				}
 			}
 		}
 	}
@@ -183,6 +188,8 @@ func formatEvent(originResource, eventstring, hostIP string) (string, string) {
 		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/systems/", str, -1)
 		str = "/redfish/v1/Chassis/" + uuid + ":"
 		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Chassis/", str, -1)
+		str = "/redfish/v1/Managers/" + uuid + ":"
+		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Managers/", str, -1)
 	}
 	return eventRequestString, uuid
 }

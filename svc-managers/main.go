@@ -22,10 +22,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-managers/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 func main() {
@@ -59,12 +59,12 @@ func main() {
 }
 
 func registerHandlers() {
-	managers := new(rpc.Managers)
+	manager := new(rpc.Managers)
 
-	managers.IsAuthorizedRPC = services.IsAuthorized
-	managers.ContactClientRPC = pmbhandle.ContactPlugin
+	manager.IsAuthorizedRPC = services.IsAuthorized
+	manager.EI = managers.GetExternalInterface()
 
-	managersproto.RegisterManagersHandler(services.Service.Server(), managers)
+	managersproto.RegisterManagersHandler(services.Service.Server(), manager)
 }
 
 func addManagertoDB() error {

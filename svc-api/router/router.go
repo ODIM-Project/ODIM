@@ -41,16 +41,24 @@ func Router() *iris.Application {
 		DeleteRPC:         rpc.DoAccountDeleteRequest,
 	}
 	pc := handle.AggregatorRPCs{
-		GetAggregationServiceRPC:   rpc.DoGetAggregationService,
-		AddComputeRPC:              rpc.DoAddComputeRequest,
-		DeleteComputeRPC:           rpc.DoDeleteComputeRequest,
-		ResetRPC:                   rpc.DoResetRequest,
-		SetDefaultBootOrderRPC:     rpc.DoSetDefaultBootOrderRequest,
-		AddAggregationSourceRPC:    rpc.DoAddAggregationSource,
-		GetAllAggregationSourceRPC: rpc.DoGetAllAggregationSource,
-		GetAggregationSourceRPC:    rpc.DoGetAggregationSource,
-		UpdateAggregationSourceRPC: rpc.DoUpdateAggregationSource,
-		DeleteAggregationSourceRPC: rpc.DoDeleteAggregationSource,
+		GetAggregationServiceRPC:                rpc.DoGetAggregationService,
+		AddComputeRPC:                           rpc.DoAddComputeRequest,
+		DeleteComputeRPC:                        rpc.DoDeleteComputeRequest,
+		ResetRPC:                                rpc.DoResetRequest,
+		SetDefaultBootOrderRPC:                  rpc.DoSetDefaultBootOrderRequest,
+		AddAggregationSourceRPC:                 rpc.DoAddAggregationSource,
+		GetAllAggregationSourceRPC:              rpc.DoGetAllAggregationSource,
+		GetAggregationSourceRPC:                 rpc.DoGetAggregationSource,
+		UpdateAggregationSourceRPC:              rpc.DoUpdateAggregationSource,
+		DeleteAggregationSourceRPC:              rpc.DoDeleteAggregationSource,
+		CreateAggregateRPC:                      rpc.DoCreateAggregate,
+		GetAggregateCollectionRPC:               rpc.DoGetAggregateCollection,
+		GetAggregateRPC:                         rpc.DoGeteAggregate,
+		DeleteAggregateRPC:                      rpc.DoDeleteAggregate,
+		AddElementsToAggregateRPC:               rpc.DoAddElementsToAggregate,
+		RemoveElementsFromAggregateRPC:          rpc.DoRemoveElementsFromAggregate,
+		ResetAggregateElementsRPC:               rpc.DoResetAggregateElements,
+		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 	}
 
 	s := handle.SessionRPCs{
@@ -109,7 +117,13 @@ func Router() *iris.Application {
 	}
 
 	update := handle.UpdateRPCs{
-		GetUpdateServiceRPC: rpc.DoGetUpdateService,
+		GetUpdateServiceRPC:               rpc.DoGetUpdateService,
+		SimpleUpdateRPC:                   rpc.DoSimpleUpdate,
+		StartUpdateRPC:                    rpc.DoStartUpdate,
+		GetFirmwareInventoryRPC:           rpc.DoGetFirmwareInventory,
+		GetFirmwareInventoryCollectionRPC: rpc.DoGetFirmwareInventoryCollection,
+		GetSoftwareInventoryRPC:           rpc.DoGetSoftwareInventory,
+		GetSoftwareInventoryCollectionRPC: rpc.DoGetSoftwareInventoryCollection,
 	}
 
 	registryFile := handle.Registry{
@@ -213,6 +227,7 @@ func Router() *iris.Application {
 	systems.Get("/{id}/Storage/{rid}/Drives/{rid2}", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Any("/", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/EthernetInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/EthernetInterfaces/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot", handle.SystemsMethodNotAllowed)
@@ -221,6 +236,8 @@ func Router() *iris.Application {
 	systems.Any("/{id}/Memory", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Processors", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Storage", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Storage/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Storage/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/LogServices", handle.SystemsMethodNotAllowed)
@@ -247,10 +264,12 @@ func Router() *iris.Application {
 	aggregation.Post("/Actions/AggregationService.Add/", pc.AddCompute)
 	aggregation.Post("/Actions/AggregationService.Remove/", pc.DeleteCompute)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
+	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
+	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
 	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
-	aggregationSource := aggregation.Party("/AggregationSource", middleware.SessionDelMiddleware)
+	aggregationSource := aggregation.Party("/AggregationSources", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregationSource.Get("/", pc.GetAllAggregationSource)
 	aggregationSource.Any("/", handle.AggMethodNotAllowed)
@@ -258,6 +277,22 @@ func Router() *iris.Application {
 	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)
 	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)
 	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
+
+	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
+	aggregates.Post("/", pc.CreateAggregate)
+	aggregates.Get("/", pc.GetAggregateCollection)
+	aggregates.Any("/", handle.AggregateMethodNotAllowed)
+	aggregates.Get("/{id}", pc.GetAggregate)
+	aggregates.Delete("/{id}", pc.DeleteAggregate)
+	aggregates.Any("/{id}", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.AddElements/", pc.AddElementsToAggregate)
+	aggregates.Any("/{id}/Actions/Aggregate.AddElements/", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.RemoveElements/", pc.RemoveElementsFromAggregate)
+	aggregates.Any("/{id}/Actions/Aggregate.RemoveElements/", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.Reset/", pc.ResetAggregateElements)
+	aggregates.Any("/{id}/Actions/Aggregate.Reset/", handle.AggregateMethodNotAllowed)
+	aggregates.Post("/{id}/Actions/Aggregate.SetDefaultBootOrder/", pc.SetDefaultBootOrderAggregateElements)
+	aggregates.Any("/{id}/Actions/Aggregate.SetDefaultBootOrder/", handle.AggregateMethodNotAllowed)
 
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)
@@ -299,6 +334,7 @@ func Router() *iris.Application {
 	events.Any("/", handle.EvtMethodNotAllowed)
 	events.Any("/Actions", handle.EvtMethodNotAllowed)
 	events.Any("/Actions/EventService.SubmitTestEvent", handle.EvtMethodNotAllowed)
+	events.Any("/Subscriptions", handle.EvtMethodNotAllowed)
 
 	fabrics := v1.Party("/Fabrics", middleware.SessionDelMiddleware)
 	fabrics.SetRegisterRule(iris.RouteSkip)
@@ -357,5 +393,10 @@ func Router() *iris.Application {
 	updateService := v1.Party("/UpdateService", middleware.SessionDelMiddleware)
 	updateService.SetRegisterRule(iris.RouteSkip)
 	updateService.Get("/", update.GetUpdateService)
+	updateService.Post("/Actions/UpdateService.SimpleUpdate", update.SimpleUpdate)
+	updateService.Get("/FirmwareInventory", update.GetFirmwareInventoryCollection)
+	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
+	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)
+	updateService.Get("/SoftwareInventory/{softwareInventory_id}", update.GetSoftwareInventory)
 	return router
 }

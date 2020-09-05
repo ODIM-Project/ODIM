@@ -265,16 +265,16 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		Password:       []byte("admin12345"),
 		PluginID:       "ILO",
 	})
-	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSource/123455")
+	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	err = agmodel.AddAggregationSource(reqManagerILO, "/redfish/v1/AggregationService/AggregationSource/123457")
+	err = agmodel.AddAggregationSource(reqManagerILO, "/redfish/v1/AggregationService/AggregationSources/123457")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	err = agmodel.AddAggregationSource(reqBMC, "/redfish/v1/AggregationService/AggregationSource/123456")
+	err = agmodel.AddAggregationSource(reqBMC, "/redfish/v1/AggregationService/AggregationSources/123456")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -323,7 +323,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 
 	commonResponse1 := response.Response{
 		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
-		OdataID:      "/redfish/v1/AggregationService/AggregationSource/123455",
+		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123455",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123455",
 		Name:         "Aggregation Source",
@@ -352,7 +352,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	}
 	commonResponse2 := response.Response{
 		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
-		OdataID:      "/redfish/v1/AggregationService/AggregationSource/123456",
+		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123456",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123456",
 		Name:         "Aggregation Source",
@@ -379,8 +379,8 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Links:    reqBMC.Links,
 	}
-	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSource/123466 found"
-	resp3 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSource/123466"}, nil)
+	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSources/123466 found"
+	resp3 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSources/123466"}, nil)
 	param := "HostName "
 	errMsg = "error:  field " + param + " Missing"
 	resp4 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
@@ -418,7 +418,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123455",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123455",
 					RequestBody: successReqManager,
 				},
 			},
@@ -429,7 +429,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123456",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123456",
 					RequestBody: successReqBMC,
 				},
 			},
@@ -440,7 +440,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123466",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123466",
 					RequestBody: successReqManager,
 				},
 			},
@@ -451,7 +451,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123457",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123457",
 					RequestBody: invalidReqBody1,
 				},
 			},
@@ -462,7 +462,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123457",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123457",
 					RequestBody: invalidReqBody3,
 				},
 			},
@@ -473,7 +473,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123457",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123457",
 					RequestBody: invalidReqBody2,
 				},
 			},
@@ -484,7 +484,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123456",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123456",
 					RequestBody: invalidReqBody4,
 				},
 			},
@@ -495,7 +495,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 			e:    p,
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
-					URL:         "/redfish/v1/AggregationService/AggregationSource/123457",
+					URL:         "/redfish/v1/AggregationService/AggregationSources/123457",
 					RequestBody: missingparamReq,
 				},
 			},

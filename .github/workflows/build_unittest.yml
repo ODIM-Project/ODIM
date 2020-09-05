@@ -96,7 +96,7 @@ jobs:
           for i in $LIST; do
             echo "Testing $i"
             cd $i
-            go test ./... --cover
+            GORACE=history_size=7 go test ./... --cover
             echo "Test Done"
             if [ $? -eq 0 ]; then
               echo Unit Testing for odimra service/lib dependencies $i is Successful !!!!

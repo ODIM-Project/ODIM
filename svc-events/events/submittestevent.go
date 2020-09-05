@@ -101,7 +101,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 
 		for _, origin := range sub.OriginResources {
 			if sub.Destination != "" {
-				if filterEventsToBeForwarded(sub, messageBytes, origin) {
+				if filterEventsToBeForwarded(sub, messageBytes, []string{origin}) {
 					log.Printf("Destination: %v\n", sub.Destination)
 					go postEvent(sub.Destination, messageBytes)
 				}

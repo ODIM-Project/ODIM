@@ -32,15 +32,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
 )
 
-// DeviceContact struct to inject the contact device function into the handlers
-type DeviceContact struct {
-	GetDeviceInfo         func(mgrcommon.ResourceInfoRequest) (string, error)
-	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DecryptDevicePassword func([]byte) ([]byte, error)
-}
-
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
-func GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
+func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -63,7 +56,7 @@ func GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, err
 	members = append(members, dmtf.Link{Oid: oid})
 
 	// Add servers as manager in manager collection
-	managersCollectionKeysArray, err := mgrmodel.GetAllKeysFromTable("Managers")
+	managersCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Managers")
 	if err != nil || len(managersCollectionKeysArray) == 0 {
 		log.Printf("odimra Doesnt have Servers")
 	}
@@ -79,7 +72,7 @@ func GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, err
 }
 
 // GetManagers will fetch individual manager details with the given ID
-func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.RPC {
+func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -91,7 +84,7 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 	}
 
 	if req.ManagerID == config.Data.RootServiceUUID {
-		manager, err := getManagerDetails(req.ManagerID)
+		manager, err := e.getManagerDetails(req.ManagerID)
 		if err != nil {
 			log.Printf("error getting manager details : %v", err.Error())
 			errArgs := []interface{}{"Managers", req.ManagerID}
@@ -105,11 +98,11 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 
 		requestData := strings.Split(req.ManagerID, ":")
 		if len(requestData) <= 1 {
-			resp = d.getPluginManagerResoure(requestData[0], req.URL)
+			resp = e.getPluginManagerResoure(requestData[0], req.URL)
 			return resp
 		}
 		uuid := requestData[0]
-		data, err := mgrmodel.GetManagerByURL(req.URL)
+		data, err := e.DB.GetManagerByURL(req.URL)
 		if err != nil {
 			log.Printf("error getting manager details : %v", err.Error())
 			var errArgs = []interface{}{}
@@ -145,7 +138,7 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 		}
 
 		if managerType != common.ManagerTypeService && managerType != "" {
-			deviceData, err := d.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
+			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
 				log.Printf("warning: Device %v is unreachable: %v", req.URL, err)
 				// Updating the state
@@ -162,7 +155,7 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 					return resp
 				}
 			}
-			err = mgrmodel.UpdateManagersData(req.URL, managerData)
+			err = e.DB.UpdateManagersData(req.URL, managerData)
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
 				log.Println(errorMessage)
@@ -189,11 +182,11 @@ func (d *DeviceContact) GetManagers(req *managersproto.ManagerRequest) response.
 	return resp
 }
 
-func getManagerDetails(id string) (mgrmodel.Manager, error) {
+func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
 	var name, managerType, firmwareVersion, managerid, uuid, state string
 
-	mgrData, err := mgrmodel.GetManagerData(id)
+	mgrData, err := e.DB.GetManagerData(id)
 	if err != nil {
 		return mgr, err
 	}
@@ -224,7 +217,7 @@ func getManagerDetails(id string) (mgrmodel.Manager, error) {
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
+func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -237,7 +230,7 @@ func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) r
 
 	requestData := strings.Split(req.ManagerID, ":")
 	if len(requestData) <= 1 {
-		resp = d.getPluginManagerResoure(requestData[0], req.URL)
+		resp = e.getPluginManagerResoure(requestData[0], req.URL)
 		return resp
 	}
 	uuid := requestData[0]
@@ -250,11 +243,11 @@ func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) r
 		tableName = urlData[len(urlData)-2]
 	}
 
-	data, err := mgrmodel.GetResource(tableName, req.URL)
+	data, err := e.DB.GetResource(tableName, req.URL)
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error
-			if data, err = d.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
+			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
 				errorMessage := "error while getting details from device: " + err.Error()
 				log.Println(errorMessage)
 				errArgs := []interface{}{tableName, req.ManagerID}
@@ -275,9 +268,10 @@ func (d *DeviceContact) GetManagersResource(req *managersproto.ManagerRequest) r
 
 	return resp
 }
-func (d *DeviceContact) getPluginManagerResoure(managerID, reqURI string) response.RPC {
+
+func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
 	var resp response.RPC
-	data, dberr := mgrmodel.GetManagerByURL("/redfish/v1/Managers/" + managerID)
+	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
 	if dberr != nil {
 		log.Printf("error getting manager details : %v", dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
@@ -297,7 +291,7 @@ func (d *DeviceContact) getPluginManagerResoure(managerID, reqURI string) respon
 	}
 	var pluginID = managerData["Name"].(string)
 	// Get the Plugin info
-	plugin, gerr := mgrmodel.GetPluginData(pluginID)
+	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
 		log.Printf("error getting manager details : %v", gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}
@@ -308,7 +302,7 @@ func (d *DeviceContact) getPluginManagerResoure(managerID, reqURI string) respon
 	}
 	var req mgrcommon.PluginContactRequest
 
-	req.ContactClient = d.ContactClient
+	req.ContactClient = e.Device.ContactClient
 	req.Plugin = plugin
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
@@ -378,14 +372,14 @@ func fillResponse(body []byte) response.RPC {
 
 }
 
-func (d *DeviceContact) getResourceInfoFromDevice(reqURL, uuid, systemID string) (string, error) {
+func (e *ExternalInterface) getResourceInfoFromDevice(reqURL, uuid, systemID string) (string, error) {
 	var getDeviceInfoRequest = mgrcommon.ResourceInfoRequest{
 		URL:                   reqURL,
 		UUID:                  uuid,
 		SystemID:              systemID,
-		ContactClient:         d.ContactClient,
-		DecryptDevicePassword: d.DecryptDevicePassword,
+		ContactClient:         e.Device.ContactClient,
+		DecryptDevicePassword: e.Device.DecryptDevicePassword,
 	}
-	return d.GetDeviceInfo(getDeviceInfoRequest)
+	return e.Device.GetDeviceInfo(getDeviceInfoRequest)
 
 }

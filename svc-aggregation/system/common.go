@@ -277,7 +277,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	str := strings.Split(oid, "/")
 	var key []string
 	for i, id := range str {
-		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers")) {
+		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
 			key = append(key, DeviceUUID+":"+id)
 			continue
 		}
@@ -508,8 +508,9 @@ func isFileExist(existingFiles []string, substr string) bool {
 	return fileExist
 }
 
-func (h *respHolder) getAllChassisInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
-	body, _, getResponse, err := contactPlugin(req, "error while trying to get the Chassis collection details: ")
+func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+	resourceName := req.OID
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get the"+resourceName+"collection details: ")
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = err.Error()
@@ -521,26 +522,26 @@ func (h *respHolder) getAllChassisInfo(taskID string, progress int32, alottedWor
 		return progress
 	}
 
-	chassisMap := make(map[string]interface{})
-	err = json.Unmarshal([]byte(body), &chassisMap)
+	resourceMap := make(map[string]interface{})
+	err = json.Unmarshal([]byte(body), &resourceMap)
 	if err != nil {
 		h.lock.Lock()
-		h.ErrorMessage = "error while trying unmarshal Chassis collection: " + err.Error()
+		h.ErrorMessage = "error while trying unmarshal " + resourceName + " " + err.Error()
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying to unmarshal Chassis collection: ", err)
+		log.Println("error while trying to unmarshal"+resourceName+": ", err)
 		return progress
 
 	}
 
-	chassisMembers := chassisMap["Members"]
-	// Loop through all the chasis members collection and discover all of them
-	for _, object := range chassisMembers.([]interface{}) {
-		estimatedWork := alottedWork / int32(len(chassisMembers.([]interface{})))
+	resourceMembers := resourceMap["Members"]
+	// Loop through all the resource members collection and discover all of them
+	for _, object := range resourceMembers.([]interface{}) {
+		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		progress = h.getChassisInfo(taskID, progress, estimatedWork, req)
+		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req)
 	}
 	return progress
 }
@@ -712,8 +713,9 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 	return searchForm
 }
-func (h *respHolder) getChassisInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
-	body, _, getResponse, err := contactPlugin(req, "error while trying to get chassis details: ")
+func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+	resourceName := getResourceName(req.OID, false)
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = err.Error()
@@ -722,8 +724,8 @@ func (h *respHolder) getChassisInfo(taskID string, progress int32, alottedWork i
 		h.lock.Unlock()
 		return progress
 	}
-	var chassis map[string]interface{}
-	err = json.Unmarshal(body, &chassis)
+	var resource map[string]interface{}
+	err = json.Unmarshal(body, &resource)
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying unmarshal response body: " + err.Error()
@@ -732,15 +734,15 @@ func (h *respHolder) getChassisInfo(taskID string, progress int32, alottedWork i
 		h.lock.Unlock()
 		return progress
 	}
-	oid := chassis["@odata.id"].(string)
-	chassisID := chassis["Id"].(string)
+	oid := resource["@odata.id"].(string)
+	resourceID := resource["Id"].(string)
 
-	oidKey := keyFormation(oid, chassisID, req.DeviceUUID)
+	oidKey := keyFormation(oid, resourceID, req.DeviceUUID)
 
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
-	// persist the response with table chassis  and key as system UUID + Oid Needs relook TODO
-	err = agmodel.GenericSave([]byte(updatedResourceData), "chassis", oidKey)
+	// persist the response with table resource and key as system UUID + Oid Needs relook TODO
+	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
 	if err != nil {
 		h.lock.Lock()
 		h.ErrorMessage = "error while trying to save data: " + err.Error()
@@ -751,11 +753,11 @@ func (h *respHolder) getChassisInfo(taskID string, progress int32, alottedWork i
 	}
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
-	getLinks(chassis, retrievalLinks, false)
+	getLinks(resource, retrievalLinks, false)
 
 	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.ChassisCollection, h.TraversedLinks)
 
-	req.SystemID = chassisID
+	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
 		estimatedWork := alottedWork / int32(len(retrievalLinks))

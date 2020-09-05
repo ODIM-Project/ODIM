@@ -12,7 +12,6 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package rpc ...
 package rpc
 
 import (
@@ -24,13 +23,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 )
 
 // Managers struct helps to register service
 type Managers struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
-	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	EI              *managers.ExternalInterface
 }
 
 //GetManagersCollection defines the operation which hasnled the RPC request response
@@ -50,7 +48,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 		log.Printf(errorMessage)
 		return nil
 	}
-	data, _ := managers.GetManagersCollection(req)
+	data, _ := m.EI.GetManagersCollection(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -77,12 +75,7 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 		log.Printf(errorMessage)
 		return nil
 	}
-	var d = managers.DeviceContact{
-		GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
-		ContactClient:         m.ContactClientRPC,
-		DecryptDevicePassword: common.DecryptWithPrivateKey,
-	}
-	data := d.GetManagers(req)
+	data := m.EI.GetManagers(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
@@ -109,12 +102,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 		log.Printf(errorMessage)
 		return nil
 	}
-	var d = managers.DeviceContact{
-		GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
-		ContactClient:         m.ContactClientRPC,
-		DecryptDevicePassword: common.DecryptWithPrivateKey,
-	}
-	data := d.GetManagersResource(req)
+	data := m.EI.GetManagersResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage

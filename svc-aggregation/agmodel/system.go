@@ -78,6 +78,11 @@ type AggregationSource struct {
 	Links    interface{}
 }
 
+// Aggregate payload is used for perform the operations on Aggregate
+type Aggregate struct {
+	Elements []string `json:"Elements"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -627,19 +632,6 @@ func GetAggregationSourceInfo(aggregationSourceURI string) (AggregationSource, *
 	return aggregationSource, nil
 }
 
-//GetAllKeysFromTable fetches all keys in a given table
-func GetAllKeysFromTable(table string) ([]string, error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		return nil, err
-	}
-	keysArray, err := conn.GetAllDetails(table)
-	if err != nil {
-		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
-	}
-	return keysArray, nil
-}
-
 // UpdateSystemData updates the bmc details
 func UpdateSystemData(system SaveSystem, key string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
@@ -695,4 +687,140 @@ func DeleteAggregationSource(aggregtionSourceURI string) *errors.Error {
 		return err
 	}
 	return nil
+}
+
+//GetSystem fetches computer system details by UUID from database
+func GetSystem(systemid string) (string, *errors.Error) {
+	var system string
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		// connection error
+		return system, err
+	}
+	systemData, err := conn.Read("ComputerSystem", systemid)
+	if err != nil {
+		return "", errors.PackError(err.ErrNo(), "error while trying to get system details: ", err.Error())
+	}
+	if errs := json.Unmarshal([]byte(systemData), &system); errs != nil {
+		return "", errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return system, nil
+}
+
+//CreateAggregate will create aggregate on disk
+func CreateAggregate(aggregate Aggregate, aggregateURI string) *errors.Error {
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	const table string = "Aggregate"
+	if err := conn.Create(table, aggregateURI, aggregate); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to create aggregate: ", err.Error())
+	}
+
+	return nil
+}
+
+// GetAggregate fetches the aggregate info for the given aggregateURI
+func GetAggregate(aggregateURI string) (Aggregate, *errors.Error) {
+	var aggregate Aggregate
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return aggregate, err
+	}
+	const table string = "Aggregate"
+	data, err := conn.Read(table, aggregateURI)
+	if err != nil {
+		return aggregate, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+	}
+
+	if err := json.Unmarshal([]byte(data), &aggregate); err != nil {
+		return aggregate, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+	return aggregate, nil
+}
+
+//DeleteAggregate will delete the aggregate
+func DeleteAggregate(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	const table string = "Aggregate"
+	if err = conn.Delete(table, key); err != nil {
+		return err
+	}
+	return nil
+}
+
+//GetAllKeysFromTable retrun all matching data give table name
+func GetAllKeysFromTable(table string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	keysArray, err := conn.GetAllDetails(table)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+	}
+	return keysArray, nil
+}
+
+//AddElementsToAggregate add elements to the aggregate
+func AddElementsToAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	agg, err := GetAggregate(aggregateURL)
+	if err != nil {
+		return err
+	}
+	aggregate.Elements = append(aggregate.Elements, agg.Elements...)
+	const table string = "Aggregate"
+	if _, err := conn.Update(table, aggregateURL, aggregate); err != nil {
+		return err
+	}
+	return nil
+}
+
+//RemoveElementsFromAggregate remove elements from an aggregate
+func RemoveElementsFromAggregate(aggregate Aggregate, aggregateURL string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	agg, err := GetAggregate(aggregateURL)
+	if err != nil {
+		return err
+	}
+	aggregate.Elements = removeElements(aggregate.Elements, agg.Elements)
+
+	const table string = "Aggregate"
+	if _, err := conn.Update(table, aggregateURL, aggregate); err != nil {
+		return err
+	}
+	return nil
+}
+
+func removeElements(requestElements, presentElements []string) []string {
+	newElements := []string{}
+	var present bool
+	for _, presentElement := range presentElements {
+		front := 0
+		rear := len(requestElements) - 1
+		for front <= rear {
+			if requestElements[front] == presentElement || requestElements[rear] == presentElement {
+				present = true
+			}
+			front++
+			rear--
+		}
+		if !present {
+			newElements = append(newElements, presentElement)
+		}
+	}
+	return newElements
 }

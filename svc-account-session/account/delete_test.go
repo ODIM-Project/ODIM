@@ -36,7 +36,7 @@ func createMockUser(username, roleID string) error {
 		Password: hashedPassword,
 		RoleID:   roleID,
 	}
-	if err := user.Create(); err != nil {
+	if err := asmodel.CreateUser(user); err != nil {
 		return err
 	}
 	return nil
@@ -156,6 +156,70 @@ func TestDelete(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error in creating mock admin user %v", err)
 		}
+		t.Run(tt.name, func(t *testing.T) {
+			got := Delete(tt.args.session, tt.args.accountID)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Delete() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDeleteDefaultAdminAccount(t *testing.T) {
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	common.SetUpMockConfig()
+
+	errArgs := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.ResourceCannotBeDeleted,
+				ErrorMessage:  "default user account can not be deleted",
+			},
+		},
+	}
+	err := createMockUser(defaultAdminAccount, common.RoleAdmin)
+	if err != nil {
+		t.Fatalf("Error in creating mock admin user %v", err)
+	}
+	type args struct {
+		session   *asmodel.Session
+		accountID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want response.RPC
+	}{
+		{
+			name: "deletion of default admin user account",
+			args: args{
+				session: &asmodel.Session{
+					Privileges: map[string]bool{
+						common.PrivilegeConfigureUsers: true,
+					},
+				},
+				accountID: "admin",
+			},
+			want: response.RPC{
+				StatusCode:    http.StatusBadRequest,
+				StatusMessage: response.ResourceCannotBeDeleted,
+				Header: map[string]string{
+					"Content-type": "application/json; charset=utf-8",
+				},
+				Body: errArgs.CreateGenericErrorResponse(),
+			},
+		},
+	}
+	for _, tt := range tests {
+
 		t.Run(tt.name, func(t *testing.T) {
 			got := Delete(tt.args.session, tt.args.accountID)
 			if !reflect.DeepEqual(got, tt.want) {

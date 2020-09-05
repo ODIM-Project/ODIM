@@ -153,6 +153,73 @@ func testDeleteAggregationSourceRPCCall(req aggregatorproto.AggregatorRequest) (
 	return response, nil
 }
 
+func testAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	var response = &aggregatorproto.AggregatorResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusCreated,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode: http.StatusUnauthorized,
+		}
+	} else if req.SessionToken == "token" {
+		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
+}
+
+func testGetAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	var response = &aggregatorproto.AggregatorResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusOK,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode: http.StatusUnauthorized,
+		}
+	} else if req.SessionToken == "token" {
+		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
+}
+
+func testDeleteAggregateRPCCall(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	var response = &aggregatorproto.AggregatorResponse{}
+	if req.SessionToken == "ValidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode: http.StatusNoContent,
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized", Body: []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "" {
+		response = &aggregatorproto.AggregatorResponse{
+			StatusCode: http.StatusUnauthorized,
+		}
+	} else if req.SessionToken == "token" {
+		return &aggregatorproto.AggregatorResponse{}, errors.New("Unable to RPC Call")
+	}
+	return response, nil
+}
+
 type params struct {
 	Name string
 }
@@ -361,29 +428,29 @@ func TestAddAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
 	a.AddAggregationSourceRPC = testAddAggregationSourceRPCCall
 	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSources")
 	redfishRoutes.Post("/", a.AddAggregationSource)
 	test := httptest.New(t, testApp)
-	test.POST("/redfish/v1/AggregationService/AggregationSource").WithHeader("X-Auth-Token", "ValidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusAccepted)
-	test.POST("/redfish/v1/AggregationService/AggregationSource").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
-	test.POST("/redfish/v1/AggregationService/AggregationSource").WithHeader("X-Auth-Token", "token").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
+	test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", "ValidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusAccepted)
+	test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
+	test.POST("/redfish/v1/AggregationService/AggregationSources").WithHeader("X-Auth-Token", "token").WithJSON(addAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
 }
 
 func TestGetAllAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
 	a.GetAllAggregationSourceRPC = testGetAllAggregationSourceRPC
 	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSources")
 	redfishRoutes.Get("/", a.GetAllAggregationSource)
 	test := httptest.New(t, testApp)
 	test.GET(
-		"/redfish/v1/AggregationService/AggregationSource",
+		"/redfish/v1/AggregationService/AggregationSources",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
-		"/redfish/v1/AggregationService/AggregationSource",
+		"/redfish/v1/AggregationService/AggregationSources",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	test.GET(
-		"/redfish/v1/AggregationService/AggregationSource",
+		"/redfish/v1/AggregationService/AggregationSources",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -391,17 +458,17 @@ func TestGetAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
 	a.GetAggregationSourceRPC = testGetAggregationSourceRPC
 	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSources")
 	redfishRoutes.Get("/{id}", a.GetAggregationSource)
 	test := httptest.New(t, testApp)
 	test.GET(
-		"/redfish/v1/AggregationService/AggregationSource/someid",
+		"/redfish/v1/AggregationService/AggregationSources/someid",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
-		"/redfish/v1/AggregationService/AggregationSource/someid",
+		"/redfish/v1/AggregationService/AggregationSources/someid",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	test.GET(
-		"/redfish/v1/AggregationService/AggregationSource/someid",
+		"/redfish/v1/AggregationService/AggregationSources/someid",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -409,22 +476,285 @@ func TestUpdateAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
 	a.UpdateAggregationSourceRPC = testUpdateAggregationSourceRPCCall
 	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSources")
 	redfishRoutes.Patch("/{id}", a.UpdateAggregationSource)
 	test := httptest.New(t, testApp)
-	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusOK)
-	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
-	test.PATCH("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSources/someid").WithHeader("X-Auth-Token", "ValidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusOK)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSources/someid").WithHeader("X-Auth-Token", "InvalidToken").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusUnauthorized)
+	test.PATCH("/redfish/v1/AggregationService/AggregationSources/someid").WithHeader("X-Auth-Token", "token").WithJSON(updateAggregationSourceRequest).Expect().Status(http.StatusInternalServerError)
 }
 
 func TestDeleteAggregationSource(t *testing.T) {
 	var a AggregatorRPCs
 	a.DeleteAggregationSourceRPC = testDeleteAggregationSourceRPCCall
 	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSource")
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/AggregationSources")
 	redfishRoutes.Delete("/{id}", a.DeleteAggregationSource)
 	test := httptest.New(t, testApp)
-	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusAccepted)
-	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
-	test.DELETE("/redfish/v1/AggregationService/AggregationSource/someid").WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSources/someid").WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusAccepted)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSources/someid").WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+	test.DELETE("/redfish/v1/AggregationService/AggregationSources/someid").WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+var aggregateRequest = map[string]interface{}{
+	"Elements": []string{
+		"/redfish/v1/Systems/423e8254-e3ef-42bd-a130-f096c93a4wq2:1",
+		"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+	},
+}
+
+func TestCreateAggregate(t *testing.T) {
+	var a AggregatorRPCs
+	a.CreateAggregateRPC = testAggregateRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates")
+	redfishRoutes.Post("/", a.CreateAggregate)
+	test := httptest.New(t, testApp)
+	//  update status code after the code is added
+	// test with valid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusCreated)
+
+	// test with Invalid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without RequestBody
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
+
+	// test for RPC Error
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
+}
+
+func TestGetAggregateCollection(t *testing.T) {
+	var a AggregatorRPCs
+	a.GetAggregateCollectionRPC = testGetAggregateRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates")
+	redfishRoutes.Get("/", a.GetAggregateCollection)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+
+	// test with Invalid token
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+
+	// test for RPC Error
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestGetAggregate(t *testing.T) {
+	var a AggregatorRPCs
+	a.GetAggregateRPC = testGetAggregateRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates/{id}")
+	redfishRoutes.Get("/", a.GetAggregate)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+
+	// test with Invalid token
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+
+	// test for RPC Error
+	test.GET(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestDeleteAggregate(t *testing.T) {
+	var a AggregatorRPCs
+	a.DeleteAggregateRPC = testDeleteAggregateRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates/{id}")
+	redfishRoutes.Delete("/", a.DeleteAggregate)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.DELETE(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNoContent)
+
+	// test with Invalid token
+	test.DELETE(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.DELETE(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+
+	// test for RPC Error
+	test.DELETE(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73",
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestAddElementsToAggregate(t *testing.T) {
+	var a AggregatorRPCs
+	a.AddElementsToAggregateRPC = testGetAggregateRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates/{id}/Actions/Aggregate.AddElements")
+	redfishRoutes.Post("/", a.AddElementsToAggregate)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusOK)
+
+	// test with Invalid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without request body
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
+
+	// test for RPC Error
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
+
+}
+
+func TestRemoveElementsFromAggregate(t *testing.T) {
+	var a AggregatorRPCs
+	a.RemoveElementsFromAggregateRPC = testGetAggregateRPCCall
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates/{id}/Actions/Aggregate.RemoveElements")
+	redfishRoutes.Post("/", a.RemoveElementsFromAggregate)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusOK)
+
+	// test with Invalid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without request body
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
+
+	// test for RPC Error
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
+}
+
+func TestResetAggregateElements(t *testing.T) {
+	var a AggregatorRPCs
+	a.ResetAggregateElementsRPC = testGetAggregateRPCCall
+	var aggregateRequest = map[string]interface{}{
+		"BatchSize":                    2,
+		"DelayBetweenBatchesInSeconds": 2,
+		"ResetType":                    "ForceOff",
+	}
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates/{id}/Actions/Aggregate.Reset")
+	redfishRoutes.Post("/", a.ResetAggregateElements)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusOK)
+
+	// test with Invalid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without request body
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
+
+	// test for RPC Error
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
+}
+
+func TestSetDefaultBootOrderAggregateElements(t *testing.T) {
+	var a AggregatorRPCs
+	a.SetDefaultBootOrderAggregateElementsRPC = testGetAggregateRPCCall
+	var aggregateRequest = map[string]interface{}{
+		"BatchSize":                    2,
+		"DelayBetweenBatchesInSeconds": 2,
+		"ResetType":                    "ForceOff",
+	}
+	testApp := iris.New()
+	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/Aggregates/{id}/Actions/Aggregate.SetDefaultBootOrder")
+	redfishRoutes.Post("/", a.SetDefaultBootOrderAggregateElements)
+	test := httptest.New(t, testApp)
+	// test with valid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusOK)
+
+	// test with Invalid token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test without token
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+	).WithHeader("X-Auth-Token", "").WithJSON(aggregateRequest).Expect().Status(http.StatusUnauthorized)
+
+	// test for RPC Error
+	test.POST(
+		"/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
+	).WithHeader("X-Auth-Token", "token").WithJSON(aggregateRequest).Expect().Status(http.StatusInternalServerError)
 }

@@ -19,7 +19,7 @@
 LIST=`ls | grep -v 'svc-plugin-rest-client' | grep -E '^svc-|^plugin|^odimra'` 
 for i in $LIST; do
 	cd $i
-	go build .
+	go build -race .
 	if [ $? -eq 0 ]; then
 		echo Build for odimra service/lib $i is Successful !!!!
 		arr1+=$i;

@@ -258,6 +258,32 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 
+	// Populate the resource Firmware inventory for update service
+	pluginContactRequest.DeviceInfo = getSystemBody
+	pluginContactRequest.OID = "/redfish/v1/UpdateService/FirmwareInventory"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	progress = percentComplete
+	firmwareEstimatedWork := int32(15)
+	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest)
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the resource Software inventory for update service
+	pluginContactRequest.DeviceInfo = getSystemBody
+	pluginContactRequest.OID = "/redfish/v1/UpdateService/SoftwareInventory"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	progress = percentComplete
+	softwareEstimatedWork := int32(15)
+	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest)
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
 	// Lets Discover/gather registry files of this server and store them in DB
 
 	pluginContactRequest.DeviceInfo = getSystemBody
@@ -292,7 +318,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 
 	progress = percentComplete
 	chassisEstimatedWork := int32(15)
-	progress = h.getAllChassisInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest)
+	progress = h.getAllRootInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
@@ -322,6 +348,11 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	}
 	pluginContactRequest.CreateSubcription(h.SystemURL)
 	pluginContactRequest.PublishEvent(h.SystemURL, "SystemsCollection")
+	// get all managers and chassis info
+	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", saveSystem.DeviceUUID, common.InMemory)
+	managersList, _ := agmodel.GetAllMatchingDetails("Managers", saveSystem.DeviceUUID, common.InMemory)
+	pluginContactRequest.PublishEvent(chassisList, "ChassisCollection")
+	pluginContactRequest.PublishEvent(managersList, "ManagerCollection")
 
 	h.PluginResponse = strings.Replace(h.PluginResponse, `/redfish/v1/Systems/`, `/redfish/v1/Systems/`+saveSystem.DeviceUUID+`:`, -1)
 	var list agresponse.List

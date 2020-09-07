@@ -29,20 +29,20 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
-// SetBootOrderRequest defines the request for the setting default boot order
-type SetBootOrderRequest struct {
-	Parameters BootOrderParameters `json:"Parameters"`
-}
-
-// BootOrderParameters defines the boot order parameters
-type BootOrderParameters struct {
-	ServerCollection []string `json:"ServerCollection"`
-}
-
 type responseHolder struct {
 	response   []interface{}
 	anyFailure bool
 	lock       sync.Mutex
+}
+
+// AggregationSetDefaultBootOrderRequest struct for set default boot order the BMC
+type AggregationSetDefaultBootOrderRequest struct {
+	Systems []OdataID `json:"Systems"`
+}
+
+//OdataID struct definition for @odata.id
+type OdataID struct {
+	OdataID string `json:"@odata.id"`
 }
 
 // SetDefaultBootOrder defines the logic for setting the boot order to the default
@@ -53,15 +53,21 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
-	var setOrderReq SetBootOrderRequest
+	var setOrderReq AggregationSetDefaultBootOrderRequest
 	if err := json.Unmarshal(req.RequestBody, &setOrderReq); err != nil {
 		errMsg := "error while trying to set default boot order: " + err.Error()
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 
+	if len(setOrderReq.Systems) == 0 {
+		errMsg := "error while trying to validate request fields"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Systems"}, taskInfo)
+	}
+
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, &SetBootOrderRequest{})
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, &AggregationSetDefaultBootOrderRequest{})
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Println(errMsg)
@@ -74,22 +80,22 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	}
 
 	partialResultFlag := false
-	subTaskChan := make(chan int32, len(setOrderReq.Parameters.ServerCollection))
-	for _, serverURI := range setOrderReq.Parameters.ServerCollection {
-		go e.collectAndSetDefaultOrder(taskID, serverURI, string(req.RequestBody), subTaskChan, sessionUserName)
+	subTaskChannel := make(chan int32, len(setOrderReq.Systems))
+	for _, serverURI := range setOrderReq.Systems {
+		go e.collectAndSetDefaultOrder(taskID, serverURI.OdataID, string(req.RequestBody), subTaskChannel, sessionUserName)
 	}
 	resp.StatusCode = http.StatusOK
-	for i := 0; i < len(setOrderReq.Parameters.ServerCollection); i++ {
+	for i := 0; i < len(setOrderReq.Systems); i++ {
 		select {
-		case statusCode := <-subTaskChan:
+		case statusCode := <-subTaskChannel:
 			if statusCode != http.StatusOK {
 				partialResultFlag = true
 				if resp.StatusCode < statusCode {
 					resp.StatusCode = statusCode
 				}
 			}
-			if i < len(setOrderReq.Parameters.ServerCollection)-1 {
-				percentComplete := int32(((i + 1) / len(setOrderReq.Parameters.ServerCollection)) * 100)
+			if i < len(setOrderReq.Systems)-1 {
+				percentComplete := int32(((i + 1) / len(setOrderReq.Systems)) * 100)
 				var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 				err := e.UpdateTask(task)
 				if err != nil && err.Error() == common.Cancelling {
@@ -112,7 +118,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 		log.Println(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{setOrderReq.Parameters.ServerCollection}, taskInfo)
+			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{setOrderReq.Systems}, taskInfo)
 		case http.StatusNotFound:
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SetDefaultBootOrder"}, taskInfo)
 		default:
@@ -147,11 +153,11 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 
 }
 
-func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON string, subTaskChan chan<- int32, sessionUserName string) {
+func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON string, subTaskChannel chan<- int32, sessionUserName string) {
 	var resp response.RPC
 	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
-		subTaskChan <- http.StatusInternalServerError
+		subTaskChannel <- http.StatusInternalServerError
 		log.Println("error while trying to create sub task")
 		return
 	}
@@ -168,7 +174,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	var percentComplete int32
 	uuid, systemID, err := getIDsFromURI(serverURI)
 	if err != nil {
-		subTaskChan <- http.StatusNotFound
+		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while trying to get system ID from " + serverURI + ": " + err.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemID", serverURI}, taskInfo)
@@ -177,7 +183,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	// Get target device Credentials from using device UUID
 	target, err := agmodel.GetTarget(uuid)
 	if err != nil {
-		subTaskChan <- http.StatusNotFound
+		subTaskChannel <- http.StatusNotFound
 		errMsg := err.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, taskInfo)
@@ -185,7 +191,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	}
 	decryptedPasswordByte, err := e.DecryptPassword(target.Password)
 	if err != nil {
-		subTaskChan <- http.StatusInternalServerError
+		subTaskChannel <- http.StatusInternalServerError
 		errMsg := "error while trying to decrypt device password: " + err.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
@@ -196,7 +202,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	// Get the Plugin info
 	plugin, errs := agmodel.GetPluginData(target.PluginID)
 	if errs != nil {
-		subTaskChan <- http.StatusNotFound
+		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while getting plugin data: " + errs.Error()
 		log.Println(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
@@ -219,7 +225,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 		pluginContactRequest.OID = "/ODIM/v1/Sessions"
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while logging in to plugin: ")
 		if err != nil {
-			subTaskChan <- getResponse.StatusCode
+			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
 			log.Println(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
@@ -241,7 +247,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	pluginContactRequest.HTTPMethodType = http.MethodPost
 	_, _, getResponse, err := contactPlugin(pluginContactRequest, "error while setting the default boot order: ")
 	if err != nil {
-		subTaskChan <- getResponse.StatusCode
+		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
 		log.Println(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
@@ -263,7 +269,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	}
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
-	subTaskChan <- int32(getResponse.StatusCode)
+	subTaskChannel <- int32(getResponse.StatusCode)
 	var task = fillTaskData(subTaskID, serverURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {

@@ -119,7 +119,7 @@ var SystemResource = map[string]string{
 	"LogServices":        "LogServicesCollection",
 	"Settings":           "Bios",
 	"Volumes":            "VolumesCollection",
- }
+}
 
 // ChassisResource contains the Resource name and table name
 // this map is basically to fetch the table name against the chassis resource name,

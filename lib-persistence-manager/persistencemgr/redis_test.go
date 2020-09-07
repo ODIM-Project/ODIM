@@ -17,12 +17,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/gomodule/redigo/redis"
 )
 
 type sample struct {
@@ -1030,4 +1032,161 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 		t.Errorf("Error while making data entry: %v\n", cerr.Error())
 	}
 
+}
+
+func TestGetCurrentMasterHostPort(t *testing.T) {
+	type args struct {
+		host string
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  string
+		want1 string
+	}{
+		{
+			name: "Positive Case: All is well, valid sentinel Host",
+			args: args{
+				host: "ValidHost",
+			},
+			want:  "validSentinelIP",
+			want1: "validSentinelPort",
+		},
+		{
+			name: "Negetive Case: Invalid sentinel Host",
+			args: args{
+				host: "invalidHost",
+			},
+			want:  "",
+			want1: "",
+		},
+		{
+			name: "Negetive Case: empty sentinel Host",
+			args: args{
+				host: "",
+			},
+			want:  "",
+			want1: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := GetCurrentMasterHostPort(tt.args.host)
+			if got != tt.want {
+				t.Errorf("GetCurrentMasterHostPort() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("GetCurrentMasterHostPort() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+func TestGetDBConnection(t *testing.T) {
+	type args struct {
+		dbFlag DbType
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  *ConnPool
+		want1 *errors.Error
+	}{
+		// TODO: Add test cases.
+		{
+			name: "Positive case: All is well, inmemory db type",
+			args: args{
+				dbFlag: InMemory,
+			},
+			want:  &ConnPool{},
+			want1: nil,
+		},
+		{
+			name: "Positive case: All is well, OnDisk db type",
+			args: args{
+				dbFlag: OnDisk,
+			},
+			want:  &ConnPool{},
+			want1: nil,
+		},
+		{
+			name: "Negetive case: invalid db type",
+			args: args{
+				dbFlag: 3,
+			},
+			want:  nil,
+			want1: &errors.Error{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := GetDBConnection(tt.args.dbFlag)
+			/*	if !got != !tt.want {
+					t.Errorf("GetDBConnection() got = %v, want %v", got, tt.want)
+				}
+				if !got1 != !tt.want1 {
+					t.Errorf("GetDBConnection() got1 = %v, want %v", got1, tt.want1)
+
+				}*/
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetDBConnection() got = %v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("GetDBConnection() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func TestGetPool(t *testing.T) {
+	type args struct {
+		host string
+		port string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *redis.Pool
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+		{
+			name: "Positive Case: All is well, valid Host, Valid Port",
+			args: args{
+				host: "ValidDBHost",
+				port: "ValiDBPort",
+			},
+			want:    &redis.Pool{},
+			wantErr: false,
+		},
+		{
+			name: "Negative Case: Invalid Host, Valid Port",
+			args: args{
+				host: "InvalidDBHost",
+				port: "ValidDBPort",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Negative Case: Valid Host, Invalid Port",
+			args: args{
+				host: "ValidDBHost",
+				port: "InvalidDBPort",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetPool(tt.args.host, tt.args.port)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetPool() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetPool() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

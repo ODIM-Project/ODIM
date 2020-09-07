@@ -38,7 +38,7 @@ type Events struct {
 	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) (int32, string)
 	GetSessionUserNameRPC func(sessionToken string) (string, error)
 	CreateTaskRPC         func(string) (string, error)
-	UpdateTaskRPC         func(task events.TaskData) error
+	UpdateTaskRPC         func(task common.TaskData) error
 	CreateChildTaskRPC    func(sessionid, taskid string) (string, error)
 }
 

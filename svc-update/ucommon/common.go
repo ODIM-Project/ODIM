@@ -37,6 +37,7 @@ type PluginContactRequest struct {
 	DeviceInfo     interface{}
 	BasicAuth      map[string]string
 	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	PostBody       interface{}
 	Plugin         umodel.Plugin
 	HTTPMethodType string
 }

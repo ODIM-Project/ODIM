@@ -32,7 +32,7 @@ import (
 // Discovers  its top level odata.ID links and store them in inmemory db.
 // Upon successfull operation this api returns added AggregationSourceUUID  in the response body with 201 OK.
 func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
-	targetURI := "/redfish/v1/AggregationService/AggregationSource"
+	targetURI := "/redfish/v1/AggregationService/AggregationSources"
 	var resp response.RPC
 	var percentComplete int32
 	var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)

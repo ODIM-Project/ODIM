@@ -136,7 +136,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	//rediscovering the Chassis Information
 	req.OID = "/redfish/v1/Chassis"
 	chassisEstimatedWork := int32(15)
-	progress = h.getAllChassisInfo("", progress, chassisEstimatedWork, req)
+	progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req)
 	var responseBody = map[string]string{
 		"UUID": deviceUUID,
 	}

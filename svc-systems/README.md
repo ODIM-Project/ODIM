@@ -1425,7 +1425,7 @@ Some of the attributes include:
    -d \
 '{ 
    "Boot":{ 
-      "BootSourceOverrideTarget":"UefiHttp"
+      "BootSourceOverrideTarget":"Usb"
    }
 }' \
  'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}}'
@@ -1452,7 +1452,7 @@ Some of the attributes include:
 ```
 { 
    "Boot":{ 
-      "BootSourceOverrideTarget":"UefiHttp"
+      "BootSourceOverrideTarget":"Usb"
    }
 }
 ```

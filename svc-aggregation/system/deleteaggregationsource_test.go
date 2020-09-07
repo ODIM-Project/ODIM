@@ -42,7 +42,9 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 		ContactClient:     mockContactClientForDelete,
 		DecryptPassword:   stubDevicePassword,
 	}
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -113,15 +115,15 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 			},
 		},
 	}
-	err := agmodel.AddAggregationSource(reqManagerILO, "/redfish/v1/AggregationService/AggregationSource/123455")
+	err := agmodel.AddAggregationSource(reqManagerILO, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	err = agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSource/123456")
+	err = agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	err = agmodel.AddAggregationSource(req1, "/redfish/v1/AggregationService/AggregationSource/123457")
+	err = agmodel.AddAggregationSource(req1, "/redfish/v1/AggregationService/AggregationSources/123457")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -138,7 +140,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/123456",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123456",
 				},
 			},
 			want: http.StatusNoContent,
@@ -148,7 +150,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/123455",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123455",
 				},
 			},
 			want: http.StatusNotAcceptable,
@@ -158,7 +160,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/123434",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123434",
 				},
 			},
 			want: http.StatusNotFound,
@@ -168,7 +170,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/123457",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123457",
 				},
 			},
 			want: http.StatusNotAcceptable,
@@ -226,11 +228,11 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1")
 
-	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831")
+	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	err = agmodel.AddAggregationSource(reqFailure, "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db832")
+	err = agmodel.AddAggregationSource(reqFailure, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db832")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -247,7 +249,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831",
 				},
 			},
 			want: http.StatusNoContent,
@@ -257,7 +259,7 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db832",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db832",
 				},
 			},
 			want: http.StatusInternalServerError,
@@ -307,7 +309,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 	}
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
 
-	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831")
+	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -326,7 +328,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 			args: args{
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "SessionToken",
-					URL:          "/redfish/v1/AggregationService/AggregationSource/ef83e569-7336-492a-aaee-31c02d9db831",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831",
 				},
 			},
 			want: http.StatusNotAcceptable,

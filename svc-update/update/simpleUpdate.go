@@ -60,8 +60,13 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 	for _, individualTarget := range updateRequest.Targets {
 		// spliting the uuid and system id
 		requestData := strings.Split(individualTarget, "/")
-		requestTarget := strings.Split(requestData[len(requestData)-1], ":")
-		if len(requestTarget) <= 1 {
+		var requestTarget []string
+		for _, data := range requestData {
+			if strings.Contains(data, ":") {
+				requestTarget = strings.Split(data, ":")
+			}
+		}
+		if len(requestTarget) != 2 || requestTarget[1] == "" {
 			errorMessage := "error: SystemUUID not found"
 			return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", individualTarget}, nil)
 		}

@@ -96,7 +96,7 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 		bytePassword := []byte(updateRequest["Password"].(string))
 		updateRequest["Password"] = bytePassword
 	}
-	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSource/")
+	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 	links := aggregationSource.Links.(map[string]interface{})
 	oem := links["Oem"].(map[string]interface{})
 	if _, ok := oem["PluginType"]; ok {

@@ -462,3 +462,12 @@ func UpdateEventSubscription(evtSubscription Subscription) error {
 	}
 	return nil
 }
+
+//GetAllMatchingDetails accepts the table name ,pattern and DB type and return all the keys which mathces the pattern
+func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return []string{}, err
+	}
+	return conn.GetAllMatchingDetails(table, pattern)
+}

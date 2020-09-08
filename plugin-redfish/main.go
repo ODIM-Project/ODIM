@@ -184,6 +184,13 @@ func routers() *iris.Application {
 
 		registryStoreCap := pluginRoutes.Party("/RegistryStore", rfpmiddleware.BasicAuth)
 		registryStoreCap.Get("/registries/en/{id}", rfphandler.GetResource)
+
+		// Routes related to Update service
+		update := pluginRoutes.Party("/UpdateService", rfpmiddleware.BasicAuth)
+		update.Get("/FirmwareInventory", rfphandler.GetResource)
+		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
+		update.Get("/SoftwareInventory", rfphandler.GetResource)
+		update.Get("/SoftwareInventory/{id}", rfphandler.GetResource)
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

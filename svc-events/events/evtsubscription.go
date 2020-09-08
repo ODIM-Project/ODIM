@@ -942,14 +942,16 @@ func saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
 	if deviceSubscription != nil {
 
 		save = true
-		// currently there will be only one element in origin resources
-		// when we add support for multiple origin resources will have to change this.
-		originResource := deviceSubscription.OriginResources[0]
 		// if the origin resource is present in device subscription details then dont add
-		if evtSubscription.OriginResource == originResource {
-			save = false
-		}
+		for _, originResource := range deviceSubscription.OriginResources {
+			if evtSubscription.OriginResource == originResource {
 
+				save = false
+			} else {
+				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, originResource)
+				save = false
+			}
+		}
 		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
 		if err != nil {
 			return err
@@ -976,9 +978,10 @@ func getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse,
 	target, err := evmodel.GetTarget(uuid)
 	if err != nil {
 		// Frame the RPC response body and response Header below
-		errorMessage := "error while getting System(Target device Credentials) table details: " + err.Error()
+
+		errorMessage := "error while getting Systems(Target device Credentials) table details: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
-			&resp, []interface{}{"System", origin})
+			&resp, []interface{}{"Systems", origin})
 		log.Printf(errorMessage)
 		return nil, resp, err
 	}
@@ -1140,21 +1143,29 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	//Creating key to get all the System Collection subscription
 
 	var searchKey string
+	var bmcFlag bool
 	if strings.Contains(origin, "Fabrics") {
 		searchKey = "/redfish/v1/Fabrics"
 	} else {
+		bmcFlag = true
 		searchKey = "/redfish/v1/Systems"
 	}
 	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return
 	}
-
+	var chassisSubscriptions, managersSubscriptions []evmodel.Subscription
+	if bmcFlag {
+		chassisSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Chassis")
+		subscriptions = append(subscriptions, chassisSubscriptions...)
+		managersSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Managers")
+		subscriptions = append(subscriptions, managersSubscriptions...)
+	}
 	// Checking the collection based subscription
 	var collectionSubscription = make([]evmodel.Subscription, 0)
 	for _, evtSubscription := range subscriptions {
 		for _, originResource := range evtSubscription.OriginResources {
-			if strings.Contains(origin, "Systems") && originResource == "/redfish/v1/Systems" {
+			if strings.Contains(origin, "Systems") && (originResource == "/redfish/v1/Systems" || originResource == "/redfish/v1/Chassis" || originResource == "/redfish/v1/Managers") {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			} else if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
@@ -1223,6 +1234,27 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 			log.Println("Error while Updating event subscription : ", err)
 		}
 	}
+	// Get Device Subscription Details if collection is bmc and update chassis and managers uri
+	if bmcFlag {
+		searchKey = host
+		deviceSubscription, _ := evmodel.GetDeviceSubscriptions(searchKey)
+		data := strings.Split(origin, "/redfish/v1/Systems/")
+		chassisList, _ := evmodel.GetAllMatchingDetails("Chassis", data[1], common.InMemory)
+		managersList, _ := evmodel.GetAllMatchingDetails("Managers", data[1], common.InMemory)
+		var newDevSubscription = evmodel.DeviceSubscription{
+			EventHostIP:     deviceSubscription.EventHostIP,
+			Location:        deviceSubscription.Location,
+			OriginResources: deviceSubscription.OriginResources,
+		}
+		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, chassisList...)
+		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, managersList...)
+
+		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
+		if err != nil {
+			log.Println("Error while Updating Device subscription : ", err)
+		}
+	}
+
 	return
 }
 

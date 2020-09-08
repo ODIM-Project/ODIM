@@ -18,7 +18,6 @@ package common
 import (
 	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
@@ -41,32 +40,15 @@ const (
 //	InMemory:	returns In-Memory DB connection pool
 //	OnDsik:  	returns On-Disk DB connection pool
 func GetDBConnection(dbFlag DbType) (*persistencemgr.ConnPool, *errors.Error) {
-	var err *errors.Error
 	switch dbFlag {
 	case InMemory:
-		// In this case this function return in-memory db connection pool
-		if inMemDBConnPool == nil {
-			config := persistencemgr.Config{
-				Port:     config.Data.DBConf.InMemoryPort,
-				Protocol: config.Data.DBConf.Protocol,
-				Host:     config.Data.DBConf.InMemoryHost,
-			}
-
-			inMemDBConnPool, err = config.Connection()
-		}
-		return inMemDBConnPool, err
+		pool, err := persistencemgr.GetDBConnection(persistencemgr.InMemory)
+		inMemDBConnPool = pool
+		return pool, err
 	case OnDisk:
-		// In this case this function returns On-Disk db connection pool
-		if onDiskDBConnPool == nil {
-			config := persistencemgr.Config{
-				Port:     config.Data.DBConf.OnDiskPort,
-				Protocol: config.Data.DBConf.Protocol,
-				Host:     config.Data.DBConf.OnDiskHost,
-			}
-
-			onDiskDBConnPool, err = config.Connection()
-		}
-		return onDiskDBConnPool, err
+		pool, err := persistencemgr.GetDBConnection(persistencemgr.OnDisk)
+		onDiskDBConnPool = pool
+		return pool, err
 	default:
 		return nil, errors.PackError(errors.UndefinedErrorType, "error invalid db type selection")
 	}

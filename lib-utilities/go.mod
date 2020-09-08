@@ -9,3 +9,4 @@ require (
 	github.com/kataras/iris/v12 v12.1.9-0.20200616210209-a85c83b70ad0
 	github.com/micro/go-micro v1.13.2
 )
+replace github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7 => ../lib-persistence-manager

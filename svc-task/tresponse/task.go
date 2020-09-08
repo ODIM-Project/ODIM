@@ -68,10 +68,10 @@ type Oem struct {
 
 // Payload struct is used to give response to the user
 type Payload struct {
-	RespHTTPHeaders []string `json:"HttpHeaders"`
-	HTTPOperation   string   `json:"HttpOperation"`
-	RespJSONBody    string   `json:"JsonBody"`
-	TargetURI       string   `json:"TargetUri"`
+	HTTPHeaders   []string `json:"HttpHeaders"`
+	HTTPOperation string   `json:"HttpOperation"`
+	JSONBody      string   `json:"JsonBody"`
+	TargetURI     string   `json:"TargetUri"`
 }
 
 //TaskCollectionResponse is used to give back the response

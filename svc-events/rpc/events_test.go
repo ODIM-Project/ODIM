@@ -29,7 +29,6 @@ import (
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	"github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
@@ -122,7 +121,7 @@ func mockCreateChildTask(sessionID, taskid string) (string, error) {
 	return "123456", nil
 }
 
-func mockUpdateTask(task events.TaskData) error {
+func mockUpdateTask(task common.TaskData) error {
 	return nil
 }
 

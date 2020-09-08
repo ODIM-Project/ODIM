@@ -43,6 +43,8 @@ github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200807110514-4651503cc1a8 h1
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200807110514-4651503cc1a8/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200820090301-0f8b79f2a5e4 h1:pG4i/A9lV25e+S2W9Wkn0nDlOrOCWcY7tQxMhhG4Hdo=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200820090301-0f8b79f2a5e4/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200908075939-7bf37600f7d6 h1:UisB3184m/UkjX1Y6TwDkLdqIZjp6apBp/1Tb/byxe4=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200908075939-7bf37600f7d6/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87/go.mod h1:iGLljf5n9GjT6kc0HBvyI1nOKnGQbNB66VzSNbK5iks=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 h1:WDC6ySpJzbxGWFh4aMxFFC28wwGp5pEuoTtvA4q/qQ4=

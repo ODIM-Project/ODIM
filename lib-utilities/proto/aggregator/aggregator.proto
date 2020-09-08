@@ -15,9 +15,7 @@
 syntax = "proto3";
 
 service Aggregator {
-    rpc AddCompute(AggregatorRequest) returns (AggregatorResponse) {}
     rpc GetAggregationService(AggregatorRequest) returns (AggregatorResponse) {}
-    rpc DeleteCompute(AggregatorRequest) returns (AggregatorResponse) {}
     rpc Reset(AggregatorRequest) returns (AggregatorResponse) {}
     rpc SetDefaultBootOrder(AggregatorRequest) returns (AggregatorResponse) {}
     rpc RediscoverSystemInventory(RediscoverSystemInventoryRequest) returns (RediscoverSystemInventoryResponse) {}

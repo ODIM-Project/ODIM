@@ -56,7 +56,7 @@ func GetExternalInterface() *ExternalInterface {
 }
 
 // CreateVolume defines the logic for creating a volume under storage
-func (p *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) response.RPC {
+func (e *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) response.RPC {
 	var resp response.RPC
 
 	// spliting the uuid and system id
@@ -103,7 +103,7 @@ func (p *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) 
 	}
 
 	//fields validation
-	statuscode, statusMessage, messageArgs, err := p.validateProperties(&volume)
+	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
 		log.Printf(errorMessage)
@@ -111,7 +111,7 @@ func (p *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) 
 		return resp
 	}
 
-	decryptedPasswordByte, err := p.DevicePassword(target.Password)
+	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
@@ -124,7 +124,7 @@ func (p *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) 
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	var contactRequest scommon.PluginContactRequest
-	contactRequest.ContactClient = p.ContactClient
+	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {

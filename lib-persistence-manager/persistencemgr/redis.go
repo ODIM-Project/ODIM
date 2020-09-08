@@ -62,7 +62,7 @@ func (r redisExtCallsImp) getMasterAddrByName(ctx context.Context, masterSet str
 	return snlClient.GetMasterAddrByName(ctx, masterSet)
 }
 
-//NewRedisExternalCalls is Constructor for RedisExtCallsImplement
+//NewRedisExternalCalls is Constructor for RedisExternalCalls
 func NewRedisExternalCalls() RedisExternalCalls {
 	return &redisExtCallsImp{}
 }

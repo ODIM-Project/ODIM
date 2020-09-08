@@ -1091,7 +1091,6 @@ func TestGetDBConnection(t *testing.T) {
 		want  *ConnPool
 		want1 *errors.Error
 	}{
-		// TODO: Add test cases.
 		{
 			name: "Positive case: All is well, inmemory db type",
 			args: args{
@@ -1120,13 +1119,6 @@ func TestGetDBConnection(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := GetDBConnection(tt.args.dbFlag)
-			/*	if !got != !tt.want {
-					t.Errorf("GetDBConnection() got = %v, want %v", got, tt.want)
-				}
-				if !got1 != !tt.want1 {
-					t.Errorf("GetDBConnection() got1 = %v, want %v", got1, tt.want1)
-
-				}*/
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetDBConnection() got = %v, want %v", got, tt.want)
 			}
@@ -1148,7 +1140,6 @@ func TestGetPool(t *testing.T) {
 		want    *redis.Pool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{
 			name: "Positive Case: All is well, valid Host, Valid Port",
 			args: args{

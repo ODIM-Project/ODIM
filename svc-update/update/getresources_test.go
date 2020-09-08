@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"github.com/ODIM-Project/ODIM/svc-update/uresponse"
 	"github.com/stretchr/testify/assert"
@@ -71,6 +72,12 @@ func mockGetPluginData(id string) (umodel.Plugin, *errors.Error) {
 	return plugin, nil
 }
 
+func mockContactPlugin(req ucommon.PluginContactRequest, errorMessage string) ([]byte, string, ucommon.ResponseStatus, error) {
+	var responseStatus ucommon.ResponseStatus
+
+	return []byte(`{"Attributes":"sample"}`), "token", responseStatus, nil
+}
+
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
@@ -82,6 +89,7 @@ func mockGetExternalInterface() *ExternalInterface {
 			ContactClient:  mockContactClient,
 			GetTarget:      mockGetTarget,
 			GetPluginData:  mockGetPluginData,
+			ContactPlugin:  mockContactPlugin,
 			DevicePassword: stubDevicePassword,
 		},
 		DB: DB{

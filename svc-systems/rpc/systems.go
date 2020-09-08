@@ -249,7 +249,26 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolumeRequest, resp *systemsproto.SystemsResponse) error {
-	// This function yet to be implemented
-	resp.StatusCode = http.StatusNotImplemented
+	sessionToken := req.SessionToken
+	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authStatusCode != http.StatusOK {
+		errorMessage := "error while trying to authenticate session"
+		resp.StatusCode = authStatusCode
+		resp.StatusMessage = authStatusMessage
+		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+		resp.Body = generateResponse(rpcResp.Body)
+		resp.Header = rpcResp.Header
+		log.Printf(errorMessage)
+		return nil
+	}
+	var pc = systems.PluginContact{
+		ContactClient:  pmbhandle.ContactPlugin,
+		DevicePassword: common.DecryptWithPrivateKey,
+	}
+	data := pc.CreateVolume(req)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	resp.Body = generateResponse(data.Body)
 	return nil
 }

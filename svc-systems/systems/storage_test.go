@@ -14,8 +14,10 @@
 package systems
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
@@ -59,6 +61,17 @@ func mockSystemsData(uuid string, device smodel.Target) error {
 	return nil
 }
 
+func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes" {
+		body := `{"MessageId": "Base.1.0.Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
+	return nil, fmt.Errorf("InvalidRequest")
+}
+
 func TestPluginContact_CreateVolume(t *testing.T) {
 	// Modify the contents with http.StatusNotImplemented to the correct status
 	// and modify all other info accordingly after implementations
@@ -94,7 +107,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
 	pluginContact := PluginContact{
-		ContactClient:  mockContactClient,
+		ContactClient:  contactPluginClient,
 		DevicePassword: stubDevicePassword,
 	}
 
@@ -111,18 +124,14 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
-										"RaidType":"RAID0",
+										"RAIDType":"RAID0",
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"}]}`),
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusNotImplemented, // change it to StatusOK after implementation
+				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Content-type": "application/json; charset=utf-8",
 				},
 				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
 			},
@@ -133,18 +142,14 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
-										"RaidType":"RAID0",
+										"RAIDType":"RAID0",
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"},{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/1"}]}`),
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusNotImplemented, // change it to StatusOK after implementation
+				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Content-type": "application/json; charset=utf-8",
 				},
 				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
 			},
@@ -155,23 +160,21 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
-										"RaidType":"RAID0",
+										"RAIDType":"RAID0",
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b:1/Storage/ArrayControllers-0/Drives/0"}]}`),
 			},
-			// change it to StatusNotFound after implementation
-			want: common.GeneralError(http.StatusNotImplemented, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b:1"}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
 			p:    &pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
-				StorageInstance: "ArrayControllers-XYZ",
+				StorageInstance: "",
 				RequestBody: []byte(`{"Name":"Volume1",
-										"RaidType":"RAID0",
-										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-XYZ/Drives/0"}]}`),
+										"RAIDType":"RAID0",
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"}]}`),
 			},
-			// change it to StatusNotFound after implementation
-			want: common.GeneralError(http.StatusNotImplemented, response.ResourceNotFound, "error: Storage instance not found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0a"}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid RaidType",
 			p:    &pluginContact,
@@ -179,11 +182,10 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
-										"RaidType":"Invalid",
+										"RAIDType":"Invalid",
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"}]}`),
 			},
-			// change it to StatusBadRequest after implementation
-			want: common.GeneralError(http.StatusNotImplemented, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0a"}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
 		}, {
 			name: "Invalid Drives format",
 			p:    &pluginContact,
@@ -192,17 +194,15 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
 										"RaidType":"Invalid",
-										"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"]}`),
+										"Drives":["/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/12"]`),
 			},
-			// change it to StatusBadRequest after implementation
-			want: common.GeneralError(http.StatusNotImplemented, response.ResourceNotFound, "error: ", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0a"}, nil),
+			want: common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "Error while unmarshaling the create volume request: unexpected end of JSON input", []interface{}{}, nil),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			//TODO: after implementation of logic change the statuscode match to entire response match
-			if got := tt.p.CreateVolume(tt.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("PluginContact.CreateVolume() = %v, want %v", got.StatusCode, tt.want.StatusCode)
+			if got := tt.p.CreateVolume(tt.req); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PluginContact.CreateVolume() = %v, want %v", got, tt.want)
 			}
 		})
 	}

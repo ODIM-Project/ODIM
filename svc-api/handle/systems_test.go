@@ -475,19 +475,19 @@ func mockCreateVolume(req systemsproto.CreateVolumeRequest) (*systemsproto.Syste
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{
-			StatusCode:    501, //change to 401 after logic implementation,
+			StatusCode:    401,
 			StatusMessage: "Unauthorized",
 			Body:          []byte(`{"Response":"Unauthorized"}`),
 		}
 	} else if req.SessionToken == "InvalidToken" {
 		response = &systemsproto.SystemsResponse{
-			StatusCode:    501, //change to 401 after logic implementation,
+			StatusCode:    401,
 			StatusMessage: "Unauthorized",
 			Body:          []byte(`{"Response":"Unauthorized"}`),
 		}
-	} else if req.SessionToken == "ValidToken" && req.SystemID == "" {
+	} else if req.SessionToken == "ValidToken" && req.StorageInstance == "" {
 		response = &systemsproto.SystemsResponse{
-			StatusCode:    501, //change to 400 after logic implementation,
+			StatusCode:    400,
 			StatusMessage: "BadRequest",
 			Body:          []byte(`{"Response":"BadRequest"}`),
 		}
@@ -495,7 +495,7 @@ func mockCreateVolume(req systemsproto.CreateVolumeRequest) (*systemsproto.Syste
 		return &systemsproto.SystemsResponse{}, errors.New("Unable to RPC Call")
 	} else {
 		response = &systemsproto.SystemsResponse{
-			StatusCode:    501, //change to 401 after logic implementation,
+			StatusCode:    200,
 			StatusMessage: "Success",
 			Body:          []byte(`{"Response":"Success"}`),
 		}
@@ -513,7 +513,7 @@ func TestCreateVolume(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusOK after logic implementation,
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK) //change to http.StatusOK after logic implementation,
 }
 
 func TestCreateVolumeWithoutToken(t *testing.T) {
@@ -539,7 +539,7 @@ func TestCreateVolumeWithInvalidToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusUnauthorized after logic implementation,
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized) //change to http.StatusUnauthorized after logic implementation,
 }
 
 func TestCreateVolumeNegativeTestCases(t *testing.T) {
@@ -552,11 +552,11 @@ func TestCreateVolumeNegativeTestCases(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage//Volumes",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusNotFound after logic implementation,
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
 	e.POST(
 		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //change to http.StatusBadRequest after logic implementation,
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest) //change to http.StatusBadRequest after logic implementation,
 	e.POST(
 		"/redfish/v1/Systems//Storage/ArrayControllers-0/Volumes",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusNotImplemented) //change to http.StatusInternalServerError after logic implementation,
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError) //change to http.StatusInternalServerError after logic implementation,
 }

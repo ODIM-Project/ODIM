@@ -24,6 +24,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
@@ -72,6 +73,26 @@ func contactPluginClient(url, method, token string, odataID string, body interfa
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
+func mockGetExternalInterface() *ExternalInterface {
+	return &ExternalInterface{
+		ContactClient:  contactPluginClient,
+		DevicePassword: stubDevicePassword,
+		DB: DB{
+			GetResource: mockGetResource,
+		},
+	}
+}
+
+func mockGetResource(table, key string) (string, *errors.Error) {
+	if key == "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0" {
+		return "", nil
+	}
+	if key == "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/1" {
+		return "", nil
+	}
+	return "body", nil
+}
+
 func TestPluginContact_CreateVolume(t *testing.T) {
 	// Modify the contents with http.StatusNotImplemented to the correct status
 	// and modify all other info accordingly after implementations
@@ -106,20 +127,17 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
-	pluginContact := PluginContact{
-		ContactClient:  contactPluginClient,
-		DevicePassword: stubDevicePassword,
-	}
+	pluginContact := mockGetExternalInterface()
 
 	tests := []struct {
 		name string
-		p    *PluginContact
+		p    *ExternalInterface
 		req  *systemsproto.CreateVolumeRequest
 		want response.RPC
 	}{
 		{
 			name: "Valid request",
-			p:    &pluginContact,
+			p:    pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
@@ -137,7 +155,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			},
 		}, {
 			name: "Valid request with multiple drives",
-			p:    &pluginContact,
+			p:    pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
@@ -155,7 +173,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			},
 		}, {
 			name: "invalid system id",
-			p:    &pluginContact,
+			p:    pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:1",
 				StorageInstance: "ArrayControllers-0",
@@ -166,7 +184,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
-			p:    &pluginContact,
+			p:    pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "",
@@ -177,7 +195,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: Storage instance is not found", []interface{}{"Storage", ""}, nil),
 		}, {
 			name: "invalid RaidType",
-			p:    &pluginContact,
+			p:    pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
@@ -188,7 +206,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, "error: request payload validation failed: RAIDType Invalid is invalid", []interface{}{"Invalid", "RAIDType"}, nil),
 		}, {
 			name: "Invalid Drives format",
-			p:    &pluginContact,
+			p:    pluginContact,
 			req: &systemsproto.CreateVolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",

@@ -29,6 +29,7 @@ import (
 // Systems struct helps to register service
 type Systems struct {
 	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	EI              *systems.ExternalInterface
 }
 
 //GetSystemResource defines the operations which handles the RPC request response
@@ -261,11 +262,8 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolu
 		log.Printf(errorMessage)
 		return nil
 	}
-	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
-	}
-	data := pc.CreateVolume(req)
+
+	data := s.EI.CreateVolume(req)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header

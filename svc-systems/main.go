@@ -18,6 +18,8 @@ import (
 	"log"
 	"os"
 
+	"io/ioutil"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
@@ -25,7 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
-	"io/ioutil"
 )
 
 func main() {
@@ -66,6 +67,7 @@ func main() {
 func registerHandler() {
 	systemRPC := new(rpc.Systems)
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
+	systemRPC.EI = systems.GetExternalInterface()
 	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
 	chassisRPC := new(rpc.ChassisRPC)
 	chassisRPC.IsAuthorizedRPC = services.IsAuthorized

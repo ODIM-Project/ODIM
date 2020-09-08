@@ -23,15 +23,40 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"gopkg.in/go-playground/validator.v9"
 )
 
+// ExternalInterface holds all the external connections managers package functions uses
+type ExternalInterface struct {
+	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword func([]byte) ([]byte, error)
+	DB             DB
+}
+
+// DB struct to inject the contact DB function into the handlers
+type DB struct {
+	GetResource func(string, string) (string, *errors.Error)
+}
+
+// GetExternalInterface retrieves all the external connections managers package functions uses
+func GetExternalInterface() *ExternalInterface {
+	return &ExternalInterface{
+		ContactClient:  pmbhandle.ContactPlugin,
+		DevicePassword: common.DecryptWithPrivateKey,
+		DB: DB{
+			GetResource: smodel.GetResource,
+		},
+	}
+}
+
 // CreateVolume defines the logic for creating a volume under storage
-func (p *PluginContact) CreateVolume(req *systemsproto.CreateVolumeRequest) response.RPC {
+func (p *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) response.RPC {
 	var resp response.RPC
 
 	// spliting the uuid and system id
@@ -78,7 +103,7 @@ func (p *PluginContact) CreateVolume(req *systemsproto.CreateVolumeRequest) resp
 	}
 
 	//fields validation
-	statuscode, statusMessage, messageArgs, err := validateProperties(&volume)
+	statuscode, statusMessage, messageArgs, err := p.validateProperties(&volume)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
 		log.Printf(errorMessage)
@@ -86,7 +111,6 @@ func (p *PluginContact) CreateVolume(req *systemsproto.CreateVolumeRequest) resp
 		return resp
 	}
 
-	//
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
@@ -150,7 +174,7 @@ func (p *PluginContact) CreateVolume(req *systemsproto.CreateVolumeRequest) resp
 }
 
 // Validates all the input prorperties
-func validateProperties(request *smodel.Volume) (int32, string, []interface{}, error) {
+func (e *ExternalInterface) validateProperties(request *smodel.Volume) (int32, string, []interface{}, error) {
 	validate := validator.New()
 	// if any of the mandatory fields missing in the struct, then it will return an error
 	err := validate.Struct(request)
@@ -179,6 +203,18 @@ func validateProperties(request *smodel.Volume) (int32, string, []interface{}, e
 		//validates the number of Drives
 		if len(request.Drives) < raidTypeWithMinDrives {
 			return http.StatusBadRequest, response.PropertyMissing, []interface{}{"Drives"}, fmt.Errorf("Minimum number of Drives not matching for the RAIDType")
+		}
+		// Validated the contents of Drives array and even checks if the request drive exists or not
+		for _, drive := range request.Drives {
+			driveURI := drive.OdataID
+			if driveURI == "" {
+				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf("Error processing create volume request: @odata.id key(s) is missing in Drives list")
+			}
+			_, err := e.DB.GetResource("Drives", driveURI)
+			if err != nil {
+				log.Printf(err.Error())
+				return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
+			}
 		}
 	}
 

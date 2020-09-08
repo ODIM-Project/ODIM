@@ -120,7 +120,6 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		contactRequest.DeviceInfo = target
 		contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 		contactRequest.HTTPMethodType = http.MethodPost
-		//contactRequest.PostBody = updateRequest
 		body, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 		if err != nil {
 			resp.StatusCode = getResponse.StatusCode

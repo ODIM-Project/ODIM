@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"time"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -81,6 +82,8 @@ func app() {
 	if err != nil {
 		log.Fatalf("fatal: error while initializing plugin server: %v", err)
 	}
+	//Checking race condition
+	time.Sleep(time.Second)
 	app.Run(iris.Server(pluginServer))
 }
 

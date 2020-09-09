@@ -188,7 +188,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume) (int32, s
 	items := []string{"OnReset", "Immediate"}
 	if request.OperationApplyTime == "" {
 		request.OperationApplyTime = items[0]
-	} else if request.OperationApplyTime != items[0] || request.OperationApplyTime != items[1] {
+	} else if found := searchItem(items, request.OperationApplyTime); !found {
 		return http.StatusBadRequest, response.PropertyValueNotInList, []interface{}{request.OperationApplyTime, "OperationApplyTime"}, fmt.Errorf("OperationApplyTime %v is invalid", request.OperationApplyTime)
 	}
 
@@ -242,4 +242,14 @@ func mapRaidTypesWithMinDrives(req string) int {
 		"RAID6TP":      4,
 	}
 	return raidTypesWithMinDrives[req]
+}
+
+// searchItem is used to find an item from the slice
+func searchItem(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
 }

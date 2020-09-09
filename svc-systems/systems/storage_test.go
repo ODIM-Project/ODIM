@@ -143,7 +143,9 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
 										"RAIDType":"RAID0",
-										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"}]}`),
+										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/0"}]
+										,"@Redfish.OperationApplyTime": "OnReset"
+										}`),
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,

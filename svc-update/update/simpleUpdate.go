@@ -21,6 +21,7 @@ package update
 import (
 	"encoding/json"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
@@ -115,8 +116,12 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 			}
 
 		}
-		replaceTargetUUID := strings.Replace(string(req.RequestBody), uuid+":", "", -1)
-		target.PostBody = []byte(replaceTargetUUID)
+		updateRequestBody := strings.Replace(string(req.RequestBody), uuid+":", "", -1)
+		//replacing the reruest url with south bound translation URL
+		for key, value := range config.Data.URLTranslation.SouthBoundURL {
+			updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
+		}
+		target.PostBody = []byte(updateRequestBody)
 		contactRequest.DeviceInfo = target
 		contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 		contactRequest.HTTPMethodType = http.MethodPost

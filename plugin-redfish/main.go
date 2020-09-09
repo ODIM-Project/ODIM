@@ -81,8 +81,6 @@ func app() {
 	if err != nil {
 		log.Fatalf("fatal: error while initializing plugin server: %v", err)
 	}
-	//Checking race condition
-	time.Sleep(5 * time.Second)
 	app.Run(iris.Server(pluginServer))
 }
 

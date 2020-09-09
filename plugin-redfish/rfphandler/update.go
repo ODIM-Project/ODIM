@@ -75,7 +75,7 @@ func SimpleUpdate(ctx iris.Context) {
 		return
 	}
 	//Update BMC resource
-	resp, err := redfishClient.DeviceCall(device, uri, "POST")
+	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
 		errorMessage := err.Error()
 		fmt.Println(err)

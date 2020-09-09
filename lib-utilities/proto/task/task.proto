@@ -19,9 +19,10 @@ import "google/protobuf/timestamp.proto";
 message Payload {
      map<string, string> HTTPHeaders = 1;
      string HTTPOperation = 2;
-     bytes JSONBody = 3;
+     string JSONBody = 3;
      int32 StatusCode = 4;
      string TargetURI = 5;
+     bytes ResponseBody = 6;
 }
 message GetTaskRequest {
       string taskID = 1;

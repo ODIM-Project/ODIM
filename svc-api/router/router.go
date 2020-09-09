@@ -42,8 +42,6 @@ func Router() *iris.Application {
 	}
 	pc := handle.AggregatorRPCs{
 		GetAggregationServiceRPC:                rpc.DoGetAggregationService,
-		AddComputeRPC:                           rpc.DoAddComputeRequest,
-		DeleteComputeRPC:                        rpc.DoDeleteComputeRequest,
 		ResetRPC:                                rpc.DoResetRequest,
 		SetDefaultBootOrderRPC:                  rpc.DoSetDefaultBootOrderRequest,
 		AddAggregationSourceRPC:                 rpc.DoAddAggregationSource,
@@ -261,14 +259,11 @@ func Router() *iris.Application {
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
-	aggregation.Post("/Actions/AggregationService.Add/", pc.AddCompute)
-	aggregation.Post("/Actions/AggregationService.Remove/", pc.DeleteCompute)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
-	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
 	aggregationSource := aggregation.Party("/AggregationSources", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregationSource.Get("/", pc.GetAllAggregationSource)

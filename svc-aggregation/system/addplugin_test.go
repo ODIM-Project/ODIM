@@ -68,64 +68,76 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "GRF",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
+	reqSuccess, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "GRF",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
 		},
 	})
-	reqExistingPlugin, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
+	reqExistingPlugin, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
 		},
 	})
-	reqInvalidAuthType, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "BasicAuthentication",
-			PluginType:        "Compute",
+	reqInvalidAuthType, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuthentication",
+				PluginType:        "Compute",
+			},
 		},
 	})
-	reqInvalidPluginType, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "plugin",
+	reqInvalidPluginType, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "plugin",
+			},
 		},
 	})
-	reqExistingPluginBadPassword, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "PluginWithBadPassword",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
+	reqExistingPluginBadPassword, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "PluginWithBadPassword",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
 		},
 	})
-	reqExistingPluginBadData, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "PluginWithBadData",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
+	reqExistingPluginBadData, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "PluginWithBadData",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
 		},
 	})
 
@@ -163,7 +175,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusOK,
+				StatusCode: http.StatusCreated,
 			},
 		},
 		{
@@ -236,8 +248,8 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	for _, tt := range tests {
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd = %v, want %v", got, tt.want)
+			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
 		ActiveReqSet.ReqRecord = nil
@@ -269,68 +281,80 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error while trying to create schema: %v", err)
 	}
-	reqXAuthSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "GRF",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+	reqXAuthSuccess, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "GRF",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
 		},
 	})
-	reqXAuthFail, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "incorrectusername",
-		Password:       "incorrectPassword",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
-		},
-	})
-
-	reqStatusFail, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.3:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+	reqXAuthFail, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "incorrectusername",
+		Password: "incorrectPassword",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
 		},
 	})
 
-	reqInvalidStatusBody, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.4:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+	reqStatusFail, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.3:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
 		},
 	})
 
-	reqManagerGetFail, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.5:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+	reqInvalidStatusBody, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.4:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
 		},
 	})
 
-	reqInvalidManagerBody, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.6:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+	reqManagerGetFail, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.5:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
+		},
+	})
+
+	reqInvalidManagerBody, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.6:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
 		},
 	})
 
@@ -368,7 +392,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusOK,
+				StatusCode: http.StatusCreated,
 			},
 		},
 		{
@@ -445,8 +469,8 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	for _, tt := range tests {
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd = %v, want %v", got, tt.want)
+			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
 		ActiveReqSet.ReqRecord = nil
@@ -465,14 +489,16 @@ func TestExternalInterface_PluginWithMultipleRequest(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "GRF",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
+	reqSuccess, _ := json.Marshal(AggregationSource{
+		HostName: "localhost:9091",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID:          "GRF",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
 		},
 	})
 
@@ -513,10 +539,10 @@ func TestExternalInterface_PluginWithMultipleRequest(t *testing.T) {
 	for _, tt := range tests {
 		ActiveReqSet.ReqRecord = make(map[string]interface{})
 		t.Run(tt.name, func(t *testing.T) {
-			go p.AggregationServiceAdd("123", "validUserName", req)
+			go p.AddAggregationSource("123", "validUserName", req)
 			time.Sleep(time.Second)
-			if got := p.AggregationServiceAdd("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd = %v, want %v", got, tt.want)
+			if got := p.AddAggregationSource("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
 		ActiveReqSet.ReqRecord = nil

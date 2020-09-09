@@ -187,6 +187,7 @@ func routers() *iris.Application {
 
 		// Routes related to Update service
 		update := pluginRoutes.Party("/UpdateService", rfpmiddleware.BasicAuth)
+		update.Post("/Actions/UpdateService.SimpleUpdate", rfphandler.SimpleUpdate)
 		update.Get("/FirmwareInventory", rfphandler.GetResource)
 		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
 		update.Get("/SoftwareInventory", rfphandler.GetResource)

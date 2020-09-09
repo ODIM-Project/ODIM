@@ -16,7 +16,6 @@
 package persistencemgr
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -27,7 +26,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	redisSentinel "github.com/go-redis/redis/v8"
+	redisSentinel "github.com/go-redis/redis"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -49,7 +48,7 @@ const (
 //RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
 type RedisExternalCalls interface {
 	newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient
-	getMasterAddrByName(ctx context.Context, mset string, snlClient *redisSentinel.SentinelClient) *redisSentinel.StringSliceCmd
+	getMasterAddrByName(mset string, snlClient *redisSentinel.SentinelClient) *redisSentinel.StringSliceCmd
 }
 
 type redisExtCallsImp struct{}
@@ -58,8 +57,8 @@ func (r redisExtCallsImp) newSentinelClient(opt *redisSentinel.Options) *redisSe
 	return redisSentinel.NewSentinelClient(opt)
 }
 
-func (r redisExtCallsImp) getMasterAddrByName(ctx context.Context, masterSet string, snlClient *redisSentinel.SentinelClient) *redisSentinel.StringSliceCmd {
-	return snlClient.GetMasterAddrByName(ctx, masterSet)
+func (r redisExtCallsImp) getMasterAddrByName(masterSet string, snlClient *redisSentinel.SentinelClient) *redisSentinel.StringSliceCmd {
+	return snlClient.GetMasterAddrByName(masterSet)
 }
 
 //NewRedisExternalCalls is Constructor for RedisExternalCalls

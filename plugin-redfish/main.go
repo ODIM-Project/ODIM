@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"time"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"

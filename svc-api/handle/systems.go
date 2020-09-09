@@ -318,6 +318,52 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
-	// This function yet to be implemented
-	ctx.StatusCode(int(http.StatusNotImplemented))
+	var req interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from the create volume request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(req)
+	if err != nil {
+		errorMessage := "error while trying to create JSON request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	volRequest := systemsproto.CreateVolumeRequest{
+		SessionToken:    sessionToken,
+		SystemID:        ctx.Params().Get("id"),
+		StorageInstance: ctx.Params().Get("rid"),
+		RequestBody:     request,
+	}
+	resp, err := sys.CreateVolumeRPC(volRequest)
+	if err != nil {
+		errorMessage := "RPC error:" + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }

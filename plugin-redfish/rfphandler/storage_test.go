@@ -17,12 +17,14 @@ package rfphandler
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
@@ -44,10 +46,21 @@ func mockCreateVolume(username, url string) (*http.Response, error) {
 	return nil, fmt.Errorf("Error")
 }
 
+func mockDevice(username, password, url string, w http.ResponseWriter) {
+	resp, err := mockCreateVolume(username, url)
+	if err != nil && resp == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(resp.StatusCode)
+	return
+}
+
 func TestCreateVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
-
-	ts := startTestServer(mockDeviceHandler)
+	deviceHost := "localhost"
+	devicePort := "1234"
+	ts := startTestServer(mockDevice)
 	// Start the server.
 	ts.StartTLS()
 	defer ts.Close()
@@ -61,20 +74,26 @@ func TestCreateVolume(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 
-	var requestBody = `{
-		"Name":"Volume 1",
-		"RAIDType":"RAID0",
-		"Drives": [{"@odata.id":"/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Drives/1"}],
-		"@Redfish.OperationApplyTime": "OnReset"
-	}`
+	reqPostBody := map[string]interface{}{
+		"Name":     "Volume_Test1",
+		"RAIDType": "RAID0",
+		"Drives":   []rfpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:1/Storage/ArrayControllers-0/Drives/0"}},
+	}
+	reqBodyBytes, _ := json.Marshal(reqPostBody)
+	requestBody := map[string]interface{}{
+		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
+		"UserName":       "admin",
+		"Password":       []byte("P@$$w0rd"),
+		"PostBody":       reqBodyBytes,
+	}
 
 	//Unit Test for success scenario
-	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusNotImplemented) //ToDo Change the status to http.StatusOK
+	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusOK)
 
 	//Case for invalid token
-	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusNotImplemented) //ToDo Change the status to http.StatusUnauthorized
+	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
 
 	//unittest for bad request scenario
 	invalidRequestBody := "invalid"
-	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(invalidRequestBody).Expect().Status(http.StatusNotImplemented) //ToDo Change the status to http.StatusBadRequest
+	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(invalidRequestBody).Expect().Status(http.StatusBadRequest)
 }

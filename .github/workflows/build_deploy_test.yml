@@ -43,7 +43,7 @@ jobs:
         make all
         sleep 15s
         b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish'`
-        if [ $b -eq 20];
+        if [ $b -eq 20 ];
         then
             echo "ODIMRA processes & GRF plugin are up & running"
             echo "Deployment sucessful" 

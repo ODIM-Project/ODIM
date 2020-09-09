@@ -43,10 +43,6 @@ func SimpleUpdate(ctx iris.Context) {
 	}
 	var deviceDetails rfpmodel.Device
 	uri := ctx.Request().RequestURI
-	//replacing the request url with south bound translation URL
-	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
-		uri = strings.Replace(uri, key, value, -1)
-	}
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
@@ -55,11 +51,19 @@ func SimpleUpdate(ctx iris.Context) {
 		ctx.WriteString("Error: bad request.")
 		return
 	}
+
+	var reqData string
+	//replacing the request url with south bound translation URL
+	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
+		uri = strings.Replace(uri, key, value, -1)
+		reqData = strings.Replace(string(deviceDetails.PostBody), key, value, -1)
+	}
+
 	device := &rfputilities.RedfishDevice{
 		Host:     deviceDetails.Host,
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
-		PostBody: deviceDetails.PostBody,
+		PostBody: []byte(reqData),
 	}
 
 	redfishClient, err := rfputilities.GetRedfishClient()

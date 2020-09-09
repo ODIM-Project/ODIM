@@ -88,6 +88,7 @@ type getResourceRequest struct {
 	ContactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	OemFlag           bool
 	Plugin            agmodel.Plugin
+	TaskRequest       string
 	HTTPMethodType    string
 	Token             string
 	StatusPoll        bool
@@ -171,10 +172,11 @@ func getIPAndPortFromAddress(address string) (string, string) {
 	return ip, port
 }
 
-func fillTaskData(taskID string, targetURI string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
+func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
 	return common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
+		TaskRequest:     request,
 		Response:        resp,
 		TaskState:       taskState,
 		TaskStatus:      taskStatus,
@@ -198,9 +200,10 @@ func UpdateTaskData(taskData common.TaskData) error {
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      respBody,
+		JSONBody:      taskData.TaskRequest,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
+		ResponseBody:  respBody,
 	}
 
 	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
@@ -830,11 +833,11 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 	}
 
 	progress = progress + alottedWork
-	var task = fillTaskData(taskID, req.TargetURI, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
+	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	err = req.UpdateTask(task)
 
 	if err != nil && (err.Error() == common.Cancelling) {
-		var task = fillTaskData(taskID, req.TargetURI, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
+		var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Cancelled, common.OK, progress, http.MethodPost)
 		req.UpdateTask(task)
 
 	}

@@ -48,6 +48,21 @@ func main() {
 		}
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
+		// This if block added to fix issue odim-98
+		if basicAuth != "" {
+			var URLs_not_requiring_basic_auth = []string {"/redfish/v1","/redfish/v1/SessionService"}
+			var found bool = false
+			for _, item := range URLs_not_requiring_basic_auth {
+				if item == path {
+					found = true
+					break
+				}
+			}
+			if found {
+				log.Println("warning: basic auth is provided but not used as URL is: "+path)
+				basicAuth = ""
+			}
+		}
 		if basicAuth != "" {
 			var username, password string
 			yes := strings.Contains(basicAuth, "Basic")

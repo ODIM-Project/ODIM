@@ -17,127 +17,17 @@ package system
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 	uuid "github.com/satori/go.uuid"
 )
-
-// AggregationServiceAdd to add bmc or manger via AggregationService Add action
-func (e *ExternalInterface) AggregationServiceAdd(taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) response.RPC {
-	var resp response.RPC
-	var percentComplete int32
-	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Add"
-	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
-	err := e.UpdateTask(task)
-	if err != nil {
-		errMsg := "error while starting the task: " + err.Error()
-		log.Printf("error while starting the task: %v", errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-	}
-
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
-
-	// parsing the AddResourceRequest
-	var addResourceRequest AddResourceRequest
-	err = json.Unmarshal(req.RequestBody, &addResourceRequest)
-	if err != nil {
-		errMsg := "unable to parse the add request" + err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
-	}
-
-	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, addResourceRequest)
-	if err != nil {
-		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
-	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
-		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
-		return resp
-	}
-
-	if addResourceRequest.Oem == nil {
-		errMsg := "error: mandatory Oem block missing in the request"
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Oem"}, taskInfo)
-	}
-
-	// check if there is a request ongoing for the server in payload
-	ActiveReqSet.UpdateMu.Lock()
-	if pluginID, exist := ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress]; exist {
-		ActiveReqSet.UpdateMu.Unlock()
-		var errMsg string
-		mIP, mPort := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
-		// checking whether the request is for adding a server or a manager
-		if addResourceRequest.Oem.PluginType != "" || addResourceRequest.Oem.PreferredAuthType != "" {
-			errMsg = fmt.Sprintf("error: An active request already exists for adding manager %v plugin with IP %v Port %v", pluginID.(string), mIP, mPort)
-		} else {
-			errMsg = fmt.Sprintf("error: An active request already exists for adding BMC with IP %v through %v plugin", mIP, pluginID.(string))
-		}
-		log.Println(errMsg)
-		args := response.Args{
-			Code:    response.GeneralError,
-			Message: errMsg,
-		}
-		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
-		resp.StatusCode = http.StatusConflict
-		percentComplete = 100
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
-		return resp
-	}
-	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.Oem.PluginID
-	ActiveReqSet.UpdateMu.Unlock()
-
-	defer func() {
-		// check if there is an entry added for the server in ongoing requests tracker and remove it
-		ActiveReqSet.UpdateMu.Lock()
-		delete(ActiveReqSet.ReqRecord, addResourceRequest.ManagerAddress)
-		ActiveReqSet.UpdateMu.Unlock()
-	}()
-
-	var pluginContactRequest getResourceRequest
-
-	pluginContactRequest.ContactClient = e.ContactClient
-	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
-	pluginContactRequest.TargetURI = targetURI
-	pluginContactRequest.UpdateTask = e.UpdateTask
-	pluginContactRequest.TaskRequest = string(req.RequestBody)
-
-	if addResourceRequest.Oem.PluginType != "" || addResourceRequest.Oem.PreferredAuthType != "" {
-		resp, _, _ = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest)
-	} else {
-
-		resp, _, _ = e.addCompute(taskID, targetURI, percentComplete, addResourceRequest, pluginContactRequest)
-	}
-	if resp.StatusMessage != "" {
-		return resp
-	}
-	resp.StatusMessage = response.Success
-	resp.StatusCode = http.StatusOK
-	resp.Body = response.ErrorClass{
-		Code:    resp.StatusMessage,
-		Message: "Request completed successfully.",
-	}
-	percentComplete = 100
-
-	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost)
-	e.UpdateTask(task)
-
-	return resp
-}
 
 // AddCompute is the handler for adding system
 // Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
@@ -210,7 +100,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 
 	commonError.Error.Code = errors.PropertyValueFormatError
 	resp.Body = commonError
-	resp.StatusCode = getResponse.StatusCode
+	resp.StatusCode = http.StatusCreated
 	resp.StatusMessage = getResponse.StatusMessage
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 

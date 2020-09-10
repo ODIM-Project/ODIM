@@ -27,14 +27,89 @@
 package system
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
+	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
+
+func deleteComputeforTest(index int, key string) *errors.Error {
+	if key == "/redfish/v1/Systems/del-comp-internal-err:1" {
+		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
+	}
+	if key != "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/Systems/" &&
+		key != "/redfish/v1/Systems/del-sys-internal-err:1" && key != "/redfish/v1/Systems/sys-not-found:1" {
+		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
+	}
+	return nil
+}
+
+func deleteSystemforTest(key string) *errors.Error {
+	if key == "del-sys-internal-err" {
+		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
+	}
+	if key != "ef83e569-7336-492a-aaee-31c02d9db831" {
+		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
+	}
+	return nil
+}
+
+func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
+	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1" {
+		return nil, fmt.Errorf("error while trying to delete event subcription")
+	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode:1" {
+		return &eventsproto.EventSubResponse{
+			StatusCode: http.StatusCreated,
+		}, nil
+	}
+	return &eventsproto.EventSubResponse{
+		StatusCode: http.StatusNoContent,
+	}, nil
+}
+
+func mockEventNotification(systemID, eventType, collectionType string) {
+	return
+}
+func mockManagersData(id string, data map[string]interface{}) error {
+	reqData, _ := json.Marshal(data)
+
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.Create("Managers", id, string(reqData)); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "Managaers", err.Error())
+	}
+	return nil
+}
+
+func mockContactClientForDelete(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
+	if url == "https://localhost:9092/ODIM/v1/Status" || (strings.Contains(url, "/ODIM/v1/Status") && credentials["UserName"] == "noStatusUser") {
+		body := `{"MessageId": "Base.1.0.Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
+	return nil, fmt.Errorf("InvalidRequest")
+}
+
+func mockSystemOperationInfo() *errors.Error {
+	systemOperation := agmodel.SystemOperation{
+		Operation: "InventoryRediscovery ",
+	}
+	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+}
 
 func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	d := &ExternalInterface{

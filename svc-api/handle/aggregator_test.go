@@ -234,51 +234,6 @@ var request = map[string]interface{}{
 	"Parameters":     []params{{Name: "uri"}},
 }
 
-func TestDeleteCompute(t *testing.T) {
-	var a AggregatorRPCs
-	a.DeleteComputeRPC = testDeleteComputeRPC
-
-	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1")
-	redfishRoutes.Delete("/AggregationService#RemoveActionInfo", a.DeleteCompute)
-
-	e := httptest.New(t, testApp)
-	e.DELETE(
-		"/redfish/v1/AggregationService#RemoveActionInfo",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusOK)
-}
-func TestAddCompute(t *testing.T) {
-	var a AggregatorRPCs
-	a.AddComputeRPC = testAddComputeRPC
-
-	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1")
-	redfishRoutes.Post("/AggregationService#Add", a.AddCompute)
-
-	e := httptest.New(t, testApp)
-	e.POST(
-		"/redfish/v1/AggregationService#Add",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusOK)
-	e.POST(
-		"/redfish/v1/AggregationService#Add",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusBadRequest)
-	e.POST(
-		"/redfish/v1/AggregationService#Add",
-	).WithHeader("X-Auth-Token", "").WithJSON(request).Expect().Status(http.StatusUnauthorized)
-}
-func TestAddComputeWithRPCError(t *testing.T) {
-	var a AggregatorRPCs
-	a.AddComputeRPC = testAddComputeRPCWithRPCError
-
-	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1")
-	redfishRoutes.Post("/AggregationService#Add", a.AddCompute)
-
-	e := httptest.New(t, testApp)
-	e.POST(
-		"/redfish/v1/AggregationService#Add",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusInternalServerError)
-}
 func TestResetCompute(t *testing.T) {
 	var a AggregatorRPCs
 	a.ResetRPC = testAddComputeRPC
@@ -343,47 +298,6 @@ func TestSetDefaultBootOrderComputeWithRPCError(t *testing.T) {
 	e := httptest.New(t, testApp)
 	e.POST(
 		"/redfish/v1/AggregationService#SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusInternalServerError)
-}
-func TestDeleteComputeWithoutToken(t *testing.T) {
-	var a AggregatorRPCs
-	a.DeleteComputeRPC = testDeleteComputeRPC
-
-	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1")
-	redfishRoutes.Delete("/AggregationService#RemoveActionInfo", a.DeleteCompute)
-
-	e := httptest.New(t, testApp)
-	e.DELETE(
-		"/redfish/v1/AggregationService#RemoveActionInfo",
-	).WithJSON(request).Expect().Status(http.StatusUnauthorized)
-}
-
-func TestDeleteComputeWithoutRequestbody(t *testing.T) {
-	var a AggregatorRPCs
-	a.DeleteComputeRPC = testDeleteComputeRPC
-
-	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1")
-	redfishRoutes.Delete("/AggregationService#RemoveActionInfo", a.DeleteCompute)
-
-	e := httptest.New(t, testApp)
-	e.DELETE(
-		"/redfish/v1/AggregationService#RemoveActionInfo",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusBadRequest)
-}
-
-func TestDeleteComputeWithoutRPCCall(t *testing.T) {
-	var a AggregatorRPCs
-	a.DeleteComputeRPC = testDeleteComputeRPCWIthRPCError
-
-	testApp := iris.New()
-	redfishRoutes := testApp.Party("/redfish/v1")
-	redfishRoutes.Delete("/AggregationService#RemoveActionInfo", a.DeleteCompute)
-
-	e := httptest.New(t, testApp)
-	e.DELETE(
-		"/redfish/v1/AggregationService#RemoveActionInfo",
 	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusInternalServerError)
 }
 

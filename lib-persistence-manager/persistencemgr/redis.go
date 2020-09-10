@@ -26,6 +26,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	redisSentinel "github.com/go-redis/redis"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -33,6 +34,67 @@ const (
 	errorCollectingData string = "error while trying to collect data: "
 	count               int    = 1000
 )
+
+// DbType is a alias name for int32
+type DbType int32
+
+const (
+	//InMemory - To select in-memory db connection pool
+	InMemory DbType = iota
+	// OnDisk - To select in-disk db connection pool
+	OnDisk
+)
+
+//RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
+type RedisExternalCalls interface {
+	newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient
+	getMasterAddrByName(mset string, snlClient *redisSentinel.SentinelClient) *redisSentinel.StringSliceCmd
+}
+
+type redisExtCallsImp struct{}
+
+func (r redisExtCallsImp) newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient {
+	return redisSentinel.NewSentinelClient(opt)
+}
+
+func (r redisExtCallsImp) getMasterAddrByName(masterSet string, snlClient *redisSentinel.SentinelClient) *redisSentinel.StringSliceCmd {
+	return snlClient.GetMasterAddrByName(masterSet)
+}
+
+//NewRedisExternalCalls is Constructor for RedisExternalCalls
+func NewRedisExternalCalls() RedisExternalCalls {
+	return &redisExtCallsImp{}
+}
+
+var redisExtCalls RedisExternalCalls
+
+func init() {
+	redisExtCalls = redisExtCallsImp{}
+}
+
+func sentinelNewClient(host string) *redisSentinel.SentinelClient {
+	return nil
+}
+
+//GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
+func GetCurrentMasterHostPort(host string) (string, string) {
+	return "", ""
+}
+
+//resetDBWriteConection is used to reset the WriteConnection Pool (inmemory / OnDisk).
+func resetDBWriteConection(dbFlag DbType) {
+	return
+}
+
+//GetDBConnection is used to get the new Connection Pool for Inmemory/OnDisk DB
+func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
+	return nil, nil
+}
+
+//GetPool is used is utility function to get the Connection Pool from DB.
+func GetPool(host, port string) (*redis.Pool, error) {
+	return nil, fmt.Errorf("error")
+}
 
 // Connection returns connection pool
 // Connection does not take any input and returns a connection object used to interact with the DB

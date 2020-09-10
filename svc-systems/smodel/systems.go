@@ -46,6 +46,19 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
+// Volume is for sending a volume's request to south bound
+type Volume struct {
+	Name               string        `json:"Name" validate:"required"`
+	RAIDType           string        `json:"RAIDType"`
+	Drives             []OdataIDLink `json:"Drives"`
+	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+}
+
+// OdataIDLink contains link to a resource
+type OdataIDLink struct {
+	OdataID string `json:"@odata.id"`
+}
+
 //GetSystemByUUID fetches computer system details by UUID from database
 func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	var system string

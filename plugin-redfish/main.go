@@ -99,7 +99,7 @@ func routers() *iris.Application {
 	pluginRoutes := app.Party("/ODIM/v1")
 	{
 		pluginRoutes.Post("/validate", rfpmiddleware.BasicAuth, rfphandler.Validate)
-		pluginRoutes.Post("/Session", rfphandler.CreateSession)
+		pluginRoutes.Post("/Sessions", rfphandler.CreateSession)
 		pluginRoutes.Post("/Subscriptions", rfpmiddleware.BasicAuth, rfphandler.CreateEventSubscription)
 		pluginRoutes.Delete("/Subscriptions", rfpmiddleware.BasicAuth, rfphandler.DeleteEventSubscription)
 

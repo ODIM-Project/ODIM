@@ -147,7 +147,7 @@ func mockCreateChildTask(sessionID, taskid string) (string, error) {
 	return "123456", nil
 }
 
-func mockUpdateTask(task TaskData) error {
+func mockUpdateTask(task common.TaskData) error {
 	return nil
 }
 

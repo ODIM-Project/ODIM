@@ -34,9 +34,7 @@ var _ server.Option
 // Client API for Aggregator service
 
 type AggregatorService interface {
-	AddCompute(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	GetAggregationService(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
-	DeleteCompute(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	Reset(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	SetDefaultBootOrder(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, opts ...client.CallOption) (*RediscoverSystemInventoryResponse, error)
@@ -74,28 +72,8 @@ func NewAggregatorService(name string, c client.Client) AggregatorService {
 	}
 }
 
-func (c *aggregatorService) AddCompute(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
-	req := c.c.NewRequest(c.name, "Aggregator.AddCompute", in)
-	out := new(AggregatorResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *aggregatorService) GetAggregationService(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
 	req := c.c.NewRequest(c.name, "Aggregator.GetAggregationService", in)
-	out := new(AggregatorResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *aggregatorService) DeleteCompute(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
-	req := c.c.NewRequest(c.name, "Aggregator.DeleteCompute", in)
 	out := new(AggregatorResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -277,9 +255,7 @@ func (c *aggregatorService) SetDefaultBootOrderElementsOfAggregate(ctx context.C
 // Server API for Aggregator service
 
 type AggregatorHandler interface {
-	AddCompute(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	GetAggregationService(context.Context, *AggregatorRequest, *AggregatorResponse) error
-	DeleteCompute(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	Reset(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	SetDefaultBootOrder(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	RediscoverSystemInventory(context.Context, *RediscoverSystemInventoryRequest, *RediscoverSystemInventoryResponse) error
@@ -301,9 +277,7 @@ type AggregatorHandler interface {
 
 func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...server.HandlerOption) error {
 	type aggregator interface {
-		AddCompute(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		GetAggregationService(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
-		DeleteCompute(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		Reset(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		SetDefaultBootOrder(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, out *RediscoverSystemInventoryResponse) error
@@ -333,16 +307,8 @@ type aggregatorHandler struct {
 	AggregatorHandler
 }
 
-func (h *aggregatorHandler) AddCompute(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
-	return h.AggregatorHandler.AddCompute(ctx, in, out)
-}
-
 func (h *aggregatorHandler) GetAggregationService(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
 	return h.AggregatorHandler.GetAggregationService(ctx, in, out)
-}
-
-func (h *aggregatorHandler) DeleteCompute(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
-	return h.AggregatorHandler.DeleteCompute(ctx, in, out)
 }
 
 func (h *aggregatorHandler) Reset(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {

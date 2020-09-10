@@ -66,7 +66,7 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 	targetURI := "/redfish/v1/AggregationService/Actions/AggregationService.Reset/" // this will removed later and passed as input param in req struct
 	percentComplete = 0
 
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
 
 	var resetRequest AggregationResetRequest
 	if err := json.Unmarshal(req.RequestBody, &resetRequest); err != nil {
@@ -114,10 +114,10 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 
 					if i < len(resetRequest.TargetURIs)-1 {
 						percentComplete = int32(((i + 1) / len(resetRequest.TargetURIs)) * 100)
-						var task = fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+						var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
 						err := e.UpdateTask(task)
 						if err != nil && err.Error() == common.Cancelling {
-							task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+							task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
 							e.UpdateTask(task)
 							cancelled = true
 						}
@@ -137,7 +137,7 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		// if batch size is 0 then reset all the systems without any kind of batch and ignore the DelayBetweenBatchesInSeconds
 		tempIndex = tempIndex + 1
 		if resetRequest.BatchSize == 0 || tempIndex <= resetRequest.BatchSize {
-			go e.resetSystem(taskID, subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
+			go e.resetSystem(taskID, string(req.RequestBody), subTaskChan, sessionUserName, resource, resetRequest.ResetType, &wg)
 		}
 
 		if tempIndex == resetRequest.BatchSize && resetRequest.BatchSize != 0 {
@@ -174,10 +174,10 @@ func (e *ExternalInterface) Reset(taskID string, sessionUserName string, req *ag
 		Message: "Request completed successfully",
 	}
 	resp.Body = args.CreateGenericErrorResponse()
-	var task = fillTaskData(taskID, targetURI, resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
-		task = fillTaskData(taskID, targetURI, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
 		e.UpdateTask(task)
 		runtime.Goexit()
 	}

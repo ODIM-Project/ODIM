@@ -221,10 +221,10 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		Messages:    messageList,
 		TaskMonitor: task.TaskMonitor,
 		Payload: tresponse.Payload{
-			RespHTTPHeaders: httpHeaders,
-			HTTPOperation:   task.Payload.HTTPOperation,
-			RespJSONBody:    string(task.Payload.JSONBody),
-			TargetURI:       task.Payload.TargetURI,
+			HTTPHeaders:   httpHeaders,
+			HTTPOperation: task.Payload.HTTPOperation,
+			JSONBody:      string(task.Payload.JSONBody),
+			TargetURI:     task.Payload.TargetURI,
 		},
 		PercentComplete: task.PercentComplete,
 	}
@@ -513,20 +513,14 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 		Messages:     messageList,
 		TaskMonitor:  task.TaskMonitor,
 		Payload: tresponse.Payload{
-			RespHTTPHeaders: httpHeaders,
-			HTTPOperation:   task.Payload.HTTPOperation,
-			RespJSONBody:    string(task.Payload.JSONBody),
-			TargetURI:       task.Payload.TargetURI,
+			HTTPHeaders:   httpHeaders,
+			HTTPOperation: task.Payload.HTTPOperation,
+			JSONBody:      string(task.Payload.JSONBody),
+			TargetURI:     task.Payload.TargetURI,
 		},
 		PercentComplete: task.PercentComplete,
 	}
-	/*
-		if task.ParentID == "" {
-			taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
-		}else if len(task.ChildTaskIDs){
-			taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
-		}
-	*/
+
 	// Check the state of the task
 	if task.TaskState == "Completed" || task.TaskState == "Cancelled" || task.TaskState == "Killed" || task.TaskState == "Exception" {
 		// return with the 200 OK, along with response header and response body
@@ -658,10 +652,10 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest,
 		Messages:    messageList,
 		TaskMonitor: task.TaskMonitor,
 		Payload: tresponse.Payload{
-			RespHTTPHeaders: httpHeaders,
-			HTTPOperation:   task.Payload.HTTPOperation,
-			RespJSONBody:    string(task.Payload.JSONBody),
-			TargetURI:       task.Payload.TargetURI,
+			HTTPHeaders:   httpHeaders,
+			HTTPOperation: task.Payload.HTTPOperation,
+			JSONBody:      string(task.Payload.JSONBody),
+			TargetURI:     task.Payload.TargetURI,
 		},
 		PercentComplete: task.PercentComplete,
 	}
@@ -917,6 +911,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 			task.Payload.JSONBody = payLoad.JSONBody
 			task.Payload.TargetURI = payLoad.TargetURI
 			task.StatusCode = payLoad.StatusCode
+			task.TaskResponse = payLoad.ResponseBody
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
@@ -987,6 +982,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 			task.Payload.JSONBody = payLoad.JSONBody
 			task.Payload.TargetURI = payLoad.TargetURI
 			task.StatusCode = payLoad.StatusCode
+			task.TaskResponse = payLoad.ResponseBody
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification

@@ -27,7 +27,6 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
@@ -40,481 +39,8 @@ func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 func mockSubscribeEMB(pluginID string, list []string) {
 	return
 }
-func TestExternalInterface_AddCompute(t *testing.T) {
-	common.MuxLock.Lock()
-	config.SetUpMockConfig(t)
-	common.MuxLock.Unlock()
-	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
-	}
-	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockPluginData(t, "GRF")
-	mockPluginData(t, "XAuthPlugin")
-	mockPluginData(t, "XAuthPluginFail")
-
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.1",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID: "GRF",
-		},
-	})
-	reqWithoutOEM, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.11",
-		UserName:       "admin",
-		Password:       "password",
-	})
-	reqPluginID, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.1",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID: "invalid pluginID",
-		},
-	})
-	reqSuccessXAuth, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.2",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID: "XAuthPlugin",
-		},
-	})
-	reqIncorrectDeviceBasicAuth, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.1",
-		UserName:       "admin1",
-		Password:       "incorrectPassword",
-		Oem: &AddOEM{
-			PluginID: "GRF",
-		},
-	})
-	reqIncorrectDeviceXAuth, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.2",
-		UserName:       "username",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID: "XAuthPluginFail",
-		},
-	})
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-	}
-	type args struct {
-		taskID string
-		req    *aggregatorproto.AggregatorRequest
-	}
-	tests := []struct {
-		name string
-		p    *ExternalInterface
-		args args
-		want response.RPC
-	}{
-		{
-			name: "posivite case",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqSuccess,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "request without OEM",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqWithoutOEM,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
-			},
-		},
-		{
-			name: "update task failure or invalid taskID",
-			p:    p,
-			args: args{
-				taskID: "invalid",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqSuccess,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusInternalServerError,
-			},
-		},
-		{
-			name: "invalid request body format",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte("some invalid format"),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusInternalServerError,
-			},
-		},
-		{
-			name: "invalid plugin id",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqPluginID,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusNotFound,
-			},
-		},
-		{
-			name: "success: plugin with xauth token",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqSuccessXAuth,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "with incorrect device credentials and BasicAuth",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqIncorrectDeviceBasicAuth,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusUnauthorized,
-			},
-		},
-		{
-			name: "with incorrect device credentials and XAuth",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqIncorrectDeviceXAuth,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusUnauthorized,
-			},
-		},
-	}
-	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
-		t.Run(tt.name, func(t *testing.T) {
-			time.Sleep(2 * time.Second)
-			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
-			}
-		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
-	}
-}
-
-func TestExternalInterface_AddComputeForPasswordEncryptFail(t *testing.T) {
-	common.MuxLock.Lock()
-	config.SetUpMockConfig(t)
-	common.MuxLock.Unlock()
-	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
-	}
-	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockPluginData(t, "GRF")
-
-	reqEncryptFail, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.1",
-		UserName:       "admin",
-		Password:       "passwordWithInvalidEncryption",
-		Oem: &AddOEM{
-			PluginID: "GRF",
-		},
-	})
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-	}
-	type args struct {
-		taskID string
-		req    *aggregatorproto.AggregatorRequest
-	}
-	tests := []struct {
-		name string
-		p    *ExternalInterface
-		args args
-		want response.RPC
-	}{
-		{
-			name: "encryption failure",
-			p:    p,
-			args: args{
-				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqEncryptFail,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusInternalServerError,
-			},
-		},
-	}
-	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
-		t.Run(tt.name, func(t *testing.T) {
-			time.Sleep(2 * time.Second)
-			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
-			}
-		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
-	}
-}
-
-func TestExternalInterface_AddComputeMultipleRequest(t *testing.T) {
-	common.MuxLock.Lock()
-	config.SetUpMockConfig(t)
-	common.MuxLock.Unlock()
-	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
-	}
-	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
-	}()
-	mockPluginData(t, "GRF")
-
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.3",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID: "GRF",
-		},
-	})
-	p := &ExternalInterface{
-		ContactClient:       testContactClientWithDelay,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-	}
-	type args struct {
-		taskID string
-		req    *aggregatorproto.AggregatorRequest
-	}
-	req := &aggregatorproto.AggregatorRequest{
-		SessionToken: "validToken",
-		RequestBody:  reqSuccess,
-	}
-	tests := []struct {
-		name string
-		p    *ExternalInterface
-		args args
-		want response.RPC
-	}{
-		{
-			name: "multiple request case",
-			want: response.RPC{
-				StatusCode: http.StatusConflict,
-			},
-		},
-	}
-	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
-		t.Run(tt.name, func(t *testing.T) {
-			go p.AggregationServiceAdd("123", "validUserName", req)
-			time.Sleep(time.Second)
-			if got := p.AggregationServiceAdd("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
-			}
-		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
-	}
-}
-
-// TestExternalInterface_AddComputeDuplicate handles the test cases for getregistry and duplicate add server
-func TestExternalInterface_AddComputeDuplicate(t *testing.T) {
-	common.MuxLock.Lock()
-	config.SetUpMockConfig(t)
-	common.MuxLock.Unlock()
-	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
-	}
-	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
-	}()
-	mockPluginData(t, "GRF")
-
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "100.0.0.1",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID: "GRF",
-		},
-	})
-	p := &ExternalInterface{
-		ContactClient:       mockContactClientForDuplicate,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-	}
-	type args struct {
-		taskID string
-		req    *aggregatorproto.AggregatorRequest
-	}
-	req := &aggregatorproto.AggregatorRequest{
-		SessionToken: "validToken",
-		RequestBody:  reqSuccess,
-	}
-	tests := []struct {
-		name string
-		p    *ExternalInterface
-		args args
-		want response.RPC
-	}{
-		{
-			name: "success case with registries",
-			want: response.RPC{
-				StatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "duplicate case",
-			want: response.RPC{
-				StatusCode: http.StatusConflict,
-			},
-		},
-	}
-	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
-		t.Run(tt.name, func(t *testing.T) {
-			if got := p.AggregationServiceAdd("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd() = %v, want %v", got, tt.want)
-			}
-		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
-	}
-}
-
 func testContactClientWithDelay(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	time.Sleep(4 * time.Second)
-	if strings.Contains(url, "/ODIM/v1/Systems/1") {
-		uid := "24b243cf-f1e3-5318-92d9-2d6737d6b0b9"
-		body := `{"@odata.id":"/ODIM/v1/Systems/1", "UUID": "` + uid + `", "Id": "1",
-		    "MemorySummary":{
-			"Status":{
-			"HealthRollup": "OK"
-			},
-			"TotalSystemMemoryGiB": 384,
-			"TotalSystemPersistentMemoryGiB": 0
-			},
-			"PowerState": "On",
-			"ProcessorSummary":{
-				"Count": 2,
-				"Model": "Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz",
-				"Status":{
-					"HealthRollup": "OK"
-				}
-			},
-			"SystemType": "Physical",
-		}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	}
 	fBody := `{"Members":[{"@odata.id":"/ODIM/v1/Systems/1"}]}`
 	return &http.Response{
 		StatusCode: http.StatusOK,
@@ -696,3 +222,124 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 
 	return nil, fmt.Errorf("InvalidRequest")
 }
+
+func TestExternalInterface_addcompute(t *testing.T) {
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockPluginData(t, "GRF")
+	mockPluginData(t, "XAuthPlugin")
+	mockPluginData(t, "XAuthPluginFail")
+
+	reqSuccess:= AddResourceRequest{
+		ManagerAddress: "100.0.0.1",
+		UserName: "admin",
+		Password: "password",
+		Oem: &AddOEM{
+				PluginID: "GRF",
+		},
+	}
+	
+	reqSuccessXAuth := AddResourceRequest{
+		ManagerAddress: "100.0.0.2",
+		UserName: "admin",
+		Password: "password",
+		Oem: &AddOEM{
+				PluginID: "XAuthPlugin",
+		},
+	}
+	reqIncorrectDeviceBasicAuth:= AddResourceRequest{
+		ManagerAddress: "100.0.0.1",
+		UserName: "admin1",
+		Password: "incorrectPassword",
+		Oem: &AddOEM{
+				PluginID: "GRF",
+		},
+	}
+
+	p := &ExternalInterface{
+		ContactClient:       mockContactClient,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		DeleteComputeSystem: deleteComputeforTest,
+	}
+	targetURI := "/redfish/v1/AggregationService/AggregationSource"
+	var percentComplete int32
+	var pluginContactRequest getResourceRequest
+	pluginContactRequest.ContactClient = p.ContactClient
+	pluginContactRequest.GetPluginStatus = p.GetPluginStatus
+	pluginContactRequest.TargetURI = targetURI
+	pluginContactRequest.UpdateTask = p.UpdateTask
+	type args struct {
+		taskID string
+		req    AddResourceRequest
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "posivite case",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: reqSuccess,
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "success: plugin with xauth token",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req:  reqSuccessXAuth,
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "with incorrect device credentials and BasicAuth",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: reqIncorrectDeviceBasicAuth,
+			},
+			want: response.RPC{
+				StatusCode: http.StatusUnauthorized,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got,_,_ := tt.p.addCompute(tt.args.taskID, targetURI, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.addCompute = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+

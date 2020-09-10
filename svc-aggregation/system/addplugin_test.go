@@ -15,15 +15,12 @@
 package system
 
 import (
-	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
@@ -68,66 +65,76 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
+	reqSuccess:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "GRF",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
-		},
-	})
-	reqExistingPlugin, _ := json.Marshal(AddResourceRequest{
+		UserName: "admin",
+		Password: "password",
+			Oem: &AddOEM{
+				PluginID:          "GRF",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
+	}
+	reqExistingPlugin:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
-		},
-	})
-	reqInvalidAuthType, _ := json.Marshal(AddResourceRequest{
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
+	
+	}
+	reqInvalidAuthType:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "BasicAuthentication",
-			PluginType:        "Compute",
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuthentication",
+				PluginType:        "Compute",
+		
 		},
-	})
-	reqInvalidPluginType, _ := json.Marshal(AddResourceRequest{
+	}
+	reqInvalidPluginType:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "plugin",
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "plugin",
+		
 		},
-	})
-	reqExistingPluginBadPassword, _ := json.Marshal(AddResourceRequest{
+	}
+	reqExistingPluginBadPassword:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "PluginWithBadPassword",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
-		},
-	})
-	reqExistingPluginBadData, _ := json.Marshal(AddResourceRequest{
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "PluginWithBadPassword",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+			},
+
+	}
+	reqExistingPluginBadData:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "PluginWithBadData",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "PluginWithBadData",
+				PreferredAuthType: "BasicAuth",
+				PluginType:        "Compute",
+		
 		},
-	})
+	}
 
 	p := &ExternalInterface{
 		ContactClient:     mockContactClient,
@@ -141,10 +148,15 @@ func TestExternalInterface_Plugin(t *testing.T) {
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
 	}
-
+	targetURI := "/redfish/v1/AggregationService/AggregationSource"
+	var pluginContactRequest getResourceRequest
+	pluginContactRequest.ContactClient = p.ContactClient
+	pluginContactRequest.GetPluginStatus = p.GetPluginStatus
+	pluginContactRequest.TargetURI = targetURI
+	pluginContactRequest.UpdateTask = p.UpdateTask
 	type args struct {
 		taskID string
-		req    *aggregatorproto.AggregatorRequest
+		req    AddResourceRequest
 	}
 	tests := []struct {
 		name string
@@ -157,13 +169,11 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqSuccess,
-				},
+				req: reqSuccess,
+			
 			},
 			want: response.RPC{
-				StatusCode: http.StatusOK,
+				StatusCode: http.StatusCreated,
 			},
 		},
 		{
@@ -171,76 +181,68 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqExistingPlugin,
-				},
+				req:  reqExistingPlugin,
+			
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
-		}, {
+		}, 
+    {
 			name: "Invalid Auth type",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqInvalidAuthType,
-				},
+				req:  reqInvalidAuthType,
+			
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
 			},
-		}, {
+		}, 
+    {
 			name: "Invalid Plugin type",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqInvalidPluginType,
-				},
+				req:  reqInvalidPluginType,
+				
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
 			},
-		}, {
+		}, 
+    {
 			name: "Existing Plugin with bad password",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqExistingPluginBadPassword,
-				},
+				req: reqExistingPluginBadPassword,
+				
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
-		}, {
+		}, 
+    {
 			name: "Existing Plugin with bad data",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqExistingPluginBadData,
+				req: reqExistingPluginBadData,
 				},
-			},
+	
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd = %v, want %v", got, tt.want)
+			if got,_,_ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.ReqRecord = nil
 	}
 }
 
@@ -269,70 +271,82 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error while trying to create schema: %v", err)
 	}
-	reqXAuthSuccess, _ := json.Marshal(AddResourceRequest{
+	reqXAuthSuccess:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "GRF",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "GRF",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+		
 		},
-	})
-	reqXAuthFail, _ := json.Marshal(AddResourceRequest{
+	}
+	reqXAuthFail:= AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName:       "incorrectusername",
-		Password:       "incorrectPassword",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+		UserName: "incorrectusername",
+		Password: "incorrectPassword",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+		
 		},
-	})
+	}
 
-	reqStatusFail, _ := json.Marshal(AddResourceRequest{
+	reqStatusFail:= AddResourceRequest{
 		ManagerAddress: "100.0.0.3:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+		
 		},
-	})
+	}
 
-	reqInvalidStatusBody, _ := json.Marshal(AddResourceRequest{
+	reqInvalidStatusBody:= AddResourceRequest{
 		ManagerAddress: "100.0.0.4:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+		
 		},
-	})
+	}
 
-	reqManagerGetFail, _ := json.Marshal(AddResourceRequest{
+	reqManagerGetFail:= AddResourceRequest{
 		ManagerAddress: "100.0.0.5:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
-		},
-	})
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
+		
+	}
 
-	reqInvalidManagerBody, _ := json.Marshal(AddResourceRequest{
+	reqInvalidManagerBody:= AddResourceRequest{
 		ManagerAddress: "100.0.0.6:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "ILO",
-			PreferredAuthType: "XAuthToken",
-			PluginType:        "Compute",
-		},
-	})
+		UserName: "admin",
+		Password: "password",
+		
+			Oem: &AddOEM{
+				PluginID:          "ILO",
+				PreferredAuthType: "XAuthToken",
+				PluginType:        "Compute",
+			},
+	
+	}
 
 	p := &ExternalInterface{
 		ContactClient:     mockContactClient,
@@ -346,10 +360,15 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
 	}
-
+	targetURI := "/redfish/v1/AggregationService/AggregationSource"
+	var pluginContactRequest getResourceRequest
+	pluginContactRequest.ContactClient = p.ContactClient
+	pluginContactRequest.GetPluginStatus = p.GetPluginStatus
+	pluginContactRequest.TargetURI = targetURI
+	pluginContactRequest.UpdateTask = p.UpdateTask
 	type args struct {
 		taskID string
-		req    *aggregatorproto.AggregatorRequest
+		req    AddResourceRequest
 	}
 	tests := []struct {
 		name string
@@ -362,13 +381,11 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqXAuthSuccess,
+				req: reqXAuthSuccess,
 				},
-			},
+		
 			want: response.RPC{
-				StatusCode: http.StatusOK,
+				StatusCode: http.StatusCreated,
 			},
 		},
 		{
@@ -376,11 +393,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqXAuthFail,
+				req:  reqXAuthFail,
 				},
-			},
+		
 			want: response.RPC{
 				StatusCode: http.StatusUnauthorized,
 			},
@@ -390,11 +405,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqStatusFail,
+				req: reqStatusFail,
 				},
-			},
+			
 			want: response.RPC{
 				StatusCode: http.StatusServiceUnavailable,
 			},
@@ -404,11 +417,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqInvalidStatusBody,
+				req: reqInvalidStatusBody,
 				},
-			},
+		
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,
 			},
@@ -418,11 +429,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqManagerGetFail,
+				req: reqManagerGetFail,
 				},
-			},
+		
 			want: response.RPC{
 				StatusCode: http.StatusServiceUnavailable,
 			},
@@ -432,10 +441,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  reqInvalidManagerBody,
-				},
+				req: reqInvalidManagerBody,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,
@@ -443,82 +449,11 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.AggregationServiceAdd(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd = %v, want %v", got, tt.want)
+			if got,_,_ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.ReqRecord = nil
 	}
 }
 
-func TestExternalInterface_PluginWithMultipleRequest(t *testing.T) {
-	config.SetUpMockConfig(t)
-	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
-	}
-
-	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
-	}()
-
-	reqSuccess, _ := json.Marshal(AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName:       "admin",
-		Password:       "password",
-		Oem: &AddOEM{
-			PluginID:          "GRF",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "Compute",
-		},
-	})
-
-	p := &ExternalInterface{
-		ContactClient:     testContactClientWithDelay,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-	}
-
-	type args struct {
-		taskID string
-		req    *aggregatorproto.AggregatorRequest
-	}
-	req := &aggregatorproto.AggregatorRequest{
-		SessionToken: "validToken",
-		RequestBody:  reqSuccess,
-	}
-	tests := []struct {
-		name string
-		p    *ExternalInterface
-		args args
-		want response.RPC
-	}{
-		{
-			name: "multiple request",
-			want: response.RPC{
-				StatusCode: http.StatusConflict,
-			},
-		},
-	}
-	for _, tt := range tests {
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		t.Run(tt.name, func(t *testing.T) {
-			go p.AggregationServiceAdd("123", "validUserName", req)
-			time.Sleep(time.Second)
-			if got := p.AggregationServiceAdd("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
-				t.Errorf("ExternalInterface.AggregationServiceAdd = %v, want %v", got, tt.want)
-			}
-		})
-		ActiveReqSet.ReqRecord = nil
-	}
-}

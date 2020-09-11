@@ -162,7 +162,7 @@ func Router() *iris.Application {
 
 	session := v1.Party("/SessionService")
 	session.SetRegisterRule(iris.RouteSkip)
-	session.Get("/", middleware.SessionDelMiddleware, s.GetSessionService)
+	session.Get("/", s.GetSessionService)
 	session.Get("/Sessions", middleware.SessionDelMiddleware, s.GetAllActiveSessions)
 	session.Get("/Sessions/{sessionID}", middleware.SessionDelMiddleware, s.GetSession)
 	session.Post("/Sessions", s.CreateSession)

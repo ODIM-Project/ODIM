@@ -94,7 +94,7 @@ func ChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*system
 }
 
 // CreateVolume will do the rpc call to create a volume under storage
-func CreateVolume(req systemsproto.CreateVolumeRequest) (*systemsproto.SystemsResponse, error) {
+func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	asService := systemsproto.NewSystemsService(services.Systems, services.Service.Client())
 	resp, err := asService.CreateVolume(context.TODO(), &req)
 	if err != nil {

@@ -49,12 +49,12 @@ func main() {
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
 		if basicAuth != "" {
-			var urlNoBasicAuth = []string {"/redfish/v1","/redfish/v1/SessionService"}
+			var urlNoBasicAuth = []string{"/redfish/v1", "/redfish/v1/SessionService"}
 			var authRequired bool = true
 			for _, item := range urlNoBasicAuth {
 				if item == path {
 					authRequired = false
-					log.Println("warning: basic auth is provided but not used as URL is: "+path)
+					log.Println("warning: basic auth is provided but not used as URL is: " + path)
 					break
 				}
 			}
@@ -120,7 +120,7 @@ func main() {
 				}
 				r.Header.Set("X-Auth-Token", basicAuthToken)
 				r.Header.Set("Session-ID", sessionID)
-			} 
+			}
 		}
 		// r.URL.Path = strings.ToLower(path)
 		next(w, r)

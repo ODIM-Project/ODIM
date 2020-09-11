@@ -37,34 +37,6 @@ func DoGetAggregationService(req aggregatorproto.AggregatorRequest) (*aggregator
 	return resp, err
 }
 
-// DoAddComputeRequest defines the RPC call function for
-// the AddCompute from aggregator micro service
-func DoAddComputeRequest(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-
-	resp, err := aggregator.AddCompute(context.TODO(), &req)
-	if err != nil {
-		return nil, fmt.Errorf("error: RPC error: %v", err)
-	}
-
-	return resp, err
-}
-
-// DoDeleteComputeRequest defines the RPC call function for
-// the DeleteCompute from aggregator micro service
-func DoDeleteComputeRequest(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
-
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-
-	resp, err := aggregator.DeleteCompute(context.TODO(), &req)
-	if err != nil {
-		return nil, fmt.Errorf("error: RPC error: %v", err)
-	}
-
-	return resp, err
-}
-
 // DoResetRequest defines the RPC call function for
 // the Reset from aggregator micro service
 func DoResetRequest(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {

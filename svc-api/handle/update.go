@@ -191,7 +191,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
-		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
+		errorMessage := "error while trying to get JSON body from the simple update request body: " + err.Error()
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
@@ -214,6 +214,35 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 		RequestBody:  request,
 	}
 	resp, err := a.SimpleUpdateRPC(updateRequest)
+	if err != nil {
+		errorMessage := "RPC error:" + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+//StartUpdate is a handler for start update action
+func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+	updateRequest := updateproto.UpdateRequest{
+		SessionToken: sessionToken,
+	}
+	resp, err := a.StartUpdateRPC(updateRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		log.Println(errorMessage)

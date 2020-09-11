@@ -22,7 +22,8 @@ service Systems {
  rpc SetDefaultBootOrder(DefaultBootOrderRequest) returns (SystemsResponse) {}
  rpc ChangeBiosSettings(BiosSettingsRequest) returns (SystemsResponse) {}
  rpc ChangeBootOrderSettings(BootOrderSettingsRequest) returns (SystemsResponse) {}
- rpc CreateVolume(CreateVolumeRequest) returns (SystemsResponse) {}
+ rpc CreateVolume(VolumeRequest) returns (SystemsResponse) {}
+ rpc DeleteVolume(VolumeRequest) returns (SystemsResponse) {}
 }
 
 message GetSystemsRequest{
@@ -61,9 +62,10 @@ message BootOrderSettingsRequest{
     bytes RequestBody = 3;
 }
 
-message CreateVolumeRequest{
+message VolumeRequest{
     string SessionToken = 1;
     string SystemID = 2;
     string StorageInstance = 3;
-    bytes RequestBody = 4;   
+    string VolumeID = 4;
+    bytes RequestBody = 5;   
 }

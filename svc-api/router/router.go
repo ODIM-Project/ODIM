@@ -42,8 +42,6 @@ func Router() *iris.Application {
 	}
 	pc := handle.AggregatorRPCs{
 		GetAggregationServiceRPC:                rpc.DoGetAggregationService,
-		AddComputeRPC:                           rpc.DoAddComputeRequest,
-		DeleteComputeRPC:                        rpc.DoDeleteComputeRequest,
 		ResetRPC:                                rpc.DoResetRequest,
 		SetDefaultBootOrderRPC:                  rpc.DoSetDefaultBootOrderRequest,
 		AddAggregationSourceRPC:                 rpc.DoAddAggregationSource,
@@ -87,6 +85,7 @@ func Router() *iris.Application {
 		SetDefaultBootOrderRPC:     rpc.SetDefaultBootOrder,
 		ChangeBiosSettingsRPC:      rpc.ChangeBiosSettings,
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
+		CreateVolumeRPC:            rpc.CreateVolume,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -221,10 +220,6 @@ func Router() *iris.Application {
 	systems.Get("/{id}/LogServices/{rid}/Entries", system.GetSystemResource)
 	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", system.GetSystemResource)
 	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
-	systems.Get("/{id}/Storage", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}/Drives", system.GetSystemResource)
-	systems.Get("/{id}/Storage/{rid}/Drives/{rid2}", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Any("/", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}", handle.SystemsMethodNotAllowed)
@@ -235,9 +230,6 @@ func Router() *iris.Application {
 	systems.Any("/{id}/NetworkInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Memory", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Processors", handle.SystemsMethodNotAllowed)
-	systems.Any("/{id}/Storage", handle.SystemsMethodNotAllowed)
-	systems.Any("/{id}/Storage/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
-	systems.Any("/{id}/Storage/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/BootOptions/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/LogServices", handle.SystemsMethodNotAllowed)
@@ -253,6 +245,18 @@ func Router() *iris.Application {
 	systems.Any("/{id}/Bios", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Processors/{rid}", handle.SystemsMethodNotAllowed)
 
+	storage := v1.Party("/Systems/{id}/Storage", middleware.SessionDelMiddleware)
+	storage.SetRegisterRule(iris.RouteSkip)
+	storage.Get("/", system.GetSystemResource)
+	storage.Get("/{rid}", system.GetSystemResource)
+	storage.Get("/{rid}/Drives", system.GetSystemResource)
+	storage.Get("/{rid}/Drives/{rid2}", system.GetSystemResource)
+	storage.Post("/{rid}/Volumes", system.CreateVolume)
+	storage.Any("/", handle.SystemsMethodNotAllowed)
+	storage.Any("/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
+	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Any("/{rid}/Volumes", handle.SystemsMethodNotAllowed)
+
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)
 	systemsAction.Post("/ComputerSystem.Reset", system.ComputerSystemReset)
@@ -261,14 +265,11 @@ func Router() *iris.Application {
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
-	aggregation.Post("/Actions/AggregationService.Add/", pc.AddCompute)
-	aggregation.Post("/Actions/AggregationService.Remove/", pc.DeleteCompute)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
-	aggregation.Any("/Actions/AggregationService.Add/", handle.AggMethodNotAllowed)
 	aggregationSource := aggregation.Party("/AggregationSources", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregationSource.Get("/", pc.GetAllAggregationSource)

@@ -16,7 +16,6 @@
 package persistencemgr
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -29,7 +28,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	redisSentinel "github.com/go-redis/redis/v8"
+	redisSentinel "github.com/go-redis/redis"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -40,8 +39,6 @@ const (
 	errorCollectingData string = "error while trying to collect data: "
 	count               int    = 1000
 )
-
-var ctx = context.Background()
 
 // DbType is a alias name for int32
 type DbType int32
@@ -56,7 +53,7 @@ const (
 //RedisExternalCalls containes the methods to make calls to external client libraries of Redis DB
 type RedisExternalCalls interface {
 	newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient
-	getMasterAddrByName(ctx context.Context, mset string, snlClient *redisSentinel.SentinelClient) []string
+	getMasterAddrByName(mset string, snlClient *redisSentinel.SentinelClient) []string
 }
 
 type redisExtCallsImp struct{}
@@ -65,8 +62,8 @@ func (r redisExtCallsImp) newSentinelClient(opt *redisSentinel.Options) *redisSe
 	return redisSentinel.NewSentinelClient(opt)
 }
 
-func (r redisExtCallsImp) getMasterAddrByName(ctx context.Context, masterSet string, snlClient *redisSentinel.SentinelClient) []string {
-	return snlClient.GetMasterAddrByName(ctx, masterSet).Val()
+func (r redisExtCallsImp) getMasterAddrByName(masterSet string, snlClient *redisSentinel.SentinelClient) []string {
+	return snlClient.GetMasterAddrByName(masterSet).Val()
 }
 
 //NewRedisExternalCalls is Constructor for RedisExternalCalls
@@ -93,7 +90,7 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 //GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 	sentinelClient := sentinelNewClient(dbConfig)
-	stringSlice := redisExtCalls.getMasterAddrByName(ctx, dbConfig.MasterSet, sentinelClient)
+	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
 	masterIP := stringSlice[0]
 	masterPort := stringSlice[1]
 
@@ -106,7 +103,6 @@ func resetDBWriteConection(dbFlag DbType) {
 	case InMemory:
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getInMemoryDBConfig()
-			//                      time.Sleep(8*time.Second)
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Println("Inmemory MasterIP:" + currentMasterIP)
 			if inMemDBConnPool.MasterIP != currentMasterIP {
@@ -125,7 +121,6 @@ func resetDBWriteConection(dbFlag DbType) {
 	case OnDisk:
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getOnDiskDBConfig()
-			//                      time.Sleep(8*time.Second)
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Println("Ondisk MasterIP:" + currentMasterIP)
 			if onDiskDBConnPool.MasterIP != currentMasterIP {

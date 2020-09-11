@@ -99,7 +99,7 @@ func routers() *iris.Application {
 	pluginRoutes := app.Party("/ODIM/v1")
 	{
 		pluginRoutes.Post("/validate", rfpmiddleware.BasicAuth, rfphandler.Validate)
-		pluginRoutes.Post("/Session", rfphandler.CreateSession)
+		pluginRoutes.Post("/Sessions", rfphandler.CreateSession)
 		pluginRoutes.Post("/Subscriptions", rfpmiddleware.BasicAuth, rfphandler.CreateEventSubscription)
 		pluginRoutes.Delete("/Subscriptions", rfpmiddleware.BasicAuth, rfphandler.DeleteEventSubscription)
 
@@ -108,6 +108,7 @@ func routers() *iris.Application {
 		systems.Get("", rfphandler.GetResource)
 		systems.Get("/{id}", rfphandler.GetResource)
 		systems.Get("/{id}/Storage", rfphandler.GetResource)
+		systems.Post("/{id}/Storage/{rid}/Volumes", rfphandler.CreateVolume)
 		systems.Get("/{id}/BootOptions", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/Processors", rfphandler.GetResource)
@@ -186,6 +187,7 @@ func routers() *iris.Application {
 
 		// Routes related to Update service
 		update := pluginRoutes.Party("/UpdateService", rfpmiddleware.BasicAuth)
+		update.Post("/Actions/UpdateService.SimpleUpdate", rfphandler.SimpleUpdate)
 		update.Get("/FirmwareInventory", rfphandler.GetResource)
 		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
 		update.Get("/SoftwareInventory", rfphandler.GetResource)

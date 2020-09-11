@@ -35,7 +35,7 @@ type SystemRPCs struct {
 	SetDefaultBootOrderRPC     func(req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error)
 	ChangeBiosSettingsRPC      func(req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error)
 	ChangeBootOrderSettingsRPC func(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error)
-	CreateVolumeRPC            func(req systemsproto.CreateVolumeRequest) (*systemsproto.SystemsResponse, error)
+	CreateVolumeRPC            func(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
 }
 
 //GetSystemsCollection fetches all systems
@@ -347,7 +347,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	volRequest := systemsproto.CreateVolumeRequest{
+	volRequest := systemsproto.VolumeRequest{
 		SessionToken:    sessionToken,
 		SystemID:        ctx.Params().Get("id"),
 		StorageInstance: ctx.Params().Get("rid"),

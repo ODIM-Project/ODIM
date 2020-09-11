@@ -56,7 +56,7 @@ func GetExternalInterface() *ExternalInterface {
 }
 
 // CreateVolume defines the logic for creating a volume under storage
-func (e *ExternalInterface) CreateVolume(req *systemsproto.CreateVolumeRequest) response.RPC {
+func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) response.RPC {
 	var resp response.RPC
 
 	// spliting the uuid and system id

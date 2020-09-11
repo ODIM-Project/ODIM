@@ -66,5 +66,6 @@ message CreateVolumeRequest{
     string SessionToken = 1;
     string SystemID = 2;
     string StorageInstance = 3;
-    bytes RequestBody = 4;   
+    string VolumeID = 4;
+    bytes RequestBody = 5;   
 }

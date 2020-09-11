@@ -23,6 +23,7 @@ service Systems {
  rpc ChangeBiosSettings(BiosSettingsRequest) returns (SystemsResponse) {}
  rpc ChangeBootOrderSettings(BootOrderSettingsRequest) returns (SystemsResponse) {}
  rpc CreateVolume(CreateVolumeRequest) returns (SystemsResponse) {}
+ rpc DeleteVolume(CreateVolumeRequest) returns (SystemsResponse) {}
 }
 
 message GetSystemsRequest{

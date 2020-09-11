@@ -33,13 +33,18 @@ func MockDBConnection() (*ConnPool, *errors.Error) {
 func GetMockDBConfig() (*Config, *errors.Error) {
 	//Need to discuss more on this
 	config.Data.DBConf = &config.DBConf{
-		Protocol:       config.DefaultDBProtocol,
-		OnDiskPort:     "6380",
-		OnDiskHost:     "localhost",
-		InMemoryHost:   "localhost",
-		InMemoryPort:   "6379",
-		MaxIdleConns:   config.DefaultDBMaxIdleConns,
-		MaxActiveConns: config.DefaultDBMaxActiveConns,
+		Protocol:             config.DefaultDBProtocol,
+		OnDiskPort:           "6380",
+		OnDiskHost:           "localhost",
+		InMemoryHost:         "localhost",
+		InMemoryPort:         "6379",
+		RedisHAEnabled:       false,
+		InMemorySentinelPort: "26379",
+		OnDiskSentinelPort:   "26379",
+		InMemoryMasterSet:    "mymaster",
+		OnDiskMasterSet:      "mymaster",
+		MaxIdleConns:         config.DefaultDBMaxIdleConns,
+		MaxActiveConns:       config.DefaultDBMaxActiveConns,
 	}
 	config := &Config{
 		Port:     config.Data.DBConf.InMemoryPort,

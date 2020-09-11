@@ -106,7 +106,7 @@ func resetDBWriteConection(dbFlag DbType) {
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Println("Inmemory MasterIP:" + currentMasterIP)
 			if inMemDBConnPool.MasterIP != currentMasterIP {
-				writePool, _ := GetPool(currentMasterIP, currentMasterPort)
+				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
 					return
 				}
@@ -124,7 +124,7 @@ func resetDBWriteConection(dbFlag DbType) {
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Println("Ondisk MasterIP:" + currentMasterIP)
 			if onDiskDBConnPool.MasterIP != currentMasterIP {
-				writePool, _ := GetPool(currentMasterIP, currentMasterPort)
+				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
 					return
 				}
@@ -192,8 +192,8 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	}
 }
 
-//GetPool is used is utility function to get the Connection Pool from DB.
-func GetPool(host, port string) (*redis.Pool, error) {
+//getPool is used is utility function to get the Connection Pool from DB.
+func getPool(host, port string) (*redis.Pool, error) {
 	protocol := config.Data.DBConf.Protocol
 	p := &redis.Pool{
 		// Maximum number of idle connections in the pool.
@@ -237,7 +237,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 		masterIP, masterPort = GetCurrentMasterHostPort(c)
 	}
 
-	connPools.ReadPool, err = GetPool(c.Host, c.Port)
+	connPools.ReadPool, err = getPool(c.Host, c.Port)
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
@@ -245,7 +245,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
 	}
-	connPools.WritePool, err = GetPool(masterIP, masterPort)
+	connPools.WritePool, err = getPool(masterIP, masterPort)
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {

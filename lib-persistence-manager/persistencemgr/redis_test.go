@@ -22,10 +22,12 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	redisSentinel "github.com/go-redis/redis"
+	"github.com/gomodule/redigo/redis"
 )
 
 type sample struct {
@@ -1208,6 +1210,19 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 	GetMockDBConfig()
 	// Enableing HA
 	config.Data.DBConf.RedisHAEnabled = true
+
+	inMemDBConnPool = &ConnPool{
+		ReadPool:        &redis.Pool{},
+		WritePool:       nil,
+		MasterIP:        "NotValid",
+		PoolUpdatedTime: time.Now(),
+	}
+	onDiskDBConnPool = &ConnPool{
+		ReadPool:        &redis.Pool{},
+		WritePool:       nil,
+		MasterIP:        "NotValid",
+		PoolUpdatedTime: time.Now(),
+	}
 	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
 		dbFlag DbType

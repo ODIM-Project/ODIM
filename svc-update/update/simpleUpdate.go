@@ -58,6 +58,8 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
+	log.Println("SimpleUpdate Request:")
+        log.Println(updateRequest)
 	for _, individualTarget := range updateRequest.Targets {
 		// spliting the uuid and system id
 		requestData := strings.Split(individualTarget, "/")
@@ -72,6 +74,39 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 			return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", individualTarget}, nil)
 		}
 		uuid := requestTarget[0]
+		updateRequestBody := strings.Replace(string(req.RequestBody), uuid+":", "", -1)
+		//replacing the reruest url with south bound translation URL
+		for key, value := range config.Data.URLTranslation.SouthBoundURL {
+			updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
+		}
+		applyTime := updateRequest.RedfishOperationApplyTimeSupport.SupportedValues
+		if len(applyTime) != 0 {
+			if len(applyTime) > 1 || applyTime[1] != "OnStartUpdate"{
+				errorMessage := "Operation apply time not supported"
+				return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errorMessage, []interface{}{applyTime, "SupportedValues"}, nil)
+			}
+			// Save the request
+
+			resp.Header = map[string]string{
+			"Cache-Control":     "no-cache",
+			"Connection":        "keep-alive",
+			"Content-type":      "application/json; charset=utf-8",
+			"Transfer-Encoding": "chunked",
+			"OData-Version":     "4.0",
+			}
+			resp.StatusCode = http.StatusOK
+			resp.StatusMessage = response.Success
+			// Build the response body
+			break
+		}
+		resp = e.sendRequest(uuid,updateRequestBody,resp)
+	}
+
+	return resp
+}
+
+
+func (e *ExternalInterface) sendRequest(uuid, updateRequestBody string, resp response.RPC)(response.RPC){
 		target, gerr := e.External.GetTarget(uuid)
 		if gerr != nil {
 			return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
@@ -116,11 +151,7 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 			}
 
 		}
-		updateRequestBody := strings.Replace(string(req.RequestBody), uuid+":", "", -1)
-		//replacing the reruest url with south bound translation URL
-		for key, value := range config.Data.URLTranslation.SouthBoundURL {
-			updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
-		}
+
 		target.PostBody = []byte(updateRequestBody)
 		contactRequest.DeviceInfo = target
 		contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
@@ -145,7 +176,5 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		if err != nil {
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		}
-	}
-
-	return resp
+		return resp
 }

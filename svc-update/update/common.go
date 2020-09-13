@@ -72,12 +72,12 @@ type DB struct {
 
 // UpdateRequestBody struct defines the request body for update action
 type UpdateRequestBody struct {
-	ImageURI                         string   `json:"ImageURI"`
-	Password                         string   `json:"Password,omitempty"`
-	Targets                          []string `json:"Targets"`
-	TransferProtocol                 string   `json:"TransferProtocol,omitempty"`
-	Username                         string   `json:"Username,omitempty"`
-	RedfishOperationApplyTimeSupport RedfishOperationApplyTimeSupport
+	ImageURI                         string                           `json:"ImageURI"`
+	Password                         string                           `json:"Password,omitempty"`
+	Targets                          []string                         `json:"Targets"`
+	TransferProtocol                 string                           `json:"TransferProtocol,omitempty"`
+	Username                         string                           `json:"Username,omitempty"`
+	RedfishOperationApplyTimeSupport RedfishOperationApplyTimeSupport `json:"@Redfish.OperationApplyTimeSupport,omitempty"`
 }
 
 // RedfishOperationApplyTimeSupport struct defines the apply time for the action in place

@@ -23,6 +23,7 @@ import (
 )
 
 func TestSimpleUpdate(t *testing.T) {
+	errMsg := []string{"/redfish/v1/Systems/uuid:/target1"}
 	errArg1 := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -30,13 +31,13 @@ func TestSimpleUpdate(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error: SystemUUID not found",
-				MessageArgs:   []interface{}{"System", "/redfish/v1/Systems/uuid:/target1"},
+				MessageArgs:   []interface{}{"System", errMsg},
 			},
 		},
 	}
 
-	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"]}`)
-	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"]}`)
+	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport","SupportedValues": ["OnStartUpdate"]}}`)
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport","SupportedValues": ["OnStartUpdate"]}}`)
 	output := map[string]interface{}{"Attributes": "sample"}
 	tests := []struct {
 		name string

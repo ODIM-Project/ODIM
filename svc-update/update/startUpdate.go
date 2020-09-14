@@ -25,6 +25,7 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
+	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	"log"
 	"net/http"
 	"strings"
@@ -34,10 +35,15 @@ import (
 func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
 	// Read all the requests from database
-	var updateRequest UpdateRequestBody
-	err := json.Unmarshal("", &updateRequest)
+	targetList, err := umodel.GetResource("SimpleUpdate", "*")
 	if err != nil {
-		errMsg := "error: unable to parse the simple update request" + err.Error()
+		errMsg := "error: unable to read SimpleUpdate requests from database: " + err.Error()
+		log.Println(errMsg)
+	}
+	var updateRequest UpdateRequestBody
+	unMarshalErr := json.Unmarshal([]byte(targetList), &updateRequest)
+	if unMarshalErr != nil {
+		errMsg := "error: unable to parse the start update request" + err.Error()
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
@@ -52,10 +58,10 @@ func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 
-	decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
-	if err != nil {
+	decryptedPasswordByte, passwdErr := e.External.DevicePassword(target.Password)
+	if passwdErr != nil {
 		// Frame the RPC response body and response Header below
-		errorMessage := "error while trying to decrypt device password: " + err.Error()
+		errorMessage := "error while trying to decrypt device password: " + passwdErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	target.Password = decryptedPasswordByte
@@ -96,8 +102,8 @@ func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.StartUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	body, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
-	if err != nil {
+	body, _, getResponse, contactErr := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	if contactErr != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
 		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
@@ -112,8 +118,8 @@ func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
-	if err != nil {
+	respErr := json.Unmarshal(body, &resp.Body)
+	if respErr != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
 

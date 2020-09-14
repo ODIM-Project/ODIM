@@ -870,7 +870,7 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	path := url.Path
 	systemID := ctx.Params().Get("id")
 	subID := ctx.Params().Get("rid")
-
+	resourceID := ctx.Params().Get("rid2")
 	// Extend switch case, when each path, requires different handling
 	switch path {
 	case "/redfish/v1/Systems/" + systemID:
@@ -879,6 +879,8 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "")
 	case "/redfish/v1/Systems/" + systemID + "/LogServices/" + subID + "Actions/LogService.ClearLog":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Systems/" + systemID + "/Storage/" + subID + "/Volumes/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}

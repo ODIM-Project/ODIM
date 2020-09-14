@@ -253,3 +253,11 @@ func searchItem(slice []string, val string) bool {
 	}
 	return false
 }
+
+// DeleteVolume is the handler for deleting a volume
+func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) response.RPC {
+	// TODO add functionality to delete a volume
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}

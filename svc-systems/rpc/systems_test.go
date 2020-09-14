@@ -15,6 +15,7 @@ package rpc
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -501,6 +502,66 @@ func TestSystems_CreateVolume(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.s.CreateVolume(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
 				t.Errorf("Systems.CreateVolume() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSystems_DeleteVolume(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	sys := new(Systems)
+	sys.IsAuthorizedRPC = mockIsAuthorized
+
+	type args struct {
+		ctx  context.Context
+		req  *systemsproto.VolumeRequest
+		resp *systemsproto.SystemsResponse
+	}
+	tests := []struct {
+		name           string
+		s              *Systems
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Request with valid token",
+			s:    sys,
+			args: args{
+				req: &systemsproto.VolumeRequest{
+					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SessionToken: "validToken",
+				},
+				resp: &systemsproto.SystemsResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
+		},
+		{
+			name: "Request with invalid token",
+			s:    sys,
+			args: args{
+				req: &systemsproto.VolumeRequest{
+					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SessionToken: "invalidToken",
+				},
+				resp: &systemsproto.SystemsResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusUnauthorized
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.s.DeleteVolume(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Systems.DeleteVolume() = %v, want %v", tt.args.resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

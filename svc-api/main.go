@@ -50,7 +50,7 @@ func main() {
 		var basicAuthToken string
 		if basicAuth != "" {
 			var urlNoBasicAuth = []string{"/redfish/v1", "/redfish/v1/SessionService"}
-			var authRequired bool = true
+			authRequired := true
 			for _, item := range urlNoBasicAuth {
 				if item == path {
 					authRequired = false

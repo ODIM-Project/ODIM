@@ -36,6 +36,7 @@ type SystemRPCs struct {
 	ChangeBiosSettingsRPC      func(req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error)
 	ChangeBootOrderSettingsRPC func(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error)
 	CreateVolumeRPC            func(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
+	DeleteVolumeRPC            func(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
 }
 
 //GetSystemsCollection fetches all systems
@@ -366,4 +367,12 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// DeleteVolume is the handler to delete a volume under storage
+// from iris context will get the request and check sessiontoken
+// and do rpc call and send response back
+func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
 }

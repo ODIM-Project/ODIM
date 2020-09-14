@@ -249,7 +249,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolumeRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
 	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authStatusCode != http.StatusOK {
@@ -268,5 +268,17 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolu
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
+// DeleteVolume defines the operations which handles the RPC request response
+// for the DeleteVolume service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
+	// TODO: add functionality to delete volume
+	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }

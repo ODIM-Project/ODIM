@@ -132,13 +132,13 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	tests := []struct {
 		name string
 		p    *ExternalInterface
-		req  *systemsproto.CreateVolumeRequest
+		req  *systemsproto.VolumeRequest
 		want response.RPC
 	}{
 		{
 			name: "Valid request",
 			p:    pluginContact,
-			req: &systemsproto.CreateVolumeRequest{
+			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
@@ -158,7 +158,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		}, {
 			name: "Valid request with multiple drives",
 			p:    pluginContact,
-			req: &systemsproto.CreateVolumeRequest{
+			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
@@ -176,7 +176,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		}, {
 			name: "invalid system id",
 			p:    pluginContact,
-			req: &systemsproto.CreateVolumeRequest{
+			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
@@ -187,7 +187,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		}, {
 			name: "invalid storage instance",
 			p:    pluginContact,
-			req: &systemsproto.CreateVolumeRequest{
+			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "",
 				RequestBody: []byte(`{"Name":"Volume1",
@@ -198,7 +198,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		}, {
 			name: "invalid RaidType",
 			p:    pluginContact,
-			req: &systemsproto.CreateVolumeRequest{
+			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",
@@ -209,7 +209,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		}, {
 			name: "Invalid Drives format",
 			p:    pluginContact,
-			req: &systemsproto.CreateVolumeRequest{
+			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
 				StorageInstance: "ArrayControllers-0",
 				RequestBody: []byte(`{"Name":"Volume1",

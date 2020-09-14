@@ -252,10 +252,12 @@ func Router() *iris.Application {
 	storage.Get("/{rid}/Drives", system.GetSystemResource)
 	storage.Get("/{rid}/Drives/{rid2}", system.GetSystemResource)
 	storage.Post("/{rid}/Volumes", system.CreateVolume)
+	storage.Get("/{rid}/Volumes/{rid2}", system.GetSystemResource)
 	storage.Any("/", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}/Volumes", handle.SystemsMethodNotAllowed)
+	storage.Any("/{rid}/Volumes/{rid2}", system.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)

@@ -225,27 +225,20 @@ type MessageData struct {
 
 // Event contains the details of the event subscribed from PMB
 type Event struct {
-	MemberID          string   `json:"MemberId,omitempty"`
-	EventType         string   `json:"EventType"`
-	EventGroupID      int      `json:"EventGroupId,omitempty"`
-	EventID           string   `json:"EventId"`
-	Severity          string   `json:"Severity"`
-	EventTimestamp    string   `json:"EventTimestamp"`
-	Message           string   `json:"Message"`
-	MessageArgs       []string `json:"MessageArgs,omitempty"`
-	MessageID         string   `json:"MessageId"`
-	Oem               Oem      `json:"Oem,omitempty"`
-	OriginOfCondition string   `json:"OriginOfCondition"`
+	MemberID          string      `json:"MemberId,omitempty"`
+	EventType         string      `json:"EventType"`
+	EventGroupID      int         `json:"EventGroupId,omitempty"`
+	EventID           string      `json:"EventId"`
+	Severity          string      `json:"Severity"`
+	EventTimestamp    string      `json:"EventTimestamp"`
+	Message           string      `json:"Message"`
+	MessageArgs       []string    `json:"MessageArgs,omitempty"`
+	MessageID         string      `json:"MessageId"`
+	Oem               interface{} `json:"Oem,omitempty"`
+	OriginOfCondition *Link       `json:"OriginOfCondition,omitempty"`
 }
 
-//Oem struct in Event
-type Oem struct {
-	Hpe Hpe `json:"Hpe"`
-}
-
-// Hpe struct in Event->Oem
-type Hpe struct {
-	OdataType string `json:"@odata.type"`
-	Resource  string `json:"Resource"`
-	Context   string `json:"@odata.context"`
+// Link  property shall contain a link to theresource or object that originated the condition that caused the event to be generated
+type Link struct {
+	Oid string `json:"@odata.id"`
 }

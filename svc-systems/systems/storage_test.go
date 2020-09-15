@@ -304,6 +304,17 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 			wantStatusCode: http.StatusBadRequest,
 		},
 		{
+			name: "without system id",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:",
+				StorageInstance: "ArrayControllers-0",
+				VolumeID:        "1",
+				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+			},
+			wantStatusCode: http.StatusBadRequest,
+		},
+		{
 			name: "Invalid volume id",
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{

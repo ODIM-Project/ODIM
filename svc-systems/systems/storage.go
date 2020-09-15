@@ -270,7 +270,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 
 	// spliting the uuid and system id
 	requestData := strings.Split(req.SystemID, ":")
-	if len(requestData) <= 1 {
+	if len(requestData) <= 1 || requestData[1] == "" {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}

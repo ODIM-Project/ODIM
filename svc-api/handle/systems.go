@@ -369,7 +369,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	ctx.Write(resp.Body)
 }
 
-// DeleteVolume is the handler to DeleteVolume a volume under storage
+// DeleteVolume is the handler to delete a volume under storage
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {

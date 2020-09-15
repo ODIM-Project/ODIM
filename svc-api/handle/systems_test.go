@@ -560,3 +560,69 @@ func TestCreateVolumeNegativeTestCases(t *testing.T) {
 		"/redfish/v1/Systems//Storage/ArrayControllers-0/Volumes",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }
+
+func mockDeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	var response = &systemsproto.SystemsResponse{}
+	if req.SessionToken == "" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    http.StatusUnauthorized,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "ValidToken" && req.VolumeID == "2" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    http.StatusBadRequest,
+			StatusMessage: "NotFound",
+			Body:          []byte(`{"Response":"NotFound"}`),
+		}
+	} else if req.SessionToken == "TokenRPC" {
+		return &systemsproto.SystemsResponse{}, errors.New("Unable to RPC Call")
+	} else {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    http.StatusOK,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	}
+	return response, nil
+}
+
+func TestDeleteVolume(t *testing.T) {
+	var sys SystemRPCs
+	sys.CreateVolumeRPC = mockCreateVolume
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage/{id2}")
+	redfishRoutes.Delete("/Volumes/{rid}", sys.DeleteVolume)
+
+	e := httptest.New(t, mockApp)
+	// test with valid token
+	e.DELETE(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/1",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusOK
+
+	// test with Invalid token
+	e.DELETE(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/1",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+
+	// test without token
+	e.DELETE(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/1",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+
+	// test with invalid volume id
+	e.DELETE(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/2",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusNotFound
+
+	// test with rpc error
+	e.DELETE(
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/2",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusInternalServerError
+}

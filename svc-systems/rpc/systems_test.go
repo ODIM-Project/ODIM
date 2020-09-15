@@ -53,8 +53,9 @@ func mockPluginClientData(t *testing.T) error {
 
 func mockGetExternalInterface() *systems.ExternalInterface {
 	return &systems.ExternalInterface{
-		ContactClient:  contactPluginClient,
-		DevicePassword: stubDevicePassword,
+		ContactClient:   contactPluginClient,
+		DevicePassword:  stubDevicePassword,
+		GetPluginStatus: mockPluginStatus,
 	}
 }
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -79,6 +80,10 @@ func mockDeviceData(uuid string, device smodel.Target) error {
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
+}
+
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
 }
 
 func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
@@ -644,7 +649,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				},
 				resp: &systemsproto.SystemsResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "Request with invalid token",
@@ -659,7 +664,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				},
 				resp: &systemsproto.SystemsResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {

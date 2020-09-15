@@ -84,6 +84,7 @@ func mockGetExternalInterface() *ExternalInterface {
 		DB: DB{
 			GetResource: mockGetResource,
 		},
+		GetPluginStatus: mockPluginStatus,
 	}
 }
 
@@ -96,6 +97,10 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 	}
 
 	return "body", nil
+}
+
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
 }
 
 func TestPluginContact_CreateVolume(t *testing.T) {
@@ -290,7 +295,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "invalid system id",
@@ -301,18 +306,18 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
-			name: "invalid storage instance",
+			name: "without system id",
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{
-				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
-				StorageInstance: "",
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:",
+				StorageInstance: "ArrayControllers-0",
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusBadRequest
+			wantStatusCode: http.StatusBadRequest,
 		},
 		{
 			name: "Invalid volume id",
@@ -323,7 +328,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "2",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+			wantStatusCode: http.StatusNotFound,
 		},
 		{
 			name: "unknown plugin",
@@ -334,7 +339,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO : need to be changed http.StatusNotFound
+			wantStatusCode: http.StatusInternalServerError,
 		},
 	}
 	for _, tt := range tests {

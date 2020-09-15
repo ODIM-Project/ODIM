@@ -102,3 +102,13 @@ func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse
 	}
 	return resp, nil
 }
+
+// DeleteVolume will do the rpc call to DeleteVolume a volume under storage
+func DeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	asService := systemsproto.NewSystemsService(services.Systems, services.Service.Client())
+	resp, err := asService.DeleteVolume(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}

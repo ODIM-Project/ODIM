@@ -32,13 +32,14 @@ import (
 
 //PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
-	Token          string
-	OID            string
-	DeviceInfo     interface{}
-	BasicAuth      map[string]string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Plugin         smodel.Plugin
-	HTTPMethodType string
+	Token           string
+	OID             string
+	DeviceInfo      interface{}
+	BasicAuth       map[string]string
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	GetPluginStatus func(smodel.Plugin) bool
+	Plugin          smodel.Plugin
+	HTTPMethodType  string
 }
 
 //ResponseStatus holds the response of Contact Plugin
@@ -190,7 +191,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	var err error
 	response, err = callPlugin(req)
 	if err != nil {
-		if getPluginStatus(req.Plugin) {
+		if req.GetPluginStatus(req.Plugin) {
 			response, err = callPlugin(req)
 		}
 		if err != nil {
@@ -235,8 +236,8 @@ func checkRetrievalInfo(oid string) bool {
 	return true
 }
 
-// getPluginStatus checks the status of given plugin in configured interval
-func getPluginStatus(plugin smodel.Plugin) bool {
+// GetPluginStatus checks the status of given plugin in configured interval
+func GetPluginStatus(plugin smodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{

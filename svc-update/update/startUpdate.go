@@ -49,12 +49,19 @@ func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response
 	}
 	if len(targetList) == 0 {
 		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+		var args response.Args
+		args = response.Args{
+			Code:    resp.StatusMessage,
+			Message: "Request completed successfully",
+		}
+		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}
 	for _, target := range targetList {
 		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
-			errMsg := "error: unable to retrive the start update request" + err.Error()
+			errMsg := "error: unable to retrive the start update request" + gerr.Error()
 			log.Println(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}

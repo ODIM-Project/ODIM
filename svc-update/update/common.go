@@ -67,7 +67,7 @@ type responseStatus struct {
 // DB struct holds the function pointers to database operations
 type DB struct {
 	GetAllKeysFromTable func(string) ([]string, error)
-	GetResource         func(string, string) (string, *errors.Error)
+	GetResource         func(string, string, common.DbType) (string, *errors.Error)
 }
 
 // UpdateRequestBody struct defines the request body for update action

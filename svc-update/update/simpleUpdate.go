@@ -61,8 +61,6 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
-	log.Println("SimpleUpdate Request:")
-	log.Println(updateRequest)
 	targetList := make(map[string][]string)
 	applyTime := updateRequest.RedfishOperationApplyTimeSupport.SupportedValues
 	targetList, err = sortTargetList(updateRequest.Targets)
@@ -70,8 +68,6 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", updateRequest.Targets}, nil)
 	}
-	log.Println("Sorted target list")
-	log.Println(targetList)
 	for id, target := range targetList {
 		updateRequest.Targets = target
 		marshalBody, err := json.Marshal(updateRequest)

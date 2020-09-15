@@ -34,21 +34,37 @@ import (
 // StartUpdate function handler for on start update process
 func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
 	// Read all the requests from database
-	targetList, err := umodel.GetResource("SimpleUpdate", "*")
+	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate")
 	if err != nil {
 		errMsg := "error: unable to read SimpleUpdate requests from database: " + err.Error()
 		log.Println(errMsg)
 	}
-	var updateRequest UpdateRequestBody
-	unMarshalErr := json.Unmarshal([]byte(targetList), &updateRequest)
-	if unMarshalErr != nil {
-		errMsg := "error: unable to parse the start update request" + err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	if len(targetList) == 0 {
+		resp.StatusCode = http.StatusOK
+		return resp
 	}
-	uuid := updateRequest.Targets[0]
-	updateRequestBody := strings.Replace(string(req.RequestBody), uuid+":", "", -1)
+	for _, target := range targetList {
+		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
+		if gerr != nil {
+			errMsg := "error: unable to retrive the start update request" + err.Error()
+			log.Println(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		resp = e.startRequest(target, data, resp)
+	}
+	return resp
+}
+
+func (e *ExternalInterface) startRequest(uuid, data string, resp response.RPC) response.RPC {
+	updateRequestBody := strings.Replace(data, uuid+":", "", -1)
 	//replacing the reruest url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
@@ -109,19 +125,11 @@ func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response
 		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	respErr := json.Unmarshal(body, &resp.Body)
 	if respErr != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, respErr.Error(), nil, nil)
 	}
-
 	return resp
 }

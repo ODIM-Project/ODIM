@@ -23,17 +23,6 @@ import (
 )
 
 func TestStartUpdate(t *testing.T) {
-	errArg1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: SystemUUID not found",
-				MessageArgs:   []interface{}{"System", "/redfish/v1/Systems/uuid:/target1"},
-			},
-		},
-	}
 
 	output := map[string]interface{}{"Attributes": "sample"}
 	tests := []struct {
@@ -41,20 +30,6 @@ func TestStartUpdate(t *testing.T) {
 		req  *updateproto.UpdateRequest
 		want response.RPC
 	}{
-		{
-			name: "uuid without system id",
-			req: &updateproto.UpdateRequest{
-				SessionToken: "token",
-			},
-			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
-				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg1.CreateGenericErrorResponse(),
-			},
-		},
 		{
 			name: "Valid Request",
 			req: &updateproto.UpdateRequest{

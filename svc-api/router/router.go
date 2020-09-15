@@ -253,7 +253,7 @@ func Router() *iris.Application {
 	storage.Get("/{rid}/Drives", system.GetSystemResource)
 	storage.Get("/{rid}/Drives/{rid2}", system.GetSystemResource)
 	storage.Post("/{rid}/Volumes", system.CreateVolume)
-	storage.Delete("/{rid}/Volumes/{rid2}", system.DeleteVolume)
+	storage.Delete("/{id2}/Volumes/{rid}", system.DeleteVolume)
 	storage.Any("/", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)

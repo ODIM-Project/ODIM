@@ -597,8 +597,8 @@ func TestDeleteVolume(t *testing.T) {
 	var sys SystemRPCs
 	sys.DeleteVolumeRPC = mockDeleteVolume
 	mockApp := iris.New()
-	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage/{rid}")
-	redfishRoutes.Delete("/Volumes/{rid2}", sys.DeleteVolume)
+	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage/{id2}")
+	redfishRoutes.Delete("/Volumes/{rid}", sys.DeleteVolume)
 
 	e := httptest.New(t, mockApp)
 	// test with valid token

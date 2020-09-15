@@ -405,8 +405,8 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 	volRequest := systemsproto.VolumeRequest{
 		SessionToken:    sessionToken,
 		SystemID:        ctx.Params().Get("id"),
-		StorageInstance: ctx.Params().Get("rid"),
-		VolumeID:        ctx.Params().Get("rid2"),
+		StorageInstance: ctx.Params().Get("id2"),
+		VolumeID:        ctx.Params().Get("rid"),
 		RequestBody:     request,
 	}
 	resp, err := sys.DeleteVolumeRPC(volRequest)

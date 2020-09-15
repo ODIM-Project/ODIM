@@ -238,7 +238,7 @@ type Event struct {
 	OriginOfCondition *Link       `json:"OriginOfCondition,omitempty"`
 }
 
-// Link  property shall contain a link to theresource or object that originated the condition that caused the event to be generated
+// Link  property shall contain a link to the resource or object that originated the condition that caused the event to be generated
 type Link struct {
 	Oid string `json:"@odata.id"`
 }

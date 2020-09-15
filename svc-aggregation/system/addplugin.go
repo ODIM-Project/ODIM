@@ -31,7 +31,7 @@ import (
 
 func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
 	var resp response.RPC
-	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask}
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
 	if !(req.Oem.PreferredAuthType == "BasicAuth" || req.Oem.PreferredAuthType == "XAuthToken") {
 		errMsg := "error: incorrect request property value for PreferredAuthType"
@@ -213,6 +213,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		managersList = append(managersList, listMembers[i].OdataID)
 	}
 	e.PublishEvent(managersList, "ManagerCollection")
+ resp.StatusCode = http.StatusCreated
 	log.Println("sucessfully added  plugin with the id ", req.Oem.PluginID)
 	return resp, uuid.NewV4().String(), ciphertext
 }

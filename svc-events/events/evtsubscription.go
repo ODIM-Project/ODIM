@@ -53,27 +53,17 @@ import (
 type PluginContact struct {
 	ContactClient      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth               func(string, []string, []string) (int32, string)
-	UpdateTask         func(TaskData) error
+	UpdateTask         func(common.TaskData) error
 	CreateChildTask    func(string, string) (string, error)
 	GetSessionUserName func(sessionToken string) (string, error)
 }
 
-// TaskData holds the data of the Task
-type TaskData struct {
-	TaskID          string
-	TargetURI       string
-	Resp            errResponse.RPC
-	TaskState       string
-	TaskStatus      string
-	PercentComplete int32
-	HTTPMethod      string
-}
-
-func fillTaskData(taskID string, targetURI string, resp errResponse.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) TaskData {
-	return TaskData{
+func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
+	return common.TaskData{
 		TaskID:          taskID,
 		TargetURI:       targetURI,
-		Resp:            resp,
+		Response:        resp,
+		TaskRequest:     request,
 		TaskState:       taskState,
 		TaskStatus:      taskStatus,
 		PercentComplete: percentComplete,
@@ -82,14 +72,15 @@ func fillTaskData(taskID string, targetURI string, resp errResponse.RPC, taskSta
 }
 
 // UpdateTaskData update the task with the given data
-func UpdateTaskData(taskData TaskData) error {
-	respBody, _ := json.Marshal(taskData.Resp.Body)
+func UpdateTaskData(taskData common.TaskData) error {
+	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
-		HTTPHeaders:   taskData.Resp.Header,
+		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      respBody,
-		StatusCode:    taskData.Resp.StatusCode,
+		JSONBody:      taskData.TaskRequest,
+		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
+		ResponseBody:  respBody,
 	}
 
 	err := services.UpdateTask(taskData.TaskID, taskData.TaskState, taskData.TaskStatus, taskData.PercentComplete, payLoad, time.Now())
@@ -142,7 +133,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 		resp = common.GeneralError(http.StatusBadRequest, errResponse.MalformedJSON, errorMessage, []interface{}{}, nil)
 		// Fill task and update
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -156,7 +147,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		log.Println(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -169,7 +160,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		// Fill task and update
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -180,7 +171,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 		resp = common.GeneralError(http.StatusBadRequest, errResponse.PropertyValueFormatError, errorMessage, []interface{}{postRequest.Destination, "Destination"}, nil)
 		// Fill task and update
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 
@@ -192,7 +183,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
 		log.Printf(errorMessage)
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
 	for _, evtSubscription := range subscriptionDetails {
@@ -201,7 +192,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
 				[]interface{}{}, &resp)
 			log.Printf(errorMessage)
-			p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+			p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
 	}
@@ -253,7 +244,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 				if resp.StatusCode == 0 {
 					resp.StatusCode = http.StatusAccepted
 				}
-				p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost))
+				p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Running, common.OK, percentComplete, http.MethodPost))
 			}
 		}
 	}()
@@ -345,7 +336,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 			resp = common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, []interface{}{}, nil)
 			// Fill task and update
 			percentComplete = 100
-			p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+			p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
 		locationHeader = resp.Header["Location"]
@@ -353,7 +344,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	log.Println("Process Count,", originResourceProcessedCount, "successOriginResourceCount", successOriginResourceCount)
 	percentComplete = 100
 	if originResourceProcessedCount == successOriginResourceCount {
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 	} else {
 		args := response.Args{
 			Code:    response.GeneralError,
@@ -364,7 +355,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		if locationHeader != "" {
 			resp.Header["Location"] = locationHeader
 		}
-		p.UpdateTask(fillTaskData(taskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 	}
 	return resp
 }
@@ -942,14 +933,16 @@ func saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
 	if deviceSubscription != nil {
 
 		save = true
-		// currently there will be only one element in origin resources
-		// when we add support for multiple origin resources will have to change this.
-		originResource := deviceSubscription.OriginResources[0]
 		// if the origin resource is present in device subscription details then dont add
-		if evtSubscription.OriginResource == originResource {
-			save = false
-		}
+		for _, originResource := range deviceSubscription.OriginResources {
+			if evtSubscription.OriginResource == originResource {
 
+				save = false
+			} else {
+				newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, originResource)
+				save = false
+			}
+		}
 		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
 		if err != nil {
 			return err
@@ -976,9 +969,10 @@ func getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse,
 	target, err := evmodel.GetTarget(uuid)
 	if err != nil {
 		// Frame the RPC response body and response Header below
-		errorMessage := "error while getting System(Target device Credentials) table details: " + err.Error()
+
+		errorMessage := "error while getting Systems(Target device Credentials) table details: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
-			&resp, []interface{}{"System", origin})
+			&resp, []interface{}{"Systems", origin})
 		log.Printf(errorMessage)
 		return nil, resp, err
 	}
@@ -1066,11 +1060,19 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 	var (
 		subTaskURI      string
 		subTaskID       string
+		reqBody         []byte
+		reqJSON         string
 		err             error
 		resp            errResponse.RPC
 		percentComplete int32
 	)
 	defer wg.Done()
+
+	reqBody, err = json.Marshal(request)
+	if err != nil {
+		log.Println("error while trying to marshal create event request: ", err.Error())
+	}
+	reqJSON = string(reqBody)
 
 	if taskID != "" {
 		subTaskURI, err = p.CreateChildTask(reqSessionToken, taskID)
@@ -1080,7 +1082,7 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 		trimmedURI := strings.TrimSuffix(subTaskURI, "/")
 		subTaskID = trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
 		resp.StatusCode = http.StatusAccepted
-		p.UpdateTask(fillTaskData(subTaskID, targetURI, resp, common.Running, common.OK, percentComplete, http.MethodPost))
+		p.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Running, common.OK, percentComplete, http.MethodPost))
 	}
 
 	host, response := p.eventSubscription(request, originResource, collectionName, collectionFlag)
@@ -1097,9 +1099,9 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 	percentComplete = 100
 	if subTaskID != "" {
 		if response.StatusCode != http.StatusCreated {
-			p.UpdateTask(fillTaskData(subTaskID, targetURI, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
+			p.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		} else {
-			p.UpdateTask(fillTaskData(subTaskID, targetURI, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
+			p.UpdateTask(fillTaskData(subTaskID, targetURI, reqJSON, resp, common.Completed, common.OK, percentComplete, http.MethodPost))
 		}
 		subTaskChan <- int32(response.StatusCode)
 	}
@@ -1140,21 +1142,29 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	//Creating key to get all the System Collection subscription
 
 	var searchKey string
+	var bmcFlag bool
 	if strings.Contains(origin, "Fabrics") {
 		searchKey = "/redfish/v1/Fabrics"
 	} else {
+		bmcFlag = true
 		searchKey = "/redfish/v1/Systems"
 	}
 	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return
 	}
-
+	var chassisSubscriptions, managersSubscriptions []evmodel.Subscription
+	if bmcFlag {
+		chassisSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Chassis")
+		subscriptions = append(subscriptions, chassisSubscriptions...)
+		managersSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Managers")
+		subscriptions = append(subscriptions, managersSubscriptions...)
+	}
 	// Checking the collection based subscription
 	var collectionSubscription = make([]evmodel.Subscription, 0)
 	for _, evtSubscription := range subscriptions {
 		for _, originResource := range evtSubscription.OriginResources {
-			if strings.Contains(origin, "Systems") && originResource == "/redfish/v1/Systems" {
+			if strings.Contains(origin, "Systems") && (originResource == "/redfish/v1/Systems" || originResource == "/redfish/v1/Chassis" || originResource == "/redfish/v1/Managers") {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
 			} else if strings.Contains(origin, "Fabrics") && originResource == "/redfish/v1/Fabrics" {
 				collectionSubscription = append(collectionSubscription, evtSubscription)
@@ -1223,6 +1233,27 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 			log.Println("Error while Updating event subscription : ", err)
 		}
 	}
+	// Get Device Subscription Details if collection is bmc and update chassis and managers uri
+	if bmcFlag {
+		searchKey = host
+		deviceSubscription, _ := evmodel.GetDeviceSubscriptions(searchKey)
+		data := strings.Split(origin, "/redfish/v1/Systems/")
+		chassisList, _ := evmodel.GetAllMatchingDetails("Chassis", data[1], common.InMemory)
+		managersList, _ := evmodel.GetAllMatchingDetails("Managers", data[1], common.InMemory)
+		var newDevSubscription = evmodel.DeviceSubscription{
+			EventHostIP:     deviceSubscription.EventHostIP,
+			Location:        deviceSubscription.Location,
+			OriginResources: deviceSubscription.OriginResources,
+		}
+		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, chassisList...)
+		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, managersList...)
+
+		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
+		if err != nil {
+			log.Println("Error while Updating Device subscription : ", err)
+		}
+	}
+
 	return
 }
 

@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/update"
 )
 
@@ -40,8 +39,6 @@ func generateResponse(rpcResp response.RPC, uResp *updateproto.UpdateResponse) {
 // GetUpdater intializes all the required connection functions for the updater execution
 func GetUpdater() *Updater {
 	return &Updater{
-		connector: &update.ExternalInterface{
-			Auth: services.IsAuthorized,
-		},
+		connector: update.GetExternalInterface(),
 	}
 }

@@ -96,7 +96,7 @@ func TestRunWriteWorkers(t *testing.T) {
 	}
 	done := make(chan bool)
 	RunWriteWorkers(in, dataBatch, 2, done)
-	ok:=<-done
+	ok := <-done
 	if ok {
 		close(in)
 	}

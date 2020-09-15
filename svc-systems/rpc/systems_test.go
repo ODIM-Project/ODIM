@@ -447,3 +447,61 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 		})
 	}
 }
+
+func TestSystems_CreateVolume(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	sys := new(Systems)
+	sys.IsAuthorizedRPC = mockIsAuthorized
+
+	type args struct {
+		ctx  context.Context
+		req  *systemsproto.VolumeRequest
+		resp *systemsproto.SystemsResponse
+	}
+	tests := []struct {
+		name    string
+		s       *Systems
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Request with valid token",
+			s:    sys,
+			args: args{
+				req: &systemsproto.VolumeRequest{
+					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SessionToken: "validToken",
+				},
+				resp: &systemsproto.SystemsResponse{},
+			}, wantErr: false,
+		},
+		{
+			name: "Request with invalid token",
+			s:    sys,
+			args: args{
+				req: &systemsproto.VolumeRequest{
+					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SessionToken: "invalidToken",
+				},
+				resp: &systemsproto.SystemsResponse{},
+			}, wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.s.CreateVolume(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+				t.Errorf("Systems.CreateVolume() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

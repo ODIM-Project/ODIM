@@ -29,6 +29,7 @@ import (
 // Systems struct helps to register service
 type Systems struct {
 	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	EI              *systems.ExternalInterface
 }
 
 //GetSystemResource defines the operations which handles the RPC request response
@@ -239,5 +240,45 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
+// CreateVolume defines the operations which handles the RPC request response
+// for the CreateVolume service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
+	sessionToken := req.SessionToken
+	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authStatusCode != http.StatusOK {
+		errorMessage := "error while trying to authenticate session"
+		resp.StatusCode = authStatusCode
+		resp.StatusMessage = authStatusMessage
+		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+		resp.Body = generateResponse(rpcResp.Body)
+		resp.Header = rpcResp.Header
+		log.Printf(errorMessage)
+		return nil
+	}
+
+	data := s.EI.CreateVolume(req)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
+// DeleteVolume defines the operations which handles the RPC request response
+// for the DeleteVolume service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
+	// TODO: add functionality to delete volume
+	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }

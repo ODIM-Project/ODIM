@@ -94,3 +94,70 @@ func CreateVolume(ctx iris.Context) {
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }
+
+// DeleteVolume function is used for deleting a volume under storage
+func DeleteVolume(ctx iris.Context) {
+	//Get token from Request
+	token := ctx.GetHeader("X-Auth-Token")
+	uri := ctx.Request().RequestURI
+	//replacing the request url with south bound translation URL
+	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
+		uri = strings.Replace(uri, key, value, -1)
+	}
+	//Validating the token
+	if token != "" {
+		flag := TokenValidation(token)
+		if !flag {
+			log.Println("Invalid/Expired X-Auth-Token")
+			ctx.StatusCode(http.StatusUnauthorized)
+			ctx.WriteString("Invalid/Expired X-Auth-Token")
+			return
+		}
+	}
+
+	var deviceDetails rfpmodel.Device
+
+	//Get device details from request
+	err := ctx.ReadJSON(&deviceDetails)
+	if err != nil {
+		log.Println("Error while trying to collect data from request: ", err)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
+	device := &rfputilities.RedfishDevice{
+		Host:     deviceDetails.Host,
+		Username: deviceDetails.Username,
+		Password: string(deviceDetails.Password),
+		PostBody: deviceDetails.PostBody,
+	}
+
+	redfishClient, err := rfputilities.GetRedfishClient()
+	if err != nil {
+		errMsg := "error: internal processing error: " + err.Error()
+		log.Println(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
+	}
+	resp, err := redfishClient.DeviceCall(device, uri, http.MethodDelete)
+	if err != nil {
+		errorMessage := err.Error()
+		fmt.Println(err)
+		if resp == nil {
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString("error while trying to delete volume: " + errorMessage)
+			return
+		}
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		errorMessage := err.Error()
+		fmt.Println(err)
+		ctx.WriteString("Error while trying to delete volume: " + errorMessage)
+	}
+	log.Println("Response body: ", string(body))
+	ctx.StatusCode(resp.StatusCode)
+	ctx.Write(body)
+}

@@ -644,7 +644,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				},
 				resp: &systemsproto.SystemsResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "Request with invalid token",
@@ -659,7 +659,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				},
 				resp: &systemsproto.SystemsResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {

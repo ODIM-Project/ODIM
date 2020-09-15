@@ -369,10 +369,57 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	ctx.Write(resp.Body)
 }
 
-// DeleteVolume is the handler to delete a volume under storage
+// DeleteVolume is the handler to DeleteVolume a volume under storage
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
-	//need to be changed after the code is added
-	ctx.StatusCode(http.StatusNotImplemented)
+	var req interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from the create volume request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(req)
+	if err != nil {
+		errorMessage := "error while trying to create JSON request body: " + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	volRequest := systemsproto.VolumeRequest{
+		SessionToken:    sessionToken,
+		SystemID:        ctx.Params().Get("id"),
+		StorageInstance: ctx.Params().Get("rid"),
+		VolumeID:        ctx.Params().Get("rid2"),
+		RequestBody:     request,
+	}
+	resp, err := sys.DeleteVolumeRPC(volRequest)
+	if err != nil {
+		errorMessage := "RPC error:" + err.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
 }

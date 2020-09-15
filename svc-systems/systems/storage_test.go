@@ -84,6 +84,7 @@ func mockGetExternalInterface() *ExternalInterface {
 		DB: DB{
 			GetResource: mockGetResource,
 		},
+		GetPluginStatus: mockPluginStatus,
 	}
 }
 
@@ -96,6 +97,10 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 	}
 
 	return "body", nil
+}
+
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
 }
 
 func TestPluginContact_CreateVolume(t *testing.T) {

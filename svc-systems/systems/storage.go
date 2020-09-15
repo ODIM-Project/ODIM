@@ -34,9 +34,10 @@ import (
 
 // ExternalInterface holds all the external connections managers package functions uses
 type ExternalInterface struct {
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword func([]byte) ([]byte, error)
-	DB             DB
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword  func([]byte) ([]byte, error)
+	DB              DB
+	GetPluginStatus func(smodel.Plugin) bool
 }
 
 // DB struct to inject the contact DB function into the handlers
@@ -52,6 +53,7 @@ func GetExternalInterface() *ExternalInterface {
 		DB: DB{
 			GetResource: smodel.GetResource,
 		},
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 }
 
@@ -126,7 +128,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
-
+	contactRequest.GetPluginStatus = e.GetPluginStatus
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
@@ -313,7 +315,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
-
+	contactRequest.GetPluginStatus = e.GetPluginStatus
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost

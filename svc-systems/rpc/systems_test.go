@@ -53,8 +53,9 @@ func mockPluginClientData(t *testing.T) error {
 
 func mockGetExternalInterface() *systems.ExternalInterface {
 	return &systems.ExternalInterface{
-		ContactClient:  contactPluginClient,
-		DevicePassword: stubDevicePassword,
+		ContactClient:   contactPluginClient,
+		DevicePassword:  stubDevicePassword,
+		GetPluginStatus: mockPluginStatus,
 	}
 }
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -79,6 +80,10 @@ func mockDeviceData(uuid string, device smodel.Target) error {
 
 func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
+}
+
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
 }
 
 func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {

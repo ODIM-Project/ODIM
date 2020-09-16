@@ -160,6 +160,33 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
+// CheckPluginConflictMgrAddr will check if manager address already exists
+func GetPluginFromMgrAddr(MgrAddr string) (Plugin, *errors.Error) {
+	var plugin Plugin
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return plugin, err
+	}
+
+	IDs, err := conn.GetAllDetails("Plugin")
+	if err != nil {
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to fetch existing plugin IDs: ", err.Error())
+	}
+
+	for _, ID := range IDs {
+		plugin, err := GetPluginData(ID) 
+		if err != nil {
+			return plugin, errors.PackError(err.ErrNo(), "error while trying to fetch existing plugin with ID "+ID+": ", err.Error())
+		}
+		if plugin.IP+":"+plugin.Port == MgrAddr {
+			return plugin, nil
+		}
+	}
+
+	return plugin, errors.PackError(errors.UndefinedErrorType, "Plugin with manager address "+MgrAddr+" does not exist")
+}
+
 //GetComputeSystem will fetch the compute resource details
 func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 	var compute dmtfmodel.ComputerSystem

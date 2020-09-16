@@ -36,6 +36,8 @@ github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727133207-df3dfb728bd1 h1
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200903074706-88a337f66fb7 h1:JM2z1Ck5VEeBn4Hnzj8DJjAFrbuYK0f25qjAlhUxZYg=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200903074706-88a337f66fb7/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200915132516-a3f419741c89 h1:15jfZe/iGXIow23drc8sltee+pxOW0562X6JQRpLQMI=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200915132516-a3f419741c89/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87/go.mod h1:iGLljf5n9GjT6kc0HBvyI1nOKnGQbNB66VzSNbK5iks=
 github.com/RediSearch/redisearch-go v1.0.1 h1:KEz32yt3AN/OHicUztRw64OA7o5/UqDnpfGWC9BEO9k=

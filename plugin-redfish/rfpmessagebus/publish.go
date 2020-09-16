@@ -47,12 +47,12 @@ func Publish(data interface{}) bool {
 		log.Printf("error: Failed to unmarshal the event: %v", err)
 		return false
 	}
+	topic := config.Data.MessageBusConf.EmbQueue[0]
+	if err := K.Distribute(topic, event); err != nil {
+		fmt.Println("Unable Publish events to kafka", err)
+		return false
+	}
 	for _, eventMessage := range message.Events {
-		topic := config.Data.MessageBusConf.EmbQueue[0]
-		if err := K.Distribute(topic, event); err != nil {
-			fmt.Println("Unable Publish events to kafka", err)
-			return false
-		}
 		fmt.Printf("Event %v Published\n", eventMessage.EventType)
 	}
 	return true

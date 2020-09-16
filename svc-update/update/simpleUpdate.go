@@ -62,7 +62,10 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		return response
 	}
 	targetList := make(map[string][]string)
-	applyTime := updateRequest.RedfishOperationApplyTimeSupport.SupportedValues
+	var applyTime []string
+	if updateRequest.RedfishOperationApplyTimeSupport != nil && updateRequest.RedfishOperationApplyTimeSupport.SupportedValues != nil {
+		applyTime = updateRequest.RedfishOperationApplyTimeSupport.SupportedValues
+	}
 	targetList, err = sortTargetList(updateRequest.Targets)
 	if err != nil {
 		errorMessage := "error: SystemUUID not found"
@@ -80,14 +83,6 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 			errMsg := "error: unable to parse the simple update request" + err.Error()
 			log.Println(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-		}
-		if len(applyTime) != 0 {
-			err = umodel.GenericSave(marshalBody, "SimepleUpdate", id)
-			if err != nil {
-				errMsg := "error: unable to save the simple update request" + err.Error()
-				log.Println(errMsg)
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-			}
 		}
 		updateRequestBody := strings.Replace(string(marshalBody), id+":", "", -1)
 		//replacing the reruest url with south bound translation URL

@@ -126,7 +126,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 	}
 	var members []dmtf.Link
 
-	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory")
+	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
 		log.Printf("odimra Doesnt have Servers")
 	}
@@ -219,7 +219,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 	}
 	var members []dmtf.Link
 
-	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory")
+	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
 		log.Printf("odimra Doesnt have Servers")
 	}

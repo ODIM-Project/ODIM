@@ -46,7 +46,7 @@ func mockGetResource(table, key string, dbType common.DbType) (string, *errors.E
 	return "body", nil
 }
 
-func mockGetAllKeysFromTable(table string) ([]string, error) {
+func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid:1"}, nil
 }
 

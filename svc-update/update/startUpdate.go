@@ -42,7 +42,7 @@ func (e *ExternalInterface) StartUpdate(req *updateproto.UpdateRequest) response
 		"OData-Version":     "4.0",
 	}
 	// Read all the requests from database
-	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate")
+	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate", common.OnDisk)
 	if err != nil {
 		errMsg := "error: unable to read SimpleUpdate requests from database: " + err.Error()
 		log.Println(errMsg)

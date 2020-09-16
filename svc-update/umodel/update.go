@@ -46,8 +46,8 @@ type Plugin struct {
 }
 
 //GetAllKeysFromTable fetches all keys in a given table
-func GetAllKeysFromTable(table string) ([]string, error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
+	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
 		return nil, err
 	}

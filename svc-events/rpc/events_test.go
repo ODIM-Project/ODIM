@@ -251,12 +251,9 @@ func TestSubmitTestEvent(t *testing.T) {
 		"MemberID":          "1",
 		"EventType":         "Alert",
 		"EventID":           "123",
-		"EventGroupID":      1,
-		"MessageArgs":       []string{"message"},
 		"Severity":          "OK",
-		"EventTimestamp":    "",
 		"Message":           "IndicatorChanged",
-		"MessageID":         "IndicatorChanged",
+		"MessageId":         "IndicatorChanged",
 		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 	}
 
@@ -272,7 +269,7 @@ func TestSubmitTestEvent(t *testing.T) {
 	var resp = &eventsproto.EventSubResponse{}
 	err = events.SubmitTestEvent(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetEventSubscriptionsCollection(t *testing.T) {

@@ -64,7 +64,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	}
 
 	// parsing the event
-	var eventObj common.Event
+	var eventObj interface{}
 	err = json.Unmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()

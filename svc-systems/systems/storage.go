@@ -353,11 +353,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	resp.Header = map[string]string{
 		"Content-type": "application/json; charset=utf-8",
 	}
-	resp.StatusCode = http.StatusOK
+	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
-	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-	}
 	return resp
 }

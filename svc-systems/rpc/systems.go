@@ -23,6 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
@@ -52,8 +53,9 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		return nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:   pmbhandle.ContactPlugin,
+		DevicePassword:  common.DecryptWithPrivateKey,
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystemResource(req)
 	resp.Header = data.Header
@@ -108,8 +110,9 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		return nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:   pmbhandle.ContactPlugin,
+		DevicePassword:  common.DecryptWithPrivateKey,
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystems(req)
 	resp.Header = data.Header

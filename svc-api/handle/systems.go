@@ -374,15 +374,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 // and do rpc call and send response back
 func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 	var req interface{}
-	err := ctx.ReadJSON(&req)
-	if err != nil {
-		errorMessage := "error while trying to get JSON body from the create volume request body: " + err.Error()
-		log.Println(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
-	}
+	ctx.ReadJSON(&req)
 	request, err := json.Marshal(req)
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()

@@ -50,12 +50,13 @@ type ResponseStatus struct {
 
 //ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
-	URL            string
-	UUID           string
-	SystemID       string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword func([]byte) ([]byte, error)
-	ResourceName   string
+	URL             string
+	UUID            string
+	SystemID        string
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword  func([]byte) ([]byte, error)
+	GetPluginStatus func(smodel.Plugin) bool
+	ResourceName    string
 }
 
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
@@ -73,7 +74,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 
 	contactRequest.ContactClient = req.ContactClient
 	contactRequest.Plugin = plugin
-
+	contactRequest.GetPluginStatus = req.GetPluginStatus
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
@@ -211,7 +212,8 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		log.Println(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-
+	log.Println("Response", string(body))
+	log.Println("response.StatusCode", response.StatusCode)
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)

@@ -21,9 +21,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-var inMemDBConnPool *persistencemgr.ConnPool
-var onDiskDBConnPool *persistencemgr.ConnPool
-
 // DbType is a alias name for int32
 type DbType int32
 
@@ -43,11 +40,9 @@ func GetDBConnection(dbFlag DbType) (*persistencemgr.ConnPool, *errors.Error) {
 	switch dbFlag {
 	case InMemory:
 		pool, err := persistencemgr.GetDBConnection(persistencemgr.InMemory)
-		inMemDBConnPool = pool
 		return pool, err
 	case OnDisk:
 		pool, err := persistencemgr.GetDBConnection(persistencemgr.OnDisk)
-		onDiskDBConnPool = pool
 		return pool, err
 	default:
 		return nil, errors.PackError(errors.UndefinedErrorType, "error invalid db type selection")

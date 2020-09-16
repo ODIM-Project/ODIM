@@ -65,6 +65,7 @@ func PublishEventsToDestination(data interface{}) bool {
 	err := json.Unmarshal([]byte(requestData), &message)
 	if err != nil {
 		log.Printf("error: Failed to unmarshal the event: %v", err)
+		log.Println("incoming event:", requestData)
 		return false
 	}
 	if message.Events[0].OriginOfCondition == nil {

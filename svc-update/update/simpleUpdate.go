@@ -68,6 +68,11 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", updateRequest.Targets}, nil)
 	}
+	if len(targetList) > 1 {
+		errMsg := "error: 'Targets' parameter cannot have more than one BMC"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, nil)
+	}
 	for id, target := range targetList {
 		updateRequest.Targets = target
 		marshalBody, err := json.Marshal(updateRequest)

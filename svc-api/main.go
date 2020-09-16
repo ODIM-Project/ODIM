@@ -49,67 +49,78 @@ func main() {
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
 		if basicAuth != "" {
-			var username, password string
-			yes := strings.Contains(basicAuth, "Basic")
-			if yes {
-				spl := strings.Split(basicAuth, " ")
-				data, err := base64.StdEncoding.DecodeString(spl[1])
-				if err != nil {
-					log.Println("error:", err)
-					return
+			var urlNoBasicAuth = []string{"/redfish/v1", "/redfish/v1/SessionService"}
+			var authRequired bool = true
+			for _, item := range urlNoBasicAuth {
+				if item == path {
+					authRequired = false
+					log.Println("warning: basic auth is provided but not used as URL is: " + path)
+					break
 				}
-				userCred := strings.SplitN(string(data), ":", 2)
-				if len(userCred) < 2 {
+			}
+			if authRequired {
+				var username, password string
+				yes := strings.Contains(basicAuth, "Basic")
+				if yes {
+					spl := strings.Split(basicAuth, " ")
+					data, err := base64.StdEncoding.DecodeString(spl[1])
+					if err != nil {
+						log.Println("error:", err)
+						return
+					}
+					userCred := strings.SplitN(string(data), ":", 2)
+					if len(userCred) < 2 {
+						log.Println("error: not a valid basic auth")
+						return
+					}
+					username = userCred[0]
+					password = userCred[1]
+				} else {
 					log.Println("error: not a valid basic auth")
 					return
 				}
-				username = userCred[0]
-				password = userCred[1]
-			} else {
-				log.Println("error: not a valid basic auth")
-				return
-			}
 
-			//Converting the request into a map
-			sessionReq := map[string]interface{}{
-				"UserName": username,
-				"Password": password,
-			}
-			//Marshalling input to get bytes since session create request accepts bytes
-			sessionReqData, err := json.Marshal(sessionReq)
+				//Converting the request into a map
+				sessionReq := map[string]interface{}{
+					"UserName": username,
+					"Password": password,
+				}
+				//Marshalling input to get bytes since session create request accepts bytes
+				sessionReqData, err := json.Marshal(sessionReq)
 
-			var req sessionproto.SessionCreateRequest
-			req.RequestBody = sessionReqData
-			resp, err := rpc.DoSessionCreationRequest(req)
-			if err != nil && resp == nil {
-				errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-				log.Println(errorMessage)
-				w.Header().Set("Content-type", "application/json; charset=utf-8")
-				w.WriteHeader(http.StatusInternalServerError)
-				body, _ := json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-				w.Write([]byte(body))
-				return
+				var req sessionproto.SessionCreateRequest
+				req.RequestBody = sessionReqData
+				resp, err := rpc.DoSessionCreationRequest(req)
+				if err != nil && resp == nil {
+					errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
+					log.Println(errorMessage)
+					w.Header().Set("Content-type", "application/json; charset=utf-8")
+					w.WriteHeader(http.StatusInternalServerError)
+					body, _ := json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
+					w.Write([]byte(body))
+					return
+				}
+				if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+					errorMessage := "error: failed to create a sesssion"
+					log.Println(errorMessage)
+					w.Header().Set("Content-type", "application/json; charset=utf-8")
+					w.WriteHeader(int(resp.StatusCode))
+					body, _ := json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+					w.Write([]byte(body))
+					return
+				}
+				var sessionHeader map[string]string
+				var sessionID string
+				sessionHeader = resp.Header
+				basicAuthToken = sessionHeader["X-Auth-Token"]
+				sessionLocation := sessionHeader["Link"]
+				sessionLocationSlice := strings.Split(sessionLocation, "/")
+				if len(sessionLocationSlice) > 1 {
+					sessionID = sessionLocationSlice[len(sessionLocationSlice)-2]
+				}
+				r.Header.Set("X-Auth-Token", basicAuthToken)
+				r.Header.Set("Session-ID", sessionID)
 			}
-			if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-				errorMessage := "error: failed to create a sesssion"
-				log.Println(errorMessage)
-				w.Header().Set("Content-type", "application/json; charset=utf-8")
-				w.WriteHeader(int(resp.StatusCode))
-				body, _ := json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-				w.Write([]byte(body))
-				return
-			}
-			var sessionHeader map[string]string
-			var sessionID string
-			sessionHeader = resp.Header
-			basicAuthToken = sessionHeader["X-Auth-Token"]
-			sessionLocation := sessionHeader["Link"]
-			sessionLocationSlice := strings.Split(sessionLocation, "/")
-			if len(sessionLocationSlice) > 1 {
-				sessionID = sessionLocationSlice[len(sessionLocationSlice)-2]
-			}
-			r.Header.Set("X-Auth-Token", basicAuthToken)
-			r.Header.Set("Session-ID", sessionID)
 		}
 		// r.URL.Path = strings.ToLower(path)
 		next(w, r)

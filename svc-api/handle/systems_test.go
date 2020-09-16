@@ -471,7 +471,7 @@ func TestSetDefaultBootOrderWithValidData(t *testing.T) {
 }
 
 // Create volume unit tests
-func mockCreateVolume(req systemsproto.CreateVolumeRequest) (*systemsproto.SystemsResponse, error) {
+func mockCreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
 	var response = &systemsproto.SystemsResponse{}
 	if req.SessionToken == "" {
 		response = &systemsproto.SystemsResponse{

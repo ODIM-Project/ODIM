@@ -160,7 +160,7 @@ func Router() *iris.Application {
 
 	session := v1.Party("/SessionService")
 	session.SetRegisterRule(iris.RouteSkip)
-	session.Get("/", middleware.SessionDelMiddleware, s.GetSessionService)
+	session.Get("/", s.GetSessionService)
 	session.Get("/Sessions", middleware.SessionDelMiddleware, s.GetAllActiveSessions)
 	session.Get("/Sessions/{sessionID}", middleware.SessionDelMiddleware, s.GetSession)
 	session.Post("/Sessions", s.CreateSession)
@@ -251,11 +251,12 @@ func Router() *iris.Application {
 	storage.Get("/{rid}", system.GetSystemResource)
 	storage.Get("/{rid}/Drives", system.GetSystemResource)
 	storage.Get("/{rid}/Drives/{rid2}", system.GetSystemResource)
+	storage.Get("/{id2}/Volumes", system.GetSystemResource)
 	storage.Post("/{rid}/Volumes", system.CreateVolume)
 	storage.Any("/", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
-	storage.Any("/{rid}/Volumes", handle.SystemsMethodNotAllowed)
+	storage.Any("/{id2}/Volumes", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)

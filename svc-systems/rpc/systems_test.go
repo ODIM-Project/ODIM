@@ -465,7 +465,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 
 	type args struct {
 		ctx  context.Context
-		req  *systemsproto.CreateVolumeRequest
+		req  *systemsproto.VolumeRequest
 		resp *systemsproto.SystemsResponse
 	}
 	tests := []struct {
@@ -478,7 +478,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
-				req: &systemsproto.CreateVolumeRequest{
+				req: &systemsproto.VolumeRequest{
 					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken: "validToken",
 				},
@@ -489,7 +489,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
-				req: &systemsproto.CreateVolumeRequest{
+				req: &systemsproto.VolumeRequest{
 					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken: "invalidToken",
 				},

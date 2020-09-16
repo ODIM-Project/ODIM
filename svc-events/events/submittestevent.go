@@ -209,7 +209,9 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["OriginOfCondition"]; ok {
 		switch v := val.(type) {
 		case string:
-			testEvent.OriginOfCondition = v
+			testEvent.OriginOfCondition = &common.Link{
+				Oid: v,
+			}
 		default:
 			return nil, response.PropertyValueTypeError, "error: optional parameter OriginOfCondition must be of type string", []interface{}{v, "OriginOfCondition"}
 		}

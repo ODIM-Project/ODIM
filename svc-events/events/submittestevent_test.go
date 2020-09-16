@@ -59,16 +59,18 @@ func TestSubmitTestEvent(t *testing.T) {
 	}
 
 	event := common.Event{
-		MemberID:          "1",
-		EventType:         "Alert",
-		EventID:           "123",
-		EventGroupID:      1,
-		MessageArgs:       []string{"message"},
-		Severity:          "OK",
-		EventTimestamp:    "",
-		Message:           "IndicatorChanged",
-		MessageID:         "IndicatorChanged",
-		OriginOfCondition: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		MemberID:       "1",
+		EventType:      "Alert",
+		EventID:        "123",
+		EventGroupID:   1,
+		MessageArgs:    []string{"message"},
+		Severity:       "OK",
+		EventTimestamp: "",
+		Message:        "IndicatorChanged",
+		MessageID:      "IndicatorChanged",
+		OriginOfCondition: &common.Link{
+			Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		},
 	}
 
 	message, err := json.Marshal(event)

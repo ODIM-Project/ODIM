@@ -173,7 +173,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 // SimepleUpdate is an rpc handler, it gets involked during POST on UpdateService API actions (/Actions/UpdateService.SimpleUpdate)
 func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode
@@ -206,7 +206,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 // StartUpdate is an rpc handler, it gets involked during POST on UpdateService API actions (/Actions/UpdateService.StartUpdate)
 func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	authStatusCode, authStatusMessage := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authStatusCode != http.StatusOK {
 		errorMessage := "error while trying to authenticate session"
 		resp.StatusCode = authStatusCode

@@ -73,6 +73,13 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, []interface{}{}, taskInfo), "", nil
 	}
 
+	foundPlugin, errs := agmodel.GetPluginFromMgrAddr(req.ManagerAddress)
+	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
+		errMsg := "error:plugin with manager adress " + req.ManagerAddress + " already exists with name "+foundPlugin.ID+" and ManagerUUID "+foundPlugin.ManagerUUID
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", req.Oem.PluginID}, taskInfo), "", nil
+	}
+
 	// encrypt plugin password
 	ciphertext, err := e.EncryptPassword([]byte(req.Password))
 	if err != nil {

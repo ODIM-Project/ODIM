@@ -73,11 +73,23 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, []interface{}{}, taskInfo), "", nil
 	}
 
-	foundPlugin, errs := agmodel.GetPluginFromMgrAddr(req.ManagerAddress)
-	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
-		errMsg := "error:plugin with manager adress " + req.ManagerAddress + " already exists with name "+foundPlugin.ID+" and ManagerUUID "+foundPlugin.ManagerUUID
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", req.Oem.PluginID}, taskInfo), "", nil
+	pluginNameArray, err := agmodel.GetAllKeysFromTable("Plugin")
+	if err == nil {
+		for _, ID := range pluginNameArray {
+			plugin, err := agmodel.GetPluginData(ID)
+			if err != nil {
+				return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(),
+					[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
+			}
+			if plugin.IP+":"+plugin.Port == req.ManagerAddress {
+				errMsg := "error:plugin with manager adress " + req.ManagerAddress + " already exists with name "+plugin.ID+" and ManagerUUID "+plugin.ManagerUUID
+				log.Println(errMsg)
+				return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", req.Oem.PluginID}, taskInfo), "", nil
+			}
+		}
+	} else {
+		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(),
+			[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
 	}
 
 	// encrypt plugin password

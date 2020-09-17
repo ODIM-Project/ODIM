@@ -173,7 +173,7 @@ curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
 
 **2.** If you are running curl commands on a different server, perform the following steps to provide the rootCA.crt file.
       
-      a. Navigate to `~/ODIM_v1.0/configuration/Odim/certificates` on the server where the resource
+      a. Navigate to `~/ODIM/build/cert_generator/certificates` on the server where the resource
          aggregator is deployed.
 
 
@@ -233,12 +233,17 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 
 |AggregationService||
 |-------|--------------------|
-|/redfish/v1/AggregationService|`GET`|
-|/redfish/v1/AggregationService/Actions|`GET`|
-|/redfish/v1/AggregationService/Actions/AggregationService.Add|`POST`|
-|/redfish/v1/AggregationService/Actions/AggregationService.Remove|`POST`|
-|/redfish/v1/AggregationService/Actions/AggregationService.Reset|`POST`|
-|/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder|`POST`|
+|/redfish/v1/AggregationService|GET|
+|/redfish/v1/AggregationService/AggregationSources<br> |GET, POST|
+|/redfish/v1/AggregationService/AggregationSources/\{aggregationSourceId\}|GET, PATCH, DELETE|
+|/redfish/v1/AggregationService/Actions/AggregationService.Reset|POST|
+|/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder|POST|
+|/redfish/v1/AggregationService/Aggregates|GET, POST|
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}|GET, DELETE|
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.AddElements|POST|
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|POST|
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|POST|
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|POST|
 
 |Systems||
 |-------|--------------------|
@@ -630,7 +635,7 @@ curl -i POST \
 
 ```
 {
-"Username": "abc",
+"UserName": "abc",
 "Password": "abc123"
 }
 ```
@@ -643,7 +648,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Username|String \(required\)|Username of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
+|UserName|String \(required\)|Username of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
 |Password|String \(required\)<br> |Password of the user account for this session. For the first time, use the password of the default administrator account. Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br> |
 
 
@@ -1633,12 +1638,12 @@ curl -i POST \
 
 ```
 {
-   "HostName":"{plugin_host}:45003",
+   "HostName":"{plugin_host}:45001",
    "UserName":"admin",
-   "Password":"Plug!n12$4",
+   "Password":"GRFPlug!n12$4",
    "Links":{
       "Oem":{
-         "PluginID":"ILO",
+         "PluginID":"GRF",
          "PreferredAuthType":"BasicAuth",
          "PluginType":"Compute"
       }
@@ -1650,9 +1655,9 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the HPE iLO plugin is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
-|UserName|String \(required\)<br> |The plugin username. Example: Username for the HPE iLO plugin.|
-|Password|String \(required\)<br> |The plugin password. Example: Password for the HPE iLO plugin.  <br> |
+|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
+|UserName|String \(required\)<br> |The plugin username.|
+|Password|String \(required\)<br> |The plugin password.|
 |PluginID|String \(required\)<br> |The id of the plugin you want to add. Example: GRF \(Generic Redfish Plugin\), ILO<br> |
 |PreferredAuthType|String \(required\)<br> |Preferred authentication method to connect to the plugin - `BasicAuth` or `XAuthToken`.|
 |PluginType|String \(required\)<br> |The string that represents the type of the plugin. Allowed values: `Compute`, and `Fabric` <br> |
@@ -1712,11 +1717,11 @@ x-frame-options":"sameorigin"
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "Name":"Aggregation Source",
-   "HostName":"{plugin_host}:45003",
+   "HostName":"{plugin_host}:45001",
    "UserName":"admin",
    "Links":{
       "Oem":{
-         "PluginID":"ILO",
+         "PluginID":"GRF",
          "PreferredAuthType":"BasicAuth",
          "PluginType":"Compute"
       }
@@ -1750,7 +1755,7 @@ After the server is successfully added as an aggregation source, it will also be
 
 To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [collection of computer systems](#).
 
- `ComputerSystemId` is unique information about the BMC specified by HPE Resource Aggregator for ODIM. It is represented as `<UUID:n>`, where `UUID` is the aggregation source Id of the BMC. Save it as it is required to perform subsequent actions such as `delete, reset`, and `setdefaultbootorder` on this BMC.
+ `ComputerSystemId` is unique information about the BMC specified by Resource Aggregator for ODIM. It is represented as `<UUID:n>`, where `UUID` is the aggregation source Id of the BMC. Save it as it is required to perform subsequent actions such as `delete, reset`, and `setdefaultbootorder` on this BMC.
 
 
 NOTE:
@@ -1770,7 +1775,7 @@ curl -i -X POST \
     "Password": "{BMC_Password}", 
     "Links":{     
         "Oem": { 
-                  "PluginID": "ILO" 
+                  "PluginID": "GRF" 
     } 
 }
 }' \
@@ -1788,7 +1793,7 @@ curl -i -X POST \
    "Password":"{BMC_password}",
    "Links":{
       "Oem":{
-         "PluginID":"ILO"
+         "PluginID":"GRF"
       }
    }
 }
@@ -1799,10 +1804,10 @@ curl -i -X POST \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |HostName|String \(required\)<br> |A valid IP address or hostname of a baseboard management controller \(BMC\).|
-|UserName|String \(required\)<br> |The username of the HPE iLO administrator account.|
-|Password|String \(required\)<br> |The password of the HPE iLO administrator account.|
-|Links \{|Object \(required\)<br> |The links to other resources that are related to this resource.|
-|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](GUID-4E64426F-559C-430A-AE60-61409DFB4131.md). For HPE iLO, use the plugin Id that you had specified while adding the HPE iLO plugin. Example: "ILO"| 
+|UserName|String \(required\)<br> |The username of the BMC administrator account.|
+|Password|String \(required\)<br> |The password of the BMC administrator account.|
+|Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
+|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](GUID-4E64426F-559C-430A-AE60-61409DFB4131.md).| 
 
 > Sample response header \(HTTP 202 status\)
 
@@ -1876,7 +1881,7 @@ x-frame-options":"sameorigin"
 |-------|-------|
 |<strong>Method</strong> | `GET` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
-|<strong>Description</strong> |This operation lists all aggregation sources available in HPE Resource Aggregator for ODIM.|
+|<strong>Description</strong> |This operation lists all aggregation sources available in Resource Aggregator for ODIM.|
 |<strong>Returns</strong> |A list of links to all the available aggregation sources.|
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
@@ -1947,7 +1952,7 @@ curl -i GET \
    "UserName":"admin",
    "Links":{
       "Oem":{
-         "PluginID":"ILO"
+         "PluginID":"GRF"
       }     
    }   
 }
@@ -2008,7 +2013,7 @@ curl -i PATCH \
    "UserName":"admin",
    "Links":{
       "Oem":{
-         "PluginID":"ILO"
+         "PluginID":"GRF"
       }     
    }   
 }
@@ -2390,7 +2395,7 @@ Content-Length:491 bytes
 
 An aggregate is a user-defined collection of resources.
 
-The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—The aggregates are available and accessible in the HPE Resource Aggregator for ODIM environment until you delete them.
+The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—The aggregates are available and accessible in the Resource Aggregator for ODIM environment until you delete them.
 
 The resource aggregator allows you to:
 
@@ -2488,7 +2493,7 @@ Transfer-Encoding:chunked
 |----------|-----------|
 |<strong>Method</strong> | `GET` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Aggregates` |
-|<strong>Description</strong> |This operation lists all aggregates available in HPE Resource Aggregator for ODIM.|
+|<strong>Description</strong> |This operation lists all aggregates available in Resource Aggregator for ODIM.|
 |<strong>Returns</strong> |A list of links to all the available aggregates.|
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|

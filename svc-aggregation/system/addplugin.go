@@ -84,7 +84,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 			if plugin.IP+":"+plugin.Port == req.ManagerAddress {
 				errMsg := "error:plugin with manager adress " + req.ManagerAddress + " already exists with name "+plugin.ID+" and ManagerUUID "+plugin.ManagerUUID
 				log.Println(errMsg)
-				return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", req.Oem.PluginID}, taskInfo), "", nil
+				return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", ID}, taskInfo), "", nil
 			}
 		}
 	} else {

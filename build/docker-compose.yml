@@ -72,11 +72,11 @@ services:
       - DATA_DIR_PATH=/opt/etcd/data
       - LISTEN_PEER_ADDR=http://0.0.0.0:2380
       - LISTEN_CLIENT_ADDR=http://0.0.0.0:2379
-      - INITIAL_ADV_ADDR=https://etcd:2380
-      - INITIAL_CLUSTER="etcd=https://etcd:2380"
+      - INITIAL_ADV_ADDR=http://etcd:2380
+      - INITIAL_CLUSTER="etcd=http://etcd:2380"
       - INITIAL_CLUSTER_STATE=new
       - INITIAL_CLUSTER_TOKEN=odim-etcd-cluster
-      - ADV_CLIENT_ADDR=https://etcd:2379
+      - ADV_CLIENT_ADDR=http://etcd:2379
     expose:
       - '2379'
       - '2380'

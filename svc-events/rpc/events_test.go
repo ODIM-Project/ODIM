@@ -247,15 +247,14 @@ func TestSubmitTestEvent(t *testing.T) {
 	events.IsAuthorizedRPC = mockIsAuthorized
 	events.GetSessionUserNameRPC = getMockedSessionUserName
 	events.ContactClientRPC = mockContactClient
-	event := common.Event{
-		MemberID:          "1",
-		EventType:         "Alert",
-		EventID:           "123",
-		Severity:          "OK",
-		EventTimestamp:    "",
-		Message:           "IndicatorChanged",
-		MessageID:         "IndicatorChanged",
-		OriginOfCondition: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+	event := map[string]interface{}{
+		"MemberID":          "1",
+		"EventType":         "Alert",
+		"EventID":           "123",
+		"Severity":          "OK",
+		"Message":           "IndicatorChanged",
+		"MessageId":         "IndicatorChanged",
+		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 	}
 
 	message, err := json.Marshal(event)
@@ -270,7 +269,7 @@ func TestSubmitTestEvent(t *testing.T) {
 	var resp = &eventsproto.EventSubResponse{}
 	err = events.SubmitTestEvent(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetEventSubscriptionsCollection(t *testing.T) {

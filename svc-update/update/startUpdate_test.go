@@ -22,22 +22,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-func TestSimpleUpdate(t *testing.T) {
-	errMsg := []string{"/redfish/v1/Systems/uuid:/target1"}
-	errArg1 := response.Args{
-		Code:    response.GeneralError,
-		Message: "",
-		ErrorArgs: []response.ErrArgs{
-			response.ErrArgs{
-				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: SystemUUID not found",
-				MessageArgs:   []interface{}{"System", errMsg},
-			},
-		},
-	}
+func TestStartUpdate(t *testing.T) {
 
-	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport","SupportedValues": ["OnStartUpdate"]}}`)
-	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport","SupportedValues": ["OnStartUpdate"]}}`)
 	output := map[string]interface{}{"Attributes": "sample"}
 	tests := []struct {
 		name string
@@ -45,24 +31,8 @@ func TestSimpleUpdate(t *testing.T) {
 		want response.RPC
 	}{
 		{
-			name: "uuid without system id",
-			req: &updateproto.UpdateRequest{
-				RequestBody:  request1,
-				SessionToken: "token",
-			},
-			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
-				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg1.CreateGenericErrorResponse(),
-			},
-		},
-		{
 			name: "Valid Request",
 			req: &updateproto.UpdateRequest{
-				RequestBody:  request3,
 				SessionToken: "token",
 			},
 			want: response.RPC{
@@ -82,8 +52,8 @@ func TestSimpleUpdate(t *testing.T) {
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := e.SimpleUpdate(tt.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("SimpleUpdate() = %v, want %v", got, tt.want)
+			if got := e.StartUpdate(tt.req); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("StartUpdate() = %v, want %v", got, tt.want)
 			}
 		})
 	}

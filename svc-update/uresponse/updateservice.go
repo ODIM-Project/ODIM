@@ -39,12 +39,19 @@ type SoftwareInventory struct {
 // UpdateServiceSimpleUpdate defines Target information for the upgrade
 type UpdateServiceSimpleUpdate struct {
 	Target     string `json:"target"`
-	ActionInfo string `json:"@Redfish.ActionInfo"`
+	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
+}
+
+// UpdateServiceStartUpdate defines Target information for the upgrade
+type UpdateServiceStartUpdate struct {
+	Target     string `json:"target"`
+	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
 }
 
 // Action defines the links to the actions available under the service
 type Action struct {
-	UpdateServiceSimpleUpdate UpdateServiceSimpleUpdate `json:"#UpdateService.SimpleUpdate#"`
+	UpdateServiceSimpleUpdate UpdateServiceSimpleUpdate `json:"#UpdateService.SimpleUpdate"`
+	UpdateServiceStartUpdate  UpdateServiceStartUpdate  `json:"#UpdateService.StartUpdate"`
 }
 
 // UpdateService defines the service properties of update service

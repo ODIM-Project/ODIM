@@ -60,14 +60,14 @@ func contactPluginClient(url, method, token string, odataID string, body interfa
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
-	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes/1" {
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
 		body := `{"MessageId": "Base.1.0.Success"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
-	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes/2" {
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/2" {
 		body := `{"MessageId": "Base.1.0.Failed"}`
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
@@ -275,6 +275,9 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	mockDeviceData("8e896459-a8f9-4c83-95b7-7b316b4908e1", device2)
 	mockSystemData("/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1")
 	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1")
+	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/1/Volumes/1")
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1/Storage/1/Volumes/1")
 
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
@@ -291,7 +294,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
-				StorageInstance: "ArrayControllers-0",
+				StorageInstance: "1",
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
@@ -302,7 +305,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:1",
-				StorageInstance: "ArrayControllers-0",
+				StorageInstance: "1",
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
@@ -313,7 +316,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:",
-				StorageInstance: "ArrayControllers-0",
+				StorageInstance: "1",
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
@@ -324,7 +327,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
-				StorageInstance: "ArrayControllers-0",
+				StorageInstance: "1",
 				VolumeID:        "2",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
@@ -335,7 +338,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 			p:    pluginContact,
 			req: &systemsproto.VolumeRequest{
 				SystemID:        "8e896459-a8f9-4c83-95b7-7b316b4908e1:1",
-				StorageInstance: "ArrayControllers-0",
+				StorageInstance: "1",
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},

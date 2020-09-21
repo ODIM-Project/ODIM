@@ -23,6 +23,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -455,5 +456,36 @@ func TestSystemReset(t *testing.T) {
 
 	_, err = GetSystemResetInfo("systemURI")
 	assert.NotNil(t, err, "Error Should not be nil")
+
+}
+
+func TestDeleteVolume(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.InMemory)
+	}()
+	mockData(t, common.InMemory, "Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/1", "")
+	tests := []struct {
+		name string
+		key  string
+		want *errors.Error
+	}{
+		{
+			name: "Positive case",
+			key:  "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/1",
+			want: nil,
+		},
+		{
+			name: "not found",
+			key:  "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/2",
+			want: errors.PackError(errors.DBKeyNotFound, "error while trying to get voulme details: no data with the with key /redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/2 found"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := DeleteVolume(tt.key); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DeleteVolume() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 
 }

@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727133207-df3dfb728bd1
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200903134721-47bfad56447c
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200917144930-75dc6754e020
 	github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727133207-df3dfb728bd1
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
 	github.com/stretchr/testify v1.5.1

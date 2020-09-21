@@ -43,6 +43,18 @@ func mockCreateVolume(username, url string) (*http.Response, error) {
 			Body:       ioutil.NopCloser(bytes.NewBufferString("Failed")),
 		}, fmt.Errorf("Error")
 	}
+	if url == "/ODIM/v1/Systems/1/Storage/1/Volumes/1" && username == "admin" {
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString("Success")),
+		}, nil
+	}
+	if url == "/ODIM/v1/Systems/1/Storage/1/Volumes/1" && username != "admin" {
+		return &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       ioutil.NopCloser(bytes.NewBufferString("Failed")),
+		}, fmt.Errorf("Error")
+	}
 	return nil, fmt.Errorf("Error")
 }
 
@@ -96,4 +108,36 @@ func TestCreateVolume(t *testing.T) {
 	//unittest for bad request scenario
 	invalidRequestBody := "invalid"
 	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(invalidRequestBody).Expect().Status(http.StatusBadRequest)
+}
+
+func TesDeleteVolume(t *testing.T) {
+	config.SetUpMockConfig(t)
+	deviceHost := "localhost"
+	devicePort := "1234"
+	ts := startTestServer(mockDevice)
+	// Start the server.
+	ts.StartTLS()
+	defer ts.Close()
+
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1")
+
+	redfishRoutes.Delete("/Systems/{id}/Storage/{id2}/Volumes/rid", CreateVolume)
+
+	rfpresponse.PluginToken = "token"
+
+	e := httptest.New(t, mockApp)
+
+	requestBody := map[string]interface{}{
+		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
+		"UserName":       "admin",
+		"Password":       []byte("P@$$w0rd"),
+	}
+
+	//Unit Test for success scenario
+	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithJSON(requestBody).Expect().Status(http.StatusOK)
+
+	//Case for invalid token
+	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
+
 }

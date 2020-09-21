@@ -14,12 +14,14 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-ETCD_USR_ID=1125
-ETCD_GRP_ID=1125
-
 # perform pre-requisites required for creating etcd docker image
 etcd_pre_reqs()
 {
+	if [[ -z ${ETCD_GROUP_ID} ]] || [[ -z ${ETCD_USER_ID} ]]; then
+		echo "[$(date)] -- ERROR -- ETCD_GROUP_ID or ETCD_USER_ID is not set, exiting"
+		exit 1
+	fi
+
 	if [[ -n "$(getent passwd etcd 2>&1)" ]]; then
 		echo "[$(date)] -- INFO  -- user etcd exists"
 		sudo userdel etcd
@@ -28,8 +30,8 @@ etcd_pre_reqs()
 		echo "[$(date)] -- INFO  -- group etcd exists"
 		sudo groupdel etcd
 	fi
-	sudo groupadd -g ${ETCD_GRP_ID} -r etcd
-	sudo useradd -u ${ETCD_USR_ID} -r -M -g etcd etcd
+	sudo groupadd -g ${ETCD_GROUP_ID} -r etcd
+	sudo useradd -u ${ETCD_USER_ID} -r -M -g etcd etcd
 }
 
 ##############################################

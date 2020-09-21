@@ -17,10 +17,11 @@ package consumer
 
 import (
 	"encoding/json"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 )
 
 func TestConsume(t *testing.T) {
@@ -48,9 +49,11 @@ func TestKafkaSubscriber(t *testing.T) {
 		Context: "context",
 		Events: []common.Event{
 			common.Event{
-				EventType:         "Alert",
-				MessageID:         "AlertEvent",
-				OriginOfCondition: "/redfish/v1/Systems/1",
+				EventType: "Alert",
+				MessageID: "AlertEvent",
+				OriginOfCondition: &common.Link{
+					Oid: "/redfish/v1/Systems/1",
+				},
 			},
 		},
 	}

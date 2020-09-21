@@ -351,7 +351,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 	volRequest := systemsproto.VolumeRequest{
 		SessionToken:    sessionToken,
 		SystemID:        ctx.Params().Get("id"),
-		StorageInstance: ctx.Params().Get("rid"),
+		StorageInstance: ctx.Params().Get("id2"),
 		RequestBody:     request,
 	}
 	resp, err := sys.CreateVolumeRPC(volRequest)

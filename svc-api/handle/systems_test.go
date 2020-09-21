@@ -508,7 +508,7 @@ func TestCreateVolume(t *testing.T) {
 	sys.CreateVolumeRPC = mockCreateVolume
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
-	redfishRoutes.Post("/{rid}/Volumes", sys.CreateVolume)
+	redfishRoutes.Post("/{id2}/Volumes", sys.CreateVolume)
 
 	e := httptest.New(t, mockApp)
 	e.POST(
@@ -521,7 +521,7 @@ func TestCreateVolumeWithoutToken(t *testing.T) {
 	sys.CreateVolumeRPC = mockCreateVolume
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
-	redfishRoutes.Patch("/{rid}/Volumes", sys.CreateVolume)
+	redfishRoutes.Patch("/{id2}/Volumes", sys.CreateVolume)
 
 	e := httptest.New(t, mockApp)
 	e.POST(
@@ -534,7 +534,7 @@ func TestCreateVolumeWithInvalidToken(t *testing.T) {
 	sys.CreateVolumeRPC = mockCreateVolume
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
-	redfishRoutes.Post("/{rid}/Volumes", sys.CreateVolume)
+	redfishRoutes.Post("/{id2}/Volumes", sys.CreateVolume)
 
 	e := httptest.New(t, mockApp)
 	e.POST(
@@ -547,7 +547,7 @@ func TestCreateVolumeNegativeTestCases(t *testing.T) {
 	sys.CreateVolumeRPC = mockCreateVolume
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1/Systems/{id}/Storage")
-	redfishRoutes.Post("/{rid}/Volumes", sys.CreateVolume)
+	redfishRoutes.Post("/{id2}/Volumes", sys.CreateVolume)
 
 	e := httptest.New(t, mockApp)
 	e.POST(

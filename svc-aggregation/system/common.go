@@ -643,8 +643,99 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	return oidKey, progress, nil
 }
 
-func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, deviceUUID string) map[string]interface{} {
+// getStorageInfo is used to rediscover storage data from a system
+func (h *respHolder) getStorageInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get system storage collection details: ")
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = err.Error()
+		if strings.Contains(h.ErrorMessage, errors.SystemNotSupportedErrString) {
+			h.StatusMessage = response.ActionNotSupported
+		} else {
+			h.StatusMessage = getResponse.StatusMessage
+		}
+		h.StatusCode = getResponse.StatusCode
+		h.lock.Unlock()
+		return "", progress, err
+	}
 
+	var computeSystem map[string]interface{}
+	err = json.Unmarshal(body, &computeSystem)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying unmarshal response body of system storage: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		h.lock.Unlock()
+		return "", progress, err
+	}
+
+	// Read system data from DB
+	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
+	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+":", -1)
+	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
+	if dbErr != nil {
+		log.Println("error while getting the systems data", dbErr.Error())
+		return "", progress, err
+	}
+	// unmarshall the systems data
+	var systemData map[string]interface{}
+	err = json.Unmarshal([]byte(data), &systemData)
+	if err != nil {
+		log.Println("Error while unmarshaling system's data", err)
+		return "", progress, err
+	}
+
+	oid := computeSystem["@odata.id"].(string)
+	computeSystemID := systemData["Id"].(string)
+	computeSystemUUID := systemData["UUID"].(string)
+	oidKey := keyFormation(oid, computeSystemID, req.DeviceUUID)
+
+	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+	// persist the response with table Storage
+	resourceName := getResourceName(req.OID, true)
+	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, oidKey)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying to save data: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		h.lock.Unlock()
+		return oidKey, progress, err
+	}
+	h.TraversedLinks[req.OID] = true
+	h.SystemURL = append(h.SystemURL, oidKey)
+	var retrievalLinks = make(map[string]bool)
+	getLinks(computeSystem, retrievalLinks, false)
+
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
+
+	req.SystemID = computeSystemID
+	req.ParentOID = oid
+	for resourceOID, oemFlag := range retrievalLinks {
+		estimatedWork := alottedWork / int32(len(retrievalLinks))
+		req.OID = resourceOID
+		req.OemFlag = oemFlag
+		progress = h.getResourceDetails(taskID, progress, estimatedWork, req)
+	}
+	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
+	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
+	//save the final search form here
+	if req.UpdateFlag {
+		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
+	} else {
+		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+	}
+	if err != nil {
+		h.ErrorMessage = "error while trying save index values: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		return oidKey, progress, err
+	}
+	return oidKey, progress, nil
+}
+
+func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, deviceUUID string) map[string]interface{} {
 	var searchForm = make(map[string]interface{})
 
 	if val, ok := computeSystem["MemorySummary"]; ok {
@@ -668,25 +759,28 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 
 	// saving the firmware version
-	if firmwareVersion := getFirmwareVersiomn(oidKey); firmwareVersion != "" {
-		searchForm["FirmwareVersion"] = firmwareVersion
+	if !strings.Contains(oidKey, "/Storage") {
+		if firmwareVersion := getFirmwareVersiomn(oidKey); firmwareVersion != "" {
+			searchForm["FirmwareVersion"] = firmwareVersion
+		}
 	}
+
 	// saving storage drive quantity/capacity/type
-
-	if val, ok := computeSystem["Storage"]; ok {
-		storage := val.(map[string]interface{})
-		storageCollectionOdataID := storage["@odata.id"].(string)
-
+	if val, ok := computeSystem["Storage"]; ok || strings.Contains(oidKey, "/Storage") {
+		var storageCollectionOdataID string
+		if strings.Contains(oidKey, "/Storage") {
+			storageCollectionOdataID = oidKey
+		} else {
+			storage := val.(map[string]interface{})
+			storageCollectionOdataID = storage["@odata.id"].(string)
+		}
 		storageCollection := agcommon.GetStorageResources(strings.TrimSuffix(storageCollectionOdataID, "/"))
-
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
-
 				storageRes := agcommon.GetStorageResources(strings.TrimSuffix(storageODataID, "/"))
-
 				drives := storageRes["Drives"]
 				if drives != nil {
 					quantity := len(drives.([]interface{}))

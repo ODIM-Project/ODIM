@@ -350,6 +350,17 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
 	}
+
+	// delete a volume in db
+	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
+	if derr := smodel.DeleteVolume(key); derr != nil {
+		errMsg := "error while trying to delete volume: " + derr.Error()
+		log.Println(errMsg)
+		if errors.DBKeyNotFound == derr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
 	resp.Header = map[string]string{
 		"Content-type": "application/json; charset=utf-8",
 	}

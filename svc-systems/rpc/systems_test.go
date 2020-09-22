@@ -87,7 +87,7 @@ func mockPluginStatus(plugin smodel.Plugin) bool {
 }
 
 func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
-	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes/1" {
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
 		body := `{"MessageId": "Base.1.0.Success"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -109,6 +109,17 @@ func mockSystemData(systemID string) error {
 	}
 	if err = connPool.Create("ComputerSystem", systemID, string(reqData)); err != nil {
 		return fmt.Errorf("error while trying to create new %v resource: %v", "System", err.Error())
+	}
+	return nil
+}
+
+func mockSystemResourceData(body []byte, table, key string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return err
+	}
+	if err = connPool.Create(table, key, string(body)); err != nil {
+		return err
 	}
 	return nil
 }
@@ -620,6 +631,8 @@ func TestSystems_DeleteVolume(t *testing.T) {
 	mockPluginClientData(t)
 	mockDeviceData("6d5a0a66-7efa-578e-83cf-44dc68d2874e", device1)
 	mockSystemData("/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	var reqData = `{"@odata.id":"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/1/Volumes/1"}`
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/1/Volumes/1")
 
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
@@ -643,7 +656,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				req: &systemsproto.VolumeRequest{
 					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken:    "validToken",
-					StorageInstance: "ArrayControllers-0",
+					StorageInstance: "1",
 					VolumeID:        "1",
 					RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 				},
@@ -658,7 +671,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 				req: &systemsproto.VolumeRequest{
 					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken:    "invalidToken",
-					StorageInstance: "ArrayControllers-0",
+					StorageInstance: "1",
 					VolumeID:        "1",
 					RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 				},

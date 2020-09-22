@@ -266,3 +266,22 @@ func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
 	}
 	return resetInfo, nil
 }
+
+//DeleteVolume will delete the volume from InMemory
+func DeleteVolume(key string) *errors.Error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
+	}
+
+	// Check key present in the DB
+	if _, err = connPool.Read("Volumes", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get voulme details: ", err.Error())
+	}
+
+	//Delete volume
+	if err = connPool.Delete("Volumes", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to delete volume: ", err.Error())
+	}
+	return nil
+}

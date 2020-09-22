@@ -64,7 +64,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	}
 
 	// parsing the event
-	var eventObj common.Event
+	var eventObj interface{}
 	err = json.Unmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
@@ -209,7 +209,9 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["OriginOfCondition"]; ok {
 		switch v := val.(type) {
 		case string:
-			testEvent.OriginOfCondition = v
+			testEvent.OriginOfCondition = &common.Link{
+				Oid: v,
+			}
 		default:
 			return nil, response.PropertyValueTypeError, "error: optional parameter OriginOfCondition must be of type string", []interface{}{v, "OriginOfCondition"}
 		}

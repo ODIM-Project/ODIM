@@ -27,6 +27,7 @@ if [ -a build/docker-compose.yml ]; then
 	sudo rm -rf Redis/redis-persistence/*
 	sudo rm -rf Kafka/kafka-persistence/config/*
 	sudo rm -rf Kafka/kafka-persistence/data/*
+	sudo rm -rf etcd/etcd-persistence/*
 	echo "Cleanup done"
 	cd ../
 	exit 0

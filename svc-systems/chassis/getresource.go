@@ -35,6 +35,7 @@ import (
 type PluginContact struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptPassword func([]byte) ([]byte, error)
+	GetPluginStatus func(smodel.Plugin) bool
 }
 
 // GetChassisResource is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -71,11 +72,12 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-				URL:            req.URL,
-				UUID:           uuid,
-				SystemID:       requestData[1],
-				ContactClient:  p.ContactClient,
-				DevicePassword: p.DecryptPassword,
+				URL:             req.URL,
+				UUID:            uuid,
+				SystemID:        requestData[1],
+				ContactClient:   p.ContactClient,
+				DevicePassword:  p.DecryptPassword,
+				GetPluginStatus: p.GetPluginStatus,
 			}
 			log.Println("Request Url", req.URL)
 			var err error

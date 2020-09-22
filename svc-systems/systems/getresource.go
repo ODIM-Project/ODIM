@@ -581,11 +581,12 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		errorMessage := err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-				URL:            req.URL,
-				UUID:           uuid,
-				SystemID:       requestData[1],
-				ContactClient:  p.ContactClient,
-				DevicePassword: p.DevicePassword,
+				URL:             req.URL,
+				UUID:            uuid,
+				SystemID:        requestData[1],
+				ContactClient:   p.ContactClient,
+				DevicePassword:  p.DevicePassword,
+				GetPluginStatus: p.GetPluginStatus,
 			}
 			var err error
 			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
@@ -699,12 +700,13 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	_, err = smodel.GetSystemResetInfo(req.URL)
 	if err == nil {
 		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-			URL:            req.URL,
-			UUID:           uuid,
-			SystemID:       requestData[1],
-			ContactClient:  p.ContactClient,
-			DevicePassword: p.DevicePassword,
-			ResourceName:   "ComputerSystem",
+			URL:             req.URL,
+			UUID:            uuid,
+			SystemID:        requestData[1],
+			ContactClient:   p.ContactClient,
+			DevicePassword:  p.DevicePassword,
+			GetPluginStatus: p.GetPluginStatus,
+			ResourceName:    "ComputerSystem",
 		}
 		var err error
 		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {

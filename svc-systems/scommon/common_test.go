@@ -142,6 +142,10 @@ func mockPluginData(t *testing.T, pluginID, PreferredAuthType, port string) erro
 	return nil
 }
 
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
+}
+
 func TestGetResourceInfoFromDevice(t *testing.T) {
 	config.SetUpMockConfig(t)
 	defer func() {
@@ -330,7 +334,7 @@ func TestContactPlugin(t *testing.T) {
 
 	contactRequest.ContactClient = mockContactClient
 	contactRequest.Plugin = plugin
-
+	contactRequest.GetPluginStatus = mockPluginStatus
 	_, _, _, err = ContactPlugin(contactRequest, "")
 	assert.NotNil(t, err, "There should be an error")
 }

@@ -86,6 +86,7 @@ func Router() *iris.Application {
 		ChangeBiosSettingsRPC:      rpc.ChangeBiosSettings,
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
 		CreateVolumeRPC:            rpc.CreateVolume,
+		DeleteVolumeRPC:            rpc.DeleteVolume,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -252,7 +253,8 @@ func Router() *iris.Application {
 	storage.Get("/{rid}/Drives", system.GetSystemResource)
 	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Volumes", system.GetSystemResource)
-	storage.Post("/{rid}/Volumes", system.CreateVolume)
+	storage.Post("/{id2}/Volumes", system.CreateVolume)
+	storage.Delete("/{id2}/Volumes/{rid}", system.DeleteVolume)
 	storage.Get("/{id2}/Volumes/{rid}", system.GetSystemResource)
 	storage.Any("/", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Drives/{rid}", handle.SystemsMethodNotAllowed)

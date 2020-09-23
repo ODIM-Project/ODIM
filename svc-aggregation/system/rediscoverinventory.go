@@ -136,7 +136,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
 	if strings.Contains(systemURL, "/Storage") {
-		_, progress, _ = h.getStorageInfo("", progress, systemsEstimatedWork, req)
+		_, progress, _ = h.getStorageInfo(progress, systemsEstimatedWork, req)
 	} else {
 		_, progress, _ = h.getSystemInfo("", progress, systemsEstimatedWork, req)
 		//rediscovering the Chassis Information

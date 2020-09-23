@@ -644,7 +644,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 }
 
 // getStorageInfo is used to rediscover storage data from a system
-func (h *respHolder) getStorageInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
+func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system storage collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -716,7 +716,8 @@ func (h *respHolder) getStorageInfo(taskID string, progress int32, alottedWork i
 		estimatedWork := alottedWork / int32(len(retrievalLinks))
 		req.OID = resourceOID
 		req.OemFlag = oemFlag
-		progress = h.getResourceDetails(taskID, progress, estimatedWork, req)
+		// Passing taskid as empty string
+		progress = h.getResourceDetails("", progress, estimatedWork, req)
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
 	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)

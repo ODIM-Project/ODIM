@@ -760,7 +760,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		if firmwareVersion := getFirmwareVersiomn(oidKey); firmwareVersion != "" {
+		if firmwareVersion := getFirmwareVersion(oidKey); firmwareVersion != "" {
 			searchForm["FirmwareVersion"] = firmwareVersion
 		}
 	}
@@ -1043,7 +1043,7 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersiomn(oid string) string {
+func getFirmwareVersion(oid string) string {
 	// replace the system with the manager
 	managerID := strings.Replace(oid, "Systems", "Managers", -1)
 	data, dbErr := agmodel.GetResource("Managers", managerID)

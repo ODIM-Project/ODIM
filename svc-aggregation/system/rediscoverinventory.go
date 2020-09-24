@@ -102,6 +102,9 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	}
 	// check whether delete operation for the system is intiated
 	udaptedSystemURI := strings.Replace(systemURL, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+":", -1)
+	if strings.Contains(systemURL, "/Storage") {
+		udaptedSystemURI = strings.Replace(udaptedSystemURI, "/Storage", "", -1)
+	}
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(udaptedSystemURI)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
 		log.Println("Rediscovery for system: ", udaptedSystemURI, " can't be processed ", dbErr.Error())
@@ -132,11 +135,16 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	h.TraversedLinks = make(map[string]bool)
 	progress := int32(100)
 	systemsEstimatedWork := int32(75)
-	_, progress, _ = h.getSystemInfo("", progress, systemsEstimatedWork, req)
-	//rediscovering the Chassis Information
-	req.OID = "/redfish/v1/Chassis"
-	chassisEstimatedWork := int32(15)
-	progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req)
+	if strings.Contains(systemURL, "/Storage") {
+		_, progress, _ = h.getStorageInfo(progress, systemsEstimatedWork, req)
+	} else {
+		_, progress, _ = h.getSystemInfo("", progress, systemsEstimatedWork, req)
+		//rediscovering the Chassis Information
+		req.OID = "/redfish/v1/Chassis"
+		chassisEstimatedWork := int32(15)
+		progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req)
+	}
+
 	var responseBody = map[string]string{
 		"UUID": deviceUUID,
 	}

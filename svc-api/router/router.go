@@ -400,6 +400,7 @@ func Router() *iris.Application {
 	updateService.SetRegisterRule(iris.RouteSkip)
 	updateService.Get("/", update.GetUpdateService)
 	updateService.Post("/Actions/UpdateService.SimpleUpdate", update.SimpleUpdate)
+	updateService.Post("/Actions/UpdateService.StartUpdate", update.StartUpdate)
 	updateService.Get("/FirmwareInventory", update.GetFirmwareInventoryCollection)
 	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
 	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)

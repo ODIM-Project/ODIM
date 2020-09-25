@@ -316,7 +316,7 @@ func (e *ExternalInterface) publishResourceUpdatedEvent(systemIDs []string, coll
 func deleteResourceResetInfo(pattern string) {
 	keys, err := agmodel.GetAllMatchingDetails("SystemReset", pattern, common.InMemory)
 	if err != nil {
-		log.Printf("error while trying to ")
+		log.Printf("error while trying to fetch all matching keys from system reset table: %v", err)
 	}
 	for _, key := range keys {
 		agmodel.DeleteSystemResetInfo(key)

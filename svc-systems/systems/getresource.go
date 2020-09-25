@@ -562,6 +562,13 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		"OData-Version":     "4.0",
 	}
 
+	var saveRequired bool
+	// check the whether SystemResetInfo available in db. If it is available, then don't save the data in DB.
+	_, err := smodel.GetSystemResetInfo(req.URL)
+	if err != nil { // if err means, url is not available in SystemResetInfo, so data can be saved in DB.
+		saveRequired = true
+	}
+
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
@@ -593,7 +600,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 				GetPluginStatus: p.GetPluginStatus,
 			}
 			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 			} else {
 				if strings.Contains(req.URL, "/Storage") {
@@ -723,7 +730,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	uuid := requestData[0]
 	var data string
 	var err *errors.Error
-	// check the whether SystemResetInfo available in db if it is available the get the data from device
+	// check the whether SystemResetInfo available in db. If it is available, then get the data from device
 	_, err = smodel.GetSystemResetInfo(req.URL)
 	if err == nil {
 		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -736,7 +743,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			ResourceName:    "ComputerSystem",
 		}
 		var err error
-		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 	} else {

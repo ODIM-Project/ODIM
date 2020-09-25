@@ -178,11 +178,11 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 	assert.Nil(t, err, "There should be no error getting data")
 	req.UUID = "uuid1"
 	req.URL = "/redfish/v1/Systems/uuid1:1/EthernetInterfaces"
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 	assert.Nil(t, err, "There should be no error getting data")
 }
 

@@ -32,8 +32,6 @@ etcd_pre_reqs()
 	fi
 	sudo groupadd -g ${ETCD_GROUP_ID} -r etcd
 	sudo useradd -u ${ETCD_USER_ID} -r -M -g etcd etcd
-
-	sudo chown -R etcd:etcd etcd/etcd-persistence
 }
 
 ##############################################

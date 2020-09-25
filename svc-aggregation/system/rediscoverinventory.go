@@ -22,8 +22,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -320,5 +320,5 @@ func deleteResourceResetInfo(pattern string) {
 	}
 	for _, key := range keys {
 		agmodel.DeleteSystemResetInfo(key)
-	} 
+	}
 }

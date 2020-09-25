@@ -81,7 +81,7 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 			}
 			log.Println("Request Url", req.URL)
 			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
 				log.Printf("error while getting resource: %v", err)
 				errorMsg := err.Error()
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil)

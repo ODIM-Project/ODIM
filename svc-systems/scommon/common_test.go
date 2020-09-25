@@ -214,11 +214,11 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 
 	assert.NotNil(t, err, "There should be an error")
 	//PluginContactRequest.Token = "23456"
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -250,7 +250,7 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginData(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -277,7 +277,7 @@ func TestGetResourceInfoFromDeviceWithNoTarget(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 
@@ -309,7 +309,7 @@ func TestGetResourceInfoFromDeviceWithInvalidDevicePassword(t *testing.T) {
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDeviceInvalidPassword,
 	}
-	_, err = GetResourceInfoFromDevice(req)
+	_, err = GetResourceInfoFromDevice(req, true)
 	assert.NotNil(t, err, "There should be an error")
 }
 

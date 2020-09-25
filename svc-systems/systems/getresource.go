@@ -602,10 +602,9 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 			var err error
 			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
-			} else {
-				if strings.Contains(req.URL, "/Storage") {
-					rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
-				}
+			}
+			if strings.Contains(req.URL, "/Storage") {
+				rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
 			}
 
 		} else {

@@ -143,6 +143,14 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 					serviceRoot.Managers = &models.Service{OdataID: servicePath}
 				}
 			}
+
+		case "UpdateService":
+			serviceNodes, err := reg.GetService(srv.Update)
+			if err == nil {
+				if len(serviceNodes) != 0 {
+					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
+				}
+			}
 		}
 	}
 
@@ -870,7 +878,8 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	path := url.Path
 	systemID := ctx.Params().Get("id")
 	subID := ctx.Params().Get("rid")
-
+	storageid := ctx.Params().Get("id2")
+	resourceID := ctx.Params().Get("rid")
 	// Extend switch case, when each path, requires different handling
 	switch path {
 	case "/redfish/v1/Systems/" + systemID:
@@ -879,6 +888,10 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "")
 	case "/redfish/v1/Systems/" + systemID + "/LogServices/" + subID + "Actions/LogService.ClearLog":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST, GET")
+	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}

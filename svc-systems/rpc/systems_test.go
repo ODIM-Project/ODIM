@@ -14,12 +14,115 @@
 package rpc
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
+
+func mockPluginClientData(t *testing.T) error {
+	password := getEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
+	plugin := smodel.Plugin{
+		IP:                "localhost",
+		Port:              "9091",
+		Username:          "admin",
+		Password:          password,
+		ID:                "GRF",
+		PreferredAuthType: "BasicAuth",
+	}
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err)
+	}
+	// Clear previously created key, if exists
+	connPool.Delete("Plugin", "GRF")
+	if err = connPool.Create("Plugin", "GRF", plugin); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "Plugin", err.Error())
+	}
+	return nil
+}
+
+func mockGetExternalInterface() *systems.ExternalInterface {
+	return &systems.ExternalInterface{
+		ContactClient:   contactPluginClient,
+		DevicePassword:  stubDevicePassword,
+		GetPluginStatus: mockPluginStatus,
+	}
+}
+func getEncryptedKey(t *testing.T, key []byte) []byte {
+	cryptedKey, err := common.EncryptWithPublicKey(key)
+	if err != nil {
+		t.Fatalf("error: failed to encrypt data: %v", err)
+	}
+	return cryptedKey
+}
+
+func mockDeviceData(uuid string, device smodel.Target) error {
+
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err)
+	}
+	if err = connPool.Create("System", uuid, device); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "System", err.Error())
+	}
+	return nil
+}
+
+func stubDevicePassword(password []byte) ([]byte, error) {
+	return password, nil
+}
+
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
+}
+
+func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
+		body := `{"MessageId": "Base.1.0.Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
+	return nil, fmt.Errorf("InvalidRequest")
+}
+
+func mockSystemData(systemID string) error {
+	reqData, _ := json.Marshal(&map[string]interface{}{
+		"Manufacturer": "HPE",
+		"Id":           "1",
+	})
+
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.Create("ComputerSystem", systemID, string(reqData)); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "System", err.Error())
+	}
+	return nil
+}
+
+func mockSystemResourceData(body []byte, table, key string) error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return err
+	}
+	if err = connPool.Create(table, key, string(body)); err != nil {
+		return err
+	}
+	return nil
+}
 
 func TestSystems_GetSystemResource(t *testing.T) {
 	common.SetUpMockConfig()
@@ -465,7 +568,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 
 	type args struct {
 		ctx  context.Context
-		req  *systemsproto.CreateVolumeRequest
+		req  *systemsproto.VolumeRequest
 		resp *systemsproto.SystemsResponse
 	}
 	tests := []struct {
@@ -478,7 +581,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			name: "Request with valid token",
 			s:    sys,
 			args: args{
-				req: &systemsproto.CreateVolumeRequest{
+				req: &systemsproto.VolumeRequest{
 					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken: "validToken",
 				},
@@ -489,7 +592,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			name: "Request with invalid token",
 			s:    sys,
 			args: args{
-				req: &systemsproto.CreateVolumeRequest{
+				req: &systemsproto.VolumeRequest{
 					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
 					SessionToken: "invalidToken",
 				},
@@ -501,6 +604,86 @@ func TestSystems_CreateVolume(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := tt.s.CreateVolume(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
 				t.Errorf("Systems.CreateVolume() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestSystems_DeleteVolume(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	device1 := smodel.Target{
+		ManagerAddress: "10.24.0.12",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e",
+		PluginID:       "GRF",
+	}
+	mockPluginClientData(t)
+	mockDeviceData("6d5a0a66-7efa-578e-83cf-44dc68d2874e", device1)
+	mockSystemData("/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	var reqData = `{"@odata.id":"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/1/Volumes/1"}`
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/1/Volumes/1")
+
+	sys := new(Systems)
+	sys.IsAuthorizedRPC = mockIsAuthorized
+	sys.EI = mockGetExternalInterface()
+
+	type args struct {
+		ctx  context.Context
+		req  *systemsproto.VolumeRequest
+		resp *systemsproto.SystemsResponse
+	}
+	tests := []struct {
+		name           string
+		s              *Systems
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Request with valid token",
+			s:    sys,
+			args: args{
+				req: &systemsproto.VolumeRequest{
+					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SessionToken:    "validToken",
+					StorageInstance: "1",
+					VolumeID:        "1",
+					RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+				},
+				resp: &systemsproto.SystemsResponse{},
+			},
+			wantStatusCode: http.StatusNoContent,
+		},
+		{
+			name: "Request with invalid token",
+			s:    sys,
+			args: args{
+				req: &systemsproto.VolumeRequest{
+					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SessionToken:    "invalidToken",
+					StorageInstance: "1",
+					VolumeID:        "1",
+					RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+				},
+				resp: &systemsproto.SystemsResponse{},
+			},
+			wantStatusCode: http.StatusUnauthorized,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.s.DeleteVolume(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Systems.DeleteVolume() = %v, want %v", tt.args.resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

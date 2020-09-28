@@ -23,6 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
@@ -52,8 +53,9 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		return nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:   pmbhandle.ContactPlugin,
+		DevicePassword:  common.DecryptWithPrivateKey,
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystemResource(req)
 	resp.Header = data.Header
@@ -108,8 +110,9 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		return nil
 	}
 	var pc = systems.PluginContact{
-		ContactClient:  pmbhandle.ContactPlugin,
-		DevicePassword: common.DecryptWithPrivateKey,
+		ContactClient:   pmbhandle.ContactPlugin,
+		DevicePassword:  common.DecryptWithPrivateKey,
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystems(req)
 	resp.Header = data.Header
@@ -249,7 +252,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolumeRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
 	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authStatusCode != http.StatusOK {
@@ -264,6 +267,34 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.CreateVolu
 	}
 
 	data := s.EI.CreateVolume(req)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
+// DeleteVolume defines the operations which handles the RPC request response
+// for the DeleteVolume service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
+	sessionToken := req.SessionToken
+	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authStatusCode != http.StatusOK {
+		errorMessage := "error while trying to authenticate session"
+		resp.StatusCode = authStatusCode
+		resp.StatusMessage = authStatusMessage
+		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+		resp.Body = generateResponse(rpcResp.Body)
+		resp.Header = rpcResp.Header
+		log.Printf(errorMessage)
+		return nil
+	}
+
+	data := s.EI.DeleteVolume(req)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header

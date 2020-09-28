@@ -25,6 +25,7 @@ import (
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 )
 
 // ChassisRPC struct helps to register service
@@ -54,6 +55,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	var pc = chassis.PluginContact{
 		ContactClient:   pmbhandle.ContactPlugin,
 		DecryptPassword: common.DecryptWithPrivateKey,
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetChassisResource(req)
 	resp.Header = data.Header

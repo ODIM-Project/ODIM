@@ -39,14 +39,14 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func mockGetResource(table, key string) (string, *errors.Error) {
+func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
 	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b:1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b:1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
 }
 
-func mockGetAllKeysFromTable(table string) ([]string, error) {
+func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
 	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid:1"}, nil
 }
 

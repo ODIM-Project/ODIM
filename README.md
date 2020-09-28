@@ -122,10 +122,10 @@ This section provides a step-by-step procedure for deploying the resource aggreg
    ```
 2. Choose a Fully Qualified Domain Name (FQDN) for the resource aggregator server. 
    Example: odim.local.com.
-3. Set FQDN to environment of the host machine using the following command:
-    ```
-    $ export FQDN=<user_preferred_fqdn_for_host>
-    ```
+3. set FQDN to environment of the host machine using the following command:
+   ```
+   $ export FQDN=<user_preferred_fqdn_for_host>
+   ```
 4. Set the environment variable, `HOSTIP` to the IP address of your system.
    ```
    $ export HOSTIP=<ip_address_of_your_system>

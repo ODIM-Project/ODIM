@@ -249,6 +249,15 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			},
 		},
 		{
+			name: "Positive case: All is well, Need redicovery of storage",
+			e:    &externalInterface,
+			args: args{
+				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
+				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1/Storage",
+				updateFlag: true,
+			},
+		},
+		{
 			name: "Positive case: All is well, dont need redicovery of the resource",
 			e:    &externalInterface,
 			args: args{

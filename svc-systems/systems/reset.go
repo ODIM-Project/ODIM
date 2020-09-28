@@ -30,8 +30,9 @@ import (
 
 //PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword func([]byte) ([]byte, error)
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword  func([]byte) ([]byte, error)
+	GetPluginStatus func(smodel.Plugin) bool
 }
 
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType

@@ -122,19 +122,13 @@ This section provides a step-by-step procedure for deploying the resource aggreg
    ```
 2. Choose a Fully Qualified Domain Name (FQDN) for the resource aggregator server. 
    Example: odim.local.com.
-   And set FQDN to environment of the host machine using the following command:
+3. set FQDN to environment of the host machine using the following command:
    ```
    $ export FQDN=<user_preferred_fqdn_for_host>
    ```
-3. Set the environment variable, `HOSTIP` to the IP address of your system.
+4. Set the environment variable, `HOSTIP` to the IP address of your system.
    ```
    $ export HOSTIP=<ip_address_of_your_system>
-   ```
-4. Set below environment variables with user and group ID to be used for etcd
-   Use values higher than 1100 preferably for user and group IDs.
-   ```
-   $ export ETCD_USER_ID=<etcd_user_id>
-   $ export ETCD_GROUP_ID=<etcd_group_id>
    ```
 5. Set up FQDN in the `/etc/hosts` file (only if there is no DNS infrastructure):
     a. Open the `/etc/hosts` file for editing:

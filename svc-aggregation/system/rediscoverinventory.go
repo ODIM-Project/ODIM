@@ -322,3 +322,22 @@ func deleteResourceResetInfo(pattern string) {
 		agmodel.DeleteSystemResetInfo(key)
 	}
 }
+
+// deleteSubordinateResource will delete all the subordinate resources assosiated with the pattern
+func deleteSubordinateResource(pattern string) {
+	keys, err := agmodel.GetAllMatchingDetails("", pattern, common.InMemory)
+	if err != nil {
+		log.Printf("error while trying to fetch all matching keys from system reset table: %v", err)
+	}
+	for _, key := range keys {
+		resourceDetails := strings.SplitN(key, ":", 2)
+		switch resourceDetails[0] {
+		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers":
+			continue
+		default:
+			if err = agmodel.DeleteSubodinateResource(resourceDetails[0], resourceDetails[1]); err != nil {
+				log.Printf("error: delete of %v from %v failed due to the error: %v", resourceDetails[1], resourceDetails[0], err)
+			}
+		}	 
+	}
+}

@@ -824,3 +824,15 @@ func removeElements(requestElements, presentElements []string) []string {
 	}
 	return newElements
 }
+
+//DeleteSubodinateResource will delete the 
+func DeleteSubodinateResource(table, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return err
+	}
+	if err = conn.Delete(table, key); err != nil {
+		return err
+	}
+	return nil
+}

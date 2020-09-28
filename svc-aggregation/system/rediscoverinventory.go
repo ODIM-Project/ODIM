@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -125,6 +126,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	defer func() {
 		agmodel.DeleteSystemOperationInfo(udaptedSystemURI)
 		agmodel.DeleteSystemResetInfo(udaptedSystemURI)
+		deleteResourceResetInfo(udaptedSystemURI)
 	}()
 	req.DeviceUUID = deviceUUID
 	req.DeviceInfo = target
@@ -308,5 +310,15 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 func (e *ExternalInterface) publishResourceUpdatedEvent(systemIDs []string, collectionName string) {
 	for i := 0; i < len(systemIDs); i++ {
 		e.PublishEventMB(systemIDs[i], "ResourceUpdated", collectionName)
+	}
+}
+
+func deleteResourceResetInfo(pattern string) {
+	keys, err := agmodel.GetAllMatchingDetails("SystemReset", pattern, common.InMemory)
+	if err != nil {
+		log.Printf("error while trying to fetch all matching keys from system reset table: %v", err)
+	}
+	for _, key := range keys {
+		agmodel.DeleteSystemResetInfo(key)
 	}
 }

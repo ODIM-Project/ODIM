@@ -22,8 +22,11 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	redisSentinel "github.com/go-redis/redis"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -1034,9 +1037,34 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 
 }
 
+type redisExtCallsImpMock struct{}
+
+func (r redisExtCallsImpMock) newSentinelClient(opt *redisSentinel.Options) *redisSentinel.SentinelClient {
+	return newSentinelClientMock(opt)
+}
+func newSentinelClientMock(opt *redisSentinel.Options) *redisSentinel.SentinelClient {
+	strSlice := strings.Split(opt.Addr, ":")
+	sentinelHost := strSlice[0]
+	sentinelPort := strSlice[1]
+	if sentinelHost == "ValidHost" && sentinelPort == "ValidSentinelPort" {
+		return &redisSentinel.SentinelClient{}
+	}
+	return nil
+}
+func (r redisExtCallsImpMock) getMasterAddrByName(masterSet string, snlClient *redisSentinel.SentinelClient) []string {
+	return getMasterAddbyNameMock(masterSet, snlClient)
+}
+
+func getMasterAddbyNameMock(masterSet string, snlClient *redisSentinel.SentinelClient) []string {
+	if masterSet == "ValidMasterSet" && snlClient != nil {
+		return []string{"ValidMasterIP", "ValidMasterPort"}
+	}
+	return []string{"", ""}
+}
 func TestGetCurrentMasterHostPort(t *testing.T) {
+	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
-		host string
+		dbConfig *Config
 	}
 	tests := []struct {
 		name  string
@@ -1047,23 +1075,71 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 		{
 			name: "Positive Case: All is well, valid sentinel Host",
 			args: args{
-				host: "ValidHost",
+				dbConfig: &Config{
+					Host:         "ValidHost",
+					SentinelPort: "ValidSentinelPort",
+					MasterSet:    "ValidMasterSet",
+				},
 			},
-			want:  "validSentinelIP",
-			want1: "validSentinelPort",
+			want:  "ValidMasterIP",
+			want1: "ValidMasterPort",
 		},
 		{
-			name: "Negetive Case: Invalid sentinel Host",
+			name: "Negative Case: Invalid sentinel Host",
 			args: args{
-				host: "invalidHost",
+				dbConfig: &Config{
+					Host:         "InvalidHost",
+					SentinelPort: "ValidSentinelPort",
+					MasterSet:    "ValidMasterSet",
+				},
 			},
 			want:  "",
 			want1: "",
 		},
 		{
-			name: "Negetive Case: empty sentinel Host",
+			name: "Negative Case: Invalid sentinel Port",
 			args: args{
-				host: "",
+				dbConfig: &Config{
+					Host:         "ValidHost",
+					SentinelPort: "InvalidSentinelPort",
+					MasterSet:    "ValidMasterSet",
+				},
+			},
+			want:  "",
+			want1: "",
+		},
+		{
+			name: "Negative Case: Invalid MasterSet",
+			args: args{
+				dbConfig: &Config{
+					Host:         "ValidHost",
+					SentinelPort: "ValidSentinelPort",
+					MasterSet:    "InvalidMasterSet",
+				},
+			},
+			want:  "",
+			want1: "",
+		},
+		{
+			name: "Negative Case: empty sentinel Host",
+			args: args{
+				dbConfig: &Config{
+					Host:         "",
+					SentinelPort: "ValidSentinelPort",
+					MasterSet:    "ValidMasterSet",
+				},
+			},
+			want:  "",
+			want1: "",
+		},
+		{
+			name: "Negative Case: empty MasterSet",
+			args: args{
+				dbConfig: &Config{
+					Host:         "ValidHost",
+					SentinelPort: "ValidSentinelPort",
+					MasterSet:    "",
+				},
 			},
 			want:  "",
 			want1: "",
@@ -1071,7 +1147,7 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetCurrentMasterHostPort(tt.args.host)
+			got, got1 := GetCurrentMasterHostPort(tt.args.dbConfig)
 			if got != tt.want {
 				t.Errorf("GetCurrentMasterHostPort() got = %v, want %v", got, tt.want)
 			}
@@ -1082,6 +1158,8 @@ func TestGetCurrentMasterHostPort(t *testing.T) {
 	}
 }
 func TestGetDBConnection(t *testing.T) {
+	GetMockDBConfig()
+	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
 		dbFlag DbType
 	}
@@ -1108,18 +1186,18 @@ func TestGetDBConnection(t *testing.T) {
 			want1: nil,
 		},
 		{
-			name: "Negetive case: invalid db type",
+			name: "Negative case: invalid db type",
 			args: args{
 				dbFlag: 3,
 			},
 			want:  nil,
-			want1: &errors.Error{},
+			want1: errors.PackError(errors.UndefinedErrorType, "error invalid db type selection"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := GetDBConnection(tt.args.dbFlag)
-			if !reflect.DeepEqual(got, tt.want) {
+			if (got != nil) != (tt.want != nil) {
 				t.Errorf("GetDBConnection() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
@@ -1128,55 +1206,66 @@ func TestGetDBConnection(t *testing.T) {
 		})
 	}
 }
+func TestGetDBConnection_HAEnabled(t *testing.T) {
+	GetMockDBConfig()
+	// Enableing HA
+	config.Data.DBConf.RedisHAEnabled = true
 
-func TestGetPool(t *testing.T) {
+	inMemDBConnPool = &ConnPool{
+		ReadPool:        &redis.Pool{},
+		WritePool:       nil,
+		MasterIP:        "NotValid",
+		PoolUpdatedTime: time.Now(),
+	}
+	onDiskDBConnPool = &ConnPool{
+		ReadPool:        &redis.Pool{},
+		WritePool:       nil,
+		MasterIP:        "NotValid",
+		PoolUpdatedTime: time.Now(),
+	}
+	redisExtCalls = redisExtCallsImpMock{}
 	type args struct {
-		host string
-		port string
+		dbFlag DbType
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    *redis.Pool
-		wantErr bool
+		name  string
+		args  args
+		want  *ConnPool
+		want1 *errors.Error
 	}{
 		{
-			name: "Positive Case: All is well, valid Host, Valid Port",
+			name: "Positive case: All is well, inmemory db type",
 			args: args{
-				host: "ValidDBHost",
-				port: "ValiDBPort",
+				dbFlag: InMemory,
 			},
-			want:    &redis.Pool{},
-			wantErr: false,
+			want:  &ConnPool{},
+			want1: nil,
 		},
 		{
-			name: "Negative Case: Invalid Host, Valid Port",
+			name: "Positive case: All is well, OnDisk db type",
 			args: args{
-				host: "InvalidDBHost",
-				port: "ValidDBPort",
+				dbFlag: OnDisk,
 			},
-			want:    nil,
-			wantErr: true,
+			want:  &ConnPool{},
+			want1: nil,
 		},
 		{
-			name: "Negative Case: Valid Host, Invalid Port",
+			name: "Negative case: invalid db type",
 			args: args{
-				host: "ValidDBHost",
-				port: "InvalidDBPort",
+				dbFlag: 3,
 			},
-			want:    nil,
-			wantErr: true,
+			want:  nil,
+			want1: errors.PackError(errors.UndefinedErrorType, "error invalid db type selection"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetPool(tt.args.host, tt.args.port)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetPool() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			got, got1 := GetDBConnection(tt.args.dbFlag)
+			if (got != nil) != (tt.want != nil) {
+				t.Errorf("GetDBConnection() got = %v, want %v", got, tt.want)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetPool() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(got1, tt.want1) {
+				t.Errorf("GetDBConnection() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

@@ -825,9 +825,9 @@ func removeElements(requestElements, presentElements []string) []string {
 	return newElements
 }
 
-//DeleteSubodinateResource will delete the 
-func DeleteSubodinateResource(table, key string) *errors.Error {
-	conn, err := common.GetDBConnection(common.InMemory)
+// Delete will delete the data from the provided db with the provided table and key data
+func Delete(table, key string, dbtype common.DbType) *errors.Error {
+	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
 		return err
 	}

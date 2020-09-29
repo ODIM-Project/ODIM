@@ -29,12 +29,14 @@ if [ -a build/docker-compose.yml ]; then
         rm -rf RFPlugin/plugin_config/*
 	sudo rm -rf /var/log/odimra
 	sudo rm -rf /var/log/GRF_PLUGIN
+	sudo rm -rf Consul/data/*
 	sudo rm -rf Redis/redis-persistence/*
 	sudo rm -rf Kafka/kafka-persistence/config/*
 	sudo rm -rf Kafka/kafka-persistence/data/*
 	sudo rm -rf /etc/kafkacert /etc/odimracert /etc/plugincert
 	sudo rm -rf cert_generator/kafka* cert_generator/root* cert_generator/odimra*
-	sudo rm -rf etcd/etcd-persistence/*
+	host=`whoami`
+	sudo chown -R ${host}:${host} Consul/*
 	echo "Cleanup done"
 	cd ../
 	exit 0

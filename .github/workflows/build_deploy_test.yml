@@ -32,8 +32,6 @@ jobs:
         echo $ip
         export FQDN=odimra.local.com
         export HOSTIP=$ip
-        export ETCD_USER_ID=1125
-        export ETCD_GROUP_ID=1125
         sudo echo "$HOSTIP $FQDN" | sudo tee -a /etc/hosts
         echo $FQDN
         echo $HOSTIP

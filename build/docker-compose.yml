@@ -14,6 +14,19 @@
 version: '2.4'
 
 services:
+  consul:
+    image: 'consul:1.6'
+    hostname: consul
+    restart: always
+    ports:
+      - '8600:8600'
+      - '8500:8500'
+      - '8301:8301'
+      - '8302:8302'
+      - '8300:8300'
+    volumes:
+      - './Consul/data:/consul/data:rw'
+      - './Consul/config:/consul/config:rw'
   redis:
     build:
       context: ./.
@@ -36,40 +49,6 @@ services:
       - './Redis/6380.conf:/usr/local/etc/redis/6380.conf:ro'
       - './Redis/6379.conf:/usr/local/etc/redis/6379.conf:ro'
       - './Redis/redis-persistence:/data:rw'
-  etcd:
-    build:
-      context: ./.
-      dockerfile: ./etcd/Dockerfile.etcd
-      args:
-          http_proxy: $http_proxy
-          https_proxy: $https_proxy
-    container_name: odim_etcd
-    image: odim_etcd:1.0
-    hostname: etcd
-    restart: on-failure
-    ports:
-     - '2379:2379'
-     - '2380:2380'
-    stop_grace_period: 30s
-    stop_signal: SIGTERM
-    user: etcd
-    domainname: etcd
-    environment:
-      - MEMBER_NAME=etcd
-      - DATA_DIR_PATH=/opt/etcd/data
-      - LISTEN_PEER_ADDR=http://0.0.0.0:2380
-      - LISTEN_CLIENT_ADDR=http://0.0.0.0:2379
-      - INITIAL_ADV_ADDR=http://etcd:2380
-      - INITIAL_CLUSTER="etcd=http://etcd:2380"
-      - INITIAL_CLUSTER_STATE=new
-      - INITIAL_CLUSTER_TOKEN=odim-etcd-cluster
-      - ADV_CLIENT_ADDR=http://etcd:2379
-    expose:
-      - '2379'
-      - '2380'
-    volumes:
-      - './etcd/etcd-persistence:/opt/etcd/data:rw'
-    command: bash -c "/opt/etcd/scripts/start_etcd.sh"
   zookeeper:
     image: 'bitnami/zookeeper:3.5.7'
     hostname: zookeeper
@@ -80,6 +59,8 @@ services:
      - '2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+    depends_on:
+      - "consul"
   kafka:
     image: 'bitnami/kafka:2.5.0-debian-10-r93'
     hostname: kafka
@@ -124,6 +105,7 @@ services:
       - '/etc/kafkacert/kafka.keystore.jks:/bitnami/kafka/config/certs/kafka.keystore.jks:ro'
       - '/etc/kafkacert/kafka.truststore.jks:/bitnami/kafka/config/certs/kafka.truststore.jks:ro'
       - './Kafka/kafka-persistence:/bitnami/kafka'
+  
   odimra:
     build:
       context: ./.
@@ -143,7 +125,7 @@ services:
     depends_on:
       - "kafka"
       - "redis"
-      - "etcd"
+      - "consul"
     ports:
       - '45000:45000'
     expose:
@@ -169,6 +151,7 @@ services:
       - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
       - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
     command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh" 
+
   grf_plugin:
     build:
       context: ./.

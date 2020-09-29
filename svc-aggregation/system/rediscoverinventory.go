@@ -335,13 +335,13 @@ func deleteSubordinateResource(deviceUUID string) {
 	for _, key := range keys {
 		resourceDetails := strings.SplitN(key, ":", 2)
 		switch resourceDetails[0] {
-		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers":
+		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers", "FirmwareInventory", "SoftwareInventory":
 			continue
 		default:
 			if err = agmodel.Delete(resourceDetails[0], resourceDetails[1], common.InMemory); err != nil {
 				log.Printf("error: delete of %v from %v in %v DB failed due to the error: %v", resourceDetails[1], resourceDetails[0], common.InMemory, err)
 			}
-		}	 
+		}
 	}
 	log.Printf("info: removal of subordinate resources for the BMC with ID %v from the in-memory DB is now complete.", deviceUUID)
 }

@@ -22,6 +22,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 	"log"
 	"net/http"
+	"net"
+	"fmt"
 	"strings"
 )
 
@@ -48,10 +50,28 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errs.Error(),
 				[]interface{}{}, nil)
 		}
-		if plugin.IP == address {
+
+		// get the ip address from the host name
+		addr, err := net.LookupIP(plugin.IP)
+		if err != nil || len(addr) < 1 {
+			errorMessage := "Can't lookup the ip from host name"
+			if err != nil {
+				errorMessage = "Can't lookup the ip from host name" + err.Error()
+			}
+			log.Printf(errorMessage)
+			return common.GeneralError(http.ResourceNotFound, response.ResourceNotFound, errs.Error(),
+				[]interface{}{"IP Address", plugin.IP}, nil) //TODO
+		}
+		deviceIPAddress := fmt.Sprintf("%v", addr[0])
+
+		if deviceIPAddress == address {
 			pluginID = plugin.ID
 			break
 		}
+	}
+	if pluginID == "" {
+		return common.GeneralError(http.ResourceNotFound, response.ResourceNotFound, "error: no match found for plugin ID"),
+		[]interface{}{"IP Address", address}, nil) //TODO
 	}
 	fab := fabmodel.Fabric{
 		FabricUUID: uuid,

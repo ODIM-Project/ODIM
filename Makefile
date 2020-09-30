@@ -31,7 +31,7 @@ dep: copy
 	build/odimra/makedep.sh
 
 build-containers: dep
-	cd build && ./run_pre_reqs.sh && docker-compose build --force-rm --build-arg ETCD_USER_ID=${ETCD_USER_ID} --build-arg ETCD_GROUP_ID=${ETCD_GROUP_ID}
+	cd build && docker-compose build
 
 standup-containers: build-containers
 	cd build && docker-compose up -d  && docker exec -d build_odimra_1 /bin/command.sh && docker restart build_odimra_1 && docker exec -d build_grf_plugin_1 /bin/command.sh && docker restart build_grf_plugin_1

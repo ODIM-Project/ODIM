@@ -35,7 +35,6 @@ if [ -a build/docker-compose.yml ]; then
 	sudo rm -rf Kafka/kafka-persistence/data/*
 	sudo rm -rf /etc/kafkacert /etc/odimracert /etc/plugincert
 	sudo rm -rf cert_generator/kafka* cert_generator/root* cert_generator/odimra*
-	sudo rm -rf etcd/etcd-persistence/*
 	host=`whoami`
 	sudo chown -R ${host}:${host} Consul/*
 	echo "Cleanup done"

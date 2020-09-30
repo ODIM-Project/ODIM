@@ -50,7 +50,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errs.Error(),
 				[]interface{}{}, nil)
 		}
-
+		fmt.Printf("info: plugin ip: %v, address: %v: ", plugin.IP, address)
 		// get the ip address from the host name
 		addr, err := net.LookupIP(plugin.IP)
 		if err != nil || len(addr) < 1 {
@@ -63,13 +63,14 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 				[]interface{}{"IP Address", plugin.IP}, nil)
 		}
 		deviceIPAddress := fmt.Sprintf("%v", addr[0])
-
+		fmt.Printf("info: device address:%v, address list: %v", deviceIPAddress, addr)
 		if deviceIPAddress == address {
 			pluginID = plugin.ID
 			break
 		}
 	}
 	if pluginID == "" {
+		log.Printf("error: plugin ID is empty")
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: no match found for plugin ID",
 			[]interface{}{"IP Address", address}, nil)
 	}

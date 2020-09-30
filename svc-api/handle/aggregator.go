@@ -44,6 +44,7 @@ type AggregatorRPCs struct {
 	RemoveElementsFromAggregateRPC          func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	ResetAggregateElementsRPC               func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 	SetDefaultBootOrderAggregateElementsRPC func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
+	GetAllConnectionMethodsRPC              func(aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error)
 }
 
 // GetAggregationService is the handler for getting AggregationService details
@@ -678,4 +679,10 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+// GetAllConnectionMethods is the handler for get all connection methods
+func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
+	//need to be changed after the code is added
+	ctx.StatusCode(http.StatusNotImplemented)
 }

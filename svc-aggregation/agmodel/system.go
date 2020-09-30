@@ -85,14 +85,14 @@ type Aggregate struct {
 
 // ConnectionMethod payload is used for perform the operations on connection method
 type ConnectionMethod struct {
-	ConnectionMethodType 	string `json:"ConnectionMethodType"`
+	ConnectionMethodType    string `json:"ConnectionMethodType"`
 	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
-	Links Links `json:"Links"`
+	Links                   Links  `json:"Links"`
 }
 
 // Links is payload of aggregation resources
 type Links struct {
-	AggregationSources 	[]OdataID `json:"AggregationSources"`
+	AggregationSources []OdataID `json:"AggregationSources"`
 }
 
 //OdataID struct definition for @odata.id

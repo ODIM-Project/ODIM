@@ -18,19 +18,20 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
+
 func TestGetConnectionCollection(t *testing.T) {
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	
+
 	var resp1 = response.RPC{
-		StatusCode:    http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
+		StatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
 	}
 
 	// TODO: Need to add these lines when GetAllConnectionMethods is implemented
@@ -61,18 +62,18 @@ func TestGetConnectionCollection(t *testing.T) {
 	// 	MembersCount: 1,
 	// 	Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/12345"}},
 	// }
-  p := &ExternalInterface{
+	p := &ExternalInterface{
 		Auth: mockIsAuthorized,
 	}
 	tests := []struct {
 		name string
-   e    *ExternalInterface
-		req *aggregatorproto.AggregatorRequest
+		e    *ExternalInterface
+		req  *aggregatorproto.AggregatorRequest
 		want response.RPC
 	}{
 		{
 			name: "Postive Case",
-      e:    p,
+			e:    p,
 			req: &aggregatorproto.AggregatorRequest{
 				SessionToken: "validToken",
 			},

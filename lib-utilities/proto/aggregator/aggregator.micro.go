@@ -52,6 +52,8 @@ type AggregatorService interface {
 	RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	GetConnectionMethod(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 }
 
 type aggregatorService struct {
@@ -252,6 +254,26 @@ func (c *aggregatorService) SetDefaultBootOrderElementsOfAggregate(ctx context.C
 	return out, nil
 }
 
+func (c *aggregatorService) GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.GetAllConnectionMethods", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorService) GetConnectionMethod(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.GetConnectionMethod", in)
+	out := new(AggregatorResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Aggregator service
 
 type AggregatorHandler interface {
@@ -273,6 +295,8 @@ type AggregatorHandler interface {
 	RemoveElementsFromAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	ResetElementsOfAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	SetDefaultBootOrderElementsOfAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	GetAllConnectionMethods(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	GetConnectionMethod(context.Context, *AggregatorRequest, *AggregatorResponse) error
 }
 
 func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...server.HandlerOption) error {
@@ -295,6 +319,8 @@ func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...
 		RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		GetConnectionMethod(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 	}
 	type Aggregator struct {
 		aggregator
@@ -377,4 +403,12 @@ func (h *aggregatorHandler) ResetElementsOfAggregate(ctx context.Context, in *Ag
 
 func (h *aggregatorHandler) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
 	return h.AggregatorHandler.SetDefaultBootOrderElementsOfAggregate(ctx, in, out)
+}
+
+func (h *aggregatorHandler) GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.GetAllConnectionMethods(ctx, in, out)
+}
+
+func (h *aggregatorHandler) GetConnectionMethod(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
+	return h.AggregatorHandler.GetConnectionMethod(ctx, in, out)
 }

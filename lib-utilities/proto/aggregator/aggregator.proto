@@ -33,6 +33,8 @@ service Aggregator {
     rpc RemoveElementsFromAggregate(AggregatorRequest) returns (AggregatorResponse) {}
     rpc ResetElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
     rpc SetDefaultBootOrderElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAllConnectionMethods(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetConnectionMethod(AggregatorRequest) returns (AggregatorResponse) {}
   }
 
 message AggregatorRequest {

@@ -65,74 +65,69 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqSuccess:= AddResourceRequest{
+	reqSuccess := AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-			Oem: &AddOEM{
-				PluginID:          "GRF",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
-			},
-	}
-	reqExistingPlugin:= AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
-			},
-	
-	}
-	reqInvalidAuthType:= AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuthentication",
-				PluginType:        "Compute",
-		
+		UserName:       "admin",
+		Password:       "password",
+		Oem: &AddOEM{
+			PluginID:          "GRF",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "Compute",
 		},
 	}
-	reqInvalidPluginType:= AddResourceRequest{
+	reqExistingPlugin := AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "plugin",
-		
-		},
-	}
-	reqExistingPluginBadPassword:= AddResourceRequest{
-		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "PluginWithBadPassword",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
-			},
+		UserName:       "admin",
+		Password:       "password",
 
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "Compute",
+		},
 	}
-	reqExistingPluginBadData:= AddResourceRequest{
+	reqInvalidAuthType := AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "PluginWithBadData",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
-		
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "BasicAuthentication",
+			PluginType:        "Compute",
+		},
+	}
+	reqInvalidPluginType := AddResourceRequest{
+		ManagerAddress: "localhost:9091",
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "plugin",
+		},
+	}
+	reqExistingPluginBadPassword := AddResourceRequest{
+		ManagerAddress: "localhost:9091",
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "PluginWithBadPassword",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "Compute",
+		},
+	}
+	reqExistingPluginBadData := AddResourceRequest{
+		ManagerAddress: "localhost:9091",
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "PluginWithBadData",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "Compute",
 		},
 	}
 
@@ -169,8 +164,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqSuccess,
-			
+				req:    reqSuccess,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -181,57 +175,53 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req:  reqExistingPlugin,
-			
+				req:    reqExistingPlugin,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
-		}, 
-    {
+		},
+		{
 			name: "Invalid Auth type",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req:  reqInvalidAuthType,
-			
+				req:    reqInvalidAuthType,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
 			},
-		}, 
-    {
+		},
+		{
 			name: "Invalid Plugin type",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req:  reqInvalidPluginType,
-				
+				req:    reqInvalidPluginType,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
 			},
-		}, 
-    {
+		},
+		{
 			name: "Existing Plugin with bad password",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqExistingPluginBadPassword,
-				
+				req:    reqExistingPluginBadPassword,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
-		}, 
-    {
+		},
+		{
 			name: "Existing Plugin with bad data",
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqExistingPluginBadData,
-				},
-	
+				req:    reqExistingPluginBadData,
+			},
+
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
@@ -239,7 +229,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got,_,_ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})
@@ -271,81 +261,75 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error while trying to create schema: %v", err)
 	}
-	reqXAuthSuccess:= AddResourceRequest{
+	reqXAuthSuccess := AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "GRF",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
-		
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "GRF",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
 		},
 	}
-	reqXAuthFail:= AddResourceRequest{
+	reqXAuthFail := AddResourceRequest{
 		ManagerAddress: "localhost:9091",
-		UserName: "incorrectusername",
-		Password: "incorrectPassword",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
-		
+		UserName:       "incorrectusername",
+		Password:       "incorrectPassword",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
 		},
 	}
 
-	reqStatusFail:= AddResourceRequest{
+	reqStatusFail := AddResourceRequest{
 		ManagerAddress: "100.0.0.3:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
-		
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
 		},
 	}
 
-	reqInvalidStatusBody:= AddResourceRequest{
+	reqInvalidStatusBody := AddResourceRequest{
 		ManagerAddress: "100.0.0.4:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
-		
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
 		},
 	}
 
-	reqManagerGetFail:= AddResourceRequest{
+	reqManagerGetFail := AddResourceRequest{
 		ManagerAddress: "100.0.0.5:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
-			},
-		
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
+		},
 	}
 
-	reqInvalidManagerBody:= AddResourceRequest{
+	reqInvalidManagerBody := AddResourceRequest{
 		ManagerAddress: "100.0.0.6:9091",
-		UserName: "admin",
-		Password: "password",
-		
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
-			},
-	
+		UserName:       "admin",
+		Password:       "password",
+
+		Oem: &AddOEM{
+			PluginID:          "ILO",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
+		},
 	}
 
 	p := &ExternalInterface{
@@ -381,9 +365,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqXAuthSuccess,
-				},
-		
+				req:    reqXAuthSuccess,
+			},
+
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
 			},
@@ -393,9 +377,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req:  reqXAuthFail,
-				},
-		
+				req:    reqXAuthFail,
+			},
+
 			want: response.RPC{
 				StatusCode: http.StatusUnauthorized,
 			},
@@ -405,9 +389,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqStatusFail,
-				},
-			
+				req:    reqStatusFail,
+			},
+
 			want: response.RPC{
 				StatusCode: http.StatusServiceUnavailable,
 			},
@@ -417,9 +401,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqInvalidStatusBody,
-				},
-		
+				req:    reqInvalidStatusBody,
+			},
+
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,
 			},
@@ -429,9 +413,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqManagerGetFail,
-				},
-		
+				req:    reqManagerGetFail,
+			},
+
 			want: response.RPC{
 				StatusCode: http.StatusServiceUnavailable,
 			},
@@ -441,7 +425,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqInvalidManagerBody,
+				req:    reqInvalidManagerBody,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,
@@ -450,10 +434,9 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got,_,_ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addPluginData(tt.args.req, tt.args.taskID, targetURI, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addPluginData = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
-

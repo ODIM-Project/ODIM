@@ -867,7 +867,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to delete volume
+	// TODO: add functionality to get all connection method collection
 	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }
@@ -879,7 +879,7 @@ func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregato
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to delete volume
+	// TODO: add functionality to get connection method
 	resp.StatusCode = http.StatusNotImplemented
 	return nil
 }

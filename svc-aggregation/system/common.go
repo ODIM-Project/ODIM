@@ -67,6 +67,8 @@ type ExternalInterface struct {
 	DeleteSystem            func(string) *errors.Error
 	DeleteEventSubscription func(string) (*eventsproto.EventSubResponse, error)
 	EventNotification       func(string, string, string)
+	GetAllKeysFromTable     func(string) ([]string, error)
+	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
 }
 
 type responseStatus struct {

@@ -15,14 +15,34 @@
 package system
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
+
+func mockGetAllKeysFromTable(table string) ([]string, error) {
+	if table == "ConncectionMethod" {
+		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
+	}
+	return []string{}, fmt.Errorf("Table not found")
+}
+
+func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
+	var connMethod agmodel.ConnectionMethod
+	if ConnectionMethodURI == "7ff3bd97-c41c-5de0-937d-85d390691b73" {
+		connMethod.ConnectionMethodType = "Redfish"
+		connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
+		return connMethod, nil
+	}
+	return connMethod, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+ConnectionMethodURI+" found")
+}
 
 func TestGetConnectionCollection(t *testing.T) {
 	defer func() {
@@ -60,10 +80,12 @@ func TestGetConnectionCollection(t *testing.T) {
 	// resp1.Body = agresponse.List{
 	// 	Response:     commonResponse,
 	// 	MembersCount: 1,
-	// 	Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/12345"}},
+	// 	Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}},
 	// }
 	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
+		Auth:                mockIsAuthorized,
+		GetAllKeysFromTable: mockGetAllKeysFromTable,
+		GetConnectionMethod: mockGetConnectionMethod,
 	}
 	tests := []struct {
 		name string

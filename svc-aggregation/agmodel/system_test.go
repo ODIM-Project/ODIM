@@ -1242,33 +1242,3 @@ func TestRemoveElementsFromAggregate(t *testing.T) {
 	assert.NotNil(t, err, "err should not be nil")
 
 }
-
-func TestAddandGetConnectionMethod(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/71200a7e-e95c-435b-bec7-926de482da26"
-	req := ConnectionMethod{
-		ConnectionMethodType:    "redfish",
-		ConnectionMethodVariant: "iLO_v1.0",
-	}
-	err := AddConnectionMethod(req, connectionMethodURI)
-	assert.Nil(t, err, "err should be nil")
-
-	err = AddConnectionMethod(req, connectionMethodURI)
-	assert.NotNil(t, err, "Error Should not be nil")
-
-	data, err := GetConnectionMethod(connectionMethodURI)
-	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, data.ConnectionMethodType, req.ConnectionMethodType)
-	assert.Equal(t, data.ConnectionMethodVariant, req.ConnectionMethodVariant)
-
-	_, err = GetConnectionMethod("/redfish/v1/AggregationService/Aggregates/123456")
-	assert.NotNil(t, err, "Error Should not be nil")
-
-}

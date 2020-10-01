@@ -37,6 +37,7 @@ type ChassisService interface {
 	GetChassisCollection(ctx context.Context, in *GetChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
 	GetChassisResource(ctx context.Context, in *GetChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
 	GetChassisInfo(ctx context.Context, in *GetChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
+	CreateChassis(ctx context.Context, in *CreateChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
 }
 
 type chassisService struct {
@@ -87,12 +88,23 @@ func (c *chassisService) GetChassisInfo(ctx context.Context, in *GetChassisReque
 	return out, nil
 }
 
+func (c *chassisService) CreateChassis(ctx context.Context, in *CreateChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error) {
+	req := c.c.NewRequest(c.name, "Chassis.CreateChassis", in)
+	out := new(GetChassisResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Chassis service
 
 type ChassisHandler interface {
 	GetChassisCollection(context.Context, *GetChassisRequest, *GetChassisResponse) error
 	GetChassisResource(context.Context, *GetChassisRequest, *GetChassisResponse) error
 	GetChassisInfo(context.Context, *GetChassisRequest, *GetChassisResponse) error
+	CreateChassis(context.Context, *CreateChassisRequest, *GetChassisResponse) error
 }
 
 func RegisterChassisHandler(s server.Server, hdlr ChassisHandler, opts ...server.HandlerOption) error {
@@ -100,6 +112,7 @@ func RegisterChassisHandler(s server.Server, hdlr ChassisHandler, opts ...server
 		GetChassisCollection(ctx context.Context, in *GetChassisRequest, out *GetChassisResponse) error
 		GetChassisResource(ctx context.Context, in *GetChassisRequest, out *GetChassisResponse) error
 		GetChassisInfo(ctx context.Context, in *GetChassisRequest, out *GetChassisResponse) error
+		CreateChassis(ctx context.Context, in *CreateChassisRequest, out *GetChassisResponse) error
 	}
 	type Chassis struct {
 		chassis
@@ -122,4 +135,8 @@ func (h *chassisHandler) GetChassisResource(ctx context.Context, in *GetChassisR
 
 func (h *chassisHandler) GetChassisInfo(ctx context.Context, in *GetChassisRequest, out *GetChassisResponse) error {
 	return h.ChassisHandler.GetChassisInfo(ctx, in, out)
+}
+
+func (h *chassisHandler) CreateChassis(ctx context.Context, in *CreateChassisRequest, out *GetChassisResponse) error {
+	return h.ChassisHandler.CreateChassis(ctx, in, out)
 }

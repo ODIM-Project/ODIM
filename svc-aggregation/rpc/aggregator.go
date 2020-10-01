@@ -867,8 +867,17 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 // The function also checks for the session time out of the token
 // which is present in the request.
 func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	// TODO: add functionality to get all connection method collection
-	resp.StatusCode = http.StatusNotImplemented
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	rpcResponce := a.connector.GetAllConnectionMethods(req)
+	generateResponse(rpcResponce, resp)
 	return nil
 }
 

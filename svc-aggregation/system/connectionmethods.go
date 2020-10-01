@@ -15,15 +15,52 @@
 package system
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
+	"log"
 	"net/http"
 )
 
 // GetAllConnectionMethods is the handler for getting the connection methods collection
 func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.AggregatorRequest) response.RPC {
-	// TODO add functionality to getting the connection methods collection
-	return response.RPC{
-		StatusCode: http.StatusNotImplemented,
+	connectionMethods, err := agmodel.GetAllKeysFromTable("ConnectionMethod")
+	if err != nil {
+		log.Printf("error getting connection methods : %v", err.Error())
+		errorMessage := err.Error()
+		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
+	var members = make([]agresponse.ListMember, 0)
+	for i := 0; i < len(connectionMethods); i++ {
+		members = append(members, agresponse.ListMember{
+			OdataID: connectionMethods[i],
+		})
+	}
+	var resp = response.RPC{
+		StatusCode:    http.StatusOK,
+		StatusMessage: response.Success,
+	}
+	commonResponse := response.Response{
+		OdataType:    "#ConnectionMethodCollection.ConnectionMethodCollection",
+		OdataID:      "/redfish/v1/AggregationService/ConnectionMethods",
+		OdataContext: "/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+		Name:         "Connection Methods",
+	}
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	commonResponse.CreateGenericResponse(response.Success)
+	resp.Body = agresponse.List{
+		Response:     commonResponse,
+		MembersCount: len(members),
+		Members:      members,
+	}
+	return resp
 }

@@ -684,20 +684,20 @@ func TestGetAllConnectionMethods(t *testing.T) {
 	// test with valid token
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusOK
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 
 	// test with Invalid token
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods",
-	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
 
 	// test without token
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 
 	// test for RPC Error
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusInternalServerError
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }

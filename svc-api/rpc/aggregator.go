@@ -246,3 +246,17 @@ func DoSetDefaultBootOrderAggregateElements(req aggregatorproto.AggregatorReques
 
 	return resp, err
 }
+
+// DoGetAllConnectionMethods defines the RPC call function for
+// the get connection method collection from aggregator micro service
+func DoGetAllConnectionMethods(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+
+	resp, err := aggregator.GetAllConnectionMethods(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+
+	return resp, err
+}

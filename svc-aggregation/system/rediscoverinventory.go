@@ -32,6 +32,8 @@ import (
 // RediscoverSystemInventory  is the handler for redicovering system whenever the restrat event detected in event service
 //It deletes old data and  Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL string, updateFlag bool) {
+	log.Printf("info: rediscovery of the BMC with ID %v is started.", deviceUUID)
+
 	var resp response.RPC
 	systemURL = strings.TrimSuffix(systemURL, "/")
 	data := strings.Split(systemURL, "/")
@@ -42,8 +44,6 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		})
 		return
 	}
-	sysID := data[len(data)-1]
-	log.Println("System URl: ", systemURL, " sysID: ", sysID, " deviceUUID: ", deviceUUID)
 
 	// Getting the device info
 	target, err := agmodel.GetTarget(deviceUUID)
@@ -128,6 +128,9 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		agmodel.DeleteSystemResetInfo(udaptedSystemURI)
 		deleteResourceResetInfo(udaptedSystemURI)
 	}()
+
+	deleteSubordinateResource(deviceUUID)
+
 	req.DeviceUUID = deviceUUID
 	req.DeviceInfo = target
 	req.OID = systemURL
@@ -156,9 +159,8 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	resp.Header = map[string]string{
 		"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 	}
-	log.Println("info: rediscovery of system and chassis completed.")
 
-	return
+	log.Printf("info: rediscovery of the BMC with ID %v is now complete.", deviceUUID)
 }
 
 //RediscoverResources is a function to rediscover the server inventory,
@@ -321,4 +323,26 @@ func deleteResourceResetInfo(pattern string) {
 	for _, key := range keys {
 		agmodel.DeleteSystemResetInfo(key)
 	}
+}
+
+// deleteSubordinateResource will delete all the subordinate resources assosiated with the pattern
+func deleteSubordinateResource(deviceUUID string) {
+	log.Printf("info: initiated removal of subordinate resource for the BMC with ID %v from the in-memory DB.", deviceUUID)
+	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
+	if err != nil {
+		log.Printf("error while trying to fetch all matching keys from system reset table: %v", err)
+		return
+	}
+	for _, key := range keys {
+		resourceDetails := strings.SplitN(key, ":", 2)
+		switch resourceDetails[0] {
+		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers", "FirmwareInventory", "SoftwareInventory":
+			continue
+		default:
+			if err = agmodel.Delete(resourceDetails[0], resourceDetails[1], common.InMemory); err != nil {
+				log.Printf("error: delete of %v from %v in %v DB failed due to the error: %v", resourceDetails[1], resourceDetails[0], common.InMemory, err)
+			}
+		}
+	}
+	log.Printf("info: removal of subordinate resources for the BMC with ID %v from the in-memory DB is now complete.", deviceUUID)
 }

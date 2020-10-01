@@ -21,10 +21,12 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
@@ -49,39 +51,41 @@ func TestGetConnectionCollection(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-
-	var resp1 = response.RPC{
-		StatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
+	config.SetUpMockConfig(t)
+	var connMethod agmodel.ConnectionMethod
+	connMethod.ConnectionMethodType = "Redfish"
+	connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
+	err := agmodel.AddConnectionMethod(connMethod, "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
 	}
-
-	// TODO: Need to add these lines when GetAllConnectionMethods is implemented
-	// commonResponse := response.Response{
-	// 	OdataType:    "#ConnectionMethodCollection.ConnectionMethodCollection",
-	// 	OdataID:      "/redfish/v1/AggregationService/ConnectionMethods",
-	// 	OdataContext: "/redfish/v1/$metadata##ConnectionMethodCollection.ConnectionMethodCollection",
-	// 	Name:         "Connection Methods",
-	// }
-	// var resp1 = response.RPC{
-	// 	StatusCode:    http.StatusOK,
-	// 	StatusMessage: response.Success,
-	// }
-	// resp1.Header = map[string]string{
-	// 	"Cache-Control":     "no-cache",
-	// 	"Connection":        "keep-alive",
-	// 	"Content-type":      "application/json; charset=utf-8",
-	// 	"Transfer-Encoding": "chunked",
-	// 	"OData-Version":     "4.0",
-	// }
-	// commonResponse.CreateGenericResponse(response.Success)
-	// commonResponse.Message = ""
-	// commonResponse.ID = ""
-	// commonResponse.MessageID = ""
-	// commonResponse.Severity = ""
-	// resp1.Body = agresponse.List{
-	// 	Response:     commonResponse,
-	// 	MembersCount: 1,
-	// 	Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}},
-	// }
+	commonResponse := response.Response{
+		OdataType:    "#ConnectionMethodCollection.ConnectionMethodCollection",
+		OdataID:      "/redfish/v1/AggregationService/ConnectionMethods",
+		OdataContext: "/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+		Name:         "Connection Methods",
+	}
+	var resp1 = response.RPC{
+		StatusCode:    http.StatusOK,
+		StatusMessage: response.Success,
+	}
+	resp1.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	commonResponse.CreateGenericResponse(response.Success)
+	//	commonResponse.Message = ""
+	//commonResponse.ID = ""
+	//commonResponse.MessageID = ""
+	//commonResponse.Severity = ""
+	resp1.Body = agresponse.List{
+		Response:     commonResponse,
+		MembersCount: 1,
+		Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}},
+	}
 	p := &ExternalInterface{
 		Auth:                mockIsAuthorized,
 		GetAllKeysFromTable: mockGetAllKeysFromTable,

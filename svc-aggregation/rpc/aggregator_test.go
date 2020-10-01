@@ -1712,7 +1712,7 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "auth fail",
@@ -1721,7 +1721,7 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, // TODO: Need to be change as http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {

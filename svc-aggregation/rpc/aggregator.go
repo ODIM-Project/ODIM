@@ -868,7 +868,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 // which is present in the request.
 func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
-	privileges := []string{common.PrivilegeConfigureComponents}
+	privileges := []string{common.PrivilegeLogin}
 	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authStatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"

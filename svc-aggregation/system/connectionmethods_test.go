@@ -77,10 +77,6 @@ func TestGetConnectionCollection(t *testing.T) {
 		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
-	//	commonResponse.Message = ""
-	//commonResponse.ID = ""
-	//commonResponse.MessageID = ""
-	//commonResponse.Severity = ""
 	resp1.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: 1,

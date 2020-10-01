@@ -213,7 +213,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		managersList = append(managersList, listMembers[i].OdataID)
 	}
 	e.PublishEvent(managersList, "ManagerCollection")
- resp.StatusCode = http.StatusCreated
+	resp.StatusCode = http.StatusCreated
 	log.Println("sucessfully added  plugin with the id ", req.Oem.PluginID)
 	return resp, uuid.NewV4().String(), ciphertext
 }

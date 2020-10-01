@@ -331,6 +331,7 @@ func deleteSubordinateResource(deviceUUID string) {
 	keys, err := agmodel.GetAllMatchingDetails("*", deviceUUID, common.InMemory)
 	if err != nil {
 		log.Printf("error while trying to fetch all matching keys from system reset table: %v", err)
+		return
 	}
 	for _, key := range keys {
 		resourceDetails := strings.SplitN(key, ":", 2)

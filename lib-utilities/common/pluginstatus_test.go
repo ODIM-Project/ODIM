@@ -41,7 +41,7 @@ func TestCheckPluginStatus(t *testing.T) {
 
 	var pluginStatus = &PluginStatus{
 		PluginIP:                "localhost",
-		PluginPort:              "45000",
+		PluginPort:              "45100",
 		PluginUsername:          "admin",
 		PluginUserPassword:      "admin",
 		PluginPrefferedAuthType: "BasicAuth",
@@ -172,7 +172,7 @@ func mockPlugin(t *testing.T) {
 		PrivateKey:    &config.Data.APIGatewayConf.PrivateKey,
 		CACertificate: &config.Data.KeyCertConf.RootCACertificate,
 		ServerAddress: "localhost",
-		ServerPort:    "45000",
+		ServerPort:    "45100",
 	}
 	mockServer, err := conf.GetHTTPServerObj()
 	if err != nil {

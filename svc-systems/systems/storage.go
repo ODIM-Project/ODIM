@@ -364,6 +364,13 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	resp.Header = map[string]string{
 		"Content-type": "application/json; charset=utf-8",
 	}
+
+	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo
+	// for avoiding storing or retrieving them from DB before a BMC reset.
+	collectionKey := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes", req.SystemID, req.StorageInstance)
+	smodel.AddSystemResetInfo(key, "On")
+	smodel.AddSystemResetInfo(collectionKey, "On")
+
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.Success
 	return resp

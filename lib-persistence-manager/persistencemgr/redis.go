@@ -91,8 +91,12 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 	sentinelClient := sentinelNewClient(dbConfig)
 	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
-	masterIP := stringSlice[0]
-	masterPort := stringSlice[1]
+	var masterIP string
+       var masterPort string
+       if len(stringSlice) == 2 {
+               masterIP = stringSlice[0]
+               masterPort = stringSlice[1]
+       }
 
 	return masterIP, masterPort
 }
@@ -105,7 +109,7 @@ func resetDBWriteConection(dbFlag DbType) {
 			config := getInMemoryDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Println("Inmemory MasterIP:" + currentMasterIP)
-			if inMemDBConnPool.MasterIP != currentMasterIP {
+			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
 					return
@@ -123,7 +127,7 @@ func resetDBWriteConection(dbFlag DbType) {
 			config := getOnDiskDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
 			log.Println("Ondisk MasterIP:" + currentMasterIP)
-			if onDiskDBConnPool.MasterIP != currentMasterIP {
+			if onDiskDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
 					return

@@ -34,6 +34,7 @@ type AggregationServiceResponse struct {
 	Actions            Actions `json:"Actions"`
 	Aggregates         OdataID `json:"Aggregates"`
 	AggregationSources OdataID `json:"AggregationSources"`
+	ConnectionMethods  OdataID `json:"ConnectionMethods"`
 	ServiceEnabled     bool    `json:"ServiceEnabled"`
 	Status             Status  `json:"Status"`
 }

@@ -59,8 +59,12 @@ type ResourceInfoRequest struct {
 	ResourceName    string
 }
 
-//GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
-func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
+// GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
+// If saveRequired is set to true the newly collected data will be saved in the DB.
+// Some specific cases may not require the data to be stored in DB,
+// eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
+// request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
+func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (string, error) {
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -135,7 +139,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 	// to replace id in chassis
 	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+":", -1)
 
-	if checkRetrievalInfo(contactRequest.OID) {
+	if saveRequired && checkRetrievalInfo(contactRequest.OID) {
 		oidKey = keyFormation(contactRequest.OID, req.SystemID, req.UUID)
 		var memberFlag bool
 		if _, ok := resourceData["Members"]; ok {

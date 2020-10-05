@@ -83,6 +83,23 @@ type Aggregate struct {
 	Elements []string `json:"Elements"`
 }
 
+// ConnectionMethod payload is used for perform the operations on connection method
+type ConnectionMethod struct {
+	ConnectionMethodType    string `json:"ConnectionMethodType"`
+	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
+	Links                   Links  `json:"Links"`
+}
+
+// Links is payload of aggregation resources
+type Links struct {
+	AggregationSources []OdataID `json:"AggregationSources"`
+}
+
+//OdataID struct definition for @odata.id
+type OdataID struct {
+	OdataID string `json:"@odata.id"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -823,4 +840,49 @@ func removeElements(requestElements, presentElements []string) []string {
 		}
 	}
 	return newElements
+}
+
+//AddConnectionMethod will add connection methods on disk
+func AddConnectionMethod(connectionMethod ConnectionMethod, connectionMethodURI string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	const table string = "ConnectionMethod"
+	if err := conn.Create(table, connectionMethodURI, connectionMethod); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to create aggregate: ", err.Error())
+	}
+
+	return nil
+}
+
+// GetConnectionMethod fetches the connection method info for the given connection method uri
+func GetConnectionMethod(connectionMethodURI string) (ConnectionMethod, *errors.Error) {
+	var connectionMethod ConnectionMethod
+
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return connectionMethod, err
+	}
+	const table string = "ConnectionMethod"
+	data, err := conn.Read(table, connectionMethodURI)
+	if err != nil {
+		return connectionMethod, errors.PackError(err.ErrNo(), "error: while trying to fetch connection method data: ", err.Error())
+	}
+
+	if err := json.Unmarshal([]byte(data), &connectionMethod); err != nil {
+		return connectionMethod, errors.PackError(errors.JSONUnmarshalFailed, err)
+	}
+	return connectionMethod, nil
+}
+// Delete will delete the data from the provided db with the provided table and key data
+func Delete(table, key string, dbtype common.DbType) *errors.Error {
+	conn, err := common.GetDBConnection(dbtype)
+	if err != nil {
+		return err
+	}
+	if err = conn.Delete(table, key); err != nil {
+		return err
+	}
+	return nil
 }

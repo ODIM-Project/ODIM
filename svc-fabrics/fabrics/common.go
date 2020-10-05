@@ -328,7 +328,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		}
 
 	}
-	
+
 	// Validating Post/Patch request properties are in uppercamelcase or not
 	if strings.EqualFold(req.Method, "POST") || strings.EqualFold(req.Method, "PATCH") {
 		valResp, err := validateReqParamsCase(req)

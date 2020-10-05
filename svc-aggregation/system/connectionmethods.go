@@ -64,3 +64,11 @@ func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.Aggrega
 	}
 	return resp
 }
+
+// GetConnectionMethodInfo is the handler for getting the connection method
+func (e *ExternalInterface) GetConnectionMethodInfo(req *aggregatorproto.AggregatorRequest) response.RPC {
+	// TODO add functionality to getting the connection method
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
+}

@@ -875,6 +875,7 @@ func GetConnectionMethod(connectionMethodURI string) (ConnectionMethod, *errors.
 	}
 	return connectionMethod, nil
 }
+
 // Delete will delete the data from the provided db with the provided table and key data
 func Delete(table, key string, dbtype common.DbType) *errors.Error {
 	conn, err := common.GetDBConnection(dbtype)

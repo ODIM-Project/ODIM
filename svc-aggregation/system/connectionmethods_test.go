@@ -54,7 +54,7 @@ func TestGetConnectionCollection(t *testing.T) {
 	config.SetUpMockConfig(t)
 	var connMethod agmodel.ConnectionMethod
 	connMethod.ConnectionMethodType = "Redfish"
-	connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
+	connMethod.ConnectionMethodVariant = "GRF_v1.0.0"
 	err := agmodel.AddConnectionMethod(connMethod, "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73")
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -106,6 +106,69 @@ func TestGetConnectionCollection(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.e.GetAllConnectionMethods(tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllConnectionMethods() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_GetConnectionMethod(t *testing.T) {
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+	}()
+
+	var connMethod agmodel.ConnectionMethod
+	connMethod.ConnectionMethodType = "Redfish"
+	connMethod.ConnectionMethodVariant = "GRF_v1.0.0"
+	err := agmodel.AddConnectionMethod(connMethod, "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	p := &ExternalInterface{
+		Auth:                mockIsAuthorized,
+		GetAllKeysFromTable: mockGetAllKeysFromTable,
+		GetConnectionMethod: mockGetConnectionMethod,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusOK
+			},
+		},
+		{
+			name: "Invalid conncetion method id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/ConnectionMethods/1",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusNotFound
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.GetConnectionMethodInfo(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.GetConnectionMethodInfo() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})
 	}

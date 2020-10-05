@@ -92,11 +92,11 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 	sentinelClient := sentinelNewClient(dbConfig)
 	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
 	var masterIP string
-       var masterPort string
-       if len(stringSlice) == 2 {
-               masterIP = stringSlice[0]
-               masterPort = stringSlice[1]
-       }
+	var masterPort string
+	if len(stringSlice) == 2 {
+		masterIP = stringSlice[0]
+		masterPort = stringSlice[1]
+	}
 
 	return masterIP, masterPort
 }

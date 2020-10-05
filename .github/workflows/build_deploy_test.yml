@@ -15,7 +15,7 @@ name: build_deploy_test
 
 on:
   pull_request:
-    branches: [ development ]
+    branches: [ ** ]
 
 jobs:
 

@@ -17,6 +17,8 @@ package persistencemgr
 
 import (
 	"github.com/gomodule/redigo/redis"
+	"sync"
+	"time"
 )
 
 // Config is the configuration for db which is set by the wrapper package.
@@ -26,14 +28,18 @@ Protocol is the type of protocol with which the connection takes place
 Host is hostname/IP on which the database is running
 */
 type Config struct {
-	Port     string
-	Protocol string
-	Host     string
+	Port         string
+	Protocol     string
+	Host         string
+	SentinelPort string
+	MasterSet    string
 }
 
 // ConnPool is the established connection
 type ConnPool struct {
-	// pool field is private(starting with small letter) so won't be
-	// visible to outside wrapper package
-	pool *redis.Pool
+	ReadPool        *redis.Pool
+	WritePool       *redis.Pool
+	MasterIP        string
+	PoolUpdatedTime time.Time
+	Mux             sync.Mutex
 }

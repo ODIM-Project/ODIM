@@ -31,6 +31,8 @@ github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727133207-df3dfb728bd1 h
 github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:SFgC2w23lU3/pQv9ROS3x7iLWQESf4jafMumH/IVS0E=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7 h1:J58RfJlekckvgdmdkEydb4givP/2MGPYFKO3uv7LtU4=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7/go.mod h1:NyEEh6a2bgEXock1ThrXDLnp2A5syxleqSGmWwucPPA=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201005194902-ed323c41b4d6 h1:+Ex1pdY+VB6mXoJRQPV6MXks/M6+AbAiccAAjCrq2Ks=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201005194902-ed323c41b4d6/go.mod h1:px22wynjWTLxeeCGenVKhZ0Y+fIJc2RQusZazSo+OsI=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727091052-cb7db65624ce/go.mod h1:kvWozdwrn+nfJmxQB5o2hruNU4K2c0CLn5r5UrdJp/M=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727133207-df3dfb728bd1 h1:GknB3C2ZD3KUBTLworGWrEIX9XWoDZI02sQSk/0FCLk=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
@@ -44,6 +46,8 @@ github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200915132516-a3f419741c89 h1
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200915132516-a3f419741c89/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200925145026-eac0549d2f51 h1:jDvIEskQV4laSq8codnPFGB2FYxrz3dIgi40LMXxxgI=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200925145026-eac0549d2f51/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201005194902-ed323c41b4d6 h1:oHn+0IFoYwVMDG/hUSfHIxcKG9US80SszEmNwIk1+r4=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201005194902-ed323c41b4d6/go.mod h1:7DSDBjZvsFjhpXqjpmQqbso/di5/HET61Yhxi3XbZ+s=
 github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727133207-df3dfb728bd1 h1:GiHOkQPUUDaslgamzJAk+4SB6O2QLm1gevUe2wAJf7A=
 github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:FJG5L0GBEffhhnil+FGlLOwEax8U3SekjQiU9QrfY0I=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
@@ -149,6 +153,8 @@ github.com/go-playground/locales v0.12.1 h1:2FITxuFt/xuCNP1Acdhv62OzaCiviiE4kotf
 github.com/go-playground/locales v0.12.1/go.mod h1:IUMDtCfWo/w/mtMfIE/IG2K+Ey3ygWanZIBtBW0W2TM=
 github.com/go-playground/universal-translator v0.16.0 h1:X++omBR/4cE2MNg91AoC3rmGrCjJ8eAeUP/K/EKx4DM=
 github.com/go-playground/universal-translator v0.16.0/go.mod h1:1AnU7NaIRDWWzGEKwgtJRd2xk99HeFyHw3yid4rvQIY=
+github.com/go-redis/redis v6.15.9+incompatible h1:K0pv1D7EQUjfyoMql+r/jZqCLizCGKFlFgcHWWmHQjg=
+github.com/go-redis/redis v6.15.9+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8wamY7mA7PouImQ2Jvg6kA=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible/go.mod h1:qf9acutJ8cwBUhm1bqgz6Bei9/C/c93FPDljKWwsOgM=
 github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee/go.mod h1:L0fX3K22YWvt/FAX9NnzrNzcI4wNYi9Yku4O0LKYflo=

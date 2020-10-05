@@ -101,5 +101,15 @@
 		"Managers",
 		"UpdateService"
 	],
-	"SupportedPluginTypes" : ["Compute", "Fabric"]
+	"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
+  "ConnectionMethodConf":[
+		{
+			"ConnectionMethodType":"Redfish",
+			"ConnectionMethodVariant":"Compute:GRF_v1.0.0"
+		},
+		{
+			"ConnectionMethodType":"Redfish",
+			"ConnectionMethodVariant":"Storage:STG_v1.0.0"
+		}
+	]
 }

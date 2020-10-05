@@ -50,6 +50,7 @@ type configModel struct {
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
+	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 }
 
 // DBConf holds all DB related configurations
@@ -138,6 +139,12 @@ type TLSConf struct {
 	PreferredCipherSuites []string `json:"PreferredCipherSuites"`
 }
 
+// ConnectionMethodConf is for connection method type and variant
+type ConnectionMethodConf struct {
+	ConnectionMethodType    string `json:"ConnectionMethodType"`
+	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -175,6 +182,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkTLSConf(); err != nil {
+		return err
+	}
+	if err = checkConnectionMethodConf(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -479,5 +489,13 @@ func checkTLSConf() error {
 //CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
 func CheckRootServiceuuid(uid string) error {
 	_, err := uuid.Parse(uid)
+	return err
+}
+
+func checkConnectionMethodConf() error {
+	var err error
+	if len(Data.ConnectionMethodConf) == 0 {
+		return fmt.Errorf("error: ConnectionMethodConf is not provided")
+	}
 	return err
 }

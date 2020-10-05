@@ -101,19 +101,11 @@
 		"Managers",
 		"UpdateService"
 	],
-	"SupportedPluginTypes" : ["Compute", "Fabric"],
+	"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
   "ConnectionMethodConf":[
 		{
 			"ConnectionMethodType":"Redfish",
-			"ConnectionMethodVariant":"Compute:iLO_v1.0.0"
-		},
-		{
-			"ConnectionMethodType":"Redfish",
 			"ConnectionMethodVariant":"Compute:GRF_v1.0.0"
-		},
-		{
-			"ConnectionMethodType":"Redfish",
-			"ConnectionMethodVariant":"Fabric:CFM_v1.0.0"
 		},
 		{
 			"ConnectionMethodType":"Redfish",

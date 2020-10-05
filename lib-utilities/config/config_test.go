@@ -131,21 +131,13 @@ func TestSetConfiguration(t *testing.T) {
                 "Fabrics",
                 "Managers"
 		],
-		"SupportedPluginTypes" : ["Compute", "Fabric"],
+		"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
 		"ConnectionMethodConf":[
-			{
-				"ConnectionMethodType":"Redfish",
-				"ConnectionMethodVariant":"Compute:iLO_v1.0.0"
-			},
-			{
+		  {
 				"ConnectionMethodType":"Redfish",
 				"ConnectionMethodVariant":"Compute:GRF_v1.0.0"
 			},
-			{
-				"ConnectionMethodType":"Redfish",
-				"ConnectionMethodVariant":"Fabric:CFM_v1.0.0"
-			},
-			{
+		  {
 				"ConnectionMethodType":"Redfish",
 				"ConnectionMethodVariant":"Storage:STG_v1.0.0"
 			}
@@ -450,7 +442,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
        Data.ConnectionMethodConf = []ConnectionMethodConf{
            {
              ConnectionMethodType : "Redfish",
-             ConnectionMethodVariant : "iLO_v1.0.0",
+             ConnectionMethodVariant : "GRF_v1.0.0",
            },
        }
 		case 7:

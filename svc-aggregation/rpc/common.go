@@ -53,6 +53,8 @@ func GetAggregator() *Aggregator {
 			DeleteSystem:            agmodel.DeleteSystem,
 			DeleteEventSubscription: services.DeleteSubscription,
 			EventNotification:       agmessagebus.Publish,
+			GetAllKeysFromTable:     agmodel.GetAllKeysFromTable,
+			GetConnectionMethod:     agmodel.GetConnectionMethod,
 		},
 	}
 }

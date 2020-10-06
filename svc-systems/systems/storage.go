@@ -176,7 +176,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 }
 
 // Validates all the input prorperties
-func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemId string) (int32, string, []interface{}, error) {
+func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID string) (int32, string, []interface{}, error) {
 	validate := validator.New()
 	// if any of the mandatory fields missing in the struct, then it will return an error
 	err := validate.Struct(request)
@@ -218,8 +218,8 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemId 
 				return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
 			}
 			// Validating if a a drive URI contains correct system id
-			driveURI_split := strings.Split(driveURI, "/")
-			if len(driveURI_split) > 5 && driveURI_split[4] != systemId {
+			driveURISplit := strings.Split(driveURI, "/")
+			if len(driveURISplit) > 5 && driveURISplit[4] != systemID {
 				errMsg := "Drive URI contains incorrect system id"
 				log.Println(errMsg)
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)

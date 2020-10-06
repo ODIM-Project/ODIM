@@ -219,7 +219,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemId 
 			}
 			// Validating if a a drive URI contains correct system id
 			driveURI_split := strings.Split(driveURI, "/")
-			if driveURI_split[4] != systemId {
+			if len(driveURI_split) > 5 && driveURI_split[4] != systemId {
 				errMsg := "Drive URI contains incorrect system id"
 				log.Println(errMsg)
 				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)

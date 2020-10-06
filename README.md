@@ -378,8 +378,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
      The above command will perform below tasks:
      - brings down all the deployed containers.
      - remove only those docker images which were created and deployed as containers.
-     - removes data stored by Consul, Redis & Kafka
-
+     - removes data stored by Consul, Redis & Kafka.
 
      ```
      $ make deepclean

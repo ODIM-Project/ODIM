@@ -25,14 +25,15 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-var	SupportedConnectionMethodTypes = map[string]bool{
-		"Redfish": true, 
-		"SNMP": true, 
-		"OEM" : true, 
-		"NETCONF" : true, 
-		"IPMI15" : true, 
-		"IPMI20" : true,
-	}
+// SupportedConnectionMethodTypes is for validating the connection method type
+var SupportedConnectionMethodTypes = map[string]bool{
+	"Redfish": true,
+	"SNMP":    true,
+	"OEM":     true,
+	"NETCONF": true,
+	"IPMI15":  true,
+	"IPMI20":  true,
+}
 
 // GetPluginStatus checks the status of given plugin in configured interval
 func GetPluginStatus(plugin agmodel.Plugin) bool {
@@ -106,7 +107,7 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 			connectionMethod := agmodel.ConnectionMethod{
 				ConnectionMethodType:    connectionMethodConf[i].ConnectionMethodType,
 				ConnectionMethodVariant: connectionMethodConf[i].ConnectionMethodVariant,
-   	 }
+			}
 			err := agmodel.AddConnectionMethod(connectionMethod, connectionMethodURI)
 			if err != nil {
 				log.Printf("error adding connection methods : %v", err.Error())

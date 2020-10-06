@@ -20,8 +20,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
- 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"log"
 	"net/http"
 	"strings"
@@ -99,12 +99,12 @@ func (e *ExternalInterface) GetConnectionMethodInfo(req *aggregatorproto.Aggrega
 	}
 	commonResponse.CreateGenericResponse(response.Success)
 	links := connectionmethod.Links
-	if len(links.AggregationSources) == 0{
+	if len(links.AggregationSources) == 0 {
 		links = agmodel.Links{
-      AggregationSources : []agmodel.OdataID{},
-    }
+			AggregationSources: []agmodel.OdataID{},
+		}
 	}
-  commonResponse.Message = ""
+	commonResponse.Message = ""
 	commonResponse.MessageID = ""
 	resp.Body = agresponse.ConnectionMethodResponse{
 		Response:                commonResponse,

@@ -380,6 +380,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
      - remove only those docker images which were created and deployed as containers.
      - removes data stored by Consul, Redis & Kafka
 
+
      ```
      $ make deepclean
      ```
@@ -391,6 +392,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
      - removes logs files created for odimra services and grfplugin.
 
      [NOTE] Provide the sudo password when prompted by above commands.
+
      [CAUTION] The above commands are not encouraged to be executed in production envoirnment as this will erase important data.
                The action is irrecoverable and will wipe all the odimra completely. 
      

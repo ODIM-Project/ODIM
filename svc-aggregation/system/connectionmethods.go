@@ -19,7 +19,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 	"log"
 	"net/http"
@@ -27,7 +26,7 @@ import (
 
 // GetAllConnectionMethods is the handler for getting the connection methods collection
 func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.AggregatorRequest) response.RPC {
-	connectionMethods, err := agmodel.GetAllKeysFromTable("ConnectionMethod")
+	connectionMethods, err := e.GetAllKeysFromTable("ConnectionMethod")
 	if err != nil {
 		log.Printf("error getting connection methods : %v", err.Error())
 		errorMessage := err.Error()

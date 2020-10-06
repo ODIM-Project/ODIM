@@ -1734,16 +1734,6 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 }
 
 func TestAggregator_GetConnectionMethod(t *testing.T) {
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-	}()
-	var connMethod agmodel.ConnectionMethod
-	connMethod.ConnectionMethodType = "Redfish"
-	connMethod.ConnectionMethodVariant = "GRF_v1.0.0"
-	err := agmodel.AddConnectionMethod(connMethod, "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73")
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
 	type args struct {
 		ctx  context.Context
 		req  *aggregatorproto.AggregatorRequest

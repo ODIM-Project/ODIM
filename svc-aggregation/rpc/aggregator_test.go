@@ -1732,3 +1732,52 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 		})
 	}
 }
+
+func TestAggregator_GetConnectionMethod(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name           string
+		a              *Aggregator
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "Positive cases",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusOK
+		},
+		{
+			name: "Invalid Token",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusUnauthorized
+		},
+		{
+			name: "Invalid aggregate id",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/1"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusNotFound
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.GetConnectionMethod(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetConnectionMethod() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}

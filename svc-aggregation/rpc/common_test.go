@@ -54,7 +54,7 @@ var connector = &system.ExternalInterface{
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
-	if table == "ConncectionMethod" {
+	if table == "ConnectionMethod" {
 		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
 	}
 	return []string{}, fmt.Errorf("Table not found")
@@ -62,7 +62,7 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 
 func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
 	var connMethod agmodel.ConnectionMethod
-	if ConnectionMethodURI == "7ff3bd97-c41c-5de0-937d-85d390691b73" {
+	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {
 		connMethod.ConnectionMethodType = "Redfish"
 		connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
 		return connMethod, nil

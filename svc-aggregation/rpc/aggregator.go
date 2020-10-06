@@ -859,3 +859,36 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 
 	return nil
 }
+
+// GetAllConnectionMethods defines the operations which handles the RPC request response
+// for the GetAllConnectionMethods service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authStatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	rpcResponce := a.connector.GetAllConnectionMethods(req)
+	generateResponse(rpcResponce, resp)
+	return nil
+}
+
+// GetConnectionMethod defines the operations which handles the RPC request response
+// for the GetConnectionMethod service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+	// TODO: add functionality to get connection method
+	resp.StatusCode = http.StatusNotImplemented
+	return nil
+}

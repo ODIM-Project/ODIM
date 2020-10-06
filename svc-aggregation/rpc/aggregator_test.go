@@ -1690,3 +1690,45 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 		})
 	}
 }
+
+func TestAggregator_GetAllConnectionMethods(t *testing.T) {
+	config.SetUpMockConfig(t)
+	config.Data.EnabledServices = append(config.Data.EnabledServices, "AggregationService")
+	type args struct {
+		ctx  context.Context
+		req  *aggregatorproto.AggregatorRequest
+		resp *aggregatorproto.AggregatorResponse
+	}
+	tests := []struct {
+		name           string
+		a              *Aggregator
+		args           args
+		wantStatusCode int32
+	}{
+		{
+			name: "positive case",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusOK,
+		},
+		{
+			name: "auth fail",
+			a:    &Aggregator{connector: connector},
+			args: args{
+				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
+				resp: &aggregatorproto.AggregatorResponse{},
+			},
+			wantStatusCode: http.StatusUnauthorized,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.a.GetAllConnectionMethods(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAllConnectionMethods() got = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}

@@ -131,7 +131,17 @@ func TestSetConfiguration(t *testing.T) {
                 "Fabrics",
                 "Managers"
 		],
-		"SupportedPluginTypes" : ["Compute", "Fabric"]
+		"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
+		"ConnectionMethodConf":[
+		  {
+				"ConnectionMethodType":"Redfish",
+				"ConnectionMethodVariant":"Compute:GRF_v1.0.0"
+			},
+		  {
+				"ConnectionMethodType":"Redfish",
+				"ConnectionMethodVariant":"Storage:STG_v1.0.0"
+			}
+		]
 }`
 
 	tests := []struct {
@@ -381,6 +391,10 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			name:    "Invalid value for APIGatewayConf.PrivateKeyPath",
 			wantErr: true,
 		},
+    {
+			name: "Invalid value for ConnectionMethodConf",
+			wantErr: true,
+		},
 		{
 			name:    "Invalid value for APIGatewayConf.CertificatePath",
 			wantErr: false,
@@ -415,7 +429,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 				MinPasswordLength:       0,
 				MaxPasswordLength:       0,
 				AllowedSpecialCharcters: "",
-			}
+			} 
 		case 3:
 			Data.APIGatewayConf = &APIGatewayConf{
 				Host: "localhost",
@@ -424,17 +438,24 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.APIGatewayConf.Port = "someport"
 		case 5:
 			Data.APIGatewayConf.PrivateKeyPath = sampleFileForTest
-		case 6:
-			Data.APIGatewayConf.CertificatePath = sampleFileForTest
+    case 6:
+       Data.ConnectionMethodConf = []ConnectionMethodConf{
+           {
+             ConnectionMethodType : "Redfish",
+             ConnectionMethodVariant : "GRF_v1.0.0",
+           },
+       }
 		case 7:
+			Data.APIGatewayConf.CertificatePath = sampleFileForTest
+		case 8:
 			Data.AddComputeSkipResources = &AddComputeSkipResources{
 				SystemCollection: []string{"Chassis", "LogServices"},
 			}
-		case 8:
-			Data.AddComputeSkipResources.ChassisCollection = []string{"Managers", "Systems", "Devices"}
 		case 9:
-			Data.AddComputeSkipResources.OtherCollection = []string{"Power", "Thermal", "SmartStorage"}
+			Data.AddComputeSkipResources.ChassisCollection = []string{"Managers", "Systems", "Devices"}
 		case 10:
+			Data.AddComputeSkipResources.OtherCollection = []string{"Power", "Thermal", "SmartStorage"}
+		case 11:
 			Data.URLTranslation = &URLTranslation{
 				NorthBoundURL: map[string]string{},
 				SouthBoundURL: map[string]string{},

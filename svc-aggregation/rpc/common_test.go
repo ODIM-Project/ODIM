@@ -49,6 +49,25 @@ var connector = &system.ExternalInterface{
 	EventNotification:       mockEventNotification,
 	SubscribeToEMB:          mockSubscribeEMB,
 	GetSessionUserName:      getSessionUserNameForTesting,
+	GetAllKeysFromTable:     mockGetAllKeysFromTable,
+	GetConnectionMethod:     mockGetConnectionMethod,
+}
+
+func mockGetAllKeysFromTable(table string) ([]string, error) {
+	if table == "ConncectionMethod" {
+		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
+	}
+	return []string{}, fmt.Errorf("Table not found")
+}
+
+func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
+	var connMethod agmodel.ConnectionMethod
+	if ConnectionMethodURI == "7ff3bd97-c41c-5de0-937d-85d390691b73" {
+		connMethod.ConnectionMethodType = "Redfish"
+		connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
+		return connMethod, nil
+	}
+	return connMethod, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+ConnectionMethodURI+" found")
 }
 
 func deleteComputeforTest(index int, key string) *errors.Error {

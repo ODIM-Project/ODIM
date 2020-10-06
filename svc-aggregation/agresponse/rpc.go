@@ -15,6 +15,10 @@
 // Package agresponse ...
 package agresponse
 
+import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+)
+
 // ResetResponse ...
 type ResetResponse struct {
 	ResetType string      `json:"ResetType"`
@@ -61,4 +65,12 @@ type Action struct {
 //OdataID struct definition for @odata.id
 type OdataID struct {
 	OdataID string `json:"@odata.id"`
+}
+
+// ConnectionMethodResponse defines the response for connection method
+type ConnectionMethodResponse struct {
+	response.Response
+	ConnectionMethodType    string      `json:"ConnectionMethodType"`
+	ConnectionMethodVariant string      `json:"ConnectionMethodVariant"`
+	Links                   interface{} `json:"Links"`
 }

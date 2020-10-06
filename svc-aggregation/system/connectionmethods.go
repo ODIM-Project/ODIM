@@ -17,11 +17,14 @@ package system
 import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
+ 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // GetAllConnectionMethods is the handler for getting the connection methods collection
@@ -66,8 +69,48 @@ func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.Aggrega
 
 // GetConnectionMethodInfo is the handler for getting the connection method
 func (e *ExternalInterface) GetConnectionMethodInfo(req *aggregatorproto.AggregatorRequest) response.RPC {
-	// TODO add functionality to getting the connection method
-	return response.RPC{
-		StatusCode: http.StatusNotImplemented,
+	connectionmethod, err := e.GetConnectionMethod(req.URL)
+	if err != nil {
+		log.Printf("error getting  connectionmethod : %v", err)
+		errorMessage := err.Error()
+		if errors.DBKeyNotFound == err.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", req.URL}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
+	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/ConnectionMethods/")
+	commonResponse := response.Response{
+		OdataType:    "#ConnectionMethod.v1_0_0.ConnectionMethod",
+		OdataID:      req.URL,
+		OdataContext: "/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+		ID:           data[1],
+		Name:         "Connection Method",
+	}
+	var resp = response.RPC{
+		StatusCode:    http.StatusOK,
+		StatusMessage: response.Success,
+	}
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	commonResponse.CreateGenericResponse(response.Success)
+	links := connectionmethod.Links
+	if len(links.AggregationSources) == 0{
+		links = agmodel.Links{
+      AggregationSources : []agmodel.OdataID{},
+    }
+	}
+  commonResponse.Message = ""
+	commonResponse.MessageID = ""
+	resp.Body = agresponse.ConnectionMethodResponse{
+		Response:                commonResponse,
+		ConnectionMethodType:    connectionmethod.ConnectionMethodType,
+		ConnectionMethodVariant: connectionmethod.ConnectionMethodVariant,
+		Links:                   links,
+	}
+	return resp
 }

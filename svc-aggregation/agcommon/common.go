@@ -28,11 +28,11 @@ import (
 // SupportedConnectionMethodTypes is for validating the connection method type
 var SupportedConnectionMethodTypes = map[string]bool{
 	"Redfish": true,
-	"SNMP":    true,
-	"OEM":     true,
-	"NETCONF": true,
-	"IPMI15":  true,
-	"IPMI20":  true,
+	"SNMP":    false,
+	"OEM":     false,
+	"NETCONF": false,
+	"IPMI15":  false
+	"IPMI20":  false,
 }
 
 // GetPluginStatus checks the status of given plugin in configured interval

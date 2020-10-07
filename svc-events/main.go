@@ -26,7 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	evt "github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 )
 
 func main() {

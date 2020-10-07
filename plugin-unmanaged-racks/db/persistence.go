@@ -6,6 +6,22 @@ import (
 	"strings"
 )
 
+const (
+	DB_ERR_ALREADY_EXISTS DBError = iota + 1
+	DB_ERR_GENERAL
+)
+
+type DBError int
+
+type Error struct {
+	Code DBError
+	Msg  string
+}
+
+func (e Error) Error() string {
+	return e.Msg
+}
+
 func NewConnectionManager(protocol, host, port string) *ConnectionManager {
 	return &ConnectionManager{&redis.Pool{
 		Dial: func() (redis.Conn, error) {
@@ -46,24 +62,24 @@ func (c *ConnectionManager) FindByKey(schema, key string) (interface{}, error) {
 	return v, nil
 }
 
-func (c *ConnectionManager) Create(schema, key string, data []byte) error {
+func (c *ConnectionManager) Create(schema, key string, data []byte) *Error {
 	cs := c.pool.Get()
 	defer cs.Close()
 
 	pk := strings.Title(schema) + ":" + key
 	r, err := cs.Do("SETNX", pk, data)
 	if err != nil {
-		return err
+		return &Error{DB_ERR_GENERAL, err.Error()}
 	}
 
 	v, ok := r.(int64)
 	if !ok {
-		return fmt.Errorf("unexpected response type")
+		return &Error{DB_ERR_GENERAL, "unexpected response type"}
 	}
 
 	switch v {
 	case 0:
-		return fmt.Errorf("specified key(%s) already exists", pk)
+		return &Error{DB_ERR_ALREADY_EXISTS, fmt.Sprintf("specified key(%s) already exists", pk)}
 	default:
 		return nil
 	}

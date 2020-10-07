@@ -37,7 +37,7 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	}
 
 	validator := c.createValidator(chassisToBeDeleted)
-	r := validator.validate()
+	r := validator.Validate()
 	if r.HasErrors() {
 		ctx.StatusCode(http.StatusConflict)
 		ctx.JSON(r.Error())
@@ -58,21 +58,23 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	ctx.StatusCode(http.StatusOK)
 }
 
-func (c *chassisDeletionHandler) createValidator(chassis *redfish.Chassis) *compositeValidator {
-	return &compositeValidator{
-		validator{
-			validationRule: func() bool {
+func (c *chassisDeletionHandler) createValidator(chassis *redfish.Chassis) *redfish.CompositeValidator {
+	return &redfish.CompositeValidator{
+		redfish.Validator{
+			ValidationRule: func() bool {
 				return !strings.Contains(strings.Join([]string{"", "RackGroup", "Rack"}, "#"), chassis.ChassisType)
 			},
-			field:   "ChassisType",
-			message: "supported ChassisTypes are: RackGroup|Rack",
+			ErrorGenerator: func() redfish.MsgExtendedInfo {
+				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack")
+			},
 		},
-		validator{
-			validationRule: func() bool {
+		redfish.Validator{
+			ValidationRule: func() bool {
 				return len(chassis.Links.Contains) != 0
 			},
-			field:   "Links.Contains",
-			message: "there are existing elements under requested chassis",
+			ErrorGenerator: func() redfish.MsgExtendedInfo {
+				return redfish.NewResourceInUseMsg("there are existing elements(Links.Contains) under requested chassis")
+			},
 		},
 	}
 }

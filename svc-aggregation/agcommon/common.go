@@ -31,7 +31,7 @@ var SupportedConnectionMethodTypes = map[string]bool{
 	"SNMP":    false,
 	"OEM":     false,
 	"NETCONF": false,
-	"IPMI15":  false
+	"IPMI15":  false,
 	"IPMI20":  false,
 }
 

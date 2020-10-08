@@ -119,6 +119,7 @@ var SystemResource = map[string]string{
 	"LogServices":        "LogServicesCollection",
 	"Settings":           "Bios",
 	"Volumes":            "VolumesCollection",
+	"Drives":             "DrivesCollection",
 }
 
 // ChassisResource contains the Resource name and table name

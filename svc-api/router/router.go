@@ -251,7 +251,6 @@ func Router() *iris.Application {
 	storage.SetRegisterRule(iris.RouteSkip)
 	storage.Get("/", system.GetSystemResource)
 	storage.Get("/{rid}", system.GetSystemResource)
-	storage.Get("/{rid}/Drives", system.GetSystemResource)
 	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Volumes", system.GetSystemResource)
 	storage.Post("/{id2}/Volumes", system.CreateVolume)

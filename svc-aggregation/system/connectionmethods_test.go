@@ -122,7 +122,7 @@ func TestExternalInterface_GetConnectionMethod(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusOK
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
@@ -135,7 +135,7 @@ func TestExternalInterface_GetConnectionMethod(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				StatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusNotFound
+				StatusCode: http.StatusNotFound,
 			},
 		},
 	}

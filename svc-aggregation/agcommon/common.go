@@ -22,7 +22,18 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	uuid "github.com/satori/go.uuid"
 )
+
+// SupportedConnectionMethodTypes is for validating the connection method type
+var SupportedConnectionMethodTypes = map[string]bool{
+	"Redfish": true,
+	"SNMP":    false,
+	"OEM":     false,
+	"NETCONF": false,
+	"IPMI15":  false,
+	"IPMI20":  false,
+}
 
 // GetPluginStatus checks the status of given plugin in configured interval
 func GetPluginStatus(plugin agmodel.Plugin) bool {
@@ -65,4 +76,44 @@ func GetStorageResources(oid string) map[string]interface{} {
 		return resourceData
 	}
 	return resourceData
+}
+
+// AddConnectionMethods will add the connection method type and variant into DB
+func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
+	connectionMethodsKeys, err := agmodel.GetAllKeysFromTable("ConnectionMethod")
+	if err != nil {
+		log.Printf("error getting connection methods : %v", err.Error())
+		return err
+	}
+	for i := 0; i < len(connectionMethodConf); i++ {
+		var present bool
+		if !SupportedConnectionMethodTypes[connectionMethodConf[i].ConnectionMethodType] {
+			log.Printf("Connection method type %v is not supported.", connectionMethodConf[i].ConnectionMethodType)
+			continue
+		}
+		for j := 0; j < len(connectionMethodsKeys); j++ {
+			connectionmethod, err := agmodel.GetConnectionMethod(connectionMethodsKeys[j])
+			if err != nil {
+				log.Printf("error getting connection method : %v", err)
+				return err
+			}
+			if connectionmethod.ConnectionMethodVariant == connectionMethodConf[i].ConnectionMethodVariant {
+				present = true
+				break
+			}
+		}
+		if !present {
+			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
+			connectionMethod := agmodel.ConnectionMethod{
+				ConnectionMethodType:    connectionMethodConf[i].ConnectionMethodType,
+				ConnectionMethodVariant: connectionMethodConf[i].ConnectionMethodVariant,
+			}
+			err := agmodel.AddConnectionMethod(connectionMethod, connectionMethodURI)
+			if err != nil {
+				log.Printf("error adding connection methods : %v", err.Error())
+				return err
+			}
+		}
+	}
+	return nil
 }

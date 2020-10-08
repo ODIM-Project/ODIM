@@ -58,6 +58,7 @@ func Router() *iris.Application {
 		ResetAggregateElementsRPC:               rpc.DoResetAggregateElements,
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
+		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
 	}
 
 	s := handle.SessionRPCs{
@@ -287,7 +288,9 @@ func Router() *iris.Application {
 
 	connectionMethods := aggregation.Party("/ConnectionMethods", middleware.SessionDelMiddleware)
 	connectionMethods.Get("/", pc.GetAllConnectionMethods)
+	connectionMethods.Get("/{id}", pc.GetConnectionMethod)
 	connectionMethods.Any("/", handle.AggMethodNotAllowed)
+	connectionMethods.Any("/{id}", handle.AggMethodNotAllowed)
 
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)

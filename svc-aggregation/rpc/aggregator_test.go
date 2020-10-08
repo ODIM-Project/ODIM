@@ -1692,7 +1692,6 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 }
 
 func TestAggregator_GetAllConnectionMethods(t *testing.T) {
-	config.SetUpMockConfig(t)
 	config.Data.EnabledServices = append(config.Data.EnabledServices, "AggregationService")
 	type args struct {
 		ctx  context.Context
@@ -1752,7 +1751,7 @@ func TestAggregator_GetConnectionMethod(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusOK
+			wantStatusCode: http.StatusOK,
 		},
 		{
 			name: "Invalid Token",
@@ -1761,7 +1760,7 @@ func TestAggregator_GetConnectionMethod(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusUnauthorized
+			wantStatusCode: http.StatusUnauthorized,
 		},
 		{
 			name: "Invalid aggregate id",
@@ -1770,7 +1769,7 @@ func TestAggregator_GetConnectionMethod(t *testing.T) {
 				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/1"},
 				resp: &aggregatorproto.AggregatorResponse{},
 			},
-			wantStatusCode: http.StatusNotImplemented, //TODO : replace with http.StatusNotFound
+			wantStatusCode: http.StatusNotFound,
 		},
 	}
 	for _, tt := range tests {

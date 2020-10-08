@@ -704,7 +704,7 @@ func TestGetAllConnectionMethods(t *testing.T) {
 
 func TestGetConnectionMethod(t *testing.T) {
 	var a AggregatorRPCs
-	a.GetAllConnectionMethodsRPC = testGetAggregateRPCCall
+	a.GetConnectionMethodRPC = testGetAggregateRPCCall
 
 	testApp := iris.New()
 	redfishRoutes := testApp.Party("/redfish/v1/AggregationService/ConnectionMethods")
@@ -713,20 +713,20 @@ func TestGetConnectionMethod(t *testing.T) {
 	// test with valid token
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods/74116e00-0a4a-53e6-a959-e6a7465d6358",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusOK
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK) //TODO : replace with http.StatusOK
 
 	// test with Invalid token
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods/74116e00-0a4a-53e6-a959-e6a7465d6358",
-	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized) //TODO : replace with http.StatusUnauthorized
 
 	// test without token
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods/74116e00-0a4a-53e6-a959-e6a7465d6358",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusUnauthorized
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized) //TODO : replace with http.StatusUnauthorized
 
 	// test for RPC Error
 	test.GET(
 		"/redfish/v1/AggregationService/ConnectionMethods/74116e00-0a4a-53e6-a959-e6a7465d6358",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusNotImplemented) //TODO : replace with http.StatusInternalServerError
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError) //TODO : replace with http.StatusInternalServerError
 }

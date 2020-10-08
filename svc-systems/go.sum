@@ -31,12 +31,12 @@ github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20200727133207-df3dfb728bd1 h1:1Gk8
 github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:6TGYR8Sq3/MJid434DXHhA3SX9/sOHwi3114WeFNKsY=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7 h1:J58RfJlekckvgdmdkEydb4givP/2MGPYFKO3uv7LtU4=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7/go.mod h1:NyEEh6a2bgEXock1ThrXDLnp2A5syxleqSGmWwucPPA=
+github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf h1:GS2ahHlyYV9qoJ+t8aVatNu2a7uzsAcYSzd3vL26AG8=
+github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf/go.mod h1:WPKKuAY5yeQhB5PjFpUG6pAA39Zkk7itx5lE6QFhiyo=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727091052-cb7db65624ce/go.mod h1:kvWozdwrn+nfJmxQB5o2hruNU4K2c0CLn5r5UrdJp/M=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727110501-4599893e44fd/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200925145026-eac0549d2f51 h1:jDvIEskQV4laSq8codnPFGB2FYxrz3dIgi40LMXxxgI=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200925145026-eac0549d2f51/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
-github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727133207-df3dfb728bd1 h1:GiHOkQPUUDaslgamzJAk+4SB6O2QLm1gevUe2wAJf7A=
-github.com/ODIM-Project/ODIM/svc-plugin-rest-client v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:FJG5L0GBEffhhnil+FGlLOwEax8U3SekjQiU9QrfY0I=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87/go.mod h1:iGLljf5n9GjT6kc0HBvyI1nOKnGQbNB66VzSNbK5iks=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 h1:WDC6ySpJzbxGWFh4aMxFFC28wwGp5pEuoTtvA4q/qQ4=

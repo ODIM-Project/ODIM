@@ -15,11 +15,11 @@
 package managers
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"net/http"
 )
 

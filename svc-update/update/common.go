@@ -15,13 +15,14 @@
 package update
 
 import (
+	"net/http"
+
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
-	"net/http"
 )
 
 //Device struct to define the response from plugin for UUID

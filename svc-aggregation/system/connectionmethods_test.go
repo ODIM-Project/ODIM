@@ -20,8 +20,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -30,7 +28,7 @@ import (
 )
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
-	if table == "ConncectionMethod" {
+	if table == "ConnectionMethod" {
 		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
 	}
 	return []string{}, fmt.Errorf("Table not found")
@@ -38,7 +36,7 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 
 func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
 	var connMethod agmodel.ConnectionMethod
-	if ConnectionMethodURI == "7ff3bd97-c41c-5de0-937d-85d390691b73" {
+	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {
 		connMethod.ConnectionMethodType = "Redfish"
 		connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
 		return connMethod, nil
@@ -47,18 +45,6 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 }
 
 func TestGetConnectionCollection(t *testing.T) {
-	defer func() {
-		common.TruncateDB(common.OnDisk)
-		common.TruncateDB(common.InMemory)
-	}()
-	config.SetUpMockConfig(t)
-	var connMethod agmodel.ConnectionMethod
-	connMethod.ConnectionMethodType = "Redfish"
-	connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
-	err := agmodel.AddConnectionMethod(connMethod, "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73")
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
 	commonResponse := response.Response{
 		OdataType:    "#ConnectionMethodCollection.ConnectionMethodCollection",
 		OdataID:      "/redfish/v1/AggregationService/ConnectionMethods",
@@ -106,6 +92,57 @@ func TestGetConnectionCollection(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.e.GetAllConnectionMethods(tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetAllConnectionMethods() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_GetConnectionMethod(t *testing.T) {
+	p := &ExternalInterface{
+		Auth:                mockIsAuthorized,
+		GetAllKeysFromTable: mockGetAllKeysFromTable,
+		GetConnectionMethod: mockGetConnectionMethod,
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		e    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "Positive case",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Invalid conncetion method id",
+			e:    p,
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					URL:          "/redfish/v1/AggregationService/ConnectionMethods/1",
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotFound,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.e.GetConnectionMethodInfo(tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.GetConnectionMethodInfo() = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
 		})
 	}

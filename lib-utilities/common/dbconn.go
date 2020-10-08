@@ -101,10 +101,10 @@ func CheckDBConnection() error {
 		return fmt.Errorf("error while trying to create OnDisk DB connection: %v", err)
 	}
 
-	if pingErr := inMemConn.Ping(); pingErr != nil {
+	if err := inMemConn.Ping(); err != nil {
 		return fmt.Errorf("error while trying to ping InMemory DB: %v", err)
 	}
-	if pingErr := onDiskConn.Ping(); pingErr != nil {
+	if err := onDiskConn.Ping(); err != nil {
 		return fmt.Errorf("error while trying to ping OnDisk DB: %v", err)
 	}
 

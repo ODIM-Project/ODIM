@@ -16,7 +16,6 @@ package response
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"reflect"
 )
@@ -27,7 +26,7 @@ const (
 	//ErrorMessageOdataType holds message registry version
 	ErrorMessageOdataType               = "#Message.v1_0_8.Message"
 	propertyMissingArgCount             = 1
-	propertyValueNotInListArgCount		= 2
+	propertyValueNotInListArgCount      = 2
 	propertyValueTypeErrorArgCount      = 2
 	resourceNotFoundArgCount            = 2
 	propertyValueFormatErrorArgCount    = 2
@@ -36,8 +35,8 @@ const (
 	actionNotSupportedArgCount          = 1
 	resourceAlreadyExistsArgCount       = 3
 	actionParameterNotSupportedArgCount = 2
-	propertyUnknownArgCount				= 1
-	propertyValueConflictArgCount		= 2
+	propertyUnknownArgCount             = 1
+	propertyValueConflictArgCount       = 2
 )
 
 // validateParamTypes will compare string slices and returns bool

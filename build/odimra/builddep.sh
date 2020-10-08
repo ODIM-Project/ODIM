@@ -16,7 +16,7 @@
 # Script is for generating certificate and private key
 # for Client mode connection usage only
 
-LIST=`ls -R | grep -v 'svc-plugin-rest-client' | grep -E '^svc-|^plugin-'` 
+LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-'` 
 echo $LIST
 for i in $LIST; do
 	cd $i

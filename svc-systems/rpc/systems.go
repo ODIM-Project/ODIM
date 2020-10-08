@@ -20,9 +20,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )

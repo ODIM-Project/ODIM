@@ -56,6 +56,10 @@ func main() {
 	//initialize global record used for tracking ongoing requests
 	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
 
+	if err := agcommon.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
+		log.Fatalf("error while trying add connection method: %v", err)
+	}
+
 	err := services.InitializeService(services.Aggregator)
 	if err != nil {
 		log.Fatalf("fatal: error while trying to initialize service: %v", err)

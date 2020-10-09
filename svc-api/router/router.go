@@ -20,7 +20,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
-	iris "github.com/kataras/iris/v12"
+
+	"github.com/kataras/iris/v12"
 )
 
 //Router method to register API handlers.
@@ -95,6 +96,7 @@ func Router() *iris.Application {
 		GetChassisCollectionRPC: rpc.GetChassisCollection,
 		GetChassisResourceRPC:   rpc.GetChassisResource,
 		GetChassisRPC:           rpc.GetChassis,
+		CreateChassisRPC:        rpc.CreateChassis,
 	}
 
 	evt := handle.EventsRPCs{
@@ -312,6 +314,7 @@ func Router() *iris.Application {
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)
 	chassis.Get("/", cha.GetChassisCollection)
+	chassis.Post("/", cha.CreateChassis)
 	chassis.Get("/{id}", cha.GetChassis)
 	chassis.Get("/{id}/NetworkAdapters", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{rid}", cha.GetChassisResource)

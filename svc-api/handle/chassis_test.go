@@ -14,13 +14,16 @@
 package handle
 
 import (
+	"context"
 	"errors"
-	"github.com/kataras/iris/v12/httptest"
+	"fmt"
 	"net/http"
 	"testing"
 
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
-	iris "github.com/kataras/iris/v12"
+
+	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/httptest"
 )
 
 func mockGetChassisResource(chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
@@ -125,3 +128,126 @@ func TestChassisRPCs_GetChassisWithRPCError(t *testing.T) {
 		"/redfish/v1/Chassis/",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
+
+func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
+	sut := ChassisRPCs{}
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes(nil).
+		Expect()
+
+	resp.Status(http.StatusBadRequest)
+	resp.JSON().Schema(redfishErrorSchema)
+	resp.Headers().Equal(map[string][]string{
+		"Connection":      {"keep-alive"},
+		"Odata-Version":   {"4.0"},
+		"X-Frame-Options": {"sameorigin"},
+		"Content-Type":    {"application/json; charset=utf-8"},
+	})
+}
+
+func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error) {
+			return nil, fmt.Errorf("RPC ERROR")
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"chassis":"creationRequest"}`)).
+		Expect()
+
+	resp.Status(http.StatusInternalServerError)
+	resp.JSON().Schema(redfishErrorSchema)
+	resp.Headers().Equal(map[string][]string{
+		"Connection":      {"keep-alive"},
+		"Odata-Version":   {"4.0"},
+		"X-Frame-Options": {"sameorigin"},
+		"Content-Type":    {"application/json; charset=utf-8"},
+	})
+}
+
+func TestChassisRPCs_CreateChassis(t *testing.T) {
+	expectedRPCResponse := chassisproto.GetChassisResponse{
+		StatusCode: http.StatusOK,
+		Header: map[string]string{
+			"Location": "/redfish/odim/blebleble",
+		},
+		Body: []byte(`{"chassis":"body"}`),
+	}
+
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error) {
+			return &expectedRPCResponse, nil
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"chassis":"creationRequest"}`)).
+		Expect()
+
+	resp.Status(http.StatusOK)
+	resp.Body().Contains(string(expectedRPCResponse.Body))
+	resp.Headers().Equal(map[string][]string{
+		"Connection":      {"keep-alive"},
+		"Odata-Version":   {"4.0"},
+		"X-Frame-Options": {"sameorigin"},
+		"Location":        {"/redfish/odim/blebleble"},
+	})
+}
+
+var redfishErrorSchema = `
+{
+   "$schema": "http://json-schema.org/draft-04/schema#",
+   "type": "object",
+   "properties": {
+      "error": {
+		"type":"object",
+		"properties": {
+          "@Message.ExtendedInfo": {
+			 "type": "array",
+			 "items": {
+				"type": "object",
+				"properties": {
+					"@odata.type": {
+						"type": "string"
+					},
+					"Message": {
+						"type": "string"
+					},
+					"MessageId": {
+						"type": "string"
+					},
+					"Resolution": {
+						"type": "string"
+					},
+					"Severity": {
+						"type": "string",
+						"enum": ["Critical", "Warning"]
+					}
+				},
+				"required": ["@odata.type", "Message", "MessageId", "Resolution", "Severity"]
+			 }
+		  },
+			
+		  "code": {
+			 "type": "string"
+		  },
+			
+		  "message": {
+			 "type": "string"
+		  }
+        },
+		"required":["code", "message"]
+      }
+   },
+   "required": ["error"]
+}`

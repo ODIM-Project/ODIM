@@ -16,13 +16,17 @@
 package handle
 
 import (
-	log "github.com/sirupsen/logrus"
+	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	iris "github.com/kataras/iris/v12"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/kataras/iris/v12"
+	"github.com/micro/go-micro/metadata"
 )
 
 // ChassisRPCs defines all the RPC methods in system service
@@ -30,6 +34,49 @@ type ChassisRPCs struct {
 	GetChassisCollectionRPC func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisResourceRPC   func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisRPC           func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
+	CreateChassisRPC        func(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error)
+}
+
+func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
+	requestBody := new(json.RawMessage)
+	e := ctx.ReadJSON(requestBody)
+	if e != nil {
+		errorMessage := "error while trying to read obligatory json body: " + e.Error()
+		log.Error(errorMessage)
+		re := common.GeneralError(http.StatusBadRequest, response.GeneralError, errorMessage, nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	rpcResp, rpcErr := chassis.CreateChassisRPC(
+		chassisproto.CreateChassisRequest{
+			RequestBody: *requestBody,
+		},
+
+		metadata.NewContext(context.TODO(), metadata.Metadata{
+			"X-Auth-Token": ctx.Request().Header.Get("X-Auth-Token"),
+		}),
+	)
+
+	if rpcErr != nil {
+		log.Error("RPC error:" + rpcErr.Error())
+		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	writeResponse(ctx, rpcResp.Header, rpcResp.StatusCode, rpcResp.Body)
+}
+
+func writeResponse(ctx iris.Context, headers map[string]string, status int32, body interface{}) {
+	common.SetResponseHeader(ctx, headers)
+	ctx.StatusCode(int(status))
+	switch v := body.(type) {
+	case []byte:
+		ctx.Write(v)
+	default:
+		ctx.JSON(v)
+	}
 }
 
 //GetChassisCollection fetches all Chassis

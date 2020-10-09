@@ -4980,7 +4980,7 @@ curl -i GET \
 
 # Software and firmware update
 
-The resource aggregator exposes Redfish update service endpoints. Use these endpoints to access and update the software components of a system such as BIOS and firmware. Using these endpoints, you can also update firmware of other components such as system drivers and provider software.
+The resource aggregator exposes Redfish update service endpoints. Use these endpoints to access and update the software components of a system such as BIOS and firmware. Using these endpoints, you can also upgrade or downgrade firmware of other components such as system drivers and provider software.
 
 The `UpdateService` schema describes the update service and the properties for the service itself. It exposes the firmware and software inventory resources and provides links to access them.
 

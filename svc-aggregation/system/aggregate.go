@@ -67,7 +67,7 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 	if err != nil {
 		errMsg := "invalid elements for create an aggregate" + err.Error()
 		log.Println(errMsg)
-		errArgs := []interface{}{"Elements", createRequest}
+		errArgs := []interface{}{"Elements", string(req.RequestBody)}
 		return common.GeneralError(statuscode, response.ResourceNotFound, errMsg, errArgs, nil)
 	}
 	targetURI := "/redfish/v1/AggregationService/Aggregates"
@@ -268,7 +268,7 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 	if err != nil {
 		errMsg := "invalid elements for create an aggregate" + err.Error()
 		log.Println(errMsg)
-		errArgs := []interface{}{"Elements", addRequest}
+		errArgs := []interface{}{"Elements", fmt.Sprintf("%v", addRequest)}
 		return common.GeneralError(statuscode, response.ResourceNotFound, errMsg, errArgs, nil)
 	}
 
@@ -292,7 +292,7 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 	if checkElementsPresent(addRequest.Elements, aggregate.Elements) {
 		errMsg := "Elements present in aggregate"
 		log.Println(errMsg)
-		errArgs := []interface{}{"AddElements", "Elements", addRequest.Elements}
+		errArgs := []interface{}{"AddElements", "Elements", fmt.Sprintf("%v", addRequest.Elements)}
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, errArgs, nil)
 	}
 
@@ -372,7 +372,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 	if !checkRemovingElementsPresent(removeRequest.Elements, aggregate.Elements) {
 		errMsg := "Elements not present in aggregate"
 		log.Println(errMsg)
-		errArgs := []interface{}{"RemoveElements", "Elements", removeRequest.Elements}
+		errArgs := []interface{}{"Elements", fmt.Sprintf("%v", removeRequest.Elements)}
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, errArgs, nil)
 	}
 

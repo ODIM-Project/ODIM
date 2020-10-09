@@ -392,7 +392,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	resp6 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "HostName UserName Password "
 	errMsg = "error while trying to authenticate the compute server: error: invalid resource username/password"
-	resp7 := common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{"https://localhost:9091/ODIM/v1/validate", errMsg}, nil)
+	resp7 := common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{"https://localhost:9091/ODIM/v1/validate"}, nil)
 	errMsg = "error:  field " + param + " Missing"
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 

@@ -15,19 +15,21 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
-	"os"
-
 	"io/ioutil"
+	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
+
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.New()
@@ -78,7 +80,10 @@ func registerHandler() {
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
 	systemRPC.EI = systems.GetExternalInterface()
 	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
-	chassisRPC := new(rpc.ChassisRPC)
-	chassisRPC.IsAuthorizedRPC = services.IsAuthorized
+
+	chassisRPC := rpc.NewChassisRPC(services.IsAuthorized, chassis.NewGetCollectionHandler(
+		smodel.GetPluginData,
+		smodel.GetAllKeysFromTable,
+	))
 	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)
 }

@@ -30,3 +30,19 @@ type Collection struct {
 	Members      []dmtf.Link `json:"Members"`
 	MembersCount int         `json:"Members@odata.count"`
 }
+
+func (c *Collection) AddMember(m dmtf.Link) {
+	c.Members = append(c.Members, m)
+	c.MembersCount = len(c.Members)
+}
+
+func NewChassisCollection() Collection {
+	return Collection{
+		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
+		OdataID:      "/redfish/v1/Chassis/",
+		OdataType:    "#ChassisCollection.ChassisCollection",
+		Description:  "Computer System Chassis view",
+		Name:         "Computer System Chassis",
+		Members:      []dmtf.Link{},
+	}
+}

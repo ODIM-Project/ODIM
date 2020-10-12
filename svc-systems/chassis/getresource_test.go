@@ -22,11 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 func mockChassisResourceData(body []byte, table, key string) error {
@@ -183,72 +181,6 @@ func TestGetChassisInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := GetChassisInfo(tt.args.req)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetChassisInfo() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetAllChassis(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockChassisResourceData(reqData, "Chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	if err != nil {
-		t.Fatalf("Error in creating mock resource data :%v", err)
-	}
-	chassisCollection := sresponse.Collection{
-		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
-		OdataID:      "/redfish/v1/Chassis/",
-		OdataType:    "#ChassisCollection.ChassisCollection",
-		Description:  "Computer System Chassis view",
-		Name:         "Computer System Chassis",
-	}
-	chassisCollection.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}}
-	chassisCollection.MembersCount = 1
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
-	type args struct {
-		req *chassisproto.GetChassisRequest
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    response.RPC
-		wantErr bool
-	}{
-		{
-			name: "successful get data",
-			args: args{
-				req: &chassisproto.GetChassisRequest{
-					URL: "/redfish/v1/Chassis/",
-				},
-			},
-			want: response.RPC{
-				Header:        header,
-				StatusCode:    http.StatusOK,
-				StatusMessage: response.Success,
-				Body:          chassisCollection,
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetChassisCollection(tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetChassisInfo() = %v, want %v", got, tt.want)
 			}

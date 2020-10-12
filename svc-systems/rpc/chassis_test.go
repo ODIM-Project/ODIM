@@ -17,7 +17,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"net/http"
 	"testing"
 
@@ -118,24 +121,15 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 }
 
 func TestChassis_GetAllChassis(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1\"`)
-	err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	if err != nil {
-		t.Fatalf("Error in creating mock resource data :%v", err)
-	}
-	cha := new(ChassisRPC)
-	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha := NewChassisRPC(
+		mockIsAuthorized,
+		chassis.NewGetCollectionHandler(
+			func(pluginID string) (smodel.Plugin, *errors.Error) {
+				return smodel.Plugin{}, errors.PackError(errors.DBKeyNotFound, "error")
+			}, func(table string) ([]string, error) {
+				return []string{}, nil
+			}))
+
 	type args struct {
 		ctx  context.Context
 		req  *chassisproto.GetChassisRequest

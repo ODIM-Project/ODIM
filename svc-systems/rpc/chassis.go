@@ -24,27 +24,34 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 
 	log "github.com/sirupsen/logrus"
 )
 
+func NewChassisRPC(
+	authWrapper func(sessionToken string, privileges, oemPrivileges []string) (int32, string),
+	getCollectionHandler chassis.GetCollectionHandler) *ChassisRPC {
+
+	return &ChassisRPC{
+		IsAuthorizedRPC:      authWrapper,
+		GetCollectionHandler: getCollectionHandler,
+	}
+}
+
 // ChassisRPC struct helps to register service
 type ChassisRPC struct {
+	GetCollectionHandler chassis.GetCollectionHandler
 	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
 }
 
-func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.CreateChassisRequest, resp *chassisproto.GetChassisResponse) error {
-	r := auth(req.SessionToken, func() response.RPC {
-		return createChassis(req)
+func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest, resp *chassisproto.GetChassisResponse) error {
+	r := auth(cha.IsAuthorizedRPC, req.SessionToken, func() response.RPC {
+		return chassis.Create(req)
 	})
 
-	resp.Header = r.Header
-	resp.Body = generateResponse(r.Body)
-	resp.StatusCode = r.StatusCode
-	return nil
+	return rewrite(r, resp)
 }
 
 //GetChassisResource defines the operations which handles the RPC request response
@@ -76,16 +83,10 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 // Retrieves all the keys with table name ChassisCollection and create the response
 // to send back to requested user.
 func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
-	sessionToken := req.SessionToken
-	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
-		fillChassisProtoResponse(resp, authResp)
-		return nil
-	}
-	data := chassis.GetChassisCollection(req)
-	fillChassisProtoResponse(resp, data)
-	return nil
+	r := auth(cha.IsAuthorizedRPC, req.SessionToken, func() response.RPC {
+		return cha.GetCollectionHandler.Handle()
+	})
+	return rewrite(r, resp)
 }
 
 //GetChassisInfo defines the operations which handles the RPC request response
@@ -105,6 +106,25 @@ func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.Get
 	data := chassis.GetChassisInfo(req)
 	fillChassisProtoResponse(resp, data)
 	return nil
+}
+
+func rewrite(source response.RPC, target *chassisproto.GetChassisResponse) error {
+	target.Header = source.Header
+	target.StatusCode = source.StatusCode
+	target.StatusMessage = source.StatusMessage
+	target.Body = jsonMarshal(source.Body)
+	return nil
+}
+
+func jsonMarshal(input interface{}) []byte {
+	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
+		return bytes
+	}
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		log.Println("error in unmarshalling response object from util-libs", err.Error())
+	}
+	return bytes
 }
 
 func generateResponse(input interface{}) []byte {

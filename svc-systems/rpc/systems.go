@@ -17,7 +17,6 @@ package rpc
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -26,6 +25,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Systems struct helps to register service

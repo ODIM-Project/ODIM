@@ -17,18 +17,17 @@ package chassis
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
-	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //PluginContact struct to inject the pmb client function into the handlers
@@ -102,44 +101,6 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	resp.StatusMessage = response.Success
 	return resp
 
-}
-
-//GetChassisCollection is to fetch all the Systems uri's and retruns with created collection
-// of Chassis data of odimra
-func GetChassisCollection(req *chassisproto.GetChassisRequest) response.RPC {
-	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-	chassisCollectionKeysArray, err := smodel.GetAllKeysFromTable("Chassis")
-	if err != nil {
-		log.Error("error getting all keys of ChassisCollection table : " + err.Error())
-		errorMessage := err.Error()
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-	}
-	chassisCollection := sresponse.Collection{
-		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
-		OdataID:      "/redfish/v1/Chassis/",
-		OdataType:    "#ChassisCollection.ChassisCollection",
-		Description:  "Computer System Chassis view",
-		Name:         "Computer System Chassis",
-	}
-	var members = []dmtf.Link{}
-	for _, key := range chassisCollectionKeysArray {
-		members = append(members, dmtf.Link{Oid: key})
-	}
-	chassisCollection.Members = members
-	chassisCollection.MembersCount = len(members)
-	resp.Body = chassisCollection
-	resp.StatusCode = http.StatusOK
-	resp.StatusMessage = response.Success
-
-	return resp
 }
 
 // GetChassisInfo is used to fetch resource data. The function is supposed to be used as part of RPC

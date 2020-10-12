@@ -1,4 +1,4 @@
-package rpc
+package chassis
 
 import (
 	"encoding/json"
@@ -7,16 +7,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	dberrors "github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
-func createChassis(req *chassisproto.CreateChassisRequest) (r response.RPC) {
+func Create(req *chassisproto.CreateChassisRequest) response.RPC {
 	mbc := new(linksManagedByCollection)
 	e := json.Unmarshal(req.RequestBody, mbc)
 	if e != nil {
@@ -53,7 +51,7 @@ func createChassis(req *chassisproto.CreateChassisRequest) (r response.RPC) {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	plugin, dbErr := smodel.GetPluginData(nameCarrier.Name)
+	pluginConfig, dbErr := smodel.GetPluginData(nameCarrier.Name)
 	if dbErr != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, dbErr.Error(), nil, nil)
 	}
@@ -65,51 +63,22 @@ func createChassis(req *chassisproto.CreateChassisRequest) (r response.RPC) {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pluginResponse, pluginCallErr := pmbhandle.ContactPlugin(
-		"https://"+plugin.IP+":"+plugin.Port+"/ODIM/v1/Chassis",
-		http.MethodPost,
-		"",
-		"",
-		body,
-		map[string]string{
-			"UserName": plugin.Username,
-			"Password": string(plugin.Password),
-		},
-	)
-
-	if pluginCallErr != nil {
-		return common.GeneralError(
-			http.StatusInternalServerError,
-			response.InternalError,
-			fmt.Sprintf("Error occurred during communication with plugin(%s): %v", plugin.PluginType, pluginCallErr),
-			nil,
-			nil,
-		)
+	pr, pe := plugin.NewClient(pluginConfig).Post("/ODIM/v1/Chassis", body)
+	if pe != nil {
+		return pe.AsRPCResponse()
 	}
 
-	r.StatusCode, r.Body, r.Header = jsonResponseWriter(*pluginResponse, func(toBeTransformed string) string {
-		//todo: use translators provided by config
-		return strings.Replace(toBeTransformed, "/ODIM/", "/redfish/", -1)
-	})
-
-	return
+	return pr.AsRPCResponse()
 }
 
-func findOrNull(conn *persistencemgr.ConnPool, table, key string) (string, error) {
-	r, e := conn.Read(table, key)
-	if e != nil {
-		switch e.ErrNo() {
-		case dberrors.DBKeyNotFound:
-			return "", nil
-		default:
-			return "", e
-		}
-	}
-	return r, nil
-}
-
+//{
+//	"Links" : {
+//		"ManagedBy": [
+//			"@odata.id": "/redfish/v1/Managers/1"
+//		]
+//	}
+//}
 type linksManagedByCollection struct {
-	Name  string
 	Links struct {
 		ManagedBy []struct {
 			Oid string `json:"@odata.id"`
@@ -117,6 +86,9 @@ type linksManagedByCollection struct {
 	}
 }
 
+//{
+//	"Name" : "name"
+//}
 type nameCarrier struct {
 	Name string
 }

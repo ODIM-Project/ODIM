@@ -37,8 +37,8 @@ type ChassisRPC struct {
 }
 
 func (cha *ChassisRPC) CreateChassis(ctx context.Context, req *chassisproto.CreateChassisRequest, resp *chassisproto.GetChassisResponse) error {
-	r := auth(ctx, func() response.RPC {
-		return createChassis(ctx, req)
+	r := auth(req.SessionToken, func() response.RPC {
+		return createChassis(req)
 	})
 
 	resp.Header = r.Header

@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,7 +16,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
-func createChassis(_ context.Context, req *chassisproto.CreateChassisRequest) (r response.RPC) {
+func createChassis(req *chassisproto.CreateChassisRequest) (r response.RPC) {
 	mbc := new(linksManagedByCollection)
 	e := json.Unmarshal(req.RequestBody, mbc)
 	if e != nil {

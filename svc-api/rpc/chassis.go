@@ -53,9 +53,9 @@ func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisRes
 	return resp, nil
 }
 
-func CreateChassis(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error) {
+func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
-	resp, err := service.CreateChassis(ctx, &req)
+	resp, err := service.CreateChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}

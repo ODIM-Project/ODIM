@@ -14,7 +14,6 @@
 package handle
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -150,7 +149,7 @@ func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
 
 func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
 	sut := ChassisRPCs{
-		CreateChassisRPC: func(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error) {
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 			return nil, fmt.Errorf("RPC ERROR")
 		},
 	}
@@ -182,7 +181,7 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 	}
 
 	sut := ChassisRPCs{
-		CreateChassisRPC: func(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error) {
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 			return &expectedRPCResponse, nil
 		},
 	}

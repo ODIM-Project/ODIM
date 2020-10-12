@@ -1,23 +1,15 @@
 package rpc
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-
-	"github.com/micro/go-micro/metadata"
 )
 
-func auth(ctx context.Context, callback func() response.RPC) response.RPC {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "X-Auth-Token header is missing", nil, nil)
-	}
-	sessionToken, ok := md["X-Auth-Token"]
-	if !ok {
+func auth(sessionToken string, callback func() response.RPC) response.RPC {
+	if sessionToken == "" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "X-Auth-Token header is missing", nil, nil)
 	}
 

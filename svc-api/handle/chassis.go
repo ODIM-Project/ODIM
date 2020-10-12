@@ -16,7 +16,6 @@
 package handle
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -26,7 +25,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/kataras/iris/v12"
-	"github.com/micro/go-micro/metadata"
 )
 
 // ChassisRPCs defines all the RPC methods in system service
@@ -34,7 +32,7 @@ type ChassisRPCs struct {
 	GetChassisCollectionRPC func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisResourceRPC   func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisRPC           func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
-	CreateChassisRPC        func(req chassisproto.CreateChassisRequest, ctx context.Context) (*chassisproto.GetChassisResponse, error)
+	CreateChassisRPC        func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error)
 }
 
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
@@ -50,12 +48,9 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 
 	rpcResp, rpcErr := chassis.CreateChassisRPC(
 		chassisproto.CreateChassisRequest{
-			RequestBody: *requestBody,
+			RequestBody:  *requestBody,
+			SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		},
-
-		metadata.NewContext(context.TODO(), metadata.Metadata{
-			"X-Auth-Token": ctx.Request().Header.Get("X-Auth-Token"),
-		}),
 	)
 
 	if rpcErr != nil {

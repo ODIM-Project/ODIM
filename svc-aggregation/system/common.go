@@ -254,7 +254,7 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResp.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
-			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID, errorMessage}
+			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
 			log.Println(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}

@@ -58,6 +58,7 @@ func Router() *iris.Application {
 		ResetAggregateElementsRPC:               rpc.DoResetAggregateElements,
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
+		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
 	}
 
 	s := handle.SessionRPCs{
@@ -251,7 +252,6 @@ func Router() *iris.Application {
 	storage.SetRegisterRule(iris.RouteSkip)
 	storage.Get("/", system.GetSystemResource)
 	storage.Get("/{rid}", system.GetSystemResource)
-	storage.Get("/{rid}/Drives", system.GetSystemResource)
 	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Volumes", system.GetSystemResource)
 	storage.Post("/{id2}/Volumes", system.CreateVolume)
@@ -287,7 +287,9 @@ func Router() *iris.Application {
 
 	connectionMethods := aggregation.Party("/ConnectionMethods", middleware.SessionDelMiddleware)
 	connectionMethods.Get("/", pc.GetAllConnectionMethods)
+	connectionMethods.Get("/{id}", pc.GetConnectionMethod)
 	connectionMethods.Any("/", handle.AggMethodNotAllowed)
+	connectionMethods.Any("/{id}", handle.AggMethodNotAllowed)
 
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)

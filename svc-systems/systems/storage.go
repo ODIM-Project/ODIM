@@ -22,11 +22,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"gopkg.in/go-playground/validator.v9"
@@ -105,7 +105,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	//fields validation
-	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume)
+	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume, req.SystemID)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
 		log.Printf(errorMessage)
@@ -176,7 +176,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 }
 
 // Validates all the input prorperties
-func (e *ExternalInterface) validateProperties(request *smodel.Volume) (int32, string, []interface{}, error) {
+func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID string) (int32, string, []interface{}, error) {
 	validate := validator.New()
 	// if any of the mandatory fields missing in the struct, then it will return an error
 	err := validate.Struct(request)
@@ -217,6 +217,13 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume) (int32, s
 				log.Printf(err.Error())
 				return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
 			}
+			// Validating if a a drive URI contains correct system id
+			driveURISplit := strings.Split(driveURI, "/")
+			if len(driveURISplit) > 5 && driveURISplit[4] != systemID {
+				errMsg := "Drive URI contains incorrect system id"
+				log.Println(errMsg)
+				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
+			}
 		}
 	}
 
@@ -230,9 +237,9 @@ func mapRaidTypesWithMinDrives(req string) int {
 		"RAID00":       2,
 		"RAID01":       2,
 		"RAID1":        2,
-		"RAID10":       2,
+		"RAID10":       4,
 		"RAID10E":      2,
-		"RAID10Triple": 3,
+		"RAID10Triple": 6,
 		"RAID1E":       2,
 		"RAID1Triple":  3,
 		"RAID3":        3,

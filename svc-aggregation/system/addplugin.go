@@ -16,6 +16,7 @@ package system
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -43,7 +44,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	if !isPluginTypeSupported(req.Oem.PluginType) {
 		errMsg := "error: incorrect request property value for PluginType"
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PluginType", config.Data.SupportedPluginTypes}, taskInfo), "", nil
+		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PluginType", fmt.Sprintf("%v", config.Data.SupportedPluginTypes)}, taskInfo), "", nil
 	}
 
 	// checking whether the Plugin already exists

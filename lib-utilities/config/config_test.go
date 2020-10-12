@@ -391,8 +391,8 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			name:    "Invalid value for APIGatewayConf.PrivateKeyPath",
 			wantErr: true,
 		},
-    {
-			name: "Invalid value for ConnectionMethodConf",
+		{
+			name:    "Invalid value for ConnectionMethodConf",
 			wantErr: true,
 		},
 		{
@@ -429,7 +429,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 				MinPasswordLength:       0,
 				MaxPasswordLength:       0,
 				AllowedSpecialCharcters: "",
-			} 
+			}
 		case 3:
 			Data.APIGatewayConf = &APIGatewayConf{
 				Host: "localhost",
@@ -438,13 +438,13 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.APIGatewayConf.Port = "someport"
 		case 5:
 			Data.APIGatewayConf.PrivateKeyPath = sampleFileForTest
-    case 6:
-       Data.ConnectionMethodConf = []ConnectionMethodConf{
-           {
-             ConnectionMethodType : "Redfish",
-             ConnectionMethodVariant : "GRF_v1.0.0",
-           },
-       }
+		case 6:
+			Data.ConnectionMethodConf = []ConnectionMethodConf{
+				{
+					ConnectionMethodType:    "Redfish",
+					ConnectionMethodVariant: "GRF_v1.0.0",
+				},
+			}
 		case 7:
 			Data.APIGatewayConf.CertificatePath = sampleFileForTest
 		case 8:

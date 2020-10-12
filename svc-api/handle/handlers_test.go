@@ -394,6 +394,7 @@ func TestAggMethodNotAllowed(t *testing.T) {
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/AggregationService", AggMethodNotAllowed)
 	redfishRoutes.Any("/AggregationService/ConnectionMethods", AggMethodNotAllowed)
+	redfishRoutes.Any("/AggregationService/ConnectionMethods/{id}", AggMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on aggregation servicee URLs
@@ -405,6 +406,12 @@ func TestAggMethodNotAllowed(t *testing.T) {
 	e.POST("/redfish/v1/AggregationService/ConnectionMethods").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/AggregationService/ConnectionMethods").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/AggregationService/ConnectionMethods").Expect().Status(http.StatusMethodNotAllowed)
+
+	connMethodID := "74116e00-0a4a-53e6-a959-e6a7465d6358"
+	//Check for status code 405 for http methods which are not allowed on aggregation service connection method URLs
+	e.POST("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestFabricsMethodNotAllowed is unittest method for FabricsMethodNotAllowed func.

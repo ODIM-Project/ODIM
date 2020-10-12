@@ -68,7 +68,7 @@ func TestGetChassisInfo(t *testing.T) {
 		}
 	}()
 	dbData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockChassisResourceData(dbData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	err := mockChassisResourceData(dbData, "Chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -79,7 +79,7 @@ func TestGetChassisInfo(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error: SystemUUID not found",
-				MessageArgs:   []interface{}{"chassis", "6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
+				MessageArgs:   []interface{}{"Chassis", "6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
 			},
 		},
 	}
@@ -90,7 +90,7 @@ func TestGetChassisInfo(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error while trying to get resource details: no data with the with key /redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1 found",
-				MessageArgs:   []interface{}{"chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1"},
+				MessageArgs:   []interface{}{"Chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1"},
 			},
 		},
 	}
@@ -184,7 +184,7 @@ func TestGetAllChassis(t *testing.T) {
 		}
 	}()
 	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockChassisResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	err := mockChassisResourceData(reqData, "Chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -270,7 +270,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error: SystemUUID not found",
-				MessageArgs:   []interface{}{"chassis", "6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
+				MessageArgs:   []interface{}{"Chassis", "6d4a0a66-7efa-578e-83cf-44dc68d2874e"},
 			},
 		},
 	}

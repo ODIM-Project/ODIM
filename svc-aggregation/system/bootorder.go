@@ -17,6 +17,7 @@ package system
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"runtime"
@@ -118,7 +119,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 		log.Println(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
-			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{setOrderReq.Systems}, taskInfo)
+			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", setOrderReq.Systems)}, taskInfo)
 		case http.StatusNotFound:
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SetDefaultBootOrder"}, taskInfo)
 		default:

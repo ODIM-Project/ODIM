@@ -16,7 +16,6 @@ package response
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"reflect"
 )
@@ -37,11 +36,11 @@ const (
 	resourceAlreadyExistsArgCount       = 3
 	actionParameterNotSupportedArgCount = 2
 	propertyUnknownArgCount             = 1
-	propertyValueConflict               = 2
+	propertyValueConflictArgCount       = 2
 )
 
-//ValidateParamTypes will compare string slices and returns bool
-func ValidateParamTypes(paramTypes []string, actualParamTypes []string) bool {
+// validateParamTypes will compare string slices and returns bool
+func validateParamTypes(paramTypes []string, actualParamTypes []string) bool {
 	if len(paramTypes) != len(actualParamTypes) {
 		return false
 	}
@@ -51,6 +50,21 @@ func ValidateParamTypes(paramTypes []string, actualParamTypes []string) bool {
 		}
 	}
 	return true
+}
+
+// validateMessageArgs will validate the provided messageArgs against the expected count
+// and type of messageArgs. The function will panic if a mismatch is found.
+func validateMessageArgs(msgArgs []interface{}, paramTypes []string, expectedCount int) {
+	if len(msgArgs) != expectedCount {
+		panic("error: messageArgs doesn't match the expected count")
+	}
+	actualParamTypes := []string{}
+	for i := 0; i < len(msgArgs); i++ {
+		actualParamTypes = append(actualParamTypes, reflect.TypeOf(msgArgs[i]).String())
+	}
+	if !validateParamTypes(paramTypes, actualParamTypes) {
+		panic("error: messageArgs types are not matching with paramTypes list provided")
+	}
 }
 
 // CreateGenericErrorResponse will fill the error response with respective data
@@ -104,18 +118,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution: "Resubmit the request.  If the problem persists, consider resetting the service.",
 				})
 		case PropertyMissing:
-			if len(errArg.MessageArgs) != propertyMissingArgCount {
-				log.Println("warning: MessageArgs in PropertyMissing response is missing")
-			}
-			ParamTypes := []string{"string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in PropertyMissing response is missing")
-			}
-
+			validateMessageArgs(errArg.MessageArgs, []string{"string"}, propertyMissingArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -126,18 +129,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution:  "Ensure that the property is in the request body and has a valid value and resubmit the request if the operation failed.",
 				})
 		case PropertyUnknown:
-			if len(errArg.MessageArgs) != propertyUnknownArgCount {
-				log.Println("warning: MessageArgs in PropertyUnknown response is missing")
-			}
-			ParamTypes := []string{"string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in PropertyUnknown response is missing")
-			}
-
+			validateMessageArgs(errArg.MessageArgs, []string{"string"}, propertyUnknownArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -148,18 +140,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution:  "Ensure that the request body has valid properties with proper cases and resubmit the request.",
 				})
 		case PropertyValueNotInList:
-			if len(errArg.MessageArgs) != propertyValueNotInListArgCount {
-				log.Println("warning: MessageArgs in PropertyValueNotInList response is missing")
-			}
-			ParamTypes := []string{"string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in PropertyValueNotInList response is missing")
-			}
-
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string"}, propertyValueNotInListArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -170,18 +151,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution:  "Choose a value from the enumeration list that the implementation can support and resubmit the request if the operation failed.",
 				})
 		case PropertyValueTypeError:
-			if len(errArg.MessageArgs) != propertyValueTypeErrorArgCount {
-				log.Println("warning: MessageArgs in PropertyValueTypeError response is missing")
-			}
-			ParamTypes := []string{"string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in PropertyValueTypeError response is missing")
-			}
-
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string"}, propertyValueTypeErrorArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -201,18 +171,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution: "Ensure that the request body is valid JSON and resubmit the request.",
 				})
 		case ResourceNotFound:
-			if len(errArg.MessageArgs) != resourceNotFoundArgCount {
-				log.Println("warning: MessageArgs in ResourceNotFound response is missing")
-			}
-			ParamTypes := []string{"string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in ResourceNotFound response is missing")
-			}
-
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string"}, resourceNotFoundArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -241,17 +200,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution: "Remove the condition and resubmit the request if the operation failed.",
 				})
 		case PropertyValueFormatError:
-			if len(errArg.MessageArgs) != propertyValueFormatErrorArgCount {
-				log.Println("warning: MessageArgs in PropertyValueFormatError response is missing")
-			}
-			ParamTypes := []string{"string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in PropertyValueFormatError response is missing")
-			}
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string"}, propertyValueFormatErrorArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -262,17 +211,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution:  "Correct the value for the property in the request body and resubmit the request if the operation failed.",
 				})
 		case ResourceAtURIUnauthorized:
-			if len(errArg.MessageArgs) != resourceAtURIUnauthorizedArgCount {
-				log.Println("warning: MessageArgs in ResourceAtURIUnauthorized response is missing")
-			}
-			ParamTypes := []string{"string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in RResourceAtURIUnauthorized response is missing")
-			}
+			validateMessageArgs(errArg.MessageArgs, []string{"string"}, resourceAtURIUnauthorizedArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -283,17 +222,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution:  "Ensure that the appropriate access is provided for the service in order for it to access the URI.",
 				})
 		case CouldNotEstablishConnection:
-			if len(errArg.MessageArgs) != couldNotEstablishConnectionArgCount {
-				log.Println("warning: MessageArgs in CouldNotEstablishConnection response is missing")
-			}
-			ParamTypes := []string{"string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in CouldNotEstablishConnection response is missing")
-			}
+			validateMessageArgs(errArg.MessageArgs, []string{"string"}, couldNotEstablishConnectionArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -304,41 +233,18 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution:  "Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.",
 				})
 		case ActionNotSupported:
-			errMsgArg := ""
-			if len(errArg.MessageArgs) != actionNotSupportedArgCount {
-				log.Println("warning: MessageArgs in ActionNotSupported response is missing")
-			} else {
-				errMsgArg = errArg.MessageArgs[0].(string)
-			}
-			ParamTypes := []string{"string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in ActionNotSupported response is missing")
-			}
+			validateMessageArgs(errArg.MessageArgs, []string{"string"}, actionNotSupportedArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
 					MessageID:   errArg.StatusMessage,
-					Message:     fmt.Sprintf("The action %v is not supported by the resource. %v", errArg.MessageArgs[0], errMsgArg),
+					Message:     fmt.Sprintf("The action %v is not supported by the resource. %v", errArg.MessageArgs[0], errArg.ErrorMessage),
 					Severity:    "Critical",
 					MessageArgs: errArg.MessageArgs,
 					Resolution:  "The action supplied cannot be resubmitted to the implementation. Perhaps the action was invalid, the wrong resource was the target or the implementation documentation may be of assistance.",
 				})
 		case ResourceAlreadyExists:
-			if len(errArg.MessageArgs) != resourceAlreadyExistsArgCount {
-				log.Println("warning: MessageArgs in ResourceAlreadyExists response is missing")
-			}
-			ParamTypes := []string{"string", "string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in ResourceAlreadyExists response is missing")
-			}
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string", "string"}, resourceAlreadyExistsArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -367,17 +273,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution: "Remove the query parameters and resubmit the request if the operation failed.",
 				})
 		case ActionParameterNotSupported:
-			if len(errArg.MessageArgs) != actionParameterNotSupportedArgCount {
-				log.Println("warning: MessageArgs in ActionParameterNotSupported response is missing")
-			}
-			ParamTypes := []string{"string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in ActionParameterNotSupported response is missing")
-			}
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string"}, actionParameterNotSupportedArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,
@@ -397,18 +293,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Resolution: "Do not attempt to delete a non-deletable resource.",
 				})
 		case PropertyValueConflict:
-			if len(errArg.MessageArgs) != propertyValueConflict {
-				log.Println("warning: MessageArgs in PropertyValueConflict response is missing")
-			}
-			ParamTypes := []string{"string", "string"}
-			actualParamTypes := []string{}
-			for i := 0; i < len(errArg.MessageArgs); i++ {
-				actualParamTypes = append(actualParamTypes, reflect.TypeOf(errArg.MessageArgs[i]).String())
-			}
-			if !ValidateParamTypes(ParamTypes, actualParamTypes) {
-				log.Println("warning: Paramtypes in PropertyValueConflict response is missing")
-			}
-
+			validateMessageArgs(errArg.MessageArgs, []string{"string", "string"}, propertyValueConflictArgCount)
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:   ErrorMessageOdataType,

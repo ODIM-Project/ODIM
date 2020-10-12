@@ -14,6 +14,7 @@
 package update
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
@@ -31,7 +32,7 @@ func TestSimpleUpdate(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error: SystemUUID not found",
-				MessageArgs:   []interface{}{"System", errMsg},
+				MessageArgs:   []interface{}{"System", fmt.Sprintf("%v", errMsg)},
 			},
 		},
 	}

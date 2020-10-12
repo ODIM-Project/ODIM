@@ -65,7 +65,7 @@ jobs:
     
     - name: Build
       run: |
-          LIST=`ls -R | grep -v 'svc-plugin-rest-client' | grep -E '^svc-|^plugin-'`
+          LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-'`
           for i in $LIST; do
             echo "Compiling $i"
             cd $i

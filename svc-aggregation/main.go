@@ -18,6 +18,7 @@ import (
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -26,7 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/rpc"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 // Schema is a struct to define search, condition and query keys

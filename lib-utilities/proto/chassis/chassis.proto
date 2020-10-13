@@ -19,6 +19,7 @@ syntax = "proto3";
  rpc GetChassisResource(GetChassisRequest) returns (GetChassisResponse){}
  rpc GetChassisInfo(GetChassisRequest) returns (GetChassisResponse){}
  rpc CreateChassis(CreateChassisRequest) returns (GetChassisResponse){}
+ rpc DeleteChassis(DeleteChassisRequest) returns (GetChassisResponse){}
  }
 
  message GetChassisRequest{
@@ -38,4 +39,9 @@ syntax = "proto3";
  message CreateChassisRequest{
    string sessionToken=1;
    bytes RequestBody = 2;
+ }
+
+ message DeleteChassisRequest{
+   string sessionToken=1;
+   string URL=2;
  }

@@ -94,6 +94,27 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
+func Find(Table, key string, r interface{}) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return err
+	}
+	resourceData, err := conn.Read(Table, key)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+
+	var resourceAsString string
+	if errs := json.Unmarshal([]byte(resourceData), &resourceAsString); errs != nil {
+		return errors.PackError(errors.UndefinedErrorType, errs)
+	}
+
+	if errs := json.Unmarshal([]byte(resourceAsString), r); errs != nil {
+		return errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return nil
+}
+
 //GetAllKeysFromTable fetches all keys in a given table
 func GetAllKeysFromTable(table string) ([]string, error) {
 	conn, err := common.GetDBConnection(common.InMemory)

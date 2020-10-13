@@ -24,6 +24,7 @@ import (
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
@@ -81,9 +82,17 @@ func registerHandler() {
 	systemRPC.EI = systems.GetExternalInterface()
 	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
 
-	chassisRPC := rpc.NewChassisRPC(services.IsAuthorized, chassis.NewGetCollectionHandler(
-		smodel.GetPluginData,
-		smodel.GetAllKeysFromTable,
-	))
+	chassisRPC := rpc.NewChassisRPC(
+		services.IsAuthorized,
+		chassis.NewGetCollectionHandler(
+			smodel.GetPluginData,
+			smodel.GetAllKeysFromTable,
+		),
+		chassis.NewGetHandler(
+			plugin.ClientCreator,
+			smodel.Find,
+		),
+	)
+
 	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)
 }

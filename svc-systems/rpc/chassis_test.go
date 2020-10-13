@@ -128,7 +128,7 @@ func TestChassis_GetAllChassis(t *testing.T) {
 				return smodel.Plugin{}, errors.PackError(errors.DBKeyNotFound, "error")
 			}, func(table string) ([]string, error) {
 				return []string{}, nil
-			}))
+			}), chassis.NewGetHandler(nil, nil))
 
 	type args struct {
 		ctx  context.Context

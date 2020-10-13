@@ -15,9 +15,9 @@ import (
 
 func NewGetCollectionHandler(
 	pdp func(pluginID string) (smodel.Plugin, *errors.Error),
-	imkp func(table string) ([]string, error)) GetCollectionHandler {
+	imkp func(table string) ([]string, error)) *GetCollectionHandler {
 
-	return GetCollectionHandler{
+	return &GetCollectionHandler{
 		&sourceProviderImpl{
 			getPluginConfig: pdp,
 			getAllKeys:      imkp,

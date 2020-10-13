@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"github.com/gomodule/redigo/redis"
+	log "log"
 	"net/http"
 	"strings"
 
@@ -64,8 +65,11 @@ func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfis
 			ValidationRule: func() bool {
 				if chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 1 {
 					containedByOid := chassis.Links.ContainedBy[0].Oid
-					_, err := c.cm.FindByKey("Chassis", containedByOid)
-					return err != nil
+					v, err := c.cm.FindByKey("Chassis", containedByOid)
+					if err != nil {
+						log.Println("error:", err)
+					}
+					return err != nil || v == nil
 				}
 				return false
 			},
@@ -138,6 +142,10 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 		cbUri := requestedChassis.Links.ContainedBy[0].Oid
 		bytes, err := redis.Bytes(c.cm.FindByKey("Chassis", cbUri))
 		if err != nil {
+			ctx.StatusCode(http.StatusInternalServerError)
+			return
+		}
+		if bytes == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			return
 		}

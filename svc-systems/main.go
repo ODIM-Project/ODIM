@@ -88,6 +88,7 @@ func registerHandler() {
 			smodel.GetPluginData,
 			smodel.GetAllKeysFromTable,
 		),
+		chassis.NewDeleteHandler(plugin.ClientCreator, smodel.Find),
 		chassis.NewGetHandler(
 			plugin.ClientCreator,
 			smodel.Find,

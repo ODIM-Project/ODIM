@@ -19,15 +19,22 @@ type chassisReadingHandler struct {
 
 func (c *chassisReadingHandler) handle(ctx context.Context) {
 	v, err := redis.String(c.cm.FindByKey("Chassis", ctx.Request().RequestURI))
+	if err != nil && err == redis.ErrNil {
+		ctx.StatusCode(http.StatusNotFound)
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceNotFoundMsg("Chassis", ctx.Request().RequestURI, "")))
+		return
+	}
 	if err != nil {
-		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
+		ctx.StatusCode(http.StatusInternalServerError)
 		return
 	}
 
 	chassis := new(redfish.Chassis)
 	err = json.Unmarshal([]byte(v), chassis)
 	if err != nil {
-		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
+		ctx.StatusCode(http.StatusInternalServerError)
 		return
 	}
 

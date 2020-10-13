@@ -97,6 +97,7 @@ func Router() *iris.Application {
 		GetChassisResourceRPC:   rpc.GetChassisResource,
 		GetChassisRPC:           rpc.GetChassis,
 		CreateChassisRPC:        rpc.CreateChassis,
+		DeleteChassisRPC:        rpc.DeleteChassis,
 	}
 
 	evt := handle.EventsRPCs{
@@ -316,6 +317,7 @@ func Router() *iris.Application {
 	chassis.Get("/", cha.GetChassisCollection)
 	chassis.Post("/", cha.CreateChassis)
 	chassis.Get("/{id}", cha.GetChassis)
+	chassis.Delete("/{id}", cha.DeleteChassis)
 	chassis.Get("/{id}/NetworkAdapters", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{rid}", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions", cha.GetChassisResource)

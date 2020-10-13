@@ -42,24 +42,18 @@ func (c *ConnectionManager) Delete(schema, key string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if numOfRemovedKeys.(int) == 0 {
-		return false, fmt.Errorf("requested asset(%s) does not exist", schema+":"+key)
+	if numOfRemovedKeys.(int64) == 0 {
+		return false, nil
 	}
 	return true, nil
 }
 
+// Returns object related with requested key(schema + key) or nil in case when requested key does not exist
 func (c *ConnectionManager) FindByKey(schema, key string) (interface{}, error) {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	v, e := cs.Do("GET", schema+":"+key)
-	if e != nil {
-		return nil, e
-	}
-	if v == nil {
-		return nil, fmt.Errorf("requested object(%s) does not exist", schema+":"+key)
-	}
-	return v, nil
+	return cs.Do("GET", schema+":"+key)
 }
 
 func (c *ConnectionManager) Create(schema, key string, data []byte) *Error {

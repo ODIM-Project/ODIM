@@ -29,6 +29,10 @@ func (c *ClientMock) Post(uri string, body interface{}) (Response, sresponse.Err
 	panic("implement me")
 }
 
+func (c *ClientMock) Delete(uri string) (Response, sresponse.Error) {
+	panic("implement me")
+}
+
 type ResponseMock struct {
 	mock.Mock
 }

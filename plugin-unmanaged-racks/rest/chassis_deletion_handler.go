@@ -22,9 +22,14 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	requestedChassis := ctx.Request().RequestURI
 
 	bytes, err := redis.Bytes(c.connectionManager.FindByKey("Chassis", requestedChassis))
+	if err != nil && err == redis.ErrNil {
+		ctx.StatusCode(http.StatusNotFound)
+		ctx.JSON(redfish.NewResourceNotFoundMsg("Chassis", requestedChassis, ""))
+		return
+	}
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(err)
+		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
 		return
 	}
 
@@ -32,7 +37,7 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	err = json.Unmarshal(bytes, chassisToBeDeleted)
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(err)
+		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
 		return
 	}
 
@@ -44,14 +49,10 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 		return
 	}
 
-	ok, err := c.connectionManager.Delete("Chassis", requestedChassis)
+	_, err = c.connectionManager.Delete("Chassis", requestedChassis)
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(err)
-		return
-	}
-	if !ok {
-		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
 		return
 	}
 

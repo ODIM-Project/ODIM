@@ -1,11 +1,10 @@
 package plugin
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -36,52 +35,71 @@ type Response interface {
 	AsRPCResponse() (r response.RPC)
 }
 
+func newPluginResponse(r *http.Response) *pluginResponse {
+	pr := new(pluginResponse)
+	pr.status = r.StatusCode
+	pr.headers = r.Header
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pr.body = bytes
+	return pr
+}
+
 type pluginResponse struct {
-	*http.Response
+	status  int
+	headers http.Header
+	body    []byte
 }
 
 func (p *pluginResponse) JSON(t interface{}) error {
-	bb := new(bytes.Buffer)
-	io.Copy(bb, p.Body)
-	bodyAsString := strings.Replace(bb.String(), "/ODIM/", "/redfish/", -1)
+	bodyAsString := strings.Replace(string(p.body), "/ODIM/", "/redfish/", -1)
 	return json.Unmarshal([]byte(bodyAsString), t)
 }
 
 func (p *pluginResponse) AsRPCResponse() (r response.RPC) {
-	r.StatusCode, r.Body, r.Header = jsonResponseWriter(p.Response, func(toBeTransformed string) string {
-		return strings.Replace(toBeTransformed, "/ODIM/", "/redfish/", -1)
-	})
+	r.StatusCode = int32(p.status)
+
+	r.Header = map[string]string{}
+	for k := range p.headers {
+		if hasToBeSkipped(k) {
+			continue
+		}
+		r.Header[k] = strings.Replace(p.headers.Get(k), "/ODIM/", "/redfish/", -1)
+	}
+
+	if p.body != nil && len(p.body) != 0 {
+		bodyToBeTransformed := string(p.body)
+		bodyToBeTransformed = strings.Replace(bodyToBeTransformed, "/ODIM/", "/redfish/", -1)
+		r.Body = []byte(bodyToBeTransformed)
+	}
 	return
 }
 
 func jsonResponseWriter(res *http.Response, bodyTransformers ...func(string) string) (statusCode int32, body []byte, headers map[string]string) {
-	jsonBodyBytes := new(json.RawMessage)
-	err := json.NewDecoder(res.Body).Decode(jsonBodyBytes)
-	if err != nil {
-		ge := common.GeneralError(
-			http.StatusInternalServerError,
-			response.GeneralError,
-			fmt.Sprintf("Cannot read response: %v", err), nil, nil)
+	d := json.NewDecoder(res.Body)
+	if d.More() {
+		jsonBodyBytes := new(json.RawMessage)
+		err := json.NewDecoder(res.Body).Decode(jsonBodyBytes)
+		if err != nil {
+			ge := common.GeneralError(
+				http.StatusInternalServerError,
+				response.GeneralError,
+				fmt.Sprintf("Cannot read response: %v", err), nil, nil)
 
-		return ge.StatusCode, jsonMarshal(ge.Body), ge.Header
-	}
-
-	bodyToBeTransformed := string(*jsonBodyBytes)
-	for _, t := range bodyTransformers {
-		bodyToBeTransformed = t(bodyToBeTransformed)
-	}
-
-	headersToBeReturned := map[string]string{}
-	for k := range res.Header {
-		if hasToBeSkipped(k) {
-			continue
+			return ge.StatusCode, jsonMarshal(ge.Body), ge.Header
 		}
+
+		bodyToBeTransformed := string(*jsonBodyBytes)
 		for _, t := range bodyTransformers {
-			headersToBeReturned[k] = t(res.Header.Get(k))
+			bodyToBeTransformed = t(bodyToBeTransformed)
 		}
+		body = []byte(bodyToBeTransformed)
 	}
 
-	return int32(res.StatusCode), []byte(bodyToBeTransformed), headersToBeReturned
+	statusCode = int32(res.StatusCode)
+	return
 }
 
 func jsonMarshal(input interface{}) []byte {
@@ -102,15 +120,17 @@ func hasToBeSkipped(header string) bool {
 type Client interface {
 	Get(uri string) (Response, sresponse.Error)
 	Post(uri string, body interface{}) (Response, sresponse.Error)
+	Delete(uri string) (Response, sresponse.Error)
 }
 
 type client struct {
 	plugin smodel.Plugin
 }
 
-func (c *client) Post(uri string, body interface{}) (Response, sresponse.Error) {
+func (c *client) Delete(uri string) (Response, sresponse.Error) {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
-	resp, err := pmbhandle.ContactPlugin(url, http.MethodPost, "", "", body, map[string]string{
+	url = strings.Replace(url, "/redfish", "/ODIM", -1)
+	resp, err := pmbhandle.ContactPlugin(url, http.MethodDelete, "", "", nil, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
@@ -120,7 +140,23 @@ func (c *client) Post(uri string, body interface{}) (Response, sresponse.Error) 
 	if !is2xx(resp.StatusCode) {
 		return nil, extractError(resp)
 	}
-	return &pluginResponse{resp}, nil
+	return newPluginResponse(resp), nil
+}
+
+func (c *client) Post(uri string, body interface{}) (Response, sresponse.Error) {
+	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
+	resp, err := pmbhandle.ContactPlugin(url, http.MethodPost, "", "", body, map[string]string{
+		"UserName": c.plugin.Username,
+		"Password": string(c.plugin.Password),
+	})
+	if err != nil {
+		return nil, &sresponse.UnknownErrorWrapper{Error: err, StatusCode: http.StatusInternalServerError}
+	}
+
+	if !is2xx(resp.StatusCode) {
+		return nil, extractError(resp)
+	}
+	return newPluginResponse(resp), nil
 }
 
 func (c *client) Get(uri string) (Response, sresponse.Error) {
@@ -138,19 +174,17 @@ func (c *client) Get(uri string) (Response, sresponse.Error) {
 	if !is2xx(resp.StatusCode) {
 		return nil, extractError(resp)
 	}
-	return &pluginResponse{resp}, nil
+	return newPluginResponse(resp), nil
 }
 
 func extractError(resp *http.Response) sresponse.Error {
+	r := (newPluginResponse(resp)).AsRPCResponse()
 	ce := new(response.CommonError)
-	if e := (&pluginResponse{resp}).JSON(ce); e != nil {
-		return &sresponse.UnknownErrorWrapper{StatusCode: resp.StatusCode, Error: e}
-	}
 
-	r := response.RPC{}
-	r.StatusCode, r.Body, r.Header = jsonResponseWriter(resp, func(toBeTransformed string) string {
-		return strings.Replace(toBeTransformed, "/ODIM/", "/redfish/", -1)
-	})
+	e := json.Unmarshal(r.Body.([]byte), ce)
+	if e != nil {
+		return &sresponse.UnknownErrorWrapper{StatusCode: resp.StatusCode, Error: fmt.Errorf(string(r.Body.([]byte)))}
+	}
 
 	return &sresponse.RPCErrorWrapper{RPC: r}
 }

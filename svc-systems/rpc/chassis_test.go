@@ -20,6 +20,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"net/http"
 	"testing"
@@ -128,7 +129,7 @@ func TestChassis_GetAllChassis(t *testing.T) {
 				return smodel.Plugin{}, errors.PackError(errors.DBKeyNotFound, "error")
 			}, func(table string) ([]string, error) {
 				return []string{}, nil
-			}), chassis.NewGetHandler(nil, nil))
+			}), nil, nil)
 
 	type args struct {
 		ctx  context.Context
@@ -192,6 +193,10 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 	}
 	cha := new(ChassisRPC)
 	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha.GetHandler = chassis.NewGetHandler(
+		func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.DBKeyNotFound, "urp os not registered")
+		}, smodel.Find)
 	type args struct {
 		ctx  context.Context
 		req  *chassisproto.GetChassisRequest

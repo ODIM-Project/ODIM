@@ -33,6 +33,7 @@ type ChassisRPCs struct {
 	GetChassisResourceRPC   func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisRPC           func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	CreateChassisRPC        func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error)
+	DeleteChassisRPC        func(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error)
 }
 
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
@@ -164,4 +165,20 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
+	rpcResp, rpcErr := chassis.DeleteChassisRPC(chassisproto.DeleteChassisRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	})
+
+	if rpcErr != nil {
+		log.Println("RPC error:" + rpcErr.Error())
+		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	writeResponse(ctx, rpcResp.Header, rpcResp.StatusCode, rpcResp.Body)
 }

@@ -19,11 +19,14 @@
 
 # Deploying ODIMRA
 ## 1. Setting up OS and Docker environment
-### Prerequisites
+
+**Prerequisites**
+------------------
 Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
 
 
-### Procedure
+**Procedure**
+--------------
 1. Download and install `Ubuntu 18.04 LTS` on your system.
     >   **NOTE:**  Before installation, configure your system IP to access the data center network.
 2. Install `Ubuntu Make` on your system.
@@ -135,7 +138,8 @@ This section provides a step-by-step procedure for deploying the resource aggreg
 
 **WARNING:** Do not run the commands provided in this section as root user unless mentioned.
 
-### Procedure
+**Procedure**
+--------------
 1. Clone the odimra repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user.
    ```
    $ git clone https://github.com/ODIM-Project/ODIM.git
@@ -175,7 +179,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
         - Append the Root CA used for signing the intermediate CA to the resource   aggregator CA file.
 
 
-   ###### Procedure
+    **Procedure**
    
    a. Navigate to the path: `ODIM/build/cert_generator`
       ```
@@ -425,7 +429,8 @@ During the course of this procedure, you will be required to create files and co
 
 </blockquote>
 
-### Procedure
+**Procedure**
+--------------
 
 1.   In the home directory of odimra user, create a hidden directory called .docker, and then create a file called config.json. 
 

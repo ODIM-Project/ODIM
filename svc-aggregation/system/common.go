@@ -69,6 +69,7 @@ type ExternalInterface struct {
 	EventNotification       func(string, string, string)
 	GetAllKeysFromTable     func(string) ([]string, error)
 	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
+	GetPluginData           func(string) (agmodel.Plugin,  *errors.Error)
 }
 
 type responseStatus struct {

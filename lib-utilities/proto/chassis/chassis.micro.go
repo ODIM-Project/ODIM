@@ -39,6 +39,7 @@ type ChassisService interface {
 	GetChassisInfo(ctx context.Context, in *GetChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
 	CreateChassis(ctx context.Context, in *CreateChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
 	DeleteChassis(ctx context.Context, in *DeleteChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
+	UpdateChassis(ctx context.Context, in *UpdateChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error)
 }
 
 type chassisService struct {
@@ -109,6 +110,16 @@ func (c *chassisService) DeleteChassis(ctx context.Context, in *DeleteChassisReq
 	return out, nil
 }
 
+func (c *chassisService) UpdateChassis(ctx context.Context, in *UpdateChassisRequest, opts ...client.CallOption) (*GetChassisResponse, error) {
+	req := c.c.NewRequest(c.name, "Chassis.UpdateChassis", in)
+	out := new(GetChassisResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Chassis service
 
 type ChassisHandler interface {
@@ -117,6 +128,7 @@ type ChassisHandler interface {
 	GetChassisInfo(context.Context, *GetChassisRequest, *GetChassisResponse) error
 	CreateChassis(context.Context, *CreateChassisRequest, *GetChassisResponse) error
 	DeleteChassis(context.Context, *DeleteChassisRequest, *GetChassisResponse) error
+	UpdateChassis(context.Context, *UpdateChassisRequest, *GetChassisResponse) error
 }
 
 func RegisterChassisHandler(s server.Server, hdlr ChassisHandler, opts ...server.HandlerOption) error {
@@ -126,6 +138,7 @@ func RegisterChassisHandler(s server.Server, hdlr ChassisHandler, opts ...server
 		GetChassisInfo(ctx context.Context, in *GetChassisRequest, out *GetChassisResponse) error
 		CreateChassis(ctx context.Context, in *CreateChassisRequest, out *GetChassisResponse) error
 		DeleteChassis(ctx context.Context, in *DeleteChassisRequest, out *GetChassisResponse) error
+		UpdateChassis(ctx context.Context, in *UpdateChassisRequest, out *GetChassisResponse) error
 	}
 	type Chassis struct {
 		chassis
@@ -156,4 +169,8 @@ func (h *chassisHandler) CreateChassis(ctx context.Context, in *CreateChassisReq
 
 func (h *chassisHandler) DeleteChassis(ctx context.Context, in *DeleteChassisRequest, out *GetChassisResponse) error {
 	return h.ChassisHandler.DeleteChassis(ctx, in, out)
+}
+
+func (h *chassisHandler) UpdateChassis(ctx context.Context, in *UpdateChassisRequest, out *GetChassisResponse) error {
+	return h.ChassisHandler.UpdateChassis(ctx, in, out)
 }

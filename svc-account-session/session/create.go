@@ -88,7 +88,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 			resp.StatusMessage = response.CouldNotEstablishConnection
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
-			errorArgs[0].MessageArgs = []interface{}{fmt.Sprintf("database:%v", config.Data.DBConf.OnDiskPort)}
+			errorArgs[0].MessageArgs = []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.OnDiskHost, config.Data.DBConf.OnDiskPort)}
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil), ""

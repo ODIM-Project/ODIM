@@ -37,7 +37,7 @@ func main() {
 		log.Fatalln("Api Service should not be run as the root user")
 	}
 	router := router.Router()
-	password := "1234"
+	
 	//WrapRouter method removes the trailing slash from the URL if present in the request and convert the URL to lower case.
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		path := r.URL.Path
@@ -149,4 +149,14 @@ func main() {
 		log.Fatalf("fatal: error while initializing server: %v", err)
 	}
 	router.Run(iris.Server(apiServer))
+	
+	func serve() {
+        http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+                r.ParseForm()
+                user := r.Form.Get("user")
+                pw := r.Form.Get("password")
+                log.Printf("Registering new user %s with password %s.\n", user, pw)
+        })
+        http.ListenAndServe(":80", nil)
+        }
 }

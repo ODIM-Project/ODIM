@@ -1,3 +1,5 @@
+# Table of contents
+
 - [Introduction](#introduction)
   * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
@@ -161,7 +163,7 @@
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 
 
@@ -1822,7 +1824,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -1971,7 +1973,7 @@ curl -i -X POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -2257,7 +2259,7 @@ curl -i POST \
 
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -2416,7 +2418,7 @@ curl -i POST \
 
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -2619,7 +2621,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -2805,7 +2807,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -2881,7 +2883,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -3117,7 +3119,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -4103,7 +4105,7 @@ curl -i -X POST \
 }}
 ```
 
-### Request parameters 
+**Request parameters** 
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -4164,7 +4166,7 @@ curl -i -X DELETE \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -4728,7 +4730,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.` 
 
@@ -4829,7 +4831,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 `Attributes` are the list of BIOS attributes specific to the manufacturer or provider. To get a full list of attributes, perform `GET` on:
 
@@ -4903,7 +4905,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 To get a full list of boot attributes that you can update, perform `GET` on:
 
@@ -5570,7 +5572,7 @@ curl -i POST \
 }
 ```
 
-#### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -6506,7 +6508,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -6691,7 +6693,7 @@ curl -i POST \
 
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -6847,7 +6849,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
@@ -6986,7 +6988,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
@@ -7138,7 +7140,7 @@ curl -i POST \
 ```
 
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Value|Description|
 |---------|-----|-----------|

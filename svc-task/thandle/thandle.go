@@ -125,7 +125,7 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		log.Printf("error while deleting the main task: %v", err)
 		return err
 	}
-    //CompletedTaskIndex has only completed task which has subtasks associated with them. So delete index only when condition is met.
+	//CompletedTaskIndex has only completed task which has subtasks associated with them. So delete index only when condition is met.
 	if task.TaskState == "Completed" && len(task.ChildTaskIDs) != 0 {
 		err = ts.DeleteTaskIndex(taskID)
 		if err != nil {

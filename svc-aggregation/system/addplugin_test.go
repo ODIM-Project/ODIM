@@ -43,9 +43,9 @@ func stubPluginData (pluginID string) (agmodel.Plugin, *errors.Error) {
         plugin.Port = "9091"
         plugin.Username = "admin"
         plugin.Password = []byte("password")
-        plugin.ID = "GRF"
+        plugin.ID = "XAuthPlugin"
         plugin.PluginType = "Compute"
-        plugin.PreferredAuthType = "XAuthToken"
+        plugin.PreferredAuthType = "BasicAuth"
         plugin.ManagerUUID = "1s7sda8asd-asdas8as0"
         return  plugin, nil
 }

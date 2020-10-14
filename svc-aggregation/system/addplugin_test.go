@@ -23,6 +23,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 func mockData(t *testing.T, dbType common.DbType, table, id string, data interface{}) {
@@ -33,6 +34,20 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 	if err = connPool.Create(table, id, data); err != nil {
 		t.Fatalf("error: mockData() failed to create entry %s-%s: %v", table, id, err)
 	}
+}
+
+func stubPluginData (pluginID string) (agmodel.Plugin, *errors.Error) {
+        var plugin agmodel.Plugin
+
+        plugin.IP = "localhost"
+        plugin.Port = "9091"
+        plugin.Username = "admin"
+        plugin.Password = []byte("password")
+        plugin.ID = "GRF"
+        plugin.PluginType = "Compute"
+        plugin.PreferredAuthType = "XAuthToken"
+        plugin.ManagerUUID = "1s7sda8asd-asdas8as0"
+        return  plugin, nil
 }
 
 func TestExternalInterface_Plugin(t *testing.T) {
@@ -262,7 +277,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		t.Fatalf("error while trying to create schema: %v", err)
 	}
 	reqXAuthSuccess := AddResourceRequest{
-		ManagerAddress: "localhost:9091",
+		ManagerAddress: "100.0.0.7:9091",
 		UserName:       "admin",
 		Password:       "password",
 
@@ -273,7 +288,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		},
 	}
 	reqXAuthFail := AddResourceRequest{
-		ManagerAddress: "localhost:9091",
+		ManagerAddress: "100.0.0.8:9091",
 		UserName:       "incorrectusername",
 		Password:       "incorrectPassword",
 
@@ -332,6 +347,19 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		},
 	}
 
+        reqDuplicateManagerAddress:= AddResourceRequest{
+                ManagerAddress: "localhost:9091",
+                UserName: "admin",
+                Password: "password",
+
+                        Oem: &AddOEM{
+                                PluginID:          "ILO",
+                                PreferredAuthType: "XAuthToken",
+                                PluginType:        "Compute",
+                        },
+
+        }
+
 	p := &ExternalInterface{
 		ContactClient:     mockContactClient,
 		Auth:              mockIsAuthorized,
@@ -343,6 +371,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+		GetPluginData:     stubPluginData,
 	}
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var pluginContactRequest getResourceRequest
@@ -431,6 +460,18 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 				StatusCode: http.StatusInternalServerError,
 			},
 		},
+                {
+                        name: "duplicate manager address",
+                        p:    p,
+                        args: args{
+                                taskID: "123",
+                                req: reqDuplicateManagerAddress,
+                        },
+                        want: response.RPC{
+                                StatusCode: http.StatusConflict,
+                        },
+                },
+
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,6 +1,8 @@
 [![build_deploy_test Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_deploy_test/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
 [![build_unittest Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_unittest/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
 
+
+
 # Deploying ODIMRA
 ## 1. Setting up OS, docker environment and other pre-requisites
 ### Prerequisites
@@ -108,8 +110,8 @@ To install `Ubuntu Make`, run the following command:
 This section provides a step-by-step procedure for deploying the resource aggregator for ODIM (odimra) and GRF plugin.
 
 > **NOTE:**
-  • All configuration parameters are set to default values in the configuration files for odimra and GRF plugin. 
-  • The following ports are used for deploying odimra and GRF plugin:
+  â€¢ All configuration parameters are set to default values in the configuration files for odimra and GRF plugin. 
+  â€¢ The following ports are used for deploying odimra and GRF plugin:
     45000, 45001, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
     Ensure that the above ports are not in use.
 

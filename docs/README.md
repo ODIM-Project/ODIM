@@ -1,3 +1,4 @@
+
 # Table of contents
 
 - [Introduction](#introduction)
@@ -32,31 +33,22 @@
 - [Resource aggregation and management](#resource-aggregation-and-management)
   * [Viewing the aggregation service root](#viewing-the-aggregation-service-root)
   * [Adding a plugin as an aggregation source](#adding-a-plugin-as-an-aggregation-source)
-    + [Request parameters](#request-parameters)
   * [Adding a server as an aggregation source](#adding-a-server-as-an-aggregation-source)
-    + [Request parameters](#request-parameters-1)
   * [Viewing a collection of aggregation sources](#viewing-a-collection-of-aggregation-sources)
   * [Viewing an aggregation source](#viewing-an-aggregation-source)
   * [Updating an aggregation source](#updating-an-aggregation-source)
   * [Resetting servers](#resetting-servers)
-    + [Request parameters](#request-parameters-2)
-    + [Reset type](#reset-type)
   * [Changing the boot order of servers to default settings](#changing-the-boot-order-of-servers-to-default-settings)
-    + [Request parameters](#request-parameters-3)
   * [Deleting a resource from the inventory](#deleting-a-resource-from-the-inventory)
   * [Aggregates](#aggregates)
   * [Creating an aggregate](#creating-an-aggregate)
-    + [Request parameters](#request-parameters-4)
   * [Viewing a list of aggregates](#viewing-a-list-of-aggregates)
   * [Viewing information about a single aggregate](#viewing-information-about-a-single-aggregate)
   * [Deleting an aggregate](#deleting-an-aggregate)
   * [Adding elements to an aggregate](#adding-elements-to-an-aggregate)
-    + [Request parameters](#request-parameters-5)
   * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
-    + [Request parameters](#request-parameters-6)
   * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
   * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
-    + [Request parameters](#request-parameters-7)
 - [Resource inventory](#resource-inventory)
   * [Collection of computer systems](#collection-of-computer-systems)
   * [Single computer system](#single-computer-system)
@@ -74,9 +66,7 @@
     + [A collection of volumes](#a-collection-of-volumes)
     + [Single volume](#single-volume)
     + [Creating a volume](#creating-a-volume)
-    + [Request parameters](#request-parameters-8)
     + [Deleting a volume](#deleting-a-volume)
-    + [Request parameters](#request-parameters-9)
   * [SecureBoot](#secureboot)
   * [Processors](#processors)
   * [Single processor](#single-processor)
@@ -89,12 +79,9 @@
     + [Request URI parameters](#request-uri-parameters)
 - [Actions on a computer system](#actions-on-a-computer-system)
   * [Resetting a computer system](#resetting-a-computer-system)
-    + [Request parameters](#request-parameters-10)
   * [Changing the boot order of a computer system to default settings](#changing-the-boot-order-of-a-computer-system-to-default-settings)
   * [Changing BIOS settings](#changing-bios-settings)
-    + [Request parameters](#request-parameters-11)
   * [Changing the boot order settings](#changing-the-boot-order-settings)
-    + [Request parameters](#request-parameters-12)
 - [Managers](#managers)
   * [Collection of managers](#collection-of-managers)
   * [Single manager](#single-manager)
@@ -106,7 +93,6 @@
   * [Viewing a specific software resource](#viewing-a-specific-software-resource)
   * [Actions](#actions)
     + [Simple update](#simple-update)
-      - [Request parameters](#request-parameters-13)
     + [Start update](#start-update)
 - [Host to fabric networking](#host-to-fabric-networking)
   * [Collection of fabrics](#collection-of-fabrics)
@@ -122,15 +108,10 @@
   * [Collection of zones](#collection-of-zones)
   * [Single zone](#single-zone)
   * [Creating a zone-specific address pool](#creating-a-zone-specific-address-pool)
-    + [Request parameters](#request-parameters-14)
   * [Creating an address pool for zone of zones](#creating-an-address-pool-for-zone-of-zones)
-    + [Request parameters](#request-parameters-15)
   * [Adding a zone of zones](#adding-a-zone-of-zones)
-    + [Request parameters](#request-parameters-16)
   * [Adding an endpoint](#adding-an-endpoint)
-    + [Request parameters](#request-parameters-17)
   * [Creating a zone of endpoints](#creating-a-zone-of-endpoints)
-    + [Request parameters](#request-parameters-18)
   * [Updating a zone](#updating-a-zone)
   * [Deleting a zone](#deleting-a-zone)
   * [Deleting an endpoint](#deleting-an-endpoint)
@@ -144,13 +125,7 @@
 - [Events](#events)
   * [Viewing the event service root](#viewing-the-event-service-root)
   * [Creating an event subscription](#creating-an-event-subscription)
-    + [Origin resources](#origin-resources)
-    + [Event types](#event-types)
-    + [EventFormat type](#eventformat-type)
-    + [Subscription type](#subscription-type)
-    + [Protocol](#protocol)
   * [Submitting a test event](#submitting-a-test-event)
-    + [Severity](#severity)
   * [Event subscription use cases](#event-subscription-use-cases)
     + [Subscribing to resource addition notification](#subscribing-to-resource-addition-notification)
     + [Subscribing to resource removal notification](#subscribing-to-resource-removal-notification)
@@ -162,6 +137,7 @@
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
+
 
 
 
@@ -2268,7 +2244,7 @@ curl -i POST \
 |ResetType|String \(required\)<br> |The type of reset to be performed. For possible values, see "Reset type". If the value is not supported by the target server machine, you will receive an HTTP `400 Bad Request` error.|
 |TargetURIs|Array \(required\)<br> |The URI of the target for `Reset`. Example: `"/redfish/v1/Systems/{ComputerSystemId}"` |
 
-### Reset type
+**Reset type**
 
 |String|Description|
 |------|-----------|
@@ -8147,7 +8123,7 @@ curl -i POST \
 |SubordinateResources|Boolean|Read-only \(null\)|Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`,<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`,<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`,<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
 |OriginResources|Array| Required \(null\)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource will be sent to the subscriber. For possible values, see "Origin resources" table.|
 
-### Origin resources
+**Origin resources**
 
 |String|Description|
 |------|-----------|
@@ -8158,7 +8134,7 @@ curl -i POST \
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
 
-### Event types
+**Event types**
 
 |String|Description|
 |------|-----------|
@@ -8168,19 +8144,19 @@ curl -i POST \
 |ResourceUpdated|The value of this resource has been updated.|
 |StatusChange|The status of this resource has changed.|
 
-### EventFormat type
+**EventFormat type**
 
 |String|Description|
 |------|-----------|
 |Event|The subscription destination will receive JSON bodies of the Resource Type Event.|
 
-### Subscription type
+**Subscription type**
 
 |String|Description|
 |------|-----------|
 |RedfishEvent|The subscription follows the Redfish specification for event notifications, which is done by a service sending an HTTP `POST` to the destination URI of the subscriber.|
 
-### Protocol
+**Protocol**
 
 |String|Description|
 |------|-----------|
@@ -8370,7 +8346,7 @@ curl -i POST \
 |OriginOfCondition|String|Optional|The URL in the `OriginOfCondition` property of the event to add. It is not a reference object. It is the resource that originated the condition that caused the event to be generated. For possible values, see "Origin resources" in [Creating an event subscription](#creating-an-event-subscription).|
 |Severity|String|Optional|The severity for the event to add. For possible values, see "Severity" table.|
 
-### Severity
+**Severity**
 
 |String|Description|
 |------|-----------|

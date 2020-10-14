@@ -5,15 +5,11 @@
 
 - [Deploying ODIMRA](#deploying-odimra)
   * [1. Setting up OS and Docker environment](#1-setting-up-os-and-docker-environment)
-    + [Prerequisites](#prerequisites)
-    + [Procedure](#procedure)
   * [2. Installing the resource aggregator for ODIM and GRF plugin](#2-installing-the-resource-aggregator-for-odim-and-grf-plugin)
-    + [Procedure](#procedure-1)
-          + [Procedure](#procedure-2)
     + [Default user credentials for ODIMRA and GRF Plugin](#default-user-credentials-for-odimra-and-grf-plugin)
 - [Modifying default configuration parameters for the resource aggregator](#modifying-default-configuration-parameters-for-the-resource-aggregator)
 - [Configuring proxy for Docker](#configuring-proxy-for-docker)
-    + [Procedure](#procedure-3)
+   
 
 
 
@@ -430,7 +426,7 @@ During the course of this procedure, you will be required to create files and co
 </blockquote>
 
 **Procedure**
-
+--------------
 
 1.   In the home directory of odimra user, create a hidden directory called .docker, and then create a file called config.json. 
 

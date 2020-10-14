@@ -430,7 +430,7 @@ During the course of this procedure, you will be required to create files and co
 </blockquote>
 
 **Procedure**
---------------
+
 
 1.   In the home directory of odimra user, create a hidden directory called .docker, and then create a file called config.json. 
 

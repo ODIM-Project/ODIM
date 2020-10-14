@@ -34,6 +34,7 @@ type ChassisRPCs struct {
 	GetChassisRPC           func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	CreateChassisRPC        func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error)
 	DeleteChassisRPC        func(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error)
+	UpdateChassisRPC        func(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error)
 }
 
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
@@ -165,6 +166,33 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
+	requestBody := new(json.RawMessage)
+	e := ctx.ReadJSON(requestBody)
+	if e != nil {
+		errorMessage := "error while trying to read obligatory json body: " + e.Error()
+		log.Println(errorMessage)
+		re := common.GeneralError(http.StatusBadRequest, response.GeneralError, errorMessage, nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+	rr, rerr := chassis.UpdateChassisRPC(chassisproto.UpdateChassisRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  *requestBody,
+	})
+
+	if rerr != nil {
+		log.Println("RPC error:" + rerr.Error())
+		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rerr.Error(), nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	writeResponse(ctx, rr.Header, rr.StatusCode, rr.Body)
+
 }
 
 func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {

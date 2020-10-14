@@ -70,3 +70,12 @@ func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChas
 	}
 	return resp, nil
 }
+
+func UpdateChassis(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	resp, err := service.UpdateChassis(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	return resp, nil
+}

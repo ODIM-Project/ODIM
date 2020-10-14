@@ -34,13 +34,15 @@ func NewChassisRPC(
 	authWrapper func(sessionToken string, privileges, oemPrivileges []string) (int32, string),
 	getCollectionHandler *chassis.GetCollectionHandler,
 	deleteHandler *chassis.Delete,
-	getHandler *chassis.Get) *ChassisRPC {
+	getHandler *chassis.Get,
+	updateHandler *chassis.Update) *ChassisRPC {
 
 	return &ChassisRPC{
 		IsAuthorizedRPC:      authWrapper,
 		GetCollectionHandler: getCollectionHandler,
 		GetHandler:           getHandler,
 		DeleteHandler:        deleteHandler,
+		UpdateHandler:        updateHandler,
 	}
 }
 
@@ -50,6 +52,16 @@ type ChassisRPC struct {
 	GetCollectionHandler *chassis.GetCollectionHandler
 	GetHandler           *chassis.Get
 	DeleteHandler        *chassis.Delete
+	UpdateHandler        *chassis.Update
+}
+
+func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest, resp *chassisproto.GetChassisResponse) (e error) {
+	r := auth(cha.IsAuthorizedRPC, req.SessionToken, func() response.RPC {
+		return cha.UpdateHandler.Handle(req)
+	})
+
+	rewrite(r, resp)
+	return
 }
 
 func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest, resp *chassisproto.GetChassisResponse) (e error) {

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	smodel "github.com/ODIM-Project/ODIM/svc-systems/smodel"
@@ -77,42 +76,6 @@ func (p *pluginResponse) AsRPCResponse() (r response.RPC) {
 	return
 }
 
-func jsonResponseWriter(res *http.Response, bodyTransformers ...func(string) string) (statusCode int32, body []byte, headers map[string]string) {
-	d := json.NewDecoder(res.Body)
-	if d.More() {
-		jsonBodyBytes := new(json.RawMessage)
-		err := json.NewDecoder(res.Body).Decode(jsonBodyBytes)
-		if err != nil {
-			ge := common.GeneralError(
-				http.StatusInternalServerError,
-				response.GeneralError,
-				fmt.Sprintf("Cannot read response: %v", err), nil, nil)
-
-			return ge.StatusCode, jsonMarshal(ge.Body), ge.Header
-		}
-
-		bodyToBeTransformed := string(*jsonBodyBytes)
-		for _, t := range bodyTransformers {
-			bodyToBeTransformed = t(bodyToBeTransformed)
-		}
-		body = []byte(bodyToBeTransformed)
-	}
-
-	statusCode = int32(res.StatusCode)
-	return
-}
-
-func jsonMarshal(input interface{}) []byte {
-	if bytes, alreadyBytes := input.([]byte); alreadyBytes {
-		return bytes
-	}
-	bytes, err := json.Marshal(input)
-	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
-	}
-	return bytes
-}
-
 func hasToBeSkipped(header string) bool {
 	return header == "Content-Length"
 }
@@ -120,6 +83,7 @@ func hasToBeSkipped(header string) bool {
 type Client interface {
 	Get(uri string) (Response, sresponse.Error)
 	Post(uri string, body interface{}) (Response, sresponse.Error)
+	Patch(uri string, body *json.RawMessage) (Response, sresponse.Error)
 	Delete(uri string) (Response, sresponse.Error)
 }
 
@@ -146,6 +110,25 @@ func (c *client) Delete(uri string) (Response, sresponse.Error) {
 func (c *client) Post(uri string, body interface{}) (Response, sresponse.Error) {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	resp, err := pmbhandle.ContactPlugin(url, http.MethodPost, "", "", body, map[string]string{
+		"UserName": c.plugin.Username,
+		"Password": string(c.plugin.Password),
+	})
+	if err != nil {
+		return nil, &sresponse.UnknownErrorWrapper{Error: err, StatusCode: http.StatusInternalServerError}
+	}
+
+	if !is2xx(resp.StatusCode) {
+		return nil, extractError(resp)
+	}
+	return newPluginResponse(resp), nil
+}
+
+func (c *client) Patch(uri string, body *json.RawMessage) (Response, sresponse.Error) {
+	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
+	url = strings.Replace(url, "/redfish", "/ODIM", -1)
+
+	*body = json.RawMessage(strings.Replace(string(*body), "/redfish/", "/ODIM/", -1))
+	resp, err := pmbhandle.ContactPlugin(url, http.MethodPatch, "", "", body, map[string]string{
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})

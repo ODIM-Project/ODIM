@@ -56,6 +56,7 @@ func (p *Plugin) Run() {
 	chassis.Get("/{id}", rest.NewChassisReadingHandler(p.connectionManager))
 	chassis.Delete("/{id}", rest.NewChassisDeletionHandler(p.connectionManager))
 	chassis.Post("", rest.NewCreateChassisHandlerHandler(p.connectionManager, p.pluginConfig))
+	chassis.Patch("/{id}", rest.NewChassisUpdateHandler(p.connectionManager))
 
 	application.Run(
 		iris.TLS(

@@ -84,15 +84,10 @@ func registerHandler() {
 
 	chassisRPC := rpc.NewChassisRPC(
 		services.IsAuthorized,
-		chassis.NewGetCollectionHandler(
-			smodel.GetPluginData,
-			smodel.GetAllKeysFromTable,
-		),
+		chassis.NewGetCollectionHandler(smodel.GetPluginData, smodel.GetAllKeysFromTable),
 		chassis.NewDeleteHandler(plugin.ClientCreator, smodel.Find),
-		chassis.NewGetHandler(
-			plugin.ClientCreator,
-			smodel.Find,
-		),
+		chassis.NewGetHandler(plugin.ClientCreator, smodel.Find),
+		chassis.NewUpdateHandler(plugin.ClientCreator),
 	)
 
 	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)

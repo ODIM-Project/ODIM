@@ -2,8 +2,10 @@ package db
 
 import (
 	"fmt"
-	"github.com/gomodule/redigo/redis"
+	"log"
 	"strings"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -56,6 +58,10 @@ func (c *ConnectionManager) FindByKey(schema, key string) (interface{}, error) {
 	return cs.Do("GET", schema+":"+key)
 }
 
+func (c *ConnectionManager) GetConnection() redis.Conn {
+	return c.pool.Get()
+}
+
 func (c *ConnectionManager) Create(schema, key string, data []byte) *Error {
 	cs := c.pool.Get()
 	defer cs.Close()
@@ -101,7 +107,7 @@ func (c *ConnectionManager) GetAllKeys(schema string) ([]string, error) {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	schema = formatSchemaSufix(schema)
+	schema = formatSchemaSuffix(schema)
 
 	keys, err := cs.Do("KEYS", schema+"*")
 	if err != nil {
@@ -116,10 +122,23 @@ func (c *ConnectionManager) GetAllKeys(schema string) ([]string, error) {
 
 }
 
-func formatSchemaSufix(schema string) string {
+func formatSchemaSuffix(schema string) string {
 	if strings.HasSuffix(schema, ":") {
 		return schema
 	} else {
 		return schema + ":"
 	}
+}
+
+func NewConnectionCloser(conn *redis.Conn) func() {
+	return func() {
+		err := (*conn).Close()
+		if err != nil {
+			log.Print("Error: ", err)
+		}
+	}
+}
+
+func CreateChassisContainsKey(chassisOid string) string {
+	return fmt.Sprintf(":Chassis:%s:contains", chassisOid)
 }

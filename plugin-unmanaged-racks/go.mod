@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/deckarep/golang-set v1.7.1
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect

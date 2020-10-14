@@ -35,6 +35,9 @@ var SupportedConnectionMethodTypes = map[string]bool{
 	"IPMI20":  false,
 }
 
+// ConfigFilePath holds the value of odim config file path
+var ConfigFilePath string
+
 // GetPluginStatus checks the status of given plugin in configured interval
 func GetPluginStatus(plugin agmodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
@@ -85,32 +88,56 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 		log.Printf("error getting connection methods : %v", err.Error())
 		return err
 	}
+	var connectionMethodInfo = make(map[string]agmodel.ConnectionMethod)
+	var connectionMehtodIDMap = make(map[string]string)
+	// Get all existing connectionmethod info store it in above two map
+	for i := 0; i < len(connectionMethodsKeys); i++ {
+		connectionmethod, err := agmodel.GetConnectionMethod(connectionMethodsKeys[i])
+		if err != nil {
+			log.Printf("error getting connection method : %v", err)
+			return err
+		}
+		connectionMethodInfo[connectionMethodsKeys[i]] = connectionmethod
+		connectionMehtodIDMap[connectionmethod.ConnectionMethodType+":"+connectionmethod.ConnectionMethodVariant] = connectionMethodsKeys[i]
+	}
 	for i := 0; i < len(connectionMethodConf); i++ {
-		var present bool
 		if !SupportedConnectionMethodTypes[connectionMethodConf[i].ConnectionMethodType] {
 			log.Printf("Connection method type %v is not supported.", connectionMethodConf[i].ConnectionMethodType)
 			continue
 		}
-		for j := 0; j < len(connectionMethodsKeys); j++ {
-			connectionmethod, err := agmodel.GetConnectionMethod(connectionMethodsKeys[j])
-			if err != nil {
-				log.Printf("error getting connection method : %v", err)
-				return err
-			}
-			if connectionmethod.ConnectionMethodVariant == connectionMethodConf[i].ConnectionMethodVariant {
-				present = true
-				break
-			}
-		}
-		if !present {
+		if connectionMethodID, present := connectionMehtodIDMap[connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant]; present {
+			log.Printf("Connection Method Info with Connection Method Type %s and Connection Method Variant %s alredy present in ODIM", connectionMethodConf[i].ConnectionMethodType, connectionMethodConf[i].ConnectionMethodVariant)
+			delete(connectionMethodInfo, connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
+			delete(connectionMehtodIDMap, connectionMethodID)
+		} else {
 			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
 			connectionMethod := agmodel.ConnectionMethod{
 				ConnectionMethodType:    connectionMethodConf[i].ConnectionMethodType,
 				ConnectionMethodVariant: connectionMethodConf[i].ConnectionMethodVariant,
+				Links: agmodel.Links{
+					AggregationSources: []agmodel.OdataID{},
+				},
 			}
 			err := agmodel.AddConnectionMethod(connectionMethod, connectionMethodURI)
 			if err != nil {
 				log.Printf("error adding connection methods : %v", err.Error())
+				return err
+			}
+		}
+	}
+	// loop thorugh the remaing connection method data from connectionMethodInfo map
+	// delete the connection from ODIM if doesn't manage any aggreation else log the error
+	for connectionMethodID, connectionMethodData := range connectionMethodInfo {
+		if len(connectionMethodData.Links.AggregationSources) > 0 {
+			log.Println("Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
+				" and Connection Method Variant", connectionMethodData.ConnectionMethodType, " managing ", string(len(connectionMethodData.Links.AggregationSources)), " Aggregation Sources it can't be removed")
+
+		} else {
+			log.Println("Removing Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
+				" and Connection Method Variant", connectionMethodData.ConnectionMethodType)
+			err := agmodel.Delete("ConnectionMethod", connectionMethodID, common.OnDisk)
+			if err != nil {
+				log.Printf("error removing connection methods : %v", err.Error())
 				return err
 			}
 		}

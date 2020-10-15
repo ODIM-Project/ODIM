@@ -101,7 +101,7 @@ func storeTestEventDetails(t *testing.T) {
 	}
 
 }
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" && sessionToken != "token" && sessionToken != "token1" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}

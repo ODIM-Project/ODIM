@@ -21,8 +21,8 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
 )
 

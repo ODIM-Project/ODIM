@@ -76,4 +76,7 @@ func TestSetUpMockConfig(t *testing.T) {
 	if len(Data.SupportedPluginTypes) == 0 {
 		t.Error("error: Data.SupportedPluginTypes is not initialized")
 	}
+	if len(Data.ConnectionMethodConf) == 0 {
+		t.Error("error: Data.ConnectionMethodConf is not initialized")
+	}
 }

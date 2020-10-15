@@ -42,3 +42,19 @@ func GetUpdater() *Updater {
 		connector: update.GetExternalInterface(),
 	}
 }
+
+func generateResponse(input interface{}) []byte {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		log.Println("error in unmarshalling response object from util-libs", err.Error())
+	}
+	return bytes
+}
+
+func fillProtoResponse(resp *updateproto.UpdateResponse, data response.RPC) {
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	resp.Header = data.Header
+
+}

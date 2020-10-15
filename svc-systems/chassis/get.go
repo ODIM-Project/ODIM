@@ -43,12 +43,7 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pr, pe := pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
-	if pe != nil {
-		return pe.AsRPCResponse()
-	}
-
-	return pr.AsRPCResponse()
+	return pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
 }
 
 type Get struct {

@@ -5,16 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
-func Create(req *chassisproto.CreateChassisRequest) response.RPC {
+func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	mbc := new(linksManagedByCollection)
 	e := json.Unmarshal(req.RequestBody, mbc)
 	if e != nil {
@@ -51,24 +49,28 @@ func Create(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pluginConfig, dbErr := smodel.GetPluginData(nameCarrier.Name)
-	if dbErr != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, dbErr.Error(), nil, nil)
-	}
-
 	body := new(json.RawMessage)
-	//todo: use translators provided by config
-	e = json.Unmarshal([]byte(strings.Replace(string(req.RequestBody), "/redfish/", "/ODIM/", -1)), body)
+	e = json.Unmarshal(req.RequestBody, body)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pr, pe := plugin.NewClient(pluginConfig).Post("/ODIM/v1/Chassis", body)
+	pc, pe := h.createPluginClient("URP")
 	if pe != nil {
-		return pe.AsRPCResponse()
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, pe.Error(), nil, nil)
 	}
 
-	return pr.AsRPCResponse()
+	return pc.Post("/redfish/v1/Chassis", body)
+}
+
+type Create struct {
+	createPluginClient plugin.ClientFactory
+}
+
+func NewCreateHandler(createPluginClient plugin.ClientFactory) *Create {
+	return &Create{
+		createPluginClient: createPluginClient,
+	}
 }
 
 //{

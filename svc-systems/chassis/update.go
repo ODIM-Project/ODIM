@@ -28,11 +28,7 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 
-	pr, pe := pc.Patch(req.URL, body)
-	if pe != nil {
-		return pe.AsRPCResponse()
-	}
-	return pr.AsRPCResponse()
+	return pc.Patch(req.URL, body)
 }
 
 type Update struct {

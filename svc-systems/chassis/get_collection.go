@@ -1,6 +1,7 @@
 package chassis
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -9,37 +10,36 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 func NewGetCollectionHandler(
-	pdp func(pluginID string) (smodel.Plugin, *errors.Error),
-	imkp func(table string) ([]string, error)) *GetCollectionHandler {
+	pcf plugin.ClientFactory,
+	imkp func(table string) ([]string, error)) *GetCollection {
 
-	return &GetCollectionHandler{
+	return &GetCollection{
 		&sourceProviderImpl{
-			getPluginConfig: pdp,
-			getAllKeys:      imkp,
+			pluginClientFactory: pcf,
+			getAllKeys:          imkp,
 		},
 	}
 }
 
-type GetCollectionHandler struct {
+type GetCollection struct {
 	sourcesProvider sourceProvider
 }
 
-func (h *GetCollectionHandler) Handle() (r response.RPC) {
+func (h *GetCollection) Handle() (r response.RPC) {
 	sources, e := h.sourcesProvider.findSources()
 	if e != nil {
-		return e.AsRPCResponse()
+		return *e
 	}
 
 	allChassisCollection := sresponse.NewChassisCollection()
 	for _, s := range sources {
 		r, e := s.read()
 		if e != nil {
-			return e.AsRPCResponse()
+			return *e
 		}
 		for _, m := range r {
 			allChassisCollection.AddMember(m)
@@ -51,46 +51,44 @@ func (h *GetCollectionHandler) Handle() (r response.RPC) {
 }
 
 type sourceProvider interface {
-	findSources() ([]source, sresponse.Error)
+	findSources() ([]source, *response.RPC)
 }
 
 type sourceProviderImpl struct {
-	getPluginConfig func(pluginID string) (smodel.Plugin, *errors.Error)
-	getAllKeys      func(table string) ([]string, error)
+	pluginClientFactory plugin.ClientFactory
+	getAllKeys          func(table string) ([]string, error)
 }
 
-func (c *sourceProviderImpl) findSources() ([]source, sresponse.Error) {
+func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
 	sources := []source{&managedChassisProvider{c.getAllKeys}}
 
-	pluginConf, dberr := c.getPluginConfig("URP")
+	pc, dberr := c.pluginClientFactory("URP")
 	if dberr != nil {
 		if dberr.ErrNo() == errors.DBKeyNotFound {
 			return sources, nil
 		}
-		return nil, &sresponse.RPCErrorWrapper{
-			RPC: common.GeneralError(http.StatusInternalServerError, response.InternalError, dberr.Error(), nil, nil),
-		}
+		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, dberr.Error(), nil, nil)
+		return nil, &ge
 	}
 
-	sources = append(sources, &unmanagedChassisProvider{pluginConf: &pluginConf})
+	sources = append(sources, &unmanagedChassisProvider{c: pc})
 	return sources, nil
 }
 
 type source interface {
-	read() ([]dmtf.Link, sresponse.Error)
+	read() ([]dmtf.Link, *response.RPC)
 }
 
 type managedChassisProvider struct {
 	inMemoryKeysProvider func(table string) ([]string, error)
 }
 
-func (m *managedChassisProvider) read() ([]dmtf.Link, sresponse.Error) {
+func (m *managedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
 		log.Printf("error getting all keys of ChassisCollection table : %v", e)
-		return nil, &sresponse.RPCErrorWrapper{
-			RPC: common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil),
-		}
+		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return nil, &ge
 	}
 	var r []dmtf.Link
 	for _, key := range keys {
@@ -101,20 +99,19 @@ func (m *managedChassisProvider) read() ([]dmtf.Link, sresponse.Error) {
 }
 
 type unmanagedChassisProvider struct {
-	pluginConf *smodel.Plugin
+	c plugin.Client
 }
 
-func (u unmanagedChassisProvider) read() ([]dmtf.Link, sresponse.Error) {
-	r, e := plugin.NewClient(*u.pluginConf).Get("/ODIM/v1/Chassis")
-	if e != nil {
-		return nil, e
+func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
+	r := u.c.Get("/redfish/v1/Chassis")
+	if r.StatusCode != http.StatusOK {
+		return nil, &r
 	}
 
 	c := new(sresponse.Collection)
-	if e := r.JSON(c); e != nil {
-		return nil, &sresponse.RPCErrorWrapper{
-			RPC: common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil),
-		}
+	if e := json.Unmarshal(r.Body.([]byte), c); e != nil {
+		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
+		return nil, &ge
 	}
 	return c.Members, nil
 }

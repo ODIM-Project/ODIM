@@ -1,7 +1,6 @@
 package chassis
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -10,8 +9,6 @@ import (
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -79,10 +76,7 @@ func TestNewGetHandler_WhenPluginClientFactoryReturnsUnexpectedError(t *testing.
 func TestNewGetHandler_WhenPluginClientReturnsError(t *testing.T) {
 	ppc := new(plugin.ClientMock)
 	ppc.On("Get", mock.AnythingOfType("string")).
-		Return(nil, &sresponse.UnknownErrorWrapper{
-			Error:      fmt.Errorf("errror"),
-			StatusCode: http.StatusInternalServerError,
-		})
+		Return(internalError)
 	sut := NewGetHandler(
 		func(name string) (plugin.Client, *errors.Error) {
 			return ppc, nil
@@ -98,16 +92,14 @@ func TestNewGetHandler_WhenPluginClientReturnsError(t *testing.T) {
 }
 
 func TestNewGetHandler_WhenPluginClientReturnsNonErrorResponse(t *testing.T) {
-	responseMock := new(plugin.ResponseMock)
-	responseMock.On("AsRPCResponse").
-		Return(response.RPC{
-			StatusCode: http.StatusOK,
-			Body:       dmtf.Chassis{},
-		})
-
 	ppc := new(plugin.ClientMock)
 	ppc.On("Get", mock.AnythingOfType("string")).
-		Return(responseMock, nil)
+		Return(
+			response.RPC{
+				StatusCode: http.StatusOK,
+				Body:       dmtf.Chassis{},
+			},
+		)
 
 	sut := NewGetHandler(
 		func(name string) (plugin.Client, *errors.Error) {

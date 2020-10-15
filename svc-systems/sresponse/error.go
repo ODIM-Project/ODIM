@@ -15,11 +15,6 @@
 //Package sresponse ...
 package sresponse
 
-import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-)
-
 //CommonError struct definition
 type CommonError struct {
 	Error ErrorClass `json:"error"`
@@ -39,25 +34,4 @@ type MsgExtendedInfo struct {
 	Message    string `json:"Message"`
 	Severity   string `json:"Severity"`
 	Resolution string `json:"Resolution"`
-}
-
-type Error interface {
-	AsRPCResponse() response.RPC
-}
-
-type RPCErrorWrapper struct {
-	response.RPC
-}
-
-func (r *RPCErrorWrapper) AsRPCResponse() response.RPC {
-	return r.RPC
-}
-
-type UnknownErrorWrapper struct {
-	Error      error
-	StatusCode int
-}
-
-func (e *UnknownErrorWrapper) AsRPCResponse() response.RPC {
-	return common.GeneralError(int32(e.StatusCode), response.InternalError, e.Error.Error(), nil, nil)
 }

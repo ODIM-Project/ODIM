@@ -32,7 +32,8 @@ import (
 
 func NewChassisRPC(
 	authWrapper func(sessionToken string, privileges, oemPrivileges []string) (int32, string),
-	getCollectionHandler *chassis.GetCollectionHandler,
+	createHandler *chassis.Create,
+	getCollectionHandler *chassis.GetCollection,
 	deleteHandler *chassis.Delete,
 	getHandler *chassis.Get,
 	updateHandler *chassis.Update) *ChassisRPC {
@@ -43,16 +44,18 @@ func NewChassisRPC(
 		GetHandler:           getHandler,
 		DeleteHandler:        deleteHandler,
 		UpdateHandler:        updateHandler,
+		CreateHandler:        createHandler,
 	}
 }
 
 // ChassisRPC struct helps to register service
 type ChassisRPC struct {
 	IsAuthorizedRPC      func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
-	GetCollectionHandler *chassis.GetCollectionHandler
+	GetCollectionHandler *chassis.GetCollection
 	GetHandler           *chassis.Get
 	DeleteHandler        *chassis.Delete
 	UpdateHandler        *chassis.Update
+	CreateHandler        *chassis.Create
 }
 
 func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest, resp *chassisproto.GetChassisResponse) (e error) {
@@ -75,7 +78,7 @@ func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.Dele
 
 func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest, resp *chassisproto.GetChassisResponse) error {
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, func() response.RPC {
-		return chassis.Create(req)
+		return cha.CreateHandler.Handle(req)
 	})
 
 	return rewrite(r, resp)

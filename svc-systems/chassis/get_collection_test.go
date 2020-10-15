@@ -2,15 +2,17 @@ package chassis
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
 )
 
 func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
@@ -21,7 +23,7 @@ func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1, source2}, nil)
-	sut := GetCollectionHandler{cspMock}
+	sut := GetCollection{cspMock}
 
 	r := sut.Handle()
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
@@ -39,8 +41,9 @@ func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 
 func Test_GetCollectionHandler_WhenCollectionSourcesCannotBeDetermined(t *testing.T) {
 	cspMock := new(collectionSourceProviderMock)
-	cspMock.On("findSources").Return([]source{}, &sresponse.UnknownErrorWrapper{fmt.Errorf("error"), 500})
-	sut := GetCollectionHandler{cspMock}
+
+	cspMock.On("findSources").Return([]source{}, &internalError)
+	sut := GetCollection{cspMock}
 
 	r := sut.Handle()
 	require.NotEqual(t, http.StatusOK, r.StatusCode)
@@ -49,10 +52,10 @@ func Test_GetCollectionHandler_WhenCollectionSourcesCannotBeDetermined(t *testin
 
 func Test_GetCollectionHandler_WhenFirstSourceReturnsError(t *testing.T) {
 	source1 := new(sourceMock)
-	source1.On("read").Return([]dmtfmodel.Link{}, &sresponse.UnknownErrorWrapper{Error: fmt.Errorf("error"), StatusCode: 500})
+	source1.On("read").Return([]dmtfmodel.Link{}, &internalError)
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1}, nil)
-	sut := GetCollectionHandler{cspMock}
+	sut := GetCollection{cspMock}
 
 	r := sut.Handle()
 	require.NotEqual(t, http.StatusOK, r.StatusCode)
@@ -64,10 +67,10 @@ func Test_GetCollectionHandler_WhenNonFirstSourceReturnsError(t *testing.T) {
 	source1.On("read").Return([]dmtfmodel.Link{{"1"}}, nil)
 
 	source2 := new(sourceMock)
-	source2.On("read").Return([]dmtfmodel.Link{}, &sresponse.UnknownErrorWrapper{Error: fmt.Errorf("error"), StatusCode: 500})
+	source2.On("read").Return([]dmtfmodel.Link{}, &internalError)
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1, source2}, nil)
-	sut := GetCollectionHandler{cspMock}
+	sut := GetCollection{cspMock}
 
 	r := sut.Handle()
 	require.NotEqual(t, http.StatusOK, r.StatusCode)
@@ -76,8 +79,8 @@ func Test_GetCollectionHandler_WhenNonFirstSourceReturnsError(t *testing.T) {
 
 func Test_collectionSourceProvider_whenURPIsNotRegistered(t *testing.T) {
 	sut := sourceProviderImpl{
-		getPluginConfig: func(pluginID string) (smodel.Plugin, *errors.Error) {
-			return smodel.Plugin{}, errors.PackError(errors.DBKeyNotFound, "plugin not found")
+		pluginClientFactory: func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.DBKeyNotFound, "plugin not found")
 		},
 	}
 
@@ -88,9 +91,10 @@ func Test_collectionSourceProvider_whenURPIsNotRegistered(t *testing.T) {
 }
 
 func Test_collectionSourceProvider_whenURPIsRegistered(t *testing.T) {
+	cm := new(plugin.ClientMock)
 	sut := sourceProviderImpl{
-		getPluginConfig: func(pluginID string) (smodel.Plugin, *errors.Error) {
-			return smodel.Plugin{}, nil
+		pluginClientFactory: func(name string) (plugin.Client, *errors.Error) {
+			return cm, nil
 		},
 	}
 
@@ -103,8 +107,8 @@ func Test_collectionSourceProvider_whenURPIsRegistered(t *testing.T) {
 
 func Test_collectionSourceProvider_whenURPIsRegisteredAndUnderlyingDBReturnsError(t *testing.T) {
 	sut := sourceProviderImpl{
-		getPluginConfig: func(pluginID string) (smodel.Plugin, *errors.Error) {
-			return smodel.Plugin{}, errors.PackError(errors.UndefinedErrorType, "unexpected error")
+		pluginClientFactory: func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.UndefinedErrorType, "unexpected error")
 		},
 	}
 
@@ -156,23 +160,23 @@ type collectionSourceProviderMock struct {
 	mock.Mock
 }
 
-func (c *collectionSourceProviderMock) findSources() ([]source, sresponse.Error) {
+func (c *collectionSourceProviderMock) findSources() ([]source, *response.RPC) {
 	args := c.Mock.Called()
 	return args.Get(0).([]source), getErrorOrNil(args.Get(1))
 }
 
-func getErrorOrNil(a interface{}) sresponse.Error {
+func getErrorOrNil(a interface{}) *response.RPC {
 	if a == nil {
 		return nil
 	}
-	return a.(sresponse.Error)
+	return a.(*response.RPC)
 }
 
 type sourceMock struct {
 	mock.Mock
 }
 
-func (s *sourceMock) read() ([]dmtfmodel.Link, sresponse.Error) {
+func (s *sourceMock) read() ([]dmtfmodel.Link, *response.RPC) {
 	args := s.Mock.Called()
 	return args.Get(0).([]dmtfmodel.Link), getErrorOrNil(args.Get(1))
 }

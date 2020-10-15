@@ -82,12 +82,14 @@ func registerHandler() {
 	systemRPC.EI = systems.GetExternalInterface()
 	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
 
+	pcf := plugin.NewClientFactory(config.Data.URLTranslation)
 	chassisRPC := rpc.NewChassisRPC(
 		services.IsAuthorized,
-		chassis.NewGetCollectionHandler(smodel.GetPluginData, smodel.GetAllKeysFromTable),
-		chassis.NewDeleteHandler(plugin.ClientCreator, smodel.Find),
-		chassis.NewGetHandler(plugin.ClientCreator, smodel.Find),
-		chassis.NewUpdateHandler(plugin.ClientCreator),
+		chassis.NewCreateHandler(pcf),
+		chassis.NewGetCollectionHandler(pcf, smodel.GetAllKeysFromTable),
+		chassis.NewDeleteHandler(pcf, smodel.Find),
+		chassis.NewGetHandler(pcf, smodel.Find),
+		chassis.NewUpdateHandler(pcf),
 	)
 
 	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)

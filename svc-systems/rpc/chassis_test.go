@@ -124,12 +124,13 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 func TestChassis_GetAllChassis(t *testing.T) {
 	cha := NewChassisRPC(
 		mockIsAuthorized,
+		nil,
 		chassis.NewGetCollectionHandler(
-			func(pluginID string) (smodel.Plugin, *errors.Error) {
-				return smodel.Plugin{}, errors.PackError(errors.DBKeyNotFound, "error")
+			func(name string) (plugin.Client, *errors.Error) {
+				return nil, errors.PackError(errors.DBKeyNotFound, "error")
 			}, func(table string) ([]string, error) {
 				return []string{}, nil
-			}), nil, nil)
+			}), nil, nil, nil)
 
 	type args struct {
 		ctx  context.Context

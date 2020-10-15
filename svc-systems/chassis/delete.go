@@ -28,11 +28,7 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pr, pe := c.Delete(req.URL)
-	if pe != nil {
-		return pe.AsRPCResponse()
-	}
-	return pr.AsRPCResponse()
+	return c.Delete(req.URL)
 }
 
 func NewDeleteHandler(createPluginClient plugin.ClientFactory, finder func(Table string, key string, r interface{}) *errors.Error) *Delete {

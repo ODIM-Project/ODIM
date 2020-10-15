@@ -226,7 +226,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: SystemUUID not found", []interface{}{"System", "24b243cf-f1e3-5318-92d9-2d6737d6b0b"}, nil),
 		},
 		{
 			name: "if plugin id is not there in the db",

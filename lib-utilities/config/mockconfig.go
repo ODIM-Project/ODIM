@@ -253,6 +253,16 @@ func SetUpMockConfig(t *testing.T) error {
 		},
 	}
 	Data.SupportedPluginTypes = []string{"Compute", "Fabric"}
+	Data.ConnectionMethodConf = []ConnectionMethodConf{
+		{
+			ConnectionMethodType:    "Redfish",
+			ConnectionMethodVariant: "Compute:BasicAuth:GRF:1.0.0",
+		},
+		{
+			ConnectionMethodType:    "Redfish",
+			ConnectionMethodVariant: "Storage:BasicAuth:STG:1.0.0",
+		},
+	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion)
 	SetTLSMaxVersion(Data.TLSConf.MaxVersion)

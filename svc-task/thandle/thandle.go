@@ -716,7 +716,7 @@ func fillProtoResponse(resp *taskproto.TaskResponse, data response.RPC) {
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
 	resp.Header = data.Header
-	
+
 }
 
 // CreateTaskUtil Create the New Task and persist in in-memory DB and return task ID and error

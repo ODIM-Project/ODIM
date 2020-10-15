@@ -16,8 +16,8 @@
 package auth
 
 import (
-	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	micro "github.com/micro/go-micro"
 )
 

@@ -52,10 +52,10 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		fillProtoResponse(rsp, authResp)
 		return nil
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		log.Printf(authErrorMessage)
-		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		return nil
 	}
 	// get task status from database using task id

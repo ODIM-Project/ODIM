@@ -28,7 +28,6 @@ import (
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
 	"github.com/ODIM-Project/ODIM/svc-api/response"
-
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -553,7 +552,7 @@ func GetMetadata(ctx iris.Context) {
 
 // Registry defines Auth which helps with authorization
 type Registry struct {
-	Auth func(string, []string, []string) response.RPC
+	Auth func(string, []string, []string) errResponse.RPC
 }
 
 //GetRegistryFileCollection is show available collection of registry files.

@@ -17,8 +17,9 @@ package session
 
 import (
 	"encoding/json"
-
+	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -26,7 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	uuid "github.com/satori/go.uuid"
-
 	"log"
 	"net/http"
 	"time"
@@ -88,7 +88,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 			resp.StatusMessage = response.CouldNotEstablishConnection
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
-			errorArgs[0].MessageArgs = []interface{}{""}
+			errorArgs[0].MessageArgs = []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.OnDiskHost, config.Data.DBConf.OnDiskPort)}
 			resp.Body = args.CreateGenericErrorResponse()
 		} else {
 			return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil), ""

@@ -51,7 +51,7 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp := a.connector.(req.SessionToken, privileges, oemprivileges)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		log.Printf("error while trying to authenticate session")
 		generateResponse(authResp, resp)

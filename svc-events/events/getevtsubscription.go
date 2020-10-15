@@ -39,17 +39,10 @@ import (
 // GetEventSubscriptionsDetails collects subscription data against given subscription id
 func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authStatusCode, authStatusMessage := p.Auth(
-		req.SessionToken,
-		[]string{
-			common.PrivilegeConfigureComponents,
-		},
-		[]string{},
-	)
-	if authStatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authStatusCode, authStatusMessage)
-		log.Printf(errMsg)
-		return common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil)
+	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return authResp
 	}
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",
@@ -126,17 +119,10 @@ func updateOriginResourceswithOdataID(originResources []string) []evresponse.Lis
 // GetEventSubscriptionsCollection collects all subscription details
 func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRequest) response.RPC {
 	var resp response.RPC
-	authStatusCode, authStatusMessage := p.Auth(
-		req.SessionToken,
-		[]string{
-			common.PrivilegeConfigureComponents,
-		},
-		[]string{},
-	)
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		log.Printf(errorMessage)
-		return common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return authResp
 	}
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",

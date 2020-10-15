@@ -193,7 +193,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RAIDType":"RAID0",
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b:1/Storage/ArrayControllers-0/Drives/0"}]}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
 			p:    pluginContact,
@@ -309,7 +309,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusBadRequest,
+			wantStatusCode: http.StatusNotFound,
 		},
 		{
 			name: "without system id",
@@ -320,7 +320,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 				VolumeID:        "1",
 				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
 			},
-			wantStatusCode: http.StatusBadRequest,
+			wantStatusCode: http.StatusNotFound,
 		},
 		{
 			name: "Invalid volume id",

@@ -553,7 +553,7 @@ func GetMetadata(ctx iris.Context) {
 
 // Registry defines Auth which helps with authorization
 type Registry struct {
-	Auth func(string, []string, []string) (int32, string)
+	Auth func(string, []string, []string) response.RPC
 }
 
 //GetRegistryFileCollection is show available collection of registry files.
@@ -569,18 +569,15 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authStatusCode, authStatusMessage :=
-		r.Auth(sessionToken,
-			[]string{common.PrivilegeLogin},
-			[]string{})
-	if authStatusCode != http.StatusOK {
+	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
 		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+		response := common.GeneralError(authResp.StatusCode, authResp.StatusMessage, errorMessage, nil, nil)
 		responseBody, _ := json.Marshal(response.Body)
 		responseHeader := map[string]string{
 			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 		}
-		ctx.StatusCode(int(authStatusCode))
+		ctx.StatusCode(int(authResp.StatusCode))
 		SetResponseHeaders(ctx, responseHeader)
 		ctx.Write(responseBody)
 		log.Printf(errorMessage)
@@ -661,18 +658,15 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authStatusCode, authStatusMessage :=
-		r.Auth(sessionToken,
-			[]string{common.PrivilegeLogin},
-			[]string{})
-	if authStatusCode != http.StatusOK {
+	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
 		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+		response := common.GeneralError(authResp.StatusCode, authResp.StatusMessage, errorMessage, nil, nil)
 		responseBody, _ := json.Marshal(response.Body)
 		responseHeader := map[string]string{
 			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 		}
-		ctx.StatusCode(int(authStatusCode))
+		ctx.StatusCode(int(authResp.StatusCode))
 		SetResponseHeaders(ctx, responseHeader)
 		ctx.Write(responseBody)
 		log.Printf(errorMessage)
@@ -772,18 +766,15 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authStatusCode, authStatusMessage :=
-		r.Auth(sessionToken,
-			[]string{common.PrivilegeLogin},
-			[]string{})
-	if authStatusCode != http.StatusOK {
+	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
 		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
+		response := common.GeneralError(authResp.StatusCode, authResp.StatusMessage, errorMessage, nil, nil)
 		responseBody, _ := json.Marshal(response.Body)
 		responseHeader := map[string]string{
 			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 		}
-		ctx.StatusCode(int(authStatusCode))
+		ctx.StatusCode(int(authResp.StatusCode))
 		SetResponseHeaders(ctx, responseHeader)
 		ctx.Write(responseBody)
 		log.Printf(errorMessage)

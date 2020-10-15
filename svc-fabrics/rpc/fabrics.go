@@ -24,11 +24,12 @@ import (
 
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // Fabrics struct helps to register service
 type Fabrics struct {
-	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC  func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
 	ContactClientRPC func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 

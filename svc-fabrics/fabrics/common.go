@@ -35,7 +35,7 @@ import (
 
 // Fabrics struct helps to hold the behaviours
 type Fabrics struct {
-	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) (int32, string)
+	Auth          func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
 	ContactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
@@ -275,13 +275,11 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	var contactRequest pluginContactRequest
 	var resp response.RPC
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		var errorMessage = "error while trying to authenticate session"
-		log.Println(errorMessage)
-		resp = common.GeneralError(authStatusCode, authStatusMessage, errorMessage,
-			[]interface{}{}, nil)
-		return contactRequest, resp, fmt.Errorf(errorMessage)
+	authResp := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		errMsg := "error while trying to authenticate session"
+		log.Println(errMsg)
+		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}
 
 	if req.URL == "/redfish/v1/Fabrics" {

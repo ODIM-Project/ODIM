@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) responce.RPC {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 	}

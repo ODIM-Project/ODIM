@@ -16,7 +16,6 @@ package rpc
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -33,7 +32,7 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 // GetFirmwareInventoryCollection an rpc handler which is invoked during GET on firmware inventory collection
 func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
+	if authResp.StatusCode != http.StatusOK {
 		log.Println("error while trying to authenticate session")
 		fillProtoResponse(resp, authResp)
 		return nil
@@ -71,7 +70,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Println("error while trying to authenticate session")
-		fillProtoResponse(authResp)
+		fillProtoResponse(resp, authResp)
 		return nil
 	}
 	fillProtoResponse(resp, a.connector.GetSoftwareInventory(req))

@@ -573,7 +573,7 @@ func TestGetSystems(t *testing.T) {
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
 				},
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
@@ -700,7 +700,7 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
 				},
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},

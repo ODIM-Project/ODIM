@@ -37,12 +37,12 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	requestData := strings.Split(systemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", systemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", systemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
@@ -123,12 +123,12 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 
 	var biosSetting BiosSetting
@@ -225,7 +225,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 
 	var bootOrderSettings BootOrderSettings
@@ -254,7 +254,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	decryptedPasswordByte, err := p.DevicePassword(target.Password)
 	if err != nil {

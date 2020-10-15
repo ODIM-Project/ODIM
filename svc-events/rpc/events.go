@@ -35,7 +35,7 @@ import (
 //Events struct helps to register service
 type Events struct {
 	ContactClientRPC      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
 	GetSessionUserNameRPC func(sessionToken string) (string, error)
 	CreateTaskRPC         func(string) (string, error)
 	UpdateTaskRPC         func(task common.TaskData) error

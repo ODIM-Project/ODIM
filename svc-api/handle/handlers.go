@@ -570,16 +570,10 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authResp.StatusCode, authResp.StatusMessage, errorMessage, nil, nil)
-		responseBody, _ := json.Marshal(response.Body)
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
+		log.Printf("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
-		SetResponseHeaders(ctx, responseHeader)
-		ctx.Write(responseBody)
-		log.Printf(errorMessage)
+		SetResponseHeaders(ctx, authResp.Header)
+		ctx.JSON(authResp.Body)
 		return
 	}
 
@@ -659,16 +653,10 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authResp.StatusCode, authResp.StatusMessage, errorMessage, nil, nil)
-		responseBody, _ := json.Marshal(response.Body)
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
+		log.Printf("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
-		SetResponseHeaders(ctx, responseHeader)
-		ctx.Write(responseBody)
-		log.Printf(errorMessage)
+		SetResponseHeaders(ctx, authResp.Header)
+		ctx.JSON(authResp.Body)
 		return
 	}
 	var headers = map[string]string{
@@ -767,16 +755,10 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authResp.StatusCode, authResp.StatusMessage, errorMessage, nil, nil)
-		responseBody, _ := json.Marshal(response.Body)
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
+		log.Printf("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
-		SetResponseHeaders(ctx, responseHeader)
-		ctx.Write(responseBody)
-		log.Printf(errorMessage)
+		SetResponseHeaders(ctx, authResp.Header)
+		ctx.JSON(authResp.Body)
 		return
 	}
 	var headers = map[string]string{

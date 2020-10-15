@@ -65,12 +65,12 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	// Validating the storage instance
 	if strings.TrimSpace(req.StorageInstance) == "" {
@@ -281,12 +281,12 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) != 2 || requestData[1] == "" {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	// Validating the storage instance
 	if strings.TrimSpace(req.VolumeID) == "" {

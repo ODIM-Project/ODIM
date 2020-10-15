@@ -353,10 +353,10 @@ password: GRFPlug!n12$4
   
 #  Modifying default configuration parameters for the resource aggregator
 
-1.   Navigate to the `odimra_1` container using the following command: 
+1.   Navigate to the `build_odimra_1` container using the following command: 
 
       ```
-     $ docker exec -it odimra_1/bin/bash
+     $ docker exec -it build_odimra_1/bin/bash
      ```
 
 2.   Edit the parameters in the `odimra_config.json` file located in this path:   `/etc/odimra_config/odimra_config.json` and save. 
@@ -403,7 +403,7 @@ password: GRFPlug!n12$4
 4.   Restart Docker using the following command: 
 
      ```
-     $ docker restart odim_1
+     $ docker restart build_odimra_1
       ```
     
    
@@ -428,7 +428,19 @@ During the course of this procedure, you will be required to create files and co
 **Procedure**
 --------------
 
-1.   In the home directory of odimra user, create a hidden directory called .docker, and then create a file called config.json. 
+1.   In the home directory of odimra user, create a hidden directory called .docker, and then create a file called config.json inside it.
+
+      ```
+       mkdir .docker
+      ```
+
+      ```
+       cd .docker
+      ```
+
+      ```
+       vi config.json
+      ```	   
 
 2.   Add the following content in the config.json file and save: 
 

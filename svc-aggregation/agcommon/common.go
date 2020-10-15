@@ -108,8 +108,8 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 		}
 		if connectionMethodID, present := connectionMehtodIDMap[connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant]; present {
 			log.Printf("Connection Method Info with Connection Method Type %s and Connection Method Variant %s alredy present in ODIM", connectionMethodConf[i].ConnectionMethodType, connectionMethodConf[i].ConnectionMethodVariant)
-			delete(connectionMethodInfo, connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
-			delete(connectionMehtodIDMap, connectionMethodID)
+			delete(connectionMehtodIDMap, connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
+			delete(connectionMethodInfo, connectionMethodID)
 		} else {
 			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
 			connectionMethod := agmodel.ConnectionMethod{
@@ -124,10 +124,11 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 				log.Printf("error adding connection methods : %v", err.Error())
 				return err
 			}
+			log.Printf("Connection Method Info with Connection Method Type %s and Connection Method Variant %s added to ODIM", connectionMethodConf[i].ConnectionMethodType, connectionMethodConf[i].ConnectionMethodVariant)
 		}
 	}
 	// loop thorugh the remaing connection method data from connectionMethodInfo map
-	// delete the connection from ODIM if doesn't manage any aggreation else log the error
+	// delete the connection from ODIM if doesn't manage any aggreation source  else log the error
 	for connectionMethodID, connectionMethodData := range connectionMethodInfo {
 		if len(connectionMethodData.Links.AggregationSources) > 0 {
 			log.Println("Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
@@ -135,7 +136,7 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 
 		} else {
 			log.Println("Removing Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
-				" and Connection Method Variant", connectionMethodData.ConnectionMethodType)
+				" and Connection Method Variant", connectionMethodData.ConnectionMethodVariant)
 			err := agmodel.Delete("ConnectionMethod", connectionMethodID, common.OnDisk)
 			if err != nil {
 				log.Printf("error removing connection methods : %v", err.Error())
@@ -147,13 +148,12 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 }
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-// When any files changes events recived it will reload the configuration and verify the existing events
+// Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
 func TrackConfigFileChanges() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer watcher.Close()
 	err = watcher.Add(ConfigFilePath)
 	if err != nil {
 		log.Fatal(err)
@@ -163,25 +163,28 @@ func TrackConfigFileChanges() {
 			select {
 			case fileEvent, ok := <-watcher.Events:
 				if !ok {
-					return
+					continue
 				}
 				log.Println("event:", fileEvent)
-				if fileEvent.Op&fsnotify.Write == fsnotify.Write {
+				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
 					log.Println("modified file:", fileEvent.Name)
 					// update the odim config
 					if err := config.SetConfiguration(); err != nil {
 						log.Printf("error while trying to set configuration: %v", err)
 					}
-					err = AddConnectionMethods(config.Data.ConnectionMethodConf)
+					err := AddConnectionMethods(config.Data.ConnectionMethodConf)
 					if err != nil {
-						log.Printf("error while trying to Add connection methods: %v", err)
+						log.Printf("error while trying to Add connection methods: %s", err)
 					}
-
 				}
+				//Readding file to continue the watch
+				watcher.Add(ConfigFilePath)
 			case err, _ := <-watcher.Errors:
-				log.Println("error:", err)
+				if err != nil {
+					log.Println(err)
+					defer watcher.Close()
+				}
 			}
 		}
 	}()
-
 }

@@ -23,8 +23,8 @@ import (
 	"net/http"
 
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
-	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
 )
 
 // Fabrics struct helps to register service

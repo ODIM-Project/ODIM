@@ -80,10 +80,11 @@ func main() {
 		UpdateTask:      system.UpdateTaskData,
 	}
 	go p.RediscoverResources()
-	agmodel.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
-	if agmodel.ConfigFilePath == "" {
-		return log.Fatalf("error: no value get the environment variable CONFIG_FILE_PATH")
+	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
+	if agcommon.ConfigFilePath == "" {
+		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
+	go agcommon.TrackConfigFileChanges()
 	if err = services.Service.Run(); err != nil {
 		log.Fatalf("failed to run a service: %v", err)
 	}

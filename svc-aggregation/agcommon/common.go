@@ -22,6 +22,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/fsnotify/fsnotify"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -143,4 +144,44 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 		}
 	}
 	return nil
+}
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+// When any files changes events recived it will reload the configuration and verify the existing events
+func TrackConfigFileChanges() {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+	err = watcher.Add(ConfigFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	go func() {
+		for {
+			select {
+			case fileEvent, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				log.Println("event:", fileEvent)
+				if fileEvent.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("modified file:", fileEvent.Name)
+					// update the odim config
+					if err := config.SetConfiguration(); err != nil {
+						log.Printf("error while trying to set configuration: %v", err)
+					}
+					err = AddConnectionMethods(config.Data.ConnectionMethodConf)
+					if err != nil {
+						log.Printf("error while trying to Add connection methods: %v", err)
+					}
+
+				}
+			case err, _ := <-watcher.Errors:
+				log.Println("error:", err)
+			}
+		}
+	}()
+
 }

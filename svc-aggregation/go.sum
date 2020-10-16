@@ -43,16 +43,9 @@ github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf/
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727091052-cb7db65624ce/go.mod h1:kvWozdwrn+nfJmxQB5o2hruNU4K2c0CLn5r5UrdJp/M=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727110501-4599893e44fd/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200925145026-eac0549d2f51/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200930102352-fdedf684cec7 h1:FEhcYlaIzcRCK/qKlfwnmRJ6+DNO59RklItToVa1/Gk=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200930102352-fdedf684cec7/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201008091728-c32d76636ee1 h1:iWsLi261NpngxHoKTnAPLGq5imknkK7mxIWdZQWK5oE=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201008091728-c32d76636ee1/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201009052423-b3d4beccdb41 h1:SwuydwZlz6aFkMWx7SQXcI1S8kxuxXMXFWXT2wBoPcc=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201009052423-b3d4beccdb41/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201012075046-3c059402892a h1:FmXQUxd4lLbDrjEpJCljpWkyK2Hcozur4NbgdKkCoDE=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201012075046-3c059402892a/go.mod h1:EY3r2ljrLgEkB5zP7zJbq7/YEn24PaBc3oLr4YVX40w=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201015111324-83393fdedb82 h1:2TOpMRuktYGOPS+IiuJdrM/aFepk6vEqFT6m1t6Zt6E=
-github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201015111324-83393fdedb82/go.mod h1:EY3r2ljrLgEkB5zP7zJbq7/YEn24PaBc3oLr4YVX40w=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201016064732-c652b5935f93 h1:KrEB61iFFDwlOaFW/H4CEoJv6WIMl8JVeqmCMW5/UtA=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201016064732-c652b5935f93/go.mod h1:EY3r2ljrLgEkB5zP7zJbq7/YEn24PaBc3oLr4YVX40w=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87/go.mod h1:iGLljf5n9GjT6kc0HBvyI1nOKnGQbNB66VzSNbK5iks=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 h1:WDC6ySpJzbxGWFh4aMxFFC28wwGp5pEuoTtvA4q/qQ4=
@@ -146,6 +139,8 @@ github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI
 github.com/forestgiant/sliceutil v0.0.0-20160425183142-94783f95db6c/go.mod h1:pFdJbAhRf7rh6YYMUdIQGyzne6zYL1tCUW8QV2B3UfY=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
+github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
+github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsouza/go-dockerclient v1.4.4/go.mod h1:PrwszSL5fbmsESocROrOGq/NULMXRw+bajY0ltzD6MA=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gliderlabs/ssh v0.2.2/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aevW3Awn0=
@@ -641,6 +636,7 @@ golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20190710143415-6ec70d6a5542/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190726091711-fc99dfbffb4e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190801041406-cbf593c0f2f3/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd h1:xhmwyvizuTgC2qz7ZlMluP20uW+C3Rm0FD/WLDX8884=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

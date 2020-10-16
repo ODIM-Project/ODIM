@@ -277,7 +277,7 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	defer writeConn.Close()
 
 	value, readErr := p.Read(table, key)
-	if readErr.ErrNo() == errors.DBConnFailed  {
+	if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
 		return errors.PackError(readErr.ErrNo(), "error: db connection failed")
 	}
 	if value != "" {

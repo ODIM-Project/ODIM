@@ -20,6 +20,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
@@ -52,7 +53,7 @@ type Plugin struct {
 // External struct holds the function pointers all outboud services
 type External struct {
 	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth           func(string, []string, []string) (int32, string)
+	Auth           func(string, []string, []string) response.RPC
 	DevicePassword func([]byte) ([]byte, error)
 	GetPluginData  func(string) (umodel.Plugin, *errors.Error)
 	ContactPlugin  func(ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)

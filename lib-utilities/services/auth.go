@@ -17,9 +17,12 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	errResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -28,10 +31,8 @@ import (
 // IsAuthorized is used to authorize the services using svc-account-session.
 // As parameters session token, privileges and oem privileges are passed.
 // A RPC call is made with these parameters to the Account-Session service
-// to check whether the session is valid and have all the privileges which are
-// passed to it. After the RPC response, the function will return status code and
-// status message back to the caller.
-func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+// to check whether the session is valid and have all the privileges which are passed to it.
+func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errResponse.RPC {
 	asService := authproto.NewAuthorizationService(AccountSession, Service.Client())
 	response, err := asService.IsAuthorized(
 		context.TODO(),
@@ -42,10 +43,15 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int3
 		},
 	)
 	if err != nil && response == nil {
-		log.Printf("error: something went wrong with rpc call: %v", err)
-		return http.StatusInternalServerError, errResponse.InternalError
+		errMsg := fmt.Sprintf("error: rpc call failed: %v", err)
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
 	}
-	return response.StatusCode, response.StatusMessage
+	var msgArgs []interface{}
+	if response.StatusCode == http.StatusServiceUnavailable {
+		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort))
+	}
+	return common.GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs, nil)
 }
 
 // GetSessionUserName will get user name from the session token by rpc call to account-session service

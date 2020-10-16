@@ -55,13 +55,18 @@ type configModel struct {
 
 // DBConf holds all DB related configurations
 type DBConf struct {
-	Protocol       string `json:"Protocol"`
-	InMemoryHost   string `json:"InMemoryHost"`
-	InMemoryPort   string `json:"InMemoryPort"`
-	OnDiskHost     string `json:"OnDiskHost"`
-	OnDiskPort     string `json:"OnDiskPort"`
-	MaxIdleConns   int    `json:"MaxIdleConns"`
-	MaxActiveConns int    `json:"MaxActiveConns"`
+	Protocol             string `json:"Protocol"`
+	InMemoryHost         string `json:"InMemoryHost"`
+	InMemoryPort         string `json:"InMemoryPort"`
+	OnDiskHost           string `json:"OnDiskHost"`
+	OnDiskPort           string `json:"OnDiskPort"`
+	MaxIdleConns         int    `json:"MaxIdleConns"`
+	MaxActiveConns       int    `json:"MaxActiveConns"`
+	RedisHAEnabled       bool   `json:"RedisHAEnabled"`
+	InMemorySentinelPort string `json:"InMemorySentinelPort"`
+	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
+	InMemoryMasterSet    string `json:"InMemoryMasterSet"`
+	OnDiskMasterSet      string `json:"OnDiskMasterSet"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -255,6 +260,27 @@ func checkDBConf() error {
 	if Data.DBConf.MaxIdleConns == 0 {
 		log.Println("warn: no value configured for MaxIdleConns, setting default value")
 		Data.DBConf.MaxIdleConns = DefaultDBMaxIdleConns
+	}
+	if Data.DBConf.RedisHAEnabled {
+		if err := checkDBHAConf(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkDBHAConf() error {
+	if Data.DBConf.InMemorySentinelPort == "" {
+		return fmt.Errorf("error: no value configured for DB InMemorySentinelPort")
+	}
+	if Data.DBConf.OnDiskSentinelPort == "" {
+		return fmt.Errorf("error: no value configured for DB OnDiskSentinelPort")
+	}
+	if Data.DBConf.InMemoryMasterSet == "" {
+		return fmt.Errorf("error: no value configured for DB InMemoryMasterSet")
+	}
+	if Data.DBConf.OnDiskMasterSet == "" {
+		return fmt.Errorf("error: no value configured for DB OnDiskMasterSet")
 	}
 	return nil
 }

@@ -35,7 +35,7 @@ import (
 //Events struct helps to register service
 type Events struct {
 	ContactClientRPC      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
 	GetSessionUserNameRPC func(sessionToken string) (string, error)
 	CreateTaskRPC         func(string) (string, error)
 	UpdateTaskRPC         func(task common.TaskData) error
@@ -68,14 +68,12 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := e.IsAuthorizedRPC(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authStatusCode, authStatusMessage)
-		log.Printf(errMsg)
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.StatusMessage = authStatusMessage
-		resp.StatusCode = rpcResp.StatusCode
+	authResp := e.IsAuthorizedRPC(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		resp.Body = generateResponse(authResp.Body)
+		resp.StatusMessage = authResp.StatusMessage
+		resp.StatusCode = authResp.StatusCode
 		return nil
 	}
 	// Check whether the Event Service is enbaled in configuration file.
@@ -172,19 +170,11 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		GetSessionUserName: e.GetSessionUserNameRPC,
 	}
 	// Athorize the request here
-	authStatusCode, authStatusMessage := e.IsAuthorizedRPC(
-		req.SessionToken,
-		[]string{
-			common.PrivilegeConfigureComponents,
-		},
-		[]string{},
-	)
-	if authStatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session: status code: %v, status message: %v", authStatusCode, authStatusMessage)
-		log.Printf(errMsg)
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.StatusCode = rpcResp.StatusCode
+	authResp := e.IsAuthorizedRPC(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		resp.Body = generateResponse(authResp.Body)
+		resp.StatusCode = authResp.StatusCode
 		return nil
 	}
 	sessionUserName, err := pc.GetSessionUserName(req.SessionToken)

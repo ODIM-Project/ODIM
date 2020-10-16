@@ -16,6 +16,7 @@
 package auth
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	micro "github.com/micro/go-micro"
 )
@@ -28,7 +29,7 @@ func init() {
 }
 
 // Authentication is used to authenticate using session token from svc-account-session
-func Authentication(sessionToken string, privileges []string) (int32, string) {
+func Authentication(sessionToken string, privileges []string) response.RPC {
 	oemprivileges := []string{}
 	return srv.IsAuthorized(sessionToken, privileges, oemprivileges)
 }

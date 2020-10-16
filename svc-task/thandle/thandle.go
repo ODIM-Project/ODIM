@@ -42,7 +42,7 @@ const (
 // AuthenticationRPC is used to authorize user and privileges
 // GetTaskStatusModel get task status
 type TasksRPC struct {
-	AuthenticationRPC                func(sessionToken string, privileges []string) (int32, string)
+	AuthenticationRPC                func(sessionToken string, privileges []string) response.RPC
 	GetSessionUserNameRPC            func(sessionToken string) (string, error)
 	GetTaskStatusModel               func(taskID string, db common.DbType) (*tmodel.Task, error)
 	GetAllTaskKeysModel              func() ([]string, error)
@@ -103,6 +103,7 @@ func (ts *TasksRPC) OverWriteCompletedTaskUtil(userName string) error {
 	}
 	return nil
 }
+
 func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 	task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 	if err != nil {
@@ -172,10 +173,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	}
 	if err != nil {
 		errorMessage := "error max retries exceeded for TaskCancel Transaction: " + err.Error()
-		// Frame the response body below to send back to the user
-		rsp.StatusCode = http.StatusInternalServerError
-		rsp.StatusMessage = response.InternalError
-		rsp.Body = generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
 		log.Printf(errorMessage)
 		return nil
 	}
@@ -248,24 +246,19 @@ func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 	}
 
 }
+
 func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) (*tmodel.Task, error) {
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, nil, nil)
-		rsp.Body = generateResponse(rpcResp.Body)
-		rsp.Header = rpcResp.Header
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		fillProtoResponse(rsp, authResp)
 		log.Printf(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
 	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
-		rsp.StatusCode = http.StatusUnauthorized
-		rsp.StatusMessage = response.NoValidSession
-		rsp.Body = generateResponse(common.GeneralError(rsp.StatusCode, rsp.StatusMessage, authErrorMessage, nil, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		log.Printf(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
 
@@ -274,9 +267,7 @@ func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *tas
 	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
 	if err != nil {
 		log.Printf("error getting task status : %v", err)
-		rsp.StatusCode = http.StatusNotFound
-		rsp.StatusMessage = response.ResourceNotFound
-		rsp.Body = generateResponse(common.GeneralError(rsp.StatusCode, rsp.StatusMessage, err.Error(), []interface{}{"Task", req.TaskID}, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return nil, err
 	}
 	//Compare the task username with requesting session user name.
@@ -284,17 +275,16 @@ func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *tas
 	//is an Admin(PrivilegeConfigureUsers). If he is admin then proceed.
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-		if authStatusCode != http.StatusOK {
-			rsp.StatusCode = authStatusCode
-			rsp.StatusMessage = authStatusMessage
-			rsp.Body = generateResponse(common.GeneralError(rsp.StatusCode, rsp.StatusMessage, authErrorMessage, nil, nil))
+		authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+		if authResp.StatusCode != http.StatusOK {
+			fillProtoResponse(rsp, authResp)
 			log.Printf(authErrorMessage)
 			return nil, fmt.Errorf(authErrorMessage)
 		}
 	}
 	return task, nil
 }
+
 func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 	task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 	if err != nil {
@@ -347,8 +337,8 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 	}
 
 	return nil
-
 }
+
 func (ts *TasksRPC) asyncTaskDelete(taskID string) {
 	//Polling for the taskstate.
 	//If the taskstate becomes Cancelled, then this means the thread associated with this task exited succefully,
@@ -412,57 +402,38 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 
 	rsp.Body = generateResponse(taskResp)
 	return nil
-
 }
 
 //GetSubTask is an API end point to get the subtask details
 func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
 	constructCommonResponseHeader(rsp)
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		if authStatusCode == http.StatusServiceUnavailable {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		} else {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, nil, nil).Body)
-		}
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
 		log.Printf(authErrorMessage)
+		fillProtoResponse(rsp, authResp)
 		return nil
 	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		// handle the error case with appropriate response body
-		rsp.StatusCode = http.StatusUnauthorized
-		rsp.StatusMessage = response.NoValidSession
-		rsp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		log.Printf(authErrorMessage)
 		return nil
-
 	}
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.SubTaskID, common.InMemory)
 	if err != nil {
 		log.Printf("error getting sub task status : %v", err)
-		rsp.StatusCode = http.StatusNotFound
-		rsp.StatusMessage = response.ResourceNotFound
-		rsp.Body = generateResponse(common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.SubTaskID}, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.SubTaskID}, nil))
 		return nil
 	}
 	//Compare the task username with requesting session user name
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
-		authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-		if authStatusCode != http.StatusOK {
-			rsp.StatusCode = authStatusCode
-			rsp.StatusMessage = authStatusMessage
-			if authStatusCode == http.StatusServiceUnavailable {
-				rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-			} else {
-				rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, nil, nil).Body)
-			}
+		authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+		if authResp.StatusCode != http.StatusOK {
 			log.Printf(authErrorMessage)
+			fillProtoResponse(rsp, authResp)
 			return nil
 		}
 	}
@@ -549,15 +520,9 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	}
 	constructCommonResponseHeader(rsp)
 	privileges := []string{common.PrivilegeConfigureUsers}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		if authStatusCode == http.StatusServiceUnavailable {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		} else {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, nil, nil).Body)
-		}
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		fillProtoResponse(rsp, authResp)
 		log.Printf(authErrorMessage)
 		return nil
 	}
@@ -565,9 +530,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 	tasks, err := ts.GetAllTaskKeysModel()
 	if err != nil {
 		errorMessage := "error: while trying to get all task keys from db: " + err.Error()
-		rsp.StatusCode = http.StatusInternalServerError
-		rsp.StatusMessage = response.InternalError
-		rsp.Body = generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
 		log.Printf(errorMessage)
 		return nil
 	}
@@ -690,15 +653,9 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	// Validate the token, if user has ConfigureUsers privelege then proceed.
 	//Else send 401 Unautherised
 	privileges := []string{common.PrivilegeConfigureUsers}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		if authStatusCode == http.StatusServiceUnavailable {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		} else {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, nil, nil).Body)
-		}
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		fillProtoResponse(rsp, authResp)
 		log.Printf(authErrorMessage)
 		return nil
 	}
@@ -713,7 +670,6 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 			serviceState = "Enabled"
 			break
 		}
-
 	}
 
 	rsp.StatusCode = http.StatusOK
@@ -753,6 +709,14 @@ func generateResponse(input interface{}) []byte {
 		log.Println("error in unmarshalling response object from util-libs", err.Error())
 	}
 	return bytes
+}
+
+func fillProtoResponse(resp *taskproto.TaskResponse, data response.RPC) {
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	resp.Header = data.Header
+
 }
 
 // CreateTaskUtil Create the New Task and persist in in-memory DB and return task ID and error

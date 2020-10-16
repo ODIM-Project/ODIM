@@ -4,7 +4,8 @@ go 1.13
 
 require (
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727133207-df3dfb728bd1
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201009052423-b3d4beccdb41
+	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201012075046-3c059402892a // indirect
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201015111324-83393fdedb82
 	github.com/RediSearch/redisearch-go v1.0.1
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f

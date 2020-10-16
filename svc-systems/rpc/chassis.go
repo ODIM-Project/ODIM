@@ -24,13 +24,14 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 )
 
 // ChassisRPC struct helps to register service
 type ChassisRPC struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
 }
 
 //GetChassisResource defines the operations which handles the RPC request response
@@ -41,15 +42,10 @@ type ChassisRPC struct {
 // which is present in the request.
 func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillChassisProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = chassis.PluginContact{
@@ -58,10 +54,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetChassisResource(req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	fillChassisProtoResponse(resp, data)
 	return nil
 }
 
@@ -71,22 +64,14 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 // to send back to requested user.
 func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillChassisProtoResponse(resp, authResp)
 		return nil
 	}
 	data := chassis.GetChassisCollection(req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	fillChassisProtoResponse(resp, data)
 	return nil
 }
 
@@ -98,22 +83,14 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 // which is present in the request.
 func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillChassisProtoResponse(resp, authResp)
 		return nil
 	}
 	data := chassis.GetChassisInfo(req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	fillChassisProtoResponse(resp, data)
 	return nil
 }
 
@@ -123,4 +100,11 @@ func generateResponse(input interface{}) []byte {
 		log.Println("error in unmarshalling response object from util-libs", err.Error())
 	}
 	return bytes
+}
+
+func fillChassisProtoResponse(resp *chassisproto.GetChassisResponse, data response.RPC) {
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	resp.Header = data.Header
 }

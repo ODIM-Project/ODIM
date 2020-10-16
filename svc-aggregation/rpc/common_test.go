@@ -140,11 +140,11 @@ func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 	return true
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken == "invalidToken" {
-		return http.StatusUnauthorized, errors.Unauthorized
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return http.StatusOK, response.Success
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func getSessionUserNameForTesting(sessionToken string) (string, error) {

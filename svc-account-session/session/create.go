@@ -45,18 +45,6 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		Name:      "Session Service",
 	}
 	var resp response.RPC
-	errorArgs := []response.ErrArgs{
-		response.ErrArgs{
-			StatusMessage: "",
-			ErrorMessage:  "",
-			MessageArgs:   []interface{}{},
-		},
-	}
-	args := &response.Args{
-		Code:      response.GeneralError,
-		Message:   "",
-		ErrorArgs: errorArgs,
-	}
 
 	// parsing the CreateSession
 	var createSession asmodel.CreateSession
@@ -82,18 +70,14 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 
 	user, err := auth.CheckSessionCreationCredentials(createSession.UserName, createSession.Password)
 	if err != nil {
-		errorMessage := "error while authorizing session creation credentials: " + err.Error()
+		errMsg := "error while authorizing session creation credentials: " + err.Error()
 		if err.ErrNo() == errors.DBConnFailed {
-			resp.StatusCode = http.StatusServiceUnavailable
-			resp.StatusMessage = response.CouldNotEstablishConnection
-			errorArgs[0].ErrorMessage = errorMessage
-			errorArgs[0].StatusMessage = resp.StatusMessage
-			errorArgs[0].MessageArgs = []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.OnDiskHost, config.Data.DBConf.OnDiskPort)}
-			resp.Body = args.CreateGenericErrorResponse()
+			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.OnDiskHost, config.Data.DBConf.OnDiskPort)}
+			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
 		} else {
-			return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil), ""
+			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 		}
-		log.Printf(errorMessage)
+		log.Printf(errMsg)
 		return resp, ""
 	}
 
@@ -128,12 +112,14 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	auth.Lock.Lock()
 	defer auth.Lock.Unlock()
 	if err = sess.Persist(); err != nil {
-		errorMessage := "error while trying to insert session details: " + err.Error()
-		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
+		errMsg := "error while trying to insert session details: " + err.Error()
+		if err.ErrNo() == errors.DBConnFailed {
+			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort)}
+			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
+		} else {
+			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
-		log.Printf(errorMessage)
+		log.Printf(errMsg)
 		return resp, ""
 	}
 

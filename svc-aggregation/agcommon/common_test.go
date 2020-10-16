@@ -16,26 +16,72 @@ package agcommon
 
 import (
 	"testing"
+	"github.com/stretchr/testify/assert"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 func TestAddConnectionMethods(t *testing.T) {
-	type args struct {
-		connectionMethodConf []config.ConnectionMethodConf
+	var e = DBInterface{
+		GetAllKeysFromTableInterface: stubGetAllkeys,
+		GetConnectionMethodInterface: stubGetConnectionMethod,
+		AddConnectionMethodInterface: stubAddConnectionMethod,
+		DeleteInterface:              stubDeleteConnectionMethod,
 	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
+	config.SetUpMockConfig(t)
+	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
+	assert.Nil(t, err,"err should be nil")
+}
+
+var connectionMethod = []string{"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234f",
+	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234g",
+	"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234h"}
+
+func stubGetAllkeys(tableName string) ([]string, error) {
+	return connectionMethod, nil
+}
+
+func stubGetConnectionMethod(key string) (agmodel.ConnectionMethod, *errors.Error) {
+	if key == "/redfish/v1/AggregationService/ConnectionMethods/1234567545691234f" {
+		return agmodel.ConnectionMethod{
+			ConnectionMethodType:    "Redfish",
+			ConnectionMethodVariant: "Compute:BasicAuth:GRF:1.0.0",
+			Links: agmodel.Links{
+				AggregationSources: []agmodel.OdataID{},
+			},
+		}, nil
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := AddConnectionMethods(tt.args.connectionMethodConf); (err != nil) != tt.wantErr {
-				t.Errorf("AddConnectionMethods() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+
+	if key == "/redfish/v1/AggregationService/ConnectionMethods/1234567545691234g" {
+		return agmodel.ConnectionMethod{
+			ConnectionMethodType:    "Redfish",
+			ConnectionMethodVariant: "Fabric:XAuthToken:FabricPlugin:1.0.0",
+			Links: agmodel.Links{
+				AggregationSources: []agmodel.OdataID{
+					agmodel.OdataID{OdataID: "/redfish/v1/AggregationService/AggregationSources/1234656881231fg1"},
+				},
+			},
+		}, nil
 	}
+	return agmodel.ConnectionMethod{
+		ConnectionMethodType:    "Redfish",
+		ConnectionMethodVariant: "Storage:BasicAuth:Stg1:1.0.0",
+		Links: agmodel.Links{
+			AggregationSources: []agmodel.OdataID{},
+		},
+	}, nil
+}
+
+func stubAddConnectionMethod(data agmodel.ConnectionMethod, key string) *errors.Error {
+
+	return nil
+}
+
+func stubDeleteConnectionMethod(table, key string, dbtype common.DbType) *errors.Error {
+
+	return nil
+
 }

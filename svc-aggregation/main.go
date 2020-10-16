@@ -55,8 +55,14 @@ func main() {
 
 	//initialize global record used for tracking ongoing requests
 	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
-
-	if err := agcommon.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
+	
+	var connectionMethoodInterface=agcommon.DBInterface{
+		GetAllKeysFromTableInterface:agmodel.GetAllKeysFromTable,
+		GetConnectionMethodInterface:agmodel.GetConnectionMethod,
+		AddConnectionMethodInterface:agmodel.AddConnectionMethod,
+		DeleteInterface:agmodel.Delete,
+	} 
+	if err := connectionMethoodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
 		log.Fatalf("error while trying add connection method: %v", err)
 	}
 
@@ -84,7 +90,7 @@ func main() {
 	if agcommon.ConfigFilePath == "" {
 		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges()
+	go agcommon.TrackConfigFileChanges(connectionMethoodInterface)
 	if err = services.Service.Run(); err != nil {
 		log.Fatalf("failed to run a service: %v", err)
 	}

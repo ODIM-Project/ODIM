@@ -20,11 +20,20 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/fsnotify/fsnotify"
 	uuid "github.com/satori/go.uuid"
 )
+
+// DBInterface hold interface for db functions 
+type DBInterface struct{
+	GetAllKeysFromTableInterface func(string)([]string,error)
+	GetConnectionMethodInterface func(string)(agmodel.ConnectionMethod,*errors.Error)
+	AddConnectionMethodInterface func(agmodel.ConnectionMethod, string) (*errors.Error)
+	DeleteInterface func(string,string ,common.DbType) (*errors.Error)
+}
 
 // SupportedConnectionMethodTypes is for validating the connection method type
 var SupportedConnectionMethodTypes = map[string]bool{
@@ -83,8 +92,8 @@ func GetStorageResources(oid string) map[string]interface{} {
 }
 
 // AddConnectionMethods will add the connection method type and variant into DB
-func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
-	connectionMethodsKeys, err := agmodel.GetAllKeysFromTable("ConnectionMethod")
+func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
+	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface("ConnectionMethod")
 	if err != nil {
 		log.Printf("error getting connection methods : %v", err.Error())
 		return err
@@ -93,7 +102,7 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 	var connectionMehtodIDMap = make(map[string]string)
 	// Get all existing connectionmethod info store it in above two map
 	for i := 0; i < len(connectionMethodsKeys); i++ {
-		connectionmethod, err := agmodel.GetConnectionMethod(connectionMethodsKeys[i])
+		connectionmethod, err := e.GetConnectionMethodInterface(connectionMethodsKeys[i])
 		if err != nil {
 			log.Printf("error getting connection method : %v", err)
 			return err
@@ -119,7 +128,7 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 					AggregationSources: []agmodel.OdataID{},
 				},
 			}
-			err := agmodel.AddConnectionMethod(connectionMethod, connectionMethodURI)
+			err := e.AddConnectionMethodInterface(connectionMethod, connectionMethodURI)
 			if err != nil {
 				log.Printf("error adding connection methods : %v", err.Error())
 				return err
@@ -137,7 +146,7 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 		} else {
 			log.Println("Removing Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
 				" and Connection Method Variant", connectionMethodData.ConnectionMethodVariant)
-			err := agmodel.Delete("ConnectionMethod", connectionMethodID, common.OnDisk)
+			err := e.DeleteInterface("ConnectionMethod", connectionMethodID, common.OnDisk)
 			if err != nil {
 				log.Printf("error removing connection methods : %v", err.Error())
 				return err
@@ -149,7 +158,7 @@ func AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) er
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
-func TrackConfigFileChanges() {
+func TrackConfigFileChanges(dbInterface DBInterface) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -172,7 +181,7 @@ func TrackConfigFileChanges() {
 					if err := config.SetConfiguration(); err != nil {
 						log.Printf("error while trying to set configuration: %v", err)
 					}
-					err := AddConnectionMethods(config.Data.ConnectionMethodConf)
+					err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 					if err != nil {
 						log.Printf("error while trying to Add connection methods: %s", err)
 					}

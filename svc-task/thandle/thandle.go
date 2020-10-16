@@ -160,17 +160,12 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		return nil
 	}
 	privileges := []string{common.PrivilegeConfigureManager}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		if authStatusCode == http.StatusServiceUnavailable {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		} else {
-			rsp.Body = generateResponse(common.GeneralError(authStatusCode, authStatusMessage, authErrorMessage, nil, nil).Body)
-		}
-		log.Printf(authErrorMessage)
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while authentication")
+		fillProtoResponse(rsp, authResp)
 		return nil
+
 	}
 	rsp.Header["Allow"] = "DELETE"
 	// Critical Logic follows
@@ -547,14 +542,12 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		log.Printf(errorMessage)
 		return nil
 	}
-	statusConfigureUsers, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
+	statusConfigureUsers := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		rsp.StatusCode = http.StatusUnauthorized
-		rsp.StatusMessage = response.NoValidSession
-		rsp.Body = generateResponse(common.GeneralError(rsp.StatusCode, rsp.StatusMessage, authErrorMessage, nil, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		log.Printf(authErrorMessage)
-		return fmt.Errorf(authErrorMessage)
+		return nil
 
 	}
 	var listMembers = []tresponse.ListMember{}
@@ -562,14 +555,12 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		// Check who owns the task before returning, if this can only be done by admin,
 		//then its appropriate to give back all the tasks available in the DB
 		//If user has just login privelege then return his own task
-		if authStatusCode == http.StatusOK && statusConfigureUsers != http.StatusOK {
+		if authResp.StatusCode == http.StatusOK && statusConfigureUsers.StatusCode != http.StatusOK {
 			task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 			if err != nil {
 				log.Printf("error getting task status : %v", err)
-				rsp.StatusCode = http.StatusNotFound
-				rsp.StatusMessage = response.ResourceNotFound
-				rsp.Body = generateResponse(common.GeneralError(rsp.StatusCode, rsp.StatusMessage, err.Error(), []interface{}{"Task", req.TaskID}, nil).Body)
-				return err
+				fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, authErrorMessage, nil, nil))
+				return nil
 			}
 			//Check if the task belongs to user
 			if task.UserName == sessionUserName {
@@ -578,7 +569,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 			}
 		}
 		//if user has configureusers privelege then return all tasks
-		if statusConfigureUsers == http.StatusOK {
+		if statusConfigureUsers.StatusCode == http.StatusOK {
 			member := tresponse.ListMember{OdataID: "/redfish/v1/TaskService/Tasks/" + taskID}
 			listMembers = append(listMembers, member)
 		}

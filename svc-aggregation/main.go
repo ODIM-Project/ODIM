@@ -27,7 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/rpc"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 // Schema is a struct to define search, condition and query keys
@@ -79,7 +78,6 @@ func main() {
 		SubscribeToEMB:  services.SubscribeToEMB,
 		DecryptPassword: common.DecryptWithPrivateKey,
 		UpdateTask:      system.UpdateTaskData,
-		GetPluginData:   agmodel.GetPluginData,
 	}
 	go p.RediscoverResources()
 

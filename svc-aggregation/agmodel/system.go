@@ -160,6 +160,21 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 	return plugin, nil
 }
 
+func GetPluginMgrAddr(pluginID string) (Plugin, *errors.Error) {
+	var plugin Plugin
+
+        plugin, err := GetPluginData(pluginID)
+        if err != nil {
+                plugin.ID = pluginID
+                plugin.ManagerUUID = "dummy-mgr-addr"
+                plugin.IP="dummyhost"
+                plugin.Port = "9091"
+        }
+
+        return  plugin, nil
+
+}
+
 //GetComputeSystem will fetch the compute resource details
 func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 	var compute dmtfmodel.ComputerSystem

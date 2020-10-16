@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"fmt"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -36,18 +37,25 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 	}
 }
 
-func stubPluginData (pluginID string) (agmodel.Plugin, *errors.Error) {
+func stubPluginMgrAddrData (pluginID string) (agmodel.Plugin, *errors.Error) {
         var plugin agmodel.Plugin
 
-        plugin.IP = "localhost"
-        plugin.Port = "9091"
-        plugin.Username = "admin"
-        plugin.Password = []byte("password")
-        plugin.ID = "XAuthPlugin"
-        plugin.PluginType = "Compute"
-        plugin.PreferredAuthType = "BasicAuth"
-        plugin.ManagerUUID = "1s7sda8asd-asdas8as0"
-        return  plugin, nil
+	plugin, err := agmodel.GetPluginData(pluginID)
+	if err != nil {
+		plugin.ID = pluginID
+		plugin.ManagerUUID = "dummy-mgr-addr"
+		plugin.Port = "9091"
+	}
+	plugin.IP="dummyhost"
+
+	if pluginID == "DUPMGRADDRMOCK" {
+		plugin.ManagerUUID = "duplicate-mgr-addr"
+		plugin.IP="duphost"
+		plugin.Port = "9091"
+	}
+
+	return  plugin, nil
+
 }
 
 func TestExternalInterface_Plugin(t *testing.T) {
@@ -157,6 +165,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+		GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var pluginContactRequest getResourceRequest
@@ -251,12 +260,38 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	}
 }
 
+func mockDupMgrAddrPluginData(t *testing.T, pluginID string) error {
+        password,_ := stubDevicePassword([]byte("password"))
+        plugin := agmodel.Plugin{
+                IP:                "duphost",
+                Port:              "9091",
+                Username:          "admin",
+                Password:          password,
+                ID:                pluginID,
+                PreferredAuthType: "BasicAuth",
+                ManagerUUID:       "duplicate-mgr-addr",
+        }
+        connPool, err := common.GetDBConnection(common.OnDisk)
+        if err != nil {
+                return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+        }
+        if err = connPool.Create("Plugin", pluginID, plugin); err != nil {
+                return fmt.Errorf("error while trying to create new %v resource: %v", "Plugin", err.Error())
+        }
+        return nil
+}
+
 func TestExternalInterface_PluginXAuth(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "XAuthPlugin")
+	if err != nil {
+		t.Fatalf("Error in creating mock PluginData :%v", err)
+	}
+
+	err = mockDupMgrAddrPluginData(t, "DUPMGRADDRMOCK")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
@@ -348,12 +383,12 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 	}
 
         reqDuplicateManagerAddress:= AddResourceRequest{
-                ManagerAddress: "localhost:9091",
+                ManagerAddress: "duphost:9091",
                 UserName: "admin",
                 Password: "password",
 
                         Oem: &AddOEM{
-                                PluginID:          "ILO",
+                                PluginID:          "DUPMGRADDR",
                                 PreferredAuthType: "XAuthToken",
                                 PluginType:        "Compute",
                         },
@@ -371,7 +406,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
-		GetPluginData:     stubPluginData,
+		GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var pluginContactRequest getResourceRequest

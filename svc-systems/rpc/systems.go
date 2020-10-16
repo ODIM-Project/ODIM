@@ -23,13 +23,14 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
 // Systems struct helps to register service
 type Systems struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
 	EI              *systems.ExternalInterface
 }
 
@@ -41,15 +42,10 @@ type Systems struct {
 // which is present in the request.
 func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = systems.PluginContact{
@@ -58,10 +54,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystemResource(req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -71,22 +64,14 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 // to send back to requested user.
 func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	data := systems.GetSystemsCollection(req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -98,15 +83,10 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 // which is present in the request.
 func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = systems.PluginContact{
@@ -115,10 +95,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystems(req)
-	resp.Header = data.Header
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -130,15 +107,10 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 // which is present in the request.
 func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = systems.PluginContact{
@@ -146,10 +118,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ComputerSystemReset(req)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -161,15 +130,10 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 // which is present in the request.
 func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = systems.PluginContact{
@@ -177,10 +141,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.SetDefaultBootOrder(req.SystemID)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -192,15 +153,10 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 // which is present in the request.
 func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = systems.PluginContact{
@@ -208,10 +164,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBiosSettings(req)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -223,15 +176,10 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 // which is present in the request.
 func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 	var pc = systems.PluginContact{
@@ -239,10 +187,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBootOrderSettings(req)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -254,23 +199,15 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 // which is present in the request.
 func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 
 	data := s.EI.CreateVolume(req)
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
-	resp.Body = generateResponse(data.Body)
+	fillSystemProtoResponse(resp, data)
 	return nil
 }
 
@@ -282,22 +219,21 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 // which is present in the request.
 func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
 
 	data := s.EI.DeleteVolume(req)
+	fillSystemProtoResponse(resp, data)
+	return nil
+}
+
+func fillSystemProtoResponse(resp *systemsproto.SystemsResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
-	resp.Header = data.Header
 	resp.Body = generateResponse(data.Body)
-	return nil
+	resp.Header = data.Header
 }

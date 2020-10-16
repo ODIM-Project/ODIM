@@ -36,17 +36,10 @@ import (
 // SubmitTestEvent is a helper method to handle the submit test event request.
 func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
-	authStatusCode, authStatusMessage := p.Auth(
-		req.SessionToken,
-		[]string{
-			common.PrivilegeConfigureComponents,
-		},
-		[]string{},
-	)
-	if authStatusCode != http.StatusOK {
-		errMsg := fmt.Sprintf("error while trying to authenticate session for submit test events: status code: %v, status message: %v", authStatusCode, authStatusMessage)
-		log.Printf(errMsg)
-		return common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil)
+	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		return authResp
 	}
 	// First get the UserName from SessionToken
 	sessionUserName, err := p.GetSessionUserName(req.SessionToken)

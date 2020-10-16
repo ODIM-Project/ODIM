@@ -572,7 +572,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 
@@ -724,7 +724,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 	var data string

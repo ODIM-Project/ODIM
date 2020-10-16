@@ -608,7 +608,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 				rsp.Body = generateResponse(common.GeneralError(rsp.StatusCode, rsp.StatusMessage, err.Error(), []interface{}{"Task", req.TaskID}, nil).Body)
 				return err
 			}
-			// return the task belonging to the user
+			//Check if the task belongs to user
 			if task.UserName == sessionUserName {
 				member := tresponse.ListMember{OdataID: "/redfish/v1/TaskService/Tasks/" + taskID}
 				listMembers = append(listMembers, member)

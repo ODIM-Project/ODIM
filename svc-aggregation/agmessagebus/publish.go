@@ -16,11 +16,12 @@ package agmessagebus
 
 import (
 	"encoding/json"
+	"log"
+
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	uuid "github.com/satori/go.uuid"
-	"log"
 )
 
 //Publish will takes the system id,Event type and publishes the data to message bus
@@ -33,16 +34,18 @@ func Publish(systemID, eventType, collectionType string) {
 
 	defer k.Close()
 	var event = common.Event{
-		EventID:           uuid.NewV4().String(),
-		MessageID:         "ResourceEvent.1.0.1." + eventType,
-		EventType:         eventType,
-		OriginOfCondition: systemID,
+		EventID:   uuid.NewV4().String(),
+		MessageID: "ResourceEvent.1.0.3." + eventType,
+		EventType: eventType,
+		OriginOfCondition: &common.Link{
+			Oid: systemID,
+		},
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
 		Name:      "Resource Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
-		OdataType: "#Event.v1_0_0.Event",
+		OdataType: "#Event.v1_4_0.Event",
 		Events:    events,
 	}
 	data, _ := json.Marshal(messageData)

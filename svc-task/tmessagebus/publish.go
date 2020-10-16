@@ -35,16 +35,18 @@ func Publish(taskURI string, messageID string, eventType string) {
 
 	defer k.Close()
 	var event = common.Event{
-		EventID:           uuid.NewV4().String(),
-		MessageID:         messageID,
-		EventType:         eventType,
-		OriginOfCondition: taskURI,
+		EventID:   uuid.NewV4().String(),
+		MessageID: messageID,
+		EventType: eventType,
+		OriginOfCondition: &common.Link{
+			Oid: taskURI,
+		},
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
 		Name:      "Resource Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
-		OdataType: "#Event.v1_0_0.Event",
+		OdataType: "#Event.v1_4_0.Event",
 		Events:    events,
 	}
 	data, _ := json.Marshal(messageData)

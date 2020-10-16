@@ -245,29 +245,29 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	mockPluginData(t, "XAuthPlugin")
 	mockPluginData(t, "XAuthPluginFail")
 
-	reqSuccess:= AddResourceRequest{
+	reqSuccess := AddResourceRequest{
 		ManagerAddress: "100.0.0.1",
-		UserName: "admin",
-		Password: "password",
+		UserName:       "admin",
+		Password:       "password",
 		Oem: &AddOEM{
-				PluginID: "GRF",
+			PluginID: "GRF",
 		},
 	}
-	
+
 	reqSuccessXAuth := AddResourceRequest{
 		ManagerAddress: "100.0.0.2",
-		UserName: "admin",
-		Password: "password",
+		UserName:       "admin",
+		Password:       "password",
 		Oem: &AddOEM{
-				PluginID: "XAuthPlugin",
+			PluginID: "XAuthPlugin",
 		},
 	}
-	reqIncorrectDeviceBasicAuth:= AddResourceRequest{
+	reqIncorrectDeviceBasicAuth := AddResourceRequest{
 		ManagerAddress: "100.0.0.1",
-		UserName: "admin1",
-		Password: "incorrectPassword",
+		UserName:       "admin1",
+		Password:       "incorrectPassword",
 		Oem: &AddOEM{
-				PluginID: "GRF",
+			PluginID: "GRF",
 		},
 	}
 
@@ -305,7 +305,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqSuccess,
+				req:    reqSuccess,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -316,7 +316,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req:  reqSuccessXAuth,
+				req:    reqSuccessXAuth,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -327,7 +327,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 			p:    p,
 			args: args{
 				taskID: "123",
-				req: reqIncorrectDeviceBasicAuth,
+				req:    reqIncorrectDeviceBasicAuth,
 			},
 			want: response.RPC{
 				StatusCode: http.StatusUnauthorized,
@@ -336,10 +336,9 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got,_,_ := tt.p.addCompute(tt.args.taskID, targetURI, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addCompute(tt.args.taskID, targetURI, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addCompute = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
-

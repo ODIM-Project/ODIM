@@ -22,11 +22,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"gopkg.in/go-playground/validator.v9"
@@ -34,9 +34,10 @@ import (
 
 // ExternalInterface holds all the external connections managers package functions uses
 type ExternalInterface struct {
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword func([]byte) ([]byte, error)
-	DB             DB
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword  func([]byte) ([]byte, error)
+	DB              DB
+	GetPluginStatus func(smodel.Plugin) bool
 }
 
 // DB struct to inject the contact DB function into the handlers
@@ -52,6 +53,7 @@ func GetExternalInterface() *ExternalInterface {
 		DB: DB{
 			GetResource: smodel.GetResource,
 		},
+		GetPluginStatus: scommon.GetPluginStatus,
 	}
 }
 
@@ -63,12 +65,12 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
 	target, gerr := smodel.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	// Validating the storage instance
 	if strings.TrimSpace(req.StorageInstance) == "" {
@@ -103,7 +105,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	//fields validation
-	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume)
+	statuscode, statusMessage, messageArgs, err := e.validateProperties(&volume, req.SystemID)
 	if err != nil {
 		errorMessage := "error: request payload validation failed: " + err.Error()
 		log.Printf(errorMessage)
@@ -126,7 +128,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	var contactRequest scommon.PluginContactRequest
 	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
-
+	contactRequest.GetPluginStatus = e.GetPluginStatus
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
@@ -174,7 +176,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 }
 
 // Validates all the input prorperties
-func (e *ExternalInterface) validateProperties(request *smodel.Volume) (int32, string, []interface{}, error) {
+func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID string) (int32, string, []interface{}, error) {
 	validate := validator.New()
 	// if any of the mandatory fields missing in the struct, then it will return an error
 	err := validate.Struct(request)
@@ -215,6 +217,13 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume) (int32, s
 				log.Printf(err.Error())
 				return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
 			}
+			// Validating if a a drive URI contains correct system id
+			driveURISplit := strings.Split(driveURI, "/")
+			if len(driveURISplit) > 5 && driveURISplit[4] != systemID {
+				errMsg := "Drive URI contains incorrect system id"
+				log.Println(errMsg)
+				return http.StatusBadRequest, response.ResourceNotFound, []interface{}{"Drives", drive}, fmt.Errorf(errMsg)
+			}
 		}
 	}
 
@@ -228,9 +237,9 @@ func mapRaidTypesWithMinDrives(req string) int {
 		"RAID00":       2,
 		"RAID01":       2,
 		"RAID1":        2,
-		"RAID10":       2,
+		"RAID10":       4,
 		"RAID10E":      2,
-		"RAID10Triple": 3,
+		"RAID10Triple": 6,
 		"RAID1E":       2,
 		"RAID1Triple":  3,
 		"RAID3":        3,
@@ -252,4 +261,124 @@ func searchItem(slice []string, val string) bool {
 		}
 	}
 	return false
+}
+
+// DeleteVolume defines the logic for deleting a volume under storage
+func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) response.RPC {
+	var resp response.RPC
+
+	var volume smodel.Volume
+	// unmarshalling the volume
+	err := json.Unmarshal(req.RequestBody, &volume)
+	if err != nil {
+		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
+		log.Printf(errorMessage)
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		return resp
+	}
+
+	// spliting the uuid and system id
+	requestData := strings.Split(req.SystemID, ":")
+	if len(requestData) != 2 || requestData[1] == "" {
+		errorMessage := "error: SystemUUID not found"
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+	}
+	uuid := requestData[0]
+	target, gerr := smodel.GetTarget(uuid)
+	if gerr != nil {
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+	}
+	// Validating the storage instance
+	if strings.TrimSpace(req.VolumeID) == "" {
+		errorMessage := "error: Volume id is not found"
+		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Volume", req.VolumeID}, nil)
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, volume)
+	if err != nil {
+		errMsg := "error while validating request parameters for volume creation: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response
+	}
+
+	decryptedPasswordByte, err := e.DevicePassword(target.Password)
+	if err != nil {
+		errorMessage := "error while trying to decrypt device password: " + err.Error()
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	target.Password = decryptedPasswordByte
+	// Get the Plugin info
+	plugin, gerr := smodel.GetPluginData(target.PluginID)
+	if gerr != nil {
+		errorMessage := "error while trying to get plugin details"
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	var contactRequest scommon.PluginContactRequest
+	contactRequest.ContactClient = e.ContactClient
+	contactRequest.Plugin = plugin
+	contactRequest.GetPluginStatus = e.GetPluginStatus
+	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		var err error
+		contactRequest.HTTPMethodType = http.MethodPost
+		contactRequest.DeviceInfo = map[string]interface{}{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+		contactRequest.OID = "/ODIM/v1/Sessions"
+		_, token, getResponse, err := scommon.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
+
+		if err != nil {
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+		}
+		contactRequest.Token = token
+	} else {
+		contactRequest.BasicAuth = map[string]string{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+
+	}
+	target.PostBody = req.RequestBody
+
+	contactRequest.HTTPMethodType = http.MethodDelete
+	contactRequest.DeviceInfo = target
+	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes/%s", requestData[1], req.StorageInstance, req.VolumeID)
+
+	body, _, getResponse, err := scommon.ContactPlugin(contactRequest, "error while deleting a volume: ")
+	if err != nil {
+		resp.StatusCode = getResponse.StatusCode
+		json.Unmarshal(body, &resp.Body)
+		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+		return resp
+	}
+
+	// delete a volume in db
+	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
+	if derr := smodel.DeleteVolume(key); derr != nil {
+		errMsg := "error while trying to delete volume: " + derr.Error()
+		log.Println(errMsg)
+		if errors.DBKeyNotFound == derr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	resp.Header = map[string]string{
+		"Content-type": "application/json; charset=utf-8",
+	}
+
+	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo
+	// for avoiding storing or retrieving them from DB before a BMC reset.
+	collectionKey := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes", req.SystemID, req.StorageInstance)
+	smodel.AddSystemResetInfo(key, "On")
+	smodel.AddSystemResetInfo(collectionKey, "On")
+
+	resp.StatusCode = http.StatusNoContent
+	resp.StatusMessage = response.Success
+	return resp
 }

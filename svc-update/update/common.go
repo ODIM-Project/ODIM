@@ -15,13 +15,15 @@
 package update
 
 import (
+	"net/http"
+
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
-	"net/http"
 )
 
 //Device struct to define the response from plugin for UUID
@@ -51,7 +53,7 @@ type Plugin struct {
 // External struct holds the function pointers all outboud services
 type External struct {
 	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth           func(string, []string, []string) (int32, string)
+	Auth           func(string, []string, []string) response.RPC
 	DevicePassword func([]byte) ([]byte, error)
 	GetPluginData  func(string) (umodel.Plugin, *errors.Error)
 	ContactPlugin  func(ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
@@ -66,18 +68,18 @@ type responseStatus struct {
 
 // DB struct holds the function pointers to database operations
 type DB struct {
-	GetAllKeysFromTable func(string) ([]string, error)
-	GetResource         func(string, string) (string, *errors.Error)
+	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
+	GetResource         func(string, string, common.DbType) (string, *errors.Error)
 }
 
 // UpdateRequestBody struct defines the request body for update action
 type UpdateRequestBody struct {
-	ImageURI                         string   `json:"ImageURI"`
-	Password                         string   `json:"Password,omitempty"`
-	Targets                          []string `json:"Targets"`
-	TransferProtocol                 string   `json:"TransferProtocol,omitempty"`
-	Username                         string   `json:"Username,omitempty"`
-	RedfishOperationApplyTimeSupport RedfishOperationApplyTimeSupport
+	ImageURI                         string                            `json:"ImageURI"`
+	Password                         string                            `json:"Password,omitempty"`
+	Targets                          []string                          `json:"Targets"`
+	TransferProtocol                 string                            `json:"TransferProtocol,omitempty"`
+	Username                         string                            `json:"Username,omitempty"`
+	RedfishOperationApplyTimeSupport *RedfishOperationApplyTimeSupport `json:"@Redfish.OperationApplyTimeSupport,omitempty"`
 }
 
 // RedfishOperationApplyTimeSupport struct defines the apply time for the action in place

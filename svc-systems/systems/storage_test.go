@@ -51,22 +51,26 @@ func mockPluginClientData(t *testing.T) error {
 	}
 	return nil
 }
-func mockSystemsData(uuid string, device smodel.Target) error {
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		return fmt.Errorf("error while trying to connecting to DB: %v", err)
-	}
-	if err = connPool.Create("System", uuid, device); err != nil {
-		return fmt.Errorf("error while trying to create new %v resource: %v", "System", err.Error())
-	}
-	return nil
-}
 
 func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes" {
 		body := `{"MessageId": "Base.1.0.Success"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
+		body := `{"MessageId": "Base.1.0.Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
+	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/2" {
+		body := `{"MessageId": "Base.1.0.Failed"}`
+		return &http.Response{
+			StatusCode: http.StatusNotFound,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
@@ -80,6 +84,7 @@ func mockGetExternalInterface() *ExternalInterface {
 		DB: DB{
 			GetResource: mockGetResource,
 		},
+		GetPluginStatus: mockPluginStatus,
 	}
 }
 
@@ -90,7 +95,12 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 	if key == "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/ArrayControllers-0/Drives/1" {
 		return "", nil
 	}
+
 	return "body", nil
+}
+
+func mockPluginStatus(plugin smodel.Plugin) bool {
+	return true
 }
 
 func TestPluginContact_CreateVolume(t *testing.T) {
@@ -120,7 +130,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
 	}
-	err = mockSystemsData("54b243cf-f1e3-5319-92d9-2d6737d6b0a", device1)
+	err = mockDeviceData("54b243cf-f1e3-5319-92d9-2d6737d6b0a", device1)
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -183,7 +193,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 										"RAIDType":"RAID0",
 										"Drives":[{"@odata.id": "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0b:1/Storage/ArrayControllers-0/Drives/0"}]}`),
 			},
-			want: common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 54b243cf-f1e3-5319-92d9-2d6737d6b0b found", []interface{}{"System", "54b243cf-f1e3-5319-92d9-2d6737d6b0b"}, nil),
 		}, {
 			name: "invalid storage instance",
 			p:    pluginContact,
@@ -223,6 +233,122 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.CreateVolume(tt.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.CreateVolume() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPluginContact_DeleteVolume(t *testing.T) {
+	// Modify the contents with http.StatusNotImplemented to the correct status
+	// and modify all other info accordingly after implementations
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	device1 := smodel.Target{
+		ManagerAddress: "10.24.0.12",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "54b243cf-f1e3-5319-92d9-2d6737d6b0a",
+		PluginID:       "GRF",
+	}
+	device2 := smodel.Target{
+		ManagerAddress: "100.0.0.2",
+		Password:       []byte("someValidPassword"),
+		UserName:       "admin",
+		DeviceUUID:     "8e896459-a8f9-4c83-95b7-7b316b4908e1",
+		PluginID:       "Unknown-Plugin",
+	}
+	err := mockPluginClientData(t)
+	if err != nil {
+		t.Fatalf("Error in creating mock DeviceData :%v", err)
+	}
+	mockDeviceData("54b243cf-f1e3-5319-92d9-2d6737d6b0a", device1)
+	mockDeviceData("8e896459-a8f9-4c83-95b7-7b316b4908e1", device2)
+	mockSystemData("/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1")
+	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1")
+	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a:1/Storage/1/Volumes/1")
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1/Storage/1/Volumes/1")
+
+	var positiveResponse interface{}
+	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
+	pluginContact := mockGetExternalInterface()
+
+	tests := []struct {
+		name           string
+		p              *ExternalInterface
+		req            *systemsproto.VolumeRequest
+		wantStatusCode int32
+	}{
+		{
+			name: "Valid request",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
+				StorageInstance: "1",
+				VolumeID:        "1",
+				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+			},
+			wantStatusCode: http.StatusNoContent,
+		},
+		{
+			name: "invalid system id",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:1",
+				StorageInstance: "1",
+				VolumeID:        "1",
+				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+			},
+			wantStatusCode: http.StatusNotFound,
+		},
+		{
+			name: "without system id",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0b:",
+				StorageInstance: "1",
+				VolumeID:        "1",
+				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+			},
+			wantStatusCode: http.StatusNotFound,
+		},
+		{
+			name: "Invalid volume id",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "54b243cf-f1e3-5319-92d9-2d6737d6b0a:1",
+				StorageInstance: "1",
+				VolumeID:        "2",
+				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+			},
+			wantStatusCode: http.StatusNotFound,
+		},
+		{
+			name: "unknown plugin",
+			p:    pluginContact,
+			req: &systemsproto.VolumeRequest{
+				SystemID:        "8e896459-a8f9-4c83-95b7-7b316b4908e1:1",
+				StorageInstance: "1",
+				VolumeID:        "1",
+				RequestBody:     []byte(`{"@Redfish.OperationApplyTime": "OnReset"}`),
+			},
+			wantStatusCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.DeleteVolume(tt.req); got.StatusCode != tt.wantStatusCode {
+				t.Errorf("PluginContact.DeleteVolume() = %v, want %v", got.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

@@ -73,6 +73,31 @@ func mockSimpleUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateRespons
 	return response, nil
 }
 
+func mockStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	var response = &updateproto.UpdateResponse{}
+	if req.SessionToken == "" {
+		response = &updateproto.UpdateResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "InvalidToken" {
+		response = &updateproto.UpdateResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.SessionToken == "TokenRPC" {
+		return &updateproto.UpdateResponse{}, errors.New("Unable to RPC Call")
+	}
+	response = &updateproto.UpdateResponse{
+		StatusCode:    200,
+		StatusMessage: "Success",
+		Body:          []byte(`{"Response":"Success"}`),
+	}
+	return response, nil
+}
+
 func TestGetUpdateService(t *testing.T) {
 	var a UpdateRPCs
 	a.GetUpdateServiceRPC = testGetUpdateService
@@ -196,6 +221,41 @@ func TestSimpleUpdateNegativeTestCases(t *testing.T) {
 	//ToDo
 }
 
-func TestStartUpdate(t *testing.T) {
-	//ToDo
+func TestStartUpdateWithValidToken(t *testing.T) {
+	var a UpdateRPCs
+	a.StartUpdateRPC = mockStartUpdate
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService")
+	redfishRoutes.Post("/Actions/UpdateService.StartUpdate", a.StartUpdate)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+}
+
+func TestStartUpdateWithoutToken(t *testing.T) {
+	var a UpdateRPCs
+	a.StartUpdateRPC = mockStartUpdate
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService")
+	redfishRoutes.Post("/Actions/UpdateService.StartUpdate", a.StartUpdate)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+}
+
+func TestStartUpdateWithInvalidToken(t *testing.T) {
+	var a UpdateRPCs
+	a.StartUpdateRPC = mockStartUpdate
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/UpdateService")
+	redfishRoutes.Post("/Actions/UpdateService.StartUpdate", a.StartUpdate)
+
+	e := httptest.New(t, mockApp)
+	e.POST(
+		"/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 }

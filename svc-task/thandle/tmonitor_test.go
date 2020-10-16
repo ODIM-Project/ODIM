@@ -30,24 +30,24 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
 )
 
-func mockIsAuthorized(sessionToken string, privileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges []string) response.RPC {
 	switch sessionToken {
 	case "validToken":
-		return http.StatusOK, response.Success
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 	case "NotTaskUserToken":
 		// this session user does not have ConfigureUses Privilege
 		for _, privilege := range privileges {
 			if privilege == common.PrivilegeConfigureUsers {
 				fmt.Printf("UnAuthorized %v", privileges)
-				return http.StatusUnauthorized, response.NoValidSession
+				return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 			}
 		}
 		fmt.Printf("Autherized %v", privileges)
-		return http.StatusOK, response.Success
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 	case "NotTaskUserButAdminToken":
-		return http.StatusOK, response.Success
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 	default:
-		return http.StatusUnauthorized, response.NoValidSession
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 
 	}
 }

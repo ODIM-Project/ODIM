@@ -50,7 +50,8 @@ func main() {
 		var basicAuthToken string
 		if basicAuth != "" {
 			var urlNoBasicAuth = []string{"/redfish/v1", "/redfish/v1/SessionService"}
-			var authRequired bool = true
+			var authRequired bool
+			authRequired = true
 			for _, item := range urlNoBasicAuth {
 				if item == path {
 					authRequired = false
@@ -101,10 +102,15 @@ func main() {
 					return
 				}
 				if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-					errorMessage := "error: failed to create a sesssion"
-					log.Println(errorMessage)
 					w.Header().Set("Content-type", "application/json; charset=utf-8")
 					w.WriteHeader(int(resp.StatusCode))
+					if resp.StatusCode == http.StatusServiceUnavailable {
+						log.Println("error: unable to establish connection with db")
+						w.Write(resp.Body)
+						return
+					}
+					errorMessage := "error: failed to create a sesssion"
+					log.Println(errorMessage)
 					body, _ := json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 					w.Write([]byte(body))
 					return

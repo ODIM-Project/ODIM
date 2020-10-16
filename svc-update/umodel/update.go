@@ -46,8 +46,8 @@ type Plugin struct {
 }
 
 //GetAllKeysFromTable fetches all keys in a given table
-func GetAllKeysFromTable(table string) ([]string, error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+func GetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
+	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +59,8 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 }
 
 //GetResource fetches a resource from database using table and key
-func GetResource(Table, key string) (string, *errors.Error) {
-	conn, err := common.GetDBConnection(common.InMemory)
+func GetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
+	conn, err := common.GetDBConnection(dbtype)
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +77,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 
 //GenericSave will save any resource data into the database
 func GenericSave(body []byte, table string, key string) error {
-	connPool, err := common.GetDBConnection(common.InMemory)
+	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}

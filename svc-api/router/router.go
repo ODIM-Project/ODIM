@@ -57,6 +57,8 @@ func Router() *iris.Application {
 		RemoveElementsFromAggregateRPC:          rpc.DoRemoveElementsFromAggregate,
 		ResetAggregateElementsRPC:               rpc.DoResetAggregateElements,
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
+		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
+		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
 	}
 
 	s := handle.SessionRPCs{
@@ -86,6 +88,7 @@ func Router() *iris.Application {
 		ChangeBiosSettingsRPC:      rpc.ChangeBiosSettings,
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
 		CreateVolumeRPC:            rpc.CreateVolume,
+		DeleteVolumeRPC:            rpc.DeleteVolume,
 	}
 
 	cha := handle.ChassisRPCs{
@@ -249,14 +252,16 @@ func Router() *iris.Application {
 	storage.SetRegisterRule(iris.RouteSkip)
 	storage.Get("/", system.GetSystemResource)
 	storage.Get("/{rid}", system.GetSystemResource)
-	storage.Get("/{rid}/Drives", system.GetSystemResource)
-	storage.Get("/{rid}/Drives/{rid2}", system.GetSystemResource)
+	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Volumes", system.GetSystemResource)
-	storage.Post("/{rid}/Volumes", system.CreateVolume)
+	storage.Post("/{id2}/Volumes", system.CreateVolume)
+	storage.Delete("/{id2}/Volumes/{rid}", system.DeleteVolume)
+	storage.Get("/{id2}/Volumes/{rid}", system.GetSystemResource)
 	storage.Any("/", handle.SystemsMethodNotAllowed)
-	storage.Any("/{rid}/Drives/{rid2}", handle.SystemsMethodNotAllowed)
+	storage.Any("/{id2}/Drives/{rid}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes", handle.SystemsMethodNotAllowed)
+	storage.Any("/{id2}/Volumes/{rid}", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)
@@ -279,6 +284,12 @@ func Router() *iris.Application {
 	aggregationSource.Patch("/{id}", pc.UpdateAggregationSource)
 	aggregationSource.Delete("/{id}", pc.DeleteAggregationSource)
 	aggregationSource.Any("/{id}", handle.AggMethodNotAllowed)
+
+	connectionMethods := aggregation.Party("/ConnectionMethods", middleware.SessionDelMiddleware)
+	connectionMethods.Get("/", pc.GetAllConnectionMethods)
+	connectionMethods.Get("/{id}", pc.GetConnectionMethod)
+	connectionMethods.Any("/", handle.AggMethodNotAllowed)
+	connectionMethods.Any("/{id}", handle.AggMethodNotAllowed)
 
 	aggregates := aggregation.Party("/Aggregates", middleware.SessionDelMiddleware)
 	aggregates.Post("/", pc.CreateAggregate)
@@ -396,6 +407,7 @@ func Router() *iris.Application {
 	updateService.SetRegisterRule(iris.RouteSkip)
 	updateService.Get("/", update.GetUpdateService)
 	updateService.Post("/Actions/UpdateService.SimpleUpdate", update.SimpleUpdate)
+	updateService.Post("/Actions/UpdateService.StartUpdate", update.StartUpdate)
 	updateService.Get("/FirmwareInventory", update.GetFirmwareInventoryCollection)
 	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
 	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)

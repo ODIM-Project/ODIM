@@ -109,6 +109,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}", rfphandler.GetResource)
 		systems.Get("/{id}/Storage", rfphandler.GetResource)
 		systems.Post("/{id}/Storage/{rid}/Volumes", rfphandler.CreateVolume)
+		systems.Delete("/{id}/Storage/{id2}/Volumes/{rid}", rfphandler.DeleteVolume)
 		systems.Get("/{id}/BootOptions", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/Processors", rfphandler.GetResource)
@@ -188,6 +189,7 @@ func routers() *iris.Application {
 		// Routes related to Update service
 		update := pluginRoutes.Party("/UpdateService", rfpmiddleware.BasicAuth)
 		update.Post("/Actions/UpdateService.SimpleUpdate", rfphandler.SimpleUpdate)
+		update.Post("/Actions/UpdateService.StartUpdate", rfphandler.StartUpdate)
 		update.Get("/FirmwareInventory", rfphandler.GetResource)
 		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
 		update.Get("/SoftwareInventory", rfphandler.GetResource)

@@ -30,8 +30,9 @@ import (
 
 //PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword func([]byte) ([]byte, error)
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword  func([]byte) ([]byte, error)
+	GetPluginStatus func(smodel.Plugin) bool
 }
 
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType
@@ -64,7 +65,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	requestData := strings.Split(req.SystemID, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 
 	uuid := requestData[0]

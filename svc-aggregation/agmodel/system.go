@@ -161,17 +161,8 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 }
 
 func GetPluginMgrAddr(pluginID string) (Plugin, *errors.Error) {
-	var plugin Plugin
 
-        plugin, err := GetPluginData(pluginID)
-        if err != nil {
-                plugin.ID = pluginID
-                plugin.ManagerUUID = "dummy-mgr-addr"
-                plugin.IP="dummyhost"
-                plugin.Port = "9091"
-        }
-
-        return  plugin, nil
+        return GetPluginData(pluginID)
 
 }
 

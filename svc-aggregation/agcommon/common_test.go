@@ -15,8 +15,8 @@
 package agcommon
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -33,7 +33,7 @@ func TestAddConnectionMethods(t *testing.T) {
 	}
 	config.SetUpMockConfig(t)
 	err := e.AddConnectionMethods(config.Data.ConnectionMethodConf)
-	assert.Nil(t, err,"err should be nil")
+	assert.Nil(t, err, "err should be nil")
 }
 
 var connectionMethod = []string{"/redfish/v1/AggregationService/ConnectionMethods/1234567545691234f",

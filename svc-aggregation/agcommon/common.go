@@ -20,19 +20,19 @@ import (
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/fsnotify/fsnotify"
 	uuid "github.com/satori/go.uuid"
 )
 
-// DBInterface hold interface for db functions 
-type DBInterface struct{
-	GetAllKeysFromTableInterface func(string)([]string,error)
-	GetConnectionMethodInterface func(string)(agmodel.ConnectionMethod,*errors.Error)
-	AddConnectionMethodInterface func(agmodel.ConnectionMethod, string) (*errors.Error)
-	DeleteInterface func(string,string ,common.DbType) (*errors.Error)
+// DBInterface hold interface for db functions
+type DBInterface struct {
+	GetAllKeysFromTableInterface func(string) ([]string, error)
+	GetConnectionMethodInterface func(string) (agmodel.ConnectionMethod, *errors.Error)
+	AddConnectionMethodInterface func(agmodel.ConnectionMethod, string) *errors.Error
+	DeleteInterface              func(string, string, common.DbType) *errors.Error
 }
 
 // SupportedConnectionMethodTypes is for validating the connection method type

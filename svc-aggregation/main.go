@@ -23,9 +23,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"\
-	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/rpc"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/system"
 )
@@ -56,13 +56,13 @@ func main() {
 
 	//initialize global record used for tracking ongoing requests
 	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
-	
-	var connectionMethoodInterface=agcommon.DBInterface{
-		GetAllKeysFromTableInterface:agmodel.GetAllKeysFromTable,
-		GetConnectionMethodInterface:agmodel.GetConnectionMethod,
-		AddConnectionMethodInterface:agmodel.AddConnectionMethod,
-		DeleteInterface:agmodel.Delete,
-	} 
+
+	var connectionMethoodInterface = agcommon.DBInterface{
+		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
+		GetConnectionMethodInterface: agmodel.GetConnectionMethod,
+		AddConnectionMethodInterface: agmodel.AddConnectionMethod,
+		DeleteInterface:              agmodel.Delete,
+	}
 	if err := connectionMethoodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
 		log.Fatalf("error while trying add connection method: %v", err)
 	}

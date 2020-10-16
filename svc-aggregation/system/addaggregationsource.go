@@ -226,6 +226,10 @@ func (e *ExternalInterface) addAggregationSourceWithConnectionMethod(taskID, tar
 	pluginContactRequest.UpdateTask = e.UpdateTask
 	var aggregationSourceUUID string
 	var cipherText []byte
+
+	// check status will do call on the URI /ODIM/v1/Status to the requested manager address
+	// if its success then add the plugin, else if its not found then add BMC
+	// else return the response
 	statusResp, statusCode, queueList := checkStatus(pluginContactRequest, addResourceRequest, cmVariants, taskInfo)
 	if statusCode == http.StatusOK {
 		resp, aggregationSourceUUID, cipherText = e.addPluginDataWIthConnectionMethod(addResourceRequest, taskID, targetURI, pluginContactRequest, queueList, cmVariants)

@@ -1217,6 +1217,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
 	}
 
+	// check the firmaware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
 		errMsg := "firmaware is not supported by connection method"
 		log.Println(errMsg)

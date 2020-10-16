@@ -117,7 +117,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort)}
 			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
 		} else {
-			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
+			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
 		log.Printf(errMsg)
 		return resp, ""

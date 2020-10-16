@@ -6,7 +6,7 @@ require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20200727115727-33d557ff397c
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201007090649-06a4c52ce4cf
 	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201009052423-b3d4beccdb41
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201015104848-58e49b42dbc2
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.5.1
 )

@@ -51,7 +51,7 @@ type Device struct {
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
 	ContactClient           func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                    func(string, []string, []string) (int32, string)
+	Auth                    func(string, []string, []string) response.RPC
 	GetSessionUserName      func(string) (string, error)
 	CreateChildTask         func(string, string) (string, error)
 	CreateTask              func(string) (string, error)

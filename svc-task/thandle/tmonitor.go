@@ -46,35 +46,23 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		"OData-Version":     "4.0",
 	}
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		rsp.Body = generateResponse(rpcResp.Body)
-		rsp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf(authErrorMessage)
+		fillProtoResponse(rsp, authResp)
 		return nil
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		// handle the error case with appropriate response body
-		errorMessage := "error while trying to authenticate session"
-		rsp.StatusCode = http.StatusUnauthorized
-		rsp.StatusMessage = response.NoValidSession
-		rsp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil).Body)
-		log.Printf(errorMessage)
+		log.Printf(authErrorMessage)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		return nil
 	}
-	log.Printf(sessionUserName)
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
 	if err != nil {
 		log.Printf("error getting task status : %v", err)
-		rsp.StatusCode = http.StatusNotFound
-		rsp.StatusMessage = response.ResourceNotFound
-		rsp.Body = generateResponse(common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return nil
 	}
 

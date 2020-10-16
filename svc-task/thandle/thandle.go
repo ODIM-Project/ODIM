@@ -166,10 +166,9 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	if task.PercentComplete == 100 {
 		delErr := ts.deleteCompletedTask(req.TaskID)
 		if delErr != nil {
-			log.Printf("Error while deleting the completed task: %v", delErr)
-			rsp.StatusCode = http.StatusInternalServerError
-			rsp.StatusMessage = response.InternalError
-			rsp.Body = generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, delErr.Error(), nil, nil).Body)
+			errorMessage := "Error while deleting the completed task: " + delErr.Error()
+			log.Printf(errorMessage)
+			fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
 			return nil
 		}
 		rsp.StatusCode = http.StatusNoContent

@@ -55,7 +55,7 @@ func GetAggregator() *Aggregator {
 			EventNotification:       agmessagebus.Publish,
 			GetAllKeysFromTable:     agmodel.GetAllKeysFromTable,
 			GetConnectionMethod:     agmodel.GetConnectionMethod,
-			GetPluginData:		 agmodel.GetPluginData,
+			GetPluginMgrAddr:	 agmodel.GetPluginMgrAddr,
 		},
 	}
 }

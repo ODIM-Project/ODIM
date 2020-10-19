@@ -76,7 +76,12 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	pluginNameArray, err := agmodel.GetAllKeysFromTable("Plugin")
 	if err == nil {
 		for _, ID := range pluginNameArray {
-			plugin, err := e.GetPluginData(ID)
+
+			plugin, err := e.GetPluginMgrAddr(ID)
+
+			if err != nil && err.ErrNo() == errors.JSONUnmarshalFailed {
+				continue
+			}
 			if err != nil {
 				return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(),
 					[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil

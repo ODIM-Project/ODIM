@@ -193,7 +193,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 		}, nil
 
 	} else if url == host+"/ODIM/v1/Status" {
-		body := `{"EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
+		body := `{"Version": "1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
 		if host == "https://100.0.0.3:9091" {
 			return nil, fmt.Errorf("plugin not reachable")
 		}

@@ -7,7 +7,8 @@ require (
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201007090649-06a4c52ce4cf
 	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201012075046-3c059402892a // indirect
 	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201015111324-83393fdedb82
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201016064732-c652b5935f93
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/satori/go.uuid v1.2.0
 	github.com/stretchr/testify v1.5.1
 )

@@ -1,18 +1,52 @@
 #  Resource inventory
 
-Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems` and `Chassis` endpoints. It also offers the capability to search inventory information based on one or more configuration parameters and exposes APIs to manage the added resources.
+Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems`, `Chassis`, and `Managers` endpoints. It also offers the capability to search inventory information based on one or more configuration parameters and exposes APIs to manage the added resources.
 
 To discover crucial configuration information about a resource, including chassis, perform `GET` on these endpoints.
 
+**Supported endpoints**
 
-<aside class="notice">
-To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
-</aside>
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/Systems|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}|GET, PATCH|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Memory|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Memory/\{memoryId\}|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/MemoryDomains|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/NetworkInterfaces|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Bios|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Processors|GET|`Login` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|GET|`Login` |
+|/redfish/v1/Systems?$filter=\{searchKeys\}%20\{conditionKeys\}%20\{value\}|GET|`Login` |
+| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|POST|`ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|POST|`ConfigureComponents` |
+
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/Chassis|GET|`Login` |
+|/redfish/v1/Chassis/\{chassisId\}|GET|`Login` |
+|/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login` |
+|/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|GET|`Login` |
+
+
+
+
+>**NOTE:**
+To view system, chassis, and manager resources, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
   
 ##  Modifying Configurations of Systems Service
   
-Config File of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
-Refer the section **Modifying Configurations** in the README.md to change the configurations of a odimra service
+Config file of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
+Refer to the section **Modifying Configurations** in the README.md file to change the configurations of an odimra service.
   
 **Specific configurations for Systems Service are:**
   
@@ -22,36 +56,7 @@ Refer the section **Modifying Configurations** in the README.md to change the co
     
   
 
-## Supported endpoints
 
-|||
-|-------|--------------------|
-|/redfish/v1/Systems|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}|`GET`, `PATCH`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Memory|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Memory/\{memoryId\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/MemoryDomains|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/NetworkInterfaces|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Bios|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|`GET` , `POST`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|`GET`, `DELETE`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
-|/redfish/v1/Systems?$filter=\{searchKeys\}%20\{conditionKeys\}%20\{value\}|`GET`|
-| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|`POST`|
-|/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
-
-|||
-|-------|--------------------|
-|/redfish/v1/Chassis|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}/Thermal|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|`GET`|
 
 
 
@@ -61,6 +66,17 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 
 ##  Collection of computer systems
 
+|||
+|---------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Systems` |
+|**Description** |This operation lists all systems available with Resource Aggregator for ODIM.|
+|**Returns** |A collection of links to computer system instances.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
@@ -69,7 +85,7 @@ curl -i GET \
 
 ```
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 { 
@@ -91,19 +107,24 @@ curl -i GET \
 ```
 
 
-|||
-|---------|-------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Systems` |
-|**Description** |This operation lists all systems available with Resource Aggregator for ODIM.|
-|**Returns** |A collection of links to computer system instances.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 
 ## Single computer system
+
+|||
+|---------|-------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
+|**Description** |This endpoint fetches information about a specific system.|
+|**Returns** |JSON schema representing this computer system instance.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 
 ```
 curl -i GET \
@@ -112,7 +133,7 @@ curl -i GET \
 
 ```
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 { 
@@ -427,29 +448,13 @@ curl -i GET \
 
 
 
-|||
-|---------|-------|
-|**Method** | `GET` |
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
-|**Description** |This endpoint fetches information about a specific system.|
-|**Returns** |JSON schema representing this computer system instance.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
  
 
 
 
 ##  Memory collection
-
-
-```
-curl -i GET \
-         -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Memory'
-
-
-```
 
 |||
 |---------|-------|
@@ -460,9 +465,35 @@ curl -i GET \
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
+>**curl command**
+
+
+```
+curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Memory'
+
+
+```
+
+
+
 
 
 ## Single memory
+
+
+|||
+|---------|-------|
+|**Method** |GET|
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Memory/{memoryId}` |
+|**Description** |This endpoint retrieves configuration information of specific memory.|
+|**Returns** |JSON schema representing this memory resource.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 
 ```
 curl -i GET \
@@ -472,7 +503,7 @@ curl -i GET \
 
 ```
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 { 
@@ -528,33 +559,15 @@ curl -i GET \
 
 
 
-|||
-|---------|-------|
-|**Method** |GET|
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Memory/{memoryId}` |
-|**Description** |This endpoint retrieves configuration information of specific memory.|
-|**Returns** |JSON schema representing this memory resource.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
  
 
 
 
 
-
-
-
-
 ##  Memory domains
 
-```
-curl -i GET \
-         -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/MemoryDomains'
-
-
-```
 |||
 |-------|-------|
 |**Method** |`GET` |
@@ -564,18 +577,20 @@ curl -i GET \
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
-
-
-##  BIOS
+>**curl command**
 
 ```
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Bios'
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/MemoryDomains'
 
 
 ```
 
+
+
+
+##  BIOS
 
 |||
 |---------|-------|
@@ -587,16 +602,21 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
-## Network interfaces
+>**curl command**
 
 ```
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/NetworkInterfaces'
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Bios'
 
 
 ```
 
+
+
+
+
+## Network interfaces
 
 |||
 |--------|---------|
@@ -607,18 +627,22 @@ curl -i GET \
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
-
-
-##  Ethernet interfaces
-
+>**curl command**
 
 ```
 curl -i GET \
-             -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces'
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/NetworkInterfaces'
 
 
 ```
+
+
+
+
+
+
+##  Ethernet interfaces
 
 |||
 |---------|-------|
@@ -630,8 +654,32 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
+>**curl command**
+
+```
+curl -i GET \
+             -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces'
+
+
+```
+
+
+
+
 ## Single Ethernet interface
 
+|||
+|-----------|----------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/ EthernetInterfaces/{ethernetInterfaceId}` |
+|**Description** |This endpoint retrieves information on a single, logical Ethernet interface or network interface controller \(NIC\).|
+|**Returns** |JSON schema representing this Ethernet interface.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -642,7 +690,7 @@ curl -i GET \
 ```
 
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 {
@@ -674,29 +722,13 @@ curl -i GET \
 
 
 
-|||
-|-----------|----------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/ EthernetInterfaces/{ethernetInterfaceId}` |
-|**Description** |This endpoint retrieves information on a single, logical Ethernet interface or network interface controller \(NIC\).|
-|**Returns** |JSON schema representing this Ethernet interface.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 
 
 ##  Storage
-
-```
-curl -i GET \
-         -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage'
-
-
-```
-
 
 |||
 |---------|-------|
@@ -708,16 +740,21 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
-##  Storage subsystem
-
+>**curl command**
 
 ```
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}'
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage'
 
 
 ```
+
+
+
+
+
+##  Storage subsystem
 
 |||
 |---------|-------|
@@ -729,17 +766,22 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
-
-
-##  Storage drive
+>**curl command**
 
 ```
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}'
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}'
 
 
 ```
+
+
+
+
+
+
+##  Storage drive
 
 |||
 |---------|-------|
@@ -750,23 +792,38 @@ curl -i GET \
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
+>**curl command**
+
+
+```
+curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/{driveId}'
+
+
+```
+
+
+
 
 ## Volumes
 
+
+
 ### A collection of volumes
 
-| | | 
+| | |
 |----------|-----------|
 |<strong>Method</strong> |`GET` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
 |<strong>Description</strong>  |This endpoint retrieves a collection of volumes in a specific storage subsystem.|
 |<strong>Returns</strong> |A list of links to volumes.|
-|<strong>Response Code</strong> |On success, `200 OK` |
+|<strong>Response code</strong> |On success, `200 OK` |
 |<strong>Authentication</strong> |Yes|
 
  
 
- 
+>**curl command** 
 
 ```
 curl -i GET \
@@ -776,22 +833,22 @@ curl -i GET \
 
 ```
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 {
-   ​   "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
-   ​   "@odata.etag":"W/\"AA6D42B0\"",
-   ​   "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes",
-   ​   "@odata.type":"#VolumeCollection.VolumeCollection",
-   ​   "Description":"Volume Collection view",
-   ​   "Members":​[
-      ​      {
-         ​         "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes/1"         ​
-      }      ​
+      "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
+      "@odata.etag":"W/\"AA6D42B0\"",
+      "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes",
+      "@odata.type":"#VolumeCollection.VolumeCollection",
+      "Description":"Volume Collection view",
+      "Members":[
+            {
+                  "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes/1"         
+      }      
    ],
-   ​   "Members@odata.count":1,
-   ​   "Name":"Volume Collection"   ​
+      "Members@odata.count":1,
+      "Name":"Volume Collection"   
 }
 ```
 
@@ -800,17 +857,17 @@ curl -i GET \
 ### Single volume
 
 
-| | | 
+| | |
 |----------|-----------|
 |<strong>Method</strong> |`GET` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
 |<strong>Description</strong>   |This endpoint retrieves information about a specific volume in a storage subsystem.|
 |<strong>Returns</strong>  |JSON schema representing this volume.|
-|<strong>Response Code</strong>  |On success, `200 OK` |
+|<strong>Response code</strong>  |On success, `200 OK` |
 |<strong>Authentication</strong>  |Yes|
 
  
-
+>**curl command**
  
 
 ```
@@ -821,7 +878,7 @@ curl -i GET \
 
 ```
 
-> Sample request body 
+>**Sample response body** 
 
 ```
 {
@@ -857,15 +914,15 @@ curl -i GET \
 
 ### Creating a volume
 
-| | | 
+| | |
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
 |<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.|
-|<strong>Response Code</strong>   |On success, `200 Ok` |
+|<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
-
+>**curl command**
 
 ```
 curl -i -X POST \
@@ -890,7 +947,7 @@ curl -i -X POST \
 
 ```
 
-> Sample request body 
+>**Sample request body** 
 
 ```
 {
@@ -908,7 +965,7 @@ curl -i -X POST \
 }}
 ```
 
-### Request parameters 
+**Request parameters** 
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -918,22 +975,21 @@ curl -i -X POST \
 |@odata.id \}\]<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
 
-> Sample response body 
+>**Sample response body** 
 
 ```
  {
-   ​   "error":{
-      ​      "@Message.ExtendedInfo":[
-         ​         {
-            ​            "MessageId":"iLO.2.13.SystemResetRequired"            ​
-         }         ​
+      "error":{
+            "@Message.ExtendedInfo":[
+                  {
+                        "MessageId":"iLO.2.13.SystemResetRequired"            
+         }         
       ],
-      ​      "code":"iLO.0.10.ExtendedInfo",
-      ​      "message":"See @Message.ExtendedInfo for more information."      ​
-   }   ​
+            "code":"iLO.0.10.ExtendedInfo",
+            "message":"See @Message.ExtendedInfo for more information."      
+   }   
 }
 ```
-
 
 
 
@@ -942,15 +998,15 @@ curl -i -X POST \
 ### Deleting a volume
 
 
-| | | 
+| | |
 |----------|-----------|
 |<strong>Method</strong>  | `DELETE` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
 |<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br> |
-|<strong>Response Code</strong>|On success, `204 No Content` |
+|<strong>Response code</strong>|On success, `204 No Content` |
 |<strong>Authentication</strong>  |Yes|
 
-
+>**curl command**
 
 ```
 curl -i -X DELETE \
@@ -961,7 +1017,7 @@ curl -i -X DELETE \
 
 ```
 
-> Sample request body 
+>**Sample request body** 
 
 ```
 {
@@ -970,7 +1026,7 @@ curl -i -X DELETE \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -979,8 +1035,18 @@ curl -i -X DELETE \
 
 
 
-
 ##  SecureBoot
+
+|||
+|---------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/SecureBoot` |
+|**Description** |Use this endpoint to discover information on `UEFI Secure Boot` and managing the `UEFI Secure Boot` functionality of a specific system.|
+|**Returns** | <ul><li>Action for resetting keys.</li><li> `UEFI Secure Boot` properties.<br>**NOTE:**<br> Use URI in the Actions group to discover information about resetting keys.</li></ul>|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
 
 
 ```
@@ -992,26 +1058,10 @@ curl -i GET \
 ```
 
 
-|||
-|---------|-------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/SecureBoot` |
-|**Description** |Use this endpoint to discover information on `UEFI Secure Boot` and managing the `UEFI Secure Boot` functionality of a specific system.|
-|**Returns** | <ul><li>Action for resetting keys.</li><li> `UEFI Secure Boot` properties.<br>**NOTE:**<br> Use URI in the Actions group to discover information about resetting keys.</li></ul>|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 ##  Processors
-
-```
-curl -i GET \
-         -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Processors'
-
-
-```
-
 
 |||
 |---------|-------|
@@ -1023,18 +1073,23 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
-
-##  Single processor
-
+>**curl command**
 
 
 ```
 curl -i GET \
          -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Processors/{processoId}'
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Processors'
 
 
 ```
+
+
+
+
+
+
+##  Single processor
 
 |||
 |---------|-------|
@@ -1045,9 +1100,33 @@ curl -i GET \
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
+>**curl command**
+
+```
+curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Processors/{processoId}'
+
+
+```
+
+
+
 
 
 ##  Collection of chassis
+
+|||
+|-------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Chassis` |
+|**Description** | This operation lists chassis instances available with Resource Aggregator for ODIM.<br> Chassis represents the physical components of a system - sheet-metal confined spaces, logical zones such as racks, enclosures, chassis and all other containers, and subsystems \(like sensors\).<br> |
+|**Returns** |A collection of links to chassis instances.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -1056,7 +1135,7 @@ curl -i GET \
 
 ```
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 { 
@@ -1077,21 +1156,14 @@ curl -i GET \
 }
 ```
 
-|||
-|-------|-------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Chassis` |
-|**Description** | This operation lists chassis instances available with Resource Aggregator for ODIM.<br> Chassis represents the physical components of a system - sheet-metal confined spaces, logical zones such as racks, enclosures, chassis and all other containers, and subsystems \(like sensors\).<br> |
-|**Returns** |A collection of links to chassis instances.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
  
 
 
 
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 { 
@@ -1118,7 +1190,17 @@ curl -i GET \
 
 ## Single chassis
 
+|||
+|---------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Chassis/{ChassisId}` |
+|**Description** |This operation fetches information on a specific chassis.|
+|**Returns** |JSON schema representing this chassis instance.|
+|**Response code** |On success, `200 OK` |
+|**Authentication** |Yes|
 
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -1128,7 +1210,7 @@ curl -i GET \
 
 ```
 
-> Sample Response body 
+>**Sample response body** 
 
 ```
 { 
@@ -1200,7 +1282,7 @@ curl -i GET \
                "Index":1,
                "MaximumCapWatts":96,
                "Model":"875241-B21",
-               "ProductName":"HPE Smart Storage Battery ",
+               "ProductName":"Smart Storage Battery ",
                "RemainingChargeTimeSeconds":7,
                "SerialNumber":"6WQXL0CB2BV63K",
                "SparePartNumber":"878643-001",
@@ -1243,27 +1325,12 @@ curl -i GET \
 
 
 
-|||
-|---------|-------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Chassis/{ChassisId}` |
-|**Description** |This operation fetches information on a specific chassis.|
-|**Returns** |JSON schema representing this chassis instance.|
-|**Response code** |On success, `200 OK` |
-|**Authentication** |Yes|
 
 
 
- 
+
+
 ##  Thermal metrics
-
-```
-curl -i GET \
-   -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Thermal'
-
-
-```
 
 |||
 |---------|-------|
@@ -1275,16 +1342,20 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
-##  Network adapters
+>**curl command**
 
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Thermal'
 
 
 ```
 
+
+
+
+##  Network adapters
 
 |||
 |---------|-------|
@@ -1296,17 +1367,23 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
+>**curl command**
 
-##  Power
 
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Power'
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
 
 
 ```
 
+
+
+
+
+
+##  Power
 
 |||
 |---------|-------|
@@ -1317,15 +1394,22 @@ curl -i GET \
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
+>**curl command**
 
-##  Searching the inventory
 
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}'
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/Power'
+
 
 ```
+
+
+
+
+
+##  Searching the inventory
 
 |||
 |---------|-------|
@@ -1336,7 +1420,15 @@ curl -i GET \
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
- 
+>**curl command**
+
+
+```
+curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems?$filter={searchKeys}%20{conditionKeys}%20{value/regular_expression}%20{logicalOperand}%20{searchKeys}%20{conditionKeys}%20{value}'
+
+```
 
 
 
@@ -1354,24 +1446,23 @@ curl -i GET \
 -  `{searchkeys}` refers to `ComputerSystem` parameters. Following are the allowed search keys:
 
        -    `ProcessorSummary/Count` 
-
+        
        -   `ProcessorSummary/Model` 
-
+        
        -   `ProcessorSummary/sockets` 
-
+        
        -    `SystemType` 
-
+        
        -   `MemorySummary/TotalSystemMemoryGiB` 
-
+        
        -   `FirmwareVersion` 
-
+        
        -   `Storage/Drives/Quantity` 
-
+        
        -   `Storage/Drives/Capacity` 
-
+        
        -   `Storage/Drives/Type` 
-	 
-
+	
 -  `{conditionKeys}` refers to Redfish-specified conditions. Following are the allowed condition keys:
 
     |Condition Key|Meaning|Supported data type|
@@ -1392,9 +1483,9 @@ curl -i GET \
       Examples:
 
          1. `$filter=TotalSystemMemoryGiB%20eq%20**384**` 
-
+        
          2. `$filter=ProcessorSummary/Model%20eq%20**int\***` 
-
+        
          3. `$filter=Storage/Drives/Type%20eq%20HDD` 
 
 -  `{logicalOperands}` refers to the logical operands that are used to combine two or more filters in a request. Allowed logical operands are `and`, `or`, and `not`.
@@ -1407,7 +1498,7 @@ curl -i GET \
 
 
 1. `$filter=TotalSystemMemoryGiB%20eq%20384`
-    
+   
 	This filter searches a server having total physical memory of 384 GB.
 
 
@@ -1429,11 +1520,11 @@ This filter searches a server having total physical memory of 384 GB and two Int
 
 
 
- 
- 
+
  
 
-> Sample response body
+
+>**Sample response body**
 
 ```
 { 
@@ -1464,6 +1555,18 @@ This filter searches a server having total physical memory of 384 GB and two Int
 
 ##  Resetting a computer system
 
+|||
+|---------|-------|
+|**Method** | `POST` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
+|**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:**<br> To reset an aggregate of systems, use this URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
+
 ```
  curl -i POST \
    -H "X-Auth-Token:{X-Auth-Token}" \
@@ -1478,21 +1581,8 @@ This filter searches a server having total physical memory of 384 GB and two Int
 ```
 
 
-|||
-|---------|-------|
-|**Method** | `POST` |
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
-|**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:**<br> To reset an aggregate of systems, use this URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
 
- 
-
-
-
-
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -1500,13 +1590,13 @@ This filter searches a server having total physical memory of 384 GB and two Int
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.` 
 
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1524,6 +1614,16 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 ##  Changing the boot order of a computer system to default settings
 
+|||
+|--------|------|
+|**Method** |`POST` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder` |
+|**Description** |This action changes the boot order of a specific system to default settings.<br>**NOTE:**<br> To change the boot order of an aggregate of systems, use this URI:<br> `/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` <br> See [Changing the Boot Order of Servers to Default Settings](#changing-the-boot-order-of-servers-to-default-settings).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
 
 ```
  curl -i POST \
@@ -1535,7 +1635,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1549,20 +1649,24 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 }
 ```
 
-|||
-|--------|------|
-|**Method** |`POST` |
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder` |
-|**Description** |This action changes the boot order of a specific system to default settings.<br>**NOTE:**<br> To change the boot order of an aggregate of systems, use this URI:<br> `/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` <br> See [Changing the Boot Order of Servers to Default Settings](#changing-the-boot-order-of-servers-to-default-settings).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 
 ##  Changing BIOS settings
 
+|||
+|-------|-------|
+|**Method** |`PATCH` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings` |
+|**Description** |This action changes BIOS configuration.<br>**NOTE:**<br> Any change in BIOS configuration will be reflected only after the system resets. To see the change, [reset the computer system](#resetting-a-computer-system).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message registries](#message-registries). For example,`MessageId` in the sample response body is `iLO.2.8.SystemResetRequired`. The registry to look up is `iLO.2.8`.<br> |
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 ```
  curl -i -X PATCH \
@@ -1575,21 +1679,9 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 ```
 
 
-|||
-|-------|-------|
-|**Method** |`PATCH` |
-|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Bios/Settings` |
-|**Description** |This action changes BIOS configuration.<br>**NOTE:**<br> Any change in BIOS configuration will be reflected only after the system resets. To see the change, [reset the computer system](#resetting-a-computer-system).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message registries](#message-registries). For example,`MessageId` in the sample response body is `iLO.2.8.SystemResetRequired`. The registry to look up is `iLO.2.8`.<br> |
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
-
- 
 
 
-
-
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -1599,7 +1691,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 `Attributes` are the list of BIOS attributes specific to the manufacturer or provider. To get a full list of attributes, perform `GET` on:
 
@@ -1607,22 +1699,9 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 `https://{odimra_host}:{port}/redfish/v1/Systems/1/Bios/Settings`. 
 
 
-Some of the attributes include:
-
--   `BootMode` 
-
--   `NicBoot1` 
-
--   `PowerProfile` 
-
--   `AdminPhone` 
-
--   `ProcCoreDisable` 
-
--   `UsbControl` 
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -1647,20 +1726,6 @@ Some of the attributes include:
 
 ## Changing the boot order settings
 
-```
- curl -i -X PATCH \
-   -H "X-Auth-Token:{X-Auth-Token}" \
-   -H "Content-Type:application/json" \
-   -d \
-'{ 
-   "Boot":{ 
-      "BootSourceOverrideTarget":"Usb"
-   }
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}}'
-
-```
-
 |||
 |---------|-------|
 |**Method** |`PATCH` |
@@ -1670,30 +1735,44 @@ Some of the attributes include:
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
- 
+>**curl command**
+
+
+```
+ curl -i -X PATCH \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+   -d \
+'{ 
+   "Boot":{ 
+      "BootSourceOverrideTarget":"UefiHttp"
+   }
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}}'
+
+```
 
 
 
 
-
-> Sample request body
+>**Sample request body**
 
 ```
 { 
    "Boot":{ 
-      "BootSourceOverrideTarget":"Usb"
+      "BootSourceOverrideTarget":"UefiHttp"
    }
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 To get a full list of boot attributes that you can update, perform `GET` on:
 
- 
+
 `https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}`.
 
- 
+
 Check attributes under `Boot` in the JSON response. 
 
 Some of the attributes include:
@@ -1748,7 +1827,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
 
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 

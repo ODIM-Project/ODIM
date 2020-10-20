@@ -126,10 +126,13 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		log.Printf("error while deleting the main task: %v", err)
 		return err
 	}
-	err = ts.DeleteTaskIndex(taskID)
-	if err != nil {
-		log.Printf("error while deleting the main task: %v", err)
-		return err
+	//CompletedTaskIndex has only completed task which has subtasks associated with them. So delete index only when condition is met.
+	if task.TaskState == "Completed" && len(task.ChildTaskIDs) != 0 {
+		err = ts.DeleteTaskIndex(taskID)
+		if err != nil {
+			log.Printf("error while deleting the main task: %v", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -168,6 +171,18 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 
 	}
 	rsp.Header["Allow"] = "DELETE"
+	if task.PercentComplete == 100 {
+		delErr := ts.deleteCompletedTask(req.TaskID)
+		if delErr != nil {
+			errorMessage := "Error while deleting the completed task: " + delErr.Error()
+			log.Printf(errorMessage)
+			fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+			return nil
+		}
+		rsp.StatusCode = http.StatusNoContent
+		rsp.Body = nil
+		return nil
+	}
 	// Critical Logic follows
 
 	// Cancel the task using Transaction

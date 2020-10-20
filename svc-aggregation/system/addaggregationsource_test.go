@@ -116,6 +116,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		EncryptPassword:     stubDevicePassword,
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -297,6 +298,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 		EncryptPassword:     stubDevicePassword,
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -375,6 +377,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		EncryptPassword:     stubDevicePassword,
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -534,6 +537,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+		GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -756,6 +760,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+		GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -905,6 +910,7 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+		GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {

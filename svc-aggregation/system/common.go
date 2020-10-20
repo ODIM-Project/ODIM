@@ -1166,9 +1166,14 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 
 	var queueList = make([]string, 0)
 	ipData := strings.Split(req.ManagerAddress, ":")
+	var ip, port string
+	ip = ipData[0]
+	if len(ipData) > 1 {
+		port = ipData[1]
+	}
 	var plugin = agmodel.Plugin{
-		IP:                ipData[0],
-		Port:              ipData[1],
+		IP:                ip,
+		Port:              port,
 		Username:          req.UserName,
 		Password:          []byte(req.Password),
 		ID:                cmVariants.PluginID,

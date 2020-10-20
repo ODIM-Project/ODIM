@@ -32,19 +32,19 @@ import (
 // AddCompute is the handler for adding system
 // Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
 // Upon successfull operation this api returns Systems root UUID in the response body with 200 OK.
-func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete int32, addResourceRequest AddResourceRequest, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
+func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, percentComplete int32, addResourceRequest AddResourceRequest, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
 	var resp response.RPC
-	log.Printf("started adding system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, addResourceRequest.Oem.PluginID)
+	log.Printf("started adding system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, pluginID)
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
 	var task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 
-	plugin, errs := agmodel.GetPluginData(addResourceRequest.Oem.PluginID)
+	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", addResourceRequest.Oem.PluginID}, taskInfo), "", nil
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, taskInfo), "", nil
 	}
 
 	var saveSystem agmodel.SaveSystem
@@ -52,7 +52,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 	saveSystem.UserName = addResourceRequest.UserName
 	//saveSystem.Password = ciphertext
 	saveSystem.Password = []byte(addResourceRequest.Password)
-	saveSystem.PluginID = addResourceRequest.Oem.PluginID
+	saveSystem.PluginID = pluginID
 
 	pluginContactRequest.Plugin = plugin
 	pluginContactRequest.StatusPoll = true
@@ -131,9 +131,9 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 		var skipFlag bool
 		switch h.StatusMessage {
 		case response.ResourceAlreadyExists:
-			msgArg = append(msgArg, addResourceRequest.ManagerAddress, addResourceRequest.Oem.PluginID, "ComputerSystem")
+			msgArg = append(msgArg, addResourceRequest.ManagerAddress, pluginID, "ComputerSystem")
 		case response.ActionParameterNotSupported:
-			msgArg = append(msgArg, addResourceRequest.ManagerAddress, addResourceRequest.Oem.PluginID)
+			msgArg = append(msgArg, addResourceRequest.ManagerAddress, pluginID)
 		case response.ResourceAtURIUnauthorized, response.CouldNotEstablishConnection:
 			msgArg = append(msgArg, addResourceRequest.ManagerAddress)
 		default:
@@ -255,6 +255,6 @@ func (e *ExternalInterface) addCompute(taskID, targetURI string, percentComplete
 		"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		"Location":     resourceURI,
 	}
-	log.Printf("sucessfully added system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, addResourceRequest.Oem.PluginID)
+	log.Printf("sucessfully added system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, pluginID)
 	return resp, saveSystem.DeviceUUID, ciphertext
 }

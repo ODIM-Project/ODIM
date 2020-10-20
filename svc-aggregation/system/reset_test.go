@@ -109,7 +109,6 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	if url == "" {
 		return nil, fmt.Errorf("InvalidRequest")
 	}
-
 	var bData agmodel.SaveSystem
 	bBytes, _ := json.Marshal(body)
 	json.Unmarshal(bBytes, &bData)
@@ -239,6 +238,13 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}
 		if host == "https://100.0.0.4:9091" {
 			body = "incorrectResponse"
+		}
+		if host == "https://100.0.0.1:" || host == "https://100.0.0.2:" {
+			body = "not found"
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+				Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+			}, nil
 		}
 		return &http.Response{
 			StatusCode: http.StatusOK,

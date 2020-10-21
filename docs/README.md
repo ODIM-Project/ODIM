@@ -3127,7 +3127,7 @@ curl -i POST \
 
 ## Connection methods
 
-##  Viewing a collection of connection methods
+###  Viewing a collection of connection methods
 
 
 |||
@@ -3155,21 +3155,26 @@ curl -i GET \
 
 ```
 {
-   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
-   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
-   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
-   "Description":"Connection Methods",
-   "Name":" Connection Methods",
-   "Members":[
-      {
-         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/76a7ec10-6629-499b-99ad-c77656e5a928"
-      }
-   ],
-   "Members@odata.count":1
+   ​   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "Name":"Connection Methods",
+   ​   "Members@odata.count":3,
+   ​   "Members":[
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/aa166b6b-a367-40ba-ac2e-402f9a0c818f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/7cb9fc3b-8b75-45da-8aad-5ff595968b71"         ​
+      }      ​
+   ]   ​
 }
 ```
 
-## Viewing a connection method
+### Viewing a connection method
 
 |||
 |--------|---------|
@@ -3194,28 +3199,24 @@ curl -i GET \
 
 ```
 {
-   "Id":{
-      connectionmethodsID
-   },
-   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsID},
-   "@odata.type": "",
-   "@odata.context": "",
-   "ConnectionMethodType":"Redfish",
-   "ConnectionMethodVariant":"GRF_v1.0",
-   "OEM":{
-
-   },
-   "Links":{
-      "AggregationSources":[
+   ​   "@odata.type":"#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "Name":"Connection Method",
+   ​   "ConnectionMethodType":"Redfish",
+   ​   "ConnectionMethodVariant":"Compute:BasicAuth:GRF:1.0.0",
+   ​   "Links":{
+      ​      "AggregationSources":[
          {
-            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}"
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
          },
          {
-            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}"
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
          }
-      ]
-   }
-}
+      ]      ​
+   }   ​
+}​
 ```
 
 >**Connection method properties**
@@ -4013,9 +4014,12 @@ curl -i GET \
 
 
 
+## Drives
+
+The drive schema represents a single physical drive for a system, including links to associated volumes.
 
 
-##  Storage drive
+###  Single drive
 
 |||
 |---------|-------|
@@ -4042,6 +4046,7 @@ curl -i GET \
 
 ## Volumes
 
+The volume schema represents a volume, virtual disk, LUN, or other logical storage entity for any system.
 
 
 ### A collection of volumes
@@ -4152,7 +4157,7 @@ curl -i GET \
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.|
+|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before creating a volume.</li><li>Power on the system once the operation is successful. The volume will be available in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
@@ -4205,7 +4210,7 @@ curl -i -X POST \
 |---------|----|-----------|
 |Name|String \(required\)<br> |Name of the new volume.|
 |RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
-|Drives\[\{|Array \(required\)<br> |An array of links to drive resources that the new volume contains.|
+|Drives\[\{|Array \(required\)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id \}\]<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
 
@@ -4958,13 +4963,13 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 
 
-## Changing the boot order settings
+## Changing the boot settings
 
 |||
 |---------|-------|
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
-|**Description** |This action changes the boot order settings of a specific system.|
+|**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. The changes will be seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
@@ -5014,6 +5019,8 @@ Some of the attributes include:
 -   `BootSourceOverrideTarget` 
 
 -   `UefiTargetBootSourceOverride` 
+
+-   `Bootorder`
 
 
 For possible values, see values listed under `{attribute}.AllowableValues`. 

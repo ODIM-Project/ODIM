@@ -1521,7 +1521,7 @@ curl -i POST \
 
 ## Connection methods
 
-##  Viewing a collection of connection methods
+###  Viewing a collection of connection methods
 
 
 |||
@@ -1549,21 +1549,26 @@ curl -i GET \
 
 ```
 {
-   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
-   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
-   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
-   "Description":"Connection Methods",
-   "Name":" Connection Methods",
-   "Members":[
-      {
-         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/76a7ec10-6629-499b-99ad-c77656e5a928"
-      }
-   ],
-   "Members@odata.count":1
+   ​   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "Name":"Connection Methods",
+   ​   "Members@odata.count":3,
+   ​   "Members":[
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/aa166b6b-a367-40ba-ac2e-402f9a0c818f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/7cb9fc3b-8b75-45da-8aad-5ff595968b71"         ​
+      }      ​
+   ]   ​
 }
 ```
 
-## Viewing a connection method
+### Viewing a connection method
 
 |||
 |--------|---------|
@@ -1588,28 +1593,24 @@ curl -i GET \
 
 ```
 {
-   "Id":{
-      connectionmethodsID
-   },
-   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsID},
-   "@odata.type": "",
-   "@odata.context": "",
-   "ConnectionMethodType":"Redfish",
-   "ConnectionMethodVariant":"GRF_v1.0",
-   "OEM":{
-
-   },
-   "Links":{
-      "AggregationSources":[
+   ​   "@odata.type":"#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "Name":"Connection Method",
+   ​   "ConnectionMethodType":"Redfish",
+   ​   "ConnectionMethodVariant":"Compute:BasicAuth:GRF:1.0.0",
+   ​   "Links":{
+      ​      "AggregationSources":[
          {
-            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}"
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
          },
          {
-            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}"
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
          }
-      ]
-   }
-}
+      ]      ​
+   }   ​
+}​
 ```
 
 >**Connection method properties**

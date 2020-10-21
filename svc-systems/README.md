@@ -780,8 +780,12 @@ curl -i GET \
 
 
 
+## Drives
 
-##  Storage drive
+The drive schema represents a single physical drive for a system, including links to associated volumes.
+
+
+###  Single drive
 
 |||
 |---------|-------|
@@ -808,6 +812,7 @@ curl -i GET \
 
 ## Volumes
 
+The volume schema represents a volume, virtual disk, LUN, or other logical storage entity for any system.
 
 
 ### A collection of volumes
@@ -918,7 +923,7 @@ curl -i GET \
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.|
+|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before creating a volume.</li><li>Power on the system once the operation is successful. The volume will be available in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
@@ -971,7 +976,7 @@ curl -i -X POST \
 |---------|----|-----------|
 |Name|String \(required\)<br> |Name of the new volume.|
 |RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
-|Drives\[\{|Array \(required\)<br> |An array of links to drive resources that the new volume contains.|
+|Drives\[\{|Array \(required\)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id \}\]<br> |String|A link to a drive resource.|
 |@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
 
@@ -990,7 +995,6 @@ curl -i -X POST \
    }   
 }
 ```
-
 
 
 
@@ -1724,13 +1728,13 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 
 
-## Changing the boot order settings
+## Changing the boot settings
 
 |||
 |---------|-------|
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
-|**Description** |This action changes the boot order settings of a specific system.|
+|**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. The changes will be seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
@@ -1780,6 +1784,8 @@ Some of the attributes include:
 -   `BootSourceOverrideTarget` 
 
 -   `UefiTargetBootSourceOverride` 
+
+-   `Bootorder`
 
 
 For possible values, see values listed under `{attribute}.AllowableValues`. 

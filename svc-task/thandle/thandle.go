@@ -126,10 +126,13 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		log.Printf("error while deleting the main task: %v", err)
 		return err
 	}
-	err = ts.DeleteTaskIndex(taskID)
-	if err != nil {
-		log.Printf("error while deleting the main task: %v", err)
-		return err
+	//CompletedTaskIndex has only completed task which has subtasks associated with them. So delete index only when condition is met.
+	if task.TaskState == "Completed" && len(task.ChildTaskIDs) != 0 {
+		err = ts.DeleteTaskIndex(taskID)
+		if err != nil {
+			log.Printf("error while deleting the main task: %v", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -159,7 +162,27 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	if err != nil {
 		return nil
 	}
+	privileges := []string{common.PrivilegeConfigureManager}
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while authentication")
+		fillProtoResponse(rsp, authResp)
+		return nil
+
+	}
 	rsp.Header["Allow"] = "DELETE"
+	if task.PercentComplete == 100 {
+		delErr := ts.deleteCompletedTask(req.TaskID)
+		if delErr != nil {
+			errorMessage := "Error while deleting the completed task: " + delErr.Error()
+			log.Printf(errorMessage)
+			fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+			return nil
+		}
+		rsp.StatusCode = http.StatusNoContent
+		rsp.Body = nil
+		return nil
+	}
 	// Critical Logic follows
 
 	// Cancel the task using Transaction
@@ -519,7 +542,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		OdataType:    "#TaskCollection.TaskCollection",
 	}
 	constructCommonResponseHeader(rsp)
-	privileges := []string{common.PrivilegeConfigureUsers}
+	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		fillProtoResponse(rsp, authResp)
@@ -534,14 +557,37 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		log.Printf(errorMessage)
 		return nil
 	}
+	statusConfigureUsers := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
+	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	if err != nil {
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		log.Printf(authErrorMessage)
+		return nil
+
+	}
 	var listMembers = []tresponse.ListMember{}
 	for _, taskID := range tasks {
 		// Check who owns the task before returning, if this can only be done by admin,
 		//then its appropriate to give back all the tasks available in the DB
-		member := tresponse.ListMember{
-			OdataID: "/redfish/v1/TaskService/Tasks/" + taskID,
+		//If user has just login privelege then return his own task
+		if authResp.StatusCode == http.StatusOK && statusConfigureUsers.StatusCode != http.StatusOK {
+			task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
+			if err != nil {
+				log.Printf("error getting task status : %v", err)
+				fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, authErrorMessage, nil, nil))
+				return nil
+			}
+			//Check if the task belongs to user
+			if task.UserName == sessionUserName {
+				member := tresponse.ListMember{OdataID: "/redfish/v1/TaskService/Tasks/" + taskID}
+				listMembers = append(listMembers, member)
+			}
 		}
-		listMembers = append(listMembers, member)
+		//if user has configureusers privelege then return all tasks
+		if statusConfigureUsers.StatusCode == http.StatusOK {
+			member := tresponse.ListMember{OdataID: "/redfish/v1/TaskService/Tasks/" + taskID}
+			listMembers = append(listMembers, member)
+		}
 	}
 
 	// return response with status OK

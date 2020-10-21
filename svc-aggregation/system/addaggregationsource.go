@@ -122,7 +122,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	if aggregationSourceRequest.Links.Oem.PluginType != "" || aggregationSourceRequest.Links.Oem.PreferredAuthType != "" {
 		resp, aggregationSourceUUID, cipherText = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest)
 	} else {
-		resp, aggregationSourceUUID, cipherText = e.addCompute(taskID, targetURI, percentComplete, addResourceRequest, pluginContactRequest)
+		resp, aggregationSourceUUID, cipherText = e.addCompute(taskID, targetURI, addResourceRequest.Oem.PluginID, percentComplete, addResourceRequest, pluginContactRequest)
 	}
 	if resp.StatusMessage != "" {
 		return resp
@@ -213,7 +213,6 @@ func (e *ExternalInterface) addAggregationSourceWithConnectionMethod(taskID, tar
 
 	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)
 	if err1 != nil {
-		fmt.Println("errrrr", err1, connectionMethod)
 		errMsg := "error while getting connection method id: " + err1.Error()
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
@@ -234,7 +233,7 @@ func (e *ExternalInterface) addAggregationSourceWithConnectionMethod(taskID, tar
 	if statusCode == http.StatusOK {
 		resp, aggregationSourceUUID, cipherText = e.addPluginDataWIthConnectionMethod(addResourceRequest, taskID, targetURI, pluginContactRequest, queueList, cmVariants)
 	} else if statusCode == http.StatusNotFound {
-		resp, aggregationSourceUUID, cipherText = e.addCompute(taskID, targetURI, percentComplete, addResourceRequest, pluginContactRequest)
+		resp, aggregationSourceUUID, cipherText = e.addCompute(taskID, targetURI, cmVariants.PluginID, percentComplete, addResourceRequest, pluginContactRequest)
 	} else {
 		return statusResp
 	}

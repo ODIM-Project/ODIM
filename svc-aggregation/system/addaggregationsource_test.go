@@ -423,6 +423,402 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 	}
 }
 
+func TestExternalInterface_AddBMCWithConnectionMethod(t *testing.T) {
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockPluginData(t, "GRF")
+	mockPluginData(t, "XAuthPlugin")
+	mockPluginData(t, "XAuthPluginFail")
+
+	reqSuccess, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	})
+	reqWithoutConnectionMethod, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.11",
+		UserName: "admin",
+		Password: "password",
+	})
+	reqPluginID, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
+			},
+		},
+	})
+	reqSuccessXAuth, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.2",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/0a8992dc-8b47-4fe3-b26c-4c34048cf0d2",
+			},
+		},
+	})
+	reqIncorrectDeviceBasicAuth, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin1",
+		Password: "incorrectPassword",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	})
+	reqIncorrectDeviceXAuth, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.2",
+		UserName: "username",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7551386e-b9d7-4233-a963-3841adc69e17",
+			},
+		},
+	})
+	p := &ExternalInterface{
+		ContactClient:          mockContactClient,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		DeleteComputeSystem:    deleteComputeforTest,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+	}
+	type args struct {
+		taskID string
+		req    *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "posivite case",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqSuccess,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "request without OEM",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqWithoutConnectionMethod,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "update task failure or invalid taskID",
+			p:    p,
+			args: args{
+				taskID: "invalid",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqSuccess,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "invalid request body format",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  []byte("some invalid format"),
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "invalid plugin id",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqPluginID,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "success: plugin with xauth token",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqSuccessXAuth,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "with incorrect device credentials and BasicAuth",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqIncorrectDeviceBasicAuth,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusUnauthorized,
+			},
+		},
+		{
+			name: "with incorrect device credentials and XAuth",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqIncorrectDeviceXAuth,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusUnauthorized,
+			},
+		},
+	}
+	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
+		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
+		t.Run(tt.name, func(t *testing.T) {
+			time.Sleep(2 * time.Second)
+			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
+			}
+		})
+		ActiveReqSet.UpdateMu.Lock()
+		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
+	}
+}
+
+func TestExternalInterface_AddBMCForPasswordEncryptFailWithConnectionMethod(t *testing.T) {
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockPluginData(t, "GRF")
+
+	reqEncryptFail, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin",
+		Password: "passwordWithInvalidEncryption",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	})
+	p := &ExternalInterface{
+		ContactClient:          mockContactClient,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		DeleteComputeSystem:    deleteComputeforTest,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+	}
+	type args struct {
+		taskID string
+		req    *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "encryption failure",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqEncryptFail,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+	}
+	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
+		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
+		t.Run(tt.name, func(t *testing.T) {
+			time.Sleep(2 * time.Second)
+			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
+			}
+		})
+		ActiveReqSet.UpdateMu.Lock()
+		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
+	}
+}
+
+// TestExternalInterface_AddBMCDuplicateWithConnectionMethod handles the test cases for getregistry and duplicate add server
+func TestExternalInterface_AddBMCDuplicateWithConnectionMethod(t *testing.T) {
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	defer func() {
+		common.TruncateDB(common.OnDisk)
+		common.TruncateDB(common.InMemory)
+	}()
+	mockPluginData(t, "GRF")
+
+	reqSuccess, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	})
+	p := &ExternalInterface{
+		ContactClient:          mockContactClientForDuplicate,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		DeleteComputeSystem:    deleteComputeforTest,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+	}
+	type args struct {
+		taskID string
+		req    *aggregatorproto.AggregatorRequest
+	}
+	req := &aggregatorproto.AggregatorRequest{
+		SessionToken: "validToken",
+		RequestBody:  reqSuccess,
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "success case with registries",
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "duplicate case",
+			want: response.RPC{
+				StatusCode: http.StatusConflict,
+			},
+		},
+	}
+	for _, tt := range tests {
+		ActiveReqSet.UpdateMu.Lock()
+		ActiveReqSet.ReqRecord = make(map[string]interface{})
+		ActiveReqSet.UpdateMu.Unlock()
+		t.Run(tt.name, func(t *testing.T) {
+			if got := p.AddAggregationSource("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
+			}
+		})
+		ActiveReqSet.UpdateMu.Lock()
+		ActiveReqSet.ReqRecord = nil
+		ActiveReqSet.UpdateMu.Unlock()
+	}
+}
+
 func TestExternalInterface_Manager(t *testing.T) {
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)

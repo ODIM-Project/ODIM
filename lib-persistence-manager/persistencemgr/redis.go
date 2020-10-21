@@ -276,7 +276,10 @@ func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 
-	value, _ := p.Read(table, key)
+	value, readErr := p.Read(table, key)
+	if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
+		return errors.PackError(readErr.ErrNo(), "error: db connection failed")
+	}
 	if value != "" {
 		return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
 	}

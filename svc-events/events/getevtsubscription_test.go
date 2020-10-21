@@ -58,7 +58,7 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	resp := pc.GetEventSubscriptionsCollection(req)
 	data := resp.Body.(evresponse.ListResponse)
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
-	assert.Equal(t, 7, data.MembersCount, "MembersCount should be 7")
+	assert.Equal(t, 8, data.MembersCount, "MembersCount should be 8")
 
 	// Negative test cases
 	// Invalid token

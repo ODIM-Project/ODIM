@@ -38,12 +38,15 @@ github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4b
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201005194902-ed323c41b4d6/go.mod h1:px22wynjWTLxeeCGenVKhZ0Y+fIJc2RQusZazSo+OsI=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201012075046-3c059402892a h1:yYO7jsTIL6BFJQYsoZln68F0nySeTHkM3AKwvcQK1/g=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201012075046-3c059402892a/go.mod h1:wuy33SH06z/SpmSj2CruKW5ml08fLeCoStg4t9/evKI=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201021053518-88345d4a9988 h1:mnZ4dpCtFygpzJUUKzIdynmxWO3mE3IcVM+xwgi8e+A=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201021053518-88345d4a9988/go.mod h1:gxcTX5NCbmKYHweBnALpVA0hytBWvQ9esKGS2WnkBFk=
 github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf h1:GS2ahHlyYV9qoJ+t8aVatNu2a7uzsAcYSzd3vL26AG8=
 github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201007090649-06a4c52ce4cf/go.mod h1:WPKKuAY5yeQhB5PjFpUG6pAA39Zkk7itx5lE6QFhiyo=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727091052-cb7db65624ce/go.mod h1:kvWozdwrn+nfJmxQB5o2hruNU4K2c0CLn5r5UrdJp/M=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200727110501-4599893e44fd/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20200925145026-eac0549d2f51/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201009052423-b3d4beccdb41/go.mod h1:mWour82PNJD+oJ8T2fYGpo7UBCNK7IlmPLRoeyFSYog=
+github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201012075046-3c059402892a/go.mod h1:EY3r2ljrLgEkB5zP7zJbq7/YEn24PaBc3oLr4YVX40w=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201016064732-c652b5935f93 h1:KrEB61iFFDwlOaFW/H4CEoJv6WIMl8JVeqmCMW5/UtA=
 github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201016064732-c652b5935f93/go.mod h1:EY3r2ljrLgEkB5zP7zJbq7/YEn24PaBc3oLr4YVX40w=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

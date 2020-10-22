@@ -252,6 +252,12 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 - {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you
     have changed the default port in the `odim_config.json` file, use that as the port.
+	
+	
+To access the base URL using a REST client, use IP address of the system where the resource aggregator is installed as `{odim_host}`.
+ 
+>**NOTE**: To use FQDN as `{odim_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
+
 
 **curl usage**
 

@@ -1238,11 +1238,14 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 }
 
 func getConnectionMethodVariants(connectionMethodVariant string) connectionMethodVariants {
+	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
+	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
+	firmawareVesrion := strings.Split(cm[2], "_")
 	return connectionMethodVariants{
 		PluginType:        cm[0],
 		PreferredAuthType: cm[1],
 		PluginID:          cm[2],
-		FirmwareVersion:   cm[3],
+		FirmwareVersion:   firmawareVesrion[1],
 	}
 }

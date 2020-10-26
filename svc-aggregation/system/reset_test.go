@@ -76,6 +76,18 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		plugin.ManagerUUID = "1234877451-1234"
 	case "ILO":
 		plugin.ManagerUUID = "1234877451-1233"
+	case "XAuthPlugin_v1.0.0":
+		plugin.PreferredAuthType = "XAuthToken"
+	case "XAuthPluginFail_v1.0.0":
+		plugin.PreferredAuthType = "XAuthToken"
+		plugin.Username = "incorrectusername"
+	case "NoStatusPlugin_v1.0.0":
+		plugin.Username = "noStatusUser"
+		plugin.ManagerUUID = "1234877451-1235"
+	case "GRF_v1.0.0":
+		plugin.ManagerUUID = "1234877451-1234"
+	case "ILO_v1.0.0":
+		plugin.ManagerUUID = "1234877451-1233"
 	}
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -232,7 +244,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}, nil
 
 	} else if url == host+"/ODIM/v1/Status" {
-		body := `{"Version": "1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
+		body := `{"Version": "v1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
 		if host == "https://100.0.0.3:9091" {
 			return nil, fmt.Errorf("plugin not reachable")
 		}

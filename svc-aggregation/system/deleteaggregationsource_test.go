@@ -418,3 +418,257 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		})
 	}
 }
+
+func TestExternalInterface_DeleteAggregationSourceManagerWithConnectionMethod(t *testing.T) {
+	d := &ExternalInterface{
+		EventNotification:      mockEventNotification,
+		ContactClient:          mockContactClientForDelete,
+		DecryptPassword:        stubDevicePassword,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+	}
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	device1 := agmodel.Target{
+		ManagerAddress: "100.0.0.1",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
+		PluginID:       "ILO_v1.0.0",
+	}
+
+	mockPluginData(t, "GRF_v1.0.0")
+	mockPluginData(t, "ILO_v1.0.0")
+	mockPluginData(t, "NoStatusPlugin_v1.0.0")
+	mockDeviceData("24b243cf-f1e3-5318-92d9-2d6737d6b0b9", device1)
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
+	reqManagerGRF := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
+	reqManagerILO := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50001",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069",
+			},
+		},
+	}
+	req1 := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50002",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/e85bd91f-b257-4db8-b049-171099f3beec",
+			},
+		},
+	}
+	err := agmodel.AddAggregationSource(reqManagerILO, "/redfish/v1/AggregationService/AggregationSources/123455")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(req1, "/redfish/v1/AggregationService/AggregationSources/123457")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		args args
+		want int32
+	}{
+		{
+			name: "successful plugin deletion",
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "SessionToken",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123456",
+				},
+			},
+			want: http.StatusNoContent,
+		},
+		{
+			name: "deletion of plugin with mangaged devices",
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "SessionToken",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123455",
+				},
+			},
+			want: http.StatusNotAcceptable,
+		},
+		{
+			name: "deletion of plugin with invalid aggregation source id",
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "SessionToken",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123434",
+				},
+			},
+			want: http.StatusNotFound,
+		},
+		{
+			name: "plugin status check failure",
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "SessionToken",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/123457",
+				},
+			},
+			want: http.StatusNotAcceptable,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := d.DeleteAggregationSource(tt.args.req)
+			if got.StatusCode != tt.want {
+				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_DeleteBMCWithConnectionMethod(t *testing.T) {
+	d := &ExternalInterface{
+		DeleteComputeSystem:     deleteComputeforTest,
+		DeleteSystem:            deleteSystemforTest,
+		DeleteEventSubscription: mockDeleteSubscription,
+		EventNotification:       mockEventNotification,
+		DecryptPassword:         stubDevicePassword,
+		GetConnectionMethod:     mockGetConnectionMethod,
+		UpdateConnectionMethod:  mockUpdateConnectionMethod,
+	}
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	reqSuccess := agmodel.AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
+	reqFailure := agmodel.AggregationSource{
+		HostName: "100.0.0.2",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
+	device1 := agmodel.Target{
+		ManagerAddress: "100.0.0.1",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "ef83e569-7336-492a-aaee-31c02d9db831",
+		PluginID:       "GRF_v1.0.0",
+	}
+	device2 := agmodel.Target{
+		ManagerAddress: "100.0.0.1",
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+		UserName:       "admin",
+		DeviceUUID:     "ef83e569-7336-492a-aaee-31c02d9db832",
+		PluginID:       "GRF_v1.0.0",
+	}
+
+	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device1)
+	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db832", device2)
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1")
+
+	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(reqFailure, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db832")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	type args struct {
+		req *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		args args
+		want int32
+	}{
+		{
+			name: "successful compute deletion",
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "SessionToken",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831",
+				},
+			},
+			want: http.StatusNoContent,
+		},
+		{
+			name: "delete subscription failure",
+			args: args{
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "SessionToken",
+					URL:          "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db832",
+				},
+			},
+			want: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := d.DeleteAggregationSource(tt.args.req)
+			if got.StatusCode != tt.want {
+				t.Errorf("DeleteAggregationSource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -254,9 +254,9 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
     have changed the default port in the `odim_config.json` file, use that as the port.
 	
 	
-To access the base URL using a REST client, use IP address of the system where the resource aggregator is installed as `{odim_host}`.
+To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed.
  
->**NOTE**: To use FQDN as `{odim_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
+>**NOTE**: To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 
 **curl usage**

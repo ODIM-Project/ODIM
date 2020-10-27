@@ -102,19 +102,14 @@
 		"UpdateService"
 	],
 	"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
-  "ConnectionMethodConf":[
-		{
-            "ConnectionMethodType":"Redfish",
-            "ConnectionMethodVariant":"Compute:BasicAuth:GRF:1.0.0"
-        },
-        {
-            "ConnectionMethodType":"Redfish",
-            "ConnectionMethodVariant":"Storage:BasicAuth:STG:1.0.0"
-        },
-        {
-            "ConnectionMethodType":"Redfish",
-            "ConnectionMethodVariant":"Compute:XAuthToken:GRF:1.0.0"
-        }
-
-	]
+  "ConnectionMethodConf": [
+      {
+         "ConnectionMethodType": "Redfish",
+         "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
+      },
+      {
+         "ConnectionMethodType": "Redfish",
+         "ConnectionMethodVariant": "Storage:BasicAuth:STG_v1.0.0"
+      }
+   ]
 }

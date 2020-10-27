@@ -13,13 +13,15 @@
 
 
 
-# Deploying ODIMRA
+# Deploying the resource aggregator for ODIM (ODIMRA)
+
 ## 1. Setting up OS and Docker environment
 
 **Prerequisites**
 ------------------
-Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
+- Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
 
+- Ensure not to create `odimra` user during the installation of the VM.
 
 **Procedure**
 --------------
@@ -122,7 +124,7 @@ To install `Ubuntu Make`, run the following command:
 
 	   
 ## 2. Installing the resource aggregator for ODIM and GRF plugin
-This section provides a step-by-step procedure for deploying the resource aggregator for ODIM (odimra) and GRF plugin.
+This section provides a step-by-step procedure for deploying ODIMRA and GRF plugin.
 
   
   **NOTE:**
@@ -130,6 +132,18 @@ This section provides a step-by-step procedure for deploying the resource aggreg
   - The following ports are used for deploying odimra and GRF plugin:
     45000, 45001, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
     Ensure that the above ports are not in use.
+  - The following users are created and added to group ids automatically when the certificates are generated during deployment. 
+  
+    |User Id| Group Id|
+	-----|---------|
+	|`odimra`|1234 |
+	|`plugin`|1235 |
+	
+    `odimra` is created on both the VM and the container for the resource aggregator.
+	
+	`plugin` is created  on both the VM and the container for the GRF plugin.
+	
+	 Ensure that these user ids and group ids are not present on the VM prior to deployment.
 
 
 **WARNING:** Do not run the commands provided in this section as root user unless mentioned.
@@ -338,15 +352,15 @@ This section provides a step-by-step procedure for deploying the resource aggreg
 ODIMRA:
 
 ```
-username: admin
-password: Od!m12$4
+Username: admin
+Password: Od!m12$4
 ```
 
-GRF PLUGIN:
+GRF plugin:
 
 ```
-username: admin
-password: GRFPlug!n12$4
+Username: admin
+Password: GRFPlug!n12$4
 ``` 
  
  
@@ -359,7 +373,7 @@ password: GRFPlug!n12$4
      $ docker exec -it build_odimra_1/bin/bash
      ```
 
-2.   Edit the parameters in the `odimra_config.json` file located in this path:   `/etc/odimra_config/odimra_config.json` and save. 
+2.   Edit the parameters in the `odimra_config.json` file located in this path: `/etc/odimra_config/odimra_config.json` and save. 
 
      The parameters that are configurable are listed in the following table.
       > **NOTE:** It is recommended not to modify parameters other than the ones listed in the following table.

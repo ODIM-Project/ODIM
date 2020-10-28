@@ -370,7 +370,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "successful get data",
+			name: "successful get NetworkAdapters collection",
 			p:    &pluginContact,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
@@ -388,7 +388,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 		},
 
 		{
-			name: "successful get data",
+			name: "successful get NetworkAdapter",
 			p:    &pluginContact,
 			args: args{
 				req: &chassisproto.GetChassisRequest{

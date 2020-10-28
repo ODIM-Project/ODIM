@@ -134,10 +134,10 @@ func routers() *iris.Application {
 		systemsAction.Post("/ComputerSystem.Reset", rfphandler.ResetComputerSystem)
 		systemsAction.Post("/ComputerSystem.SetDefaultBootOrder", rfphandler.SetDefaultBootOrder)
 
-		biosParty := pluginRoutes.Party("/systems/{id}/bios")
-		biosParty.Get("", rfphandler.GetResource)
-		biosParty.Get("/settings", rfphandler.GetResource)
-		biosParty.Patch("/settings", rfphandler.ChangeSettings)
+		biosParty := systems.Party("/{id}/Bios")
+		biosParty.Get("/", rfphandler.GetResource)
+		biosParty.Get("/Settings", rfphandler.GetResource)
+		biosParty.Patch("/Settings", rfphandler.ChangeSettings)
 
 		chassis := pluginRoutes.Party("/Chassis")
 		chassis.Get("", rfphandler.GetResource)

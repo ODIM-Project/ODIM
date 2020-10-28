@@ -139,11 +139,11 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
 	|`odimra`|1234 |
 	|`plugin`|1235 |
 	
-    `odimra` is created on both the VM and the container for the resource aggregator.
+     `odimra` is created on both the VM and the container for the resource aggregator.
 	
-	`plugin` is created  on both the VM and the container for the GRF plugin.
+	 `plugin` is created  on both the VM and the container for the GRF plugin.
 	
-	 Ensure that these user ids and group ids are not present on the VM prior to deployment.
+	  Ensure that these user ids and group ids are not present on the VM prior to deployment.
 
 
 **WARNING:** Do not run the commands provided in this section as root user unless mentioned.

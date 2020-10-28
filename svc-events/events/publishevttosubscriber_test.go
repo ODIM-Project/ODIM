@@ -146,6 +146,22 @@ func storeTestEventDetails(t *testing.T) {
 			Hosts:                []string{"localhost"},
 			SubordinateResources: true,
 		},
+		{
+			UserName:             "admin",
+			SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d8",
+			Destination:          "https://10.24.1.9:9090/events",
+			Name:                 "Subscription",
+			Location:             "https://10.24.1.2/EventService/Subscriptions/1",
+			EventHostIP:          "10.4.1.2",
+			Context:              "context",
+			EventTypes:           []string{"Alert"},
+			MessageIds:           []string{"IndicatorChanged"},
+			ResourceTypes:        []string{"ComputerSystem"},
+			OriginResource:       "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			Hosts:                []string{"10.4.1.2"},
+			SubordinateResources: true,
+		},
 	}
 
 	for _, sub := range subarr {
@@ -179,6 +195,11 @@ func storeTestEventDetails(t *testing.T) {
 			Location:        "/ODIM/v1/Subscriptions/12345",
 			EventHostIP:     "localhost",
 			OriginResources: []string{""},
+		},
+		{
+			Location:        "https://10.24.1.9/EventService/Subscriptions/1",
+			EventHostIP:     "10.4.1.9",
+			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea:1"},
 		},
 	}
 	for _, devSub := range devSubArr {
@@ -232,6 +253,17 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 		event.Request = message
 		flag := PublishEventsToDestination(event)
 		assert.True(t, flag)
+	}
+	for _, v := range messages {
+		var event common.Events
+		event.IP = "10.24.1.9"
+		message, err := json.Marshal(v)
+		if err != nil {
+			t.Errorf("expected err is nil but got : %v", err)
+		}
+		event.Request = message
+		flag := PublishEventsToDestination(event)
+		assert.False(t, flag)
 	}
 }
 

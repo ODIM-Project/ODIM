@@ -101,11 +101,11 @@ func storeTestEventDetails(t *testing.T) {
 	}
 
 }
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" && sessionToken != "token" && sessionToken != "token1" {
-		return http.StatusUnauthorized, response.NoValidSession
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return http.StatusOK, response.Success
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func getMockedSessionUserName(sessionToken string) (string, error) {

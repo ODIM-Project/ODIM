@@ -16,6 +16,7 @@ package system
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -43,7 +44,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	if !isPluginTypeSupported(req.Oem.PluginType) {
 		errMsg := "error: incorrect request property value for PluginType"
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PluginType", config.Data.SupportedPluginTypes}, taskInfo), "", nil
+		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PluginType", fmt.Sprintf("%v", config.Data.SupportedPluginTypes)}, taskInfo), "", nil
 	}
 
 	// checking whether the Plugin already exists
@@ -70,6 +71,30 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 				[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, []interface{}{}, taskInfo), "", nil
+	}
+
+	pluginNameArray, err := agmodel.GetAllKeysFromTable("Plugin")
+	if err == nil {
+		for _, ID := range pluginNameArray {
+
+			plugin, err := e.GetPluginMgrAddr(ID)
+
+			if err != nil && err.ErrNo() == errors.JSONUnmarshalFailed {
+				continue
+			}
+			if err != nil {
+				return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(),
+					[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
+			}
+			if plugin.IP+":"+plugin.Port == req.ManagerAddress {
+				errMsg := "error:plugin with manager adress " + req.ManagerAddress + " already exists with name "+plugin.ID+" and ManagerUUID "+plugin.ManagerUUID
+				log.Println(errMsg)
+				return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", ID}, taskInfo), "", nil
+			}
+		}
+	} else {
+		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(),
+			[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
 	}
 
 	// encrypt plugin password

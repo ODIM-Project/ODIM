@@ -22,12 +22,13 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/managers"
 )
 
 // Managers struct helps to register service
 type Managers struct {
-	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC func(sessionToken string, privileges, oemPrivileges []string) response.RPC
 	EI              *managers.ExternalInterface
 }
 
@@ -37,15 +38,13 @@ type Managers struct {
 // to send back to requested user.
 func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
 		return nil
 	}
 	data, _ := m.EI.GetManagersCollection(req)
@@ -64,15 +63,13 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 // which is present in the request.
 func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
 		return nil
 	}
 	data := m.EI.GetManagers(req)
@@ -91,15 +88,13 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 // which is present in the request.
 func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
 	sessionToken := req.SessionToken
-	authStatusCode, authStatusMessage := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		resp.StatusCode = authStatusCode
-		resp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		resp.Body = generateResponse(rpcResp.Body)
-		resp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
 		return nil
 	}
 	data := m.EI.GetManagersResource(req)

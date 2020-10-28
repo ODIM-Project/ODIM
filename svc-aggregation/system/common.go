@@ -51,7 +51,7 @@ type Device struct {
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
 	ContactClient           func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                    func(string, []string, []string) (int32, string)
+	Auth                    func(string, []string, []string) response.RPC
 	GetSessionUserName      func(string) (string, error)
 	CreateChildTask         func(string, string) (string, error)
 	CreateTask              func(string) (string, error)
@@ -69,6 +69,7 @@ type ExternalInterface struct {
 	EventNotification       func(string, string, string)
 	GetAllKeysFromTable     func(string) ([]string, error)
 	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
+	GetPluginMgrAddr        func(string) (agmodel.Plugin,  *errors.Error)
 }
 
 type responseStatus struct {
@@ -254,7 +255,7 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 			errorMessage += "error: invalid resource username/password"
 			resp.StatusCode = int32(pluginResp.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
-			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID, errorMessage}
+			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
 			log.Println(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}

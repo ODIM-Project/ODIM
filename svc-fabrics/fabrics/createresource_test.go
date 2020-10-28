@@ -25,13 +25,13 @@ import (
 	"testing"
 )
 
-func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) (int32, string) {
+func mockAuth(sessionToken string, privileges []string, oemPrivileges []string) response.RPC {
 	if sessionToken == "valid" {
-		return http.StatusOK, response.Success
+		return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 	} else if sessionToken == "invalid" {
-		return http.StatusUnauthorized, response.NoValidSession
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 	}
-	return http.StatusForbidden, response.InsufficientPrivilege
+	return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, "error while trying to authenticate session", nil, nil)
 }
 func TestFabrics_UpdateFabricResource(t *testing.T) {
 	Token.Tokens = make(map[string]string)

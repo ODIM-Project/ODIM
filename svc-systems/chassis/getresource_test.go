@@ -56,6 +56,21 @@ func mockContactClient(url, method, token string, odataID string, body interface
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
+	if url == "/ODIM/v1/Chassis/1/NetworkAdapters" {
+		body := `{"Name": "NetworkAdapterCollection"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
+
+	if url == "/ODIM/v1/Chassis/1/NetworkAdapters/1" {
+		body := `{"Name": "Network Adapter View"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	}
 
 	return nil, fmt.Errorf("InvalidRequest")
 }
@@ -353,6 +368,41 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				Body:          errArgs1.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
+		},
+		{
+			name: "successful get data",
+			p:    &pluginContact,
+			args: args{
+				req: &chassisproto.GetChassisRequest{
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters",
+				},
+			},
+			want: response.RPC{
+				Header:        header,
+				StatusCode:    http.StatusOK,
+				StatusMessage: response.Success,
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters"},
+			},
+			wantErr: false,
+		},
+
+		{
+			name: "successful get data",
+			p:    &pluginContact,
+			args: args{
+				req: &chassisproto.GetChassisRequest{
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters/1",
+				},
+			},
+			want: response.RPC{
+				Header:        header,
+				StatusCode:    http.StatusOK,
+				StatusMessage: response.Success,
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters/1"},
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

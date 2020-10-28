@@ -123,11 +123,18 @@ func PublishEventsToDestination(data interface{}) bool {
 		// filter and send evemts to destination if destination is not empty
 		// in case of default event subscription destination will be empty
 		if sub.Destination != "" {
-			if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
-				log.Printf("Destination: %v\n", sub.Destination)
-				go postEvent(sub.Destination, eventRequest)
-				flag = true
+			// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
+			if isHostPresent(sub.Hosts, host) {
+				if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
+					log.Printf("Destination: %v\n", sub.Destination)
+					go postEvent(sub.Destination, eventRequest)
+					flag = true
+				}
+			} else {
+				log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
+				flag = false
 			}
+
 		}
 	}
 

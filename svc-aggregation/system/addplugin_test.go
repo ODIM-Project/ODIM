@@ -446,7 +446,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "ILO")
+	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
@@ -456,9 +456,9 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
 	}
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword", pluginData)
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
 	// create plugin with bad data
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData", "PluginWithBadData")
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -557,7 +557,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqSuccess,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:GRF:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:GRF_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -569,7 +569,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPlugin,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:ILO:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:ILO_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -581,7 +581,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidAuthType,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuthentication:ILO:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuthentication:ILO_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
@@ -593,7 +593,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidPluginType,
-				cmVariants: getConnectionMethodVariants("plugin:BasicAuth:ILO:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("plugin:BasicAuth:ILO_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusBadRequest,
@@ -605,7 +605,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadPassword,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadPassword:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadPassword_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
@@ -617,7 +617,7 @@ func TestExternalInterface_PluginWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqExistingPluginBadData,
-				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData_v1.0.0"),
 			},
 
 			want: response.RPC{
@@ -639,7 +639,7 @@ func TestExternalInterface_PluginXAuthWithConnectionMethod(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "XAuthPlugin")
+	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
@@ -731,7 +731,7 @@ func TestExternalInterface_PluginXAuthWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqXAuthSuccess,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:GRF:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:GRF_v1.0.0"),
 			},
 
 			want: response.RPC{
@@ -744,7 +744,7 @@ func TestExternalInterface_PluginXAuthWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqXAuthFail,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v1.0.0"),
 			},
 
 			want: response.RPC{
@@ -757,7 +757,7 @@ func TestExternalInterface_PluginXAuthWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqManagerGetFail,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v1.0.0"),
 			},
 
 			want: response.RPC{
@@ -770,7 +770,7 @@ func TestExternalInterface_PluginXAuthWithConnectionMethod(t *testing.T) {
 			args: args{
 				taskID:     "123",
 				req:        reqInvalidManagerBody,
-				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO:1.0.0.0"),
+				cmVariants: getConnectionMethodVariants("Compute:XAuthToken:ILO_v1.0.0"),
 			},
 			want: response.RPC{
 				StatusCode: http.StatusInternalServerError,

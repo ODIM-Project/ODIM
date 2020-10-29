@@ -441,9 +441,9 @@ func TestExternalInterface_AddBMCWithConnectionMethod(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	mockPluginData(t, "GRF")
-	mockPluginData(t, "XAuthPlugin")
-	mockPluginData(t, "XAuthPluginFail")
+	mockPluginData(t, "GRF_v1.0.0")
+	mockPluginData(t, "XAuthPlugin_v1.0.0")
+	mockPluginData(t, "XAuthPluginFail_v1.0.0")
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
@@ -671,7 +671,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFailWithConnectionMethod(t *t
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	mockPluginData(t, "GRF")
+	mockPluginData(t, "GRF_v1.0.0")
 
 	reqEncryptFail, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
@@ -751,7 +751,7 @@ func TestExternalInterface_AddBMCDuplicateWithConnectionMethod(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockPluginData(t, "GRF")
+	mockPluginData(t, "GRF_v1.0.0")
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
@@ -1353,7 +1353,7 @@ func TestExternalInterface_ManagerWithConnectionMethod(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "ILO")
+	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
@@ -1363,9 +1363,9 @@ func TestExternalInterface_ManagerWithConnectionMethod(t *testing.T) {
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
 	}
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword", pluginData)
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
 	// create plugin with bad data
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData", "PluginWithBadData")
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -1567,7 +1567,7 @@ func TestExternalInterface_ManagerXAuthWithConnectionMethod(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "XAuthPlugin")
+	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}

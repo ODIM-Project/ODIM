@@ -90,7 +90,7 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 		managerData["ManagerType"] = "Service"
 		managerData["Status"] = `{"State":"Enabled"}}`
 		managerData["Name"] = "odimra"
-		managerData["ID"] = config.Data.RootServiceUUID
+		managerData["ManagerID"] = config.Data.RootServiceUUID
 		managerData["UUID"] = config.Data.RootServiceUUID
 		managerData["FirmwareVersion"] = "1.0"
 	}

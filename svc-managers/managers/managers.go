@@ -183,7 +183,6 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
 	var mgrData mgrmodel.RAManager
-	var name, managerType, firmwareVersion, managerid, uuid, state string
 
 	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {

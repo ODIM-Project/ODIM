@@ -43,47 +43,6 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-// func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
-// 	if id == "nonExistingUUID" {
-// 		return mgrmodel.RAManager{}, fmt.Errorf("not found")
-// 	} else if id == "noDevice" {
-// 		return mgrmodel.RAManager{
-// 			Name:            "odimra",
-// 			ManagerType:     "Service",
-// 			FirmwareVersion: "1.0",
-// 			ID:              "noDevice",
-// 			UUID:            "noDevice",
-// 			State:           "Absent",
-// 		}, nil
-// 	}
-// 	return mgrmodel.RAManager{
-// 		Name:            "odimra",
-// 		ManagerType:     "Service",
-// 		FirmwareVersion: "1.0",
-// 		ID:              config.Data.RootServiceUUID,
-// 		UUID:            config.Data.RootServiceUUID,
-// 		State:           "Enabled",
-// 	}, nil
-// }
-
-// func mockGetManagerByURL(url string) (string, *errors.Error) {
-// 	if url == "/redfish/v1/Managers/invalidURL:1" || url == "/redfish/v1/Managers/invalidURL" || url == "/redfish/v1/Managers/invalidID" {
-// 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-// 	}
-// 	managerData := make(map[string]interface{})
-// 	managerData["ManagerType"] = "BMC"
-// 	managerData["Status"] = `{"State":"Enabled"}}`
-// 	managerData["Name"] = "somePlugin"
-// 	if url == "/redfish/v1/Managers/uuid" {
-// 		managerData["Name"] = "someOtherID"
-// 	} else if url == "/redfish/v1/Managers/noPlugin" {
-// 		managerData["Name"] = "noPlugin"
-// 	} else if url == "/redfish/v1/Managers/noToken" {
-// 		managerData["Name"] = "noToken"
-// 	}
-// 	data, _ := json.Marshal(managerData)
-// 	return string(data), nil
-// }
 func mockGetManagerByURL(url string) (string, *errors.Error) {
 	managerData := make(map[string]interface{})
 	managerData["ManagerType"] = "BMC"
@@ -105,7 +64,7 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 		managerData["Name"] = "noPlugin"
 	case "/redfish/v1/Managers/noToken":
 		managerData["Name"] = "noToken"
-	case "/redfish/v1/Managers/"+config.Data.RootServiceUUID:
+	case "/redfish/v1/Managers/" + config.Data.RootServiceUUID:
 		managerData["ManagerType"] = "Service"
 		managerData["Status"] = `{"State":"Enabled"}}`
 		managerData["Name"] = "odimra"

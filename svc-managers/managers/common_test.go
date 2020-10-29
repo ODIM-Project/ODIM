@@ -86,7 +86,7 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 		managerData["Name"] = "noPlugin"
 	case "/redfish/v1/Managers/noToken":
 		managerData["Name"] = "noToken"
-	case "/redfish/v1/Managers/"+config.Data.RootServiceUUID:
+	case "/redfish/v1/Managers/" + config.Data.RootServiceUUID:
 		managerData["ManagerType"] = "Service"
 		managerData["Status"] = `{"State":"Enabled"}}`
 		managerData["Name"] = "odimra"

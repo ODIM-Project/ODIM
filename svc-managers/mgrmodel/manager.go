@@ -131,7 +131,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	return keysArray, nil
 }
 
-//GetManagerByURL fetches computer manager details by URL from database
+// GetManagerByURL fetches computer manager details by URL from database
 func GetManagerByURL(url string) (string, *errors.Error) {
 	var manager string
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -185,28 +185,14 @@ func GenericSave(body []byte, table string, key string) error {
 
 // AddManagertoDB will add odimra Manager details to DB
 func (mgr *RAManager) AddManagertoDB() error {
+	key := "/redfish/v1/Managers/" + mgr.UUID
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
-	if err := conn.Create("OdimraManager", mgr.UUID, mgr); err != nil {
+	if err := conn.Create("Managers", key, mgr); err != nil {
 		return fmt.Errorf("error while trying to add manager: %v", err)
 	}
 	return nil
-
-}
-
-//GetManagerData is used to retrive individual manager information
-func GetManagerData(id string) (RAManager, error) {
-	var mgr RAManager
-	conn, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		return mgr, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-	managerData, err := conn.Read("OdimraManager", id)
-	if err := json.Unmarshal([]byte(managerData), &mgr); err != nil {
-		return mgr, fmt.Errorf("error while retriving manager information: %v", err)
-	}
-	return mgr, nil
 
 }

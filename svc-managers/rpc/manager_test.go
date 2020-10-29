@@ -149,7 +149,6 @@ func mockGetExternalInterface() *managers.ExternalInterface {
 		},
 		DB: managers.DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
-			GetManagerData:      mockGetManagerData,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateManagersData:  mockUpdateManagersData,

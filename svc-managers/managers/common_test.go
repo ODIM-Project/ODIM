@@ -53,7 +53,6 @@ func mockGetExternalInterface() *ExternalInterface {
 		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
-			GetManagerData:      mockGetManagerData,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateManagersData:  mockUpdateManagersData,

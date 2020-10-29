@@ -173,7 +173,7 @@ func TestAddManagertoDB(t *testing.T) {
 	err := mngr.AddManagertoDB()
 	assert.Nil(t, err, "There should be no error")
 
-	data, err := GetManagerByURL(mngr.UUID)
+	data, err := GetManagerByURL("/redfish/v1/Managers/" + mngr.UUID)
 	var manager RAManager
 	json.Unmarshal([]byte(data), &manager)
 	assert.Nil(t, err, "There should be no error")

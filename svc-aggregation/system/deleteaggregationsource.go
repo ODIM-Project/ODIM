@@ -245,11 +245,10 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	}
 	uuid := k[0]
 
-	systemList, derr := agmodel.GetAllMatchingDetails("Chassis", uuid, common.InMemory)
+	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", uuid, common.InMemory)
 	if derr != nil {
 		log.Printf("error while trying to collect the chassis list: %v", derr)
 	}
-	log.Println("sdfffffffffffffffffffffffffff: ", systemList)
 
 	// Delete Compute System Details from InMemory
 	if derr := e.DeleteComputeSystem(index, key); derr != nil {
@@ -271,6 +270,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
+	for _. chassis := range chassisList {
+		e.EventNotification(chassis, "ResourceRemoved", "Chassis")
+	}
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",
 		"Transfer-Encoding": "chunked",

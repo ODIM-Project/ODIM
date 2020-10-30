@@ -17,6 +17,7 @@ package managers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -51,9 +52,6 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 		Name:         "Managers",
 	}
 	var members []dmtf.Link
-	// Add odimra(self) as manager in manager collection
-	oid := "/redfish/v1/Managers/" + config.Data.RootServiceUUID
-	members = append(members, dmtf.Link{Oid: oid})
 
 	// Add servers as manager in manager collection
 	managersCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Managers")
@@ -184,29 +182,26 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 
 func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
-	var name, managerType, firmwareVersion, managerid, uuid, state string
+	var mgrData mgrmodel.RAManager
 
-	mgrData, err := e.DB.GetManagerData(id)
+	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {
-		return mgr, err
+		return mgr, fmt.Errorf("error while retriving manager information: %v", err)
 	}
-	name = mgrData.Name
-	firmwareVersion = mgrData.FirmwareVersion
-	managerType = mgrData.ManagerType
-	managerid = mgrData.ID
-	uuid = mgrData.UUID
-	state = mgrData.State
+	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
+		return mgr, fmt.Errorf("error while unmarshalling manager information: %v", err)
+	}
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
 		OdataType:       "#Manager.v1_3_3.Manager",
-		Name:            name,
-		ManagerType:     managerType,
-		ID:              managerid,
-		UUID:            uuid,
-		FirmwareVersion: firmwareVersion,
+		Name:            mgrData.Name,
+		ManagerType:     mgrData.ManagerType,
+		ID:              mgrData.ID,
+		UUID:            mgrData.UUID,
+		FirmwareVersion: mgrData.FirmwareVersion,
 		Status: &mgrmodel.Status{
-			State: state,
+			State: mgrData.State,
 		},
 	}, nil
 }

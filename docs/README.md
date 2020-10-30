@@ -76,7 +76,8 @@
   * [Collection of chassis](#collection-of-chassis)
   * [Single chassis](#single-chassis)
   * [Thermal metrics](#thermal-metrics)
-  * [Network adapters](#network-adapters)
+  * [Collection of network adapters](#collection-of-network-adapters)
+  * [Single network adapter](#single-network-adapter)
   * [Power](#power)
   * [Searching the inventory](#searching-the-inventory)
     + [Request URI parameters](#request-uri-parameters)
@@ -84,7 +85,7 @@
   * [Resetting a computer system](#resetting-a-computer-system)
   * [Changing the boot order of a computer system to default settings](#changing-the-boot-order-of-a-computer-system-to-default-settings)
   * [Changing BIOS settings](#changing-bios-settings)
-  * [Changing the boot order settings](#changing-the-boot-order-settings)
+  * [Changing the boot settings](#changing-the-boot-settings)
 - [Managers](#managers)
   * [Collection of managers](#collection-of-managers)
   * [Single manager](#single-manager)
@@ -396,6 +397,7 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Chassis/\{chassisId\}/Thermal|`GET`|
 |/redfish/v1/Chassis/\{ChassisId\}/Power|`GET`|
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|`GET`|
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login` |
 
 |Managers||
 |-------|--------------------|
@@ -3275,7 +3277,7 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|GET|`Login` |
 |/redfish/v1/Systems?$filter=\{searchKeys\}%20\{conditionKeys\}%20\{value\}|GET|`Login` |
-| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|POST|`ConfigureComponents` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|POST|`ConfigureComponents` |
 
@@ -3285,6 +3287,7 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Chassis/\{chassisId\}|GET|`Login` |
 |/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login` |
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|GET|`Login` |
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login` |
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
@@ -4600,14 +4603,14 @@ curl -i GET \
 
 
 
-##  Network adapters
+##  A collection of network adapters
 
 |||
 |---------|-------|
 |**Method** |`GET` |
-|**URI** |`/redfish/v1/Chassis/{ChassisId}/NetworkAdapters` |
-|**Description** | Use this endpoint to discover information on network adapters. Some examples of network adapters include Ethernet, fibre channel, and converged network adapters.<br> A `NetworkAdapter` represents the physical network adapter capable of connecting to a computer network.<br> |
-|**Returns** |Links to network adapter instances available in this chassis.|
+|**URI** |`/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}` |
+|**Description** | Use this endpoint to discover information on a specific network adapter.|
+|**Returns** |JSON schema representing this network adapter.|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -4618,7 +4621,7 @@ curl -i GET \
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}'
 
 
 ```
@@ -8250,7 +8253,7 @@ curl -i POST \
 |EventTypes|Array \(string \(enum\)\)|Read-only \(Optional\)<br> |The types of events that are sent to the destination. For possible values, see "Event types" table.|
 |ResourceTypes|Array \(string, null\)|Read-only \(Optional\)<br> |The list of resource type values \(Schema names\) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |Context|String|Read/write Required \(null\)<br> |A string that is stored with the event destination subscription.|
-|MessageId|String|Read-only \(Optional\)<br> |The key used to find the message in a Message Registry.|
+|MessageIds|Array|Read-only \(Optional\)<br> |The key used to find the message in a Message Registry.|
 |Protocol|String \(enum\)|Read-only \(Required on create\)<br> |The protocol type of the event connection. For possible values, see "Protocol" table.|
 |SubscriptionType|String \(enum\)|Read-only Required \(null\)<br> |Indicates the subscription type for events. For possible values, see "Subscription type" table.|
 |EventFormatType|String \(enum\)|Read-only \(Optional\)<br> |Indicates the content types of the message that this service can send to the event destination. For possible values, see "EventFormat" type table.|
@@ -8267,6 +8270,7 @@ curl -i POST \
 |/redfish/v1/Chassis|All chassis resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
+|/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 
 **Event types**
 
@@ -8421,7 +8425,6 @@ curl -i POST \
    "EventTimestamp":"{Event_Time_Stamp}",
    "EventType":"{Event_Type_String}",
    "Message":"{Message_String}",
-   "ResourceTypes":[{resource_type_string}],
    "MessageArgs":[ 
 
    ],
@@ -8451,7 +8454,6 @@ curl -i POST \
    "EventTimestamp":"2020-02-17T17:17:42-0600",
    "EventType":"Alert",
    "Message":"The LAN has been disconnected",
-   "ResourceTypes":["EthernetInterface"],
    "MessageArgs":[ 
        "EthernetInterface 1",
             "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
@@ -8474,7 +8476,6 @@ curl -i POST \
 |EventTimestamp|String|Optional|The date and time stamp for the event to add. When the event is received, it translates as the time the event occurred.|
 |EventType|String \(enum\)|Optional|The type for the event to add. For possible property values, see "EventType" in [Creating an event subscription](#creating-an-event-subscription).|
 |Message|String|Optional|The human-readable message for the event to add.|
-|ResourceTypes|Array \(string, null\)|Read-only  <br> |The list of resource type values \(Schema names\) that correspond to `OriginOfCondition`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |MessageArgs \[ \]|Array \(string\)|Optional|An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, `MessageArgs` in "Sample event payload" has the following two substitution variables:<br><ul><li>`EthernetInterface 1`</li><li>`/redfish/v1/Systems/{ComputerSystemId}`</li></ul><br>`Description` and `Message` values in "Sample message registry" are substituted with the above-mentioned variables. They translate to "A LAN Disconnect on `EthernetInterface 1` was detected on system `/redfish/v1/Systems/{ComputerSystemId}.` |
 |MessageId|String|Required|The Message Id for the event to add. It is the key used to find the message in a message registry. It has `RegistryPrefix` concatenated with the version, and the unique identifier for the message registry entry. The `RegistryPrefix` concatenated with the version is the name of the message registry. To get the names of available message registries, perform HTTP `GET` on `/redfish/v1/Registries`. The message registry mentioned in the sample request payload is `Alert.1.0`.|
 |OriginOfCondition|String|Optional|The URL in the `OriginOfCondition` property of the event to add. It is not a reference object. It is the resource that originated the condition that caused the event to be generated. For possible values, see "Origin resources" in [Creating an event subscription](#creating-an-event-subscription).|

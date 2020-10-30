@@ -269,10 +269,10 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
-	e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
 	for _, chassis := range chassisList {
-		e.EventNotification(chassis, "ResourceRemoved", "Chassis")
+		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}
+	e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",
 		"Transfer-Encoding": "chunked",

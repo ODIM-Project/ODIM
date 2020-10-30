@@ -43,43 +43,34 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
-func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
-	if id == "nonExistingUUID" {
-		return mgrmodel.RAManager{}, fmt.Errorf("not found")
-	} else if id == "noDevice" {
-		return mgrmodel.RAManager{
-			Name:            "odimra",
-			ManagerType:     "Service",
-			FirmwareVersion: "1.0",
-			ID:              "noDevice",
-			UUID:            "noDevice",
-			State:           "Absent",
-		}, nil
-	}
-	return mgrmodel.RAManager{
-		Name:            "odimra",
-		ManagerType:     "Service",
-		FirmwareVersion: "1.0",
-		ID:              config.Data.RootServiceUUID,
-		UUID:            config.Data.RootServiceUUID,
-		State:           "Enabled",
-	}, nil
-}
-
 func mockGetManagerByURL(url string) (string, *errors.Error) {
-	if url == "/redfish/v1/Managers/invalidURL:1" || url == "/redfish/v1/Managers/invalidURL" || url == "/redfish/v1/Managers/invalidID" {
-		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-	}
 	managerData := make(map[string]interface{})
 	managerData["ManagerType"] = "BMC"
 	managerData["Status"] = `{"State":"Enabled"}}`
 	managerData["Name"] = "somePlugin"
-	if url == "/redfish/v1/Managers/uuid" {
+	switch url {
+	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL:1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	case "/redfish/v1/Managers/noDevice":
+		managerData["ManagerType"] = "Service"
+		managerData["Status"] = `{"State":"Absent"}}`
+		managerData["Name"] = "odimra"
+		managerData["ID"] = "noDevice"
+		managerData["UUID"] = "noDevice"
+		managerData["FirmwareVersion"] = "1.0"
+	case "/redfish/v1/Managers/uuid":
 		managerData["Name"] = "someOtherID"
-	} else if url == "/redfish/v1/Managers/noPlugin" {
+	case "/redfish/v1/Managers/noPlugin":
 		managerData["Name"] = "noPlugin"
-	} else if url == "/redfish/v1/Managers/noToken" {
+	case "/redfish/v1/Managers/noToken":
 		managerData["Name"] = "noToken"
+	case "/redfish/v1/Managers/" + config.Data.RootServiceUUID:
+		managerData["ManagerType"] = "Service"
+		managerData["Status"] = `{"State":"Enabled"}}`
+		managerData["Name"] = "odimra"
+		managerData["ManagerID"] = config.Data.RootServiceUUID
+		managerData["UUID"] = config.Data.RootServiceUUID
+		managerData["FirmwareVersion"] = "1.0"
 	}
 	data, _ := json.Marshal(managerData)
 	return string(data), nil
@@ -149,7 +140,6 @@ func mockGetExternalInterface() *managers.ExternalInterface {
 		},
 		DB: managers.DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
-			GetManagerData:      mockGetManagerData,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateManagersData:  mockUpdateManagersData,
@@ -238,11 +228,11 @@ func TestGetManagerwithValidtoken(t *testing.T) {
 	var manager mgrmodel.Manager
 	json.Unmarshal(resp.Body, &manager)
 
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
-	assert.Equal(t, manager.Name, "odimra", "Status code should be StatusOK.")
-	assert.Equal(t, manager.ManagerType, "Service", "Status code should be StatusOK.")
-	assert.Equal(t, manager.ID, req.ManagerID, "Status code should be StatusOK.")
-	assert.Equal(t, manager.FirmwareVersion, "1.0", "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, "odimra", manager.Name, "incorrect name")
+	assert.Equal(t, "Service", manager.ManagerType, "incorrect type")
+	assert.Equal(t, req.ManagerID, manager.ID, "incorrect id")
+	assert.Equal(t, "1.0", manager.FirmwareVersion, "incorrect firmware version")
 }
 
 func TestGetManagerResourcewithInValidtoken(t *testing.T) {

@@ -83,7 +83,7 @@ type MsgExtendedInfo struct {
 	Resolution  string        `json:"Resolution,omitempty"`
 }
 
-func CreateError(code string, errorMessage string) interface{} {
+func CreateError(code string, errorMessage string) CommonError {
 	return CommonError{
 		Error: ErrorClass{
 			Code:    code,

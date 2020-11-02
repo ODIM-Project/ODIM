@@ -16,6 +16,7 @@ package main
 import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/eventing"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/rest"
 	"github.com/kataras/iris/v12"
 	"log"
@@ -41,6 +42,11 @@ type Plugin struct {
 }
 
 func (p *Plugin) Run() {
+	eventing.NewSubscriber(p.pluginConfig).Run()
+	go func() {
+		eventing.NewListener(*p.pluginConfig, p.connectionManager).Run()
+	}()
+
 	basicAuthHandler := rest.NewBasicAuthHandler(p.pluginConfig.UserName, p.pluginConfig.Password)
 
 	application := iris.New()

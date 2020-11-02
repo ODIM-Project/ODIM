@@ -5,6 +5,7 @@
 	"Port": "45003",
 	"UserName": "admin",
 	"Password": "UUFCYFpBoHh6UdvytPzm65SkHj5zyl73EYVNJNbrFeAPWYrkpTijGB9zrVQSbbLv052HK7-7chqDQQcjgWf7YA==",
+	"OdimraNBUrl" : "",
 	"EventConf": {
 		"DestinationURI": "/redfishEventListener",
 		"ListenerHost": "",

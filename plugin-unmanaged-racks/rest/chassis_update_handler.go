@@ -62,7 +62,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		}
 	}()
 
-	chassisContainsSetKey := db.CreateChassisContainsKey(requestedChassis.Oid)
+	chassisContainsSetKey := c.cm.CreateChassisContainsKey(requestedChassis.Oid)
 
 	_, err = conn.Do("WATCH", chassisContainsSetKey)
 	if err != nil {
@@ -92,6 +92,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 	knownMembers.Each(func(knownMember interface{}) bool {
 		if !requestedMembers.Contains(knownMember) {
 			conn.Send("SREM", chassisContainsSetKey, knownMember)
+			conn.Send("DEL", c.cm.CreateContainedInKey(knownMember.(string)))
 		}
 		return false
 	})
@@ -100,6 +101,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 	requestedMembers.Each(func(rm interface{}) bool {
 		if !knownMembers.Contains(rm) {
 			conn.Send("SADD", chassisContainsSetKey, rm)
+			conn.Send("SET", c.cm.CreateContainedInKey(rm.(string)), requestedChassis.Oid)
 		}
 		return false
 	})
@@ -141,11 +143,40 @@ func validate(requestedChassis *redfish.Chassis, requestedChange *rackUpdateRequ
 				)
 			},
 		},
+		redfish.Validator{
+			ValidationRule: func() bool {
+				c := redfish.NewRedfishClient("https://odimra.local.com:45000")
+				systemsCollection := new(redfish.Collection)
+				err := c.Get("/redfish/v1/Systems", systemsCollection)
+				if err != nil {
+					log.Print("Couldn't GET systems collection(/redfish/v1/Systems) Error: ", err)
+					return true
+				}
+				existingSystems := map[string]interface{}{}
+				for _, m := range systemsCollection.Members {
+					existingSystems[m.Oid] = m
+				}
+
+				for _, assetUnderChassis := range requestedChange.Links.Contains {
+					_, ok := existingSystems[assetUnderChassis.Oid]
+					if !ok {
+						return true
+					}
+				}
+				return false
+			},
+			ErrorGenerator: func() redfish.MsgExtendedInfo {
+				return redfish.NewPropertyValueNotInListMsg(
+					fmt.Sprintf("%s", requestedChange.Links.Contains),
+					"Links.Contains",
+					"Couldn't retrieve information about requested links. Make sure that they are existing!")
+			},
+		},
 	}).Validate()
 }
 
 func (c *chassisUpdateHandler) findRequestedChassis(chassisOid string) (*redfish.Chassis, error) {
-	v, err := redis.Bytes(c.cm.FindByKey("Chassis", chassisOid))
+	v, err := redis.Bytes(c.cm.FindByKey(c.cm.CreateKey("Chassis", chassisOid)))
 	if err != nil {
 		switch err {
 		case redis.ErrNil:

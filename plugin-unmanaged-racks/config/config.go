@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 )
 
@@ -18,6 +19,7 @@ type PluginConfig struct {
 	RootServiceUUID         string            `json:"RootServiceUUID"`
 	FirmwareVersion         string            `json:"FirmwareVersion"`         //FirmwareVersion of plugin of the plugin
 	SessionTimeoutInMinutes float64           `json:"SessionTimeoutInMinutes"` //plugin token time out in minutes
+	OdimraNBUrl             string            `json:"OdimraNBUrl"`
 	LoadBalancerConf        *LoadBalancerConf `json:"LoadBalancerConf"`
 	EventConf               *EventConf        `json:"EventConf"`
 	MessageBusConf          *MessageBusConf   `json:"MessageBusConf"`
@@ -97,6 +99,14 @@ func ReadPluginConfiguration() (*PluginConfig, error) {
 
 // validate will validate configurations read and assign default values, where required
 func validate(pc *PluginConfig) error {
+
+	if pc.OdimraNBUrl == "" {
+		return fmt.Errorf("OdimraNBUrl has to be specified")
+	}
+
+	if _, e := url.Parse(pc.OdimraNBUrl); e != nil {
+		return fmt.Errorf("given OdimraNBUrl is not correct URL")
+	}
 
 	if _, err := uuid.Parse(pc.RootServiceUUID); err != nil {
 		return err

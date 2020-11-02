@@ -25,15 +25,19 @@ func (e Error) Error() string {
 }
 
 func NewConnectionManager(protocol, host, port string) *ConnectionManager {
-	return &ConnectionManager{&redis.Pool{
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial(protocol, host+":"+port)
+	return &ConnectionManager{
+		pool: &redis.Pool{
+			Dial: func() (redis.Conn, error) {
+				return redis.Dial(protocol, host+":"+port)
+			},
 		},
-	}}
+		domain: "URP",
+	}
 }
 
 type ConnectionManager struct {
-	pool *redis.Pool
+	pool   *redis.Pool
+	domain string
 }
 
 func (c *ConnectionManager) Delete(schema, key string) (bool, error) {
@@ -51,23 +55,47 @@ func (c *ConnectionManager) Delete(schema, key string) (bool, error) {
 }
 
 // Returns object related with requested key(schema + key) or nil in case when requested key does not exist
-func (c *ConnectionManager) FindByKey(schema, key string) (interface{}, error) {
+func (c *ConnectionManager) FindByKey(key Key) (interface{}, error) {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	return cs.Do("GET", schema+":"+key)
+	return cs.Do("GET", key)
 }
 
 func (c *ConnectionManager) GetConnection() redis.Conn {
 	return c.pool.Get()
 }
 
-func (c *ConnectionManager) Create(schema, key string, data []byte) *Error {
+type transactional func(c redis.Conn)
+
+func (c *ConnectionManager) DoInTransaction(syncKey string, callback transactional) error {
+	conn := c.GetConnection()
+	defer conn.Close()
+
+	_, err := conn.Do("WATCH", syncKey)
+	if err != nil {
+		return err
+	}
+	err = conn.Send("MULTI")
+	if err != nil {
+		return err
+	}
+	callback(conn)
+	r, err := conn.Do("EXEC")
+	if err != nil {
+		return fmt.Errorf("cannot commit transaction: %v", err)
+	}
+	if r == redis.ErrNil {
+		return fmt.Errorf("transaction aborted for unknown reason: %v", err)
+	}
+	return nil
+}
+
+func (c *ConnectionManager) Create(key Key, data []byte) *Error {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	pk := strings.Title(schema) + ":" + key
-	r, err := cs.Do("SETNX", pk, data)
+	r, err := cs.Do("SETNX", key, data)
 	if err != nil {
 		return &Error{DB_ERR_GENERAL, err.Error()}
 	}
@@ -79,7 +107,7 @@ func (c *ConnectionManager) Create(schema, key string, data []byte) *Error {
 
 	switch v {
 	case 0:
-		return &Error{DB_ERR_ALREADY_EXISTS, fmt.Sprintf("specified key(%s) already exists", pk)}
+		return &Error{DB_ERR_ALREADY_EXISTS, fmt.Sprintf("specified key(%s) already exists", key)}
 	default:
 		return nil
 	}
@@ -89,7 +117,7 @@ func (c *ConnectionManager) Update(schema, key string, data []byte) error {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	pk := strings.Title(schema) + ":" + key
+	pk := c.CreateKey(c.domain, schema, key)
 	s, err := redis.String(cs.Do("SET", pk, data))
 	if err != nil {
 		return err
@@ -107,27 +135,32 @@ func (c *ConnectionManager) GetAllKeys(schema string) ([]string, error) {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	schema = formatSchemaSuffix(schema)
-
-	keys, err := cs.Do("KEYS", schema+"*")
+	patternKey := c.CreateKey(schema)
+	keys, err := cs.Do("KEYS", patternKey+"*")
 	if err != nil {
 		return nil, err
 	}
 
 	var result []string
 	for _, key := range keys.([]interface{}) {
-		result = append(result, strings.TrimPrefix(string(key.([]uint8)), schema))
+		result = append(result, strings.TrimPrefix(string(key.([]uint8)), string(patternKey)))
 	}
 	return result, nil
 
 }
 
-func formatSchemaSuffix(schema string) string {
-	if strings.HasSuffix(schema, ":") {
-		return schema
-	} else {
-		return schema + ":"
-	}
+type Key string
+
+func (c *ConnectionManager) CreateChassisContainsKey(chassisOid string) Key {
+	return c.CreateKey("CONTAINS", chassisOid)
+}
+
+func (c *ConnectionManager) CreateContainedInKey(oid string) Key {
+	return c.CreateKey("CONTAINEDIN", oid)
+}
+
+func (c *ConnectionManager) CreateKey(keys ...string) Key {
+	return Key(strings.Join(append([]string{c.domain}, keys...), ":"))
 }
 
 func NewConnectionCloser(conn *redis.Conn) func() {
@@ -137,8 +170,4 @@ func NewConnectionCloser(conn *redis.Conn) func() {
 			log.Print("Error: ", err)
 		}
 	}
-}
-
-func CreateChassisContainsKey(chassisOid string) string {
-	return fmt.Sprintf(":Chassis:%s:contains", chassisOid)
 }

@@ -21,7 +21,7 @@ type chassisDeletionHandler struct {
 func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	requestedChassis := ctx.Request().RequestURI
 
-	bytes, err := redis.Bytes(c.connectionManager.FindByKey("Chassis", requestedChassis))
+	bytes, err := redis.Bytes(c.connectionManager.FindByKey(c.connectionManager.CreateKey("Chassis", requestedChassis)))
 	if err != nil && err == redis.ErrNil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewResourceNotFoundMsg("Chassis", requestedChassis, ""))

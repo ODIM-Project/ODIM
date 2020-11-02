@@ -65,7 +65,7 @@ func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfis
 			ValidationRule: func() bool {
 				if chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 1 {
 					containedByOid := chassis.Links.ContainedBy[0].Oid
-					v, err := c.cm.FindByKey("Chassis", containedByOid)
+					v, err := c.cm.FindByKey(c.cm.CreateKey("Chassis", containedByOid))
 					if err != nil {
 						log.Println("error:", err)
 					}
@@ -125,7 +125,7 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	dbError := c.cm.Create("Chassis", requestedChassis.Oid, value)
+	dbError := c.cm.Create(c.cm.CreateKey("Chassis", requestedChassis.Oid), value)
 	if dbError != nil {
 		switch dbError.Code {
 		case db.DB_ERR_ALREADY_EXISTS:
@@ -140,7 +140,7 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 
 	if requestedChassis.ChassisType == "Rack" {
 		cbUri := requestedChassis.Links.ContainedBy[0].Oid
-		bytes, err := redis.Bytes(c.cm.FindByKey("Chassis", cbUri))
+		bytes, err := redis.Bytes(c.cm.FindByKey(c.cm.CreateKey("Chassis", cbUri)))
 		if err != nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			return

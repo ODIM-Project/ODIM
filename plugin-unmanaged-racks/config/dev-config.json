@@ -5,15 +5,11 @@
 	"Port": "45003",
 	"UserName": "admin",
 	"Password": "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
+	"OdimraNBUrl" : "https://odimra.local.com:45000",
 	"EventConf": {
 		"DestinationURI": "/redfishEventListener",
 		"ListenerHost": "odimra.local.com",
 		"ListenerPort": "45004"
-	},
-	"KeyCertConf": {
-		"RootCACertificatePath": "",
-		"PrivateKeyPath": "",
-		"CertificatePath": ""
 	},
 	"KeyCertConf": {
 		"RootCACertificatePath": "/home/podm/workspace/ODIM/build/cert_generator/rootCA.crt",

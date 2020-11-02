@@ -132,6 +132,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS", rfphandler.GetResource)
 		systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/NetworkInterfaces/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/PCIDevices/{rid}", rfphandler.GetResource)
 		systems.Patch("/{id}", rfphandler.ChangeSettings)
 
 		systemsAction := systems.Party("/{id}/Actions")

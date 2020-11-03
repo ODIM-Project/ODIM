@@ -516,7 +516,7 @@ func TestExternalInterface_AddBMCWithConnectionMethod(t *testing.T) {
 		DeleteComputeSystem:    deleteComputeforTest,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetPluginMgrAddr:  stubPluginMgrAddrData,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -700,7 +700,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFailWithConnectionMethod(t *t
 		DeleteComputeSystem:    deleteComputeforTest,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetPluginMgrAddr:  		stubPluginMgrAddrData,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -930,18 +930,18 @@ func TestExternalInterface_Manager(t *testing.T) {
 	})
 
 	p := &ExternalInterface{
-		ContactClient:     mockContactClient,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-   GetAllKeysFromTable: mockGetAllKeysFromTable,
-   GetPluginMgrAddr:  stubPluginMgrAddrData,
+		ContactClient:       mockContactClient,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		SubscribeToEMB:      mockSubscribeEMB,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		GetAllKeysFromTable: mockGetAllKeysFromTable,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1154,18 +1154,18 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	})
 
 	p := &ExternalInterface{
-		ContactClient:     mockContactClient,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-   GetAllKeysFromTable: mockGetAllKeysFromTable,
-   GetPluginMgrAddr:  stubPluginMgrAddrData,
+		ContactClient:       mockContactClient,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		SubscribeToEMB:      mockSubscribeEMB,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		GetAllKeysFromTable: mockGetAllKeysFromTable,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1305,18 +1305,18 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 	})
 
 	p := &ExternalInterface{
-		ContactClient:     testContactClientWithDelay,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-   GetAllKeysFromTable: mockGetAllKeysFromTable,
-   GetPluginMgrAddr:  stubPluginMgrAddrData,
+		ContactClient:       testContactClientWithDelay,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		SubscribeToEMB:      mockSubscribeEMB,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		GetAllKeysFromTable: mockGetAllKeysFromTable,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1463,8 +1463,8 @@ func TestExternalInterface_ManagerWithConnectionMethod(t *testing.T) {
 		DecryptPassword:        stubDevicePassword,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
-   GetAllKeysFromTable: mockGetAllKeysFromTable,
-   GetPluginMgrAddr:  stubPluginMgrAddrData,
+		GetAllKeysFromTable:    mockGetAllKeysFromTable,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1677,8 +1677,8 @@ func TestExternalInterface_ManagerXAuthWithConnectionMethod(t *testing.T) {
 		DecryptPassword:        stubDevicePassword,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
-   GetAllKeysFromTable: mockGetAllKeysFromTable,
-   GetPluginMgrAddr:  stubPluginMgrAddrData,
+		GetAllKeysFromTable:    mockGetAllKeysFromTable,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1828,8 +1828,8 @@ func TestExternalInterface_ManagerWithMultipleRequestWithConnectionMethod(t *tes
 		DecryptPassword:        stubDevicePassword,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
-   GetAllKeysFromTable: mockGetAllKeysFromTable,
-   GetPluginMgrAddr:  stubPluginMgrAddrData,
+		GetAllKeysFromTable:    mockGetAllKeysFromTable,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 
 	type args struct {

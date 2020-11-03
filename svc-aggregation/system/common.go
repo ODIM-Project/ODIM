@@ -70,7 +70,7 @@ type ExternalInterface struct {
 	GetAllKeysFromTable     func(string) ([]string, error)
 	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr        func(string) (agmodel.Plugin,  *errors.Error)
+	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
 }
 
 type responseStatus struct {

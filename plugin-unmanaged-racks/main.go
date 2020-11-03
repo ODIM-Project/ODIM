@@ -22,7 +22,10 @@ import (
 	"log"
 )
 
+var version = "dev"
+
 func main() {
+	log.Printf("Running URP v%s\n", version)
 	var pc *config.PluginConfig
 	var err error
 	if pc, err = config.ReadPluginConfiguration(); err != nil {

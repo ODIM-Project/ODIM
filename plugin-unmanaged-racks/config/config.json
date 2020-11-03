@@ -1,20 +1,22 @@
 {
-	"RootServiceUUID": "",
 	"ID": "URP",
-	"Host": "",
+	"Host": "odimra.local.com",
 	"Port": "45003",
 	"UserName": "admin",
-	"Password": "UUFCYFpBoHh6UdvytPzm65SkHj5zyl73EYVNJNbrFeAPWYrkpTijGB9zrVQSbbLv052HK7-7chqDQQcjgWf7YA==",
-	"OdimraNBUrl" : "",
+	"Password": "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
+	"RootServiceUUID": "99999999-9999-9999-9999-999999999999",
+	"OdimraNBUrl" : "https://odimra.local.com:45000",
+	"FirmwareVersion": "1.0",
+	"SessionTimeoutInMinutes": 30,
 	"EventConf": {
 		"DestinationURI": "/redfishEventListener",
-		"ListenerHost": "",
+		"ListenerHost": "odimra.local.com",
 		"ListenerPort": "45004"
 	},
 	"KeyCertConf": {
-		"RootCACertificatePath": "",
-		"PrivateKeyPath": "",
-		"CertificatePath": ""
+		"RootCACertificatePath": "../dev/cert/rootCA.crt",
+		"PrivateKeyPath": "../dev/cert/odimra_server.key",
+		"CertificatePath": "../dev/cert/odimra_server.crt"
 	},
 	"TLSConf": {
 		"MinVersion": "TLS_1.2",
@@ -27,19 +29,6 @@
 			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
 			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
-		]
-	},
-	"FirmwareVersion": "1.0",
-	"SessionTimeoutInMinutes": 30,
-	"LoadBalancerConf": {
-		"LBHost": "",
-		"LBPort": ""
-	},
-	"MessageBusConf": {
-		"MessageQueueConfigFilePath": "",
-		"MessageBusType": "Kafka",
-		"MessageBusQueue": [
-			"REDFISH-EVENTS-TOPIC"
 		]
 	},
 	"URLTranslation": {

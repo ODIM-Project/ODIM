@@ -11,27 +11,19 @@ import (
 )
 
 type PluginConfig struct {
-	ID                      string            `json:"ID"` // PluginID hold the id of the plugin
-	Host                    string            `json:"Host"`
-	Port                    string            `json:"Port"`
-	UserName                string            `json:"UserName"`
-	Password                string            `json:"Password"`
-	RootServiceUUID         string            `json:"RootServiceUUID"`
-	FirmwareVersion         string            `json:"FirmwareVersion"`         //FirmwareVersion of plugin of the plugin
-	SessionTimeoutInMinutes float64           `json:"SessionTimeoutInMinutes"` //plugin token time out in minutes
-	OdimraNBUrl             string            `json:"OdimraNBUrl"`
-	LoadBalancerConf        *LoadBalancerConf `json:"LoadBalancerConf"`
-	EventConf               *EventConf        `json:"EventConf"`
-	MessageBusConf          *MessageBusConf   `json:"MessageBusConf"`
-	KeyCertConf             *KeyCertConf      `json:"KeyCertConf"`
-	URLTranslation          *URLTranslation   `json:"URLTranslation"`
-	TLSConf                 *TLSConf          `json:"TLSConf"`
-}
-
-//LoadBalancerConf is for holding all load balancer related configurations
-type LoadBalancerConf struct {
-	Host string `json:"LBHost"`
-	Port string `json:"LBPort"`
+	ID                      string          `json:"ID"`
+	Host                    string          `json:"Host"`
+	Port                    string          `json:"Port"`
+	UserName                string          `json:"UserName"`
+	Password                string          `json:"Password"`
+	RootServiceUUID         string          `json:"RootServiceUUID"`
+	OdimraNBUrl             string          `json:"OdimraNBUrl"`
+	FirmwareVersion         string          `json:"FirmwareVersion"`
+	SessionTimeoutInMinutes float64         `json:"SessionTimeoutInMinutes"`
+	EventConf               *EventConf      `json:"EventConf"`
+	KeyCertConf             *KeyCertConf    `json:"KeyCertConf"`
+	URLTranslation          *URLTranslation `json:"URLTranslation"`
+	TLSConf                 *TLSConf        `json:"TLSConf"`
 }
 
 //EventConf is for holding all events related configuration
@@ -39,13 +31,6 @@ type EventConf struct {
 	DestURI      string `json:"DestinationURI"`
 	ListenerHost string `json:"ListenerHost"`
 	ListenerPort string `json:"ListenerPort"`
-}
-
-// MessageBusConf will have configuration data of MessageBusConf
-type MessageBusConf struct {
-	MessageQueueConfigFilePath string   `json:"MessageQueueConfigFilePath"` // Message Queue Config File Path
-	EmbType                    string   `json:"MessageBusType"`
-	EmbQueue                   []string `json:"MessageBusQueue"`
 }
 
 //KeyCertConf is for holding all security oriented configuration
@@ -161,18 +146,6 @@ func validate(pc *PluginConfig) error {
 	if pc.EventConf.ListenerPort == "" {
 		return fmt.Errorf("no value set for ListenerPort")
 	}
-	if pc.MessageBusConf == nil {
-		return fmt.Errorf("no value found for MessageBusConf")
-	}
-	if _, err := os.Stat(pc.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		return fmt.Errorf("value check failed for MessageQueueConfigFilePath:%s with %v", pc.MessageBusConf.MessageQueueConfigFilePath, err)
-	}
-	if pc.MessageBusConf.EmbType == "" {
-		return fmt.Errorf("no value set for MessageBusType, setting default value")
-	}
-	if len(pc.MessageBusConf.EmbQueue) <= 0 {
-		return fmt.Errorf("no value set for MessageBusQueue, setting default value")
-	}
 
 	if pc.KeyCertConf == nil {
 		return fmt.Errorf("error: no value found for KeyCertConf")
@@ -194,33 +167,6 @@ func validate(pc *PluginConfig) error {
 	}
 	if pc.TLSConf == nil {
 		return fmt.Errorf("TLSConf not provided, setting default value")
-	}
-
-	//lutilconf.SetVerifyPeer(Data.TLSConf.VerifyPeer)
-	//if err := lutilconf.SetTLSMinVersion(pc.TLSConf.MinVersion); err != nil {
-	//	return err
-	//}
-	//if err := lutilconf.SetTLSMaxVersion(pc.TLSConf.MaxVersion); err != nil {
-	//	return err
-	//}
-	//if err := lutilconf.ValidateConfiguredTLSVersions(); err != nil {
-	//	return err
-	//}
-	//if err := lutilconf.SetPreferredCipherSuites(pc.TLSConf.PreferredCipherSuites); err != nil {
-	//	return err
-	//}
-
-	if pc.LoadBalancerConf == nil {
-		log.Println("warn: no value set for LoadBalancerConf, setting default value")
-		pc.LoadBalancerConf = &LoadBalancerConf{
-			Host: pc.EventConf.ListenerHost,
-			Port: pc.EventConf.ListenerPort,
-		}
-	}
-	if pc.LoadBalancerConf.Host == "" || pc.LoadBalancerConf.Port == "" {
-		log.Println("warn: no value set for LBHost/LBPort, setting ListenerHost/ListenerPort value")
-		pc.LoadBalancerConf.Host = pc.EventConf.ListenerHost
-		pc.LoadBalancerConf.Port = pc.EventConf.ListenerPort
 	}
 
 	if pc.URLTranslation == nil {

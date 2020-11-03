@@ -399,12 +399,16 @@ func validateAggregationSourceRequest(req system.AggregationSource) string {
 func validateLinks(req *system.Links) string {
 	var param = ""
 	if req != nil {
-		if req.Oem != nil {
+		if req.ConnectionMethod != nil {
+			if req.ConnectionMethod.OdataID == "" {
+				param = param + "ConnectionMethod @odata.id"
+			}
+		} else if req.Oem != nil {
 			if req.Oem.PluginID == "" {
 				param = param + "PluginID"
 			}
 		} else {
-			param = param + "Oem"
+			param = param + "ConnectionMethod/Oem"
 		}
 	} else {
 		param = "Links"

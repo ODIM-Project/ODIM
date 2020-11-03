@@ -19,6 +19,7 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/update"
+	"log"
 )
 
 // Updater struct helps to register service
@@ -26,19 +27,25 @@ type Updater struct {
 	connector *update.ExternalInterface
 }
 
-func generateResponse(rpcResp response.RPC, uResp *updateproto.UpdateResponse) {
-	bytes, _ := json.Marshal(rpcResp.Body)
-	*uResp = updateproto.UpdateResponse{
-		StatusCode:    rpcResp.StatusCode,
-		StatusMessage: rpcResp.StatusMessage,
-		Header:        rpcResp.Header,
-		Body:          bytes,
-	}
-}
-
 // GetUpdater intializes all the required connection functions for the updater execution
 func GetUpdater() *Updater {
 	return &Updater{
 		connector: update.GetExternalInterface(),
 	}
+}
+
+func generateResponse(input interface{}) []byte {
+	bytes, err := json.Marshal(input)
+	if err != nil {
+		log.Println("error in unmarshalling response object from util-libs", err.Error())
+	}
+	return bytes
+}
+
+func fillProtoResponse(resp *updateproto.UpdateResponse, data response.RPC) {
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	resp.Header = data.Header
+
 }

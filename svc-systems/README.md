@@ -37,6 +37,8 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 |/redfish/v1/Systems/\{ComputerSystemId\}/Bios|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage|`GET`|
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|`GET` , `POST`|
+|/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|`GET`, `DELETE`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
 |/redfish/v1/Systems?$filter=\{searchKeys\}%20\{conditionKeys\}%20\{value\}|`GET`|
@@ -747,6 +749,233 @@ curl -i GET \
 |**Returns** |JSON schema representing this drive.|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
+
+
+## Volumes
+
+### A collection of volumes
+
+| | | 
+|----------|-----------|
+|<strong>Method</strong> |`GET` |
+|<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
+|<strong>Description</strong>  |This endpoint retrieves a collection of volumes in a specific storage subsystem.|
+|<strong>Returns</strong> |A list of links to volumes.|
+|<strong>Response Code</strong> |On success, `200 OK` |
+|<strong>Authentication</strong> |Yes|
+
+ 
+
+ 
+
+```
+curl -i GET \
+             -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
+
+
+```
+
+> Sample response body 
+
+```
+{
+   ​   "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
+   ​   "@odata.etag":"W/\"AA6D42B0\"",
+   ​   "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes",
+   ​   "@odata.type":"#VolumeCollection.VolumeCollection",
+   ​   "Description":"Volume Collection view",
+   ​   "Members":​[
+      ​      {
+         ​         "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes/1"         ​
+      }      ​
+   ],
+   ​   "Members@odata.count":1,
+   ​   "Name":"Volume Collection"   ​
+}
+```
+
+
+
+### Single volume
+
+
+| | | 
+|----------|-----------|
+|<strong>Method</strong> |`GET` |
+|<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
+|<strong>Description</strong>   |This endpoint retrieves information about a specific volume in a storage subsystem.|
+|<strong>Returns</strong>  |JSON schema representing this volume.|
+|<strong>Response Code</strong>  |On success, `200 OK` |
+|<strong>Authentication</strong>  |Yes|
+
+ 
+
+ 
+
+```
+curl -i GET \
+             -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/{volumeId}'
+
+
+```
+
+> Sample request body 
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Volume.Volume",
+   "@odata.etag":"W/\"46916D5D\"",
+   "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Volumes/1",
+   "@odata.type":"#Volume.v1_4_1.Volume",
+   "CapacityBytes":1200209526784,
+   "Encrypted":false,
+   "Id":"1",
+   "Identifiers":[
+      {
+         "DurableName":"600508B1001C2AFE083D7F9026B2E994",
+         "DurableNameFormat":"NAA"
+      }
+   ],
+   "Links":{
+      "Drives":[
+         {
+            "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
+         }
+      ]
+   },
+   "Name":"Drive_Volume_Link",
+   "RAIDType":"RAID0",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+### Creating a volume
+
+| | | 
+|----------|-----------|
+|<strong>Method</strong> | `POST` |
+|<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
+|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.|
+|<strong>Response Code</strong>   |On success, `200 Ok` |
+|<strong>Authentication</strong>|Yes|
+
+
+
+```
+curl -i -X POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+   "Name":"Volume_Demo",
+   "RAIDType":"RAID1",
+   "Drives":[
+      {
+         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/1"
+      }
+   ],
+   "@Redfish.OperationApplyTime":"OnReset"
+}}' \
+ 'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
+
+
+```
+
+> Sample request body 
+
+```
+{
+   "Name":"Volume_Demo",
+   "RAIDType":"RAID1",
+   "Drives":[
+      {
+         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/1"
+      }
+   ],
+   "@Redfish.OperationApplyTime":"OnReset"
+}}
+```
+
+### Request parameters 
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|Name|String \(required\)<br> |Name of the new volume.|
+|RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
+|Drives\[\{|Array \(required\)<br> |An array of links to drive resources that the new volume contains.|
+|@odata.id \}\]<br> |String|A link to a drive resource.|
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
+
+> Sample response body 
+
+```
+ {
+   ​   "error":{
+      ​      "@Message.ExtendedInfo":[
+         ​         {
+            ​            "MessageId":"iLO.2.13.SystemResetRequired"            ​
+         }         ​
+      ],
+      ​      "code":"iLO.0.10.ExtendedInfo",
+      ​      "message":"See @Message.ExtendedInfo for more information."      ​
+   }   ​
+}
+```
+
+
+
+
+
+
+### Deleting a volume
+
+
+| | | 
+|----------|-----------|
+|<strong>Method</strong>  | `DELETE` |
+|<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
+|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br> |
+|<strong>Response Code</strong>|On success, `204 No Content` |
+|<strong>Authentication</strong>  |Yes|
+
+
+
+```
+curl -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json" \
+ 'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}'
+
+
+```
+
+> Sample request body 
+
+```
+{
+  
+   "@Redfish.OperationApplyTime":"OnReset"
+}
+```
+
+### Request parameters
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset`. Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you reset the system.<br> |
+
 
 
 

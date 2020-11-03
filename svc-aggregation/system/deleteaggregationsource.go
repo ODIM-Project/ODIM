@@ -161,7 +161,6 @@ func (e *ExternalInterface) deleteAggregationSourceWithConnectionMethod(url stri
 		return resp
 	}
 	connectionMethod.Links.AggregationSources = removeAggregationSource(connectionMethod.Links.AggregationSources, agmodel.OdataID{OdataID: url})
-	fmt.Println("====", connectionMethod, connectionMethodOdataID)
 	dbErr = e.UpdateConnectionMethod(connectionMethod, connectionMethodOdataID)
 	if dbErr != nil {
 		errMsg := dbErr.Error()

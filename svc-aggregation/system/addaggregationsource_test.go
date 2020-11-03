@@ -121,6 +121,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		EncryptPassword:     stubDevicePassword,
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -302,6 +303,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 		EncryptPassword:     stubDevicePassword,
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -380,6 +382,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		EncryptPassword:     stubDevicePassword,
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -513,6 +516,7 @@ func TestExternalInterface_AddBMCWithConnectionMethod(t *testing.T) {
 		DeleteComputeSystem:    deleteComputeforTest,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -696,6 +700,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFailWithConnectionMethod(t *t
 		DeleteComputeSystem:    deleteComputeforTest,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetPluginMgrAddr:  		stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -935,6 +940,8 @@ func TestExternalInterface_Manager(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+   GetAllKeysFromTable: mockGetAllKeysFromTable,
+   GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1157,6 +1164,8 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+   GetAllKeysFromTable: mockGetAllKeysFromTable,
+   GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1306,6 +1315,8 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 		SubscribeToEMB:    mockSubscribeEMB,
 		EncryptPassword:   stubDevicePassword,
 		DecryptPassword:   stubDevicePassword,
+   GetAllKeysFromTable: mockGetAllKeysFromTable,
+   GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1452,6 +1463,8 @@ func TestExternalInterface_ManagerWithConnectionMethod(t *testing.T) {
 		DecryptPassword:        stubDevicePassword,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
+   GetAllKeysFromTable: mockGetAllKeysFromTable,
+   GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1664,6 +1677,8 @@ func TestExternalInterface_ManagerXAuthWithConnectionMethod(t *testing.T) {
 		DecryptPassword:        stubDevicePassword,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
+   GetAllKeysFromTable: mockGetAllKeysFromTable,
+   GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -1813,6 +1828,8 @@ func TestExternalInterface_ManagerWithMultipleRequestWithConnectionMethod(t *tes
 		DecryptPassword:        stubDevicePassword,
 		GetConnectionMethod:    mockGetConnectionMethod,
 		UpdateConnectionMethod: mockUpdateConnectionMethod,
+   GetAllKeysFromTable: mockGetAllKeysFromTable,
+   GetPluginMgrAddr:  stubPluginMgrAddrData,
 	}
 
 	type args struct {

@@ -15,6 +15,7 @@ package managers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -34,7 +35,7 @@ func TestGetManagersCollection(t *testing.T) {
 
 	manager := response.Body.(mgrresponse.ManagersCollection)
 	assert.Equal(t, int(response.StatusCode), http.StatusOK, "Status code should be StatusOK.")
-	assert.Equal(t, manager.MembersCount, 2, "Status code should be StatusOK.")
+	assert.Equal(t, manager.MembersCount, 1, fmt.Sprintf("Managers count is expected to be 1 but got %v", manager.MembersCount))
 }
 
 func TestGetManagerRootUUIDNotFound(t *testing.T) {

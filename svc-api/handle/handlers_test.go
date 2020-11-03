@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
@@ -271,11 +272,11 @@ func TestMethodNotAllowedForLogServices(t *testing.T) {
 		}(uri)
 	}
 }
-func authMock(token string, b []string, c []string) (int32, string) {
+func authMock(token string, b []string, c []string) response.RPC {
 	if token == "invalidToken" {
-		return 401, ""
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return 200, ""
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func TestGetRegistryFileCollection(t *testing.T) {

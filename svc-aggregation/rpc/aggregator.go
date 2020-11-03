@@ -51,11 +51,10 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	// Check whether the Aggregation Service is enbaled in configuration file.
@@ -136,11 +135,10 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	var oemprivileges []string
 
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
@@ -212,11 +210,10 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	var oemprivileges []string
 
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
@@ -314,11 +311,10 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	var taskID string
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
@@ -429,11 +425,10 @@ func validateLinks(req *system.Links) string {
 func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	data := system.GetAggregationSourceCollection()
@@ -453,11 +448,10 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	data := system.GetAggregationSource(req.URL)
@@ -477,11 +471,10 @@ func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorpr
 func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	data := a.connector.UpdateAggregationSource(req)
@@ -503,11 +496,10 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	// Task Service using RPC and get the taskID
 	targetURI := req.URL
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
@@ -603,11 +595,10 @@ func deleteAggregationSource(taskID string, targetURI string, a *Aggregator, req
 func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.CreateAggregate(req)
@@ -624,11 +615,10 @@ func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.A
 func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.GetAllAggregates(req)
@@ -645,11 +635,10 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.GetAggregate(req)
@@ -666,11 +655,10 @@ func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.Aggr
 func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.DeleteAggregate(req)
@@ -687,11 +675,10 @@ func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.A
 func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.AddElementsToAggregate(req)
@@ -708,11 +695,10 @@ func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregator
 func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.RemoveElementsFromAggregate(req)
@@ -732,11 +718,10 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	var oemprivileges []string
 
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
@@ -808,11 +793,10 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	var oemprivileges []string
 
 	privileges := []string{common.PrivilegeConfigureComponents}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
@@ -873,11 +857,10 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.GetAllConnectionMethods(req)
@@ -894,11 +877,10 @@ func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregato
 func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
-	if authStatusCode != http.StatusOK {
-		errMsg := "error while trying to authenticate session"
-		generateResponse(common.GeneralError(authStatusCode, authStatusMessage, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authenticate session")
+		generateResponse(authResp, resp)
 		return nil
 	}
 	rpcResponce := a.connector.GetConnectionMethodInfo(req)

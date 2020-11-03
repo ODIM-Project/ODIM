@@ -24,7 +24,12 @@
 		"OnDiskHost": "localhost",
 		"OnDiskPort": "6380",
 		"MaxIdleConns": 10,
-		"MaxActiveConns": 120
+		"MaxActiveConns": 120,
+		"RedisHAEnabled": false,
+		"InMemorySentinelPort": "26379",
+		"OnDiskSentinelPort": "26379",
+		"InMemoryMasterSet": "mymaster",
+		"OnDiskMasterSet": "mymaster"
 	},
 	"TLSConf" : {
 		"MinVersion": "TLS_1.2",

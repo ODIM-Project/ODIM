@@ -543,6 +543,12 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "PCIeDevice.v1_5_0"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkAdapter_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "NetworkAdapter"},
+					models.Include{Namespace: "NetworkAdapter.v1_5_0"},
+				},
+			},
 		},
 	}
 	ctx.Gzip(true)

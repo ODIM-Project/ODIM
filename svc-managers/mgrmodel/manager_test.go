@@ -173,7 +173,9 @@ func TestAddManagertoDB(t *testing.T) {
 	err := mngr.AddManagertoDB()
 	assert.Nil(t, err, "There should be no error")
 
-	manager, err := GetManagerData(mngr.UUID)
+	data, err := GetManagerByURL("/redfish/v1/Managers/" + mngr.UUID)
+	var manager RAManager
+	json.Unmarshal([]byte(data), &manager)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, manager.Name, "odimra", "Name should be odimra")
 	assert.Equal(t, manager.FirmwareVersion, "1.0", "firmwareVersion should be 1.0")
@@ -181,19 +183,4 @@ func TestAddManagertoDB(t *testing.T) {
 	assert.Equal(t, manager.ID, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", "managerid should be 3bd1f589-117a-4cf9-89f2-da44ee8e012b")
 	assert.Equal(t, manager.UUID, "3bd1f589-117a-4cf9-89f2-da44ee8e012b", "uuid should be 3bd1f589-117a-4cf9-89f2-da44ee8e012b")
 	assert.Equal(t, manager.State, "Enabled", "state should be Enabled")
-}
-
-func TestGetAddManagertoDB(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	common.SetUpMockConfig()
-	key := "da44ee8e012b"
-	_, err := GetManagerData(key)
-	assert.NotNil(t, err, "There should be an error")
-
 }

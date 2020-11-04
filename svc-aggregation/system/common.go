@@ -69,6 +69,7 @@ type ExternalInterface struct {
 	EventNotification       func(string, string, string)
 	GetAllKeysFromTable     func(string) ([]string, error)
 	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
+	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
 	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
 }
 
@@ -116,10 +117,16 @@ type respHolder struct {
 
 //AddResourceRequest is payload of adding a  resource
 type AddResourceRequest struct {
-	ManagerAddress string  `json:"ManagerAddress"`
-	UserName       string  `json:"UserName"`
-	Password       string  `json:"Password"`
-	Oem            *AddOEM `json:"Oem"`
+	ManagerAddress   string            `json:"ManagerAddress"`
+	UserName         string            `json:"UserName"`
+	Password         string            `json:"Password"`
+	Oem              *AddOEM           `json:"Oem"`
+	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod"`
+}
+
+//ConnectionMethod struct definition for @odata.id
+type ConnectionMethod struct {
+	OdataID string `json:"@odata.id"`
 }
 
 // AddOEM is struct to have the add request parameters
@@ -164,7 +171,15 @@ type AggregationSource struct {
 
 // Links holds information of Oem
 type Links struct {
-	Oem *AddOEM `json:"Oem"`
+	Oem              *AddOEM           `json:"Oem,omitempty"`
+	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod,omitempty"`
+}
+
+type connectionMethodVariants struct {
+	PluginType        string
+	PreferredAuthType string
+	PluginID          string
+	FirmwareVersion   string
 }
 
 func getIPAndPortFromAddress(address string) (string, string) {
@@ -1146,4 +1161,92 @@ func getTranslationURL(translationURL string) map[string]string {
 		return config.Data.URLTranslation.SouthBoundURL
 	}
 	return config.Data.URLTranslation.NorthBoundURL
+}
+
+func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest, cmVariants connectionMethodVariants, taskInfo *common.TaskUpdateInfo) (response.RPC, int32, []string) {
+
+	var queueList = make([]string, 0)
+	ipData := strings.Split(req.ManagerAddress, ":")
+	var ip, port string
+	ip = ipData[0]
+	if len(ipData) > 1 {
+		port = ipData[1]
+	}
+	var plugin = agmodel.Plugin{
+		IP:                ip,
+		Port:              port,
+		Username:          req.UserName,
+		Password:          []byte(req.Password),
+		ID:                cmVariants.PluginID,
+		PluginType:        cmVariants.PluginType,
+		PreferredAuthType: cmVariants.PreferredAuthType,
+	}
+	pluginContactRequest.Plugin = plugin
+	pluginContactRequest.StatusPoll = true
+	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		pluginContactRequest.HTTPMethodType = http.MethodPost
+		pluginContactRequest.DeviceInfo = map[string]interface{}{
+			"Username": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+		pluginContactRequest.OID = "/ODIM/v1/Sessions"
+		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while creating the session: ")
+		if err != nil {
+			errMsg := err.Error()
+			log.Println(errMsg)
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
+		}
+		pluginContactRequest.Token = token
+	} else {
+		pluginContactRequest.LoginCredentials = map[string]string{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+	}
+
+	// Verfiying the plugin Status
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+	pluginContactRequest.OID = "/ODIM/v1/Status"
+	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
+	if err != nil {
+		errMsg := err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
+	}
+	// extracting the EMB Type and EMB Queue name
+	var statusResponse common.StatusResponse
+	err = json.Unmarshal(body, &statusResponse)
+	if err != nil {
+		errMsg := err.Error()
+		log.Println(errMsg)
+		getResponse.StatusCode = http.StatusInternalServerError
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
+	}
+
+	// check the firmaware version of plugin is matched with connection method variant version
+	if statusResponse.Version != cmVariants.FirmwareVersion {
+		errMsg := "firmaware is not supported by connection method"
+		log.Println(errMsg)
+		getResponse.StatusCode = http.StatusBadRequest
+		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList
+	}
+	if statusResponse.EventMessageBus != nil {
+		for i := 0; i < len(statusResponse.EventMessageBus.EmbQueue); i++ {
+			queueList = append(queueList, statusResponse.EventMessageBus.EmbQueue[i].QueueName)
+		}
+	}
+	return response.RPC{}, getResponse.StatusCode, queueList
+}
+
+func getConnectionMethodVariants(connectionMethodVariant string) connectionMethodVariants {
+	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
+	// Example: Compute:BasicAuth:GRF_v1.0.0
+	cm := strings.Split(connectionMethodVariant, ":")
+	firmawareVesrion := strings.Split(cm[2], "_")
+	return connectionMethodVariants{
+		PluginType:        cm[0],
+		PreferredAuthType: cm[1],
+		PluginID:          cm[2],
+		FirmwareVersion:   firmawareVesrion[1],
+	}
 }

@@ -30,7 +30,7 @@
 			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
 		]
 	},
-	"FirmwareVersion": "1.0",
+	"FirmwareVersion": "v1.0.0",
 	"SessionTimeoutInMinutes": 30,
 	"LoadBalancerConf": {
 		"LBHost": "",

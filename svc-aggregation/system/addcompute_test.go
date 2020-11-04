@@ -193,12 +193,19 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 		}, nil
 
 	} else if url == host+"/ODIM/v1/Status" {
-		body := `{"EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
+		body := `{"Version": "1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
 		if host == "https://100.0.0.3:9091" {
 			return nil, fmt.Errorf("plugin not reachable")
 		}
 		if host == "https://100.0.0.4:9091" {
 			body = "incorrectResponse"
+		}
+		if host == "https://100.0.0.1:" || host == "https://100.0.0.2:" {
+			body = "not found"
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+				Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+			}, nil
 		}
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -291,8 +298,9 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	pluginContactRequest.TargetURI = targetURI
 	pluginContactRequest.UpdateTask = p.UpdateTask
 	type args struct {
-		taskID string
-		req    AddResourceRequest
+		taskID   string
+		req      AddResourceRequest
+		pluginID string
 	}
 	tests := []struct {
 		name string
@@ -304,8 +312,9 @@ func TestExternalInterface_addcompute(t *testing.T) {
 			name: "posivite case",
 			p:    p,
 			args: args{
-				taskID: "123",
-				req:    reqSuccess,
+				taskID:   "123",
+				req:      reqSuccess,
+				pluginID: "GRF",
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -315,8 +324,9 @@ func TestExternalInterface_addcompute(t *testing.T) {
 			name: "success: plugin with xauth token",
 			p:    p,
 			args: args{
-				taskID: "123",
-				req:    reqSuccessXAuth,
+				taskID:   "123",
+				req:      reqSuccessXAuth,
+				pluginID: "XAuthPlugin",
 			},
 			want: response.RPC{
 				StatusCode: http.StatusCreated,
@@ -326,8 +336,9 @@ func TestExternalInterface_addcompute(t *testing.T) {
 			name: "with incorrect device credentials and BasicAuth",
 			p:    p,
 			args: args{
-				taskID: "123",
-				req:    reqIncorrectDeviceBasicAuth,
+				taskID:   "123",
+				req:      reqIncorrectDeviceBasicAuth,
+				pluginID: "GRF",
 			},
 			want: response.RPC{
 				StatusCode: http.StatusUnauthorized,
@@ -336,7 +347,131 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _, _ := tt.p.addCompute(tt.args.taskID, targetURI, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got, _, _ := tt.p.addCompute(tt.args.taskID, targetURI, tt.args.pluginID, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+				t.Errorf("ExternalInterface.addCompute = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExternalInterface_addcomputeWithConnectionMethod(t *testing.T) {
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockPluginData(t, "GRF")
+	mockPluginData(t, "XAuthPlugin")
+	mockPluginData(t, "XAuthPluginFail")
+
+	reqSuccess := AddResourceRequest{
+		ManagerAddress: "100.0.0.1",
+		UserName:       "admin",
+		Password:       "password",
+		ConnectionMethod: &ConnectionMethod{
+			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+		},
+	}
+
+	reqSuccessXAuth := AddResourceRequest{
+		ManagerAddress: "100.0.0.2",
+		UserName:       "admin",
+		Password:       "password",
+		ConnectionMethod: &ConnectionMethod{
+			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/0a8992dc-8b47-4fe3-b26c-4c34048cf0d2",
+		},
+	}
+	reqIncorrectDeviceBasicAuth := AddResourceRequest{
+		ManagerAddress: "100.0.0.1",
+		UserName:       "admin1",
+		Password:       "incorrectPassword",
+		ConnectionMethod: &ConnectionMethod{
+			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+		},
+	}
+
+	p := &ExternalInterface{
+		ContactClient:       mockContactClient,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		DeleteComputeSystem: deleteComputeforTest,
+	}
+	targetURI := "/redfish/v1/AggregationService/AggregationSource"
+	var percentComplete int32
+	var pluginContactRequest getResourceRequest
+	pluginContactRequest.ContactClient = p.ContactClient
+	pluginContactRequest.GetPluginStatus = p.GetPluginStatus
+	pluginContactRequest.TargetURI = targetURI
+	pluginContactRequest.UpdateTask = p.UpdateTask
+	type args struct {
+		taskID   string
+		req      AddResourceRequest
+		pluginID string
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "posivite case",
+			p:    p,
+			args: args{
+				taskID:   "123",
+				req:      reqSuccess,
+				pluginID: "GRF",
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "success: plugin with xauth token",
+			p:    p,
+			args: args{
+				taskID:   "123",
+				req:      reqSuccessXAuth,
+				pluginID: "XAuthPlugin",
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "with incorrect device credentials and BasicAuth",
+			p:    p,
+			args: args{
+				taskID:   "123",
+				req:      reqIncorrectDeviceBasicAuth,
+				pluginID: "GRF",
+			},
+			want: response.RPC{
+				StatusCode: http.StatusUnauthorized,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got, _, _ := tt.p.addCompute(tt.args.taskID, targetURI, tt.args.pluginID, percentComplete, tt.args.req, pluginContactRequest); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.addCompute = %v, want %v", got, tt.want)
 			}
 		})

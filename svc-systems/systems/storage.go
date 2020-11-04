@@ -215,7 +215,23 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			_, err := e.DB.GetResource("Drives", driveURI)
 			if err != nil {
 				log.Printf(err.Error())
-				return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
+				if errors.DBKeyNotFound == err.ErrNo() {
+					requestData := strings.Split(systemID, ":")
+					var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+						URL:             driveURI,
+						UUID:            requestData[0],
+						SystemID:        requestData[1],
+						ContactClient:   e.ContactClient,
+						DevicePassword:  e.DevicePassword,
+						GetPluginStatus: e.GetPluginStatus,
+					}
+					var err error
+					if _, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
+						return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
+					}
+				} else {
+					return http.StatusNotFound, response.ResourceNotFound, []interface{}{"Drives", driveURI}, fmt.Errorf("Error while getting drive details for %s", driveURI)
+				}
 			}
 			// Validating if a a drive URI contains correct system id
 			driveURISplit := strings.Split(driveURI, "/")
@@ -306,7 +322,29 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response
 	}
+	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
+	_, dbErr := smodel.GetResource("Volumes", key)
+	if dbErr != nil {
+		log.Printf("error getting volumes details : %v", dbErr.Error())
+		errorMessage := dbErr.Error()
+		if errors.DBKeyNotFound == dbErr.ErrNo() {
+			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+				URL:             key,
+				UUID:            uuid,
+				SystemID:        requestData[1],
+				ContactClient:   e.ContactClient,
+				DevicePassword:  e.DevicePassword,
+				GetPluginStatus: e.GetPluginStatus,
+			}
+			var err error
+			if _, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Volumes", key}, nil)
+			}
 
+		} else {
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		}
+	}
 	decryptedPasswordByte, err := e.DevicePassword(target.Password)
 	if err != nil {
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
@@ -359,7 +397,6 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	// delete a volume in db
-	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
 	if derr := smodel.DeleteVolume(key); derr != nil {
 		errMsg := "error while trying to delete volume: " + derr.Error()
 		log.Println(errMsg)

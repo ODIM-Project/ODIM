@@ -51,6 +51,7 @@ var connector = &system.ExternalInterface{
 	GetSessionUserName:      getSessionUserNameForTesting,
 	GetAllKeysFromTable:     mockGetAllKeysFromTable,
 	GetConnectionMethod:     mockGetConnectionMethod,
+	UpdateConnectionMethod:  mockUpdateConnectionMethod,
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
@@ -60,6 +61,9 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 	return []string{}, fmt.Errorf("Table not found")
 }
 
+func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
+	return nil
+}
 func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
 	var connMethod agmodel.ConnectionMethod
 	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {

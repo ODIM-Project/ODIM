@@ -98,13 +98,17 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 	links := aggregationSource.Links.(map[string]interface{})
-	oem := links["Oem"].(map[string]interface{})
-	if _, ok := oem["PluginType"]; ok {
-		resp = e.updateManagerAggregationSource(data[1], aggregationSource, updateRequest, hostNameUpdated)
+	if _, ok := links["ConnectionMethod"]; ok {
+		resp = e.updateAggregationSourceWithConnectionMethod(req.URL, links["ConnectionMethod"].(map[string]interface{}), updateRequest, hostNameUpdated)
 	} else {
-		resp = e.updateBMCAggregationSource(data[1], aggregationSource, updateRequest, hostNameUpdated)
+		oem := links["Oem"].(map[string]interface{})
+		pluginID := oem["PluginID"].(string)
+		if _, ok := oem["PluginType"]; ok {
+			resp = e.updateManagerAggregationSource(data[1], pluginID, updateRequest, hostNameUpdated)
+		} else {
+			resp = e.updateBMCAggregationSource(data[1], pluginID, updateRequest, hostNameUpdated)
+		}
 	}
-
 	if resp.StatusMessage != "" {
 		return resp
 	}
@@ -149,10 +153,29 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	resp.StatusMessage = response.Success
 	return resp
 }
-func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID string, aggregationSource agmodel.AggregationSource, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
-	links := aggregationSource.Links.(map[string]interface{})
-	oem := links["Oem"].(map[string]interface{})
-	pluginID := oem["PluginID"].(string)
+
+func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(url string, connectionMethodLink, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
+	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
+	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
+	if err != nil {
+		log.Printf("error getting  connectionmethod : %v", err)
+		errorMessage := err.Error()
+		if errors.DBKeyNotFound == err.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
+	var data = strings.Split(url, "/redfish/v1/AggregationService/AggregationSources/")
+	uuid := url[strings.LastIndexByte(url, '/')+1:]
+	target, terr := agmodel.GetTarget(uuid)
+	if terr != nil || target == nil {
+		return e.updateManagerAggregationSource(data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
+	}
+	return e.updateBMCAggregationSource(data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
+}
+
+func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID, pluginID string, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := errs.Error()
@@ -270,11 +293,8 @@ func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID s
 	}
 }
 
-func (e *ExternalInterface) updateBMCAggregationSource(aggregationSourceID string, aggregationSource agmodel.AggregationSource, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
+func (e *ExternalInterface) updateBMCAggregationSource(aggregationSourceID, pluginID string, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {
 	// Get the plugin  from db
-	links := aggregationSource.Links.(map[string]interface{})
-	oem := links["Oem"].(map[string]interface{})
-	pluginID := oem["PluginID"].(string)
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := errs.Error()

@@ -43,6 +43,10 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	}
 	// check whether the aggregation source is bmc or manager
 	links := aggregationSource.Links.(map[string]interface{})
+	// check links has connection method or oem
+	if _, ok := links["ConnectionMethod"]; ok {
+		return e.deleteAggregationSourceWithConnectionMethod(req.URL, links["ConnectionMethod"].(map[string]interface{}))
+	}
 	oem := links["Oem"].(map[string]interface{})
 	if _, ok := oem["PluginType"]; ok {
 		// Get the plugin
@@ -96,6 +100,99 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		},
 	}
 	return resp
+}
+
+func (e *ExternalInterface) deleteAggregationSourceWithConnectionMethod(url string, connectionMethodLink map[string]interface{}) response.RPC {
+	var resp response.RPC
+	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
+	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
+	if err != nil {
+		log.Printf("error getting  connectionmethod : %v", err)
+		errorMessage := err.Error()
+		if errors.DBKeyNotFound == err.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+
+	uuid := url[strings.LastIndexByte(url, '/')+1:]
+	target, terr := agmodel.GetTarget(uuid)
+	if terr != nil || target == nil {
+		cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
+		if len(connectionMethod.Links.AggregationSources) > 1 {
+			errMsg := fmt.Sprintf("error: plugin %v can't be removed since it managing some of the devices", cmVariants.PluginID)
+			log.Println(errMsg)
+			return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
+		}
+		// Get the plugin
+		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID)
+		if errs != nil {
+			errMsg := errs.Error()
+			log.Printf(errMsg)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", cmVariants.PluginID}, nil)
+		}
+		// delete the manager
+		resp = e.deletePlugin("/redfish/v1/Managers/" + plugin.ManagerUUID)
+	} else {
+		var data = strings.Split(url, "/redfish/v1/AggregationService/AggregationSources/")
+		systemList, dbErr := agmodel.GetAllMatchingDetails("ComputerSystem", data[1], common.InMemory)
+		if dbErr != nil {
+			errMsg := dbErr.Error()
+			log.Println(errMsg)
+			if errors.DBKeyNotFound == dbErr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Systems", "everything"}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		for _, systemURI := range systemList {
+			index := strings.LastIndexAny(systemURI, "/")
+			resp = e.deleteCompute(systemURI, index)
+		}
+	}
+	if resp.StatusCode != http.StatusOK {
+		return resp
+	}
+	// Delete the Aggregation Source
+	dbErr := agmodel.DeleteAggregationSource(url)
+	if dbErr != nil {
+		errorMessage := "error while trying to delete AggreationSource  " + dbErr.Error()
+		resp.CreateInternalErrorResponse(errorMessage)
+		log.Printf(errorMessage)
+		return resp
+	}
+	connectionMethod.Links.AggregationSources = removeAggregationSource(connectionMethod.Links.AggregationSources, agmodel.OdataID{OdataID: url})
+	dbErr = e.UpdateConnectionMethod(connectionMethod, connectionMethodOdataID)
+	if dbErr != nil {
+		errMsg := dbErr.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
+	resp = response.RPC{
+		StatusCode:    http.StatusNoContent,
+		StatusMessage: response.ResourceRemoved,
+		Header: map[string]string{
+			"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
+			"Cache-Control":     "no-cache",
+			"Connection":        "keep-alive",
+			"Transfer-Encoding": "chunked",
+			"OData-Version":     "4.0",
+			"X-Frame-Options":   "sameorigin",
+		},
+	}
+	return resp
+}
+
+// removeAggregationSource will remove the element from the slice return
+// slice of remaining elements
+func removeAggregationSource(slice []agmodel.OdataID, element agmodel.OdataID) []agmodel.OdataID {
+	var elements []agmodel.OdataID
+	for _, val := range slice {
+		if val != element {
+			elements = append(elements, val)
+		}
+	}
+	return elements
 }
 
 // deleteplugin removes the given plugin

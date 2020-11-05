@@ -17,6 +17,7 @@ package handle
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -550,10 +551,11 @@ func GetMetadata(ctx iris.Context) {
 		"Allow":             "GET",
 		"Cache-Control":     "no-cache",
 		"Transfer-Encoding": "chunked",
+		"Content-type":      "application/xml; charset=utf-8",
 	}
-
+	xmlData, _ := xml.Marshal(Metadata)
 	SetResponseHeaders(ctx, headers)
-	ctx.XML(Metadata)
+	ctx.Write(xmlData)
 
 }
 

@@ -108,11 +108,11 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	return nil
 }
 
-//GetChassisCollection defines the operation which hasnled the RPC request response
+// GetChassisCollection defines the operation which handles the RPC request response
 // for getting all the server chassis added.
 // Retrieves all the keys with table name ChassisCollection and create the response
 // to send back to requested user.
-func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
+func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, func() response.RPC {
 		return cha.GetCollectionHandler.Handle()
 	})
@@ -174,11 +174,4 @@ func generateResponse(input interface{}) []byte {
 		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
-}
-
-func fillChassisProtoResponse(resp *chassisproto.GetChassisResponse, data response.RPC) {
-	resp.StatusCode = data.StatusCode
-	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
-	resp.Header = data.Header
 }

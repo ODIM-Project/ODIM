@@ -63,9 +63,13 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	uuid := requestData[0]
 	urlData := strings.Split(req.URL, "/")
 	//generating serachUrl which will be a part of key and also used in formatting  response
-	var resourceName string
-	resourceName = urlData[len(urlData)-1]
-	tableName := common.ChassisResource[resourceName]
+	var tableName string
+    if req.ResourceID == "" {
+        resourceName := urlData[len(urlData)-1]
+        tableName = common.ChassisResource[resourceName]
+    } else {
+        tableName = urlData[len(urlData)-2]
+    }
 	data, gerr := smodel.GetResource(tableName, req.URL)
 	if gerr != nil {
 		log.Printf("error getting system details : %v", gerr.Error())

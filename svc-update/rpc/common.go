@@ -49,3 +49,26 @@ func fillProtoResponse(resp *updateproto.UpdateResponse, data response.RPC) {
 	resp.Header = data.Header
 
 }
+
+func generateRPCResponse(rpcResp response.RPC, aggResp *updateproto.UpdateResponse) {
+	bytes, _ := json.Marshal(rpcResp.Body)
+	*aggResp = updateproto.UpdateResponse{
+		StatusCode:    rpcResp.StatusCode,
+		StatusMessage: rpcResp.StatusMessage,
+		Header:        rpcResp.Header,
+		Body:          bytes,
+	}
+}
+
+func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
+	commonResponse := response.Response{
+		OdataType:    "#Task.v1_4_2.Task",
+		ID:           taskID,
+		Name:         "Task " + taskID,
+		OdataContext: "/redfish/v1/$metadata#Task.Task",
+		OdataID:      taskURI,
+	}
+	commonResponse.MessageArgs = []string{taskID}
+	commonResponse.CreateGenericResponse(rpcResp.StatusMessage)
+	rpcResp.Body = commonResponse
+}

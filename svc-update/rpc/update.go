@@ -18,9 +18,11 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // GetUpdateService is an rpc handler, it gets invoked during GET on UpdateService API (/redfis/v1/UpdateService/)
@@ -85,7 +87,52 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
-	fillProtoResponse(resp, a.connector.SimpleUpdate(req))
+	sessionUserName, err := a.connector.External.GetSessionUserName(req.SessionToken)
+	if err != nil {
+		errMsg := "error while trying to get the session username: " + err.Error()
+		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	taskURI, err := a.connector.External.CreateTask(sessionUserName)
+	if err != nil {
+		errMsg := "error while trying to create task: " + err.Error()
+		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
+		log.Printf(errMsg)
+		return nil
+	}
+	strArray := strings.Split(taskURI, "/")
+	var taskID string
+	if strings.HasSuffix(taskURI, "/") {
+		taskID = strArray[len(strArray)-2]
+	} else {
+		taskID = strArray[len(strArray)-1]
+	}
+	err = a.connector.External.UpdateTask(common.TaskData{
+		TaskID:          taskID,
+		TargetURI:       taskURI,
+		TaskState:       common.Running,
+		TaskStatus:      common.OK,
+		PercentComplete: 0,
+		HTTPMethod:      http.MethodPost,
+	})
+	if err != nil {
+		// print error as we are unable to communicate with svc-task and then return
+		log.Printf("error while contacting task-service with UpdateTask RPC : %v", err)
+	}
+	go a.connector.SimpleUpdate(taskID, sessionUserName, req)
+	// return 202 Accepted
+	var rpcResp = response.RPC{
+		StatusCode:    http.StatusAccepted,
+		StatusMessage: response.TaskStarted,
+		Header: map[string]string{
+			"Content-type": "application/json; charset=utf-8",
+			"Location":     "/taskmon/" + taskID,
+		},
+	}
+	generateTaskRespone(taskID, taskURI, &rpcResp)
+	generateRPCResponse(rpcResp, resp)
+	//fillProtoResponse(resp, a.connector.SimpleUpdate(req))
 	return nil
 }
 

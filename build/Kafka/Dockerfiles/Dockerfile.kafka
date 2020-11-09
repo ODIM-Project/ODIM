@@ -45,7 +45,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
 	&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
         && chown -R odimra:odimra /opt/kafka
 
-COPY --chown=odimra:odimra ./scripts/s*_kafka.sh /opt/kafka/scripts/
+COPY --chown=odimra:odimra ./Kafka/scripts/s*_kafka.sh /opt/kafka/scripts/
 RUN chmod 0700 /opt/kafka/scripts/*
 
 USER odimra:odimra

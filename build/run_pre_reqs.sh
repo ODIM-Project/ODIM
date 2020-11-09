@@ -34,32 +34,32 @@ pre_reqs()
 	sudo useradd -u ${ETCD_USER_ID} -r -M -g etcd odimra
 
 	if [[ -z $FQDN ]]; then
-	echo "[ERROR] Set FQDN to environment of the host machine using the following command: export FQDN=<user_preferred_fqdn_for_host>"
-	exit 1
+		echo "[ERROR] Set FQDN to environment of the host machine using the following command: export FQDN=<user_preferred_fqdn_for_host>"
+		exit 1
         fi
 	
         if [[ -z $HOSTIP ]]; then
-	echo "[ERROR] Set the environment variable, HOSTIP to the IP address of your system using following coomand: export HOSTIP=<ip_address_of_your_system>"
-        exit 1
+		echo "[ERROR] Set the environment variable, HOSTIP to the IP address of your system using following coomand: export HOSTIP=<ip_address_of_your_system>"
+        	exit 1
         fi
 
 	#create kafka required directories
 	if [[ ! -d /etc/kafka ]]; then
-		output=$(sudo mkdir -p /etc/kafka/conf /etc/kafka/data 2>&1)
-		eval_cmd_exec $? "failed to create kafka directories" "$output"
+		kafka_output=$(sudo mkdir -p /etc/kafka/conf /etc/kafka/data 2>&1)
+		echo "failed to create kafka directories" "$kafka_output"
 	fi
 
-	output=$(sudo chown -R odimra:odimra /etc/kafka* && sudo chmod 0755 /etc/kafka* 2>&1)
-	eval_cmd_exec $? "failed to modify kafka directories permission" "$output"
+	kafka_owner_output=$(sudo chown -R odimra:odimra /etc/kafka* && sudo chmod 0755 /etc/kafka* 2>&1)
+	echo "failed to modify kafka directories permission" "$kafka_owner_output"
 
 	#create zookeeper required directories
 	if [[ ! -d /etc/zookeeper ]]; then
-		output=$(sudo mkdir -p /etc/zookeeper/conf /etc/zookeeper/data /etc/zookeeper/data/log 2>&1)
-		eval_cmd_exec $? "failed to create zookeeper directories" "$output"
+		zookeeper_output=$(sudo mkdir -p /etc/zookeeper/conf /etc/zookeeper/data /etc/zookeeper/data/log 2>&1)
+		echo "failed to create zookeeper directories" "$zookeeper_output"
 	fi
 
-        output=$(sudo chown -R odimra:odimra /etc/zookeeper* && sudo chmod 0755 /etc/zookeeper* 2>&1)
-	eval_cmd_exec $? "failed to modify zookeeper directories permission" "$output"
+        zookeeper_owner_output=$(sudo chown -R odimra:odimra /etc/zookeeper* && sudo chmod 0755 /etc/zookeeper* 2>&1)
+	echo "failed to modify zookeeper directories permission" "$zookeeper_owner_output"
 
 }
 

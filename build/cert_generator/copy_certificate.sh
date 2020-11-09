@@ -33,7 +33,8 @@ fi
 
 sudo mkdir /etc/odimracert /etc/kafkacert /etc/plugincert
 sudo cp rootCA.crt odimra_server.crt odimra_server.key odimra_rsa.public odimra_rsa.private odimra_kafka_client.crt odimra_kafka_client.key /etc/odimracert/
-sudo cp kafka.keystore.jks kafka.truststore.jks /etc/kafkacert/
+sudo cp kafka.keystore.jks kafka.truststore.jks /etc/kafka/conf/
+sudo cp zookeeper.keystore.jks zookeeper.truststore.jks /etc/zookeeper/conf/
 sudo cp rootCA.crt odimra_server.crt odimra_server.key odimra_kafka_client.crt odimra_kafka_client.key /etc/plugincert/
 
 cd /etc/odimracert/
@@ -53,7 +54,7 @@ else
 	exit -1
 fi
 
-cd /etc/kafkacert/
+cd /etc/kafka/conf
 
 if [ $? -eq 0 ];
 then
@@ -67,6 +68,23 @@ then
         fi
 else
         echo "Copying of Kafka Certificates failed"
+        exit -1
+fi
+
+cd /etc/zookeeper/conf
+
+if [ $? -eq 0 ];
+then
+        a=`echo \`ls | wc -l\` `
+        if [ $a -eq 2 ];
+        then
+                echo "Zookeeper Certificates copied successfully"
+        else
+                echo "Copying of Zookeeper Certificates failed"
+                exit -1
+        fi
+else
+        echo "Copying of Zookeeper Certificates failed"
         exit -1
 fi
 

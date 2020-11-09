@@ -150,7 +150,14 @@ This section provides a step-by-step procedure for deploying the resource aggreg
    ```
    $ export HOSTIP=<ip_address_of_your_system>
    ```
-5. Set up FQDN in the `/etc/hosts` file (only if there is no DNS infrastructure):
+
+5. Set below environment variables with user and group ID to be used for odimra
+   ```
+   $ export ETCD_USER_ID=1234
+   $ export ETCD_GROUP_ID=1234
+   ```
+
+6. Set up FQDN in the `/etc/hosts` file (only if there is no DNS infrastructure):
 
     a. Open the `/etc/hosts` file for editing:
       ```
@@ -163,7 +170,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
    Example:
 `<host_ipv4_address> <fqdn>`
 
-6. Generate certificates:
+7. Generate certificates:
 
    
    **NOTE:**
@@ -218,12 +225,12 @@ This section provides a step-by-step procedure for deploying the resource aggreg
       - odimra_kafka_client.crt
       
 
-7. Navigate to the odimra folder.
+8. Navigate to the odimra folder.
    ```
    $ cd ~/ODIM
    ```
 
-8. Use the following command to deploy and start the containers:
+9. Use the following command to deploy and start the containers:
    ```
    $ make all
    ```
@@ -235,7 +242,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
       - build_consul_1
       - build_grf_plugin_1
 
-9. Verify that the resource aggregator services are running successfully.
+10. Verify that the resource aggregator services are running successfully.
    ```
    $ ps -eaf | grep svc
    ```
@@ -293,7 +300,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
     - The GRF plugin logs are available at `/var/log/GRF_PLUGIN`.
 
 
-10. To configure log rotation, do the following:
+11. To configure log rotation, do the following:
 
     a. Navigate to the `/etc/logrotate.d` directory.
     ```
@@ -327,7 +334,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
       $ sudo logrotate -v -f /etc/logrotate.d/odimra
   	  ```
   
-11.  Use following commands to undeploy odimra solution and remove the docker images, persistent data, logs.
+12.  Use following commands to undeploy odimra solution and remove the docker images, persistent data, logs.
 
      ```
      $ make clean
@@ -352,7 +359,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
      [CAUTION] The above commands are not encouraged to be executed in production envoirnment as this will erase important data.
                The action is irrecoverable and will wipe all the odimra completely. 
 
-12. To add the Generic Redfish Plugin and servers to the resource aggregator for ODIM, refer to the following readme.  
+13. To add the Generic Redfish Plugin and servers to the resource aggregator for ODIM, refer to the following readme.  
     https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
 	
 	

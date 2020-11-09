@@ -26,6 +26,7 @@ type TaskData struct {
 	TaskID          string
 	TargetURI       string
 	Response        response.RPC
+	TaskRequest     string
 	TaskState       string
 	TaskStatus      string
 	PercentComplete int32
@@ -34,9 +35,10 @@ type TaskData struct {
 
 // TaskUpdateInfo holds the info for updating a task during error response
 type TaskUpdateInfo struct {
-	TaskID     string
-	TargetURI  string
-	UpdateTask func(TaskData) error
+	TaskID      string
+	TargetURI   string
+	TaskRequest string
+	UpdateTask  func(TaskData) error
 }
 
 // GeneralError will create the error response and update task if required
@@ -67,6 +69,7 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 			TaskID:          t.TaskID,
 			TargetURI:       t.TargetURI,
 			Response:        resp,
+			TaskRequest:     t.TaskRequest,
 			TaskState:       Exception,
 			TaskStatus:      Critical,
 			PercentComplete: 100,

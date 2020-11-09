@@ -15,6 +15,10 @@
 // Package agresponse ...
 package agresponse
 
+import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+)
+
 // ResetResponse ...
 type ResetResponse struct {
 	ResetType string      `json:"ResetType"`
@@ -24,22 +28,23 @@ type ResetResponse struct {
 
 //AggregationServiceResponse is used to give back the response
 type AggregationServiceResponse struct {
-	OdataContext   string  `json:"@odata.context"`
-	Etag           string  `json:"@odata.etag,omitempty"`
-	ID             string  `json:"Id"`
-	OdataID        string  `json:"@odata.id"`
-	OdataType      string  `json:"@odata.type"`
-	Name           string  `json:"Name"`
-	Description    string  `json:"Description"`
-	Actions        Actions `json:"Actions"`
-	ServiceEnabled bool    `json:"ServiceEnabled"`
-	Status         Status  `json:"Status"`
+	OdataContext       string  `json:"@odata.context"`
+	Etag               string  `json:"@odata.etag,omitempty"`
+	ID                 string  `json:"Id"`
+	OdataID            string  `json:"@odata.id"`
+	OdataType          string  `json:"@odata.type"`
+	Name               string  `json:"Name"`
+	Description        string  `json:"Description"`
+	Actions            Actions `json:"Actions"`
+	Aggregates         OdataID `json:"Aggregates"`
+	AggregationSources OdataID `json:"AggregationSources"`
+	ConnectionMethods  OdataID `json:"ConnectionMethods"`
+	ServiceEnabled     bool    `json:"ServiceEnabled"`
+	Status             Status  `json:"Status"`
 }
 
 //Actions struct definition
 type Actions struct {
-	Add                 Action `json:"#AggregationService.Add"`
-	Remove              Action `json:"#AggregationService.Remove"`
 	Reset               Action `json:"#AggregationService.Reset"`
 	SetDefaultBootOrder Action `json:"#AggregationService.SetDefaultBootOrder"`
 }
@@ -55,4 +60,17 @@ type Status struct {
 type Action struct {
 	Target     string `json:"target"`
 	ActionInfo string `json:"@Redfish.ActionInfo"`
+}
+
+//OdataID struct definition for @odata.id
+type OdataID struct {
+	OdataID string `json:"@odata.id"`
+}
+
+// ConnectionMethodResponse defines the response for connection method
+type ConnectionMethodResponse struct {
+	response.Response
+	ConnectionMethodType    string      `json:"ConnectionMethodType"`
+	ConnectionMethodVariant string      `json:"ConnectionMethodVariant"`
+	Links                   interface{} `json:"Links"`
 }

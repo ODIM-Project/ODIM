@@ -35,6 +35,7 @@ import (
 type PluginContact struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptPassword func([]byte) ([]byte, error)
+	GetPluginStatus func(smodel.Plugin) bool
 }
 
 // GetChassisResource is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -57,7 +58,7 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"chassis", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 	urlData := strings.Split(req.URL, "/")
@@ -71,15 +72,16 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-				URL:            req.URL,
-				UUID:           uuid,
-				SystemID:       requestData[1],
-				ContactClient:  p.ContactClient,
-				DevicePassword: p.DecryptPassword,
+				URL:             req.URL,
+				UUID:            uuid,
+				SystemID:        requestData[1],
+				ContactClient:   p.ContactClient,
+				DevicePassword:  p.DecryptPassword,
+				GetPluginStatus: p.GetPluginStatus,
 			}
 			log.Println("Request Url", req.URL)
 			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
 				log.Printf("error while getting resource: %v", err)
 				errorMsg := err.Error()
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil)
@@ -110,7 +112,7 @@ func GetChassisCollection(req *chassisproto.GetChassisRequest) response.RPC {
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	chassisCollectionKeysArray, err := smodel.GetAllKeysFromTable("chassis")
+	chassisCollectionKeysArray, err := smodel.GetAllKeysFromTable("Chassis")
 	if err != nil {
 		log.Printf("error getting all keys of ChassisCollection table : %v", err)
 		errorMessage := err.Error()
@@ -156,16 +158,16 @@ func GetChassisInfo(req *chassisproto.GetChassisRequest) response.RPC {
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"chassis", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.RequestParam}, nil)
 	}
-	data, gerr := smodel.GetResource("chassis", req.URL)
+	data, gerr := smodel.GetResource("Chassis", req.URL)
 	if gerr != nil {
 		log.Printf("error getting system details : %v", gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = errors.ResourceNotFound
-			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"chassis", req.URL}, nil)
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.URL}, nil)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}

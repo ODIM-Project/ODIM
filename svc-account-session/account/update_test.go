@@ -14,6 +14,7 @@
 package account
 
 import (
+	"encoding/json"
 	"net/http"
 	"reflect"
 	"testing"
@@ -26,17 +27,8 @@ import (
 )
 
 func TestUpdate(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
+	acc := getMockExternalInterface()
+
 	successResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
@@ -44,6 +36,15 @@ func TestUpdate(t *testing.T) {
 		ID:           "testUser1",
 		Name:         "Account Service",
 	}
+
+	operatorSuccessResponse := response.Response{
+		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataID:      "/redfish/v1/AccountService/Accounts/operatorUser",
+		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
+		ID:           "operatorUser",
+		Name:         "Account Service",
+	}
+
 	successResponse2 := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser2",
@@ -51,24 +52,10 @@ func TestUpdate(t *testing.T) {
 		ID:           "testUser2",
 		Name:         "Account Service",
 	}
+
 	successResponse.CreateGenericResponse(response.AccountModified)
 	successResponse2.CreateGenericResponse(response.AccountModified)
-	err := createMockRole("PrivilegeLogin", []string{common.PrivilegeLogin}, []string{}, false)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user %v", err)
-	}
-	err = createMockUser("testUser1", common.RoleAdmin)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user1 %v", err)
-	}
-	err = createMockUser("testUser2", common.RoleAdmin)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user2 %v", err)
-	}
-	err = createMockUser("testUser3", "PrivilegeLogin")
-	if err != nil {
-		t.Fatalf("Error in creating mock user3 %v", err)
-	}
+	operatorSuccessResponse.CreateGenericResponse(response.AccountModified)
 
 	errArg := response.Args{
 		Code:    response.GeneralError,
@@ -139,6 +126,19 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 	}
+
+	errArg5 := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.PropertyMissing,
+				ErrorMessage:  "empty request can not be processed",
+				MessageArgs:   []interface{}{"request body"},
+			},
+		},
+	}
+
 	genArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "error: username cannot be modified",
@@ -147,6 +147,28 @@ func TestUpdate(t *testing.T) {
 		req     *accountproto.UpdateAccountRequest
 		session *asmodel.Session
 	}
+
+	reqBodyRoleIDOperator, _ := json.Marshal(asmodel.Account{
+		RoleID: "Operator",
+	})
+	reqBodyUpdateUsername, _ := json.Marshal(asmodel.Account{
+		UserName: "xyz",
+	})
+	reqBodyInvalidRole, _ := json.Marshal(asmodel.Account{
+		RoleID: "xyz",
+	})
+	reqBodyInvalidPwd, _ := json.Marshal(asmodel.Account{
+		Password: "xyz",
+	})
+	reqBodyUpdatePwd, _ := json.Marshal(asmodel.Account{
+		Password: "P@$$w0rd@123",
+	})
+	reqBodyRoleIDAdmin, _ := json.Marshal(asmodel.Account{
+		RoleID: "Administrator",
+	})
+
+	emptyPayload, _ := json.Marshal(map[string]interface{}{})
+
 	tests := []struct {
 		name string
 		args args
@@ -156,8 +178,8 @@ func TestUpdate(t *testing.T) {
 			name: "successful updation of account as admin",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "Operator",
-					AccountID: "testUser1",
+					RequestBody: reqBodyRoleIDOperator,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -193,8 +215,8 @@ func TestUpdate(t *testing.T) {
 			name: "update role to admin without privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    common.RoleAdmin,
-					AccountID: "testUser1",
+					RequestBody: reqBodyRoleIDAdmin,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -215,8 +237,8 @@ func TestUpdate(t *testing.T) {
 			name: "update non-existing account",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "Operator",
-					AccountID: "xyz",
+					RequestBody: reqBodyRoleIDOperator,
+					AccountID:   "xyz",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -237,8 +259,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account name",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					UserName:  "xyz",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdateUsername,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -259,8 +281,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account with invalid role",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "xyz",
-					AccountID: "testUser1",
+					RequestBody: reqBodyInvalidRole,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -281,8 +303,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account with invalid password",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "xyz",
-					AccountID: "testUser1",
+					RequestBody: reqBodyInvalidPwd,
+					AccountID:   "testUser1",
 				},
 				session: &asmodel.Session{
 					Privileges: map[string]bool{
@@ -303,13 +325,13 @@ func TestUpdate(t *testing.T) {
 			name: "update own password with ConfigureSelf privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "operatorUser",
 				},
 				session: &asmodel.Session{
-					ID:       "testUser1",
-					UserName: "testUser1",
-					RoleID:   "Operator",
+					ID:       "operatorUser",
+					UserName: "operatorUser",
+					RoleID:   common.RoleMonitor,
 					Privileges: map[string]bool{
 						common.PrivilegeConfigureSelf: true,
 					},
@@ -322,14 +344,14 @@ func TestUpdate(t *testing.T) {
 					"Cache-Control":     "no-cache",
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
 				Body: asresponse.Account{
-					Response: successResponse,
-					UserName: "testUser1",
+					Response: operatorSuccessResponse,
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
@@ -343,12 +365,12 @@ func TestUpdate(t *testing.T) {
 			name: "update own password with ConfigureUsers privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "operatorUser",
 				},
 				session: &asmodel.Session{
-					ID:       "testUser1",
-					UserName: "testUser1",
+					ID:       "operatorUser",
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Privileges: map[string]bool{
 						common.PrivilegeConfigureUsers: true,
@@ -362,14 +384,14 @@ func TestUpdate(t *testing.T) {
 					"Cache-Control":     "no-cache",
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
 				Body: asresponse.Account{
-					Response: successResponse,
-					UserName: "testUser1",
+					Response: operatorSuccessResponse,
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
@@ -383,12 +405,12 @@ func TestUpdate(t *testing.T) {
 			name: "update own password with both ConfigureSelf and ConfigureUsers privileges",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser1",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "operatorUser",
 				},
 				session: &asmodel.Session{
-					ID:       "testUser1",
-					UserName: "testUser1",
+					ID:       "operatorUser",
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Privileges: map[string]bool{
 						common.PrivilegeConfigureSelf:  true,
@@ -403,14 +425,14 @@ func TestUpdate(t *testing.T) {
 					"Cache-Control":     "no-cache",
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
 				Body: asresponse.Account{
-					Response: successResponse,
-					UserName: "testUser1",
+					Response: operatorSuccessResponse,
+					UserName: "operatorUser",
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
@@ -424,8 +446,8 @@ func TestUpdate(t *testing.T) {
 			name: "update other account password with both ConfigureUsers and ConfigureSelf priveleges",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser2",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -465,8 +487,8 @@ func TestUpdate(t *testing.T) {
 			name: "update other account password with only ConfigureUsers privelege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser2",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -505,8 +527,8 @@ func TestUpdate(t *testing.T) {
 			name: "update other account password with only ConfigureSelf privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser2",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser2",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser1",
@@ -530,8 +552,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account password with only Login privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					Password:  "P@$$w0rd@123",
-					AccountID: "testUser3",
+					RequestBody: reqBodyUpdatePwd,
+					AccountID:   "testUser3",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser3",
@@ -555,8 +577,8 @@ func TestUpdate(t *testing.T) {
 			name: "update account roleid with only Login privilege",
 			args: args{
 				req: &accountproto.UpdateAccountRequest{
-					RoleId:    "Administrator",
-					AccountID: "testUser3",
+					RequestBody: reqBodyRoleIDAdmin,
+					AccountID:   "testUser3",
 				},
 				session: &asmodel.Session{
 					ID:       "testUser3",
@@ -576,10 +598,32 @@ func TestUpdate(t *testing.T) {
 				Body: errArgs1.CreateGenericErrorResponse(),
 			},
 		},
+		{
+			name: "update account without payload",
+			args: args{
+				req: &accountproto.UpdateAccountRequest{
+					RequestBody: emptyPayload,
+					AccountID:   "testUser1",
+				},
+				session: &asmodel.Session{
+					Privileges: map[string]bool{
+						common.PrivilegeConfigureSelf: true,
+					},
+				},
+			},
+			want: response.RPC{
+				StatusCode:    http.StatusBadRequest,
+				StatusMessage: response.PropertyMissing,
+				Header: map[string]string{
+					"Content-type": "application/json; charset=utf-8",
+				},
+				Body: errArg5.CreateGenericErrorResponse(),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Update(tt.args.req, tt.args.session)
+			got := acc.Update(tt.args.req, tt.args.session)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Update() = %v, want %v", got, tt.want)
 			}

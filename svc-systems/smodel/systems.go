@@ -46,6 +46,19 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
+// Volume is for sending a volume's request to south bound
+type Volume struct {
+	Name               string        `json:"Name" validate:"required"`
+	RAIDType           string        `json:"RAIDType"`
+	Drives             []OdataIDLink `json:"Drives"`
+	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+}
+
+// OdataIDLink contains link to a resource
+type OdataIDLink struct {
+	OdataID string `json:"@odata.id"`
+}
+
 //GetSystemByUUID fetches computer system details by UUID from database
 func GetSystemByUUID(systemUUID string) (string, *errors.Error) {
 	var system string
@@ -252,4 +265,23 @@ func GetSystemResetInfo(systemURI string) (map[string]string, *errors.Error) {
 		return resetInfo, errors.PackError(errors.JSONUnmarshalFailed, err)
 	}
 	return resetInfo, nil
+}
+
+//DeleteVolume will delete the volume from InMemory
+func DeleteVolume(key string) *errors.Error {
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
+	}
+
+	// Check key present in the DB
+	if _, err = connPool.Read("Volumes", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get voulme details: ", err.Error())
+	}
+
+	//Delete volume
+	if err = connPool.Delete("Volumes", key); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to delete volume: ", err.Error())
+	}
+	return nil
 }

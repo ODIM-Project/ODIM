@@ -46,35 +46,23 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		"OData-Version":     "4.0",
 	}
 	privileges := []string{common.PrivilegeLogin}
-	authStatusCode, authStatusMessage := ts.AuthenticationRPC(req.SessionToken, privileges)
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authenticate session"
-		rsp.StatusCode = authStatusCode
-		rsp.StatusMessage = authStatusMessage
-		rpcResp := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		rsp.Body = generateResponse(rpcResp.Body)
-		rsp.Header = rpcResp.Header
-		log.Printf(errorMessage)
+	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf(authErrorMessage)
+		fillProtoResponse(rsp, authResp)
 		return nil
 	}
-	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
+	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		// handle the error case with appropriate response body
-		errorMessage := "error while trying to authenticate session"
-		rsp.StatusCode = http.StatusUnauthorized
-		rsp.StatusMessage = response.NoValidSession
-		rsp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil).Body)
-		log.Printf(errorMessage)
+		log.Printf(authErrorMessage)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
 		return nil
 	}
-	log.Printf(sessionUserName)
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
 	if err != nil {
 		log.Printf("error getting task status : %v", err)
-		rsp.StatusCode = http.StatusNotFound
-		rsp.StatusMessage = response.ResourceNotFound
-		rsp.Body = generateResponse(common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil).Body)
+		fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return nil
 	}
 
@@ -83,7 +71,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		// return with the actual status code, along with response header and response body
 		//Build the respose Body
 		rsp.Header = task.Payload.HTTPHeaders
-		rsp.Body = task.Payload.JSONBody
+		rsp.Body = task.TaskResponse
 		rsp.StatusCode = task.StatusCode
 		// Delete the task from db as it is completed and user requested for the details.
 		// return the user with task details by deleting the task from db
@@ -136,21 +124,17 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 		Messages:    messageList,
 		TaskMonitor: task.TaskMonitor,
 		Payload: tresponse.Payload{
-			RespHTTPHeaders: httpHeaders,
-			HTTPOperation:   task.Payload.HTTPOperation,
-			RespJSONBody:    string(task.Payload.JSONBody),
-			TargetURI:       task.Payload.TargetURI,
+			HTTPHeaders:   httpHeaders,
+			HTTPOperation: task.Payload.HTTPOperation,
+			JSONBody:      string(task.Payload.JSONBody),
+			TargetURI:     task.Payload.TargetURI,
 		},
 		PercentComplete: task.PercentComplete,
 	}
 	if task.ParentID == "" {
-		taskResponse.SubTasks = "/redfish/v1/Tasks/" + task.ID + "/SubTasks"
+		taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
 	}
 	rsp.Body = generateResponse(taskResponse)
-	//    end
-	// return 202
-	// build response header
-	// return with empty response body
 
 	rsp.Header["location"] = task.TaskMonitor
 	return nil

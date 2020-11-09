@@ -61,6 +61,7 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "BasicAuth",
+		ManagerUUID:       "1s7sda8asd-asdas8as0",
 	}
 	switch pluginID {
 	case "XAuthPlugin":
@@ -70,6 +71,23 @@ func mockPluginData(t *testing.T, pluginID string) error {
 		plugin.Username = "incorrectusername"
 	case "NoStatusPlugin":
 		plugin.Username = "noStatusUser"
+		plugin.ManagerUUID = "1234877451-1235"
+	case "GRF":
+		plugin.ManagerUUID = "1234877451-1234"
+	case "ILO":
+		plugin.ManagerUUID = "1234877451-1233"
+	case "XAuthPlugin_v1.0.0":
+		plugin.PreferredAuthType = "XAuthToken"
+	case "XAuthPluginFail_v1.0.0":
+		plugin.PreferredAuthType = "XAuthToken"
+		plugin.Username = "incorrectusername"
+	case "NoStatusPlugin_v1.0.0":
+		plugin.Username = "noStatusUser"
+		plugin.ManagerUUID = "1234877451-1235"
+	case "GRF_v1.0.0":
+		plugin.ManagerUUID = "1234877451-1234"
+	case "ILO_v1.0.0":
+		plugin.ManagerUUID = "1234877451-1233"
 	}
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
@@ -92,18 +110,17 @@ func mockDeviceData(uuid string, device agmodel.Target) error {
 	return nil
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" {
-		return http.StatusUnauthorized, response.NoValidSession
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return http.StatusOK, response.Success
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "" {
 		return nil, fmt.Errorf("InvalidRequest")
 	}
-
 	var bData agmodel.SaveSystem
 	bBytes, _ := json.Marshal(body)
 	json.Unmarshal(bBytes, &bData)
@@ -227,12 +244,19 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}, nil
 
 	} else if url == host+"/ODIM/v1/Status" {
-		body := `{"EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
+		body := `{"Version": "v1.0.0","EventMessageBus":{"EmbQueue":[{"EmbQueueName":"GRF"}]}}`
 		if host == "https://100.0.0.3:9091" {
 			return nil, fmt.Errorf("plugin not reachable")
 		}
 		if host == "https://100.0.0.4:9091" {
 			body = "incorrectResponse"
+		}
+		if host == "https://100.0.0.1:" || host == "https://100.0.0.2:" {
+			body = "not found"
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+				Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+			}, nil
 		}
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -271,7 +295,7 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
-func TestPluginContact_Reset(t *testing.T) {
+func TestPluginContact_ResetComputerSystem(t *testing.T) {
 	config.SetUpMockConfig(t)
 	defer func() {
 		common.TruncateDB(common.OnDisk)
@@ -292,76 +316,50 @@ func TestPluginContact_Reset(t *testing.T) {
 		PluginID:       "GRF",
 	}
 	device3 := agmodel.Target{
-		ManagerAddress: "100.0.0.3",
+		ManagerAddress: "100.0.0.6",
 		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
-		DeviceUUID:     "subtask-with-slash",
-		PluginID:       "GRF",
+		DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
+		PluginID:       "SOME-INVALID-PLUGIN",
 	}
 	device4 := agmodel.Target{
-		ManagerAddress: "100.0.0.4",
-		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
-		UserName:       "admin",
-		DeviceUUID:     "server",
-		PluginID:       "GRF",
-	}
-	device5 := agmodel.Target{
 		ManagerAddress: "100.0.0.5",
 		Password:       []byte("passwordWithInvalidEncryption"),
 		UserName:       "admin",
-		DeviceUUID:     "password-decrypt-fail",
+		DeviceUUID:     "c14d91b5-3333-48bb-a7b7-75f74a137d48",
 		PluginID:       "GRF",
 	}
-	device6 := agmodel.Target{
-		ManagerAddress: "100.0.0.6",
-		Password:       []byte("invalid-plugin"),
-		UserName:       "admin",
-		DeviceUUID:     "something",
-		PluginID:       "SOME-INVALID-PLUGIN",
-	}
-	device7 := agmodel.Target{
+
+	device5 := agmodel.Target{
 		ManagerAddress: "100.0.0.7",
-		Password:       []byte("some-password"),
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
-		DeviceUUID:     "something",
+		DeviceUUID:     "8e896459-a8f9-4c83-95b7-7b316b4908e1",
 		PluginID:       "XAuthPlugin",
 	}
-	device8 := agmodel.Target{
+	device6 := agmodel.Target{
 		ManagerAddress: "100.0.0.8",
-		Password:       []byte("somepassword"),
+		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
 		UserName:       "admin",
-		DeviceUUID:     "something",
+		DeviceUUID:     "9dd6e488-31b2-475a-9304-d5f193a6a7cd",
 		PluginID:       "XAuthPluginFail",
-	}
-	device9 := agmodel.Target{
-		ManagerAddress: "100.0.0.8",
-		Password:       []byte("somepassword"),
-		UserName:       "admin",
-		DeviceUUID:     "something",
-		PluginID:       "GRF",
 	}
 	mockPluginData(t, "GRF")
 	mockPluginData(t, "XAuthPlugin")
 	mockPluginData(t, "XAuthPluginFail")
-	mockDeviceData("contact-client-fail", device9)
-	mockDeviceData("xauth-plugin-fail", device8)
-	mockDeviceData("xauth-plugin", device7)
-	mockDeviceData("invalid-plugin", device6)
-	mockDeviceData("password-decrypt-fail", device5)
-	mockDeviceData("server", device4)
-	mockDeviceData("subtask-with-slash", device3)
-	mockDeviceData("7a2c6100-67da-5fd6-ab82-6870d29c7279", device2)
 	mockDeviceData("24b243cf-f1e3-5318-92d9-2d6737d6b0b9", device1)
+	mockDeviceData("7a2c6100-67da-5fd6-ab82-6870d29c7279", device2)
+	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device3)
+	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device4)
+	mockDeviceData("8e896459-a8f9-4c83-95b7-7b316b4908e1", device5)
+	mockDeviceData("9dd6e488-31b2-475a-9304-d5f193a6a7cd", device6)
 	mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
 	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
-	mockSystemData("/redfish/v1/Systems/subtask-with-slash:1")
-	mockSystemData("/redfish/v1/Systems/server:1")
-	mockSystemData("/redfish/v1/Systems/no-target-device:1")
-	mockSystemData("/redfish/v1/Systems/password-decrypt-fail:1")
-	mockSystemData("/redfish/v1/Systems/invalid-plugin:1")
-	mockSystemData("/redfish/v1/Systems/xauth-plugin:1")
-	mockSystemData("/redfish/v1/Systems/xauth-plugin-fail:1")
-	mockSystemData("/redfish/v1/Systems/contact-client-fail:2")
+	mockSystemData("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	mockSystemData("/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1")
+	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1")
+
 	type args struct {
 		taskID          string
 		sessionUserName string
@@ -376,52 +374,87 @@ func TestPluginContact_Reset(t *testing.T) {
 		DecryptPassword: stubDevicePassword,
 		GetPluginStatus: GetPluginStatusForTesting,
 	}
-	successReq, _ := json.Marshal(AggregatorRequest{
-		Parameters: parameter{
-			ResetCollection: resetCollection{
-				ResetTargets: []ResetTarget{
-					{
-						ResetType: "ForceRestart",
-						TargetURI: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-					},
-					{
-						ResetType: "ForceOff",
-						TargetURI: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
-					},
-				},
-			},
+
+	successReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
 		},
 	})
-	invalidUUIDReq, _ := json.Marshal(AggregatorRequest{
-		Parameters: parameter{
-			ResetCollection: resetCollection{
-				ResetTargets: []ResetTarget{
-					{
-						ResetType: "ForceRestart",
-						TargetURI: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-					},
-					{
-						ResetType: "ForceOff",
-						TargetURI: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
-					},
-				},
-			},
+
+	invalidUUIDReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
 		},
 	})
-	invalidSysIDReq, _ := json.Marshal(AggregatorRequest{
-		Parameters: parameter{
-			ResetCollection: resetCollection{
-				ResetTargets: []ResetTarget{
-					{
-						ResetType: "ForceRestart",
-						TargetURI: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-					},
-					{
-						ResetType: "ForceOff",
-						TargetURI: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b",
-					},
-				},
-			},
+
+	invalidSysIDReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b",
+		},
+	})
+
+	emptyResetTypeReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+		},
+	})
+
+	emptyTargetURIsReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs:                   []string{},
+	})
+
+	InvalidPasswordReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		},
+	})
+
+	invalidPluginReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		},
+	})
+
+	XAuthPluginReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1",
+		},
+	})
+
+	XAuthPluginFailedReq, _ := json.Marshal(AggregationResetRequest{
+		BatchSize:                    1,
+		DelayBetweenBatchesInSeconds: 2,
+		ResetType:                    "ForceRestart",
+		TargetURIs: []string{
+			"/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1",
 		},
 	})
 	tests := []struct {
@@ -487,13 +520,13 @@ func TestPluginContact_Reset(t *testing.T) {
 			},
 		},
 		{
-			name: "req missing parameter",
+			name: "request missing TargetURIs",
 			p:    &pluginContact,
 			args: args{
 				taskID: "someID", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"sample":"test"}`),
+					RequestBody:  emptyTargetURIsReq,
 				},
 			},
 			want: response.RPC{
@@ -501,55 +534,13 @@ func TestPluginContact_Reset(t *testing.T) {
 			},
 		},
 		{
-			name: "request missing ResetCollection",
+			name: "request missisng ResetTYpe",
 			p:    &pluginContact,
 			args: args{
 				taskID: "someID", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":"test"}`),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
-			},
-		},
-		{
-			name: "request missisng ResetTarget",
-			p:    &pluginContact,
-			args: args{
-				taskID: "someID", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"description":"sample"}}}`),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
-			},
-		},
-		{
-			name: "request missing ResetType",
-			p:    &pluginContact,
-			args: args{
-				taskID: "someID", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"Delay":1}]}}}`),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
-			},
-		},
-		{
-			name: "request missing TargetURI",
-			p:    &pluginContact,
-			args: args{
-				taskID: "someID", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart"}]}}}`),
+					RequestBody:  emptyResetTypeReq,
 				},
 			},
 			want: response.RPC{
@@ -563,7 +554,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "taskWithoutChild", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1"}]}}}`),
+					RequestBody:  successReq,
 				},
 			},
 			want: response.RPC{
@@ -577,39 +568,11 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "subTaskWithSlash", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/subtask-with-slash:1"}]}}}`),
+					RequestBody:  successReq,
 				},
 			},
 			want: response.RPC{
 				StatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "reset on server",
-			p:    &pluginContact,
-			args: args{
-				taskID: "someId", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/server:1"}]}}}`),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "no target device",
-			p:    &pluginContact,
-			args: args{
-				taskID: "someId", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/no-target-device:1"}]}}}`),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusNotFound,
 			},
 		},
 		{
@@ -619,7 +582,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/password-decrypt-fail:1"}]}}}`),
+					RequestBody:  InvalidPasswordReq,
 				},
 			},
 			want: response.RPC{
@@ -633,7 +596,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/invalid-plugin:1"}]}}}`),
+					RequestBody:  invalidPluginReq,
 				},
 			},
 			want: response.RPC{
@@ -647,7 +610,7 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/xauth-plugin:1"}]}}}`),
+					RequestBody:  XAuthPluginReq,
 				},
 			},
 			want: response.RPC{
@@ -661,25 +624,11 @@ func TestPluginContact_Reset(t *testing.T) {
 				taskID: "someId", sessionUserName: "someUser",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/xauth-plugin-fail:1"}]}}}`),
+					RequestBody:  XAuthPluginFailedReq,
 				},
 			},
 			want: response.RPC{
 				StatusCode: http.StatusUnauthorized,
-			},
-		},
-		{
-			name: "contact client fail",
-			p:    &pluginContact,
-			args: args{
-				taskID: "someId", sessionUserName: "someUser",
-				req: &aggregatorproto.AggregatorRequest{
-					SessionToken: "validToken",
-					RequestBody:  []byte(`{"parameters":{"ResetCollection":{"ResetTarget":[{"ResetType":"ForceRestart","TargetUri":"/redfish/v1/Systems/contact-client-fail:2"}]}}}`),
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusServiceUnavailable,
 			},
 		},
 	}
@@ -687,93 +636,6 @@ func TestPluginContact_Reset(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.Reset(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.Reset() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_checkAndCorrectPriorityAndDelay(t *testing.T) {
-	type args struct {
-		resetTargets []ResetTarget
-	}
-	tests := []struct {
-		name string
-		args args
-		want []ResetTarget
-	}{
-		{
-			name: "priority less than MinResetPriority",
-			args: args{
-				resetTargets: []ResetTarget{
-					ResetTarget{
-						Priority: 0,
-						Delay:    0,
-					},
-				},
-			},
-			want: []ResetTarget{
-				ResetTarget{
-					Priority: 1,
-					Delay:    0,
-				},
-			},
-		},
-		{
-			name: "priority greater than MinResetPriority",
-			args: args{
-				resetTargets: []ResetTarget{
-					ResetTarget{
-						Priority: 11,
-						Delay:    0,
-					},
-				},
-			},
-			want: []ResetTarget{
-				ResetTarget{
-					Priority: 10,
-					Delay:    0,
-				},
-			},
-		},
-		{
-			name: "delay less than 0",
-			args: args{
-				resetTargets: []ResetTarget{
-					ResetTarget{
-						Priority: 10,
-						Delay:    -1,
-					},
-				},
-			},
-			want: []ResetTarget{
-				ResetTarget{
-					Priority: 10,
-					Delay:    0,
-				},
-			},
-		},
-		{
-			name: "delay greater than MaxDelay",
-			args: args{
-				resetTargets: []ResetTarget{
-					ResetTarget{
-						Priority: 10,
-						Delay:    36001,
-					},
-				},
-			},
-			want: []ResetTarget{
-				ResetTarget{
-					Priority: 10,
-					Delay:    36000,
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := checkAndCorrectPriorityAndDelay(tt.args.resetTargets); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("checkAndCorrectPriorityAndDelay() = %v, want %v", got, tt.want)
 			}
 		})
 	}

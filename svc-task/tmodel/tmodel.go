@@ -58,6 +58,7 @@ type Task struct {
 	TaskState       string
 	TaskStatus      string
 	StatusCode      int32
+	TaskResponse    []byte
 	Messages        []*Message // Its there in the spec, how are we going to use it
 	StartTime       time.Time
 	EndTime         time.Time
@@ -70,7 +71,7 @@ type Task struct {
 type Payload struct {
 	HTTPHeaders   map[string]string `json:"HttpHeaders"`
 	HTTPOperation string            `json:"HttpOperation"`
-	JSONBody      []byte            `json:"JsonBody"`
+	JSONBody      string            `json:"JsonBody"`
 	TargetURI     string            `json:"TargetUri"`
 }
 

@@ -136,7 +136,9 @@ func TestExternalInterface_RediscoverResources(t *testing.T) {
 	}
 }
 func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
+	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -243,6 +245,15 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
 				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				updateFlag: true,
+			},
+		},
+		{
+			name: "Positive case: All is well, Need redicovery of storage",
+			e:    &externalInterface,
+			args: args{
+				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
+				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1/Storage",
 				updateFlag: true,
 			},
 		},

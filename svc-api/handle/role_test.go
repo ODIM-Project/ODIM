@@ -113,9 +113,6 @@ func TestRoleRPCs_CreateRole(t *testing.T) {
 		"RoleId":             "someRole",
 		"AssignedPrivileges": []string{"SomePrivilege"},
 	}
-	body1 := map[string]interface{}{
-		"Role": "someRole",
-	}
 
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1")
@@ -131,9 +128,6 @@ func TestRoleRPCs_CreateRole(t *testing.T) {
 	e.POST(
 		"/redfish/v1/AccountService/Roles",
 	).WithHeader("X-Auth-Token", "").WithJSON(body).Expect().Status(http.StatusUnauthorized)
-	e.POST(
-		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").WithJSON(body1).Expect().Status(http.StatusBadRequest)
 }
 
 func TestRoleRPCs_CreateRoleWithRPCError(t *testing.T) {

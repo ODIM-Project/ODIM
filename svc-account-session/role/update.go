@@ -49,6 +49,19 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	var updateReq asmodel.Role
 	json.Unmarshal(req.UpdateRequest, &updateReq)
 
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.UpdateRequest, updateReq)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}
+
 	//Get redfish roles from database
 	redfishRoles, gerr := asmodel.GetRedfishRoles()
 	if gerr != nil {
@@ -119,6 +132,28 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 		}
 		resp.Body = args.CreateGenericErrorResponse()
 		log.Printf(errorMessage)
+		return resp
+	}
+
+	// check any duplicate roles present in the request
+	privelege, duplicatePresent := isDuplicatePrivilegesPresent(updateReq)
+	if duplicatePresent {
+		errorMessage := "Duplicate privileges can not be updated"
+		log.Println(errorMessage)
+		resp.StatusCode = http.StatusBadRequest
+		resp.StatusMessage = response.PropertyValueConflict
+		args := response.Args{
+			Code:    response.GeneralError,
+			Message: errorMessage,
+			ErrorArgs: []response.ErrArgs{
+				response.ErrArgs{
+					StatusMessage: resp.StatusMessage,
+					ErrorMessage:  errorMessage,
+					MessageArgs:   []interface{}{privelege, privelege},
+				},
+			},
+		}
+		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}
 
@@ -252,4 +287,33 @@ func validateUpdateRequest(req, data *asmodel.Role, exceptFields map[string]bool
 		errorMessage = errorMessage + field[i] + " "
 	}
 	return errorMessage
+}
+
+func isDuplicatePrivilegesPresent(updateReq asmodel.Role) (string, bool) {
+	// check assigned priveleges have duplicate privelege
+	privilege, duplicatePresent := checkDuplicatePrivileges(updateReq.AssignedPrivileges)
+	if duplicatePresent {
+		return privilege, true
+	}
+	// check OEM priveleges have duplicate privelege
+	privilege, duplicatePresent = checkDuplicatePrivileges(updateReq.OEMPrivileges)
+	if duplicatePresent {
+		return privilege, true
+	}
+	return "", false
+}
+
+//check if the privileges have duplicate privilege
+func checkDuplicatePrivileges(privileges []string) (string, bool) {
+	duplicate := make(map[string]int)
+	for _, privilege := range privileges {
+		// check if the item/privilege exist in the duplicate map
+		_, exist := duplicate[privilege]
+		if exist {
+			return privilege, true
+		}
+		duplicate[privilege] = 1
+
+	}
+	return "", false
 }

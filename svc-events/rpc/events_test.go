@@ -29,7 +29,6 @@ import (
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	"github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
@@ -102,11 +101,11 @@ func storeTestEventDetails(t *testing.T) {
 	}
 
 }
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" && sessionToken != "token" && sessionToken != "token1" {
-		return http.StatusUnauthorized, response.NoValidSession
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return http.StatusOK, response.Success
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func getMockedSessionUserName(sessionToken string) (string, error) {
@@ -122,7 +121,7 @@ func mockCreateChildTask(sessionID, taskid string) (string, error) {
 	return "123456", nil
 }
 
-func mockUpdateTask(task events.TaskData) error {
+func mockUpdateTask(task common.TaskData) error {
 	return nil
 }
 
@@ -248,15 +247,14 @@ func TestSubmitTestEvent(t *testing.T) {
 	events.IsAuthorizedRPC = mockIsAuthorized
 	events.GetSessionUserNameRPC = getMockedSessionUserName
 	events.ContactClientRPC = mockContactClient
-	event := common.Event{
-		MemberID:          "1",
-		EventType:         "Alert",
-		EventID:           "123",
-		Severity:          "OK",
-		EventTimestamp:    "",
-		Message:           "IndicatorChanged",
-		MessageID:         "IndicatorChanged",
-		OriginOfCondition: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+	event := map[string]interface{}{
+		"MemberID":          "1",
+		"EventType":         "Alert",
+		"EventID":           "123",
+		"Severity":          "OK",
+		"Message":           "IndicatorChanged",
+		"MessageId":         "IndicatorChanged",
+		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 	}
 
 	message, err := json.Marshal(event)
@@ -271,7 +269,7 @@ func TestSubmitTestEvent(t *testing.T) {
 	var resp = &eventsproto.EventSubResponse{}
 	err = events.SubmitTestEvent(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetEventSubscriptionsCollection(t *testing.T) {

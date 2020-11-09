@@ -39,7 +39,7 @@ func createMockUser(username, roleID string) error {
 		Password: hashedPassword,
 		RoleID:   roleID,
 	}
-	if err := user.Create(); err != nil {
+	if err := asmodel.CreateUser(user); err != nil {
 		return err
 	}
 	return nil

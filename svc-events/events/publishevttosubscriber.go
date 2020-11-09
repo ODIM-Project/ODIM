@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -37,7 +38,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
-	"github.com/ODIM-Project/ODIM/svc-plugin-rest-client/pmbhandle"
 )
 
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
@@ -60,25 +60,30 @@ func PublishEventsToDestination(data interface{}) bool {
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		requestData = strings.Replace(requestData, key, value, -1)
 	}
+
 	var message common.MessageData
 	err := json.Unmarshal([]byte(requestData), &message)
 	if err != nil {
 		log.Printf("error: Failed to unmarshal the event: %v", err)
+		log.Println("incoming event:", requestData)
 		return false
 	}
-	log.Println("Event", requestData)
-
-	if strings.EqualFold(message.Events[0].EventType, "ResourceAdded") &&
-		strings.HasPrefix(message.Events[0].OriginOfCondition, "/redfish/v1/Fabrics") {
-		addFabricRPCCall(message.Events[0].OriginOfCondition, host)
-	}
-
-	if len(message.Events[0].OriginOfCondition) < 1 {
+	if message.Events[0].OriginOfCondition == nil {
 		log.Println("Event not forwarded : Originofcondition is empty in incoming event", requestData)
 		return false
 	}
+
+	if len(message.Events[0].OriginOfCondition.Oid) < 1 {
+		log.Println("Event not forwarded : Originofcondition is empty in incoming event", requestData)
+		return false
+	}
+	if strings.EqualFold(message.Events[0].EventType, "ResourceAdded") &&
+		strings.HasPrefix(message.Events[0].OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+		addFabricRPCCall(message.Events[0].OriginOfCondition.Oid, host)
+	}
+
 	var resTypePresent bool
-	originofCond := strings.Split(strings.TrimSuffix(message.Events[0].OriginOfCondition, "/"), "/")
+	originofCond := strings.Split(strings.TrimSuffix(message.Events[0].OriginOfCondition.Oid, "/"), "/")
 	resType := originofCond[len(originofCond)-2]
 	for _, value := range common.ResourceTypes {
 		if strings.Contains(resType, value) {
@@ -118,28 +123,35 @@ func PublishEventsToDestination(data interface{}) bool {
 		// filter and send evemts to destination if destination is not empty
 		// in case of default event subscription destination will be empty
 		if sub.Destination != "" {
-			if filterEventsToBeForwarded(sub, eventRequest, originResource) {
-				log.Printf("Destination: %v\n", sub.Destination)
-				go postEvent(sub.Destination, eventRequest)
-				flag = true
+			// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
+			if isHostPresent(sub.Hosts, host) {
+				if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
+					log.Printf("Destination: %v\n", sub.Destination)
+					go postEvent(sub.Destination, eventRequest)
+					flag = true
+				}
+			} else {
+				log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
+				flag = false
 			}
+
 		}
 	}
 
 	if strings.EqualFold("Alert", message.Events[0].EventType) {
 		if strings.Contains(message.Events[0].MessageID, "ServerPostDiscoveryComplete") || strings.Contains(message.Events[0].MessageID, "ServerPostComplete") {
-			go rediscoverSystemInventory(uuid, message.Events[0].OriginOfCondition)
+			go rediscoverSystemInventory(uuid, message.Events[0].OriginOfCondition.Oid)
 			flag = true
 		}
 		if strings.Contains(message.Events[0].MessageID, "ServerPoweredOn") || strings.Contains(message.Events[0].MessageID, "ServerPoweredOff") {
-			go updateSystemPowerState(uuid, message.Events[0].OriginOfCondition, message.Events[0].MessageID)
+			go updateSystemPowerState(uuid, message.Events[0].OriginOfCondition.Oid, message.Events[0].MessageID)
 			flag = true
 		}
 	}
 	return flag
 }
 
-func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, origin string) bool {
+func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, originResources []string) bool {
 	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
@@ -149,21 +161,23 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte,
 		log.Printf("error: Failed to unmarshal the event: %v", err)
 		return false
 	}
-	originCondition := strings.TrimSuffix(message.Events[0].OriginOfCondition, "/")
+	originCondition := strings.TrimSuffix(message.Events[0].OriginOfCondition.Oid, "/")
 	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, message.Events[0].EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, message.Events[0].MessageID, "message id")) &&
-		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, message.Events[0].OriginOfCondition, subscription.SubordinateResources)) {
+		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, message.Events[0].OriginOfCondition.Oid, subscription.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
-		if subscription.SubordinateResources == true {
-			if strings.Contains(originCondition, origin) {
-				log.Println("Filtered Event =: ", message)
-				return true
-			}
-		} else {
-			if origin == originCondition {
-				log.Println("Filtered Event: ", message)
-				return true
+		for _, origin := range originResources {
+			if subscription.SubordinateResources == true {
+				if strings.Contains(originCondition, origin) {
+					log.Println("Filtered Event =: ", message)
+					return true
+				}
+			} else {
+				if origin == originCondition {
+					log.Println("Filtered Event: ", message)
+					return true
+				}
 			}
 		}
 	}
@@ -183,6 +197,8 @@ func formatEvent(originResource, eventstring, hostIP string) (string, string) {
 		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/systems/", str, -1)
 		str = "/redfish/v1/Chassis/" + uuid + ":"
 		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Chassis/", str, -1)
+		str = "/redfish/v1/Managers/" + uuid + ":"
+		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Managers/", str, -1)
 	}
 	return eventRequestString, uuid
 }
@@ -258,15 +274,15 @@ func postEvent(destination string, event []byte) {
 	var resp *http.Response
 	count := evcommon.DeliveryRetryAttempts + 1
 	for i := 0; i < count; i++ {
-		config.TlsConfMutex.Lock()
+		config.TLSConfMutex.Lock()
 		resp, err = httpClient.Do(req)
 		if err == nil {
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
-			config.TlsConfMutex.Unlock()
+			config.TLSConfMutex.Unlock()
 			return
 		}
-		config.TlsConfMutex.Unlock()
+		config.TLSConfMutex.Unlock()
 		log.Println("Retrying event posting")
 		time.Sleep(time.Second * evcommon.DeliveryRetryIntervalSeconds)
 	}

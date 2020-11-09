@@ -17,6 +17,7 @@ package handle
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -28,7 +29,6 @@ import (
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
 	"github.com/ODIM-Project/ODIM/svc-api/response"
-
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -141,6 +141,14 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 			if err == nil {
 				if len(serviceNodes) != 0 {
 					serviceRoot.Managers = &models.Service{OdataID: servicePath}
+				}
+			}
+
+		case "UpdateService":
+			serviceNodes, err := reg.GetService(srv.Update)
+			if err == nil {
+				if len(serviceNodes) != 0 {
+					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
 				}
 			}
 		}
@@ -528,6 +536,13 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "FabricCollection"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/PCIeDevice_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "PCIeDevice"},
+					models.Include{Namespace: "PCIeDevice.v1_4_0"},
+					models.Include{Namespace: "PCIeDevice.v1_5_0"},
+				},
+			},
 		},
 	}
 	ctx.Gzip(true)
@@ -536,16 +551,17 @@ func GetMetadata(ctx iris.Context) {
 		"Allow":             "GET",
 		"Cache-Control":     "no-cache",
 		"Transfer-Encoding": "chunked",
+		"Content-type":      "application/xml; charset=utf-8",
 	}
-
+	xmlData, _ := xml.Marshal(Metadata)
 	SetResponseHeaders(ctx, headers)
-	ctx.XML(Metadata)
+	ctx.Write(xmlData)
 
 }
 
 // Registry defines Auth which helps with authorization
 type Registry struct {
-	Auth func(string, []string, []string) (int32, string)
+	Auth func(string, []string, []string) errResponse.RPC
 }
 
 //GetRegistryFileCollection is show available collection of registry files.
@@ -561,21 +577,12 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authStatusCode, authStatusMessage :=
-		r.Auth(sessionToken,
-			[]string{common.PrivilegeLogin},
-			[]string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		responseBody, _ := json.Marshal(response.Body)
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
-		ctx.StatusCode(int(authStatusCode))
-		SetResponseHeaders(ctx, responseHeader)
-		ctx.Write(responseBody)
-		log.Printf(errorMessage)
+	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authorize token")
+		ctx.StatusCode(int(authResp.StatusCode))
+		SetResponseHeaders(ctx, authResp.Header)
+		ctx.JSON(authResp.Body)
 		return
 	}
 
@@ -653,21 +660,12 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authStatusCode, authStatusMessage :=
-		r.Auth(sessionToken,
-			[]string{common.PrivilegeLogin},
-			[]string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		responseBody, _ := json.Marshal(response.Body)
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
-		ctx.StatusCode(int(authStatusCode))
-		SetResponseHeaders(ctx, responseHeader)
-		ctx.Write(responseBody)
-		log.Printf(errorMessage)
+	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authorize token")
+		ctx.StatusCode(int(authResp.StatusCode))
+		SetResponseHeaders(ctx, authResp.Header)
+		ctx.JSON(authResp.Body)
 		return
 	}
 	var headers = map[string]string{
@@ -764,21 +762,12 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	authStatusCode, authStatusMessage :=
-		r.Auth(sessionToken,
-			[]string{common.PrivilegeLogin},
-			[]string{})
-	if authStatusCode != http.StatusOK {
-		errorMessage := "error while trying to authorize token"
-		response := common.GeneralError(authStatusCode, authStatusMessage, errorMessage, nil, nil)
-		responseBody, _ := json.Marshal(response.Body)
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
-		ctx.StatusCode(int(authStatusCode))
-		SetResponseHeaders(ctx, responseHeader)
-		ctx.Write(responseBody)
-		log.Printf(errorMessage)
+	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Printf("error while trying to authorize token")
+		ctx.StatusCode(int(authResp.StatusCode))
+		SetResponseHeaders(ctx, authResp.Header)
+		ctx.JSON(authResp.Body)
 		return
 	}
 	var headers = map[string]string{
@@ -870,7 +859,8 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	path := url.Path
 	systemID := ctx.Params().Get("id")
 	subID := ctx.Params().Get("rid")
-
+	storageid := ctx.Params().Get("id2")
+	resourceID := ctx.Params().Get("rid")
 	// Extend switch case, when each path, requires different handling
 	switch path {
 	case "/redfish/v1/Systems/" + systemID:
@@ -879,6 +869,10 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "")
 	case "/redfish/v1/Systems/" + systemID + "/LogServices/" + subID + "Actions/LogService.ClearLog":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST, GET")
+	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
@@ -962,6 +956,30 @@ func AggMethodNotAllowed(ctx iris.Context) {
 // FabricsMethodNotAllowed holds builds reponse for the unallowed http operation on Fabrics URLs and returns 405 error.
 func FabricsMethodNotAllowed(ctx iris.Context) {
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// AggregateMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregate URLs and returns 405 error.
+func AggregateMethodNotAllowed(ctx iris.Context) {
+	url := ctx.Request().URL
+	path := url.Path
+	aggregateID := ctx.Params().Get("id")
+	// Extend switch case, when each path, requires different handling
+	switch path {
+	case "/redfish/v1/AggregationService/Aggregates/":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.AddElements/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.RemoveElements/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.Reset/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.SetDefaultBootOrder/":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }

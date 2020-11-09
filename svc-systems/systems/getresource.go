@@ -16,6 +16,7 @@
 package systems
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -30,8 +31,10 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
@@ -559,10 +562,17 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		"OData-Version":     "4.0",
 	}
 
+	var saveRequired bool
+	// check the whether SystemResetInfo available in db. If it is available, then don't save the data in DB.
+	_, err := smodel.GetSystemResetInfo(req.URL)
+	if err != nil { // if err means, url is not available in SystemResetInfo, so data can be saved in DB.
+		saveRequired = true
+	}
+
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 
@@ -575,22 +585,28 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	} else {
 		tableName = urlData[len(urlData)-2]
 	}
+
 	data, err := smodel.GetResource(tableName, req.URL)
 	if err != nil {
 		log.Printf("error getting system details : %v", err.Error())
 		errorMessage := err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-				URL:            req.URL,
-				UUID:           uuid,
-				SystemID:       requestData[1],
-				ContactClient:  p.ContactClient,
-				DevicePassword: p.DevicePassword,
+				URL:             req.URL,
+				UUID:            uuid,
+				SystemID:        requestData[1],
+				ContactClient:   p.ContactClient,
+				DevicePassword:  p.DevicePassword,
+				GetPluginStatus: p.GetPluginStatus,
 			}
 			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 			}
+			if saveRequired && strings.Contains(req.URL, "/Storage") {
+				rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
+			}
+
 		} else {
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
@@ -602,6 +618,24 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	resp.StatusMessage = response.Success
 
 	return resp
+}
+
+// rediscoverSystemInventory will be triggered when ever the a valid storage URI or underneath URI's
+// are requested which does not exist in DB. It will create a rpc for aggregation which will delete all storage inventory //
+// and rediscover all of them
+func rediscoverStorageInventory(systemID, systemURL string) {
+	systemURL = strings.TrimSuffix(systemURL, "/")
+	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
+	_, err := aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
+		SystemID:  systemID,
+		SystemURL: systemURL,
+	})
+	if err != nil {
+		log.Println("Error while rediscoverStorageInventroy")
+		return
+	}
+	log.Println("info: rediscovery of system storage started.")
+	return
 }
 
 // GetSystemsCollection is to fetch all the Systems uri's and retruns with created collection
@@ -690,24 +724,25 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 	var data string
 	var err *errors.Error
-	// check the whether SystemResetInfo available in db if it is available the get the data from device
+	// check the whether SystemResetInfo available in db. If it is available, then get the data from device
 	_, err = smodel.GetSystemResetInfo(req.URL)
 	if err == nil {
 		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-			URL:            req.URL,
-			UUID:           uuid,
-			SystemID:       requestData[1],
-			ContactClient:  p.ContactClient,
-			DevicePassword: p.DevicePassword,
-			ResourceName:   "ComputerSystem",
+			URL:             req.URL,
+			UUID:            uuid,
+			SystemID:        requestData[1],
+			ContactClient:   p.ContactClient,
+			DevicePassword:  p.DevicePassword,
+			GetPluginStatus: p.GetPluginStatus,
+			ResourceName:    "ComputerSystem",
 		}
 		var err error
-		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest); err != nil {
+		if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
 		}
 	} else {

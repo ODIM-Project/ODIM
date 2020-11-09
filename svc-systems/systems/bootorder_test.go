@@ -160,7 +160,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 				systemID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg2.CreateGenericErrorResponse(),
@@ -172,7 +172,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 				systemID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b",
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
@@ -320,7 +320,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			},
 		},
 	}
-	request, _ := json.Marshal(`{"Attributes": {"BootMode": "mode"}}`)
+	request := []byte(`{"Attributes": {"BootMode": "mode"}}`)
 	tests := []struct {
 		name string
 		p    *PluginContact
@@ -336,7 +336,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 				SessionToken: "token",
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
@@ -352,7 +352,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 				SessionToken: "token",
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg2.CreateGenericErrorResponse(),
@@ -529,7 +529,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 		},
 	}
 
-	request, _ := json.Marshal(`{"Attributes": {"BootMode": "mode"}}`)
+	request := []byte(`{"Attributes": {"BootMode": "mode"}}`)
 	tests := []struct {
 		name string
 		p    *PluginContact
@@ -545,7 +545,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 				SessionToken: "token",
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
@@ -561,7 +561,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 				SessionToken: "token",
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
+				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg2.CreateGenericErrorResponse(),
@@ -607,7 +607,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.ChangeBootOrderSettings(tt.req); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("PluginContact.ChangeBiosSettings() = %v, want %v", got, tt.want)
+				t.Errorf("PluginContact.ChangeBootOrderSettings() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -1,8 +1,22 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
 name: build_deploy_test
 
 on:
   pull_request:
-    branches: [ development ]
+    branches:
+      - '**'
 
 jobs:
 
@@ -29,8 +43,8 @@ jobs:
         export HOSTIP=${HOSTIP}
         make all
         sleep 15s
-        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|plugin-redfish'`
-        if [ $b -eq 18 ];
+        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish'`
+        if [ $b -eq 20 ];
         then
             echo "ODIMRA processes & GRF plugin are up & running"
             echo "Deployment sucessful" 
@@ -66,7 +80,7 @@ jobs:
             flag=1
         fi
         echo "POST Admin creating account - (args - username, password, roleID)"
-        run2=$(curl --user admin:Od\!m12\$4 --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"Username":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://odimra.local.com:45000/redfish/v1/AccountService/Accounts')
+        run2=$(curl --user admin:Od\!m12\$4 --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://odimra.local.com:45000/redfish/v1/AccountService/Accounts')
         if [ $run2 -eq 201 ];
         then 
             echo "Account Created Sucessfully"

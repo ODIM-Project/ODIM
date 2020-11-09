@@ -50,17 +50,23 @@ type configModel struct {
 	ExecPriorityDelayConf          *ExecPriorityDelayConf   `json:"ExecPriorityDelayConf"`
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
+	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 }
 
 // DBConf holds all DB related configurations
 type DBConf struct {
-	Protocol       string `json:"Protocol"`
-	InMemoryHost   string `json:"InMemoryHost"`
-	InMemoryPort   string `json:"InMemoryPort"`
-	OnDiskHost     string `json:"OnDiskHost"`
-	OnDiskPort     string `json:"OnDiskPort"`
-	MaxIdleConns   int    `json:"MaxIdleConns"`
-	MaxActiveConns int    `json:"MaxActiveConns"`
+	Protocol             string `json:"Protocol"`
+	InMemoryHost         string `json:"InMemoryHost"`
+	InMemoryPort         string `json:"InMemoryPort"`
+	OnDiskHost           string `json:"OnDiskHost"`
+	OnDiskPort           string `json:"OnDiskPort"`
+	MaxIdleConns         int    `json:"MaxIdleConns"`
+	MaxActiveConns       int    `json:"MaxActiveConns"`
+	RedisHAEnabled       bool   `json:"RedisHAEnabled"`
+	InMemorySentinelPort string `json:"InMemorySentinelPort"`
+	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
+	InMemoryMasterSet    string `json:"InMemoryMasterSet"`
+	OnDiskMasterSet      string `json:"OnDiskMasterSet"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -138,6 +144,12 @@ type TLSConf struct {
 	PreferredCipherSuites []string `json:"PreferredCipherSuites"`
 }
 
+// ConnectionMethodConf is for connection method type and variant
+type ConnectionMethodConf struct {
+	ConnectionMethodType    string `json:"ConnectionMethodType"`
+	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -175,6 +187,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkTLSConf(); err != nil {
+		return err
+	}
+	if err = checkConnectionMethodConf(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -245,6 +260,27 @@ func checkDBConf() error {
 	if Data.DBConf.MaxIdleConns == 0 {
 		log.Println("warn: no value configured for MaxIdleConns, setting default value")
 		Data.DBConf.MaxIdleConns = DefaultDBMaxIdleConns
+	}
+	if Data.DBConf.RedisHAEnabled {
+		if err := checkDBHAConf(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkDBHAConf() error {
+	if Data.DBConf.InMemorySentinelPort == "" {
+		return fmt.Errorf("error: no value configured for DB InMemorySentinelPort")
+	}
+	if Data.DBConf.OnDiskSentinelPort == "" {
+		return fmt.Errorf("error: no value configured for DB OnDiskSentinelPort")
+	}
+	if Data.DBConf.InMemoryMasterSet == "" {
+		return fmt.Errorf("error: no value configured for DB InMemoryMasterSet")
+	}
+	if Data.DBConf.OnDiskMasterSet == "" {
+		return fmt.Errorf("error: no value configured for DB OnDiskMasterSet")
 	}
 	return nil
 }
@@ -479,5 +515,13 @@ func checkTLSConf() error {
 //CheckRootServiceuuid function is used to validate format of Root Service UUID. The same function is used in plugin-redfish config.go
 func CheckRootServiceuuid(uid string) error {
 	_, err := uuid.Parse(uid)
+	return err
+}
+
+func checkConnectionMethodConf() error {
+	var err error
+	if len(Data.ConnectionMethodConf) == 0 {
+		return fmt.Errorf("error: ConnectionMethodConf is not provided")
+	}
 	return err
 }

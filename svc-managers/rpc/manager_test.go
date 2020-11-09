@@ -11,6 +11,7 @@
 //WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 //License for the specific language governing permissions and limitations
 // under the License.
+
 package rpc
 
 import (
@@ -22,34 +23,139 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-managers/managers"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/stretchr/testify/assert"
-
-	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken != "validToken" {
-		return http.StatusUnauthorized, response.NoValidSession
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 	}
-	return http.StatusOK, response.Success
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
+func mockGetManagerByURL(url string) (string, *errors.Error) {
+	managerData := make(map[string]interface{})
+	managerData["ManagerType"] = "BMC"
+	managerData["Status"] = `{"State":"Enabled"}}`
+	managerData["Name"] = "somePlugin"
+	switch url {
+	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL:1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	case "/redfish/v1/Managers/noDevice":
+		managerData["ManagerType"] = "Service"
+		managerData["Status"] = `{"State":"Absent"}}`
+		managerData["Name"] = "odimra"
+		managerData["ID"] = "noDevice"
+		managerData["UUID"] = "noDevice"
+		managerData["FirmwareVersion"] = "1.0"
+	case "/redfish/v1/Managers/uuid":
+		managerData["Name"] = "someOtherID"
+	case "/redfish/v1/Managers/noPlugin":
+		managerData["Name"] = "noPlugin"
+	case "/redfish/v1/Managers/noToken":
+		managerData["Name"] = "noToken"
+	case "/redfish/v1/Managers/" + config.Data.RootServiceUUID:
+		managerData["ManagerType"] = "Service"
+		managerData["Status"] = `{"State":"Enabled"}}`
+		managerData["Name"] = "odimra"
+		managerData["ManagerID"] = config.Data.RootServiceUUID
+		managerData["UUID"] = config.Data.RootServiceUUID
+		managerData["FirmwareVersion"] = "1.0"
+	}
+	data, _ := json.Marshal(managerData)
+	return string(data), nil
+}
+
+func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
+	if pluginID == "someOtherID" {
+		return mgrmodel.Plugin{
+			IP:                "localhost",
+			Port:              "9091",
+			Username:          "admin",
+			Password:          []byte("password"),
+			ID:                "CFM",
+			PreferredAuthType: "XAuthToken",
+		}, nil
+	} else if pluginID == "noToken" {
+		return mgrmodel.Plugin{
+			IP:                "localhost",
+			Port:              "9092",
+			Username:          "admin",
+			Password:          []byte("password"),
+			ID:                "noToken",
+			PreferredAuthType: "XAuthToken",
+		}, nil
+	} else if pluginID == "noPlugin" {
+		return mgrmodel.Plugin{}, errors.PackError(errors.DBKeyNotFound, "not found")
+	}
+	return mgrmodel.Plugin{
+		IP:                "localhost",
+		Port:              "9093",
+		Username:          "admin",
+		Password:          []byte("password"),
+		ID:                "somePlugin",
+		PreferredAuthType: "BasicAuth",
+	}, nil
+}
+
+func mockUpdateManagersData(key string, managerData map[string]interface{}) error {
+	return nil
+}
+
+func mockGetResource(table, key string) (string, *errors.Error) {
+	if key == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	}
+	return "body", nil
+}
+
+func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
+	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", fmt.Errorf("error")
+	}
+	manager := mgrmodel.Manager{
+		Status: &mgrmodel.Status{
+			State: "Enabled",
+		},
+	}
+	dataByte, err := json.Marshal(manager)
+	return string(dataByte), err
+}
+
+func mockGetExternalInterface() *managers.ExternalInterface {
+	return &managers.ExternalInterface{
+		Device: managers.Device{
+			GetDeviceInfo: mockGetDeviceInfo,
+			ContactClient: mockContactClient,
+		},
+		DB: managers.DB{
+			GetAllKeysFromTable: mockGetAllKeysFromTable,
+			GetManagerByURL:     mockGetManagerByURL,
+			GetPluginData:       mockGetPluginData,
+			UpdateManagersData:  mockUpdateManagersData,
+			GetResource:         mockGetResource,
+		},
+	}
+}
+
+func mockGetAllKeysFromTable(table string) ([]string, error) {
+	return []string{"/redfish/v1/Managers/uuid:1"}, nil
+}
+
 func TestGetManagerCollection(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.EI = mockGetExternalInterface()
 	type args struct {
 		ctx  context.Context
 		req  *managersproto.ManagerRequest
@@ -93,16 +199,10 @@ func TestGetManagerCollection(t *testing.T) {
 
 func TestGetManagerwithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
-	mgr.ContactClientRPC = mockContactClient
+	mgr.EI = mockGetExternalInterface()
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		SessionToken: "InvalidToken",
@@ -113,28 +213,12 @@ func TestGetManagerwithInValidtoken(t *testing.T) {
 }
 func TestGetManagerwithValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mngr := mgrmodel.RAManager{
-		Name:            "odimra",
-		ManagerType:     "Service",
-		FirmwareVersion: config.Data.FirmwareVersion,
-		ID:              config.Data.RootServiceUUID,
-		UUID:            config.Data.RootServiceUUID,
-		State:           "Enabled",
-	}
-	mngr.AddManagertoDB()
-
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
-	mgr.ContactClientRPC = mockContactClient
+	mgr.EI = mockGetExternalInterface()
 	req := &managersproto.ManagerRequest{
-		ManagerID:    "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
+		ManagerID:    config.Data.RootServiceUUID,
 		SessionToken: "validToken",
 	}
 	var resp = &managersproto.ManagerResponse{}
@@ -144,25 +228,19 @@ func TestGetManagerwithValidtoken(t *testing.T) {
 	var manager mgrmodel.Manager
 	json.Unmarshal(resp.Body, &manager)
 
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
-	assert.Equal(t, manager.Name, "odimra", "Status code should be StatusOK.")
-	assert.Equal(t, manager.ManagerType, "Service", "Status code should be StatusOK.")
-	assert.Equal(t, manager.ID, req.ManagerID, "Status code should be StatusOK.")
-	assert.Equal(t, manager.FirmwareVersion, "1.0", "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, "odimra", manager.Name, "incorrect name")
+	assert.Equal(t, "Service", manager.ManagerType, "incorrect type")
+	assert.Equal(t, req.ManagerID, manager.ID, "incorrect id")
+	assert.Equal(t, "1.0", manager.FirmwareVersion, "incorrect firmware version")
 }
 
 func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
-	mgr.ContactClientRPC = mockContactClient
+	mgr.EI = mockGetExternalInterface()
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid:1",
 		SessionToken: "InvalidToken",
@@ -173,21 +251,10 @@ func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 }
 func TestGetManagerResourcewithValidtoken(t *testing.T) {
 	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	var ctx context.Context
 	mgr := new(Managers)
 	mgr.IsAuthorizedRPC = mockIsAuthorized
-	mgr.ContactClientRPC = mockContactClient
-
-	body := []byte(`body`)
-	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
-	mgrmodel.GenericSave(body, table, key)
+	mgr.EI = mockGetExternalInterface()
 
 	req := &managersproto.ManagerRequest{
 		ManagerID:    "uuid:1",

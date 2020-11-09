@@ -147,7 +147,7 @@ func mockCreateChildTask(sessionID, taskid string) (string, error) {
 	return "123456", nil
 }
 
-func mockUpdateTask(task TaskData) error {
+func mockUpdateTask(task common.TaskData) error {
 	return nil
 }
 
@@ -560,7 +560,10 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 }
 
 func TestFabricEventSubscription(t *testing.T) {
-	config.SetUpMockConfig(t)
+	if config.Data.URLTranslation == nil {
+		config.SetUpMockConfig(t)
+	}
+
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {

@@ -306,7 +306,7 @@ Only a user with `ConfigureComponents` privilege is authorized to create event s
 |Subordinates|Boolean|Read-only \(null\)|Indicates whether the service supports the `Subordinate` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate s. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate s such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`,<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`,<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`,<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
 |Origins|Array| Required \(null\)<br> |s for which the service only sends related events. If this property is absent or the array is empty, events originating from any  will be sent to the subscriber. For possible values, see "Origin s" table.|
 
-### Origin s
+### Origins
 
 |String|Description|
 |------|-----------|

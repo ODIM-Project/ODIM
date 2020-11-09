@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-api/models"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
@@ -128,11 +129,17 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/Systems", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/EthernetInterfaces", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/EthernetInterfaces/{rid}", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Memory", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Processors", SystemsMethodNotAllowed)
 	redfishRoutes.Any("/v1/Systems/{id}/Storage", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}/Drives/{rid2}", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}/Volumes", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Processors/{rid}", SystemsMethodNotAllowed)
+	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}/Volumes/{rid2}", SystemsMethodNotAllowed)
 
 	e := httptest.New(t, router)
 	systemID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
@@ -143,6 +150,10 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/Systems").Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Systems").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Systems").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID).Expect().Status(http.StatusMethodNotAllowed)
 
 	e.POST("/redfish/v1/Systems/" + systemID + "/EthernetInterfaces").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/Systems/" + systemID + "/EthernetInterfaces").Expect().Status(http.StatusMethodNotAllowed)
@@ -168,6 +179,29 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Drives/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Volumes/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Volumes/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Volumes/{rid2}").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Volumes").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Volumes").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID + "/Storage/{rid}/Volumes").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Systems/" + systemID + "/Processors/{rid}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestMethodNotAllowedForLogServices is unit test method for
@@ -238,11 +272,11 @@ func TestMethodNotAllowedForLogServices(t *testing.T) {
 		}(uri)
 	}
 }
-func authMock(token string, b []string, c []string) (int32, string) {
+func authMock(token string, b []string, c []string) response.RPC {
 	if token == "invalidToken" {
-		return 401, ""
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return 200, ""
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func TestGetRegistryFileCollection(t *testing.T) {
@@ -315,6 +349,7 @@ func TestTsMethodNotAllowed(t *testing.T) {
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/TaskService", TsMethodNotAllowed)
 	redfishRoutes.Any("/TaskService/Tasks", TsMethodNotAllowed)
+	redfishRoutes.Any("/TaskService/Tasks/{TaskID}", TsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
@@ -325,6 +360,9 @@ func TestTsMethodNotAllowed(t *testing.T) {
 	e.POST("/redfish/v1/TaskService/Tasks").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/TaskService/Tasks").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/TaskService/Tasks").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/TaskService/Tasks/{TaskID}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/TaskService/Tasks/{TaskID}").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestEvtMethodNotAllowed is unittest method for EvtMethodNotAllowed func.
@@ -334,6 +372,7 @@ func TestEvtMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/EventService", EvtMethodNotAllowed)
 	redfishRoutes.Any("/EventService/Actions", EvtMethodNotAllowed)
 	redfishRoutes.Any("/EventService/Actions/EventService.SubmitTestEvent", EvtMethodNotAllowed)
+	redfishRoutes.Any("/EventService/Subscriptions/", EvtMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Task service URLs
@@ -344,6 +383,10 @@ func TestEvtMethodNotAllowed(t *testing.T) {
 	e.GET("/redfish/v1/EventService/Actions/EventService.SubmitTestEvent").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/EventService/Actions/EventService.SubmitTestEvent").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/EventService/Actions/EventService.SubmitTestEvent").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.DELETE("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/EventService/Subscriptions").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestAggMethodNotAllowed is unittest method for AggMethodNotAllowed func.
@@ -351,12 +394,25 @@ func TestAggMethodNotAllowed(t *testing.T) {
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish/v1")
 	redfishRoutes.Any("/AggregationService", AggMethodNotAllowed)
+	redfishRoutes.Any("/AggregationService/ConnectionMethods", AggMethodNotAllowed)
+	redfishRoutes.Any("/AggregationService/ConnectionMethods/{id}", AggMethodNotAllowed)
 	e := httptest.New(t, router)
 
-	//Check for status code 405 for http methods which are not allowed on Task service URLs
+	//Check for status code 405 for http methods which are not allowed on aggregation servicee URLs
 	e.POST("/redfish/v1/AggregationService").Expect().Status(http.StatusMethodNotAllowed)
 	e.PUT("/redfish/v1/AggregationService").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/AggregationService").Expect().Status(http.StatusMethodNotAllowed)
+
+	//Check for status code 405 for http methods which are not allowed on aggregation service connection methods URLs
+	e.POST("/redfish/v1/AggregationService/ConnectionMethods").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/ConnectionMethods").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/ConnectionMethods").Expect().Status(http.StatusMethodNotAllowed)
+
+	connMethodID := "74116e00-0a4a-53e6-a959-e6a7465d6358"
+	//Check for status code 405 for http methods which are not allowed on aggregation service connection method URLs
+	e.POST("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/ConnectionMethods/" + connMethodID).Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestFabricsMethodNotAllowed is unittest method for FabricsMethodNotAllowed func.
@@ -457,4 +513,64 @@ func TestRegMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/registries/" + file).Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/registries/" + file).Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/registries/" + file).Expect().Status(http.StatusMethodNotAllowed)
+}
+
+// TestManagersMethodNotAllowed is the unit test method for ManagerMethodNotAllowed func.
+func TestManagersMethodNotAllowed(t *testing.T) {
+	router := iris.New()
+	redfishRoutes := router.Party("/redfish")
+	redfishRoutes.Any("/v1/Managers", ManagersMethodNotAllowed)
+	redfishRoutes.Any("/v1/Managers/{id}", ManagersMethodNotAllowed)
+	e := httptest.New(t, router)
+
+	e.PUT("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Managers").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.PUT("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Managers/{id}").Expect().Status(http.StatusMethodNotAllowed)
+}
+
+//TestAggregateMethodNotAllowed is unittest method for AggregateMethodNotAllowed func.
+func TestAggregateMethodNotAllowed(t *testing.T) {
+	router := iris.New()
+	redfishRoutes := router.Party("/redfish/v1/AggregationService/Aggregates")
+	redfishRoutes.Any("/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.AddElements/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.RemoveElements/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.Reset/", AggregateMethodNotAllowed)
+	redfishRoutes.Any("/{id}/Actions/Aggregate.SetDefaultBootOrder/", AggregateMethodNotAllowed)
+
+	e := httptest.New(t, router)
+	id := "74116e00-0a4a-53e6-a959-e6a7465d6358"
+	//Check for status code 405 for http methods which are not allowed
+	e.PUT("/redfish/v1/AggregationService/Aggregates").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/AggregationService/Aggregates/" + id).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id).Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id).Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.AddElements").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.RemoveElements").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.Reset").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.GET("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/AggregationService/Aggregates/" + id + "/Actions/Aggregate.SetDefaultBootOrder").Expect().Status(http.StatusMethodNotAllowed)
 }

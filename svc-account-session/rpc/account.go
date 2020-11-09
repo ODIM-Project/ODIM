@@ -84,7 +84,8 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		return nil
 	}
 
-	data, err := account.Create(req, sess)
+	acc := account.GetExternalInterface()
+	data, err := acc.Create(req, sess)
 	var jsonErr error // jsonErr is created to protect the data in err
 	resp.Body, jsonErr = json.Marshal(data.Body)
 	if jsonErr != nil {
@@ -345,7 +346,9 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		return nil
 	}
 
-	data := account.Update(req, sess)
+	acc := account.GetExternalInterface()
+
+	data := acc.Update(req, sess)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError

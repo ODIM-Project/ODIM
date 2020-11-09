@@ -32,13 +32,14 @@ import (
 
 //PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
-	Token          string
-	OID            string
-	DeviceInfo     interface{}
-	BasicAuth      map[string]string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Plugin         smodel.Plugin
-	HTTPMethodType string
+	Token           string
+	OID             string
+	DeviceInfo      interface{}
+	BasicAuth       map[string]string
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	GetPluginStatus func(smodel.Plugin) bool
+	Plugin          smodel.Plugin
+	HTTPMethodType  string
 }
 
 //ResponseStatus holds the response of Contact Plugin
@@ -49,16 +50,21 @@ type ResponseStatus struct {
 
 //ResourceInfoRequest  hold the request of getting  Resource
 type ResourceInfoRequest struct {
-	URL            string
-	UUID           string
-	SystemID       string
-	ContactClient  func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	DevicePassword func([]byte) ([]byte, error)
-	ResourceName   string
+	URL             string
+	UUID            string
+	SystemID        string
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	DevicePassword  func([]byte) ([]byte, error)
+	GetPluginStatus func(smodel.Plugin) bool
+	ResourceName    string
 }
 
-//GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
-func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
+// GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
+// If saveRequired is set to true the newly collected data will be saved in the DB.
+// Some specific cases may not require the data to be stored in DB,
+// eg: Delete volume requires reset of the BMC to take its effect. Before a reset, volumes retrieval
+// request can provide the deleted volume. We can avoid storing such a data with the use of saveRequired.
+func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (string, error) {
 	target, gerr := smodel.GetTarget(req.UUID)
 	if gerr != nil {
 		return "", gerr
@@ -72,7 +78,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 
 	contactRequest.ContactClient = req.ContactClient
 	contactRequest.Plugin = plugin
-
+	contactRequest.GetPluginStatus = req.GetPluginStatus
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
@@ -133,7 +139,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 	// to replace id in chassis
 	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+":", -1)
 
-	if checkRetrievalInfo(contactRequest.OID) {
+	if saveRequired && checkRetrievalInfo(contactRequest.OID) {
 		oidKey = keyFormation(contactRequest.OID, req.SystemID, req.UUID)
 		var memberFlag bool
 		if _, ok := resourceData["Members"]; ok {
@@ -190,7 +196,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	var err error
 	response, err = callPlugin(req)
 	if err != nil {
-		if getPluginStatus(req.Plugin) {
+		if req.GetPluginStatus(req.Plugin) {
 			response, err = callPlugin(req)
 		}
 		if err != nil {
@@ -210,7 +216,8 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		log.Println(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-
+	log.Println("Response", string(body))
+	log.Println("response.StatusCode", response.StatusCode)
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)
@@ -235,8 +242,8 @@ func checkRetrievalInfo(oid string) bool {
 	return true
 }
 
-// getPluginStatus checks the status of given plugin in configured interval
-func getPluginStatus(plugin smodel.Plugin) bool {
+// GetPluginStatus checks the status of given plugin in configured interval
+func GetPluginStatus(plugin smodel.Plugin) bool {
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{

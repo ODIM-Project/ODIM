@@ -99,7 +99,7 @@ func routers() *iris.Application {
 	pluginRoutes := app.Party("/ODIM/v1")
 	{
 		pluginRoutes.Post("/validate", rfpmiddleware.BasicAuth, rfphandler.Validate)
-		pluginRoutes.Post("/Session", rfphandler.CreateSession)
+		pluginRoutes.Post("/Sessions", rfphandler.CreateSession)
 		pluginRoutes.Post("/Subscriptions", rfpmiddleware.BasicAuth, rfphandler.CreateEventSubscription)
 		pluginRoutes.Delete("/Subscriptions", rfpmiddleware.BasicAuth, rfphandler.DeleteEventSubscription)
 
@@ -108,6 +108,12 @@ func routers() *iris.Application {
 		systems.Get("", rfphandler.GetResource)
 		systems.Get("/{id}", rfphandler.GetResource)
 		systems.Get("/{id}/Storage", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{rid}/Volumes", rfphandler.GetResource)
+		systems.Post("/{id}/Storage/{rid}/Volumes", rfphandler.CreateVolume)
+		systems.Get("/{id}/Storage/{rid}/Volumes/{rid}", rfphandler.GetResource)
+		systems.Delete("/{id}/Storage/{id2}/Volumes/{rid}", rfphandler.DeleteVolume)
+		systems.Get("/{id}/Storage/{id2}/Drives/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/Processors", rfphandler.GetResource)
@@ -126,16 +132,17 @@ func routers() *iris.Application {
 		systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS", rfphandler.GetResource)
 		systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/NetworkInterfaces/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/PCIDevices/{rid}", rfphandler.GetResource)
 		systems.Patch("/{id}", rfphandler.ChangeSettings)
 
 		systemsAction := systems.Party("/{id}/Actions")
 		systemsAction.Post("/ComputerSystem.Reset", rfphandler.ResetComputerSystem)
 		systemsAction.Post("/ComputerSystem.SetDefaultBootOrder", rfphandler.SetDefaultBootOrder)
 
-		biosParty := pluginRoutes.Party("/systems/{id}/bios")
-		biosParty.Get("", rfphandler.GetResource)
-		biosParty.Get("/settings", rfphandler.GetResource)
-		biosParty.Patch("/settings", rfphandler.ChangeSettings)
+		biosParty := systems.Party("/{id}/Bios")
+		biosParty.Get("/", rfphandler.GetResource)
+		biosParty.Get("/Settings", rfphandler.GetResource)
+		biosParty.Patch("/Settings", rfphandler.ChangeSettings)
 
 		chassis := pluginRoutes.Party("/Chassis")
 		chassis.Get("", rfphandler.GetResource)
@@ -183,6 +190,15 @@ func routers() *iris.Application {
 
 		registryStoreCap := pluginRoutes.Party("/RegistryStore", rfpmiddleware.BasicAuth)
 		registryStoreCap.Get("/registries/en/{id}", rfphandler.GetResource)
+
+		// Routes related to Update service
+		update := pluginRoutes.Party("/UpdateService", rfpmiddleware.BasicAuth)
+		update.Post("/Actions/UpdateService.SimpleUpdate", rfphandler.SimpleUpdate)
+		update.Post("/Actions/UpdateService.StartUpdate", rfphandler.StartUpdate)
+		update.Get("/FirmwareInventory", rfphandler.GetResource)
+		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
+		update.Get("/SoftwareInventory", rfphandler.GetResource)
+		update.Get("/SoftwareInventory/{id}", rfphandler.GetResource)
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

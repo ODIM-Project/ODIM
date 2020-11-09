@@ -18,6 +18,7 @@ package rpc
 import (
 	"context"
 	"fmt"
+
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
@@ -86,6 +87,26 @@ func ChangeBiosSettings(req systemsproto.BiosSettingsRequest) (*systemsproto.Sys
 func ChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
 	asService := systemsproto.NewSystemsService(services.Systems, services.Service.Client())
 	resp, err := asService.ChangeBootOrderSettings(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+// CreateVolume will do the rpc call to create a volume under storage
+func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	asService := systemsproto.NewSystemsService(services.Systems, services.Service.Client())
+	resp, err := asService.CreateVolume(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+// DeleteVolume will do the rpc call to DeleteVolume a volume under storage
+func DeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	asService := systemsproto.NewSystemsService(services.Systems, services.Service.Client())
+	resp, err := asService.DeleteVolume(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}

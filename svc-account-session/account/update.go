@@ -20,6 +20,7 @@ package account
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/base64"
+	"encoding/json"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
@@ -35,11 +36,11 @@ import (
 // updated other than the UserName if the session parameter have sufficient privileges.
 //
 // For updating an account, two parameters need to be passed UpdateAccountRequest and Session.
-// New Password and RoleId will be part of UpdateAccountRequest,
+// New Password and RoleID will be part of UpdateAccountRequest,
 // and Session parameter will have all session related data, espically the privileges.
 //
 // Output is the RPC response, which contains the status code, status message, headers and body.
-func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
+func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + req.AccountID,
@@ -53,15 +54,30 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		err  error
 	)
 
+	// parsing the Account
+	var updateAccount asmodel.Account
+	err = json.Unmarshal(req.RequestBody, &updateAccount)
+	if err != nil {
+		errMsg := "unable to parse the update account request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
 	requestUser := asmodel.User{
-		UserName:     req.UserName,
-		Password:     req.Password,
-		RoleID:       req.RoleId,
+		UserName:     updateAccount.UserName,
+		Password:     updateAccount.Password,
+		RoleID:       updateAccount.RoleID,
 		AccountTypes: []string{"Redfish"},
 	}
 
-	id := req.AccountID
+	//empty request check
+	if isEmptyRequest(req.RequestBody) {
+		errMsg := "empty request can not be processed"
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"request body"}, nil)
+	}
 
+	id := req.AccountID
 	if requestUser.UserName != "" {
 		errorMessage := "error: username cannot be modified"
 		resp.StatusCode = http.StatusBadRequest
@@ -78,11 +94,24 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		return resp
 	}
 
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateAccount)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp
+	}
+
 	if requestUser.RoleID != "" {
 		if requestUser.RoleID != common.RoleAdmin {
 			if requestUser.RoleID != common.RoleMonitor {
 				if requestUser.RoleID != common.RoleClient {
-					_, err := asmodel.GetRoleDetailsByID(requestUser.RoleID)
+					_, err := e.GetRoleDetailsByID(requestUser.RoleID)
 					if err != nil {
 						errorMessage := "error: Invalid RoleID " + requestUser.RoleID + " present"
 						resp.StatusCode = http.StatusBadRequest
@@ -111,7 +140,7 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 
 	}
 
-	user, gerr := asmodel.GetUserDetails(id)
+	user, gerr := e.GetUserDetails(id)
 	if gerr != nil {
 		errorMessage := "error while trying to get  account: " + gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
@@ -246,7 +275,7 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		requestUser.Password = hashedPassword
 	}
 
-	if uerr := user.UpdateUserDetails(requestUser); uerr != nil {
+	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
 		errorMessage := "error while trying to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		resp.Header = map[string]string{
@@ -268,7 +297,9 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-
+	if requestUser.RoleID != "" {
+		user.RoleID = requestUser.RoleID
+	}
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
 	resp.Body = asresponse.Account{
 		Response:     commonResponse,
@@ -283,4 +314,13 @@ func Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) re
 	}
 
 	return resp
+}
+
+func isEmptyRequest(requestBody []byte) bool {
+	var updateRequest map[string]interface{}
+	json.Unmarshal(requestBody, &updateRequest)
+	if len(updateRequest) <= 0 {
+		return true
+	}
+	return false
 }

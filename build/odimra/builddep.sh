@@ -16,13 +16,13 @@
 # Script is for generating certificate and private key
 # for Client mode connection usage only
 
-LIST=`ls -R | grep -v 'svc-plugin-rest-client' | grep -E '^svc-|^plugin-'` 
+LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-'` 
 echo $LIST
 for i in $LIST; do
 	cd $i
 	go mod download
 	go mod vendor
-	go build -i .
+	go build -i -race .
 	if [ $? -eq 0 ]; then
 		echo Build for odimra service/lib dependencies $i are Successful !!!!
 		arr1+=$i;

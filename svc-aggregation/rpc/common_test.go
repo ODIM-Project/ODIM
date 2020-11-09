@@ -49,6 +49,29 @@ var connector = &system.ExternalInterface{
 	EventNotification:       mockEventNotification,
 	SubscribeToEMB:          mockSubscribeEMB,
 	GetSessionUserName:      getSessionUserNameForTesting,
+	GetAllKeysFromTable:     mockGetAllKeysFromTable,
+	GetConnectionMethod:     mockGetConnectionMethod,
+	UpdateConnectionMethod:  mockUpdateConnectionMethod,
+}
+
+func mockGetAllKeysFromTable(table string) ([]string, error) {
+	if table == "ConnectionMethod" {
+		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
+	}
+	return []string{}, fmt.Errorf("Table not found")
+}
+
+func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
+	return nil
+}
+func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMethod, *errors.Error) {
+	var connMethod agmodel.ConnectionMethod
+	if ConnectionMethodURI == "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73" {
+		connMethod.ConnectionMethodType = "Redfish"
+		connMethod.ConnectionMethodVariant = "iLO_v1.0.0"
+		return connMethod, nil
+	}
+	return connMethod, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+ConnectionMethodURI+" found")
 }
 
 func deleteComputeforTest(index int, key string) *errors.Error {
@@ -121,11 +144,11 @@ func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 	return true
 }
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) (int32, string) {
+func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
 	if sessionToken == "invalidToken" {
-		return http.StatusUnauthorized, errors.Unauthorized
+		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
 	}
-	return http.StatusOK, response.Success
+	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
 
 func getSessionUserNameForTesting(sessionToken string) (string, error) {

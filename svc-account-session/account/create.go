@@ -20,6 +20,7 @@ package account
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/sha3"
 	"log"
@@ -39,25 +40,48 @@ import (
 // Create defines creation of a new account. The function is supposed to be used as part of RPC.
 //
 // For creating an account, two parameters need to be passed CreateAccountRequest and Session.
-// New account UserName, Password and RoleId will be part of CreateAccountRequest,
+// New account UserName, Password and RoleID will be part of CreateAccountRequest,
 // and Session parameter will have all session related data, espically the privileges.
 // For creating new account the ConfigureUsers privilege is mandatory.
 //
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (response.RPC, error) {
+func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (response.RPC, error) {
+	// parsing the CreateAccount
+	var createAccount asmodel.Account
+	err := json.Unmarshal(req.RequestBody, &createAccount)
+	if err != nil {
+		errMsg := "error: unable to parse the create account request" + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
+	}
+
 	commonResponse := response.Response{
 		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
-		OdataID:      "/redfish/v1/AccountService/Accounts/" + req.UserName,
+		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
-		ID:           req.UserName,
+		ID:           createAccount.UserName,
 		Name:         "Account Service",
 	}
 	var resp response.RPC
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
+	if err != nil {
+		errMsg := "error while validating request parameters: " + err.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
+	} else if invalidProperties != "" {
+		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Println(errorMessage)
+		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return resp, fmt.Errorf(errorMessage)
+	}
+
 	user := asmodel.User{
-		UserName: req.UserName,
-		Password: req.Password,
-		RoleID:   req.RoleId,
+		UserName: createAccount.UserName,
+		Password: createAccount.Password,
+		RoleID:   createAccount.RoleID,
 	}
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
@@ -105,8 +129,7 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 		log.Printf(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
-
-	if _, gerr := asmodel.GetRoleDetailsByID(user.RoleID); gerr != nil {
+	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
 		errorMessage := "error: invalid RoleID present " + gerr.Error()
 		log.Printf(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
@@ -140,7 +163,7 @@ func Create(req *accountproto.CreateAccountRequest, session *asmodel.Session) (r
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	user.Password = hashedPassword
 	user.AccountTypes = []string{"Redfish"}
-	if cerr := user.Create(); cerr != nil {
+	if cerr := e.CreateUser(user); cerr != nil {
 		errorMessage := "error while trying to add new user: " + cerr.Error()
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict

@@ -16,6 +16,23 @@
 # Script is for generating certificate and private key
 # for Client mode connection usage only
 
+logerr()
+{
+        echo "[$(date)] -- ERROR -- $1"
+        _exit 1
+}
+
+eval_cmd_exec()
+{
+        if [[ $# -lt 3 ]]; then
+                logerr "eval_cmd_exec syntax error $2"
+        fi
+        if [[ $1 -ne 0 ]]; then
+                echo "$3"
+                logerr $2
+        fi
+}
+
 if id odimra >/dev/null 2>&1; then
         echo "Continue"
 else

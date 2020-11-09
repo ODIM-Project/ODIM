@@ -40,11 +40,11 @@ type ConnectionManager struct {
 	domain string
 }
 
-func (c *ConnectionManager) Delete(schema, key string) (bool, error) {
+func (c *ConnectionManager) Delete(key Key) (bool, error) {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	numOfRemovedKeys, err := cs.Do("DEL", schema+":"+key)
+	numOfRemovedKeys, err := cs.Do("DEL", key)
 	if err != nil {
 		return false, err
 	}
@@ -113,19 +113,18 @@ func (c *ConnectionManager) Create(key Key, data []byte) *Error {
 	}
 }
 
-func (c *ConnectionManager) Update(schema, key string, data []byte) error {
+func (c *ConnectionManager) Update(key Key, data []byte) error {
 	cs := c.pool.Get()
 	defer cs.Close()
 
-	pk := c.CreateKey(c.domain, schema, key)
-	s, err := redis.String(cs.Do("SET", pk, data))
+	s, err := redis.String(cs.Do("SET", key, data))
 	if err != nil {
 		return err
 	}
 
 	switch s {
 	case "-1":
-		return fmt.Errorf("specified key(%s) does not exists", pk)
+		return fmt.Errorf("specified key(%s) does not exists", key)
 	default:
 		return nil
 	}

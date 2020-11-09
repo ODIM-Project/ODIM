@@ -162,7 +162,7 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 			ctx.StatusCode(http.StatusInternalServerError)
 			return
 		}
-		err = c.cm.Update("Chassis", cbUri, bytes)
+		err = c.cm.Update(c.cm.CreateKey("Chassis", cbUri), bytes)
 		if err != nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			return

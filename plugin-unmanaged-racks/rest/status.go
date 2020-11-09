@@ -101,7 +101,7 @@ func (p pluginStatusController) getPluginStatus(ctx iris.Context) {
 	var resp = PluginStatusResponse{
 		Comment: "Plugin Status Response",
 		Name:    "Common Redfish Plugin Status",
-		Version: "v0.1",
+		Version: p.pluginConfig.FirmwareVersion,
 	}
 	resp.Status = *p.status
 	resp.Status.TimeStamp = time.Now().Format(time.RFC3339)

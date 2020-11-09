@@ -20,8 +20,8 @@ type chassisDeletionHandler struct {
 
 func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	requestedChassis := ctx.Request().RequestURI
-
-	bytes, err := redis.Bytes(c.connectionManager.FindByKey(c.connectionManager.CreateKey("Chassis", requestedChassis)))
+	requestedChassisKey := c.connectionManager.CreateKey("Chassis", requestedChassis)
+	bytes, err := redis.Bytes(c.connectionManager.FindByKey(requestedChassisKey))
 	if err != nil && err == redis.ErrNil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewResourceNotFoundMsg("Chassis", requestedChassis, ""))
@@ -49,7 +49,7 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 		return
 	}
 
-	_, err = c.connectionManager.Delete("Chassis", requestedChassis)
+	_, err = c.connectionManager.Delete(requestedChassisKey)
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))

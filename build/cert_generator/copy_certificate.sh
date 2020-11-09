@@ -34,38 +34,38 @@ fi
 #create kafka required directories
 if [[ ! -d /etc/kafka ]]; then
         kafka_output=$(sudo mkdir -p /etc/kafka/conf /etc/kafka/data 2>&1)
-        echo "failed to create kafka directories" "$kafka_output"
+        eval_cmd_exec $? "failed to create kafka directories" "$kafka_output"
 fi
 
 kafka_owner_output=$(sudo chown -R odimra:odimra /etc/kafka* && sudo chmod 0755 /etc/kafka* 2>&1)
-echo "failed to modify kafka directories permission" "$kafka_owner_output"
+eval_cmd_exec $? "failed to modify kafka directories permission" "$kafka_owner_output"
 
 #create zookeeper required directories
 if [[ ! -d /etc/zookeeper ]]; then
         zookeeper_output=$(sudo mkdir -p /etc/zookeeper/conf /etc/zookeeper/data /etc/zookeeper/data/log 2>&1)
-        echo "failed to create zookeeper directories" "$zookeeper_output"
+        eval_cmd_exec $? "failed to create zookeeper directories" "$zookeeper_output"
 fi
 
 zookeeper_owner_output=$(sudo chown -R odimra:odimra /etc/zookeeper* && sudo chmod 0755 /etc/zookeeper* 2>&1)
-echo "failed to modify zookeeper directories permission" "$zookeeper_owner_output"
+eval_cmd_exec $?  "failed to modify zookeeper directories permission" "$zookeeper_owner_output"
 
 #create odimra required directories
 if [[ ! -d /etc/odimracert ]]; then
         odimra_output=$(sudo mkdir -p /etc/odimracert 2>&1)
-        echo "failed to create odimra directories" "$odimra_output"
+        eval_cmd_exec $? "failed to create odimra directories" "$odimra_output"
 fi
 
 odimra_owner_output=$(sudo chown -R odimra:odimra /etc/odimracert* && sudo chmod 0755 /etc/odimracert* 2>&1)
-echo "failed to modify odimra directories permission" "$odimra_owner_output"
+eval_cmd_exec $? "failed to modify odimra directories permission" "$odimra_owner_output"
 
 #create plugin required directories
 if [[ ! -d /etc/plugincert ]]; then
         plugin_output=$(sudo mkdir -p /etc/plugincert 2>&1)
-        echo "failed to create plugin directories" "$plugin_output"
+        eval_cmd_exec $? "failed to create plugin directories" "$plugin_output"
 fi
 
 plugin_owner_output=$(sudo chown -R plugin:plugin /etc/plugincert* && sudo chmod 0755 /etc/plugincert* 2>&1)
-echo "failed to modify plugin directories permission" "$plugin_owner_output"
+eval_cmd_exec $? "failed to modify plugin directories permission" "$plugin_owner_output"
 
 sudo cp rootCA.crt odimra_server.crt odimra_server.key odimra_rsa.public odimra_rsa.private odimra_kafka_client.crt odimra_kafka_client.key /etc/odimracert/
 sudo cp kafka.keystore.jks kafka.truststore.jks /etc/kafka/conf/

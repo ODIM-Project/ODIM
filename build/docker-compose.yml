@@ -51,7 +51,7 @@ services:
       - './Redis/redis-persistence:/data:rw'
   zookeeper:
     build:
-      context: ./Kafka/
+      context: ./.
       dockerfile: ./Kafka/Dockerfiles/Dockerfile.zookeeper
       args:
           http_proxy: $http_proxy
@@ -86,7 +86,7 @@ services:
 
   kafka:
     build:
-      context: ./Kafka/
+      context: ./.
       dockerfile: ./Kafka/Dockerfiles/Dockerfile.kafka
       args:
           http_proxy: $http_proxy

@@ -314,6 +314,7 @@ func Router() *iris.Application {
 	chassis.Get("/", cha.GetChassisCollection)
 	chassis.Get("/{id}", cha.GetChassis)
 	chassis.Get("/{id}/NetworkAdapters", cha.GetChassisResource)
+	chassis.Get("/{id}/NetworkAdapters/{rid}", cha.GetChassisResource)
 	chassis.Any("/", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/NetworkAdapters", handle.ChassisMethodNotAllowed)

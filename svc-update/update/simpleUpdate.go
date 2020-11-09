@@ -76,7 +76,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	targetList, err = sortTargetList(updateRequest.Targets)
 	if err != nil {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, nil)
 	}
 	/*
 		if len(targetList) > 1 {

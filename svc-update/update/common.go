@@ -67,7 +67,7 @@ type External struct {
 	CreateTask         func(string) (string, error)
 	UpdateTask         func(common.TaskData) error
 	GetSessionUserName func(string) (string, error)
-	GenericSave	   func([]byte,string,string)(error)
+	GenericSave        func([]byte, string, string) error
 }
 
 type responseStatus struct {
@@ -112,7 +112,7 @@ func GetExternalInterface() *ExternalInterface {
 			CreateChildTask:    services.CreateChildTask,
 			GetSessionUserName: services.GetSessionUserName,
 			CreateTask:         services.CreateTask,
-			GenericSave:	    umodel.GenericSave,
+			GenericSave:        umodel.GenericSave,
 		},
 		DB: DB{
 			GetAllKeysFromTable: umodel.GetAllKeysFromTable,

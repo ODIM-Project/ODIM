@@ -32,7 +32,6 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
-	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
 
 // SimpleUpdate function handler for simpe update process
@@ -204,7 +203,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		return
 	}
 	if len(applyTime) != 0 {
-		err := umodel.GenericSave([]byte(updateRequestBody), "SimpleUpdate", uuid)
+		err := e.External.GenericSave([]byte(updateRequestBody), "SimpleUpdate", uuid)
 		if err != nil {
 			subTaskChannel <- http.StatusInternalServerError
 			errMsg := "error: unable to save the simple update request" + err.Error()

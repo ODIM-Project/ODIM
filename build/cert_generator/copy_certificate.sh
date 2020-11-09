@@ -159,5 +159,6 @@ fi
 
 sudo chown -R odimra:odimra /etc/odimracert/
 sudo chown -R plugin:plugin /etc/plugincert/
-sudo chown -R odimra:odimra /etc/kafkacert/
+sudo chown -R odimra:odimra /etc/kafka/conf/
+sudo chown -R odimra:odimra /etc/zookeeper/conf/
 

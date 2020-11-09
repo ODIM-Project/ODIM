@@ -153,8 +153,8 @@ This section provides a step-by-step procedure for deploying the resource aggreg
 
 5. Set below environment variables with user and group ID to be used for odimra
    ```
-   $ export ETCD_USER_ID=1234
-   $ export ETCD_GROUP_ID=1234
+   $ export ODIMRA_USER_ID=1234
+   $ export ODIMRA_GROUP_ID=1234
    ```
 
 6. Set up FQDN in the `/etc/hosts` file (only if there is no DNS infrastructure):

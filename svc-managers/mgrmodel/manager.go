@@ -18,7 +18,6 @@ package mgrmodel
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -177,8 +176,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist != err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Printf("warning: skipped saving of duplicate data with key %v", key)
-		return fmt.Errorf("warning: skipped saving of duplicate data with key %v", key)
+		return fmt.Errorf("skipped saving of duplicate data with key %v", key)
 	}
 	return nil
 }

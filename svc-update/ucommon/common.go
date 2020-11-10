@@ -192,7 +192,6 @@ func getResourceName(oDataID string, memberFlag bool) string {
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
 func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
-	//var response *http.Response
 	var err error
 	pluginResponse, err := callPlugin(req)
 	if err != nil {

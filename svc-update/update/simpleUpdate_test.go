@@ -78,7 +78,6 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 			want: response.RPC{
 				StatusCode: http.StatusOK,
-				Body:       errArg1.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -92,6 +91,7 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 			want: response.RPC{
 				StatusCode: http.StatusNotFound,
+				Body:       errArg1.CreateGenericErrorResponse(),
 			},
 		},
 		{

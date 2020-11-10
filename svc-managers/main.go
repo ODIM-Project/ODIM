@@ -16,6 +16,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -44,6 +45,9 @@ func main() {
 
 	err := addManagertoDB()
 	if err != nil {
+		if !strings.Contains(err.Error(), "duplicate data") {
+			log.Fatalf("error while trying to add manager details into DB: %v", err)
+		}
 		log.Println(err)
 	}
 	err = services.InitializeService(services.Managers)

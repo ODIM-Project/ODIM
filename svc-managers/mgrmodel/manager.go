@@ -160,7 +160,7 @@ func UpdateManagersData(key string, managerData map[string]interface{}) error {
 		return fmt.Errorf("error while trying to marshal manager data for updating: %v", jerr)
 	}
 	if _, err = conn.Update("Managers", key, string(data)); err != nil {
-		return fmt.Errorf("error while trying to update magaer details in DB: %v", err)
+		return fmt.Errorf("error while trying to update manager details in DB: %v", err)
 	}
 	return nil
 }

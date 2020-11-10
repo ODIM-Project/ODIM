@@ -11,12 +11,17 @@
 	"EventConf": {
 		"DestinationURI": "/redfishEventListener",
 		"ListenerHost": "odimra.local.com",
-		"ListenerPort": "45004"
+		"ListenerPort": "45003"
 	},
 	"KeyCertConf": {
 		"RootCACertificatePath": "../dev/cert/rootCA.crt",
 		"PrivateKeyPath": "../dev/cert/odimra_server.key",
 		"CertificatePath": "../dev/cert/odimra_server.crt"
+	},
+	"DBConf" : {
+		"Protocol": "tcp",
+		"Host": "odimra.local.com",
+		"Port": "6380"
 	},
 	"TLSConf": {
 		"MinVersion": "TLS_1.2",

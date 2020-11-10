@@ -24,6 +24,14 @@ type PluginConfig struct {
 	KeyCertConf             *KeyCertConf    `json:"KeyCertConf"`
 	URLTranslation          *URLTranslation `json:"URLTranslation"`
 	TLSConf                 *TLSConf        `json:"TLSConf"`
+	DBConf                  *DBConf         `json:"DBConf"`
+}
+
+// DBConf holds all DB related configurations
+type DBConf struct {
+	Protocol string `json:"Protocol"`
+	Host     string `json:"Host"`
+	Port     string `json:"Port"`
 }
 
 //EventConf is for holding all events related configuration

@@ -1,50 +1,26 @@
-package eventing
+package rest
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/kataras/iris/v12"
-	"log"
-	"net/http"
+	"github.com/kataras/iris/v12/context"
 )
 
-func NewListener(c config.PluginConfig, cm *db.ConnectionManager) Listener {
-	return &listener{
-		pluginConfig: c,
-		cm:           cm,
-	}
-}
-
-type Listener interface {
-	Run()
-}
-
-type listener struct {
-	pluginConfig config.PluginConfig
-	cm           *db.ConnectionManager
-}
-
-func (l *listener) Run() {
-	app := iris.New()
-
-	eh := eventHandler{
-		cm: l.cm,
+func newEventHandler(cm *db.ConnectionManager, translator *config.URLTranslation) context.Handler {
+	return (&eventHandler{
+		cm: cm,
 		translator: &redfish.Translator{
-			Dictionaries: l.pluginConfig.URLTranslation,
+			Dictionaries: translator,
 		},
-	}
-	app.Post(l.pluginConfig.EventConf.DestURI, eh.handleEvent)
-
-	app.Run(
-		iris.TLS(
-			l.pluginConfig.EventConf.ListenerHost+":"+l.pluginConfig.EventConf.ListenerPort,
-			l.pluginConfig.KeyCertConf.CertificatePath,
-			l.pluginConfig.KeyCertConf.PrivateKeyPath,
-		),
-	)
+	}).handleEvent
 }
 
 type eventHandler struct {
@@ -85,7 +61,7 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 		})
 
 		if err != nil {
-			log.Printf("error: cannot consume message(%v): %v\n", message, err)
+			logging.Error("cannot consume message(%v): %v", message, err)
 		}
 	}
 }

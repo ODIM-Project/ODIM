@@ -16,27 +16,22 @@ package main
 import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/eventing"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/rest"
-	"github.com/kataras/iris/v12"
-	"log"
 )
 
 var version = "dev"
 
 func main() {
-	log.Printf("Running URP v%s\n", version)
-	var pc *config.PluginConfig
-	var err error
-	if pc, err = config.ReadPluginConfiguration(); err != nil {
-		log.Fatalln("error while reading from config", err)
+	if pc, err := config.ReadPluginConfiguration(); err != nil {
+		logging.Fatal("error while reading from config", err)
+	} else {
+		plugin := Plugin{
+			connectionManager: db.NewConnectionManager(pc.DBConf.Protocol, pc.DBConf.Host, pc.DBConf.Port),
+			pluginConfig:      pc,
+		}
+		plugin.Run()
 	}
-
-	plugin := Plugin{
-		connectionManager: db.NewConnectionManager("tcp", "odimra.local.com", "6380"),
-		pluginConfig:      pc,
-	}
-	plugin.Run()
 }
 
 type Plugin struct {
@@ -45,33 +40,5 @@ type Plugin struct {
 }
 
 func (p *Plugin) Run() {
-	eventing.NewSubscriber(p.pluginConfig).Run()
-	go func() {
-		eventing.NewListener(*p.pluginConfig, p.connectionManager).Run()
-	}()
-
-	basicAuthHandler := rest.NewBasicAuthHandler(p.pluginConfig.UserName, p.pluginConfig.Password)
-
-	application := iris.New()
-	pluginRoutes := application.Party("/ODIM/v1")
-	pluginRoutes.Get("/Status", rest.NewPluginStatusController(p.pluginConfig))
-
-	managers := pluginRoutes.Party("/Managers", basicAuthHandler)
-	managers.Get("", rest.NewGetManagersHandler(p.pluginConfig))
-	managers.Get("/{id}", rest.NewGetPluginManagerHandler(p.pluginConfig))
-
-	chassis := pluginRoutes.Party("/Chassis", basicAuthHandler)
-	chassis.Get("", rest.NewGetChassisCollectionHandler(p.connectionManager))
-	chassis.Get("/{id}", rest.NewChassisReadingHandler(p.connectionManager))
-	chassis.Delete("/{id}", rest.NewChassisDeletionHandler(p.connectionManager))
-	chassis.Post("", rest.NewCreateChassisHandlerHandler(p.connectionManager, p.pluginConfig))
-	chassis.Patch("/{id}", rest.NewChassisUpdateHandler(p.connectionManager))
-
-	application.Run(
-		iris.TLS(
-			p.pluginConfig.Host+":"+p.pluginConfig.Port,
-			p.pluginConfig.KeyCertConf.CertificatePath,
-			p.pluginConfig.KeyCertConf.PrivateKeyPath,
-		),
-	)
+	rest.InitializeAndRun(p.pluginConfig, p.connectionManager)
 }

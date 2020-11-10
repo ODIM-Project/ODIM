@@ -51,7 +51,6 @@ type TokenMap struct {
 }
 
 var tokenDetails []TokenMap
-var tokenSpec TokenMap
 
 //TokenValidation validates sent token with the list of plugin generated tokens
 func TokenValidation(token string, sessionTimeoutInMinutes float64) bool {
@@ -97,7 +96,6 @@ func (p pluginStatusController) getPluginStatus(ctx iris.Context) {
 			return
 		}
 	}
-	//var messageQueueInfo []rfpresponse.EmbQueue
 	var resp = PluginStatusResponse{
 		Comment: "Plugin Status Response",
 		Name:    "Common Redfish Plugin Status",
@@ -105,18 +103,6 @@ func (p pluginStatusController) getPluginStatus(ctx iris.Context) {
 	}
 	resp.Status = *p.status
 	resp.Status.TimeStamp = time.Now().Format(time.RFC3339)
-	//resp.EventMessageBus = rfpresponse.EventMessageBus{
-	//	EmbType: pluginConfig.Data.MessageBusConf.EmbType,
-	//}
-	////messageQueueInfo := make([]rfpresponse.EmbQueue, 0)
-	//for i := 0; i < len(pluginConfig.Data.MessageBusConf.EmbQueue); i++ {
-	//	messageQueueInfo = append(messageQueueInfo, rfpresponse.EmbQueue{
-	//		QueueName: pluginConfig.Data.MessageBusConf.EmbQueue[i],
-	//		QueueDesc: "Queue for redfish events",
-	//	})
-	//}
-	//resp.EventMessageBus.EmbQueue = messageQueueInfo
-
 	ctx.StatusCode(http.StatusOK)
 	ctx.JSON(resp)
 }

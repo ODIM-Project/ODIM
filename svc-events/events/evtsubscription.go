@@ -1260,7 +1260,7 @@ func createEventSubscriptionResponse() interface{} {
 				MessageID: "Base.1.0.Created",
 			},
 		},
-		Code:    "Base.1.0.0.Created",
+		Code:    errResponse.Created,
 		Message: "See @Message.ExtendedInfo for more information.",
 	}
 }

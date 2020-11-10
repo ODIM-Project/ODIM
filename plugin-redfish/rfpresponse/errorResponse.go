@@ -42,7 +42,7 @@ type MsgExtendedInfo struct {
 func CreateErrorResponse(errs string) ErrorResopnse {
 	var err = ErrorResopnse{
 		Error{
-			Code:    "iLO.0.10.ExtendedInfo",
+			Code:    "Base.1.0.0.Failed",
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
 				MsgExtendedInfo{

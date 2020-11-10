@@ -30,8 +30,8 @@ pre_reqs()
 		echo "[$(date)] -- INFO  -- group odimra exists"
 		sudo groupdel odimra
 	fi
-	sudo groupadd -g ${ETCD_GROUP_ID} -r odimra
-	sudo useradd -u ${ETCD_USER_ID} -r -M -g etcd odimra
+	sudo groupadd -g ${ODIMRA_GROUP_ID} -r odimra
+	sudo useradd -u ${ODIMRA_USER_ID} -r -M -g odimra odimra
 
 	if [[ -z $FQDN ]]; then
 		echo "[ERROR] Set FQDN to environment of the host machine using the following command: export FQDN=<user_preferred_fqdn_for_host>"

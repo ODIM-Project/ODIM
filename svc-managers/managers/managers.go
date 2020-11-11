@@ -186,7 +186,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 
 	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {
-		return mgr, fmt.Errorf("error while retriving manager information: %v", err)
+		return mgr, fmt.Errorf("error while retrieving manager information: %v", err)
 	}
 	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("error while unmarshalling manager information: %v", err)

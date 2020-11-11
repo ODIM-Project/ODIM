@@ -32,7 +32,7 @@ func main() {
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Fabric Service should not be run as the root user")
+		log.Fatalln("Manager Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {

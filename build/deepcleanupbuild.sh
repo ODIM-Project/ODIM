@@ -31,10 +31,12 @@ if [ -a build/docker-compose.yml ]; then
 	sudo rm -rf /var/log/GRF_PLUGIN
 	sudo rm -rf Consul/data/*
 	sudo rm -rf Redis/redis-persistence/*
-	sudo rm -rf Kafka/kafka-persistence/config/*
-	sudo rm -rf Kafka/kafka-persistence/data/*
-	sudo rm -rf /etc/kafkacert /etc/odimracert /etc/plugincert
-	sudo rm -rf cert_generator/kafka* cert_generator/root* cert_generator/odimra*
+	sudo rm -rf /etc/kafka/conf/*
+	sudo rm -rf /etc/kafka/data/*
+	sudo rm -rf /etc/zookeeper/conf/*
+	sudo rm -rf /etc/zookeeper/data/*
+	sudo rm -rf /etc/odimracert /etc/plugincert
+	sudo rm -rf cert_generator/kafka* cert_generator/zookeeper* cert_generator/root* cert_generator/odimra*
 	host=`whoami`
 	sudo chown -R ${host}:${host} Consul/*
 	echo "Cleanup done"

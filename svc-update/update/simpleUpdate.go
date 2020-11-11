@@ -78,13 +78,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, nil)
 	}
-	/*
-		if len(targetList) > 1 {
-			errMsg := "error: 'Targets' parameter cannot have more than one BMC"
-			log.Println(errMsg)
-			return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, nil)
-		}
-	*/
 	partialResultFlag := false
 	subTaskChannel := make(chan int32, len(targetList))
 	serverURI := ""

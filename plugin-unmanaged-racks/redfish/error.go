@@ -181,3 +181,14 @@ func NewResourceAlreadyExistsMsg(resourceType, propertyName, propertyValue, erro
 		MessageArgs: []interface{}{resourceType, propertyName, propertyValue},
 	}
 }
+
+func NewResourceAtURIUnauthorizedMsg(uri, errorMsg string) MsgExtendedInfo {
+	return MsgExtendedInfo{
+		OdataType:   "#Message.v1_0_8.Message",
+		MessageID:   ResourceAtURIUnauthorized,
+		Message:     fmt.Sprintf("While accessing the resource at %v, the service received an authorization error. %v", uri, errorMsg),
+		Severity:    "Critical",
+		Resolution:  "Ensure that the appropriate access is provided for the service in order for it to access the URI.",
+		MessageArgs: []interface{}{uri},
+	}
+}

@@ -2,11 +2,13 @@ package rest
 
 import (
 	"encoding/base64"
+	"net/http"
+
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"golang.org/x/crypto/sha3"
-	"log"
-	"net/http"
 )
 
 func NewBasicAuthHandler(username, hashedPass string) context.Handler {
@@ -24,16 +26,14 @@ type basicAuthHandler struct {
 func (b basicAuthHandler) handle(ctx iris.Context) {
 	username, password, ok := ctx.Request().BasicAuth()
 	if !ok {
-		errorMsg := "error: not a valid basic auth"
-		log.Println("error:", errorMsg)
 		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.WriteString(errorMsg)
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceAtURIUnauthorizedMsg(ctx.Request().RequestURI, "Cannot decode Authorization header")))
 		return
 	}
 
 	if username != b.username {
 		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.WriteString("Invalid Username/Password")
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceAtURIUnauthorizedMsg(ctx.Request().RequestURI, "Invalid user or password")))
 		return
 	}
 
@@ -43,7 +43,7 @@ func (b basicAuthHandler) handle(ctx iris.Context) {
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	if b.hashedPass != hashedPassword {
 		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.WriteString("Invalid Username/Password")
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceAtURIUnauthorizedMsg(ctx.Request().RequestURI, "Invalid user or password")))
 		return
 	}
 

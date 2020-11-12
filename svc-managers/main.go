@@ -16,7 +16,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -40,16 +39,14 @@ func main() {
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatalln(err)
 	}
 
 	err := addManagertoDB()
 	if err != nil {
-		if !strings.Contains(err.Error(), "duplicate data") {
-			log.Fatalf("error while trying to add manager details into DB: %v", err)
-		}
-		log.Println(err)
+		log.Fatalln(err)
 	}
+
 	err = services.InitializeService(services.Managers)
 	if err != nil {
 		log.Fatalf("fatal: error while trying to initialize service: %v", err)
@@ -80,4 +77,5 @@ func addManagertoDB() error {
 		State:           "Enabled",
 	}
 	return mgr.AddManagertoDB()
+
 }

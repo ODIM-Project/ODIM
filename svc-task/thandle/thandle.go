@@ -92,7 +92,6 @@ func (ts *TasksRPC) OverWriteCompletedTaskUtil(userName string) error {
 		timeToLeaveString, _ := time.ParseDuration("24h")
 		timeToLeaveNano := timeToLeaveString.Nanoseconds()
 		taskID = (strings.Split(value, "::"))[2]
-		log.Printf(taskID)
 		if elapsedTimeNano > timeToLeaveNano {
 			err = ts.deleteCompletedTask(taskID)
 			if err != nil {

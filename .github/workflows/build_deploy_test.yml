@@ -33,10 +33,12 @@ jobs:
         echo $ip
         export FQDN=odimra.local.com
         export HOSTIP=$ip
+        export ODIMRA_USER_ID=1234
+        export ODIMRA_GROUP_ID=1234
         sudo echo "$HOSTIP $FQDN" | sudo tee -a /etc/hosts
         echo $FQDN
         echo $HOSTIP
-        cd build/cert_generator; ./generate_odimra_cert.sh $FQDN; ./generate_kafka_tls.sh kafka
+        cd build/cert_generator; ./generate_odimra_cert.sh $FQDN; ./generate_kafka_certs.sh kafka; ./generate_zookeeper_certs.sh zookeeper
         ./copy_certificate.sh
         cd ../..
         export FQDN=${FQDN}

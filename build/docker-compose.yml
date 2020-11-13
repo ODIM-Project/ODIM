@@ -50,62 +50,79 @@ services:
       - './Redis/6379.conf:/usr/local/etc/redis/6379.conf:ro'
       - './Redis/redis-persistence:/data:rw'
   zookeeper:
-    image: 'bitnami/zookeeper:3.5.7'
+    build:
+      context: ./.
+      dockerfile: ./Kafka/Dockerfiles/Dockerfile.zookeeper
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    container_name: odim_zookeeper
+    image: odim_zookeeper:1.0
     hostname: zookeeper
-    restart: always
+    restart: on-failure
     ports:
      - '2181:2181'
-    expose:
-     - '2181'
+    external_links:
+      - kafka
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    user: odimra
+    domainname: zookeeper
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    depends_on:
-      - "consul"
+      - IS_ZOOKEEPER_CLUSTER='false'
+      - ZOOKEEPER_SSL_CLIENT_PORT=2181
+      - ZOOKEEPER_DATA_DIR=/opt/zookeeper/data
+      - ZOOKEEPER_DATA_LOG_DIR=/opt/zookeeper/data/log
+      - ZOOKEEPER_KEYSTORE_PATH=/opt/zookeeper/conf/zookeeper.keystore.jks
+      - ZOOKEEPER_KEYSTORE_PASSWORD=K@fk@_store1
+      - ZOOKEEPER_TRUSTSTORE_PATH=/opt/zookeeper/conf/zookeeper.truststore.jks
+      - ZOOKEEPER_TRUSTSTORE_PASSWORD=K@fk@_store1
+    expose:
+      - '2181'
+    volumes:
+      - '/etc/zookeeper/conf:/opt/zookeeper/conf:ro'
+      - '/etc/zookeeper/data:/opt/zookeeper/data:rw'
+    command: bash -c "/opt/zookeeper/scripts/start_zookeeper.sh"
+
   kafka:
-    image: 'bitnami/kafka:2.5.0-debian-10-r93'
+    build:
+      context: ./.
+      dockerfile: ./Kafka/Dockerfiles/Dockerfile.kafka
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    container_name: odim_kafka
+    image: odim_kafka:1.0
     hostname: kafka
     ports:
       - '9092:9092'
     expose:
       - '9092'
+    external_links:
+      - zookeeper
+    restart: on-failure
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    user: odimra
+    domainname: kafka
     environment:
-      - KAFKA_CFG_BROKER_ID=0
-      - KAFKA_CFG_NUM_NETWORK_THREADS=3
-      - KAFKA_CFG_NUM_IO_THREADS=8
-      - KAFKA_CFG_SOCKET_SE=102400
-      - KAFKA_CFG_SOCKET_RECEIVE_BUFFER_BYTES=102400
-      - KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES=104857600
-      - KAFKA_CFG_LOG_DIRS=/tmp/kafka-logs
-      - KAFKA_CFG_NUM_PARTITIONS=1
-      - KAFKA_CFG_NUM_RECOVERY_THREADS_PER_DATA_DIR=1
-      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
-      - KAFKA_CFG_LOG_RETENTION_HOURS=168
-      - KAFKA_CFG_LOG_RETENTION_CHECK_INTERVAL_MS=300000
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_ZOOKEEPER_CONNECTION_TIMEOUT_MS=6000
-      - KAFKA_CFG_SSL_KEYSTORE_LOCATION=/bitnami/kafka/config/certs/kafka.keystore.jks
-      - KAFKA_CFG_SSL_TRUSTSTORE_LOCATION=/bitnami/kafka/config/certs/kafka.truststore.jks
-      - KAFKA_CFG_SSL_KEYSTORE_PASSWORD=K@fk@_store1
-      - KAFKA_CFG_SSL_TRUSTSTORE_PASSWORD=K@fk@_store1
-      - KAFKA_CFG_LISTENERS=SSL://kafka:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=SSL://kafka:9092
-      - KAFKA_CERTIFICATE_PASSWORD=K@fk@_store1
-      - KAFKA_CFG_SSL_KEY_PASSWORD=K@fk@_store1
-      - KAFKA_CFG_SSL_ENABLED_PROTOCOLS=TLSv1.2
-      - KAFKA_CFG_SSL_KEYSTORE_TYPE=JKS
-      - KAFKA_CFG_SSL_TRUSTSTORE_TYPE=JKS
-      - KAFKA_CFG_SSL_CLIENT_AUTH=required
-      - KAFKA_CFG_SECURITY_INTER_BROKER_PROTOCOL=SSL
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=SSL:SSL
+      - IS_KAFKA_CLUSTER='false'
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=SSL://:9092
+      - KAFKA_CLIENT_AUTH=none
+      - KAFKA_KEYSTORE_PATH=/opt/kafka/conf/kafka.keystore.jks
+      - KAFKA_TRUSTSTORE_PATH=/opt/kafka/conf/kafka.truststore.jks
+      - KAFKA_KEYSTORE_PASSWORD=K@fk@_store1
+      - KAFKA_TRUSTSTORE_PASSWORD=K@fk@_store1
+      - KAFKA_LOG_DIRS=/opt/kafka/data
+      - KAFKA_ADV_LISTENERS=SSL://kafka:9092
     depends_on:
       - "zookeeper"
     volumes:
-      - '/etc/kafkacert/kafka.keystore.jks:/bitnami/kafka/config/certs/kafka.keystore.jks:ro'
-      - '/etc/kafkacert/kafka.truststore.jks:/bitnami/kafka/config/certs/kafka.truststore.jks:ro'
-      - './Kafka/kafka-persistence:/bitnami/kafka'
-  
+      - '/etc/kafka/conf:/opt/kafka/conf:ro'
+      - '/etc/kafka/data:/opt/kafka/data:rw'
+    command: bash -c "/opt/kafka/scripts/start_kafka.sh"
+
   odimra:
     build:
       context: ./.

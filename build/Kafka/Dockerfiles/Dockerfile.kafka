@@ -1,0 +1,56 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+# This is Dockerfile to build kafka image
+FROM ubuntu:18.04 as kafka-build
+
+LABEL version="1.0"
+LABEL ubuntuVersion="18.04"
+LABEL kafkaVersion="2.5.0"
+LABEL description="Kafka docker image built on top of ubuntu:18.04"
+
+WORKDIR /kafka/
+
+ARG ODIMRA_USER_ID
+ARG ODIMRA_GROUP_ID
+
+RUN apt-get update -q=3 && apt-get -q install -q=3 -y \
+        vim \
+        wget \
+        openjdk-8-jre-headless \
+        curl \
+        iputils-ping \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
+	&& mkdir -p /opt/kafka/conf /opt/kafka/data /opt/kafka/scripts /kafka/tmp \
+        && export KAFKA_IMAGE_URL=http://www-us.apache.org/dist/kafka/2.5.0/kafka_2.12-2.5.0.tgz \
+        && export KAFKA_IMAGE_NAME=kafka_2.12-2.5.0.tgz \
+        && wget -q $KAFKA_IMAGE_URL -P /kafka/ \
+        && tar -xzf /kafka/${KAFKA_IMAGE_NAME} --strip-components 1 -C /kafka/tmp \
+        && mv -f /kafka/tmp/* /opt/kafka/ \
+        && rm -rf /kafka \
+        && groupadd -r -g $ODIMRA_GROUP_ID odimra \
+	&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
+        && chown -R odimra:odimra /opt/kafka
+
+COPY --chown=odimra:odimra ./Kafka/scripts/s*_kafka.sh /opt/kafka/scripts/
+RUN chmod 0700 /opt/kafka/scripts/*
+
+USER odimra:odimra
+STOPSIGNAL SIGTERM
+
+ENTRYPOINT ["/bin/bash", "/opt/kafka/scripts/start_kafka.sh"]
+
+VOLUME ["/sys/fs/cgroup"]

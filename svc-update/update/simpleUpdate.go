@@ -281,7 +281,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	err = e.External.UpdateTask(task)
 	if err != nil && err.Error() == common.Cancelling {
 		var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
-		err = e.External.UpdateTask(task)
+		e.External.UpdateTask(task)
 	}
 	return
 }

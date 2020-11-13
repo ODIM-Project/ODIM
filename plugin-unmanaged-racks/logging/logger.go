@@ -5,7 +5,49 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-var staticLogger *zap.SugaredLogger
+var staticLogger *logger
+
+type logger struct {
+	logLevel *zap.AtomicLevel
+	*zap.SugaredLogger
+}
+
+func (l logger) Print(args ...interface{}) {
+	l.SugaredLogger.Info(args)
+}
+
+func (l logger) Println(args ...interface{}) {
+	l.SugaredLogger.Info(args)
+}
+
+func (l logger) Error(args ...interface{}) {
+	l.SugaredLogger.Error(args)
+}
+
+func (l logger) Warn(args ...interface{}) {
+	l.SugaredLogger.Warn(args)
+}
+
+func (l logger) Info(args ...interface{}) {
+	l.SugaredLogger.Info(args)
+}
+
+func (l logger) Debug(args ...interface{}) {
+	l.SugaredLogger.Debug(args)
+}
+
+func (l logger) SetLevel(ll string) {
+	var level zapcore.Level
+	err := level.UnmarshalText([]byte(ll))
+	if err != nil {
+		l.Info("Cannot change log level to %s", ll)
+	}
+	l.logLevel.SetLevel(level)
+}
+
+func Logger() logger {
+	return *staticLogger
+}
 
 func Error(i ...interface{}) {
 	staticLogger.Error(i)
@@ -43,52 +85,23 @@ func Fatal(i ...interface{}) {
 	staticLogger.Fatal(i)
 }
 
-type bridge struct {
-	*zap.SugaredLogger
-}
-
-func (b bridge) Print(i ...interface{}) {
-	b.SugaredLogger.Info(i)
-}
-
-func (b bridge) Println(i ...interface{}) {
-	b.SugaredLogger.Info(i)
-}
-
-func (b bridge) Error(i ...interface{}) {
-	b.SugaredLogger.Error(i)
-}
-
-func (b bridge) Warn(i ...interface{}) {
-	b.SugaredLogger.Warn(i)
-}
-
-func (b bridge) Info(i ...interface{}) {
-	b.SugaredLogger.Info(i)
-}
-
-func (b bridge) Debug(i ...interface{}) {
-	b.SugaredLogger.Debug(i)
-}
-
 func init() {
+	ll := zap.NewAtomicLevelAt(zapcore.DebugLevel)
 	cfg := zap.Config{
 		Encoding:         "console",
 		Level:            zap.NewAtomicLevelAt(zapcore.DebugLevel),
 		OutputPaths:      []string{"stderr"},
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
-			TimeKey:       "T",
-			LevelKey:      "L",
-			NameKey:       "N",
-			CallerKey:     "C",
-			FunctionKey:   "",
-			MessageKey:    "M",
-			StacktraceKey: "",
-			LineEnding:    zapcore.DefaultLineEnding,
-			EncodeLevel: func(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
-				enc.AppendString(l.CapitalString()[:3])
-			},
+			TimeKey:          "T",
+			LevelKey:         "L",
+			NameKey:          "N",
+			CallerKey:        "C",
+			FunctionKey:      "",
+			MessageKey:       "M",
+			StacktraceKey:    "",
+			LineEnding:       zapcore.DefaultLineEnding,
+			EncodeLevel:      zapcore.CapitalColorLevelEncoder,
 			EncodeTime:       zapcore.ISO8601TimeEncoder,
 			EncodeDuration:   zapcore.StringDurationEncoder,
 			EncodeCaller:     zapcore.ShortCallerEncoder,
@@ -101,5 +114,8 @@ func init() {
 		panic(e)
 	}
 
-	staticLogger = l.Sugar()
+	staticLogger = &logger{
+		logLevel:      &ll,
+		SugaredLogger: l.Sugar(),
+	}
 }

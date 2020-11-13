@@ -3,11 +3,13 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
+
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
+
+	"github.com/google/uuid"
 )
 
 type PluginConfig struct {
@@ -25,6 +27,7 @@ type PluginConfig struct {
 	URLTranslation          *URLTranslation `json:"URLTranslation"`
 	TLSConf                 *TLSConf        `json:"TLSConf"`
 	DBConf                  *DBConf         `json:"DBConf"`
+	LogLevel                string          `json:"LogLevel"`
 }
 
 // DBConf holds all DB related configurations
@@ -92,7 +95,9 @@ func ReadPluginConfiguration() (*PluginConfig, error) {
 
 // validate will validate configurations read and assign default values, where required
 func validate(pc *PluginConfig) error {
-
+	if pc.LogLevel == "" {
+		pc.LogLevel = "debug"
+	}
 	if pc.OdimraNBUrl == "" {
 		return fmt.Errorf("OdimraNBUrl has to be specified")
 	}
@@ -106,8 +111,8 @@ func validate(pc *PluginConfig) error {
 	}
 
 	if pc.FirmwareVersion == "" {
-		log.Println("warn: no value set for FirmwareVersion, setting default value")
 		pc.FirmwareVersion = "1.0"
+		logging.Warnf("no value set for FirmwareVersion, setting default: %s", pc.FirmwareVersion)
 	}
 
 	if pc.RootServiceUUID == "" {
@@ -115,8 +120,8 @@ func validate(pc *PluginConfig) error {
 	}
 
 	if pc.SessionTimeoutInMinutes == 0 {
-		log.Println("warn: no value set for SessionTimeoutInMinutes, setting default value")
 		pc.SessionTimeoutInMinutes = 30
+		logging.Warnf("no value set for SessionTimeoutInMinutes, setting default: %s", pc.SessionTimeoutInMinutes)
 	}
 
 	if pc.ID == "" {
@@ -144,7 +149,7 @@ func validate(pc *PluginConfig) error {
 	}
 
 	if pc.EventConf.DestURI == "" {
-		return fmt.Errorf("o value set for EventURI")
+		return fmt.Errorf("no value set for EventURI")
 	}
 
 	if pc.EventConf.ListenerHost == "" {
@@ -178,7 +183,6 @@ func validate(pc *PluginConfig) error {
 	}
 
 	if pc.URLTranslation == nil {
-		log.Println("warn: URL translation not provided, setting default value")
 		pc.URLTranslation = &URLTranslation{
 			NorthBoundURL: map[string]string{
 				"ODIM": "redfish",
@@ -187,18 +191,19 @@ func validate(pc *PluginConfig) error {
 				"redfish": "ODIM",
 			},
 		}
+		logging.Warnf("URL translation not provided, setting defaults: %v", pc.URLTranslation)
 	}
 	if len(pc.URLTranslation.NorthBoundURL) <= 0 {
-		log.Println("warn: NorthBoundURL is empty, setting default value")
 		pc.URLTranslation.NorthBoundURL = map[string]string{
 			"ODIM": "redfish",
 		}
+		logging.Warnf("NorthBoundURL is empty, setting defaults: %v", pc.URLTranslation.NorthBoundURL)
 	}
 	if len(pc.URLTranslation.SouthBoundURL) <= 0 {
-		log.Println("warn: SouthBoundURL is empty, setting default value")
 		pc.URLTranslation.SouthBoundURL = map[string]string{
 			"redfish": "ODIM",
 		}
+		logging.Warnf("SouthBoundURL is empty, setting defaults: %v", len(pc.URLTranslation.SouthBoundURL))
 	}
 	return nil
 }

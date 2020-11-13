@@ -3,8 +3,10 @@ package rest
 import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/middleware/logger"
 )
 
 func InitializeAndRun(c *config.PluginConfig, cm *db.ConnectionManager) {
@@ -20,6 +22,14 @@ func InitializeAndRun(c *config.PluginConfig, cm *db.ConnectionManager) {
 
 func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.Application {
 	application := iris.New()
+
+	application.Logger().Install(logging.Logger())
+	application.Logger().SetLevel(c.LogLevel)
+	logging.Logger().SetLevel(c.LogLevel)
+
+	//enable request logger
+	application.Use(logger.New())
+
 	application.Post(c.EventConf.DestURI, newEventHandler(cm, c.URLTranslation))
 
 	basicAuthHandler := NewBasicAuthHandler(c.UserName, c.Password)

@@ -197,10 +197,13 @@ This section provides a step-by-step procedure for deploying the resource aggreg
       ```
    c. Use the following command to generate Kafka TLS certificate:
       ```
-       $ ./generate_kafka_tls.sh kafka
+       $ ./generate_kafka_certs.sh kafka
       ```
-      
-   d. Use the following command to copy the resource aggregator, the GRF  plugin and the Kafka TLS certificates:
+   d. Use the following command to generate Zookeeper TLS certificate:
+      ```
+       $ ./generate_zookeeper_certs.sh zookeeper
+      ```
+   e. Use the following command to copy the resource aggregator, the GRF  plugin and the Kafka TLS certificates:
      ```
       $ sudo ./copy_certificate.sh
      ```
@@ -213,9 +216,13 @@ This section provides a step-by-step procedure for deploying the resource aggreg
       - odimra_kafka_client.key
       - odimra_kafka_client.crt
 
-     The following files are copied in the path: `/etc/kafkacert/`
+     The following files are copied in the path: `/etc/kafka/conf/`
       - kafka.keystore.jks
       - kafka.truststore.jks
+
+     The following files are copied in the path: - /etc/zookeeper/conf
+      - zookeeper.keystore.jks
+      - zookeeper.trustore.jks
       
     The following files are copied in the path: `/etc/plugincert/`
       - rootCA.crt

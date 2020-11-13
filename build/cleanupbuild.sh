@@ -26,8 +26,8 @@ if [ -a build/docker-compose.yml ]; then
         rm -rf RFPlugin/plugin_config/*
 	sudo rm -rf Consul/data/*
 	sudo rm -rf Redis/redis-persistence/*
-	sudo rm -rf Kafka/kafka-persistence/config/*
-	sudo rm -rf Kafka/kafka-persistence/data/*
+	sudo rm -rf /etc/kafka/data/*
+	sudo rm -rf /etc/zookeeper/data/*
 	host=`whoami`
 	sudo chown -R ${host}:${host} Consul/*
 	echo "Cleanup done"

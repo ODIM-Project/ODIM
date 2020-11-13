@@ -16,7 +16,6 @@
 # Script is for generating certificate and private key
 # for Client mode connection usage only
 
-
 if [ -z "$1" ]
 then
     echo "Please provide localhostFQDN"
@@ -26,13 +25,14 @@ else
 fi
 
 echo
+
 # generate keystore
-keytool -keystore kafka.keystore.jks -alias $1 -validity 365 -keyalg RSA -genkey <<HERE
+keytool -keystore zookeeper.keystore.jks -alias $1 -validity 365 -keyalg RSA -genkey <<HERE
 K@fk@_store1
 K@fk@_store1
 $1
 Telco Solutions
-ACME Corp
+HPE
 California
 CA
 US
@@ -41,20 +41,23 @@ yes
 HERE
 echo
 echo
-# add kafka rootCA to kafka server truststore
-keytool -keystore kafka.truststore.jks -alias CARoot -import -file rootCA.crt <<HERE
+
+# add zookeeper rootCA to zookeeper server truststore
+keytool -keystore zookeeper.truststore.jks -alias CARoot -import -file rootCA.crt <<HERE
 K@fk@_store1
 K@fk@_store1
 yes
 HERE
 echo
 echo
+
 # generate keystore CSR
-keytool -keystore kafka.keystore.jks -alias $1 -certreq -file cert-file <<HERE
+keytool -keystore zookeeper.keystore.jks -alias $1 -certreq -file cert-file <<HERE
 K@fk@_store1
 HERE
 echo
 echo
+
 #generate the keystore certificates
 openssl x509 -req -extensions server_crt -extfile <( cat <<EOF
 [server_crt] basicConstraints=CA:FALSE
@@ -64,40 +67,41 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid,issuer
 subjectAltName = @alternate_names
 [ alternate_names ]
-DNS.1 = $1
+DNS.1 = zookeeper
+DNS.2 = zookeeper1
+DNS.3 = zookeeper2
+DNS.4 = zookeeper3
+DNS.5 = zookeeper1.odim.svc.cluster.local
+DNS.6 = zookeeper2.odim.svc.cluster.local
+DNS.7 = zookeeper3.odim.svc.cluster.local
 EOF
 ) -in cert-file -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out cert-signed -days 500 -sha512
 echo
 echo
-# add kafka rootCA to kafka server keystore
-keytool -keystore kafka.keystore.jks -alias CARoot -import -file rootCA.crt <<HERE
+
+# add zookeeper rootCA to zookeeper server keystore
+keytool -keystore zookeeper.keystore.jks -alias CARoot -import -file rootCA.crt <<HERE
 K@fk@_store1
 yes
 HERE
 echo
 echo
+
 # adding server certificate to server key store
-keytool -keystore kafka.keystore.jks -alias $1 -import -file cert-signed <<HERE
+keytool -keystore zookeeper.keystore.jks -alias $1 -import -file cert-signed <<HERE
 K@fk@_store1
 HERE
 echo
 echo
-# generating kafka certs
-keytool -importkeystore -srckeystore kafka.keystore.jks -destkeystore kafka.p12 -srcstoretype JKS -deststoretype PKCS12 <<HERE
+
+# generating zookeeper certs
+keytool -importkeystore -srckeystore zookeeper.keystore.jks -destkeystore zookeeper.p12 -srcstoretype JKS -deststoretype PKCS12 <<HERE
 K@fk@_store1
 K@fk@_store1
 K@fk@_store1
 HERE
 echo
 echo
-openssl pkcs12 -passin stdin -in kafka.p12 -out kafka.key -nocerts -nodes <<HERE
-K@fk@_store1
-HERE
-echo
-echo
-openssl pkcs12 -passin stdin -in kafka.p12 -out kafka.crt -clcerts -nokeys <<HERE
-K@fk@_store1
-HERE
 
 # clean up temp files generated
-rm -f cert-file cert-signed kafka.p12 rootCA.srl kafka.crt kafka.key
+rm -f cert-file cert-signed zookeeper.p12 rootCA.srl zookeeper.key zookeeper.crt

@@ -16,7 +16,6 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -32,7 +31,7 @@ func main() {
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Fabric Service should not be run as the root user")
+		log.Fatalln("Manager Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
@@ -40,13 +39,14 @@ func main() {
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatalln(err)
 	}
 
 	err := addManagertoDB()
-	if err != nil && !(strings.Contains(err.Error(), "already exists")) {
-		log.Fatalf("error while trying to add  manager details into DB: %v", err)
+	if err != nil {
+		log.Fatalln(err)
 	}
+
 	err = services.InitializeService(services.Managers)
 	if err != nil {
 		log.Fatalf("fatal: error while trying to initialize service: %v", err)
@@ -77,4 +77,5 @@ func addManagertoDB() error {
 		State:           "Enabled",
 	}
 	return mgr.AddManagertoDB()
+
 }

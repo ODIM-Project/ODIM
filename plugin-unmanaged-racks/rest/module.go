@@ -33,11 +33,11 @@ func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.A
 	managers.Get("/{id}", NewGetPluginManagerHandler(c))
 
 	chassis := pluginRoutes.Party("/Chassis", basicAuthHandler)
-	chassis.Get("", NewGetChassisCollectionHandler(cm))
+	chassis.Get("", newGetChassisCollectionHandler(cm))
 	chassis.Get("/{id}", NewChassisReadingHandler(cm))
 	chassis.Delete("/{id}", NewChassisDeletionHandler(cm))
 	chassis.Post("", NewCreateChassisHandlerHandler(cm, c))
-	chassis.Patch("/{id}", NewChassisUpdateHandler(cm))
+	chassis.Patch("/{id}", NewChassisUpdateHandler(cm, c))
 
 	return application
 }

@@ -20,8 +20,12 @@ type chassisDeletionHandler struct {
 
 func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	requestedChassis := ctx.Request().RequestURI
-	requestedChassisKey := c.connectionManager.CreateKey("Chassis", requestedChassis)
-	bytes, err := redis.Bytes(c.connectionManager.FindByKey(requestedChassisKey))
+	requestedChassisKey := db.CreateKey("Chassis", requestedChassis)
+
+	conn := c.connectionManager.GetConnection()
+	defer db.NewConnectionCloser(&conn)
+
+	bytes, err := redis.Bytes(conn.Do("GET", requestedChassisKey))
 	if err != nil && err == redis.ErrNil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewResourceNotFoundMsg("Chassis", requestedChassis, ""))
@@ -49,7 +53,30 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 		return
 	}
 
-	_, err = c.connectionManager.Delete(requestedChassisKey)
+	switch chassisToBeDeleted.ChassisType {
+	case "RackGroup":
+		err = c.connectionManager.DoInTransaction(func(c redis.Conn) error {
+			return conn.Send("DEL", requestedChassisKey)
+		}, requestedChassis)
+
+	case "Rack":
+		err = c.connectionManager.DoInTransaction(func(c redis.Conn) error {
+			err := conn.Send("DEL", requestedChassisKey)
+			if err != nil {
+				return err
+			}
+			err = conn.Send("DEL", db.CreateContainedInKey("Chassis", requestedChassis))
+			if err != nil {
+				return err
+			}
+
+			return conn.Send("SREM", db.CreateContainsKey("Chassis", chassisToBeDeleted.Links.ContainedBy[0].Oid), requestedChassis)
+		},
+			requestedChassis,
+			db.CreateContainedInKey(requestedChassisKey.String()).String(),
+			db.CreateContainsKey(chassisToBeDeleted.Links.ContainedBy[0].Oid).String())
+	}
+
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
@@ -71,7 +98,10 @@ func (c *chassisDeletionHandler) createValidator(chassis *redfish.Chassis) *redf
 		},
 		redfish.Validator{
 			ValidationRule: func() bool {
-				return len(chassis.Links.Contains) != 0
+				conn := c.connectionManager.GetConnection()
+				defer db.NewConnectionCloser(&conn)
+				hasChildren, err := redis.Bool(conn.Do("EXISTS", db.CreateContainsKey("Chassis", chassis.Oid)))
+				return err != nil || hasChildren
 			},
 			ErrorGenerator: func() redfish.MsgExtendedInfo {
 				return redfish.NewResourceInUseMsg("there are existing elements(Links.Contains) under requested chassis")

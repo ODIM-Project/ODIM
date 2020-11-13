@@ -1,5 +1,7 @@
 package redfish
 
+import uuid "github.com/satori/go.uuid"
+
 type Chassis struct {
 	Ocontext           string           `json:"@odata.context"`
 	Oid                string           `json:"@odata.id"`
@@ -35,6 +37,18 @@ type Chassis struct {
 	Status             Status           `json:"Status"`
 	Thermal            Thermal          `json:"Thermal,omitempty"`
 }
+
+func (c *Chassis) IntializeIds() *Chassis {
+	c.ID = generateChassisId(c.Name)
+	c.Oid = "/ODIM/v1/Chassis/" + c.ID
+	return c
+}
+
+func generateChassisId(name string) string {
+	return uuid.NewV5(unmanagedChassisBaseUUID, name).String()
+}
+
+var unmanagedChassisBaseUUID = uuid.Must(uuid.FromString("1bde942f-36f3-4e92-9b3b-4e497092430d"))
 
 type Location struct {
 	Oid string `json:"@odata.id"`

@@ -20,8 +20,11 @@ type chassisReadingHandler struct {
 }
 
 func (c *chassisReadingHandler) handle(ctx context.Context) {
+	conn := c.cm.GetConnection()
+	defer db.NewConnectionCloser(&conn)
+
 	requestedChassisOid := ctx.Request().RequestURI
-	v, err := redis.String(c.cm.FindByKey(c.cm.CreateKey("Chassis", requestedChassisOid)))
+	v, err := redis.String(conn.Do("GET", db.CreateKey("Chassis", requestedChassisOid)))
 	if err != nil && err == redis.ErrNil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceNotFoundMsg("Chassis", requestedChassisOid, "")))
@@ -41,19 +44,18 @@ func (c *chassisReadingHandler) handle(ctx context.Context) {
 		return
 	}
 
-	conn := c.cm.GetConnection()
-	defer db.NewConnectionCloser(&conn)()
-
-	chassisContainsKey := c.cm.CreateChassisContainsKey(requestedChassisOid)
+	chassisContainsKey := db.CreateContainsKey("Chassis", requestedChassisOid)
 	members, err := redis.Strings(conn.Do("SMEMBERS", chassisContainsKey))
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
+		return
 	}
 
 	for _, m := range members {
 		chassis.Links.Contains = append(chassis.Links.Contains, redfish.Link{Oid: m})
 	}
 
+	ctx.StatusCode(http.StatusOK)
 	ctx.JSON(chassis)
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
 	"github.com/kataras/iris/v12/context"
-	uuid "github.com/satori/go.uuid"
 )
 
 func NewCreateChassisHandlerHandler(cm *db.ConnectionManager, pc *config.PluginConfig) context.Handler {
@@ -65,7 +64,9 @@ func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfis
 			ValidationRule: func() bool {
 				if chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 1 {
 					containedByOid := chassis.Links.ContainedBy[0].Oid
-					v, err := c.cm.FindByKey(c.cm.CreateKey("Chassis", containedByOid))
+					conn := c.cm.GetConnection()
+					defer db.NewConnectionCloser(&conn)
+					v, err := conn.Do("GET", db.CreateKey("Chassis", containedByOid))
 					if err != nil {
 						log.Println("error:", err)
 					}
@@ -110,71 +111,80 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	v := c.createValidator(requestedChassis)
-	validationResult := v.Validate()
-	if validationResult.HasErrors() {
+	if validationResult := c.createValidator(requestedChassis).Validate(); validationResult.HasErrors() {
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(validationResult.Error())
 		return
 	}
 
-	initializeDefaults(c.pc.RootServiceUUID, requestedChassis)
+	conn := c.cm.GetConnection()
+	defer db.NewConnectionCloser(&conn)
 
-	value, err := json.Marshal(requestedChassis)
+	queryParams, err := prepareChassisCreationScriptParams(requestedChassis.IntializeIds())
+	_, err = _CREATE_CHASSIS_SCRIPT.Do(conn, queryParams...)
+
+	switch err {
+	case nil:
+		ctx.StatusCode(http.StatusCreated)
+		ctx.Header("Location", requestedChassis.Oid)
+		ctx.JSON(requestedChassis)
+	case db.ErrAlreadyExists:
+		ctx.StatusCode(http.StatusConflict)
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceAlreadyExistsMsg("Chassis", "Name", requestedChassis.Name, "")))
+	default:
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
+	}
+}
+
+func prepareChassisCreationScriptParams(rc *redfish.Chassis) (res []interface{}, err error) {
+	res = append(res, rc.Oid)
+
+	chassisBody, err := json.Marshal(rc)
 	if err != nil {
 		return
 	}
+	res = append(res, chassisBody)
 
-	dbError := c.cm.Create(c.cm.CreateKey("Chassis", requestedChassis.Oid), value)
-	if dbError != nil {
-		switch dbError.Code {
-		case db.DB_ERR_ALREADY_EXISTS:
-			ctx.StatusCode(http.StatusConflict)
-			ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceAlreadyExistsMsg("Chassis", "Name", requestedChassis.Name, "")))
-		default:
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.JSON(redfish.CreateError(redfish.GeneralError, dbError.Error()))
-		}
-		return
+	if len(rc.Links.ContainedBy) > 0 {
+		res = append(res, rc.Links.ContainedBy[0].Oid)
+	} else {
+		res = append(res, nil)
 	}
-
-	if requestedChassis.ChassisType == "Rack" {
-		cbUri := requestedChassis.Links.ContainedBy[0].Oid
-		bytes, err := redis.Bytes(c.cm.FindByKey(c.cm.CreateKey("Chassis", cbUri)))
-		if err != nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			return
-		}
-		if bytes == nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			return
-		}
-		containedByChassis := new(redfish.Chassis)
-		err = json.Unmarshal(bytes, containedByChassis)
-		if err != nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			return
-		}
-
-		containedByChassis.Links.Contains = append(containedByChassis.Links.Contains, redfish.Link{Oid: requestedChassis.Oid})
-		bytes, err = json.Marshal(containedByChassis)
-		if err != nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			return
-		}
-		err = c.cm.Update(c.cm.CreateKey("Chassis", cbUri), bytes)
-		if err != nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			return
-		}
-	}
-	ctx.StatusCode(http.StatusCreated)
-	ctx.Header("Location", requestedChassis.Oid)
-	ctx.JSON(requestedChassis)
+	return
 }
 
-func initializeDefaults(rootServiceUUID string, c *redfish.Chassis) {
-	//todo: set static part of chassis
-	c.ID = uuid.NewV5(uuid.Must(uuid.FromString(rootServiceUUID)), c.Name).String()
-	c.Oid = "/ODIM/v1/Chassis/" + c.ID
-}
+// args:
+//	KEYS[1]: chassis id
+//  KEYS[2]: chassis body as []byte
+//  KEYS[3]: parent chassis id
+var _CREATE_CHASSIS_SCRIPT = redis.NewScript(3, `
+		local res, err
+
+		local chassisKey = "Chassis:"..KEYS[1]
+		res, err = redis.pcall('setnx', chassisKey, KEYS[2])
+		if err ~= nil then
+			return  redis.error_reply(err)
+		end
+		if res == 0 then		
+			return redis.error_reply("already exists")
+		end
+
+		if KEYS[3] == nil or KEYS[3] == '' then 
+			return redis.status_reply("OK")
+		end
+		
+		local containsKey = "CONTAINS:Chassis:"..KEYS[3]
+		res, err = redis.pcall("sadd", containsKey, KEYS[1])
+		if err ~= nil then
+			return redis.error_reply(err)
+		end
+
+		local containedinKey = "CONTAINEDIN:Chassis:"..KEYS[1]		
+		res, err = redis.pcall("set", containedinKey, KEYS[3])
+		if err ~= nil then
+			return redis.error_reply(err)
+		end
+		
+		return redis.status_reply("OK")
+	`)

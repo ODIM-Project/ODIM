@@ -46,8 +46,10 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 	}
 
 	for _, e := range message.Events {
-		containedInKey := eh.cm.CreateContainedInKey(e.OriginOfCondition.Oid)
-		rackKey, err := redis.String(eh.cm.FindByKey(containedInKey))
+		conn := eh.cm.GetConnection()
+
+		containedInKey := db.CreateContainedInKey("Chassis", e.OriginOfCondition.Oid)
+		rackKey, err := redis.String(conn.Do("GET", containedInKey))
 		if err == redis.ErrNil {
 			continue
 		}
@@ -55,13 +57,16 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 			continue
 		}
 
-		err = eh.cm.DoInTransaction(rackKey, func(c redis.Conn) {
+		err = eh.cm.DoInTransaction(func(c redis.Conn) error {
 			_ = c.Send("DEL", containedInKey)
-			_ = c.Send("SREM", eh.cm.CreateChassisContainsKey(rackKey), e.OriginOfCondition.Oid)
-		})
+			_ = c.Send("SREM", db.CreateContainsKey("Chassis", rackKey), e.OriginOfCondition.Oid)
+			return nil
+		}, rackKey)
 
 		if err != nil {
 			logging.Error("cannot consume message(%v): %v", message, err)
 		}
+
+		db.NewConnectionCloser(&conn)
 	}
 }

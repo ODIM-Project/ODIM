@@ -16,7 +16,7 @@ func NewCollection(odataId, odataType string, members ...Link) Collection {
 		OdataContext: "/ODIM/v1/$metadata" + odataType,
 		OdataID:      odataId,
 		OdataType:    odataType,
-		Members:      members,
+		Members:      append([]Link{}, members...),
 		MembersCount: len(members),
 	}
 }

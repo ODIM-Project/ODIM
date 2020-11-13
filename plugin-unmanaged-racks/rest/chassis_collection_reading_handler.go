@@ -1,13 +1,17 @@
 package rest
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+
+	"github.com/gomodule/redigo/redis"
 	"github.com/kataras/iris/v12/context"
-	"net/http"
 )
 
-func NewGetChassisCollectionHandler(cm *db.ConnectionManager) context.Handler {
+func newGetChassisCollectionHandler(cm *db.ConnectionManager) context.Handler {
 	return (&getChassisCollectionHandler{cm}).handle
 }
 
@@ -16,10 +20,18 @@ type getChassisCollectionHandler struct {
 }
 
 func (c *getChassisCollectionHandler) handle(ctx context.Context) {
-	keys, err := c.cm.GetAllKeys("Chassis")
+	conn := c.cm.GetConnection()
+	defer db.NewConnectionCloser(&conn)
+
+	searchKey := db.CreateKey("Chassis")
+	keys, err := redis.Strings(conn.Do("KEYS", searchKey.WithWildcard()))
 	if err != nil {
 		ctx.StatusCode(http.StatusBadRequest)
-		return
+	}
+
+	var result []string
+	for _, k := range keys {
+		result = append(result, strings.TrimPrefix(k, searchKey.String()))
 	}
 
 	collection := createChassisCollection()

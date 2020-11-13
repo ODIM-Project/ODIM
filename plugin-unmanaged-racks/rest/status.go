@@ -1,13 +1,14 @@
 package rest
 
 import (
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
-	"github.com/kataras/iris/v12/context"
 	"log"
 	"net/http"
 	"time"
 
-	iris "github.com/kataras/iris/v12"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
+
+	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 )
 
 type PluginStatusResponse struct {

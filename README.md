@@ -203,7 +203,7 @@ This section provides a step-by-step procedure for deploying the resource aggreg
       ```
        $ ./generate_zookeeper_certs.sh zookeeper
       ```
-   e. Use the following command to copy the resource aggregator, the GRF  plugin and the Kafka TLS certificates:
+   e. Use the following command to copy the resource aggregator, the GRF  plugin, the Kafka and Zookeeper TLS certificates:
      ```
       $ sudo ./copy_certificate.sh
      ```

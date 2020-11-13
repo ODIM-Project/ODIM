@@ -18,7 +18,6 @@ package mgrmodel
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -109,7 +108,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	}
 	resourceData, err := conn.Read(Table, key)
 	if err != nil {
-		return "", errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+		return "", errors.PackError(err.ErrNo(), "unable to get resource details: ", err.Error())
 	}
 	var resource string
 	if errs := json.Unmarshal([]byte(resourceData), &resource); errs != nil {
@@ -126,7 +125,7 @@ func GetAllKeysFromTable(table string) ([]string, error) {
 	}
 	keysArray, err := conn.GetAllDetails(table)
 	if err != nil {
-		return nil, fmt.Errorf("error while trying to get all keys from table - %v: %v", table, err.Error())
+		return nil, fmt.Errorf("unable to get all keys from table - %v: %v", table, err.Error())
 	}
 	return keysArray, nil
 }
@@ -141,7 +140,7 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 	}
 	managerData, err := conn.Read("Managers", url)
 	if err != nil {
-		return "", errors.PackError(err.ErrNo(), "error while trying to get managers details: ", err.Error())
+		return "", errors.PackError(err.ErrNo(), "unable to get managers details: ", err.Error())
 	}
 	if errs := json.Unmarshal([]byte(managerData), &manager); errs != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
@@ -154,14 +153,14 @@ func UpdateManagersData(key string, managerData map[string]interface{}) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("error while trying to connect to DB: %v", err)
+		return fmt.Errorf("unable to connect DB: %v", err)
 	}
 	data, jerr := json.Marshal(managerData)
 	if jerr != nil {
-		return fmt.Errorf("error while trying to marshal manager data for updating: %v", jerr)
+		return fmt.Errorf("unable to marshal manager data for updating: %v", jerr)
 	}
 	if _, err = conn.Update("Managers", key, string(data)); err != nil {
-		return fmt.Errorf("error while trying to update magaer details in DB: %v", err)
+		return fmt.Errorf("unable to update manager details in DB: %v", err)
 	}
 	return nil
 }
@@ -171,14 +170,10 @@ func GenericSave(body []byte, table string, key string) error {
 
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+		return fmt.Errorf("unable to connect DB: %v", err.Error())
 	}
-	if err = connPool.Create(table, key, string(body)); err != nil {
-		if errors.DBKeyAlreadyExist != err.ErrNo() {
-			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
-		}
-		log.Printf("warning: skipped saving of duplicate data with key %v", key)
-		return fmt.Errorf("warning: skipped saving of duplicate data with key %v", key)
+	if err := connPool.Create(table, key, string(body)); err != nil {
+		return fmt.Errorf("%v", err)
 	}
 	return nil
 }
@@ -188,7 +183,14 @@ func (mgr *RAManager) AddManagertoDB() error {
 	key := "/redfish/v1/Managers/" + mgr.UUID
 	data, err := json.Marshal(mgr)
 	if err != nil {
-		return fmt.Errorf("error while trying to marshal manager: %v", err)
+		return fmt.Errorf("unable to marshal manager data: %v", err)
 	}
-	return GenericSave(data, "Managers", key)
+	connPool, connErr := common.GetDBConnection(common.InMemory)
+	if connErr != nil {
+		return fmt.Errorf("unable to connect DB: %v", connErr.Error())
+	}
+	if err := connPool.AddResourceData("Managers", key, string(data)); err != nil {
+		return fmt.Errorf("%v", err.Error())
+	}
+	return nil
 }

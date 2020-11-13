@@ -186,10 +186,10 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 
 	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {
-		return mgr, fmt.Errorf("error while retriving manager information: %v", err)
+		return mgr, fmt.Errorf("unable to retrieve manager information: %v", err)
 	}
 	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
-		return mgr, fmt.Errorf("error while unmarshalling manager information: %v", err)
+		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
@@ -243,13 +243,13 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error
 			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
-				errorMessage := "error while getting details from device: " + err.Error()
+				errorMessage := "unable to get resource details from device: " + err.Error()
 				log.Println(errorMessage)
 				errArgs := []interface{}{tableName, req.ManagerID}
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 			}
 		} else {
-			errorMessage := "error getting managers details: " + err.Error()
+			errorMessage := "unable to get managers details: " + err.Error()
 			log.Println(errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
 		}
@@ -268,7 +268,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
 	if dberr != nil {
-		log.Printf("error getting manager details : %v", dberr.Error())
+		log.Printf("unable to get manager details : %v", dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
 		errorMessage := dberr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -278,7 +278,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	var managerData map[string]interface{}
 	jerr := json.Unmarshal([]byte(data), &managerData)
 	if jerr != nil {
-		errorMessage := "error unmarshalling manager details: " + jerr.Error()
+		errorMessage := "unable to unmarshal manager details: " + jerr.Error()
 		log.Println(errorMessage)
 		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
@@ -288,7 +288,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
-		log.Printf("error getting manager details : %v", gerr.Error())
+		log.Printf("unable to get manager details : %v", gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}
 		errorMessage := gerr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -303,7 +303,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token := mgrcommon.GetPluginToken(req)
 		if token == "" {
-			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			var errorMessage = "unable to create session with plugin " + plugin.ID
 			return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage,
 				[]interface{}{}, nil)
 		}
@@ -316,7 +316,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 
 	}
 	req.OID = reqURI
-	var errorMessage = "error while getting the details " + reqURI + ": "
+	var errorMessage = "unable to get the details " + reqURI + ": "
 	var header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	body, _, getResponse, err := mgrcommon.ContactPlugin(req, errorMessage)
 	if err != nil {

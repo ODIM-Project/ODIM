@@ -29,14 +29,14 @@ func (c *getChassisCollectionHandler) handle(ctx context.Context) {
 		ctx.StatusCode(http.StatusBadRequest)
 	}
 
-	var result []string
-	for _, k := range keys {
-		result = append(result, strings.TrimPrefix(k, searchKey.String()))
-	}
-
 	collection := createChassisCollection()
 	for _, k := range keys {
-		collection.Members = append(collection.Members, redfish.Link{Oid: k})
+		collection.Members = append(
+			collection.Members,
+			redfish.Link{
+				Oid: strings.TrimPrefix(k, searchKey.Prefix()),
+			},
+		)
 		collection.MembersCount++
 	}
 

@@ -97,7 +97,7 @@ func (s *subscriber) subscribe() {
 		case http.StatusAccepted:
 			continue
 		case http.StatusConflict:
-			logging.Info("URP->ODIMRA event dubscription is already registered")
+			logging.Info("URP->ODIMRA event subscription is already registered")
 			return
 		default:
 			logging.Infof("Task monitor(%s) reports %s status code", rsp.Header.Get("Location"), r.Status)

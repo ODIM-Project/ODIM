@@ -62,6 +62,10 @@ func (k Key) String() string {
 	return string(k)
 }
 
+func (k Key) Prefix() string {
+	return string(k) + ":"
+}
+
 func (k Key) TrimWildcard() Key {
 	return Key(strings.TrimSuffix(string(k), "*"))
 }

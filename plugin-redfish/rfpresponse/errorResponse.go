@@ -16,6 +16,7 @@
 package rfpresponse
 
 import (
+	errorResponse "github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -42,11 +43,11 @@ type MsgExtendedInfo struct {
 func CreateErrorResponse(errs string) ErrorResopnse {
 	var err = ErrorResopnse{
 		Error{
-			Code:    "iLO.0.10.ExtendedInfo",
+			Code:   errorResponse.GeneralError,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
 				MsgExtendedInfo{
-					MessageID: "Base.1.0.Failed",
+					MessageID: "Base.1.6.1.GeneralError",
 					Message:   errs,
 				},
 			},

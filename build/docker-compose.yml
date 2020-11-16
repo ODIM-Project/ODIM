@@ -201,3 +201,40 @@ services:
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
       - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw' 
     command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh" 
+
+
+  urp:
+    build:
+      context: ./.
+      dockerfile: plugin-unmanaged-racks/Dockerfile
+      args:
+        http_proxy: $http_proxy
+        https_proxy: $https_proxy
+    hostname: urp
+    restart: always
+    depends_on:
+      - odimra
+    environment:
+      - PLUGIN_CONFIG_FILE_PATH=/config.yml
+      - PLUGIN_HOST=URP
+      - PLUGIN_PORT=45003
+      - PLUGIN_BASIC_AUTH_USERNAME=admin
+      - PLUGIN_BASIC_AUTH_PASSWORD=O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==
+      - PLUGIN_SERVICE_ROOT_UUID=99999999-9999-9999-9999-999999999999
+      - PLUGIN_ODIM_NORTBOUNND_URL=https://odimra:45000
+      - PLUGIN_FIRMWARE_VERSION=v1.0.0
+      - PLUGIN_LOG_LEVEL=debug
+      - PLUGIN_PKI_ROOT_CA_PATH=/certs/rootCA.crt
+      - PLUGIN_PKI_PRIVATE_KEY_PATH=/certs/odimra_server.key
+      - PLUGIN_PKI_CERTIFICATE_PATH_PATH=/certs/odimra_server.crt
+      - PLUGIN_REDIS_PROTOCOL=tcp
+      - PLUGIN_REDIS_ADDRESS=redis:6380
+    image: urp:1.0
+    ports:
+      - '45003:45003'
+    expose:
+      - '45003'
+    volumes:
+      - '/etc/plugincert/odimra_server.crt:/certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/certs/odimra_server.key:ro'
+      - '/etc/plugincert/rootCA.crt:/certs/rootCA.crt:ro'

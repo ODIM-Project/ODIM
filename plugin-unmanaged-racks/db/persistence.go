@@ -10,11 +10,11 @@ import (
 
 var ErrAlreadyExists = redis.Error("already exists")
 
-func NewConnectionManager(protocol, host, port string) *ConnectionManager {
+func NewConnectionManager(protocol, address string) *ConnectionManager {
 	return &ConnectionManager{
 		pool: &redis.Pool{
 			Dial: func() (redis.Conn, error) {
-				return redis.Dial(protocol, host+":"+port)
+				return redis.Dial(protocol, address)
 			},
 		},
 	}

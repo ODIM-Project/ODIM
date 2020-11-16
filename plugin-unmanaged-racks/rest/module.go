@@ -9,13 +9,15 @@ import (
 	"github.com/kataras/iris/v12/middleware/logger"
 )
 
+const _PLUGIN_NAME = "URP"
+
 func InitializeAndRun(c *config.PluginConfig, cm *db.ConnectionManager) {
 	application := createApplication(c, cm)
 	application.Run(
 		iris.TLS(
 			c.Host+":"+c.Port,
-			c.KeyCertConf.CertificatePath,
-			c.KeyCertConf.PrivateKeyPath,
+			c.PKICertificatePath,
+			c.PKIPrivateKeyPath,
 		),
 	)
 }
@@ -30,13 +32,12 @@ func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.A
 	//enable request logger
 	application.Use(logger.New())
 
-	application.Post(c.EventConf.DestURI, newEventHandler(cm, c.URLTranslation))
-
 	basicAuthHandler := NewBasicAuthHandler(c.UserName, c.Password)
 
 	pluginRoutes := application.Party("/ODIM/v1")
+	pluginRoutes.Post("/EventService/Events", newEventHandler(cm, c.URLTranslation))
 	pluginRoutes.Post("/Startup", basicAuthHandler, newStartupHandler(c))
-	pluginRoutes.Get("/Status", NewPluginStatusController(c))
+	pluginRoutes.Get("/Status", newPluginStatusController(c))
 
 	managers := pluginRoutes.Party("/Managers", basicAuthHandler)
 	managers.Get("", NewGetManagersHandler(c))

@@ -21,15 +21,11 @@ import (
 )
 
 var TEST_CONFIG = config.PluginConfig{
-	ID:              "plugin-name",
 	RootServiceUUID: "99999999-9999-9999-9999-999999999999",
 	UserName:        "admin",
 	Password:        "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
 	FirmwareVersion: "0.0.0",
-	EventConf: &config.EventConf{
-		DestURI: "/eventHandler",
-	},
-	OdimraNBUrl: "https://localhost:45000",
+	OdimNBUrl:       "https://localhost:45000",
 	URLTranslation: &config.URLTranslation{
 		NorthBoundURL: map[string]string{
 			"redfish": "ODIM",
@@ -73,7 +69,7 @@ func Test_unsecured_endpoints_return_NON_401(t *testing.T) {
 		uri    string
 	}{
 		{http.MethodGet, "/ODIM/v1/Status"},
-		{http.MethodPost, TEST_CONFIG.EventConf.DestURI},
+		{http.MethodPost, "/ODIM/v1/EventService/Events"},
 	}
 
 	testApp, _ := createTestApplication()
@@ -392,7 +388,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 				defer odimstubapp.Stop()
 
 				httptest.New(t, testApp).
-					POST(TEST_CONFIG.EventConf.DestURI).
+					POST("/ODIM/v1/EventService/Events").
 					WithBytes([]byte(`
 						{
 							"Events": [
@@ -444,7 +440,7 @@ func (o *odimstub) Run() {
 		))
 	})
 
-	odimurl, err := url.Parse(TEST_CONFIG.OdimraNBUrl)
+	odimurl, err := url.Parse(TEST_CONFIG.OdimNBUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -466,6 +462,6 @@ func createTestApplication() (*iris.Application, *miniredis.Miniredis) {
 		panic(err)
 	}
 
-	cm := db.NewConnectionManager("tcp", r.Host(), r.Port())
+	cm := db.NewConnectionManager("tcp", r.Addr())
 	return createApplication(&TEST_CONFIG, cm), r
 }

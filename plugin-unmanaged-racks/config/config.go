@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -10,87 +9,56 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 
 	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
+	"gopkg.in/yaml.v3"
 )
 
 type PluginConfig struct {
-	ID                      string          `json:"ID"`
-	Host                    string          `json:"Host"`
-	Port                    string          `json:"Port"`
-	UserName                string          `json:"UserName"`
-	Password                string          `json:"Password"`
-	RootServiceUUID         string          `json:"RootServiceUUID"`
-	OdimraNBUrl             string          `json:"OdimraNBUrl"`
-	FirmwareVersion         string          `json:"FirmwareVersion"`
-	SessionTimeoutInMinutes float64         `json:"SessionTimeoutInMinutes"`
-	EventConf               *EventConf      `json:"EventConf"`
-	KeyCertConf             *KeyCertConf    `json:"KeyCertConf"`
-	URLTranslation          *URLTranslation `json:"URLTranslation"`
-	TLSConf                 *TLSConf        `json:"TLSConf"`
-	DBConf                  *DBConf         `json:"DBConf"`
-	LogLevel                string          `json:"LogLevel"`
+	Host               string          `yaml:"Host" envconfig:"HOST"`
+	Port               string          `yaml:"Port" envconfig:"PORT"`
+	UserName           string          `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
+	Password           string          `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
+	RootServiceUUID    string          `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
+	OdimNBUrl          string          `yaml:"OdimNBUrl" envconfig:"ODIM_NORTBOUNND_URL"`
+	FirmwareVersion    string          `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
+	URLTranslation     *URLTranslation `yaml:"URLTranslation"`
+	TLSConf            *TLSConf        `yaml:"TLSConf"`
+	PKIRootCAPath      string          `yaml:"PKIRootCACertificatePath" envconfig:"PKI_ROOT_CA_PATH"`
+	PKIPrivateKeyPath  string          `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
+	PKICertificatePath string          `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
+	LogLevel           string          `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
+	RedisProtocol      string          `yaml:"RedisProtocol" envconfig:"REDIS_PROTOCOL"`
+	RedisAddress       string          `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
 }
 
-// DBConf holds all DB related configurations
-type DBConf struct {
-	Protocol string `json:"Protocol"`
-	Host     string `json:"Host"`
-	Port     string `json:"Port"`
-}
-
-//EventConf is for holding all events related configuration
-type EventConf struct {
-	DestURI      string `json:"DestinationURI"`
-	ListenerHost string `json:"ListenerHost"`
-	ListenerPort string `json:"ListenerPort"`
-}
-
-//KeyCertConf is for holding all security oriented configuration
-type KeyCertConf struct {
-	RootCACertificatePath string `json:"RootCACertificatePath"` // RootCACertificate will be added to truststore
-	PrivateKeyPath        string `json:"PrivateKeyPath"`        // plugin private key
-	CertificatePath       string `json:"CertificatePath"`       // plugin certificate
-	RootCACertificate     []byte
-	PrivateKey            []byte
-	Certificate           []byte
-}
-
-// URLTranslation ...
 type URLTranslation struct {
-	NorthBoundURL map[string]string `json:"NorthBoundURL"` // holds value of NorthBound Translation
-	SouthBoundURL map[string]string `json:"SouthBoundURL"` // holds value of SouthBound Translation
+	NorthBoundURL map[string]string `yaml:"NorthBoundURL"` // holds value of NorthBound Translation
+	SouthBoundURL map[string]string `yaml:"SouthBoundURL"` // holds value of SouthBound Translation
 }
 
-// TLSConf holds TLS confifurations used in https queries
 type TLSConf struct {
-	MinVersion            string   `json:"MinVersion"`
-	MaxVersion            string   `json:"MaxVersion"`
-	VerifyPeer            bool     `json:"VerifyPeer"`
-	PreferredCipherSuites []string `json:"PreferredCipherSuites"`
+	MinVersion            string   `yaml:"MinVersion"`
+	MaxVersion            string   `yaml:"MaxVersion"`
+	VerifyPeer            bool     `yaml:"VerifyPeer"`
+	PreferredCipherSuites []string `yaml:"PreferredCipherSuites"`
 }
 
-// ReadPluginConfiguration will extract the config data from file
 func ReadPluginConfiguration() (*PluginConfig, error) {
-	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
-	if configFilePath == "" {
-		return nil, fmt.Errorf("error: no value set to environment variable PLUGIN_CONFIG_FILE_PATH")
-	}
-	configData, err := ioutil.ReadFile(configFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("error: failed to read the config file: %v", err)
-	}
-
 	pc := new(PluginConfig)
-	err = json.Unmarshal(configData, pc)
-	if err != nil {
-		return nil, fmt.Errorf("error: failed to unmarshal config data: %v", err)
+
+	if cp := os.Getenv("PLUGIN_CONFIG_FILE_PATH"); cp != "" {
+		if configData, err := ioutil.ReadFile(cp); err == nil {
+			_ = yaml.Unmarshal(configData, pc)
+		} else {
+			logging.Warn("Cannot load configuration file: %s", err)
+		}
 	}
 
-	err = validate(pc)
-	if err != nil {
-		return nil, err
+	if err := envconfig.Process("PLUGIN", pc); err != nil {
+		logging.Warnf("Cannot load ENV configuration: %s", err)
 	}
-	return pc, nil
 
+	return pc, validate(pc)
 }
 
 // validate will validate configurations read and assign default values, where required
@@ -98,11 +66,11 @@ func validate(pc *PluginConfig) error {
 	if pc.LogLevel == "" {
 		pc.LogLevel = "debug"
 	}
-	if pc.OdimraNBUrl == "" {
+	if pc.OdimNBUrl == "" {
 		return fmt.Errorf("OdimraNBUrl has to be specified")
 	}
 
-	if _, e := url.Parse(pc.OdimraNBUrl); e != nil {
+	if _, e := url.Parse(pc.OdimNBUrl); e != nil {
 		return fmt.Errorf("given OdimraNBUrl is not correct URL")
 	}
 
@@ -117,15 +85,6 @@ func validate(pc *PluginConfig) error {
 
 	if pc.RootServiceUUID == "" {
 		return fmt.Errorf("error: no value set for rootServiceUUID")
-	}
-
-	if pc.SessionTimeoutInMinutes == 0 {
-		pc.SessionTimeoutInMinutes = 30
-		logging.Warnf("no value set for SessionTimeoutInMinutes, setting default: %s", pc.SessionTimeoutInMinutes)
-	}
-
-	if pc.ID == "" {
-		return fmt.Errorf("no value set for Plugin ID, setting default value")
 	}
 
 	if pc.Host == "" {
@@ -144,40 +103,16 @@ func validate(pc *PluginConfig) error {
 		return fmt.Errorf("error: no value set for Plugin Password")
 	}
 
-	if pc.EventConf == nil {
-		return fmt.Errorf("no value found for EventConf")
+	if _, err := ioutil.ReadFile(pc.PKICertificatePath); err != nil {
+		return fmt.Errorf("error: value check failed for CertificatePath:%s with %v", pc.PKICertificatePath, err)
+	}
+	if _, err := ioutil.ReadFile(pc.PKIPrivateKeyPath); err != nil {
+		return fmt.Errorf("error: value check failed for PrivateKeyPath:%s with %v", pc.PKIPrivateKeyPath, err)
+	}
+	if _, err := ioutil.ReadFile(pc.PKIRootCAPath); err != nil {
+		return fmt.Errorf("error: value check failed for RootCACertificatePath:%s with %v", pc.PKIRootCAPath, err)
 	}
 
-	if pc.EventConf.DestURI == "" {
-		return fmt.Errorf("no value set for EventURI")
-	}
-
-	if pc.EventConf.ListenerHost == "" {
-		return fmt.Errorf("no value set for ListenerHost")
-	}
-
-	if pc.EventConf.ListenerPort == "" {
-		return fmt.Errorf("no value set for ListenerPort")
-	}
-
-	if pc.KeyCertConf == nil {
-		return fmt.Errorf("error: no value found for KeyCertConf")
-	}
-	if cert, err := ioutil.ReadFile(pc.KeyCertConf.CertificatePath); err != nil {
-		return fmt.Errorf("error: value check failed for CertificatePath:%s with %v", pc.KeyCertConf.CertificatePath, err)
-	} else {
-		pc.KeyCertConf.Certificate = cert
-	}
-	if pk, err := ioutil.ReadFile(pc.KeyCertConf.PrivateKeyPath); err != nil {
-		return fmt.Errorf("error: value check failed for PrivateKeyPath:%s with %v", pc.KeyCertConf.PrivateKeyPath, err)
-	} else {
-		pc.KeyCertConf.PrivateKey = pk
-	}
-	if ca, err := ioutil.ReadFile(pc.KeyCertConf.RootCACertificatePath); err != nil {
-		return fmt.Errorf("error: value check failed for RootCACertificatePath:%s with %v", pc.KeyCertConf.RootCACertificatePath, err)
-	} else {
-		pc.KeyCertConf.RootCACertificate = ca
-	}
 	if pc.TLSConf == nil {
 		return fmt.Errorf("TLSConf not provided, setting default value")
 	}

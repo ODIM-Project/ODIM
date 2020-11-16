@@ -31,20 +31,14 @@ func (s *startup) handle(c iris.Context) {
 
 func newSubscriber(config *config.PluginConfig) *subscriber {
 
-	baseURL, err := url.Parse("https://" + config.EventConf.ListenerHost + ":" + config.EventConf.ListenerPort + "/")
+	subscriptionTarget, err := url.Parse("https://" + config.Host + ":" + config.Port + "/EventService/Events")
 	if err != nil {
 		panic(err)
 	}
 
-	destURI, err := url.Parse(config.EventConf.DestURI)
-	if err != nil {
-		panic(err)
-	}
-
-	destURL := baseURL.ResolveReference(destURI)
 	return &subscriber{
-		destinationURL: *destURL,
-		odimRAClient:   redfish.NewClient(config.OdimraNBUrl),
+		destinationURL: *subscriptionTarget,
+		odimRAClient:   redfish.NewClient(config.OdimNBUrl),
 	}
 }
 

@@ -1,0 +1,59 @@
+####################################################################################################
+# URP Server                                                                                       #
+#--------------------------------------------------------------------------------------------------#
+# Following section configures server where URP's REST API is exposed                              #
+####################################################################################################
+Host: odimra.local.com
+Port: 45003
+
+PKIRootCACertificatePath: "/etc/plugincert/rootCA.crt"
+PKIPrivateKeyPath: "/etc/plugincert/odimra_server.key"
+PKICertificatePath: "/etc/plugincert/odimra_server.crt"
+
+TLSConf:
+  MinVersion: TLS_1.2
+  MaxVersion: TLS_1.2
+  VerifyPeer: true
+  PreferredCipherSuites:
+    - TLS_RSA_WITH_AES_128_GCM_SHA256
+    - TLS_RSA_WITH_AES_256_GCM_SHA384
+    - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+    - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+    - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+    - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+
+####################################################################################################
+#  Basic Authentication                                                                            #
+####################################################################################################
+UserName: admin
+Password: O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==
+
+####################################################################################################
+# REDFISH                                                                                          #
+####################################################################################################
+RootServiceUUID: 99999999-9999-9999-9999-999999999999           # exposed on plugin's service root
+FirmwareVersion: v1.0.0                                         # exposed on plugin's manager
+
+####################################################################################################
+# Address of ODIM's NB interface                                                                   #
+####################################################################################################
+OdimNBUrl: https://odimra.local.com:45000
+
+####################################################################################################
+# REDIS Configuration                                                                              #
+####################################################################################################
+RedisProtocol: tcp
+RedisAddress: odimra.local.com:6380
+
+####################################################################################################
+# Logging                                                                                          #
+####################################################################################################
+LogLevel: debug
+
+
+### TODO: make this not configurable
+URLTranslation:
+  NorthBoundURL:
+    redfish: ODIM
+  SouthBoundURL:
+    ODIM: redfish

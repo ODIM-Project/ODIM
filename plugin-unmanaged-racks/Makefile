@@ -7,10 +7,11 @@ ifneq ($(shell git status --porcelain),)
 endif
 
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -ldflags "-X main.version=$(VERSION)" -o build/urp main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -ldflags "-X main.version=$(VERSION)" -o ../build/plugin-unmanaged-racks/tmp/urp main.go
+	cp ./config/config.yml ../build/plugin-unmanaged-racks/tmp/
 
 clean:
-	rm -r ./build
+	rm -r ../build/plugin-unmanaged-racks/tmp
 
 run:
 	PLUGIN_CONFIG_FILE_PATH=./config/config.json go run ./main.go

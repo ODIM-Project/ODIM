@@ -27,7 +27,7 @@ func main() {
 		logging.Fatal("error while reading from config", err)
 	} else {
 		plugin := Plugin{
-			connectionManager: db.NewConnectionManager(pc.DBConf.Protocol, pc.DBConf.Host, pc.DBConf.Port),
+			connectionManager: db.NewConnectionManager(pc.RedisProtocol, pc.RedisAddress),
 			pluginConfig:      pc,
 		}
 		plugin.Run()

@@ -136,7 +136,7 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 		},
 		redfish.Validator{
 			ValidationRule: func() bool {
-				c := redfish.NewRedfishClient(c.config.OdimraNBUrl)
+				c := redfish.NewRedfishClient(c.config.OdimNBUrl)
 				systemsCollection := new(redfish.Collection)
 				err := c.Get("/redfish/v1/Systems", systemsCollection)
 				if err != nil {

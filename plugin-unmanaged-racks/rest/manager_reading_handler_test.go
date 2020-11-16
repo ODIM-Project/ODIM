@@ -16,7 +16,7 @@ func Test_get_urp_manager(t *testing.T) {
 		ContentType("application/json", "UTF-8").
 		JSON().Object().
 		ValueEqual("@odata.id", "/ODIM/v1/Managers/"+TEST_CONFIG.RootServiceUUID).
-		ValueEqual("Name", TEST_CONFIG.ID).
+		ValueEqual("Name", _PLUGIN_NAME).
 		ValueEqual("UUID", TEST_CONFIG.RootServiceUUID).
 		ValueEqual("Id", TEST_CONFIG.RootServiceUUID).
 		ValueEqual("FirmwareVersion", TEST_CONFIG.FirmwareVersion)

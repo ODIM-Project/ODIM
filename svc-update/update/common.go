@@ -142,7 +142,6 @@ func TaskData(taskData common.TaskData) error {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
 		runtime.Goexit()
-		//		return fmt.Errorf(common.Cancelled)
 	}
 	return nil
 }

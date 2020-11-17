@@ -12,7 +12,6 @@ build_args="--build-arg ODIMRA_USER_ID=2021 \
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.events -t events:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.fabrics -t fabrics:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.grfplugin -t grf-plugin:1.0 $build_args .
-#/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.iloplugin -t iloplugin:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.kafka -t odim_kafka:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.managers -t managers:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.redis -t redis:1.0 $build_args .

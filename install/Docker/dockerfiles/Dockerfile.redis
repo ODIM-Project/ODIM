@@ -1,0 +1,28 @@
+FROM redis:5.0.8
+
+ARG ODIMRA_USER_ID
+ARG ODIMRA_GROUP_ID
+
+RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then \
+       echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; \
+    fi \
+    && groupadd -r -g $ODIMRA_GROUP_ID odimra \
+    && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/kafka -r -g odimra odimra
+
+RUN apt-get install bash sed
+RUN mkdir /redis-master /redis-slave
+
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-master.conf /redis-master/redis.conf
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-slave.conf /redis-slave/redis.conf
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-createschema.sh /createschema.sh
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-checkdb.sh /checkdb.sh
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/redis-entrypointsetup.sh /entrypointsetup.sh
+
+RUN chmod 0700 /entrypointsetup.sh /redis-master /redis-slave
+RUN chown -R odimra:odimra /data /redis-master /redis-slave
+
+USER odimra:odimra
+
+CMD [ "/entrypointsetup.sh" ]
+
+ENTRYPOINT [ "bash", "-c" ]

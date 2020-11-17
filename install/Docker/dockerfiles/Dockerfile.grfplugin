@@ -1,0 +1,25 @@
+FROM golang:1.13.8 as build-stage
+
+WORKDIR /grfplugin/
+
+ADD plugin-redfish/go.sum .
+ADD plugin-redfish/go.mod .
+
+RUN go mod download
+
+ADD plugin-redfish .
+RUN go build -i -race .
+COPY install/Docker/dockerfiles/scripts/add-hosts.go .
+RUN go build -o add-hosts add-hosts.go
+
+FROM ubuntu:18.04
+
+RUN groupadd -r -g 2021 odimra
+RUN useradd -s /bin/bash -u 2021 -m -d /home/odimra -r -g odimra odimra
+RUN mkdir /etc/grfplugin_config && chown odimra:odimra /etc/grfplugin_config
+COPY install/Docker/dockerfiles/scripts/start_grfplugin.sh /bin/
+COPY --from=build-stage grfplugin/plugin-redfish /bin/
+COPY --chown=root:odimra --from=build-stage /grfplugin/add-hosts /bin/
+RUN chmod 4550 /bin/add-hosts
+USER odimra:odimra
+ENTRYPOINT ["/bin/start_grfplugin.sh"]

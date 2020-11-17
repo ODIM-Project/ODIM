@@ -1,0 +1,29 @@
+FROM golang:1.13.8 as build-stage
+
+WORKDIR /update/
+
+ADD svc-update/go.sum .
+ADD svc-update/go.mod .
+
+RUN go mod download
+
+ADD svc-update .
+RUN go build -i -race .
+COPY install/Docker/dockerfiles/scripts/add-hosts.go .
+RUN go build -o add-hosts add-hosts.go
+
+FROM ubuntu:18.04
+
+RUN groupadd -r -g 2021 odimra
+RUN useradd -s /bin/bash -u 2021 -m -d /home/odimra -r -g odimra odimra
+RUN mkdir /etc/odimra_config && chown odimra:odimra /etc/odimra_config
+RUN mkdir /etc/odimra_schema && chown odimra:odimra /etc/odimra_schema
+RUN mkdir /etc/registrystore && chown odimra:odimra /etc/registrystore
+COPY install/Docker/dockerfiles/scripts/start_update.sh /bin/
+COPY lib-utilities/config/schema.json /etc/odimra_schema
+COPY lib-utilities/etc/* /etc/registrystore/
+COPY --from=build-stage /update/svc-update /bin/
+COPY --chown=root:odimra --from=build-stage /update/add-hosts /bin/
+RUN chmod 4550 /bin/add-hosts
+USER odimra:odimra
+ENTRYPOINT ["/bin/start_update.sh"]

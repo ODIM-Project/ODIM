@@ -13,8 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# Script is for generating certificate and private key
-# for Client mode connection usage only
 declare PID=0
 
 add_host()

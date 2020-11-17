@@ -47,12 +47,12 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	if err != nil {
 		errMsg := "error: unable to parse the simple update request" + err.Error()
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	if len(updateRequest.Targets) == 0 {
 		errMsg := "error: 'Targets' parameter cannot be empty"
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, nil)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
 	}
 
 	// Validating the request JSON properties for case sensitive
@@ -60,11 +60,11 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		log.Println(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return response
 	}
 
@@ -76,7 +76,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	targetList, err = sortTargetList(updateRequest.Targets)
 	if err != nil {
 		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, taskInfo)
 	}
 	partialResultFlag := false
 	subTaskChannel := make(chan int32, len(targetList))
@@ -87,7 +87,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		if err != nil {
 			errMsg := "error: unable to parse the simple update request" + err.Error()
 			log.Println(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 		updateRequestBody := strings.Replace(string(marshalBody), id+":", "", -1)
 		//replacing the reruest url with south bound translation URL

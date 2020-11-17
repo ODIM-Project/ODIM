@@ -51,6 +51,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	if err != nil {
 		errMsg := "error: unable to read SimpleUpdate requests from database: " + err.Error()
 		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	partialResultFlag := false
 	subTaskChannel := make(chan int32, len(targetList))
@@ -78,7 +79,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		if gerr != nil {
 			errMsg := "error: unable to retrive the start update request" + gerr.Error()
 			log.Println(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 		go e.startRequest(target, taskID, data, subTaskChannel, sessionUserName)
 	}
@@ -180,7 +181,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 		subTaskChannel <- http.StatusBadRequest
 		errMsg := gerr.Error()
 		log.Println(errMsg)
-		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
 

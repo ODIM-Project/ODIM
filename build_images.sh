@@ -15,10 +15,13 @@
 
 export DOCKER_BUILDKIT=1
 
-build_args="--build-arg ODIMRA_USER_ID=2021 \
-	    --build-arg ODIMRA_GROUP_ID=2021 \
-	    --build-arg http_proxy=http://web-proxy.corp.hpecorp.net:8080/ \
-	    --build-arg https_proxy=http://web-proxy.corp.hpecorp.net:8080/"
+if [[ -z ${ODIMRA_GROUP_ID} ]] || [[ -z ${ODIMRA_USER_ID} ]]; then
+	echo "[$(date)] -- ERROR -- ODIMRA_GROUP_ID or ODIMRA_USER_ID is not set, exiting"
+	exit 1
+fi
+
+build_args="--build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} \
+	    --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}" 
 
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.accountSession -t account-session:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.aggregation -t aggregation:1.0 $build_args .

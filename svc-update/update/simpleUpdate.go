@@ -89,11 +89,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 			log.Println(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
-		updateRequestBody := strings.Replace(string(marshalBody), id+":", "", -1)
-		//replacing the reruest url with south bound translation URL
-		for key, value := range config.Data.URLTranslation.SouthBoundURL {
-			updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
-		}
+		updateRequestBody := string(marshalBody)
 		serverURI = "/redfish/v1/Systems/" + id
 		go e.sendRequest(id, taskID, serverURI, updateRequestBody, applyTime, subTaskChannel, sessionUserName)
 	}
@@ -204,6 +200,11 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			return
 		}
+	}
+	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+":", "", -1)
+	//replacing the reruest url with south bound translation URL
+	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
 	}
 
 	decryptedPasswordByte, err := e.External.DevicePassword(target.Password)

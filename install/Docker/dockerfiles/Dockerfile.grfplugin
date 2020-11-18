@@ -28,9 +28,10 @@ RUN go build -o add-hosts add-hosts.go
 
 FROM ubuntu:18.04
 
-RUN groupadd -r -g 2021 odimra
-RUN useradd -s /bin/bash -u 2021 -m -d /home/odimra -r -g odimra odimra
-RUN mkdir /etc/grfplugin_config && chown odimra:odimra /etc/grfplugin_config
+RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
+&& groupadd -r -g $ODIMRA_GROUP_ID odimra \
+&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
+&& mkdir /etc/grfplugin_config && chown odimra:odimra /etc/grfplugin_config
 COPY install/Docker/dockerfiles/scripts/start_grfplugin.sh /bin/
 COPY --from=build-stage grfplugin/plugin-redfish /bin/
 COPY --chown=root:odimra --from=build-stage /grfplugin/add-hosts /bin/

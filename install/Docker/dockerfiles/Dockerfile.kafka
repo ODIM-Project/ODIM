@@ -40,7 +40,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
         && mv -f /kafka/tmp/* /opt/kafka/ \
         && rm -rf /kafka \
         && groupadd -r -g $ODIMRA_GROUP_ID odimra \
-	&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/kafka -r -g odimra odimra \
+	&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
         && chown -R odimra:odimra /opt/kafka
 
 COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/*_kafka.sh /opt/kafka/scripts/

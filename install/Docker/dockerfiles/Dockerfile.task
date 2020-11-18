@@ -28,11 +28,11 @@ RUN go build -o add-hosts add-hosts.go
 
 FROM ubuntu:18.04
 
-RUN groupadd -r -g 2021 odimra
-RUN useradd -s /bin/bash -u 2021 -m -d /home/odimra -r -g odimra odimra
-RUN mkdir /etc/odimra_config && chown odimra:odimra /etc/odimra_config
-RUN mkdir /etc/odimra_schema && chown odimra:odimra /etc/odimra_schema
-RUN mkdir /etc/registrystore && chown odimra:odimra /etc/registrystore
+RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
+&& groupadd -r -g $ODIMRA_GROUP_ID odimra \
+&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
+&& mkdir /etc/odimra_config /etc/odimra_schema /etc/registrystore \
+&& chown odimra:odimra /etc/odimra_config /etc/odimra_schema /etc/registrystore
 COPY install/Docker/dockerfiles/scripts/start_task.sh /bin/
 COPY lib-utilities/config/schema.json /etc/odimra_schema
 COPY lib-utilities/etc/* /etc/registrystore/

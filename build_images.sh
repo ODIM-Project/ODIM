@@ -20,8 +20,17 @@ if [[ -z ${ODIMRA_GROUP_ID} ]] || [[ -z ${ODIMRA_USER_ID} ]]; then
 	exit 1
 fi
 
-build_args="--build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} \
-	    --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}" 
+if [[ -n ${http_proxy} ]] || [[ -n ${https_proxy} ]]; then 
+	echo "Adding proxy to build arguments"
+        build_args="--build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} \
+	            --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID} \
+		    --build-arg http_proxy=${http_proxy} \
+		    --build-arg https_proxy=${https_proxy}"
+else
+	build_args="--build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} \
+                    --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}"
+fi
+
 
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.accountSession -t account-session:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.aggregation -t aggregation:1.0 $build_args .

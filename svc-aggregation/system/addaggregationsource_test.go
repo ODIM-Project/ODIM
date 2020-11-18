@@ -345,7 +345,7 @@ func TestExternalInterface_AddBMCMultipleTimes(t *testing.T) {
 		want response.RPC
 	}{
 		{
-			name: "posivite case",
+			name: "adding same multiple times",
 			p:    p,
 			args: args{
 				taskID: "123",

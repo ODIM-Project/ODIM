@@ -16,6 +16,7 @@ package system
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
@@ -27,6 +28,7 @@ import (
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
+	"github.com/stretchr/testify/assert"
 )
 
 func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
@@ -259,6 +261,114 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		ActiveReqSet.UpdateMu.Lock()
 		ActiveReqSet.ReqRecord = nil
 		ActiveReqSet.UpdateMu.Unlock()
+	}
+}
+
+var activeReqFlag bool
+var forwardedRequestCounter, blockedRequestCounter int
+
+func mockAddActiveRequest(managerAddress string) error {
+	activeReqFlag = true
+	return nil
+}
+
+func mockCheckActiveRequest(managerAddress string) (bool, error) {
+	if forwardedRequestCounter == 0 {
+		forwardedRequestCounter++
+	} else {
+		blockedRequestCounter++
+	}
+	return activeReqFlag, nil
+}
+
+func mockDeleteActiveRequest(managerAddress string) error {
+	activeReqFlag = false
+	return nil
+}
+
+func TestExternalInterface_AddBMCMultipleTimes(t *testing.T) {
+	common.MuxLock.Lock()
+	config.SetUpMockConfig(t)
+	common.MuxLock.Unlock()
+	addComputeRetrieval := config.AddComputeSkipResources{
+		SystemCollection: []string{"Chassis", "LogServices"},
+	}
+	config.Data.AddComputeSkipResources = &addComputeRetrieval
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	mockPluginData(t, "GRF")
+	mockPluginData(t, "XAuthPlugin")
+	mockPluginData(t, "XAuthPluginFail")
+
+	reqSuccess, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.1",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			Oem: &AddOEM{
+				PluginID: "GRF",
+			},
+		},
+	})
+	p := &ExternalInterface{
+		ContactClient:       mockContactClient,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		DeleteComputeSystem: deleteComputeforTest,
+		GetPluginMgrAddr:    stubPluginMgrAddrData,
+		AddActiveRequest:    mockAddActiveRequest,
+		CheckActiveRequest:  mockCheckActiveRequest,
+		DeleteActiveRequest: mockDeleteActiveRequest,
+	}
+	type args struct {
+		taskID string
+		req    *aggregatorproto.AggregatorRequest
+	}
+	tests := []struct {
+		name string
+		p    *ExternalInterface
+		args args
+		want response.RPC
+	}{
+		{
+			name: "posivite case",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req: &aggregatorproto.AggregatorRequest{
+					SessionToken: "validToken",
+					RequestBody:  reqSuccess,
+				},
+			},
+			want: response.RPC{
+				StatusCode: http.StatusCreated,
+			},
+		},
+	}
+	for _, tt := range tests {
+		forwardedRequestCounter = 0
+		blockedRequestCounter = 0
+		for i := 0; i < 5; i++ {
+			t.Run(tt.name, func(t *testing.T) {
+				go tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req)
+			})
+		}
+		assert.Equal(t, 1, forwardedRequestCounter, fmt.Sprintf("expected forwarded request count to be 1 but got: %v", forwardedRequestCounter))
+		assert.Equal(t, 4, blockedRequestCounter, fmt.Sprintf("expected blocked request count to be 4 but got: %v", blockedRequestCounter))
 	}
 }
 

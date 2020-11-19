@@ -15,16 +15,16 @@
 package system
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
-	"fmt"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 func mockData(t *testing.T, dbType common.DbType, table, id string, data interface{}) {
@@ -37,8 +37,8 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 	}
 }
 
-func stubPluginMgrAddrData (pluginID string) (agmodel.Plugin, *errors.Error) {
-        var plugin agmodel.Plugin
+func stubPluginMgrAddrData(pluginID string) (agmodel.Plugin, *errors.Error) {
+	var plugin agmodel.Plugin
 
 	plugin, err := agmodel.GetPluginData(pluginID)
 	if err != nil {
@@ -46,15 +46,15 @@ func stubPluginMgrAddrData (pluginID string) (agmodel.Plugin, *errors.Error) {
 		plugin.ManagerUUID = "dummy-mgr-addr"
 		plugin.Port = "9091"
 	}
-	plugin.IP="dummyhost"
+	plugin.IP = "dummyhost"
 
 	if pluginID == "DUPMGRADDRMOCK" {
 		plugin.ManagerUUID = "duplicate-mgr-addr"
-		plugin.IP="duphost"
+		plugin.IP = "duphost"
 		plugin.Port = "9091"
 	}
 
-	return  plugin, nil
+	return plugin, nil
 
 }
 
@@ -261,24 +261,24 @@ func TestExternalInterface_Plugin(t *testing.T) {
 }
 
 func mockDupMgrAddrPluginData(t *testing.T, pluginID string) error {
-        password,_ := stubDevicePassword([]byte("password"))
-        plugin := agmodel.Plugin{
-                IP:                "duphost",
-                Port:              "9091",
-                Username:          "admin",
-                Password:          password,
-                ID:                pluginID,
-                PreferredAuthType: "BasicAuth",
-                ManagerUUID:       "duplicate-mgr-addr",
-        }
-        connPool, err := common.GetDBConnection(common.OnDisk)
-        if err != nil {
-                return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
-        }
-        if err = connPool.Create("Plugin", pluginID, plugin); err != nil {
-                return fmt.Errorf("error while trying to create new %v resource: %v", "Plugin", err.Error())
-        }
-        return nil
+	password, _ := stubDevicePassword([]byte("password"))
+	plugin := agmodel.Plugin{
+		IP:                "duphost",
+		Port:              "9091",
+		Username:          "admin",
+		Password:          password,
+		ID:                pluginID,
+		PreferredAuthType: "BasicAuth",
+		ManagerUUID:       "duplicate-mgr-addr",
+	}
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.Create("Plugin", pluginID, plugin); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "Plugin", err.Error())
+	}
+	return nil
 }
 
 func TestExternalInterface_PluginXAuth(t *testing.T) {
@@ -382,18 +382,17 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		},
 	}
 
-        reqDuplicateManagerAddress:= AddResourceRequest{
-                ManagerAddress: "duphost:9091",
-                UserName: "admin",
-                Password: "password",
+	reqDuplicateManagerAddress := AddResourceRequest{
+		ManagerAddress: "duphost:9091",
+		UserName:       "admin",
+		Password:       "password",
 
-                        Oem: &AddOEM{
-                                PluginID:          "DUPMGRADDR",
-                                PreferredAuthType: "XAuthToken",
-                                PluginType:        "Compute",
-                        },
-
-        }
+		Oem: &AddOEM{
+			PluginID:          "DUPMGRADDR",
+			PreferredAuthType: "XAuthToken",
+			PluginType:        "Compute",
+		},
+	}
 
 	p := &ExternalInterface{
 		ContactClient:     mockContactClient,
@@ -495,18 +494,17 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 				StatusCode: http.StatusInternalServerError,
 			},
 		},
-                {
-                        name: "duplicate manager address",
-                        p:    p,
-                        args: args{
-                                taskID: "123",
-                                req: reqDuplicateManagerAddress,
-                        },
-                        want: response.RPC{
-                                StatusCode: http.StatusConflict,
-                        },
-                },
-
+		{
+			name: "duplicate manager address",
+			p:    p,
+			args: args{
+				taskID: "123",
+				req:    reqDuplicateManagerAddress,
+			},
+			want: response.RPC{
+				StatusCode: http.StatusConflict,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

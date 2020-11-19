@@ -53,7 +53,6 @@ func mockGetExternalInterface() *ExternalInterface {
 		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
-			GetManagerData:      mockGetManagerData,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
 			UpdateManagersData:  mockUpdateManagersData,
@@ -66,43 +65,34 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 	return []string{"/redfish/v1/Managers/uuid:1"}, nil
 }
 
-func mockGetManagerData(id string) (mgrmodel.RAManager, error) {
-	if id == "nonExistingUUID" {
-		return mgrmodel.RAManager{}, fmt.Errorf("not found")
-	} else if id == "noDevice" {
-		return mgrmodel.RAManager{
-			Name:            "odimra",
-			ManagerType:     "Service",
-			FirmwareVersion: "1.0",
-			ID:              "noDevice",
-			UUID:            "noDevice",
-			State:           "Absent",
-		}, nil
-	}
-	return mgrmodel.RAManager{
-		Name:            "odimra",
-		ManagerType:     "Service",
-		FirmwareVersion: "1.0",
-		ID:              config.Data.RootServiceUUID,
-		UUID:            config.Data.RootServiceUUID,
-		State:           "Enabled",
-	}, nil
-}
-
 func mockGetManagerByURL(url string) (string, *errors.Error) {
-	if url == "/redfish/v1/Managers/invalidURL:1" || url == "/redfish/v1/Managers/invalidURL" || url == "/redfish/v1/Managers/invalidID" {
-		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-	}
 	managerData := make(map[string]interface{})
 	managerData["ManagerType"] = "BMC"
 	managerData["Status"] = `{"State":"Enabled"}}`
 	managerData["Name"] = "somePlugin"
-	if url == "/redfish/v1/Managers/uuid" {
+	switch url {
+	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL:1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	case "/redfish/v1/Managers/noDevice":
+		managerData["ManagerType"] = "Service"
+		managerData["Status"] = `{"State":"Absent"}}`
+		managerData["Name"] = "odimra"
+		managerData["ID"] = "noDevice"
+		managerData["UUID"] = "noDevice"
+		managerData["FirmwareVersion"] = "1.0"
+	case "/redfish/v1/Managers/uuid":
 		managerData["Name"] = "someOtherID"
-	} else if url == "/redfish/v1/Managers/noPlugin" {
+	case "/redfish/v1/Managers/noPlugin":
 		managerData["Name"] = "noPlugin"
-	} else if url == "/redfish/v1/Managers/noToken" {
+	case "/redfish/v1/Managers/noToken":
 		managerData["Name"] = "noToken"
+	case "/redfish/v1/Managers/" + config.Data.RootServiceUUID:
+		managerData["ManagerType"] = "Service"
+		managerData["Status"] = `{"State":"Enabled"}}`
+		managerData["Name"] = "odimra"
+		managerData["ManagerID"] = config.Data.RootServiceUUID
+		managerData["UUID"] = config.Data.RootServiceUUID
+		managerData["FirmwareVersion"] = "1.0"
 	}
 	data, _ := json.Marshal(managerData)
 	return string(data), nil

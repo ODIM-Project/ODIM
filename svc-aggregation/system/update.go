@@ -98,17 +98,7 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 	links := aggregationSource.Links.(map[string]interface{})
-	if _, ok := links["ConnectionMethod"]; ok {
-		resp = e.updateAggregationSourceWithConnectionMethod(req.URL, links["ConnectionMethod"].(map[string]interface{}), updateRequest, hostNameUpdated)
-	} else {
-		oem := links["Oem"].(map[string]interface{})
-		pluginID := oem["PluginID"].(string)
-		if _, ok := oem["PluginType"]; ok {
-			resp = e.updateManagerAggregationSource(data[1], pluginID, updateRequest, hostNameUpdated)
-		} else {
-			resp = e.updateBMCAggregationSource(data[1], pluginID, updateRequest, hostNameUpdated)
-		}
-	}
+	resp = e.updateAggregationSourceWithConnectionMethod(req.URL, links["ConnectionMethod"].(map[string]interface{}), updateRequest, hostNameUpdated)
 	if resp.StatusMessage != "" {
 		return resp
 	}

@@ -969,8 +969,8 @@ func TestAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("password"),
 		Links: map[string]interface{}{
-			"Oem": map[string]string{
-				"PluginID": "GRF",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	}

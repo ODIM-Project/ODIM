@@ -353,7 +353,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	mockPluginData(t, "ILO")
+	mockPluginData(t, "ILO_v1.0.0")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	system.ActiveReqSet.UpdateMu.Lock()
@@ -368,10 +368,8 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &system.Links{
-			Oem: &system.AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &system.ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	})
@@ -380,10 +378,8 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &system.Links{
-			Oem: &system.AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &system.ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	})
@@ -491,8 +487,8 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -549,8 +545,8 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -600,14 +596,14 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 	config.SetUpMockConfig(t)
 
-	mockPluginData(t, "ILO")
+	mockPluginData(t, "ILO_v1.0.0")
 	req := agmodel.AggregationSource{
 		HostName: "100.0.0.1:50000",
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -697,14 +693,14 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 }
 
 func TestAggregator_DeleteAggregationSource(t *testing.T) {
-	mockPluginData(t, "ILO")
+	mockPluginData(t, "ILO_v1.0.0")
 	req := agmodel.AggregationSource{
 		HostName: "100.0.0.1:50000",
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}

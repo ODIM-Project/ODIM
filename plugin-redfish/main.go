@@ -149,6 +149,10 @@ func routers() *iris.Application {
 		chassis.Get("/{id}", rfphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters", rfphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions", rfphandler.GetResource)
+		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts", rfphandler.GetResource)
+		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts/{rid}", rfphandler.GetResource)
 
 		// Chassis Power URl routes
 		chassisPower := chassis.Party("/{id}/Power")

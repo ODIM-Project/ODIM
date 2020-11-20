@@ -123,20 +123,12 @@ type AddResourceRequest struct {
 	ManagerAddress   string            `json:"ManagerAddress"`
 	UserName         string            `json:"UserName"`
 	Password         string            `json:"Password"`
-	Oem              *AddOEM           `json:"Oem"`
 	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod"`
 }
 
 //ConnectionMethod struct definition for @odata.id
 type ConnectionMethod struct {
 	OdataID string `json:"@odata.id"`
-}
-
-// AddOEM is struct to have the add request parameters
-type AddOEM struct {
-	PluginID          string `json:"PluginID"`
-	PreferredAuthType string `json:"PreferredAuthType,omitempty"`
-	PluginType        string `json:"PluginType,omitempty"`
 }
 
 // TaskData holds the data of the Task
@@ -174,7 +166,6 @@ type AggregationSource struct {
 
 // Links holds information of Oem
 type Links struct {
-	Oem              *AddOEM           `json:"Oem,omitempty"`
 	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod,omitempty"`
 }
 

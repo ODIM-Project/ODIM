@@ -21,7 +21,7 @@
 # configuration management.
 
 [KAFKA]
-# Kafka Server List .
+#KServersInfo defines the list of Kafka Server URI/Nodename:port. Example: KServersInfo = ["localhost:9092"].
 KServersInfo   = [""]
 # Timeout of KAFKA Server connection drop / Keepalive.
 KTimeout   = 10

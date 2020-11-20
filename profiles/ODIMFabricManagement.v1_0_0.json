@@ -1,0 +1,238 @@
+{
+  "SchemaDefinition": "RedfishInteroperabilityProfile.v1_3_0",
+  "ProfileName": "ODIMServerHardwareManagement",
+  "ProfileVersion": "1.0.0",
+  "Purpose": "",
+  "OwningEntity": "ODIM Open Source Project",
+  "ContactInfo": "tsc@odim.org",
+  "RequiredProfiles": {
+    "ODIMBaselineHardwareManagement": {
+      "MinVersion": "1.0.0"
+    }
+  },
+  "Resources": {
+    "Fabric": {
+      "MinVersion": "1.1.0",
+      "PropertyRequirements": {
+        "FabricType": {},
+        "Name": {},
+        "Zones": {
+          "ReadRequirement": "Mandatory",
+          "WriteRequirement": "Mandatory"
+        },
+        "Status": {},
+        "Endpoints": {
+          "ReadRequirement": "Mandatory",
+          "WriteRequirement": "Mandatory"
+        },
+        "AddressPools": {
+          "ReadRequirement": "Mandatory",
+          "WriteRequirement": "Mandatory"
+        },
+        "Switches": {
+          "ReadRequirement": "Mandatory",
+          "WriteRequirement": "Mandatory"
+        },
+        "Id": {}
+      }
+    },
+    "AddressPoolCollection": {
+      "PropertyRequirements": {
+        "Members": {}
+      }
+    },
+    "AddressPool": {
+      "MinVersion": "1.1.0",
+      "PropertyRequirements": {
+        "Ethernet": {
+          "PropertyRequirements": {
+            "IPv4": {
+              "ReadRequirement": "Recommended",
+              "WriteRequirement": "Recommended"
+            }
+          },
+          "Name": {},
+          "Links": {
+            "PropertyRequirements": {
+              "Zones": {}
+            }
+          },
+          "Status": {}
+        }
+      },
+      "Endpoint": {
+        "MinVersion": "1.4.1",
+        "PropertyRequirements": {
+          "Links": {
+            "PropertyRequirements": {
+              "Zones": {},
+              "ConnectedPorts": {}
+            }
+          },
+          "Name": {},
+          "Redundancy": {
+            "ReadRequirement": "IfImplemented",
+            "WriteRequirement": "IfImplemented",
+            "PropertyRequirements": {
+              "Status": {},
+              "Name": {},
+              "Mode": {},
+              "MinNumNeeded": {},
+              "MemberId": {},
+              "RedundancySet": {},
+              "MaxNumSupported": {}
+            }
+          }
+        }
+      },
+      "Switch": {
+        "MinVersion": "1.3.1",
+        "PropertyRequirements": {
+          "AssetTag": {
+            "ReadRequirement": "Recommended"
+          },
+          "FirmwareVersion": {},
+          "IsManaged": {},
+          "Links": {
+            "PropertyRequirements": {
+              "Chassis": {
+                "ReadRequirement": "Recommended"
+              },
+              "Endpoints": {
+                "ReadRequirement": "Recommended"
+              },
+              "ManagedBy": {
+                "ReadRequirement": "Recommended"
+              }
+            }
+          },
+          "Name": {},
+          "Model": {},
+          "Manufacturer": {},
+          "PartNumber": {
+            "ReadRequirement": "Recommended"
+          },
+          "Ports": {
+            "ReadRequirement": "Recommended"
+          },
+          "SerialNumber": {
+            "ReadRequirement": "Recommended"
+          },
+          "Status": {},
+          "SKU": {
+            "ReadRequirement": "Recommended"
+          },
+          "SwitchType": {},
+          "UUID": {}
+        }
+      },
+      "Port": {
+        "MinVersion": "1.2.1",
+        "PropertyRequirements": {
+          "CurrentSpeedGbps": {
+            "ReadRequirement": "Recommended"
+          },
+          "InterfaceEnabled": {},
+          "LinkNetworkTechnology": {
+            "ReadRequirement": "Recommended"
+          },
+          "Name": {},
+          "MaxSpeedGbps": {
+            "ReadRequirement": "Recommended"
+          },
+          "Links": {
+            "ConnectedPorts": {},
+            "AssociatedEndpoints": {
+              "ReadRequirement": "Recommended"
+            },
+            "ConnectedSwitches": {}
+          },
+          "LinkState": {},
+          "LinkStatus": {},
+          "PortId": {},
+          "PortMedium": {
+            "ReadRequirement": "Recommended"
+          },
+          "PortProtocol": {
+            "ReadRequirement": "Recommended"
+          },
+          "PortType": {
+            "ReadRequirement": "Recommended"
+          },
+          "Status": {}
+        }
+      },
+      "Zone": {
+        "MinVersion": "1.4.2",
+        "PropertyRequirements": {
+          "Name": {},
+          "Links": {
+            "PropertyRequirements": {
+              "InvolvedSwitches": {},
+              "EndPoints": {},
+              "AddressPools": {
+                "ReadRequirement": "Recommended",
+                "WriteRequirement": "Recommended"
+              },
+              "ContainsZones": {
+                "ConditionalRequirments": [{
+                  "CompareProperty": "ZoneType",
+                  "CompareType": "Equal",
+                  "CompareValues": [ "ZoneOfZones" ],
+                  "ReadRequirement": "Mandatory",
+                  "WriteRequirement": "Mandatory"
+                }]
+              },
+              "ContainedByZones": {
+                "ConditionalRequirments": [{
+                  "CompareProperty": "ZoneType",
+                  "CompareType": "Equal",
+                  "CompareValues": [ "ZoneOfEndpoints" ],
+                  "ReadRequirement": "Mandatory",
+                  "WriteRequirement": "Mandatory"
+                }]
+              },
+              "Endpoints": {
+                "ConditionalRequirments": [{
+                  "CompareProperty": "ZoneType",
+                  "CompareType": "Equal",
+                  "CompareValues": [ "ZoneOfEndpoints" ],
+                  "ReadRequirement": "Mandatory",
+                  "WriteRequirement": "Mandatory"
+                }]
+              }
+            }
+
+          },
+          "Status": {},
+          "ZoneType": {}
+        }
+      },
+      "EndPointCollection": {
+        "PropertyRequirements": {
+          "Members": {}
+        }
+      },
+      "FabricCollection": {
+        "PropertyRequirements": {
+          "Members": {}
+        }
+      },
+      "ZonesCollection": {
+        "PropertyRequirements": {
+          "Members": {}
+        }
+      },
+      "SwitchCollection": {
+        "PropertyRequirements": {
+          "Members": {}
+        }
+      },
+      "ServiceRoot": {
+        "PropertyRequirements": {
+          "Fabrics": {}
+        }
+      }
+    }
+  }
+}

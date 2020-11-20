@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
@@ -98,6 +99,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
+	e.GenericSave(nil, agcommon.ActiveAddBMCTable, addResourceRequest.ManagerAddress)
 	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.ConnectionMethod.OdataID
 	ActiveReqSet.UpdateMu.Unlock()
 

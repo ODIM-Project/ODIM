@@ -203,7 +203,7 @@ func SaveChassis(chassis dmtfmodel.Chassis, deviceUUID string) error {
 	return nil
 }
 
-//GenericSave will save any resource data into the database
+// GenericSave will save any resource data into the database
 func GenericSave(body []byte, table string, key string) error {
 
 	connPool, err := common.GetDBConnection(common.InMemory)

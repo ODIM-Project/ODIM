@@ -85,6 +85,7 @@ func main() {
 		SubscribeToEMB:  services.SubscribeToEMB,
 		DecryptPassword: common.DecryptWithPrivateKey,
 		UpdateTask:      system.UpdateTaskData,
+		GenericSave:     agmodel.GenericSave,
 	}
 	go p.RediscoverResources()
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")

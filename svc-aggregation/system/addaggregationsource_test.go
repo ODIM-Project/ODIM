@@ -949,7 +949,7 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 var activeReqFlag bool
 var forwardedRequestCounter, blockedRequestCounter int
 
-func mockAddActiveRequest(managerAddress string) error {
+func mockGenericSave(data []byte, table, key string) error {
 	activeReqFlag = true
 	return nil
 }
@@ -1010,7 +1010,7 @@ func TestExternalInterface_AddBMCMultipleTimes(t *testing.T) {
 		DecryptPassword:     stubDevicePassword,
 		DeleteComputeSystem: deleteComputeforTest,
 		GetPluginMgrAddr:    stubPluginMgrAddrData,
-		AddActiveRequest:    mockAddActiveRequest,
+		GenericSave:         mockGenericSave,
 		CheckActiveRequest:  mockCheckActiveRequest,
 		DeleteActiveRequest: mockDeleteActiveRequest,
 	}

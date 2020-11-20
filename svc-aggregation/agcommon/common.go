@@ -27,6 +27,11 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+const (
+	// ActiveAddBMCTable holds the table name for managing active BMC add request
+	ActiveAddBMCTable = "ActiveAddBMCRequest"
+)
+
 // DBInterface hold interface for db functions
 type DBInterface struct {
 	GetAllKeysFromTableInterface func(string) ([]string, error)

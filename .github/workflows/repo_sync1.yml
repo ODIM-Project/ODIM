@@ -1,0 +1,29 @@
+name: Repo Sync
+on:
+  schedule:
+  - cron:  "0 1 * * *"
+  workflow_dispatch:
+jobs:
+  repo-sync:
+    env: 
+      PAT: ${{secrets.PAT }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        if: env.PAT
+        with:
+          persist-credentials: false
+      - name: repo-sync
+        run: |
+          source_repo='HewlettPackard/ODIM'
+          upstream_repo='https://github.com/ODIM-Project/ODIM.git'
+          user_name='ashraf-vazeer'
+          email='ashraf.vazeer@hpe.com'
+          git config --global user.name ''$user_name''
+          git config --global user.email ''$email''
+          git remote add upstream $upstream_repo
+          git remote set-url origin https://${{secrets.PAT }}:x-oauth-basic@github.com/$source_repo.git
+          
+          git fetch upstream
+          git rebase upstream/development
+          git push -f origin development

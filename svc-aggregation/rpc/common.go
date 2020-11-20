@@ -57,6 +57,7 @@ func GetAggregator() *Aggregator {
 			GetConnectionMethod:     agmodel.GetConnectionMethod,
 			UpdateConnectionMethod:  agmodel.UpdateConnectionMethod,
 			GetPluginMgrAddr:        agmodel.GetPluginData,
+			GenericSave:             agmodel.GenericSave,
 		},
 	}
 }

@@ -842,7 +842,7 @@ func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
-		ContactClient:           testContactClientWithDelay,
+		ContactClient:           mockContactClient,
 		Auth:                    mockIsAuthorized,
 		CreateChildTask:         mockCreateChildTask,
 		UpdateTask:              mockUpdateTask,

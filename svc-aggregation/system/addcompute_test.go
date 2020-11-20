@@ -278,7 +278,18 @@ func TestExternalInterface_addcompute(t *testing.T) {
 		},
 	}
 
-	p := getMockExternalInterface()
+	p := &ExternalInterface{
+		ContactClient:       mockContactClient,
+		Auth:                mockIsAuthorized,
+		CreateChildTask:     mockCreateChildTask,
+		UpdateTask:          mockUpdateTask,
+		CreateSubcription:   EventFunctionsForTesting,
+		PublishEvent:        PostEventFunctionForTesting,
+		GetPluginStatus:     GetPluginStatusForTesting,
+		EncryptPassword:     stubDevicePassword,
+		DecryptPassword:     stubDevicePassword,
+		DeleteComputeSystem: deleteComputeforTest,
+	}
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var percentComplete int32
 	var pluginContactRequest getResourceRequest

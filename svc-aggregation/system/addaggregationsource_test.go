@@ -336,6 +336,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		},
 	})
 	p := getMockExternalInterface()
+	p.ContactClient = mockContactClientForDuplicate
 	type args struct {
 		taskID string
 		req    *aggregatorproto.AggregatorRequest

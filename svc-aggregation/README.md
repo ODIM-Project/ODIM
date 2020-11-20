@@ -15,15 +15,32 @@ Using these endpoints, you can add or remove only one resource at a time. You ca
 
 All aggregation actions are performed as [tasks](#tasks) in Resource Aggregator for ODIM. The actions performed on a group of resources \(resetting or changing the boot order to default settings\) are carried out as a set of subtasks.
 
-<aside class="notice">
-To perform Redfish aggregation service actions, you require `ConfigureComponents` privilege. If you access these endpoints without necessary privileges, you will receive an HTTP `403` error.
-</aside>
+**Supported endpoints**
+
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/AggregationService|GET|`Login` |
+| /redfish/v1/AggregationService/AggregationSources<br> |GET, POST|`Login`, `ConfigureManager` |
+|/redfish/v1/AggregationService/AggregationSources/\{aggregationSourceId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Actions/AggregationService.Reset|POST|`ConfigureManager`, `ConfigureComponents` |
+|/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder|POST|`ConfigureManager`, `ConfigureComponents` |
+|/redfish/v1/AggregationService/Aggregates|GET, POST|`Login`, `ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}|GET, DELETE|`Login`, `ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.AddElements|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/ConnectionMethods|GET|`Login`|
+|/redfish/v1/AggregationService/ConnectionMethods/\{connectionmethodsId\}|GET|`Login`|
+
+>**Note:**
+Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
   
   
 ##  Modifying Configurations of Aggregation Service
   
-Config File of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
-Refer the section **Modifying Configurations** in the README.md to change the configurations of a odimra service
+Config file of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
+Refer to the section **Modifying Configurations** in the README.md file to change the configurations of an odimra service.
   
 **Specific configurations for Aggregation Service are:**
   
@@ -35,42 +52,24 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 /var/log/ODIMRA/aggregation.log
   
   
-**Supported endpoints**
-
-|||
-|-------|--------------------|
-|/redfish/v1/AggregationService|`GET`|
-| /redfish/v1/AggregationService/AggregationSources<br> |`GET`, `POST`|
-|/redfish/v1/AggregationService/AggregationSources/\{aggregationSourceId\}|`GET`, `PATCH`, `DELETE`|
-|/redfish/v1/AggregationService/Actions/AggregationService.Reset|`POST`|
-|/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder|`POST`|
-|/redfish/v1/AggregationService/Aggregates|`GET`, `POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}|`GET`, `DELETE`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.AddElements|`POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|`POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|`POST`|
-|/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|`POST`|
 
 
 
 
 
-
-
-
-## The aggregation service root
+## Viewing the aggregation service root
 |||
 |-----|-------|
 |<strong>Method</strong> | `GET` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService` |
-|<strong>Description</strong> |JSON schema representing the aggregation service root.|
+|<strong>Description</strong> |This endpoint retrieves JSON schema representing the aggregation service root.|
 |<strong>Returns</strong> |Properties for the service and a list of actions you can perform using this service.|
 |<strong>Response Code</strong> |On success, `200 OK` |
 |<strong>Authentication</strong> |Yes|
 
  
 
-
+>**curl command**
 
 ```
 curl -i GET \
@@ -80,7 +79,7 @@ curl -i GET \
 
 ```
 
-> Sample response header 
+>**Sample response header** 
 
 ```
 Allow:GET
@@ -95,7 +94,7 @@ Transfer-Encoding":chunked
 
 ```
 
-> Sample response body 
+>**Sample response body** 
 
 ```
 {
@@ -121,6 +120,9 @@ Transfer-Encoding":chunked
    "AggregationSources":{
       "@odata.id":"/redfish/v1/AggregationService/AggregationSources"
    },
+   "ConnectionMethods":{
+      "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods"
+   },
    "ServiceEnabled":true,
    "Status":{
       "Health":"OK",
@@ -131,9 +133,124 @@ Transfer-Encoding":chunked
 ```
 
 
- 
+## Connection methods
 
- 
+Connection methods indicate protocols, providers, or other methods that are used to communicate with an endpoint. 
+The `ConnectionMethod` schema describes these connection methods for the Redfish aggregation service. 
+
+###  Viewing a collection of connection methods
+
+
+|||
+|--------|---------|
+|**Method**| `GET` |
+|**URI** |`/redfish/v1/AggregationService/ConnectionMethods` |
+|**Description** |This operation lists all connection methods associated with the Redfish aggregation service.|
+|**Returns** |A list of links to all the available connection method resources.|
+|**Response Code** |On success, `200 Ok` |
+|**Authentication** |Yes|
+
+
+
+>**curl command** 
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods'
+
+
+```
+
+>**Sample response body**
+
+```
+{
+   ​   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "Name":"Connection Methods",
+   ​   "Members@odata.count":3,
+   ​   "Members":[
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/aa166b6b-a367-40ba-ac2e-402f9a0c818f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/7cb9fc3b-8b75-45da-8aad-5ff595968b71"         ​
+      }      ​
+   ]   ​
+}
+```
+
+### Viewing a connection method
+
+|||
+|--------|---------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AggregationService/ConnectionMethods/ {connectionmethodsId}` |
+|**Description** |This operation retrieves information about a specific connection method.|
+|**Returns** |JSON schema representing this connection method.|
+|**Response Code** |On success, `200 Ok` |
+|**Authentication**|Yes|
+
+>**curl command**
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}'
+
+
+```
+
+>**Sample response body**
+
+```
+{
+   ​   "@odata.type":"#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "Name":"Connection Method",
+   ​   "ConnectionMethodType":"Redfish",
+   ​   "ConnectionMethodVariant":"Compute:BasicAuth:GRF_v1.0.0",
+   ​   "Links":{
+      ​      "AggregationSources":[
+         {
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
+         },
+         {
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
+         }
+      ]      ​
+   }   ​
+}​
+```
+
+>**Connection method properties**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|ConnectionMethodType|String| The type of this connection method.<br> For possible property values, see "Connection method types" table.<br> |
+|ConnectionMethodVariant|String|The variant of connection method.|
+|Links \{|Object|Links to other resources that are related to this connection method.|
+|AggregationSources \[ \{<br> @odata.id<br> \} \]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
+
+ >**Connection method types**
+
+|String|Description|
+|------|-----------|
+| IPMI15<br> | IPMI 1.5 connection method.<br> |
+| IPMI20<br> | IPMI 2.0 connection method.<br> |
+| NETCONF<br> | Network Configuration Protocol.<br> |
+| OEM<br> | OEM connection method.<br> |
+| Redfish<br> | Redfish connection method.<br> |
+| SNMP<br> | Simple Network Management Protocol.<br> |
+
+
 
 ##  Adding a plugin as an aggregation source
 
@@ -141,12 +258,18 @@ Transfer-Encoding":chunked
 |-------|------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationSources` |
-|<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. This operation is performed in the background as a Redfish task.|
+|<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link \(having the aggregation source Id\) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this action, perform `GET` on the [task monitor](#) returned in the response header \(until the task is complete\).
+**Usage information**
+
+Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
+				
+A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
+To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
+		
 
 After the plugin is successfully added as an aggregation source, it will also be available as a manager resource at:
 
@@ -160,7 +283,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can add a plugin. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -171,10 +294,8 @@ curl -i POST \
   "UserName":"{plugin_userName}",
   "Password":"{plugin_password}", 
   "Links":{
-      "Oem":{
-         "PluginID":"{Redfish_PluginId}",
-         "PreferredAuthType":"{Preferred_aunthentication_type}",
-         "PluginType":"{plugin_type}"
+     "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/{ConnectionMethodId}"
       }
    }
 }' \
@@ -183,7 +304,9 @@ curl -i POST \
 
 ```
 
-> Sample request body
+
+
+>**Sample request body**
 
 ```
 {
@@ -191,16 +314,14 @@ curl -i POST \
    "UserName":"admin",
    "Password":"GRFPlug!n12$4",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF",
-         "PreferredAuthType":"BasicAuth",
-         "PluginType":"Compute"
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -210,8 +331,9 @@ curl -i POST \
 |PluginID|String \(required\)<br> |The id of the plugin you want to add. Example: GRF \(Generic Redfish Plugin\), ILO<br> |
 |PreferredAuthType|String \(required\)<br> |Preferred authentication method to connect to the plugin - `BasicAuth` or `XAuthToken`.|
 |PluginType|String \(required\)<br> |The string that represents the type of the plugin. Allowed values: `Compute`, and `Fabric` <br> |
+|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header \(HTTP 202 status\)**
 
 ```
 Connection:keep-alive
@@ -224,7 +346,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response header \(HTTP 201 status\)
+>**Sample response header \(HTTP 201 status\)**
 
 ```
 "cache-control":"no-cache
@@ -238,7 +360,7 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body \(HTTP 202 status\)**
 
 ```
 {
@@ -257,7 +379,9 @@ x-frame-options":"sameorigin"
 }
 ```
 
->  Sample response body \(HTTP 201 status\)
+
+
+>**Sample response body \(HTTP 201 status\)**
 
 ```
 {
@@ -269,15 +393,12 @@ x-frame-options":"sameorigin"
    "HostName":"{plugin_host}:45001",
    "UserName":"admin",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF",
-         "PreferredAuthType":"BasicAuth",
-         "PluginType":"Compute"
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 } 
 ```
-
 
 
 
@@ -298,7 +419,14 @@ x-frame-options":"sameorigin"
 |<strong>Response Code</strong> |On success, `202 Accepted` On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this operation, perform `GET` on the [task monitor](#) returned in the response header \(until the task is complete\). When the task is successfully complete, you will receive aggregation source Id of the added BMC. Save it as it is required to identify it in the resource inventory later.
+**Usage information**
+
+Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see [Connection methods](#connection-methods).
+				
+A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
+
+To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
+When the task is successfully complete, you will receive aggregation source Id of the added BMC. Save it as it is required to identify it in the resource inventory later.
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
 
@@ -312,6 +440,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can add a server. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
+>**curl command**
 
 ```
 curl -i -X POST \
@@ -323,9 +452,9 @@ curl -i -X POST \
     "UserName": "{BMC_UserName}", 
     "Password": "{BMC_Password}", 
     "Links":{     
-        "Oem": { 
-                  "PluginID": "GRF" 
-    } 
+        "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/{ConnectionMethodId}"
+      }
 }
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
@@ -333,7 +462,9 @@ curl -i -X POST \
 
 ```
 
-> Sample request body
+
+
+>**Sample request body**
 
 ```
 {
@@ -341,14 +472,14 @@ curl -i -X POST \
    "UserName":"admin",
    "Password":"{BMC_password}",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF"
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -356,9 +487,10 @@ curl -i -X POST \
 |UserName|String \(required\)<br> |The username of the BMC administrator account.|
 |Password|String \(required\)<br> |The password of the BMC administrator account.|
 |Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
-|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](GUID-4E64426F-559C-430A-AE60-61409DFB4131.md).| 
+|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](#adding-a-plugin-as-an-aggregation-source).|
+|ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header \(HTTP 202 status\)**
 
 ```
 Connection:keep-alive
@@ -371,7 +503,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response header \(HTTP 201 status\)
+>**Sample response header \(HTTP 201 status\)**
 
 ```
 "cache-control":"no-cache
@@ -385,7 +517,7 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body \(HTTP 202 status\)**
 
 ```
 {
@@ -404,8 +536,9 @@ x-frame-options":"sameorigin"
 }
 ```
 
-> Sample response body \(HTTP 201 status\)
 
+
+>** Sample response body \(HTTP 201 status\)**
 ```
  {
    "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
@@ -415,9 +548,9 @@ x-frame-options":"sameorigin"
    "Name":"Aggregation Source",
    "HostName":"10.24.0.4",
    "UserName":"admin",
-   "Links":{
-      "Oem":{
-         "PluginID":"GRF"
+    "Links":{
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 }
@@ -435,7 +568,7 @@ x-frame-options":"sameorigin"
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i GET \
@@ -445,7 +578,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -478,7 +611,7 @@ curl -i GET \
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i GET \
@@ -488,7 +621,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -518,17 +651,17 @@ curl -i GET \
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i PATCH \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
-'{​
+'{
 
-  "HostName": "10.24.0.6",​
-  "UserName": "admin"​,
+  "HostName": "10.24.0.6",
+  "UserName": "admin",
   "Password": "admin1234"
 
 }' \
@@ -537,19 +670,19 @@ curl -i PATCH \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
-{​
+{
 
-  "HostName": "10.24.0.4",​
-  "UserName": "admin",​
+  "HostName": "10.24.0.4",
+  "UserName": "admin",
   "Password": "admin1234"
 
 }
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -581,12 +714,14 @@ curl -i PATCH \
 |--------|--------------------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
-|<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. This operation is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
+|<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
 |<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)". IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this action, perform HTTP `GET` on the [task monitor](#) returned in the response header \(until the task is complete\).
+**Usage information**
+
+To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
@@ -598,7 +733,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -619,7 +754,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -634,7 +769,7 @@ curl -i POST \
 
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -643,7 +778,7 @@ curl -i POST \
 |ResetType|String \(required\)<br> |The type of reset to be performed. For possible values, see "Reset type". If the value is not supported by the target server machine, you will receive an HTTP `400 Bad Request` error.|
 |TargetURIs|Array \(required\)<br> |The URI of the target for `Reset`. Example: `"/redfish/v1/Systems/{ComputerSystemId}"` |
 
-### Reset type
+**Reset type**
 
 |String|Description|
 |------|-----------|
@@ -656,7 +791,7 @@ curl -i POST \
 |PowerCycle|Perform a power cycle of the unit.|
 |PushPowerButton|Simulate the pressing of the physical power button on this unit.|
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header** \(HTTP 202 status\)
 
 ```
 Connection:keep-alive
@@ -669,7 +804,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body** \(HTTP 202 status\)
 
 ```
 {
@@ -688,7 +823,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(subtask\)
+>**Sample response body** \(subtask\)
 
 ```
 {
@@ -719,7 +854,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(HTTP 200 status\)
+>**Sample response body** \(HTTP 200 status\)
 
 ```
 { 
@@ -743,7 +878,9 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this action, perform HTTP `GET` on the [task monitor](#) returned in the response header \(until the task is complete\).
+**Usage information**
+
+To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
@@ -755,7 +892,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -777,7 +914,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -793,13 +930,13 @@ curl -i POST \
 
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Systems|Array \(required\)<br> |Target servers for `SetDefaultBootOrder`.|
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header** \(HTTP 202 status\)
 
 ```
 Connection:keep-alive
@@ -812,7 +949,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body** \(HTTP 202 status\)
 
 ```
 {
@@ -831,7 +968,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(subtask\)
+>**Sample response body** \(subtask\)
 
 ```
 {
@@ -862,7 +999,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(HTTP 200 status\)
+>**Sample response body** \(HTTP 200 status\)
 
 ```
 { 
@@ -887,7 +1024,9 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this action, perform `GET` on the [task monitor](#) returned in the response header \(until the task is complete\).
+**Usage information**
+
+To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
 NOTE:
@@ -895,7 +1034,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can delete a server. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
-
+>**curl command**
 
 ```
 curl -i DELETE \
@@ -905,7 +1044,7 @@ curl -i DELETE \
 
 ```
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header** \(HTTP 202 status\)
 
 ```
 Connection:keep-alive
@@ -918,7 +1057,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body** \(HTTP 202 status\)
 
 ```
 {
@@ -944,7 +1083,7 @@ Content-Length:491 bytes
 
 An aggregate is a user-defined collection of resources.
 
-The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—The aggregates are available and accessible in the Resource Aggregator for ODIM environment until you delete them.
+The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—the aggregates are available and accessible in the Resource Aggregator for ODIM environment until you delete them.
 
 The resource aggregator allows you to:
 
@@ -969,7 +1108,7 @@ The resource aggregator allows you to:
 |<strong>Response Code</strong> |On success, `201 Created` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -986,7 +1125,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -996,13 +1135,13 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Elements|Array \(required\)<br> |An empty array or an array of links to the resources that this aggregate contains. To get the links to the system resources that are available in the resource inventory, perform HTTP `GET` on:<br> `/redfish/v1/Systems/` <br> |
 
-> Sample response header
+>**Sample response header**
 
 ```
 Cache-Control:no-cache
@@ -1016,7 +1155,7 @@ Date:Fri,21 August 2020 14:08:55 GMT+5m 11s
 Transfer-Encoding:chunked
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1047,7 +1186,7 @@ Transfer-Encoding:chunked
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i GET \
@@ -1057,7 +1196,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1090,7 +1229,7 @@ curl -i GET \
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i GET \
@@ -1100,7 +1239,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1131,7 +1270,7 @@ curl -i GET \
 |<strong>Response Code</strong> |On success, `204 No Content` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i DELETE \
@@ -1153,7 +1292,7 @@ curl -i DELETE \
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -1171,7 +1310,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -1182,13 +1321,13 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Elements|Array \(required\)<br> |An array of links to the Computer system resources that this aggregate contains.|
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1219,9 +1358,9 @@ curl -i POST \
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
+**Usage information**
 
-
-To know the progress of this action, perform HTTP `GET` on the [task monitor](#) returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
@@ -1231,7 +1370,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -1248,7 +1387,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -1258,7 +1397,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -1266,7 +1405,7 @@ curl -i POST \
 |DelayBetweenBatchesInSeconds|Integer \(seconds\) \(optional\)<br> |The delay among the batches of elements being reset.|
 |ResetType|String \(optional\)<br> |For possible values, refer to "Reset type" table in [Resetting servers](GUID-22EC7FC3-6EF7-4A69-8DE1-385E3786E0C8.md).|
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header** \(HTTP 202 status\)
 
 ```
 Connection:keep-alive
@@ -1279,7 +1418,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body** \(HTTP 202 status\)
 
 ```
 {
@@ -1298,7 +1437,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(subtask\)
+>**Sample response body** \(subtask\)
 
 ```
 {
@@ -1329,7 +1468,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(HTTP 200 status\)
+>**Sample response body** \(HTTP 200 status\)
 
 ```
  {
@@ -1354,9 +1493,9 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
+**Usage information**
 
-
-To know the progress of this action, perform HTTP `GET` on the [task monitor](#) returned in the response header \(until the task is complete\).
+To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
@@ -1366,7 +1505,7 @@ NOTE:
 Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -1377,7 +1516,7 @@ curl -i POST \
 
 ```
 
-> Sample response header \(HTTP 202 status\)
+>**Sample response header** \(HTTP 202 status\)
 
 ```
 Connection:keep-alive
@@ -1390,7 +1529,7 @@ Content-Length:491 bytes
 
 ```
 
-> Sample response body \(HTTP 202 status\)
+>**Sample response body** \(HTTP 202 status\)
 
 ```
 {
@@ -1409,7 +1548,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(subtask\)
+>**Sample response body** \(subtask\)
 
 ```
 {
@@ -1440,7 +1579,7 @@ Content-Length:491 bytes
 }
 ```
 
-> Sample response body \(HTTP 200 status\)
+>**Sample response body** \(HTTP 200 status\)
 
 ```
 { 
@@ -1465,7 +1604,7 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
+>**curl command**
 
 ```
 curl -i POST \
@@ -1483,7 +1622,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -1494,13 +1633,13 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
 |Elements|Array \(required\)<br> |An array of links to the Computer system resources that you want to remove from this aggregate.|
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1517,3 +1656,5 @@ curl -i POST \
    ]
 }
 ```
+
+

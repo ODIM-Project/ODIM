@@ -185,6 +185,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 
 func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	d := getMockExternalInterface()
+	d.ContactClient = mockContactClientForDelete
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()

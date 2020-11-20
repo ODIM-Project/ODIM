@@ -29,6 +29,9 @@ RUN go build -o add-hosts add-hosts.go
 
 FROM ubuntu:18.04
 
+ARG ODIMRA_USER_ID
+ARG ODIMRA_GROUP_ID
+
 RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
 && groupadd -r -g $ODIMRA_GROUP_ID odimra \
 && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \

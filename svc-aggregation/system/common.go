@@ -72,8 +72,8 @@ type ExternalInterface struct {
 	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
 	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
 	GenericSave             func([]byte, string, string) error
-	CheckActiveRequest      func(string) (bool, error)
-	DeleteActiveRequest     func(string) error
+	CheckActiveRequest      func(string) (bool, *errors.Error)
+	DeleteActiveRequest     func(string) *errors.Error
 }
 
 type responseStatus struct {

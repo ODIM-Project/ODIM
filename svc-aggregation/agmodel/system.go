@@ -899,3 +899,34 @@ func UpdateConnectionMethod(connectionMethod ConnectionMethod, key string) *erro
 	}
 	return nil
 }
+
+// CheckActiveRequest will check the DB to see whether there are any active requests for the given key
+// It will return true if there is an active request or false if not
+// It will also through an error if any DB connection issues arise
+func CheckActiveRequest(key string) (bool, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return false, errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	_, err = conn.Read("ActiveAddBMCRequest", key)
+	if err != nil {
+		if errors.DBKeyNotFound == err.ErrNo() {
+			return false, nil
+		}
+		return false, errors.PackError(err.ErrNo(), "error: while trying to fetch active connection details: ", err.Error())
+	}
+	return true, nil
+}
+
+// DeleteActiveRequest deletes the active request key from the DB, return error if any
+func DeleteActiveRequest(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err = conn.Delete("ActiveAddBMCRequest", key)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to delete active connection details: ", err.Error())
+	}
+	return nil
+}

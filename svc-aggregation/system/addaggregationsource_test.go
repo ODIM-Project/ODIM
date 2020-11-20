@@ -954,7 +954,7 @@ func mockGenericSave(data []byte, table, key string) error {
 	return nil
 }
 
-func mockCheckActiveRequest(managerAddress string) (bool, error) {
+func mockCheckActiveRequest(managerAddress string) (bool, *errors.Error) {
 	if forwardedRequestCounter == 0 {
 		forwardedRequestCounter++
 	} else {
@@ -963,7 +963,7 @@ func mockCheckActiveRequest(managerAddress string) (bool, error) {
 	return activeReqFlag, nil
 }
 
-func mockDeleteActiveRequest(managerAddress string) error {
+func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 	activeReqFlag = false
 	return nil
 }

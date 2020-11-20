@@ -394,6 +394,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	p := getMockExternalInterface()
+	p.ContactClient = testUpdateContactClient
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}

@@ -150,9 +150,6 @@ type ActiveRequestsSet struct {
 	UpdateMu sync.Mutex
 }
 
-// ActiveReqSet is the global instance for tracking ongoing requests
-var ActiveReqSet ActiveRequestsSet
-
 var southBoundURL = "southboundurl"
 var northBoundURL = "northboundurl"
 

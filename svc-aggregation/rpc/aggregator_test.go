@@ -356,9 +356,6 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 	mockPluginData(t, "ILO_v1.0.0")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	system.ActiveReqSet.UpdateMu.Lock()
-	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
-	system.ActiveReqSet.UpdateMu.Unlock()
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)

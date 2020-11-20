@@ -80,16 +80,14 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		Password:         aggregationSourceRequest.Password,
 		ConnectionMethod: aggregationSourceRequest.Links.ConnectionMethod,
 	}
-	// ActiveReqSet.UpdateMu.Lock()
+
 	exist, dErr := e.CheckActiveRequest(addResourceRequest.ManagerAddress)
 	if dErr != nil {
 		errMsg := fmt.Sprintf("error: while trying to collect the active request details from DB: %v", dErr.Error())
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
-	// if _, exist := ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress]; exist {
 	if exist {
-		// ActiveReqSet.UpdateMu.Unlock()
 		var errMsg string
 		mIP, _ := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
 		errMsg = fmt.Sprintf("error: An active request already exists for adding aggregation source IP %v", mIP)
@@ -111,19 +109,12 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
-	// ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.ConnectionMethod.OdataID
-	// ActiveReqSet.UpdateMu.Unlock()
 
 	defer func() {
 		err := e.DeleteActiveRequest(addResourceRequest.ManagerAddress)
 		if err != nil {
 			log.Printf("error: while trying to collect the active request details from DB: %v", dErr.Error())
 		}
-		// check if there is an entry added for the server in ongoing requests tracker and remove it
-		// ActiveReqSet.UpdateMu.Lock()
-		// delete(ActiveReqSet.ReqRecord, addResourceRequest.ManagerAddress)
-		// ActiveReqSet.UpdateMu.Unlock()
-
 	}()
 
 	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)

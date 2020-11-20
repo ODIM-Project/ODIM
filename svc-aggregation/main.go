@@ -54,9 +54,6 @@ func main() {
 		log.Fatalf("error while trying to check DB connection health: %v", err)
 	}
 
-	//initialize global record used for tracking ongoing requests
-	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
-
 	var connectionMethoodInterface = agcommon.DBInterface{
 		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
 		GetConnectionMethodInterface: agmodel.GetConnectionMethod,

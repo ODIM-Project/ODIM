@@ -115,6 +115,10 @@
       {
          "ConnectionMethodType": "Redfish",
          "ConnectionMethodVariant": "Storage:BasicAuth:STG_v1.0.0"
-      }
+      },
+	  {
+		  "ConnectionMethodType": "Redfish",
+		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
+	  }
    ]
 }

@@ -30,18 +30,18 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
+func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
 	var resp response.RPC
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
-	if !(req.Oem.PreferredAuthType == "BasicAuth" || req.Oem.PreferredAuthType == "XAuthToken") {
+	if !(cmVariants.PreferredAuthType == "BasicAuth" || cmVariants.PreferredAuthType == "XAuthToken") {
 		errMsg := "error: incorrect request property value for PreferredAuthType"
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PreferredAuthType", "[BasicAuth, XAuthToken]"}, taskInfo), "", nil
 	}
 
 	// checking the plugin type
-	if !isPluginTypeSupported(req.Oem.PluginType) {
+	if !isPluginTypeSupported(cmVariants.PluginType) {
 		errMsg := "error: incorrect request property value for PluginType"
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"PluginType", fmt.Sprintf("%v", config.Data.SupportedPluginTypes)}, taskInfo), "", nil
@@ -57,14 +57,14 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	// error is not nil, DB query failed, can't say for sure if queried plugin exists,
 	// except when read fails with plugin data not found, and will continue with add process,
 	// and any other errors, will fail add plugin operation.
-	_, errs := agmodel.GetPluginData(req.Oem.PluginID)
+	_, errs := agmodel.GetPluginData(cmVariants.PluginID)
 	if errs == nil || (errs != nil && (errs.ErrNo() == errors.JSONUnmarshalFailed || errs.ErrNo() == errors.DecryptionFailed)) {
-		errMsg := "error:plugin with name " + req.Oem.PluginID + " already exists"
+		errMsg := "error:plugin with name " + cmVariants.PluginID + " already exists"
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", req.Oem.PluginID}, taskInfo), "", nil
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", cmVariants.PluginID}, taskInfo), "", nil
 	}
 	if errs != nil && errs.ErrNo() != errors.DBKeyNotFound {
-		errMsg := "error: DB lookup failed for " + req.Oem.PluginID + " plugin: " + errs.Error()
+		errMsg := "error: DB lookup failed for " + cmVariants.PluginID + " plugin: " + errs.Error()
 		log.Println(errMsg)
 		if errs.ErrNo() == errors.DBConnFailed {
 			return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg,
@@ -96,7 +96,6 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, err.Error(),
 			[]interface{}{"Backend", config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, taskInfo), "", nil
 	}
-
 	// encrypt plugin password
 	ciphertext, err := e.EncryptPassword([]byte(req.Password))
 	if err != nil {
@@ -105,16 +104,15 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	var managerUUID string
-
 	ipData := strings.Split(req.ManagerAddress, ":")
 	var plugin = agmodel.Plugin{
 		IP:                ipData[0],
 		Port:              ipData[1],
 		Username:          req.UserName,
 		Password:          []byte(req.Password),
-		ID:                req.Oem.PluginID,
-		PluginType:        req.Oem.PluginType,
-		PreferredAuthType: req.Oem.PreferredAuthType,
+		ID:                cmVariants.PluginID,
+		PluginType:        cmVariants.PluginType,
+		PreferredAuthType: cmVariants.PreferredAuthType,
 	}
 	pluginContactRequest.Plugin = plugin
 	pluginContactRequest.StatusPoll = true
@@ -138,34 +136,10 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 			"Password": string(plugin.Password),
 		}
 	}
-
-	// Verfiying the plugin Status
-	pluginContactRequest.HTTPMethodType = http.MethodGet
-	pluginContactRequest.OID = "/ODIM/v1/Status"
-	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
-	if err != nil {
-		errMsg := err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
-	}
-	// extracting the EMB Type and EMB Queue name
-	var statusResponse common.StatusResponse
-	err = json.Unmarshal(body, &statusResponse)
-	if err != nil {
-		errMsg := err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
-	}
-	var queueList = make([]string, 0)
-	if statusResponse.EventMessageBus != nil {
-		for i := 0; i < len(statusResponse.EventMessageBus.EmbQueue); i++ {
-			queueList = append(queueList, statusResponse.EventMessageBus.EmbQueue[i].QueueName)
-		}
-	}
-
 	// Getting all managers info from plugin
+	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.OID = "/ODIM/v1/Managers"
-	body, _, getResponse, err = contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
+	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
 		log.Println(errMsg)
@@ -239,6 +213,6 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	}
 	e.PublishEvent(managersList, "ManagerCollection")
 	resp.StatusCode = http.StatusCreated
-	log.Println("sucessfully added  plugin with the id ", req.Oem.PluginID)
+	log.Println("sucessfully added  plugin with the id ", cmVariants.PluginID)
 	return resp, uuid.NewV4().String(), ciphertext
 }

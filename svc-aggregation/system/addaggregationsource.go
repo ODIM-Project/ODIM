@@ -64,28 +64,28 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 		return resp
 	}
 
-	if aggregationSourceRequest.Links == nil || aggregationSourceRequest.Links.Oem == nil {
-		errMsg := "error: mandatory Oem block missing in the request"
+	if aggregationSourceRequest.Links == nil || aggregationSourceRequest.Links.ConnectionMethod == nil {
+		errMsg := "error: mandatory ConnectionMethod block missing in the request"
 		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Oem"}, taskInfo)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ConnectionMethod"}, taskInfo)
 	}
+	return e.addAggregationSource(taskID, targetURI, string(req.RequestBody), percentComplete, aggregationSourceRequest, taskInfo)
+}
+
+func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody string, percentComplete int32, aggregationSourceRequest AggregationSource, taskInfo *common.TaskUpdateInfo) response.RPC {
+	var resp response.RPC
 	var addResourceRequest = AddResourceRequest{
-		ManagerAddress: aggregationSourceRequest.HostName,
-		UserName:       aggregationSourceRequest.UserName,
-		Password:       aggregationSourceRequest.Password,
-		Oem:            aggregationSourceRequest.Links.Oem,
+		ManagerAddress:   aggregationSourceRequest.HostName,
+		UserName:         aggregationSourceRequest.UserName,
+		Password:         aggregationSourceRequest.Password,
+		ConnectionMethod: aggregationSourceRequest.Links.ConnectionMethod,
 	}
 	ActiveReqSet.UpdateMu.Lock()
-	if pluginID, exist := ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress]; exist {
+	if _, exist := ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress]; exist {
 		ActiveReqSet.UpdateMu.Unlock()
 		var errMsg string
-		mIP, mPort := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
-		// checking whether the request is for adding a server or a manager
-		if addResourceRequest.Oem.PluginType != "" || addResourceRequest.Oem.PreferredAuthType != "" {
-			errMsg = fmt.Sprintf("error: An active request already exists for adding manager %v plugin with IP %v Port %v", pluginID.(string), mIP, mPort)
-		} else {
-			errMsg = fmt.Sprintf("error: An active request already exists for adding BMC with IP %v through %v plugin", mIP, pluginID.(string))
-		}
+		mIP, _ := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
+		errMsg = fmt.Sprintf("error: An active request already exists for adding aggregation source IP %v", mIP)
 		log.Println(errMsg)
 		args := response.Args{
 			Code:    response.GeneralError,
@@ -95,10 +95,10 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
-		e.UpdateTask(fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
+		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
-	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.Oem.PluginID
+	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.ConnectionMethod.OdataID
 	ActiveReqSet.UpdateMu.Unlock()
 
 	defer func() {
@@ -108,18 +108,37 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 		ActiveReqSet.UpdateMu.Unlock()
 	}()
 
+	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)
+	if err1 != nil {
+		errMsg := "error while getting connection method id: " + err1.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
+	}
+	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
 	var pluginContactRequest getResourceRequest
-
 	pluginContactRequest.ContactClient = e.ContactClient
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.TargetURI = targetURI
 	pluginContactRequest.UpdateTask = e.UpdateTask
 	var aggregationSourceUUID string
 	var cipherText []byte
-	if aggregationSourceRequest.Links.Oem.PluginType != "" || aggregationSourceRequest.Links.Oem.PreferredAuthType != "" {
-		resp, aggregationSourceUUID, cipherText = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest)
+
+	// check status will do call on the URI /ODIM/v1/Status to the requested manager address
+	// if its success then add the plugin, else if its not found then add BMC
+	// else return the response
+	statusResp, statusCode, queueList := checkStatus(pluginContactRequest, addResourceRequest, cmVariants, taskInfo)
+	if statusCode == http.StatusOK {
+		// check if AggregationSource has any values, if its there means its managing the bmcs
+		if len(connectionMethod.Links.AggregationSources) > 0 {
+			errMsg := "Cant proceed to add aggregation source, since connection method is already managing other aggregation sources"
+			log.Println(errMsg)
+			return common.GeneralError(http.StatusNotAcceptable, response.InternalError, errMsg, nil, taskInfo)
+		}
+		resp, aggregationSourceUUID, cipherText = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest, queueList, cmVariants)
+	} else if statusCode == http.StatusNotFound {
+		resp, aggregationSourceUUID, cipherText = e.addCompute(taskID, targetURI, cmVariants.PluginID, percentComplete, addResourceRequest, pluginContactRequest)
 	} else {
-		resp, aggregationSourceUUID, cipherText = e.addCompute(taskID, targetURI, percentComplete, addResourceRequest, pluginContactRequest)
+		return statusResp
 	}
 	if resp.StatusMessage != "" {
 		return resp
@@ -133,6 +152,14 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	}
 	var aggregationSourceURI = fmt.Sprintf("%s/%s", targetURI, aggregationSourceUUID)
 	dbErr := agmodel.AddAggregationSource(aggregationSourceData, aggregationSourceURI)
+	if dbErr != nil {
+		errMsg := dbErr.Error()
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+
+	connectionMethod.Links.AggregationSources = append(connectionMethod.Links.AggregationSources, agmodel.OdataID{OdataID: aggregationSourceURI})
+	dbErr = e.UpdateConnectionMethod(connectionMethod, addResourceRequest.ConnectionMethod.OdataID)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
 		log.Println(errMsg)
@@ -167,7 +194,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	resp.StatusCode = http.StatusCreated
 	percentComplete = 100
 
-	task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	task := fillTaskData(taskID, targetURI, reqBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 	return resp
 }

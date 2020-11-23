@@ -887,3 +887,15 @@ func Delete(table, key string, dbtype common.DbType) *errors.Error {
 	}
 	return nil
 }
+
+// UpdateConnectionMethod updates the Connection Method details
+func UpdateConnectionMethod(connectionMethod ConnectionMethod, key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if _, err := conn.Update("ConnectionMethod", key, connectionMethod); err != nil {
+		return err
+	}
+	return nil
+}

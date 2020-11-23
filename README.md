@@ -165,7 +165,14 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
    ```
    $ export HOSTIP=<ip_address_of_your_system>
    ```
-5. Set up FQDN in the `/etc/hosts` file (only if there is no DNS infrastructure):
+
+5. Set below environment variables with user and group ID to be used for odimra
+   ```
+   $ export ODIMRA_USER_ID=1234
+   $ export ODIMRA_GROUP_ID=1234
+   ```
+
+6. Set up FQDN in the `/etc/hosts` file (only if there is no DNS infrastructure):
 
     a. Open the `/etc/hosts` file for editing:
       ```
@@ -178,7 +185,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
    Example:
 `<host_ipv4_address> <fqdn>`
 
-6. Generate certificates:
+7. Generate certificates:
 
    
    **NOTE:**
@@ -205,10 +212,13 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       ```
    c. Use the following command to generate Kafka TLS certificate:
       ```
-       $ ./generate_kafka_tls.sh kafka
+       $ ./generate_kafka_certs.sh kafka
       ```
-      
-   d. Use the following command to copy the resource aggregator, the GRF  plugin and the Kafka TLS certificates:
+   d. Use the following command to generate Zookeeper TLS certificate:
+      ```
+       $ ./generate_zookeeper_certs.sh zookeeper
+      ```
+   e. Use the following command to copy the resource aggregator, the GRF  plugin, the Kafka and Zookeeper TLS certificates:
      ```
       $ sudo ./copy_certificate.sh
      ```
@@ -221,9 +231,13 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       - odimra_kafka_client.key
       - odimra_kafka_client.crt
 
-     The following files are copied in the path: `/etc/kafkacert/`
+     The following files are copied in the path: `/etc/kafka/conf/`
       - kafka.keystore.jks
       - kafka.truststore.jks
+
+     The following files are copied in the path: - /etc/zookeeper/conf
+      - zookeeper.keystore.jks
+      - zookeeper.trustore.jks
       
     The following files are copied in the path: `/etc/plugincert/`
       - rootCA.crt
@@ -233,12 +247,12 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       - odimra_kafka_client.crt
       
 
-7. Navigate to the odimra folder.
+8. Navigate to the odimra folder.
    ```
    $ cd ~/ODIM
    ```
 
-8. Use the following command to deploy and start the containers:
+9. Use the following command to deploy and start the containers:
    ```
    $ make all
    ```
@@ -250,7 +264,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       - build_consul_1
       - build_grf_plugin_1
 
-9. Verify that the resource aggregator services are running successfully.
+10. Verify that the resource aggregator services are running successfully.
    ```
    $ ps -eaf | grep svc
    ```
@@ -308,7 +322,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
     - The GRF plugin logs are available at `/var/log/GRF_PLUGIN`.
 
 
-10. To configure log rotation, do the following:
+11. To configure log rotation, do the following:
 
     a. Navigate to the `/etc/logrotate.d` directory.
     ```
@@ -342,7 +356,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       $ sudo logrotate -v -f /etc/logrotate.d/odimra
   	  ```
   
-11.  Use following commands to undeploy odimra solution and remove the docker images, persistent data, logs.
+12.  Use following commands to undeploy odimra solution and remove the docker images, persistent data, logs.
 
      ```
      $ make clean
@@ -367,7 +381,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
      [CAUTION] The above commands are not encouraged to be executed in production envoirnment as this will erase important data.
                The action is irrecoverable and will wipe all the odimra completely. 
 
-12. To add the Generic Redfish Plugin and servers to the resource aggregator for ODIM, refer to the following readme.  
+13. To add the Generic Redfish Plugin and servers to the resource aggregator for ODIM, refer to the following readme.  
     https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
 	
 	

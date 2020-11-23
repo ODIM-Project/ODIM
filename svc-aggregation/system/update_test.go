@@ -222,18 +222,16 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 }
 
 func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
-	mockPluginData(t, "ILO")
-	mockPluginData(t, "GRF")
+	mockPluginData(t, "ILO_v1.0.0")
+	mockPluginData(t, "GRF_v1.0.0")
 
 	reqManagerGRF := agmodel.AggregationSource{
 		HostName: "100.0.0.1:50000",
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID":         "GRF",
-				"PreffredAuthType": "XAuthToken",
-				"PluginType":       "Compute",
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/058c1876-6f24-439a-8968-2af26154081f",
 			},
 		},
 	}
@@ -242,10 +240,8 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID":         "ILO",
-				"PreffredAuthType": "XAuthToken",
-				"PluginType":       "Compute",
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d",
 			},
 		},
 	}
@@ -254,8 +250,8 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069",
 			},
 		},
 	}
@@ -263,7 +259,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		ManagerAddress: "100.0.1.1",
 		UserName:       "admin",
 		Password:       []byte("admin12345"),
-		PluginID:       "ILO",
+		PluginID:       "ILO_v1.0.0",
 	})
 	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123455")
 	if err != nil {
@@ -398,11 +394,13 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	p := &ExternalInterface{
-		ContactClient:   testUpdateContactClient,
-		Auth:            mockIsAuthorized,
-		GetPluginStatus: GetPluginStatusForTesting,
-		EncryptPassword: stubDevicePassword,
-		DecryptPassword: stubDevicePassword,
+		ContactClient:          testUpdateContactClient,
+		Auth:                   mockIsAuthorized,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
 	}
 	type args struct {
 		req *aggregatorproto.AggregatorRequest

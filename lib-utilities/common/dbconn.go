@@ -57,11 +57,11 @@ func GetDBConnection(dbFlag DbType) (*persistencemgr.ConnPool, *errors.Error) {
 func TruncateDB(dbFlag DbType) *errors.Error {
 	conn, err := GetDBConnection(dbFlag)
 	if err != nil {
-		return errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
+		return errors.PackError(err.ErrNo(), "unable to connect DB: ", err.Error())
 	}
 	err = conn.CleanUpDB()
 	if err != nil {
-		return errors.PackError(err.ErrNo(), "error while trying to flush out DB: ", err.Error())
+		return errors.PackError(err.ErrNo(), "unable to flush out DB: ", err.Error())
 	}
 	return nil
 }
@@ -71,18 +71,18 @@ func TruncateDB(dbFlag DbType) *errors.Error {
 func CheckDBConnection() error {
 	inMemConn, err := GetDBConnection(InMemory)
 	if err != nil {
-		return fmt.Errorf("error while trying to create InMemory DB connection: %v", err)
+		return fmt.Errorf("unable to create InMemory DB connection: %v", err)
 	}
 	onDiskConn, err := GetDBConnection(OnDisk)
 	if err != nil {
-		return fmt.Errorf("error while trying to create OnDisk DB connection: %v", err)
+		return fmt.Errorf("unable to create OnDisk DB connection: %v", err)
 	}
 
 	if err := inMemConn.Ping(); err != nil {
-		return fmt.Errorf("error while trying to ping InMemory DB: %v", err)
+		return fmt.Errorf("unable to ping InMemory DB: %v", err)
 	}
 	if err := onDiskConn.Ping(); err != nil {
-		return fmt.Errorf("error while trying to ping OnDisk DB: %v", err)
+		return fmt.Errorf("unable to ping OnDisk DB: %v", err)
 	}
 
 	return nil

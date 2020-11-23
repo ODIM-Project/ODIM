@@ -1257,10 +1257,10 @@ func createEventSubscriptionResponse() interface{} {
 	return errors.ErrorClass{
 		MessageExtendedInfo: []errors.MsgExtendedInfo{
 			errors.MsgExtendedInfo{
-				MessageID: "Base.1.0.Created",
+				MessageID: "Base.1.6.1.Created",
 			},
 		},
-		Code:    "iLO.0.10.ExtendedInfo",
+		Code:    errResponse.Created,
 		Message: "See @Message.ExtendedInfo for more information.",
 	}
 }

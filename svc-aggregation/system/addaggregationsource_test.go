@@ -23,10 +23,15 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
+
+func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
+	return nil
+}
 
 func TestExternalInterface_AddBMC(t *testing.T) {
 	common.MuxLock.Lock()
@@ -46,21 +51,21 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	mockPluginData(t, "GRF")
-	mockPluginData(t, "XAuthPlugin")
-	mockPluginData(t, "XAuthPluginFail")
+	mockPluginData(t, "GRF_v1.0.0")
+	mockPluginData(t, "XAuthPlugin_v1.0.0")
+	mockPluginData(t, "XAuthPluginFail_v1.0.0")
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "GRF",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	})
-	reqWithoutOEM, _ := json.Marshal(AggregationSource{
+	reqWithoutConnectionMethod, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.11",
 		UserName: "admin",
 		Password: "password",
@@ -70,8 +75,8 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "invalidpluginid",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
 			},
 		},
 	})
@@ -80,8 +85,8 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "XAuthPlugin",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/0a8992dc-8b47-4fe3-b26c-4c34048cf0d2",
 			},
 		},
 	})
@@ -90,8 +95,8 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin1",
 		Password: "incorrectPassword",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "GRF",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	})
@@ -100,23 +105,25 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "username",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "XAuthPluginFail",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7551386e-b9d7-4233-a963-3841adc69e17",
 			},
 		},
 	})
 	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
+		ContactClient:          mockContactClient,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		DeleteComputeSystem:    deleteComputeforTest,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -143,13 +150,13 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 			},
 		},
 		{
-			name: "request without OEM",
+			name: "request without connectionmethod",
 			p:    p,
 			args: args{
 				taskID: "123",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  reqWithoutOEM,
+					RequestBody:  reqWithoutConnectionMethod,
 				},
 			},
 			want: response.RPC{
@@ -275,30 +282,32 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	mockPluginData(t, "GRF")
+	mockPluginData(t, "GRF_v1.0.0")
 
 	reqEncryptFail, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
 		Password: "passwordWithInvalidEncryption",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "GRF",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	})
 	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
+		ContactClient:          mockContactClient,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		DeleteComputeSystem:    deleteComputeforTest,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 	type args struct {
 		taskID string
@@ -354,30 +363,31 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockPluginData(t, "GRF")
+	mockPluginData(t, "GRF_v1.0.0")
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID: "GRF",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	})
 	p := &ExternalInterface{
-		ContactClient:       mockContactClientForDuplicate,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
+		ContactClient:          mockContactClientForDuplicate,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		DeleteComputeSystem:    deleteComputeforTest,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
 	}
 	type args struct {
 		taskID string
@@ -428,7 +438,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "ILO")
+	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
@@ -438,9 +448,9 @@ func TestExternalInterface_Manager(t *testing.T) {
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
 	}
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword", pluginData)
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
 	// create plugin with bad data
-	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData", "PluginWithBadData")
+	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -458,10 +468,8 @@ func TestExternalInterface_Manager(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "GRF",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	})
@@ -470,10 +478,8 @@ func TestExternalInterface_Manager(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d39069",
 			},
 		},
 	})
@@ -482,10 +488,8 @@ func TestExternalInterface_Manager(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuthentication",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/6f29f281-f5e2-4873-97b7-376be668f4f4",
 			},
 		},
 	})
@@ -494,10 +498,8 @@ func TestExternalInterface_Manager(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "plugin",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/6456115a-e900-4c11-809f-0957031d2d56",
 			},
 		},
 	})
@@ -506,10 +508,8 @@ func TestExternalInterface_Manager(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "PluginWithBadPassword",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/36474ba4-a201-46aa-badf-d8104da418e8",
 			},
 		},
 	})
@@ -518,26 +518,27 @@ func TestExternalInterface_Manager(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "PluginWithBadPassword",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/4298f256-c279-44e2-94f2-3987bb7d8f53",
 			},
 		},
 	})
 
 	p := &ExternalInterface{
-		ContactClient:     mockContactClient,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-		GetPluginMgrAddr:  stubPluginMgrAddrData,
+		ContactClient:          mockContactClient,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		SubscribeToEMB:         mockSubscribeEMB,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetAllKeysFromTable:    mockGetAllKeysFromTable,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -653,7 +654,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	addComputeRetrieval := config.AddComputeSkipResources{
 		SystemCollection: []string{"Chassis", "LogServices"},
 	}
-	err := mockPluginData(t, "XAuthPlugin")
+	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {
 		t.Fatalf("Error in creating mock PluginData :%v", err)
 	}
@@ -677,10 +678,8 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "GRF",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/058c1876-6f24-439a-8968-2af26154081f",
 			},
 		},
 	})
@@ -689,10 +688,8 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		UserName: "incorrectusername",
 		Password: "incorrectPassword",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d",
 			},
 		},
 	})
@@ -702,10 +699,8 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d",
 			},
 		},
 	})
@@ -715,10 +710,8 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d",
 			},
 		},
 	})
@@ -728,10 +721,8 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d",
 			},
 		},
 	})
@@ -741,26 +732,27 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "ILO",
-				PreferredAuthType: "XAuthToken",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/3489af48-2e99-4d78-a250-b04641e9d98d",
 			},
 		},
 	})
 
 	p := &ExternalInterface{
-		ContactClient:     mockContactClient,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-		GetPluginMgrAddr:  stubPluginMgrAddrData,
+		ContactClient:          mockContactClient,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		SubscribeToEMB:         mockSubscribeEMB,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetAllKeysFromTable:    mockGetAllKeysFromTable,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 
 	type args struct {
@@ -891,26 +883,27 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{
-			Oem: &AddOEM{
-				PluginID:          "GRF",
-				PreferredAuthType: "BasicAuth",
-				PluginType:        "Compute",
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	})
 
 	p := &ExternalInterface{
-		ContactClient:     testContactClientWithDelay,
-		Auth:              mockIsAuthorized,
-		CreateChildTask:   mockCreateChildTask,
-		UpdateTask:        mockUpdateTask,
-		CreateSubcription: EventFunctionsForTesting,
-		PublishEvent:      PostEventFunctionForTesting,
-		GetPluginStatus:   GetPluginStatusForTesting,
-		SubscribeToEMB:    mockSubscribeEMB,
-		EncryptPassword:   stubDevicePassword,
-		DecryptPassword:   stubDevicePassword,
-		GetPluginMgrAddr:  stubPluginMgrAddrData,
+		ContactClient:          testContactClientWithDelay,
+		Auth:                   mockIsAuthorized,
+		CreateChildTask:        mockCreateChildTask,
+		UpdateTask:             mockUpdateTask,
+		CreateSubcription:      EventFunctionsForTesting,
+		PublishEvent:           PostEventFunctionForTesting,
+		GetPluginStatus:        GetPluginStatusForTesting,
+		SubscribeToEMB:         mockSubscribeEMB,
+		EncryptPassword:        stubDevicePassword,
+		DecryptPassword:        stubDevicePassword,
+		GetConnectionMethod:    mockGetConnectionMethod,
+		UpdateConnectionMethod: mockUpdateConnectionMethod,
+		GetAllKeysFromTable:    mockGetAllKeysFromTable,
+		GetPluginMgrAddr:       stubPluginMgrAddrData,
 	}
 
 	type args struct {

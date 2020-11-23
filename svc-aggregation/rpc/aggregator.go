@@ -275,28 +275,6 @@ func (a *Aggregator) RediscoverSystemInventory(ctx context.Context, req *aggrega
 
 }
 
-// validateAddResoureRequest validates the request parameters of Add Resource request
-func validateAddResoureRequest(req system.AddResourceRequest) string {
-	param := ""
-	if req.ManagerAddress == "" {
-		param = "ManagerAddress "
-	}
-	if req.Password == "" {
-		param = param + "Password "
-	}
-	if req.UserName == "" {
-		param = param + "UserName "
-	}
-	if req.Oem != nil {
-		if req.Oem.PluginID == "" {
-			param = param + "PluginID"
-		}
-	} else {
-		param = param + "Oem"
-	}
-	return param
-}
-
 // UpdateSystemState defines the operations which handles the RPC request response
 // for the UpdateSystemState call to aggregator micro service.
 // The functionality retrives the request and return backs the response to
@@ -399,12 +377,10 @@ func validateAggregationSourceRequest(req system.AggregationSource) string {
 func validateLinks(req *system.Links) string {
 	var param = ""
 	if req != nil {
-		if req.Oem != nil {
-			if req.Oem.PluginID == "" {
-				param = param + "PluginID"
+		if req.ConnectionMethod != nil {
+			if req.ConnectionMethod.OdataID == "" {
+				param = param + "ConnectionMethod @odata.id"
 			}
-		} else {
-			param = param + "Oem"
 		}
 	} else {
 		param = "Links"

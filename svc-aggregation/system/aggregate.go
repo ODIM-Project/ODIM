@@ -318,7 +318,7 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		"OData-Version":     "4.0",
 	}
 	aggregate, _ = agmodel.GetAggregate(aggregateURL)
-	commonResponse.CreateGenericResponse(response.Created)
+	commonResponse.CreateGenericResponse(response.Success)
 	resp.Body = agresponse.AggregateResponse{
 		Response: commonResponse,
 		Elements: aggregate.Elements,
@@ -398,7 +398,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		"OData-Version":     "4.0",
 	}
 	aggregate, _ = agmodel.GetAggregate(aggregateURL)
-	commonResponse.CreateGenericResponse(response.Created)
+	commonResponse.CreateGenericResponse(response.Success)
 	resp.Body = agresponse.AggregateResponse{
 		Response: commonResponse,
 		Elements: aggregate.Elements,

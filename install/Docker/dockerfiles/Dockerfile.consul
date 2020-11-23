@@ -25,7 +25,7 @@ ARG ODIMRA_GROUP_ID
 # the host machine, so that persisted directories can be accessed.
 RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
     && groupadd -r -g $ODIMRA_GROUP_ID odimra \
-    && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/kafka -r -g odimra odimra
+    && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra
 
 # Set up certificates, base tools, and Consul.
 # libc6-compat is needed to symlink the shared libraries for ARM builds
@@ -89,3 +89,4 @@ ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 # everything in RAM, exposes a web UI and HTTP endpoints, and bootstraps itself.
 # Don't use this configuration for production.
 CMD ["agent", "-server"]
+

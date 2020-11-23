@@ -788,6 +788,16 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 			},
 		},
 	})
+	reqWithoutPort, _ := json.Marshal(AggregationSource{
+		HostName: "localhost",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	})
 
 	p := getMockExternalInterface()
 
@@ -795,28 +805,40 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 		taskID string
 		req    *aggregatorproto.AggregatorRequest
 	}
-	req := &aggregatorproto.AggregatorRequest{
-		SessionToken: "validToken",
-		RequestBody:  reqSuccess,
-	}
+
 	tests := []struct {
 		name string
 		p    *ExternalInterface
 		args args
 		want response.RPC
+		req  *aggregatorproto.AggregatorRequest
 	}{
 		{
 			name: "adding same BMC multiple times",
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},
+			req: &aggregatorproto.AggregatorRequest{
+				SessionToken: "validToken",
+				RequestBody:  reqSuccess,
+			},
+		},
+		{
+			name: "adding same BMC without port multiple times",
+			want: response.RPC{
+				StatusCode: http.StatusConflict,
+			},
+			req: &aggregatorproto.AggregatorRequest{
+				SessionToken: "validToken",
+				RequestBody:  reqWithoutPort,
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			go p.AddAggregationSource("123", "validUserName", req)
+			go p.AddAggregationSource("123", "validUserName", tt.req)
 			time.Sleep(time.Second)
-			if got := p.AddAggregationSource("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := p.AddAggregationSource("123", "validUserName", tt.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})

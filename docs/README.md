@@ -4341,7 +4341,7 @@ curl -i GET \
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before creating a volume.</li><li>Power on the system once the operation is successful. The volume will be available in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
+|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before creating a volume.</li><li>Power on the system once the operation is successful. The volume will be available in the system only after a successful reset.</li><li>You cannot create another volume when the system reset is in progress.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
@@ -4425,7 +4425,7 @@ curl -i -X POST \
 |----------|-----------|
 |<strong>Method</strong>  | `DELETE` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
-|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br>**NOTE:** Reset the computer system once the operation is successful. The changes will be reflected in the system only after a successful reset. To know how to reset, see [Resetting a computer system](#resetting-a-computer-system).|
+|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br>NOTE:<ul><li>Reset the computer system once the operation is successful. The changes will be reflected in the system only after a successful reset.</li><li>You cannot delete an existing volume when the system reset is in progress.</li></ul> To know how to reset, see [Resetting a computer system](#resetting-a-computer-system). |
 |<strong>Response code</strong>|On success, `204 No Content` |
 |<strong>Authentication</strong>  |Yes|
 
@@ -8563,6 +8563,7 @@ Transfer-Encoding:chunked
 |**Response code** |<ul><li>`202 Accepted`</li><li>`201 Created`</li></ul>|
 |**Authentication** |Yes|
 
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 

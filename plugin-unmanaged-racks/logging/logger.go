@@ -1,48 +1,49 @@
 package logging
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	formatter "github.com/antonfisher/nested-logrus-formatter"
+	"github.com/sirupsen/logrus"
 )
 
 var staticLogger *logger
 
 type logger struct {
-	logLevel *zap.AtomicLevel
-	*zap.SugaredLogger
+	logLevel *logrus.Level
+	*logrus.Logger
 }
 
 func (l logger) Print(args ...interface{}) {
-	l.SugaredLogger.Info(args)
+	l.Logger.Info(args)
 }
 
 func (l logger) Println(args ...interface{}) {
-	l.SugaredLogger.Info(args)
+	l.Logger.Info(args)
 }
 
 func (l logger) Error(args ...interface{}) {
-	l.SugaredLogger.Error(args)
+	l.Logger.Error(args)
 }
 
 func (l logger) Warn(args ...interface{}) {
-	l.SugaredLogger.Warn(args)
+	l.Logger.Warn(args)
 }
 
 func (l logger) Info(args ...interface{}) {
-	l.SugaredLogger.Info(args)
+	l.Logger.Info(args)
 }
 
 func (l logger) Debug(args ...interface{}) {
-	l.SugaredLogger.Debug(args)
+	l.Logger.Debug(args)
 }
 
-func (l logger) SetLevel(ll string) {
-	var level zapcore.Level
-	err := level.UnmarshalText([]byte(ll))
+func (l logger) SetLevel(lls string) {
+	ll, err := logrus.ParseLevel(lls)
 	if err != nil {
-		l.Info("Cannot change log level to %s", ll)
+		l.Errorf("Cannot change log level to %s, defaulting to INFO", lls)
+		l.Logger.SetLevel(logrus.InfoLevel)
+
 	}
-	l.logLevel.SetLevel(level)
+	l.Logger.SetLevel(ll)
 }
 
 func Logger() logger {
@@ -86,36 +87,24 @@ func Fatal(i ...interface{}) {
 }
 
 func init() {
-	ll := zap.NewAtomicLevelAt(zapcore.DebugLevel)
-	cfg := zap.Config{
-		Encoding:         "console",
-		Level:            zap.NewAtomicLevelAt(zapcore.DebugLevel),
-		OutputPaths:      []string{"stderr"},
-		ErrorOutputPaths: []string{"stderr"},
-		EncoderConfig: zapcore.EncoderConfig{
-			TimeKey:          "T",
-			LevelKey:         "L",
-			NameKey:          "N",
-			CallerKey:        "C",
-			FunctionKey:      "",
-			MessageKey:       "M",
-			StacktraceKey:    "",
-			LineEnding:       zapcore.DefaultLineEnding,
-			EncodeLevel:      zapcore.CapitalColorLevelEncoder,
-			EncodeTime:       zapcore.ISO8601TimeEncoder,
-			EncodeDuration:   zapcore.StringDurationEncoder,
-			EncodeCaller:     zapcore.ShortCallerEncoder,
-			ConsoleSeparator: " ",
-		},
-	}
-
-	l, e := cfg.Build(zap.AddCallerSkip(1))
-	if e != nil {
-		panic(e)
-	}
+	ll := logrus.DebugLevel
+	l := logrus.New()
+	l.SetFormatter(&formatter.Formatter{
+		//FieldsOrder:           nil,
+		//TimestampFormat:       "",
+		//HideKeys:              false,
+		//NoColors:              false,
+		//NoFieldsColors:        false,
+		//NoFieldsSpace:         false,
+		//ShowFullLevel:         false,
+		//NoUppercaseLevel:      false,
+		//TrimMessages:          false,
+		//CallerFirst:           false,
+		//CustomCallerFormatter: nil,
+	})
 
 	staticLogger = &logger{
-		logLevel:      &ll,
-		SugaredLogger: l.Sugar(),
+		logLevel: &ll,
+		Logger:   l,
 	}
 }

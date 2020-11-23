@@ -20,11 +20,8 @@
 # with-in odimra for their configuration file handling in the future for uniform
 # configuration management.
 
-[KAFKA]
-# Kafka Server List.
-KServers   = ""
-# Listening port.
-KLPort     = 9092
+#KServersInfo defines the list of Kafka Server URI/Nodename:port. Example: KServersInfo = ["localhost:9092"].
+KServersInfo   = [""]
 # Timeout of KAFKA Server connection drop / Keepalive.
 KTimeout   = 10
 # TLS Configuration Data

@@ -81,7 +81,9 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		ConnectionMethod: aggregationSourceRequest.Links.ConnectionMethod,
 	}
 
-	exist, dErr := e.CheckActiveRequest(addResourceRequest.ManagerAddress)
+	ipAddr := getKeyFromManagerAddress(addResourceRequest.ManagerAddress)
+
+	exist, dErr := e.CheckActiveRequest(ipAddr)
 	if dErr != nil {
 		errMsg := fmt.Sprintf("error: while trying to collect the active request details from DB: %v", dErr.Error())
 		log.Println(errMsg)
@@ -103,7 +105,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
-	err := e.GenericSave(nil, "ActiveAddBMCRequest", addResourceRequest.ManagerAddress)
+	err := e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
 	if err != nil {
 		errMsg := fmt.Sprintf("error: while trying to save the active request details from DB: %v", dErr.Error())
 		log.Println(errMsg)
@@ -111,7 +113,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	}
 
 	defer func() {
-		err := e.DeleteActiveRequest(addResourceRequest.ManagerAddress)
+		err := e.DeleteActiveRequest(ipAddr)
 		if err != nil {
 			log.Printf("error: while trying to collect the active request details from DB: %v", dErr.Error())
 		}

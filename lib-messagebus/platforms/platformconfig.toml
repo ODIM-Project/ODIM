@@ -20,7 +20,8 @@
 # with-in odimra for their configuration file handling in the future for uniform
 # configuration management.
 
-#KServersInfo defines the list of Kafka Server URI/Nodename:port. Example: KServersInfo = ["localhost:9092"].
+[KAFKA]
+#Defines the list of Kafka Server URI/Nodename:port. Example: ["localhost:9092"].
 KServersInfo   = [""]
 # Timeout of KAFKA Server connection drop / Keepalive.
 KTimeout   = 10

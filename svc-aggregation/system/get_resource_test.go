@@ -47,8 +47,8 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -111,8 +111,8 @@ func TestGetAggregationSource(t *testing.T) {
 		UserName: "admin",
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
-			"Oem": map[string]interface{}{
-				"PluginID": "ILO",
+			"ConnectionMethod": map[string]interface{}{
+				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}

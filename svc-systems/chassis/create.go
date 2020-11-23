@@ -55,7 +55,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pc, pe := h.createPluginClient("URP")
+	pc, pe := h.createPluginClient("URP_v1.0.0")
 	if pe != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, pe.Error(), nil, nil)
 	}

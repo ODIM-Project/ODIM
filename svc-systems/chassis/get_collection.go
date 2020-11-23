@@ -62,7 +62,7 @@ type sourceProviderImpl struct {
 func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
 	sources := []source{&managedChassisProvider{c.getAllKeys}}
 
-	pc, dberr := c.pluginClientFactory("URP")
+	pc, dberr := c.pluginClientFactory("URP_v1.0.0")
 	if dberr != nil {
 		if dberr.ErrNo() == errors.DBKeyNotFound {
 			return sources, nil

@@ -1,25 +1,40 @@
-#!/usr/bin/dumb-init /bin/sh
-#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-#
-#Licensed under the Apache License, Version 2.0 (the "License"); you may
-#not use this file except in compliance with the License. You may obtain
-#a copy of the License at
-#
-#    http:#www.apache.org/licenses/LICENSE-2.0
-#
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#License for the specific language governing permissions and limitations
-# under the License.
-
+#!/usr/bin/dumb-init /bin/bash
 set -e
+
+# Source code for the script is taken from
+# https://github.com/hashicorp/docker-consul and has been modified
+# to suit the requirement.
 
 # Note above that we run dumb-init as PID 1 in order to reap zombie processes
 # as well as forward signals to all processes in its session. Normally, sh
 # wouldn't do either of these functions so we'd leak zombies as well as do
 # unclean termination of all our sub-processes.
 # As of docker 1.13, using docker run --init achieves the same outcome.
+
+# If deployment type is HA mode, need to add the other consul instances
+# to form the quorum
+
+if $IS_CONSUL_CLUSTER; then
+	OLDIFS=$OIFS
+	IFS=','
+	members=($CONSUL_CLUSTER_MEMBERS)
+	IFS=$OLDIFS
+	for member in "${members[@]}"; do
+		/usr/bin/jq ".retry_join |= . + [ \"$member\" ]" /consul/config/config.json > /consul/config/config.json.tmp &&
+		mv -f /consul/config/config.json.tmp /consul/config/config.json
+
+		if [ $? -ne 0 ]; then
+			echo "Updating consul config with cluster info failed, exiting"
+			exit 1
+		fi
+	done
+	/usr/bin/jq ".bootstrap_expect = 3 | .node_name = \"${CONSUL_SERVICE_NAME}\"" /consul/config/config.json > /consul/config/config.json.tmp &&
+	mv -f /consul/config/config.json.tmp /consul/config/config.json
+	if [ $? -ne 0 ]; then
+		echo "Failed to update consul configurations, exiting"
+		exit 1
+	fi
+fi
 
 # You can set CONSUL_BIND_INTERFACE to the name of the interface you'd like to
 # bind to and this will look up the IP and pass the proper -bind= option along
@@ -88,15 +103,6 @@ fi
 
 # If we are running Consul, make sure it executes as the proper user.
 if [ "$1" = 'consul' -a -z "${CONSUL_DISABLE_PERM_MGMT+x}" ]; then
-    # If the data or config dirs are bind mounted then chown them.
-    # Note: This checks for root ownership as that's the most common case.
-    if [ "$(stat -c %u "$CONSUL_DATA_DIR")" != "$(id -u odimra)" ]; then
-        chown odimra:odimra "$CONSUL_DATA_DIR"
-    fi
-    if [ "$(stat -c %u "$CONSUL_CONFIG_DIR")" != "$(id -u odimra)" ]; then
-        chown odimra:odimra "$CONSUL_CONFIG_DIR"
-    fi
-
     # If requested, set the capability to bind to privileged ports before
     # we drop to the non-root user. Note that this doesn't work with all
     # storage drivers (it won't work with AUFS).

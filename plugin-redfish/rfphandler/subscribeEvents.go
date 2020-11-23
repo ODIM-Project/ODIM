@@ -308,14 +308,10 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 		}
 
 	}
-	header := make(map[string]string)
-	for k, v := range resp.Header {
-		var value string
-		for i := 0; i < len(v); i++ {
-			value = value + " " + v[i]
-		}
-		header[k] = value
+	header := map[string]string{
+		"Location": resp.Header.Get("Location"),
 	}
+
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Authtication with the device failed")

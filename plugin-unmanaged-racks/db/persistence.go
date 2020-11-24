@@ -1,59 +1,37 @@
 package db
 
 import (
-	"fmt"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
+	"errors"
 	"strings"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
-var ErrAlreadyExists = redis.Error("already exists")
+var ErrAlreadyExists = errors.New("already exists")
 
-func NewConnectionManager(protocol, address string) *ConnectionManager {
-	return &ConnectionManager{
-		pool: &redis.Pool{
-			Dial: func() (redis.Conn, error) {
-				return redis.Dial(protocol, address)
-			},
-		},
+func NewConnectionManager(redisAddress, sentinelMasterName string) *ConnectionManager {
+	if sentinelMasterName == "" {
+		return &ConnectionManager{
+			c: redis.NewClient(&redis.Options{
+				Addr: redisAddress,
+			}),
+		}
+	} else {
+		return &ConnectionManager{
+			c: redis.NewFailoverClient(&redis.FailoverOptions{
+				MasterName:    sentinelMasterName,
+				SentinelAddrs: []string{redisAddress},
+			}),
+		}
 	}
 }
 
 type ConnectionManager struct {
-	pool *redis.Pool
+	c *redis.Client
 }
 
-func (c *ConnectionManager) GetConnection() redis.Conn {
-	return c.pool.Get()
-}
-
-func (c *ConnectionManager) DoInTransaction(callback func(c redis.Conn) error, syncKeys ...string) error {
-	conn := c.GetConnection()
-	defer NewConnectionCloser(&conn)
-
-	for _, sk := range syncKeys {
-		_, err := conn.Do("WATCH", sk)
-		if err != nil {
-			return err
-		}
-	}
-	err := conn.Send("MULTI")
-	if err != nil {
-		return err
-	}
-	err = callback(conn)
-	if err != nil {
-		return err
-	}
-	r, err := conn.Do("EXEC")
-	if err != nil {
-		return fmt.Errorf("cannot commit transaction: %v", err)
-	}
-	if r == redis.ErrNil {
-		return fmt.Errorf("transaction aborted for unknown reason: %v", err)
-	}
-	return nil
+func (c *ConnectionManager) DAO() *redis.Client {
+	return c.c
 }
 
 type Key string
@@ -84,13 +62,4 @@ func CreateContainedInKey(tokens ...string) Key {
 
 func CreateKey(keys ...string) Key {
 	return Key(strings.Join(keys, ":"))
-}
-
-func NewConnectionCloser(conn *redis.Conn) {
-	func() {
-		err := (*conn).Close()
-		if err != nil {
-			logging.Errorf("Cannot close DB connection: %s", err)
-		}
-	}()
 }

@@ -2,17 +2,18 @@ package rest
 
 import (
 	"github.com/kataras/iris/v12/httptest"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func Test_get_not_empty_chassis_collection(t *testing.T) {
 	testApp, testRedis := createTestApplication()
 	//should be returned
-	testRedis.Set("Chassis:/ODIM/v1/Chassis/1", "")
-	testRedis.Set("Chassis:/ODIM/v1/Chassis/2", "")
+	require.NoError(t, testRedis.Set("Chassis:/ODIM/v1/Chassis/1", ""))
+	require.NoError(t, testRedis.Set("Chassis:/ODIM/v1/Chassis/2", ""))
 	//should not be returned
-	testRedis.Set("CONTAINS:Chassis:/ODIM/v1/Chassis/2", "")
-	testRedis.Set("CONTAINEDIN:Chassis:/ODIM/v1/Chassis/2", "")
+	require.NoError(t, testRedis.Set("CONTAINS:Chassis:/ODIM/v1/Chassis/2", ""))
+	require.NoError(t, testRedis.Set("CONTAINEDIN:Chassis:/ODIM/v1/Chassis/2", ""))
 
 	httptest.New(t, testApp).
 		GET("/ODIM/v1/Chassis/").

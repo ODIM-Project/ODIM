@@ -13,27 +13,27 @@ type logger struct {
 }
 
 func (l logger) Print(args ...interface{}) {
-	l.Logger.Info(args)
+	l.Logger.Info(args...)
 }
 
 func (l logger) Println(args ...interface{}) {
-	l.Logger.Info(args)
+	l.Logger.Info(args...)
 }
 
 func (l logger) Error(args ...interface{}) {
-	l.Logger.Error(args)
+	l.Logger.Error(args...)
 }
 
 func (l logger) Warn(args ...interface{}) {
-	l.Logger.Warn(args)
+	l.Logger.Warn(args...)
 }
 
 func (l logger) Info(args ...interface{}) {
-	l.Logger.Info(args)
+	l.Logger.Info(args...)
 }
 
 func (l logger) Debug(args ...interface{}) {
-	l.Logger.Debug(args)
+	l.Logger.Debug(args...)
 }
 
 func (l logger) SetLevel(lls string) {
@@ -51,7 +51,7 @@ func Logger() logger {
 }
 
 func Error(i ...interface{}) {
-	staticLogger.Error(i)
+	staticLogger.Error(i...)
 }
 
 func Errorf(t string, i ...interface{}) {
@@ -59,7 +59,7 @@ func Errorf(t string, i ...interface{}) {
 }
 
 func Warn(i ...interface{}) {
-	staticLogger.Warn(i)
+	staticLogger.Warn(i...)
 }
 
 func Warnf(t string, i ...interface{}) {
@@ -67,7 +67,7 @@ func Warnf(t string, i ...interface{}) {
 }
 
 func Info(i ...interface{}) {
-	staticLogger.Info(i)
+	staticLogger.Info(i...)
 }
 
 func Infof(t string, i ...interface{}) {
@@ -75,7 +75,7 @@ func Infof(t string, i ...interface{}) {
 }
 
 func Debug(i ...interface{}) {
-	staticLogger.Debug(i)
+	staticLogger.Debug(i...)
 }
 
 func Debugf(t string, i ...interface{}) {
@@ -83,7 +83,7 @@ func Debugf(t string, i ...interface{}) {
 }
 
 func Fatal(i ...interface{}) {
-	staticLogger.Fatal(i)
+	staticLogger.Fatal(i...)
 }
 
 func init() {

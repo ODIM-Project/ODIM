@@ -1,18 +1,18 @@
 package rest
 
 import (
+	stdCtx "context"
 	"encoding/json"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
-	"log"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
-
 	mapset "github.com/deckarep/golang-set"
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12/context"
 )
 
@@ -56,12 +56,8 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	conn := c.cm.GetConnection()
-	defer db.NewConnectionCloser(&conn)
-
 	chassisContainsSetKey := db.CreateContainsKey("Chassis", requestedChassis.Oid)
-
-	existingMembers, err := redis.Strings(conn.Do("SMEMBERS", chassisContainsSetKey))
+	existingMembers, err := c.cm.DAO().SMembers(stdCtx.TODO(), chassisContainsSetKey.String()).Result()
 	if err != nil {
 		createInternalError(ctx, err)
 		return
@@ -77,28 +73,52 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		knownMembers.Add(e)
 	}
 
-	err = c.cm.DoInTransaction(func(conn redis.Conn) error {
-		//remove known but not requested
-		knownMembers.Each(func(knownMember interface{}) bool {
-			if !requestedMembers.Contains(knownMember) {
-				//todo: handle potential errors returned by send
-				conn.Send("SREM", chassisContainsSetKey, knownMember)
-				conn.Send("DEL", db.CreateContainedInKey("Chassis", knownMember.(string)))
-			}
-			return false
-		})
+	sctx := stdCtx.TODO()
+	err = c.cm.DAO().Watch(
+		sctx,
+		func(tx *redis.Tx) error {
+			//remove known but not requested
+			_, err := tx.TxPipelined(sctx, func(pipe redis.Pipeliner) error {
+				knownMembers.Each(func(knownMember interface{}) bool {
+					if !requestedMembers.Contains(knownMember) {
+						if _, err = pipe.SRem(sctx, chassisContainsSetKey.String(), knownMember).Result(); err != nil {
+							err = fmt.Errorf("srem: %s error: %w", chassisContainsSetKey.String(), err)
+							return true
+						}
 
-		//add requested but unknown
-		requestedMembers.Each(func(rm interface{}) bool {
-			if !knownMembers.Contains(rm) {
-				conn.Send("SADD", chassisContainsSetKey, rm)
-				conn.Send("SET", db.CreateContainedInKey("Chassis", rm.(string)), requestedChassis.Oid)
-			}
-			return false
-		})
+						if _, err = pipe.Del(
+							sctx,
+							db.CreateContainedInKey("Chassis", knownMember.(string)).String(),
+						).Result(); err != nil {
+							err = fmt.Errorf("del: %s error: %w", db.CreateContainedInKey("Chassis", knownMember.(string)).String(), err)
+							return true
+						}
+					}
+					return false
+				})
 
-		return nil
-	}, chassisContainsSetKey.String())
+				//add requested but unknown
+				requestedMembers.Each(func(rm interface{}) bool {
+					if !knownMembers.Contains(rm) {
+						if _, err = pipe.SAdd(sctx, chassisContainsSetKey.String(), rm).Result(); err != nil {
+							err = fmt.Errorf("sadd: %s error: %w", chassisContainsSetKey.String(), err)
+							return true
+						}
+
+						ckey := db.CreateContainedInKey("Chassis", rm.(string)).String()
+						if _, err = pipe.Set(sctx, ckey, requestedChassis.Oid, 0).Result(); err != nil {
+							err = fmt.Errorf("set: %s error: %w", ckey, err)
+							return true
+						}
+					}
+					return false
+				})
+				return nil
+			})
+			return err
+		},
+		chassisContainsSetKey.String(),
+	)
 
 	if err != nil {
 		createInternalError(ctx, fmt.Errorf("cannot commit transaction: %v", err))
@@ -140,7 +160,7 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				systemsCollection := new(redfish.Collection)
 				err := c.Get("/redfish/v1/Systems", systemsCollection)
 				if err != nil {
-					log.Print("Couldn't GET systems collection(/redfish/v1/Systems) Error: ", err)
+					logging.Errorf("cannot validate requested chassis: %s", err)
 					return true
 				}
 				existingSystems := map[string]interface{}{}
@@ -167,20 +187,16 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 }
 
 func (c *chassisUpdateHandler) findRequestedChassis(chassisOid string) (*redfish.Chassis, error) {
-	conn := c.cm.GetConnection()
-	defer db.NewConnectionCloser(&conn)
-
-	reply, err := conn.Do("GET", db.CreateKey("Chassis", chassisOid))
+	reply, err := c.cm.DAO().Get(stdCtx.TODO(), db.CreateKey("Chassis", chassisOid).String()).Bytes()
+	if err == redis.Nil {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%v", redfish.CreateError(redfish.GeneralError, err.Error()))
 	}
-	if reply == nil {
-		return nil, nil
-	}
 
-	v, err := redis.Bytes(reply, err)
 	requestedChassis := new(redfish.Chassis)
-	if err := json.Unmarshal(v, requestedChassis); err != nil {
+	if err := json.Unmarshal(reply, requestedChassis); err != nil {
 		return nil, fmt.Errorf("%v", redfish.CreateError(redfish.GeneralError, err.Error()))
 	}
 

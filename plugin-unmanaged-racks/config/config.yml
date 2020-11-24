@@ -40,9 +40,15 @@ FirmwareVersion: v1.0.0                                         # exposed on plu
 OdimNBUrl: https://odimra.local.com:45000
 
 ####################################################################################################
-# REDIS Configuration                                                                              #
+# REDIS/Sentinel Configuration                                                                              #
 ####################################################################################################
-RedisProtocol: tcp
+# If you are running raw Redis, stay with 'SentinelMasterName' commented, otherwise
+# uncomment it and set proper Sentinel master name.
+# Uncommented 'SentinelMasterName' property, forces URP to initialize failover redis client which
+# will work only if your Redis has been configured with Sentinel support.
+#
+# SentinelMasterName: mymaster
+#
 RedisAddress: odimra.local.com:6380
 
 ####################################################################################################

@@ -227,7 +227,6 @@ services:
       - PLUGIN_PKI_ROOT_CA_PATH=/certs/rootCA.crt
       - PLUGIN_PKI_PRIVATE_KEY_PATH=/certs/odimra_server.key
       - PLUGIN_PKI_CERTIFICATE_PATH_PATH=/certs/odimra_server.crt
-      - PLUGIN_REDIS_PROTOCOL=tcp
       - PLUGIN_REDIS_ADDRESS=redis:6380
     image: urp:1.0
     ports:

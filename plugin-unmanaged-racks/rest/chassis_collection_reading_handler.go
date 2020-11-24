@@ -1,13 +1,12 @@
 package rest
 
 import (
+	stdCtx "context"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
-
-	"github.com/gomodule/redigo/redis"
 	"github.com/kataras/iris/v12/context"
 )
 
@@ -20,11 +19,8 @@ type getChassisCollectionHandler struct {
 }
 
 func (c *getChassisCollectionHandler) handle(ctx context.Context) {
-	conn := c.cm.GetConnection()
-	defer db.NewConnectionCloser(&conn)
-
 	searchKey := db.CreateKey("Chassis")
-	keys, err := redis.Strings(conn.Do("KEYS", searchKey.WithWildcard()))
+	keys, err := c.cm.DAO().Keys(stdCtx.TODO(), searchKey.WithWildcard().String()).Result()
 	if err != nil {
 		ctx.StatusCode(http.StatusBadRequest)
 	}

@@ -61,7 +61,7 @@ func (s *subscriber) subscribe() {
 	sr := createSubscriptionRequest(s.destinationURL.String())
 	bodyBytes, err := json.Marshal(&sr)
 	if err != nil {
-		logging.Error("Unexpected error during Subscription Request serialization: %e", err)
+		logging.Errorf("Unexpected error during Subscription Request serialization: %s", err)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (s *subscriber) subscribe() {
 	for {
 		r, e := monitor()
 		if e != nil {
-			logging.Error("Task monitoring interrupted by communication error: %s", e)
+			logging.Errorf("Task monitoring interrupted by communication error: %s", e)
 		}
 
 		switch r.StatusCode {

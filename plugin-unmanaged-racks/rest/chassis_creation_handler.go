@@ -1,15 +1,17 @@
 package rest
 
 import (
+	stdCtx "context"
 	"encoding/json"
-	"github.com/gomodule/redigo/redis"
-	log "log"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12/context"
 )
 
@@ -64,13 +66,11 @@ func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfis
 			ValidationRule: func() bool {
 				if chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 1 {
 					containedByOid := chassis.Links.ContainedBy[0].Oid
-					conn := c.cm.GetConnection()
-					defer db.NewConnectionCloser(&conn)
-					v, err := conn.Do("GET", db.CreateKey("Chassis", containedByOid))
+					_, err := c.cm.DAO().Get(stdCtx.TODO(), db.CreateKey("Chassis", containedByOid).String()).Result()
 					if err != nil {
-						log.Println("error:", err)
+						logging.Errorf("cannot validate requested rack: %s", err)
 					}
-					return err != nil || v == nil
+					return err != nil
 				}
 				return false
 			},
@@ -117,11 +117,45 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	conn := c.cm.GetConnection()
-	defer db.NewConnectionCloser(&conn)
+	toBeCreatedChassisId, toBeCreatedBody, parentChassisId, err := prepareChassisCreationParams(requestedChassis.IntializeIds())
+	if err != nil {
+		return
+	}
 
-	queryParams, err := prepareChassisCreationScriptParams(requestedChassis.IntializeIds())
-	_, err = _CREATE_CHASSIS_SCRIPT.Do(conn, queryParams...)
+	sctx := stdCtx.TODO()
+	err = c.cm.DAO().Watch(sctx, func(tx *redis.Tx) error {
+		exists, err := tx.Exists(sctx, toBeCreatedChassisId).Result()
+		if err != nil {
+			return err
+		}
+		if exists == 1 {
+			return db.ErrAlreadyExists
+		}
+
+		_, err = tx.TxPipelined(sctx, func(pipe redis.Pipeliner) error {
+			//create chassis
+			if _, err = pipe.SetNX(sctx, toBeCreatedChassisId, toBeCreatedBody, 0).Result(); err != nil {
+				return fmt.Errorf("setnx: %s error: %w", toBeCreatedChassisId, err)
+			}
+			//commit transaction if requested chassis has not parent
+			if parentChassisId == nil || *parentChassisId == "" {
+				return nil
+			}
+
+			//set relations between requested and parent
+			if _, err = pipe.SAdd(sctx, *parentChassisId, requestedChassis.Oid).Result(); err != nil {
+				return fmt.Errorf("sadd: %s error: %w", *parentChassisId, err)
+			}
+
+			toBeCreatedContainedInId := db.CreateContainedInKey("Chassis", requestedChassis.Oid).String()
+			if _, err = pipe.Set(sctx, toBeCreatedContainedInId, *parentChassisId, 0).Result(); err != nil {
+				return fmt.Errorf("set: %s error: %w", toBeCreatedContainedInId, err)
+			}
+
+			return nil
+		})
+		return err
+	}, toBeCreatedChassisId)
 
 	switch err {
 	case nil:
@@ -137,54 +171,18 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 	}
 }
 
-func prepareChassisCreationScriptParams(rc *redfish.Chassis) (res []interface{}, err error) {
-	res = append(res, rc.Oid)
+func prepareChassisCreationParams(rc *redfish.Chassis) (chassisId string, chassisBody []byte, parentChassisId *string, err error) {
+	chassisId = db.CreateKey("Chassis", rc.Oid).String()
 
-	chassisBody, err := json.Marshal(rc)
+	chassisBody, err = json.Marshal(rc)
 	if err != nil {
 		return
 	}
-	res = append(res, chassisBody)
 
 	if len(rc.Links.ContainedBy) > 0 {
-		res = append(res, rc.Links.ContainedBy[0].Oid)
-	} else {
-		res = append(res, nil)
+		v := db.CreateContainsKey("Chassis", rc.Links.ContainedBy[0].Oid).String()
+		parentChassisId = &v
 	}
+
 	return
 }
-
-// args:
-//	KEYS[1]: chassis id
-//  KEYS[2]: chassis body as []byte
-//  KEYS[3]: parent chassis id
-var _CREATE_CHASSIS_SCRIPT = redis.NewScript(3, `
-		local res, err
-
-		local chassisKey = "Chassis:"..KEYS[1]
-		res, err = redis.pcall('setnx', chassisKey, KEYS[2])
-		if err ~= nil then
-			return  redis.error_reply(err)
-		end
-		if res == 0 then		
-			return redis.error_reply("already exists")
-		end
-
-		if KEYS[3] == nil or KEYS[3] == '' then 
-			return redis.status_reply("OK")
-		end
-		
-		local containsKey = "CONTAINS:Chassis:"..KEYS[3]
-		res, err = redis.pcall("sadd", containsKey, KEYS[1])
-		if err ~= nil then
-			return redis.error_reply(err)
-		end
-
-		local containedinKey = "CONTAINEDIN:Chassis:"..KEYS[1]		
-		res, err = redis.pcall("set", containedinKey, KEYS[3])
-		if err ~= nil then
-			return redis.error_reply(err)
-		end
-		
-		return redis.status_reply("OK")
-	`)

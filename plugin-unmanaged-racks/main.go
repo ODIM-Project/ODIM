@@ -23,11 +23,12 @@ import (
 var version = "dev"
 
 func main() {
+	logging.Infof("Starting URP v%s\n", version)
 	if pc, err := config.ReadPluginConfiguration(); err != nil {
 		logging.Fatal("error while reading from config", err)
 	} else {
 		plugin := Plugin{
-			connectionManager: db.NewConnectionManager(pc.RedisProtocol, pc.RedisAddress),
+			connectionManager: db.NewConnectionManager(pc.RedisAddress, pc.SentinelMasterName),
 			pluginConfig:      pc,
 		}
 		plugin.Run()

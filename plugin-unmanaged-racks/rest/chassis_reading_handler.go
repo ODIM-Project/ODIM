@@ -1,13 +1,13 @@
 package rest
 
 import (
+	stdCtx "context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
-
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12/context"
 )
 
@@ -20,12 +20,9 @@ type chassisReadingHandler struct {
 }
 
 func (c *chassisReadingHandler) handle(ctx context.Context) {
-	conn := c.cm.GetConnection()
-	defer db.NewConnectionCloser(&conn)
-
 	requestedChassisOid := ctx.Request().RequestURI
-	v, err := redis.String(conn.Do("GET", db.CreateKey("Chassis", requestedChassisOid)))
-	if err != nil && err == redis.ErrNil {
+	v, err := c.cm.DAO().Get(stdCtx.TODO(), db.CreateKey("Chassis", requestedChassisOid).String()).Result()
+	if err != nil && err == redis.Nil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceNotFoundMsg("Chassis", requestedChassisOid, "")))
 		return
@@ -45,7 +42,7 @@ func (c *chassisReadingHandler) handle(ctx context.Context) {
 	}
 
 	chassisContainsKey := db.CreateContainsKey("Chassis", requestedChassisOid)
-	members, err := redis.Strings(conn.Do("SMEMBERS", chassisContainsKey))
+	members, err := c.cm.DAO().SMembers(stdCtx.TODO(), chassisContainsKey.String()).Result()
 	if err != nil {
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))

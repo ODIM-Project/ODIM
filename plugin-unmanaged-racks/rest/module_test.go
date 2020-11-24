@@ -462,6 +462,6 @@ func createTestApplication() (*iris.Application, *miniredis.Miniredis) {
 		panic(err)
 	}
 
-	cm := db.NewConnectionManager("tcp", r.Addr())
+	cm := db.NewConnectionManager(r.Addr(), "")
 	return createApplication(&TEST_CONFIG, cm), r
 }

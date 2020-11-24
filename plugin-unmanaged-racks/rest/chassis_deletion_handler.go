@@ -1,13 +1,16 @@
 package rest
 
 import (
+	stdCtx "context"
 	"encoding/json"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
-	"github.com/gomodule/redigo/redis"
-	"github.com/kataras/iris/v12/context"
+	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+	"github.com/go-redis/redis/v8"
+	"github.com/kataras/iris/v12/context"
 )
 
 func NewChassisDeletionHandler(cm *db.ConnectionManager) context.Handler {
@@ -22,11 +25,8 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	requestedChassis := ctx.Request().RequestURI
 	requestedChassisKey := db.CreateKey("Chassis", requestedChassis)
 
-	conn := c.connectionManager.GetConnection()
-	defer db.NewConnectionCloser(&conn)
-
-	bytes, err := redis.Bytes(conn.Do("GET", requestedChassisKey))
-	if err != nil && err == redis.ErrNil {
+	bytes, err := c.connectionManager.DAO().Get(stdCtx.TODO(), requestedChassisKey.String()).Bytes()
+	if err != nil && err == redis.Nil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewResourceNotFoundMsg("Chassis", requestedChassis, ""))
 		return
@@ -55,26 +55,42 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 
 	switch chassisToBeDeleted.ChassisType {
 	case "RackGroup":
-		err = c.connectionManager.DoInTransaction(func(c redis.Conn) error {
-			return conn.Send("DEL", requestedChassisKey)
+		ctx := stdCtx.TODO()
+		err = c.connectionManager.DAO().Watch(ctx, func(tx *redis.Tx) error {
+			_, err = tx.TxPipeline().Del(ctx, requestedChassisKey.String()).Result()
+			return err
 		}, requestedChassis)
 
 	case "Rack":
-		err = c.connectionManager.DoInTransaction(func(c redis.Conn) error {
-			err := conn.Send("DEL", requestedChassisKey)
-			if err != nil {
-				return err
-			}
-			err = conn.Send("DEL", db.CreateContainedInKey("Chassis", requestedChassis))
-			if err != nil {
-				return err
-			}
+		ctx := stdCtx.TODO()
 
-			return conn.Send("SREM", db.CreateContainsKey("Chassis", chassisToBeDeleted.Links.ContainedBy[0].Oid), requestedChassis)
-		},
-			requestedChassis,
-			db.CreateContainedInKey(requestedChassisKey.String()).String(),
-			db.CreateContainsKey(chassisToBeDeleted.Links.ContainedBy[0].Oid).String())
+		transactional := func(tx *redis.Tx) error {
+			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+				if _, err = pipe.Del(ctx, requestedChassisKey.String()).Result(); err != nil {
+					return fmt.Errorf("del: %s error: %w", requestedChassisKey, err)
+				}
+
+				if _, err = pipe.Del(ctx, db.CreateContainedInKey("Chassis", requestedChassis).String()).Result(); err != nil {
+					return fmt.Errorf("del: %s error: %w", db.CreateContainedInKey("Chassis", requestedChassis), err)
+				}
+
+				parentContainsId := db.CreateContainsKey("Chassis", chassisToBeDeleted.Links.ContainedBy[0].Oid).String()
+				_, err = pipe.SRem(ctx, parentContainsId, requestedChassis).Result()
+				return err
+			})
+			return err
+		}
+
+		err = c.connectionManager.DAO().
+			Watch(
+				ctx,
+				transactional,
+				requestedChassis, db.CreateContainedInKey(requestedChassisKey.String()).String(), db.CreateContainsKey(chassisToBeDeleted.Links.ContainedBy[0].Oid).String(),
+			)
+
+		mem, e := c.connectionManager.DAO().SMembers(ctx, db.CreateContainsKey("Chassis", "CONTAINS:Chassis:/ODIM/v1/Chassis/1f5780bc-1c86-52cb-b2ed-ba67cd2345f7").String()).Result()
+		fmt.Println(e)
+		fmt.Println(mem)
 	}
 
 	if err != nil {
@@ -98,10 +114,8 @@ func (c *chassisDeletionHandler) createValidator(chassis *redfish.Chassis) *redf
 		},
 		redfish.Validator{
 			ValidationRule: func() bool {
-				conn := c.connectionManager.GetConnection()
-				defer db.NewConnectionCloser(&conn)
-				hasChildren, err := redis.Bool(conn.Do("EXISTS", db.CreateContainsKey("Chassis", chassis.Oid)))
-				return err != nil || hasChildren
+				hasChildren, err := c.connectionManager.DAO().Exists(stdCtx.TODO(), db.CreateContainsKey("Chassis", chassis.Oid).String()).Result()
+				return err != nil || hasChildren == 1
 			},
 			ErrorGenerator: func() redfish.MsgExtendedInfo {
 				return redfish.NewResourceInUseMsg("there are existing elements(Links.Contains) under requested chassis")

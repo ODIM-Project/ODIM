@@ -27,8 +27,8 @@ type PluginConfig struct {
 	PKIPrivateKeyPath  string          `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
 	PKICertificatePath string          `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
 	LogLevel           string          `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
-	RedisProtocol      string          `yaml:"RedisProtocol" envconfig:"REDIS_PROTOCOL"`
 	RedisAddress       string          `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
+	SentinelMasterName string          `yaml:"SentinelMasterName" envconfig:"SENTINEL_MASTER_NAME"`
 }
 
 type URLTranslation struct {
@@ -50,7 +50,7 @@ func ReadPluginConfiguration() (*PluginConfig, error) {
 		if configData, err := ioutil.ReadFile(cp); err == nil {
 			_ = yaml.Unmarshal(configData, pc)
 		} else {
-			logging.Warn("Cannot load configuration file: %s", err)
+			logging.Warnf("Cannot load configuration file: %s", err)
 		}
 	}
 

@@ -13,7 +13,7 @@ const _PLUGIN_NAME = "URP"
 
 func InitializeAndRun(c *config.PluginConfig, cm *db.ConnectionManager) {
 	application := createApplication(c, cm)
-	application.Run(
+	_ = application.Run(
 		iris.TLS(
 			c.Host+":"+c.Port,
 			c.PKICertificatePath,

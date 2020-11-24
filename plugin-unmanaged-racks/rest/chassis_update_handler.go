@@ -12,7 +12,8 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/utils"
-	mapset "github.com/deckarep/golang-set"
+
+	"github.com/deckarep/golang-set"
 	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12/context"
 )

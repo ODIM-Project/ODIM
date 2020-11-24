@@ -8,8 +8,8 @@ import (
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 
-	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v3"
 )
 
@@ -61,7 +61,6 @@ func ReadPluginConfiguration() (*PluginConfig, error) {
 	return pc, validate(pc)
 }
 
-// validate will validate configurations read and assign default values, where required
 func validate(pc *PluginConfig) error {
 	if pc.LogLevel == "" {
 		pc.LogLevel = "debug"
@@ -74,7 +73,7 @@ func validate(pc *PluginConfig) error {
 		return fmt.Errorf("given OdimraNBUrl is not correct URL")
 	}
 
-	if _, err := uuid.Parse(pc.RootServiceUUID); err != nil {
+	if _, err := uuid.FromString(pc.RootServiceUUID); err != nil {
 		return err
 	}
 

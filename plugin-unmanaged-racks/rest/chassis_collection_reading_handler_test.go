@@ -1,9 +1,10 @@
 package rest
 
 import (
+	"testing"
+
 	"github.com/kataras/iris/v12/httptest"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_get_not_empty_chassis_collection(t *testing.T) {

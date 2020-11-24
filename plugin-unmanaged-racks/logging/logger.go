@@ -1,7 +1,7 @@
 package logging
 
 import (
-	formatter "github.com/antonfisher/nested-logrus-formatter"
+	"github.com/antonfisher/nested-logrus-formatter"
 	"github.com/sirupsen/logrus"
 )
 

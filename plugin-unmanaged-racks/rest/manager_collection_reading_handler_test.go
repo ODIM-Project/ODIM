@@ -1,9 +1,10 @@
 package rest
 
 import (
-	"github.com/kataras/iris/v12/httptest"
 	"net/http"
 	"testing"
+
+	"github.com/kataras/iris/v12/httptest"
 )
 
 func Test_get_manager_collection(t *testing.T) {

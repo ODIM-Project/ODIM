@@ -9,6 +9,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12/context"
 )

@@ -2,14 +2,16 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
-	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+
+	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 )
 
 func newStartupHandler(c *config.PluginConfig) context.Handler {

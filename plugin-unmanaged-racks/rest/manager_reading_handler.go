@@ -1,10 +1,12 @@
 package rest
 
 import (
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+
 	"github.com/kataras/iris/v12/context"
-	"net/http"
 )
 
 type getPluginManagerHandler struct {

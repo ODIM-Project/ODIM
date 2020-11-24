@@ -52,6 +52,14 @@ func (k Key) WithWildcard() Key {
 	return k + "*"
 }
 
+func (k Key) Id() string {
+	return k.TrimWildcard().TrimPrefix().String()
+}
+
+func (k Key) TrimPrefix() Key {
+	return k[strings.LastIndex(k.String(), ":")+1:]
+}
+
 func CreateContainsKey(tokens ...string) Key {
 	return CreateKey(append([]string{"CONTAINS"}, tokens...)...)
 }

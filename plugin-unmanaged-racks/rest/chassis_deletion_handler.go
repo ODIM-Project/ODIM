@@ -57,7 +57,10 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	case "RackGroup":
 		ctx := stdCtx.TODO()
 		err = c.connectionManager.DAO().Watch(ctx, func(tx *redis.Tx) error {
-			_, err = tx.TxPipeline().Del(ctx, requestedChassisKey.String()).Result()
+			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+				_, err = pipe.Del(ctx, requestedChassisKey.String()).Result()
+				return err
+			})
 			return err
 		}, requestedChassis)
 

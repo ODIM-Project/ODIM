@@ -4,13 +4,14 @@ import (
 	stdCtx "context"
 	"encoding/json"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"net/http"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/utils"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12/context"
@@ -156,24 +157,34 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 		},
 		redfish.Validator{
 			ValidationRule: func() bool {
-				c := redfish.NewRedfishClient(c.config.OdimNBUrl)
-				systemsCollection := new(redfish.Collection)
-				err := c.Get("/redfish/v1/Systems", systemsCollection)
-				if err != nil {
+				chassisCollection := new(redfish.Collection)
+				if err := redfish.NewRedfishClient(c.config.OdimNBUrl).Get("/redfish/v1/Chassis", chassisCollection); err != nil {
 					logging.Errorf("cannot validate requested chassis: %s", err)
 					return true
 				}
 				existingSystems := map[string]interface{}{}
-				for _, m := range systemsCollection.Members {
+				for _, m := range chassisCollection.Members {
 					existingSystems[m.Oid] = m
 				}
-
 				for _, assetUnderChassis := range requestedChange.Links.Contains {
 					_, ok := existingSystems[assetUnderChassis.Oid]
 					if !ok {
 						return true
 					}
 				}
+
+				unmanagedChassisKeys, err := c.cm.DAO().Keys(stdCtx.TODO(), db.CreateKey("Chassis").WithWildcard().String()).Result()
+				if err != nil {
+					logging.Errorf("cannot validate requested chassis: %s", err)
+					return true
+				}
+
+				for _, assetUnderChassis := range requestedChange.Links.Contains {
+					if utils.Finder(unmanagedChassisKeys).Find(db.CreateKey("Chassis", assetUnderChassis.Oid).String()) {
+						return true
+					}
+				}
+
 				return false
 			},
 			ErrorGenerator: func() redfish.MsgExtendedInfo {

@@ -69,7 +69,7 @@ func Test_unsecured_endpoints_return_NON_401(t *testing.T) {
 		uri    string
 	}{
 		{http.MethodGet, "/ODIM/v1/Status"},
-		{http.MethodPost, "/ODIM/v1/EventService/Events"},
+		{http.MethodPost, "/EventService/Events"},
 	}
 
 	testApp, _ := createTestApplication()
@@ -285,28 +285,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					ContentType("application/json", "UTF-8")
 			})
 
-			t.Run("try to attach unexisting system under rack", func(t *testing.T) {
-				odimstubapp := odimstub{iris.New()}
-				odimstubapp.Run()
-				defer odimstubapp.Stop()
-
-				httptest.New(t, testApp).
-					PATCH(rackURI).
-					WithBasicAuth("admin", "Od!m12$4").
-					WithBytes([]byte(`
-						{
-							"Links":{
-								"Contains": [
-									{"@odata.id":"/ODIM/v1/Systems/unexisting"}
-								]
-							}
-						}
-					`)).
-					Expect().
-					Status(http.StatusBadRequest)
-			})
-
-			t.Run("attach system under rack", func(t *testing.T) {
+			t.Run("try to attach system under rack", func(t *testing.T) {
 				odimstubapp := odimstub{iris.New()}
 				odimstubapp.Run()
 				defer odimstubapp.Stop()
@@ -324,11 +303,10 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						}
 					`)).
 					Expect().
-					Status(http.StatusNoContent).
-					NoContent()
+					Status(http.StatusBadRequest)
 			})
 
-			t.Run("attach another system under rack", func(t *testing.T) {
+			t.Run("attach chassis under rack", func(t *testing.T) {
 				odimstubapp := odimstub{iris.New()}
 				odimstubapp.Run()
 				defer odimstubapp.Stop()
@@ -340,8 +318,30 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						{
 							"Links":{
 								"Contains": [
-									{"@odata.id":"/ODIM/v1/Systems/1"},
-									{"@odata.id":"/ODIM/v1/Systems/2"}
+									{"@odata.id":"/ODIM/v1/Chassis/1"}
+								]
+							}
+						}
+					`)).
+					Expect().
+					Status(http.StatusNoContent).
+					NoContent()
+			})
+
+			t.Run("attach another chassis under rack", func(t *testing.T) {
+				odimstubapp := odimstub{iris.New()}
+				odimstubapp.Run()
+				defer odimstubapp.Stop()
+
+				httptest.New(t, testApp).
+					PATCH(rackURI).
+					WithBasicAuth("admin", "Od!m12$4").
+					WithBytes([]byte(`
+						{
+							"Links":{
+								"Contains": [
+									{"@odata.id":"/ODIM/v1/Chassis/1"},
+									{"@odata.id":"/ODIM/v1/Chassis/2"}
 								]
 							}
 						}
@@ -360,7 +360,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					ContentType("application/json", "UTF-8")
 			})
 
-			t.Run("detach system", func(t *testing.T) {
+			t.Run("detach Chassis/1", func(t *testing.T) {
 				odimstubapp := odimstub{iris.New()}
 				odimstubapp.Run()
 				defer odimstubapp.Stop()
@@ -372,7 +372,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						{
 							"Links":{
 								"Contains": [
-									{"@odata.id":"/ODIM/v1/Systems/2"}
+									{"@odata.id":"/ODIM/v1/Chassis/2"}
 								]
 							}
 						}
@@ -382,18 +382,18 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					NoContent()
 			})
 
-			t.Run("resource removed event detaches system existing under rack", func(t *testing.T) {
+			t.Run("resource removed event detaches Chassis/2 existing under rack", func(t *testing.T) {
 				odimstubapp := odimstub{iris.New()}
 				odimstubapp.Run()
 				defer odimstubapp.Stop()
 
 				httptest.New(t, testApp).
-					POST("/ODIM/v1/EventService/Events").
+					POST("/EventService/Events").
 					WithBytes([]byte(`
 						{
 							"Events": [
 								{
-									"OriginOfCondition": {"@odata.id": "/redfish/v1/Systems/2"}
+									"OriginOfCondition": {"@odata.id": "/redfish/v1/Chassis/2"}
 								}
 							]
 						}
@@ -435,7 +435,17 @@ func (o *odimstub) Run() {
 			"#ComputerSystemCollection.ComputerSystemCollection",
 			[]redfish.Link{
 				{Oid: "/redfish/v1/Systems/1"},
-				{Oid: "/redfish/v1/Systems/2"},
+			}...,
+		))
+	})
+
+	o.app.Get("/redfish/v1/Chassis", func(context context.Context) {
+		context.JSON(redfish.NewCollection(
+			"/redfish/v1/Chassis",
+			"#ChassisCollection.ChassisCollection",
+			[]redfish.Link{
+				{Oid: "/redfish/v1/Chassis/1"},
+				{Oid: "/redfish/v1/Chassis/2"},
 			}...,
 		))
 	})

@@ -106,7 +106,7 @@ func createSubscriptionRequest(destination string) redfish.EvtSubPost {
 		Destination:          destination,
 		EventTypes:           []string{"ResourceRemoved"},
 		MessageIds:           nil,
-		ResourceTypes:        []string{"ComputerSystem"},
+		ResourceTypes:        []string{"Chassis"},
 		Context:              "ODIMRA_Event",
 		Protocol:             "Redfish",
 		SubscriptionType:     "RedfishEvent",
@@ -114,7 +114,7 @@ func createSubscriptionRequest(destination string) redfish.EvtSubPost {
 		SubordinateResources: true,
 		OriginResources: []redfish.Link{
 			{
-				Oid: "/redfish/v1/Systems",
+				Oid: "/redfish/v1/Chassis",
 			},
 		},
 	}

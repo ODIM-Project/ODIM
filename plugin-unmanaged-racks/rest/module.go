@@ -31,11 +31,11 @@ func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.A
 
 	//enable request logger
 	application.Use(logger.New())
+	application.Post("/EventService/Events", newEventHandler(cm, c.URLTranslation))
 
 	basicAuthHandler := NewBasicAuthHandler(c.UserName, c.Password)
 
 	pluginRoutes := application.Party("/ODIM/v1")
-	pluginRoutes.Post("/EventService/Events", newEventHandler(cm, c.URLTranslation))
 	pluginRoutes.Post("/Startup", basicAuthHandler, newStartupHandler(c))
 	pluginRoutes.Get("/Status", newPluginStatusController(c))
 

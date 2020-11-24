@@ -117,7 +117,7 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	toBeCreatedChassisId, toBeCreatedBody, parentChassisId, err := prepareChassisCreationParams(requestedChassis.IntializeIds())
+	toBeCreatedChassisId, toBeCreatedBody, parentChassisKey, err := prepareChassisCreationParams(requestedChassis.IntializeIds())
 	if err != nil {
 		return
 	}
@@ -138,17 +138,17 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 				return fmt.Errorf("setnx: %s error: %w", toBeCreatedChassisId, err)
 			}
 			//commit transaction if requested chassis has not parent
-			if parentChassisId == nil || *parentChassisId == "" {
+			if parentChassisKey == nil {
 				return nil
 			}
 
 			//set relations between requested and parent
-			if _, err = pipe.SAdd(sctx, *parentChassisId, requestedChassis.Oid).Result(); err != nil {
-				return fmt.Errorf("sadd: %s error: %w", *parentChassisId, err)
+			if _, err = pipe.SAdd(sctx, parentChassisKey.String(), requestedChassis.Oid).Result(); err != nil {
+				return fmt.Errorf("sadd: %s error: %w", parentChassisKey, err)
 			}
 
 			toBeCreatedContainedInId := db.CreateContainedInKey("Chassis", requestedChassis.Oid).String()
-			if _, err = pipe.Set(sctx, toBeCreatedContainedInId, *parentChassisId, 0).Result(); err != nil {
+			if _, err = pipe.Set(sctx, toBeCreatedContainedInId, parentChassisKey.Id(), 0).Result(); err != nil {
 				return fmt.Errorf("set: %s error: %w", toBeCreatedContainedInId, err)
 			}
 
@@ -171,7 +171,7 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 	}
 }
 
-func prepareChassisCreationParams(rc *redfish.Chassis) (chassisId string, chassisBody []byte, parentChassisId *string, err error) {
+func prepareChassisCreationParams(rc *redfish.Chassis) (chassisId string, chassisBody []byte, parentChassisId *db.Key, err error) {
 	chassisId = db.CreateKey("Chassis", rc.Oid).String()
 
 	chassisBody, err = json.Marshal(rc)
@@ -180,8 +180,8 @@ func prepareChassisCreationParams(rc *redfish.Chassis) (chassisId string, chassi
 	}
 
 	if len(rc.Links.ContainedBy) > 0 {
-		v := db.CreateContainsKey("Chassis", rc.Links.ContainedBy[0].Oid).String()
-		parentChassisId = &v
+		k := db.CreateContainsKey("Chassis", rc.Links.ContainedBy[0].Oid)
+		parentChassisId = &k
 	}
 
 	return

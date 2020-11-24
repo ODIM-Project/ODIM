@@ -104,11 +104,7 @@ func TestGetConnectionCollection(t *testing.T) {
 		MembersCount: 1,
 		Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}},
 	}
-	p := &ExternalInterface{
-		Auth:                mockIsAuthorized,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-		GetConnectionMethod: mockGetConnectionMethod,
-	}
+	p := getMockExternalInterface()
 	tests := []struct {
 		name string
 		e    *ExternalInterface
@@ -134,11 +130,7 @@ func TestGetConnectionCollection(t *testing.T) {
 }
 
 func TestExternalInterface_GetConnectionMethod(t *testing.T) {
-	p := &ExternalInterface{
-		Auth:                mockIsAuthorized,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-		GetConnectionMethod: mockGetConnectionMethod,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}

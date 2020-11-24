@@ -52,6 +52,9 @@ var connector = &system.ExternalInterface{
 	GetAllKeysFromTable:     mockGetAllKeysFromTable,
 	GetConnectionMethod:     mockGetConnectionMethod,
 	UpdateConnectionMethod:  mockUpdateConnectionMethod,
+	GenericSave:             mockGenericSave,
+	CheckActiveRequest:      mockCheckActiveRequest,
+	DeleteActiveRequest:     mockDeleteActiveRequest,
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
@@ -372,4 +375,22 @@ func TestGetAggregator(t *testing.T) {
 			}
 		})
 	}
+}
+
+var activeReqFlag bool
+
+func mockGenericSave(data []byte, table, key string) error {
+	common.MuxLock.Lock()
+	activeReqFlag = true
+	common.MuxLock.Unlock()
+	return nil
+}
+
+func mockCheckActiveRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteActiveRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
 }

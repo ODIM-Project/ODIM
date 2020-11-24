@@ -71,9 +71,9 @@ type ExternalInterface struct {
 	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
 	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
 	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
-	AddActiveRequest        func(string) error
-	CheckActiveRequest      func(string) (bool, error)
-	DeleteActiveRequest     func(string) error
+	GenericSave             func([]byte, string, string) error
+	CheckActiveRequest      func(string) (bool, *errors.Error)
+	DeleteActiveRequest     func(string) *errors.Error
 }
 
 type responseStatus struct {
@@ -150,9 +150,6 @@ type ActiveRequestsSet struct {
 	UpdateMu sync.Mutex
 }
 
-// ActiveReqSet is the global instance for tracking ongoing requests
-var ActiveReqSet ActiveRequestsSet
-
 var southBoundURL = "southboundurl"
 var northBoundURL = "northboundurl"
 
@@ -182,6 +179,30 @@ func getIPAndPortFromAddress(address string) (string, string) {
 		ip = address
 	}
 	return ip, port
+}
+
+func getIPFromHostName(fqdn string) (string, error) {
+	addr, err := net.LookupIP(fqdn)
+	if err != nil || len(addr) < 1 {
+		errMsg := "Can't lookup the ip from host name"
+		if err != nil {
+			errMsg = "Can't lookup the ip from host name" + err.Error()
+		}
+		return "", fmt.Errorf("%v", errMsg)
+	}
+	return fmt.Sprintf("%v", addr[0]), nil
+}
+
+func getKeyFromManagerAddress(managerAddress string) string {
+	host, port := getIPAndPortFromAddress(managerAddress)
+	ipAddr, err := getIPFromHostName(host)
+	if err != nil {
+		ipAddr = host
+	}
+	if port != "" {
+		return net.JoinHostPort(host, port)
+	}
+	return ipAddr
 }
 
 func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {

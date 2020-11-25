@@ -15,7 +15,7 @@ jobs:
           persist-credentials: false
       - name: repo-sync
         run: |
-          source_repo='rahulroshan-kachchap'
+          source_repo='rahulroshan-kachchap/ODIM'
           upstream_repo='https://github.com/ODIM-Project/ODIM.git'
           user_name='rahulroshan-kachchap'
           email='rahul.kachchap@hpe.com'

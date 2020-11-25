@@ -31,7 +31,7 @@ Before accessing these endpoints, ensure that the user account has the required 
 |<strong>URI</strong> |`/redfish/v1/UpdateService` |
 |<strong>Description</strong> |This operation retrieves JSON schema representing the `UpdateService` root.|
 |<strong>Returns</strong> |Properties for the service and a list of actions you can perform using this service.|
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -44,7 +44,7 @@ curl -i GET \
 
 ```
 
->**Sample response body**
+> Sample response body
 
 ```
 {
@@ -85,7 +85,7 @@ curl -i GET \
 |<strong>URI</strong> |`/redfish/v1/UpdateService/FirmwareInventory` |
 |<strong>Description</strong> |This operation lists firmware of all the resources available in Resource Aggregator for ODIM.|
 |<strong>Returns</strong> |A collection of links to firmware resources.|
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -98,7 +98,7 @@ curl -i GET \
 
 ```
 
->**Sample response body**
+> Sample response body
 
 ```
 {
@@ -160,7 +160,7 @@ curl -i GET \
 
 ```
 
->**Sample response body**
+> Sample response body
 
 ```
 {
@@ -197,7 +197,7 @@ curl -i GET \
 |<strong>URI</strong> |`/redfish/v1/UpdateService/SoftwareInventory` |
 |<strong>Description</strong> |This operation lists software of all the resources available in Resource Aggregator for ODIM.|
 |<strong>Returns</strong> |A collection of links to software resources.|
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -210,7 +210,7 @@ curl -i GET \
 
 ```
 
->**Sample response body**
+> Sample response body
 
 ```
 {
@@ -233,7 +233,7 @@ curl -i GET \
 |<strong>URI</strong> |`/redfish/v1/UpdateService/SoftwareInventory/{inventoryId}` |
 |<strong>Description</strong> |This operation retrieves information about a specific software resource.|
 |<strong>Returns</strong> |JSON schema representing this software.|
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -246,7 +246,7 @@ curl -i GET \
 
 ```
 
->**Sample response body**
+> Sample response body
 
 ```
 {
@@ -282,13 +282,12 @@ curl -i GET \
 |-------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate` |
-|<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br>It is performed in the background as a Redfish task. |
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br> |
+|<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
  
-**Usage information** 
-To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
+
 
 
 ```
@@ -356,40 +355,7 @@ curl -i POST \
 | SFTP \(v1.1+\)<br> |Secure File Transfer Protocol.|
 |TFTP|Trivial File Transfer Protocol.|
 
-
->**Sample response header \(HTTP 202 status\)**
-
-```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
-Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
-Odata-Version:4.0
-X-Frame-Options:sameorigin
-Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
-Content-Length:491 bytes
-
-```
-
->**Sample response body \(HTTP 202 status\)**
-
-```
-{
-   "@odata.type":"#Task.v1_4_2.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
-   "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
-   "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
-   "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
-   "MessageArgs":[
-      "task4aac9e1e-df58-4fff-b781-52373fcb5699"
-   ],
-   "NumberOfArgs":1,
-   "Severity":"OK"
-}
-```
-
->**Sample response body \(HTTP 200 status\)**
+> Sample response body
 
 ```
 {
@@ -411,12 +377,12 @@ Content-Length:491 bytes
 |-------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate` |
-|<strong>Description</strong> |This operation starts updating software or firmware components for which an update request has been created.<br>It is performed in the background as a Redfish task.<br><blockquote>IMPORTANT:<br>Before performing this operation, ensure that you have created an update request first. To know how to create an update request, see [Simple update](#Simple update).<br></blockquote>|
-|<strong>Response code</strong> |On success, `200 Ok` |
+|<strong>Description</strong> |This operation starts updating software or firmware components for which an update request has been created. <blockquote>IMPORTANT:<br>Before performing this operation, ensure that you have created an update request first. To know how to create an update request, see [Simple update](#Simple update).<br></blockquote>|
+|<strong>Response Code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information** 
-To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
+ 
+
 
 
 ```
@@ -432,39 +398,7 @@ curl -i POST \
 
 None
 
->**Sample response header \(HTTP 202 status\)**
-
-```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
-Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
-Odata-Version:4.0
-X-Frame-Options:sameorigin
-Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
-Content-Length:491 bytes
-
-```
-
->**Sample response body \(HTTP 202 status\)**
-
-```
-{
-   "@odata.type":"#Task.v1_4_2.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
-   "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
-   "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
-   "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
-   "MessageArgs":[
-      "task4aac9e1e-df58-4fff-b781-52373fcb5699"
-   ],
-   "NumberOfArgs":1,
-   "Severity":"OK"
-}
-```
-
->**Sample response body \(HTTP 200 status\)**
+> Sample response body
 
 ```
 {

@@ -122,7 +122,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		if err != nil {
 			continue
 		}
-		
+
 		for _, sub := range subscriptions {
 
 			// filter and send evemts to destination if destination is not empty
@@ -131,7 +131,7 @@ func PublishEventsToDestination(data interface{}) bool {
 				// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
 				if isHostPresent(sub.Hosts, host) {
 					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
-					// if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
+						// if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
 						log.Printf("Destination: %v\n", sub.Destination)
 						// go postEvent(sub.Destination, eventRequest)
 						eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
@@ -141,10 +141,10 @@ func PublishEventsToDestination(data interface{}) bool {
 					log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
 					flag = false
 				}
-	
+
 			}
 		}
-	
+
 		if strings.EqualFold("Alert", inEvent.EventType) {
 			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
 				go rediscoverSystemInventory(uuid, inEvent.OriginOfCondition.Oid)
@@ -252,7 +252,7 @@ func PublishEventsToDestination(data interface{}) bool {
 }
 
 func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.Event, originResources []string) bool {
-// func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, originResources []string) bool {
+	// func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, originResources []string) bool {
 	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
@@ -289,7 +289,7 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 // formatEvent will format the event string according to the odimra
 // add uuid:systemid/chassisid inplace of systemid/chassisid
 func formatEvent(originResource string, event common.Event, hostIP string) (common.Event, string) {
-// func formatEvent(originResource, eventstring, hostIP string) (string, string) {
+	// func formatEvent(originResource, eventstring, hostIP string) (string, string) {
 	uuid, _ := getUUID(originResource)
 	//var eventRequestString = eventstring
 	if !strings.Contains(hostIP, "Collection") {

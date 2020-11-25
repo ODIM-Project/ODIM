@@ -1233,11 +1233,11 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
-	firmawareVesrion := strings.Split(cm[2], "_")
+	firmwareVersion := strings.Split(cm[2], "_")
 	return connectionMethodVariants{
 		PluginType:        cm[0],
 		PreferredAuthType: cm[1],
 		PluginID:          cm[2],
-		FirmwareVersion:   firmawareVesrion[1],
+		FirmwareVersion:   firmwareVersion[1],
 	}
 }

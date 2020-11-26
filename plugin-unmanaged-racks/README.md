@@ -1,3 +1,19 @@
+<!-- 
+ Copyright (c) 2020 Intel Corporation
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
 # Unmanaged Racks Plugin (URP) 
 
 This folder contains implementation of Unamanaged Racks Plugin(URP) for ODIMRA. 
@@ -28,6 +44,26 @@ make run
 ```
 
 ## Register URP in ODIMRA
+
+1. Make `https://localhost:45000/redfish/v1/AggregationService/ConnectionMethods` endpoint exposes connection method required by URP plugin. `ConnectionMethodVariant` should be `Compute:BasicAuth:URP_v1.0.0`.
+
+```
+{
+  "@odata.type": "#ConnectionMethod.v1_0_0.ConnectionMethod",
+  "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/bea4ab96-edd1-4cce-b57c-f83e218e97b6",
+  "@odata.context": "/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+  "Id": "bea4ab96-edd1-4cce-b57c-f83e218e97b6",
+  "Name": "Connection Method",
+  "Severity": "OK",
+  "ConnectionMethodType": "Redfish",
+  "ConnectionMethodVariant": "Compute:BasicAuth:URP_v1.0.0",
+  "Links": {
+    "AggregationSources": []
+  }
+}
+```
+
+2. Execute plugin registration request:
 ```
 POST https://odimra.local.com:45000/redfish/v1/AggregationService/AggregationSources
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
@@ -37,14 +73,13 @@ Authorization:Basic YWRtaW46T2QhbTEyJDQ=
  "Password":"Od!m12$4",
  "UserName":"admin",
  "Links": {
-   "Oem":{
-     "PluginID":"URP",
-     "PluginType": "Chassis",
-     "PreferredAuthType":"BasicAuth"
+   "ConnectionMethod":{
+       "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/bea4ab96-edd1-4cce-b57c-f83e218e97b6"
    }
  }
 }
 ```
+
 ## Create RackGroup
 ```
 POST https://localhost:45000/redfish/v1/Chassis
@@ -84,8 +119,9 @@ Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 
   "Name": "RACK#1"
 }
+
 ```
-## Attach ComputerSystem under Rack
+## Attach selected Chassis under Rack
 ```
 PATCH https://odimra.local.com:45000/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
@@ -95,17 +131,32 @@ Content-Type: application/json
   "Links": {
     "Contains": [
       {
-        "@odata.id": "/redfish/v1/Systems/46db63a9-2dcb-43b3-bdf2-54ce9c42e9d9:1"
+        "@odata.id": "/redfish/v1/Chassis/46db63a9-2dcb-43b3-bdf2-54ce9c42e9d9:1"
       }
     ]
   }
 }
 ```
+
+## Detach Chassis from Rack
+```
+PATCH https://odimra.local.com:45000/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
+Authorization:Basic YWRtaW46T2QhbTEyJDQ=
+Content-Type: application/json
+
+{
+  "Links": {
+    "Contains": []
+  }
+}
+```
+
 ## Delete Rack
 ```
 DELETE https://odimra.local.com:45000/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 ```
+
 ## Delete RackGroup
 ```
 DELETE https://odimra.local.com:45000/redfish/v1/Chassis/1be678f0-86dd-58ac-ac38-16bf0f6dafee

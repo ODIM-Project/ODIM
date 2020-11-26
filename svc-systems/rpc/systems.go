@@ -56,7 +56,10 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystemResource(req)
-	fillSystemProtoResponse(resp, data)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = jsonMarshal(data.Body)
 	return nil
 }
 
@@ -97,7 +100,10 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystems(req)
-	fillSystemProtoResponse(resp, data)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = jsonMarshal(data.Body)
 	return nil
 }
 
@@ -143,7 +149,10 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.SetDefaultBootOrder(req.SystemID)
-	fillSystemProtoResponse(resp, data)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	resp.Body = jsonMarshal(data.Body)
 	return nil
 }
 
@@ -158,6 +167,10 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Println("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -189,7 +202,10 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBootOrderSettings(req)
-	fillSystemProtoResponse(resp, data)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	resp.Body = jsonMarshal(data.Body)
 	return nil
 }
 
@@ -209,7 +225,10 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	}
 
 	data := s.EI.CreateVolume(req)
-	fillSystemProtoResponse(resp, data)
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Header = data.Header
+	resp.Body = jsonMarshal(data.Body)
 	return nil
 }
 
@@ -229,13 +248,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	}
 
 	data := s.EI.DeleteVolume(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
-}
-
-func fillSystemProtoResponse(resp *systemsproto.SystemsResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
-	resp.Body = generateResponse(data.Body)
 	resp.Header = data.Header
 }

@@ -16,9 +16,9 @@
 
 package utils
 
-type Finder []string
+type Collection []string
 
-func (f Finder) Find(v string) bool {
+func (f Collection) Contains(v string) bool {
 	for _, e := range f {
 		if e == v {
 			return true

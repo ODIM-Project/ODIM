@@ -32,7 +32,7 @@ import (
 )
 
 func NewChassisRPC(
-	authWrapper func(sessionToken string, privileges, oemPrivileges []string) (int32, string),
+	authWrapper func(sessionToken string, privileges, oemPrivileges []string) response.RPC,
 	createHandler *chassis.Create,
 	getCollectionHandler *chassis.GetCollection,
 	deleteHandler *chassis.Delete,
@@ -51,7 +51,7 @@ func NewChassisRPC(
 
 // ChassisRPC struct helps to register service
 type ChassisRPC struct {
-	IsAuthorizedRPC      func(sessionToken string, privileges, oemPrivileges []string) (int32, string)
+	IsAuthorizedRPC      func(sessionToken string, privileges, oemPrivileges []string) response.RPC
 	GetCollectionHandler *chassis.GetCollection
 	GetHandler           *chassis.Get
 	DeleteHandler        *chassis.Delete
@@ -82,7 +82,8 @@ func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.Create
 		return cha.CreateHandler.Handle(req)
 	})
 
-	return rewrite(r, resp)
+	rewrite(r, resp)
+	return nil
 }
 
 //GetChassisResource defines the operations which handles the RPC request response
@@ -96,7 +97,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillChassisProtoResponse(resp, authResp)
+		rewrite(authResp, resp)
 		return nil
 	}
 	var pc = chassis.PluginContact{
@@ -105,7 +106,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetChassisResource(req)
-	fillChassisProtoResponse(resp, data)
+	rewrite(data, resp)
 	return nil
 }
 

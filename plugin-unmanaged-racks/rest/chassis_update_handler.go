@@ -197,7 +197,7 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				}
 
 				for _, assetUnderChassis := range requestedChange.Links.Contains {
-					if utils.Finder(unmanagedChassisKeys).Find(db.CreateKey("Chassis", assetUnderChassis.Oid).String()) {
+					if utils.Collection(unmanagedChassisKeys).Contains(db.CreateKey("Chassis", assetUnderChassis.Oid).String()) {
 						return true
 					}
 				}

@@ -31,7 +31,7 @@ Before accessing these endpoints, ensure that the user account has the required 
 |<strong>URI</strong> |`/redfish/v1/UpdateService` |
 |<strong>Description</strong> |This operation retrieves JSON schema representing the `UpdateService` root.|
 |<strong>Returns</strong> |Properties for the service and a list of actions you can perform using this service.|
-|<strong>Response Code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -85,7 +85,7 @@ curl -i GET \
 |<strong>URI</strong> |`/redfish/v1/UpdateService/FirmwareInventory` |
 |<strong>Description</strong> |This operation lists firmware of all the resources available in Resource Aggregator for ODIM.|
 |<strong>Returns</strong> |A collection of links to firmware resources.|
-|<strong>Response Code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -197,7 +197,7 @@ curl -i GET \
 |<strong>URI</strong> |`/redfish/v1/UpdateService/SoftwareInventory` |
 |<strong>Description</strong> |This operation lists software of all the resources available in Resource Aggregator for ODIM.|
 |<strong>Returns</strong> |A collection of links to software resources.|
-|<strong>Response Code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -233,7 +233,7 @@ curl -i GET \
 |<strong>URI</strong> |`/redfish/v1/UpdateService/SoftwareInventory/{inventoryId}` |
 |<strong>Description</strong> |This operation retrieves information about a specific software resource.|
 |<strong>Returns</strong> |JSON schema representing this software.|
-|<strong>Response Code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
 
@@ -283,7 +283,7 @@ curl -i GET \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate` |
 |<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br> |
-|<strong>Response Code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
  
@@ -378,7 +378,7 @@ curl -i POST \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate` |
 |<strong>Description</strong> |This operation starts updating software or firmware components for which an update request has been created. <blockquote>IMPORTANT:<br>Before performing this operation, ensure that you have created an update request first. To know how to create an update request, see [Simple update](#Simple update).<br></blockquote>|
-|<strong>Response Code</strong> |On success, `200 Ok` |
+|<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
  

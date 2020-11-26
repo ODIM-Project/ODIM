@@ -69,7 +69,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		return false
 	}
 
-	var flags []bool
+	var flag bool
 	eventMap := make(map[string][]common.Event)
 	for _, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil {
@@ -130,11 +130,11 @@ func PublishEventsToDestination(data interface{}) bool {
 					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
 						log.Printf("Destination: %v\n", sub.Destination)
 						eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
-						flags = append(flags, true)
+						flag = true
 					}
 				} else {
 					log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
-					flags = append(flags, false)
+					flag = false
 				}
 
 			}
@@ -143,11 +143,11 @@ func PublishEventsToDestination(data interface{}) bool {
 		if strings.EqualFold("Alert", inEvent.EventType) {
 			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
 				go rediscoverSystemInventory(uuid, inEvent.OriginOfCondition.Oid)
-				flags = append(flags, true)
+				flag = true
 			}
 			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
 				go updateSystemPowerState(uuid, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
-				flags = append(flags, true)
+				flag = true
 			}
 		}
 	}
@@ -161,13 +161,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		}
 		go postEvent(key, data)
 	}
-
-	for _, f := range flags {
-		if !f {
-			return f
-		}
-	}
-	return true
+	return flag
 }
 
 func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.Event, originResources []string) bool {

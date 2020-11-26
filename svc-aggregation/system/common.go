@@ -729,12 +729,10 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 		progress = h.getResourceDetails("", progress, estimatedWork, req)
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
-	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
+	searchForm := createServerSearchIndex(computeSystem, systemURI, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
-	} else {
-		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()

@@ -1216,7 +1216,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 
 	// check the firmware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
-		errMsg := fmt.Sprintf("Provided firmware version %s is not matched with supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
+		errMsg := fmt.Sprintf("Provided firmware version %s does not match supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
 		log.Println(errMsg)
 		getResponse.StatusCode = http.StatusBadRequest
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList

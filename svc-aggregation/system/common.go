@@ -120,20 +120,12 @@ type AddResourceRequest struct {
 	ManagerAddress   string            `json:"ManagerAddress"`
 	UserName         string            `json:"UserName"`
 	Password         string            `json:"Password"`
-	Oem              *AddOEM           `json:"Oem"`
 	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod"`
 }
 
 //ConnectionMethod struct definition for @odata.id
 type ConnectionMethod struct {
 	OdataID string `json:"@odata.id"`
-}
-
-// AddOEM is struct to have the add request parameters
-type AddOEM struct {
-	PluginID          string `json:"PluginID"`
-	PreferredAuthType string `json:"PreferredAuthType,omitempty"`
-	PluginType        string `json:"PluginType,omitempty"`
 }
 
 // TaskData holds the data of the Task
@@ -171,7 +163,6 @@ type AggregationSource struct {
 
 // Links holds information of Oem
 type Links struct {
-	Oem              *AddOEM           `json:"Oem,omitempty"`
 	ConnectionMethod *ConnectionMethod `json:"ConnectionMethod,omitempty"`
 }
 
@@ -1223,9 +1214,9 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
 	}
 
-	// check the firmaware version of plugin is matched with connection method variant version
+	// check the firmware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
-		errMsg := "firmaware is not supported by connection method"
+		errMsg := fmt.Sprintf("Provided firmware version %s does not match supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
 		log.Println(errMsg)
 		getResponse.StatusCode = http.StatusBadRequest
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList
@@ -1242,11 +1233,11 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
-	firmawareVesrion := strings.Split(cm[2], "_")
+	firmwareVersion := strings.Split(cm[2], "_")
 	return connectionMethodVariants{
 		PluginType:        cm[0],
 		PreferredAuthType: cm[1],
 		PluginID:          cm[2],
-		FirmwareVersion:   firmawareVesrion[1],
+		FirmwareVersion:   firmwareVersion[1],
 	}
 }

@@ -32,10 +32,10 @@ func Publish(taskURI string, messageID string, eventType string) {
 		log.Println("Unable to connect to kafka", err)
 		return
 	}
-
+	var eventID = uuid.NewV4().String()
 	defer k.Close()
 	var event = common.Event{
-		EventID:   uuid.NewV4().String(),
+		EventID:   eventID,
 		MessageID: messageID,
 		EventType: eventType,
 		OriginOfCondition: &common.Link{
@@ -56,9 +56,8 @@ func Publish(taskURI string, messageID string, eventType string) {
 	}
 
 	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
-		log.Println("Unable Publish events to kafka", err)
+		log.Println("unable to publish the event to message bus: ", err)
 		return
 	}
-	log.Printf("debug: %s Event Published", messageID)
-
+	log.Println("info: TaskURI:", taskURI, ", EventID:", eventID, ", MessageID:", messageID)
 }

@@ -19,9 +19,33 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
+
+type args struct {
+	taskID, sessionUserName string
+	req                     *updateproto.UpdateRequest
+}
+
+func mockCreateChildTask(sessionID, taskID string) (string, error) {
+	switch taskID {
+	case "taskWithoutChild":
+		return "", fmt.Errorf("subtask cannot created")
+	case "subTaskWithSlash":
+		return "someSubTaskID/", nil
+	default:
+		return "someSubTaskID", nil
+	}
+}
+
+func mockUpdateTask(task common.TaskData) error {
+	if task.TaskID == "invalid" {
+		return fmt.Errorf("task with this ID not found")
+	}
+	return nil
+}
 
 func TestSimpleUpdate(t *testing.T) {
 	errMsg := []string{"/redfish/v1/Systems/uuid:/target1"}
@@ -36,54 +60,58 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 		},
 	}
-
 	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport","SupportedValues": ["OnStartUpdate"]}}`)
 	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport","SupportedValues": ["OnStartUpdate"]}}`)
-	output := map[string]interface{}{"Attributes": "sample"}
 	tests := []struct {
 		name string
-		req  *updateproto.UpdateRequest
+		args args
 		want response.RPC
 	}{
 		{
-			name: "uuid without system id",
-			req: &updateproto.UpdateRequest{
-				RequestBody:  request1,
-				SessionToken: "token",
+			name: "postive test Case",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  request3,
+				},
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusBadRequest,
-				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg1.CreateGenericErrorResponse(),
+				StatusCode: http.StatusOK,
 			},
 		},
 		{
-			name: "Valid Request",
-			req: &updateproto.UpdateRequest{
-				RequestBody:  request3,
-				SessionToken: "token",
+			name: "invalid system id",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  request1,
+				},
 			},
 			want: response.RPC{
-				StatusCode:    http.StatusOK,
-				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+				StatusCode: http.StatusNotFound,
+				Body:       errArg1.CreateGenericErrorResponse(),
+			},
+		},
+		{
+			name: "subtask creation failure",
+			args: args{
+				taskID: "taskWithoutChild", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+					RequestBody:  request3,
 				},
-				Body: output,
+			},
+			want: response.RPC{
+				StatusCode: http.StatusInternalServerError,
 			},
 		},
 	}
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := e.SimpleUpdate(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := e.SimpleUpdate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("SimpleUpdate() = %v, want %v", got, tt.want)
 			}
 		})

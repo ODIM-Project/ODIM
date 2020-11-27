@@ -23,6 +23,6 @@ jobs:
           git config --global user.email ''$email''
           git remote add upstream $upstream_repo
           git remote set-url origin https://${{secrets.PAT }}:x-oauth-basic@github.com/$source_repo.git
-          git pull upstream/development
-          git merge upstream/development
+          git pull upstream development
+          git merge upstream development
           git push -f origin development

@@ -52,7 +52,10 @@
   * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
   * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
   * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
-- [Resource inventory](#resource-inventory)
+  * [Connection methods](#connection-methods)
+  * [Viewing a collection of connection methods](#viewing-a-collection-of-connection-methods)
+  * [Viewing a connection method](#viewing-a-connection-method)
+  * [Resource inventory](#resource-inventory)
   * [Collection of computer systems](#collection-of-computer-systems)
   * [Single computer system](#single-computer-system)
   * [Memory collection](#memory-collection)
@@ -1884,7 +1887,7 @@ curl -i GET \
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
 				
@@ -2037,7 +2040,7 @@ x-frame-options":"sameorigin"
 |<strong>Response Code</strong> |On success, `202 Accepted` On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see [Connection methods](#connection-methods).
 				
@@ -2336,7 +2339,7 @@ curl -i PATCH \
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2495,7 +2498,7 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2641,7 +2644,7 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2975,7 +2978,7 @@ curl -i POST \
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -3110,7 +3113,7 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -3280,6 +3283,7 @@ curl -i POST \
 
 
 
+
 #  Resource inventory
 
 Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems`, `Chassis`, and `Managers` endpoints. It also offers the capability to search inventory information based on one or more configuration parameters and exposes APIs to manage the added resources.
@@ -3319,7 +3323,8 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Chassis/\{chassisId\}|GET|`Login` |
 |/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login` |
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|GET|`Login` |
-|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login`|
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login` |
+
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
@@ -4214,6 +4219,7 @@ The drive schema represents a single physical drive for a system, including link
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
+
 >**curl command**
 
 
@@ -4778,7 +4784,10 @@ curl -i GET \
 
 
 
+
 ## Collection of network adapters
+
+
 
 |||
 |---------|-------|
@@ -4796,7 +4805,7 @@ curl -i GET \
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}'
 
 
 ```
@@ -5971,7 +5980,7 @@ curl -i GET \
 |<strong>Authentication</strong> |Yes|
 
  
-**Usage information** 
+**Usage** 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
@@ -6099,7 +6108,7 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information** 
+**Usage** 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
@@ -6111,6 +6120,7 @@ curl -i POST \
 
 
 ```
+
 
 > Sample request body
 
@@ -6148,7 +6158,9 @@ Content-Length:491 bytes
 }
 ```
 
->**Sample response body \(HTTP 200 status\)**
+
+>**Sample response body**
+
 
 ```
 {
@@ -6161,9 +6173,6 @@ Content-Length:491 bytes
       "code":"iLO.0.10.ExtendedInfo",
       "message":"See @Message.ExtendedInfo for more information."
 ```
-
-
-
 
 
 
@@ -8563,7 +8572,7 @@ Transfer-Encoding:chunked
 |**Response code** |<ul><li>`202 Accepted`</li><li>`201 Created`</li></ul>|
 |**Authentication** |Yes|
 
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -8676,6 +8685,7 @@ curl -i POST \
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
+|/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 
 **Event types**
 

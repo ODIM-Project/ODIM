@@ -12,12 +12,29 @@ Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create an
 
 -   Fetching account details.
 
+
+**Supported APIs**:
+
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/AccountService|GET|`Login` |
+|/redfish/v1/AccountService/Roles|GET, POST|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService/Roles/\{RoleId\}|GET, PATCH, DELETE|`Login`, `ConfigureManager` |
+|/redfish/v1/AccountService/Accounts|POST, GET|`Login`, `ConfigureUsers` |
+|/redfish/v1/AccountService/Accounts/\{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
+
+
+
+>**NOTE:**
+Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+
   
   
 ##  Modifying Configurations of Session and Account Service
   
-Config File of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
-Refer the section **Modifying Configurations** in the README.md to change the configurations of a odimra service
+Config file of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
+Refer to the section **Modifying Configurations** in the README.md file to change the configurations of an odimra service.
+
   
 **Specific configurations for Session and Account Service are:**
   
@@ -26,19 +43,18 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 /var/log/ODIMRA/account_session.log
     
   
-
-##  Supported APIs
+## Viewing the account service root
 
 |||
-|-------|--------------------|
-|/redfish/v1/AccountService|`GET`|
-|/redfish/v1/AccountService/Accounts|`POST`, `GET`|
-|/redfish/v1/AccountService/Accounts/\{accountId\}|`GET`, `DELETE`, `PATCH`|
+|---------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AccountService` |
+|**Description** |This endpoint fetches JSON schema representing the Redfish `AccountService` root.|
+|**Returns** |The properties common to all user accounts and links to the collections of manager accounts and roles.|
+|**Response Code** | `200 OK` |
+|**Authentication** |Yes|
 
-
-
-
-## AccountService root
+>**curl command**
 
 ```
 curl -i GET \
@@ -48,7 +64,7 @@ curl -i GET \
 
 ```
 
-> Sample response header
+>**Sample response header**
 
 ```
 Allow:GET
@@ -63,7 +79,7 @@ Transfer-Encoding:chunked
 ```
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -92,34 +108,284 @@ Transfer-Encoding:chunked
 ```
 
 
+## Creating a role
+
 |||
 |---------|---------------|
-|**Method** | `GET` |
-|**URI** |`/redfish/v1/AccountService` |
-|**Description** |The schema representing the Redfish `AccountService` root.|
-|**Returns** |The properties common to all user accounts and links to the collections of manager accounts and roles.|
-|**Response Code** | `200 OK` |
+|**Method** | `POST` |
+|**URI** |`/redfish/v1/AccountService/Roles` |
+|**Description** |This operation creates a role other than Redfish predefined roles. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |JSON schema representing the newly created role.|
+|**Response code** |`201 Created` |
 |**Authentication** |Yes|
 
- 
-
-
-
-
-
-
-
-
-
-
-## Creating a user account
+>**curl command**
 
 ```
 curl -i POST \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
    -d \
-'{"UserName":"{username}","Password":"{password}","RoleId":"{roleId}"}
+'{ 
+   "RoleId":"CLIENT11",
+   "AssignedPrivileges":[ 
+      "Login",
+      "ConfigureUsers",
+      "ConfigureSelf"
+   ],
+   "OemPrivileges":null 
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
+
+
+```
+
+
+
+>**Sample request body**
+
+```
+{ 
+   "RoleId":"CLIENT11",
+   "AssignedPrivileges":[ 
+      "Login",
+      "ConfigureUsers",
+      "ConfigureSelf"
+   ],
+   "OemPrivileges":null
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|Id|String \(required, read-only\)<br> |Name for this role. <br>**NOTE:**<br> Id cannot be modified later.|
+|AssignedPrivileges|Array \(string \(enum\)\) \(required\)<br> |The Redfish privileges that this role includes. Possible values are:<br>  `ConfigureManager` <br>   `ConfigureSelf` <br>   `ConfigureUsers` <br>   `Login` <br>   `ConfigureComponents` <br>|
+|OemPrivileges|Array \(string\) \(required\)<br> |The OEM privileges that this role includes. If you do not want to specify any OEM privileges, use `null` or `[]` as value.|
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
+   "Id":"CLIENT11",
+   "Name":"User Role",
+   "Message":"The resource has been created successfully.",
+   "MessageId":"ResourceEvent.1.0.2.ResourceCreated",
+   "Severity":"OK",
+   "IsPredefined":false,
+   "AssignedPrivileges":[
+      "Login",
+      "ConfigureUsers",
+      "ConfigureSelf"
+   ],
+   "OemPrivileges":null
+}
+```
+
+## Listing roles
+
+|||
+|---------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AccountService/Roles` |
+|**Description** |This operation lists available user roles. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |Links to user role resources.|
+|**Response Code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles'
+
+```
+
+
+>**Sample response body**
+
+```
+{ 
+   "@odata.type":"#RoleCollection.RoleCollection",
+   "@odata.id":"/redfish/v1/AccountService/Roles",
+   "Name":"Roles Collection",
+   "Members@odata.count":5,
+   "Members":[ 
+      { 
+         "@odata.id":"/redfish/v1/AccountService/Roles/Administrator"
+      },
+      { 
+         "@odata.id":"/redfish/v1/AccountService/Roles/Operator"
+      },
+      { 
+         "@odata.id":"/redfish/v1/AccountService/Roles/ReadOnly"
+      },
+      { 
+         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT13"
+      },
+      { 
+         "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11"
+      }
+      
+   ]
+}
+```
+
+
+
+
+
+
+
+## Viewing information about a role
+
+
+|||
+|---------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
+|**Description** |This operation fetches information about a specific user role. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |JSON schema representing this role. The schema has the details such as - Id, name, description, assigned privileges, OEM privileges.|
+|**Response Code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
+
+
+```
+
+ >**Sample response body**
+
+```
+{
+   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
+   "Id":"CLIENT11",
+   "Name":"User Role",
+   "IsPredefined":false,
+   "AssignedPrivileges":[
+      "Login",
+      "ConfigureUsers",
+      "ConfigureSelf"
+   ],
+   "OemPrivileges":null
+}
+```
+
+
+
+
+
+## Updating a role
+
+|||
+|---------|---------------|
+|**Method** | `PATCH` |
+|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
+|**Description** |This operation updates privileges of a specific user role - assigned privileges \(Redfish predefined\) and OEM privileges. Id of a role cannot be modified.<br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Returns** |JSON schema representing the updated role.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
+```
+ curl -i -X PATCH \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "AssignedPrivileges": [{Set_Of_Privileges_to_update}],
+  "OemPrivileges": []
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
+
+```
+
+
+>**Sample request body**
+
+```
+{ 
+   "AssignedPrivileges":[ 
+      "Login",
+      "ConfigureManager",
+      "ConfigureUsers"
+   ],
+   "OemPrivileges": []
+}
+```
+
+>**Sample response body**
+
+```
+{
+   "RoleId":"CLIENT11",
+   "IsPredefined":false,
+   "AssignedPrivileges":[
+      "Login",
+      "ConfigureManager",
+      "ConfigureUsers"
+   ],
+   "OemPrivileges":null
+}
+```
+
+
+
+
+## Deleting a role
+
+|||
+|---------|---------------|
+|**Method** | `DELETE` |
+|**URI** |`/redfish/v1/AccountService/Roles/{RoleId}` |
+|**Description** |This operation deletes a specific user role. If you attempt to delete a role that is already assigned to a user account, you will receive an HTTP `403 Forbidden` error.<br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can perform this operation.|
+|**Response Code** |`204 No Content` |
+|**Authentication** |Yes|
+
+>**curl command**
+
+```
+curl -i -X DELETE \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odimra_host}:{port}/redfish/v1/AccountService/Roles/{RoleId}'
+
+```
+
+
+
+
+## Creating a user account
+
+|||
+|-------|--------------------|
+|**Method** | `POST` |
+|**URI** |`/redfish/v1/AccountService/Accounts` |
+|**Description** |This operation creates a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can create other user account.|
+|**Returns** |<ul><li>`Location` header that contains a link to the newly created account.</li><li>JSON schema representing the newly created account.</li></ul> |
+|**Response Code** |`201 Created` |
+|**Authentication** |Yes|
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{"Username":"{username}","Password":"{password}","RoleId":"{roleId}"}
 ' \
  'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts'
 
@@ -127,38 +393,24 @@ curl -i POST \
 ```
 
 
-|||
-|-------|--------------------|
-|**Method** | `POST` |
-|**URI** |`/redfish/v1/AccountService/Accounts` |
-|**Description** |This operation creates a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can create a user account.|
-|**Returns** |<ul><li>`Location` header that contains a link to the newly created account.</li><li>JSON schema representing the newly created account.</li></ul> |
-|**Response Code** |`201 Created` |
-|**Authentication** |Yes|
 
- 
-
-
-
-
-
-> Sample request body
+>**Sample request body**
 
 ```
 { 
-   "UserName":"monitor32",
+   "Username":"monitor32",
    "Password":"Abc1vent2020!",
    "RoleId":"CLIENT11"
 }
 ```
 
-###  Request URI parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|UserName|String \(required\)<br> |User name for the user account.|
+|Username|String \(required\)<br> |User name for the user account.|
 |Password|String \(required\)<br> |Password for the user account. Before creating a password, see "Password Requirements" .|
-|RoleId|String \(required\)<br> |The role for this account. To know more about roles, see [User roles and privileges](#user-roles-and-privileges). Ensure that the `roleId` you want to assign to this user account exists. To check the existing roles, see [Listing Roles](#listing-roles). If you attempt to assign an unavailable role, you will receive an HTTP `400 Bad Request` error.|
+|RoleId|String \(required\)<br> |The role for this account. To know more about roles, see [User roles and privileges](#role-based-authorization). Ensure that the `roleId` you want to assign to this user account exists. To check the existing roles, see [Listing Roles](#listing-roles). If you attempt to assign an unavailable role, you will receive an HTTP `400 Bad Request` error.|
 
 ### Password requirements
 
@@ -169,7 +421,7 @@ curl -i POST \
 -   Your password must contain at least one uppercase letter \(A-Z\), one lowercase letter \(a-z\), one digit \(0-9\), and one special character \(~!@\#$%^&\*-+\_|\(\)\{\}:;<\>,.?/\).
 
 
-> Sample response header
+>**Sample response header**
 
 ```
 Cache-Control:no-cache
@@ -183,7 +435,7 @@ Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
 Transfer-Encoding:chunked
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -211,6 +463,16 @@ Transfer-Encoding:chunked
 
 ##  Listing user accounts
 
+|||
+|---------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AccountService/Accounts` |
+|**Description** |This operation retrieves a list of user accounts. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view a list of user accounts.|
+|**Returns** |Links to user accounts.|
+|**Response Code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -221,17 +483,21 @@ curl -i GET \
 ```
 
 
-|||
-|---------|---------------|
-|**Method** | `GET` |
-|**URI** |`/redfish/v1/AccountService/Accounts` |
-|**Description** |This operation retrieves a list of user accounts. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view a list of user accounts.|
-|**Returns** |Links to user accounts.|
-|**Response Code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 ##  Viewing the account details
+
+|||
+|---------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
+|**Description** |This operation fetches information about a specific user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view information about a user account.|
+|**Returns** |JSON schema representing this user account.|
+|**Response Code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -241,7 +507,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -265,24 +531,19 @@ curl -i GET \
 ```
 
 
+
+## Updating a user account
+
 |||
 |---------|---------------|
-|**Method** | `GET` |
+|**Method** | `PATCH` |
 |**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation fetches information about a specific user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can view information about a user account.|
-|**Returns** |JSON schema representing this user account.|
+|**Description** |This operation updates user account details \(`username`, `password`, and `RoleId`\). To modify account details, add them in the request payload \(as shown in the sample request body\) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify other user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
+|**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
- 
-
-
-
-
-
-
-
-## Updating a user account
+>**curl command**
 
 ```
 curl -i -X PATCH \
@@ -299,21 +560,7 @@ curl -i -X PATCH \
 ```
 
 
-|||
-|---------|---------------|
-|**Method** | `PATCH` |
-|**URI** |`/redfish/v1/AccountService/Accounts/{accountId}` |
-|**Description** |This operation updates user account details \(`username`, `password`, and `RoleId`\). To modify account details, add them in the request payload \(as shown in the sample request body\) and perform `PATCH` on the mentioned URI. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can modify user accounts. Users with `ConfigureSelf` privilege can modify only their own accounts.|
-|**Returns** |<ul><li>`Location` header that contains a link to the updated account.</li><li>JSON schema representing the modified account.</li></ul>|
-|**Response Code** |`200 OK` |
-|**Authentication** |Yes|
-
- 
-
-
-
-
-> Sample request body
+>**Sample request body**
 
 ```
 { 
@@ -322,7 +569,7 @@ curl -i -X PATCH \
 }
 ```
 
-> Sample response header
+>**Sample response header**
 
 ```
 Cache-Control:no-cache
@@ -337,7 +584,7 @@ Transfer-Encoding:chunked
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -365,14 +612,6 @@ Transfer-Encoding:chunked
 
 ## Deleting a user account
 
-```
-curl  -i -X DELETE \
-   -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
-
-```
-
-
 |||
 |---------|---------------|
 |**Method** | `DELETE` |
@@ -380,3 +619,12 @@ curl  -i -X DELETE \
 |**Description** |This operation deletes a user account. <br>**NOTE:**<br> Only a user with `ConfigureUsers` privilege can delete a user account.|
 |**Response Code** |`204 No Content` |
 |**Authentication** |Yes|
+
+>**curl command**
+
+```
+curl  -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}'
+
+```

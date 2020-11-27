@@ -53,10 +53,6 @@ Refer to the section **Modifying Configurations** in the README.md file to chang
   
   
 
-
-
-
-
 ## Viewing the aggregation service root
 |||
 |-----|-------|
@@ -131,6 +127,7 @@ Transfer-Encoding":chunked
    }
 }
 ```
+
 
 
 ## Connection methods
@@ -252,6 +249,7 @@ curl -i GET \
 
 
 
+
 ##  Adding a plugin as an aggregation source
 
 | | |
@@ -263,6 +261,7 @@ curl -i GET \
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
+
 **Usage**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
@@ -270,13 +269,11 @@ Perform HTTP POST on the mentioned URI with a request body specifying a connecti
 A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
 To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
 		
-
 After the plugin is successfully added as an aggregation source, it will also be available as a manager resource at:
 
 `/redfish/v1/Managers`.
 
  
-
 
 NOTE:
 
@@ -305,7 +302,6 @@ curl -i POST \
 ```
 
 
-
 >**Sample request body**
 
 ```
@@ -330,7 +326,9 @@ curl -i POST \
 |Password|String \(required\)<br> |The plugin password.|
 |ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0`</li></ul>|
 
+
 >**Sample response header \(HTTP 202 status\)**
+
 
 ```
 Connection:keep-alive
@@ -343,7 +341,9 @@ Content-Length:491 bytes
 
 ```
 
+
 >**Sample response header \(HTTP 201 status\)**
+
 
 ```
 "cache-control":"no-cache
@@ -357,7 +357,9 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
+
 >**Sample response body \(HTTP 202 status\)**
+
 
 ```
 {
@@ -416,6 +418,7 @@ x-frame-options":"sameorigin"
 |<strong>Response Code</strong> |On success, `202 Accepted` On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
+
 **Usage**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see [Connection methods](#connection-methods).
@@ -460,7 +463,6 @@ curl -i -X POST \
 ```
 
 
-
 >**Sample request body**
 
 ```
@@ -488,6 +490,9 @@ curl -i -X POST \
 
 >**Sample response header \(HTTP 202 status\)**
 
+|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](#adding-a-plugin-as-an-aggregation-source).|
+
+
 ```
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
@@ -499,7 +504,9 @@ Content-Length:491 bytes
 
 ```
 
+
 >**Sample response header \(HTTP 201 status\)**
+
 
 ```
 "cache-control":"no-cache
@@ -513,7 +520,9 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
+
 >**Sample response body \(HTTP 202 status\)**
+
 
 ```
 {
@@ -533,8 +542,8 @@ x-frame-options":"sameorigin"
 ```
 
 
+>**Sample response body \(HTTP 201 status\)**
 
->** Sample response body \(HTTP 201 status\)**
 ```
  {
    "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
@@ -715,7 +724,9 @@ curl -i PATCH \
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
 
+
 **Usage**
+
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -874,7 +885,9 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
+
 **Usage**
+
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -1019,6 +1032,7 @@ Content-Length:491 bytes
 |<strong>Returns</strong> |`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".<br>|
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
+
 
 **Usage**
 
@@ -1652,5 +1666,6 @@ curl -i POST \
    ]
 }
 ```
+
 
 

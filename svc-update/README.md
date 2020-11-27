@@ -287,7 +287,7 @@ curl -i GET \
 |<strong>Authentication</strong> |Yes|
 
  
-**Usage information**
+**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -416,7 +416,7 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-**Usage information** 
+**Usage** 
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 

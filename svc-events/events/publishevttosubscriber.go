@@ -61,24 +61,43 @@ func PublishEventsToDestination(data interface{}) bool {
 		requestData = strings.Replace(requestData, key, value, -1)
 	}
 
+	var flag bool
+	var uuid string
 	var message common.MessageData
-	err := json.Unmarshal([]byte(requestData), &message)
+
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
 	if err != nil {
-		log.Printf("error: Failed to unmarshal the event: %v", err)
-		log.Println("incoming event:", requestData)
+		log.Printf("error: Failed to get the event destinations: %v\n", err)
 		return false
 	}
 
-	var flag bool
+	if len(deviceSubscription.OriginResources) < 1 {
+		log.Println("error: no origin resources found in device subscriptions")
+		return false
+	}
+
+	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
+
+	subscriptions, err := evmodel.GetEvtSubscriptions(host)
+	if err != nil {
+		return false
+	}
+
+	err = json.Unmarshal([]byte(requestData), &message)
+	if err != nil {
+		log.Printf("error: failed to unmarshal the incoming event %v: %v\n", requestData, err)
+		return false
+	}
+
 	eventMap := make(map[string][]common.Event)
 	for _, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil {
-			log.Println("Event not forwarded : Originofcondition is empty in incoming event", requestData)
+			log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
 			continue
 		}
 
 		if len(inEvent.OriginOfCondition.Oid) < 1 {
-			log.Println("Event not forwarded : Originofcondition is empty in incoming event", requestData)
+			log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
 			continue
 		}
 		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
@@ -96,27 +115,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		}
 
 		if !resTypePresent {
-			log.Println("Event not forwared: resource type of originofcondition not supported in event", message)
-			continue
-		}
-
-		var uuid string
-
-		deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
-		if err != nil {
-			log.Printf("error: Failed to get the event destinations: %v", err)
-			continue
-		}
-
-		if len(deviceSubscription.OriginResources) < 1 {
-			continue
-		}
-
-		originResource := deviceSubscription.OriginResources[0]
-		inEvent, uuid = formatEvent(originResource, inEvent, host)
-
-		subscriptions, err := evmodel.GetEvtSubscriptions(host)
-		if err != nil {
+			log.Printf("event not forwared: resource type of originofcondition not supported in event with body: %v\n", message)
 			continue
 		}
 
@@ -128,12 +127,11 @@ func PublishEventsToDestination(data interface{}) bool {
 				// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
 				if isHostPresent(sub.Hosts, host) {
 					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
-						log.Printf("Destination: %v\n", sub.Destination)
 						eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
 						flag = true
 					}
 				} else {
-					log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
+					log.Println("event not forwarded : No subscription for the incoming event's originofcondition")
 					flag = false
 				}
 
@@ -177,12 +175,10 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 		for _, origin := range originResources {
 			if subscription.SubordinateResources == true {
 				if strings.Contains(originCondition, origin) {
-					log.Printf("Filtered Event: %v", event)
 					return true
 				}
 			} else {
 				if origin == originCondition {
-					log.Printf("Filtered Event: %v", event)
 					return true
 				}
 			}
@@ -194,17 +190,17 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 
 // formatEvent will format the event string according to the odimra
 // add uuid:systemid/chassisid inplace of systemid/chassisid
-func formatEvent(originResource string, event common.Event, hostIP string) (common.Event, string) {
+func formatEvent(event, originResource, hostIP string) (string, string) {
 	uuid, _ := getUUID(originResource)
 	if !strings.Contains(hostIP, "Collection") {
 		str := "/redfish/v1/Systems/" + uuid + ":"
-		event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/Systems/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/Systems/", str, -1)
 		str = "/redfish/v1/systems/" + uuid + ":"
-		event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/systems/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/systems/", str, -1)
 		str = "/redfish/v1/Chassis/" + uuid + ":"
-		event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/Chassis/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/Chassis/", str, -1)
 		str = "/redfish/v1/Managers/" + uuid + ":"
-		event.OriginOfCondition.Oid = strings.Replace(event.OriginOfCondition.Oid, "/redfish/v1/Managers/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/Managers/", str, -1)
 	}
 	return event, uuid
 }

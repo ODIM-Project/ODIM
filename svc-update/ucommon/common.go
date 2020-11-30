@@ -269,10 +269,10 @@ func getPluginStatus(plugin umodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Warn("Error While getting the status for plugin ", plugin.ID, err)
+		log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err)
 		return status
 	}
-	log.Info("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin " + plugin.ID + " " + status)
 	return status
 }
 

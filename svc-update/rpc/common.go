@@ -37,7 +37,7 @@ func GetUpdater() *Updater {
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Warn("Unable to unmarshall response object from util-libs", err.Error())
+		log.Warn("Unable to unmarshall response object from util-libs " + err.Error())
 	}
 	return bytes
 }

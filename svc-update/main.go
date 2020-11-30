@@ -25,6 +25,7 @@ import (
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{})
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Error("System Service should not be run as the root user")

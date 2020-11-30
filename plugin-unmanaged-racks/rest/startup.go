@@ -85,7 +85,7 @@ func (s *subscriber) subscribe() {
 
 	rsp, err := s.odimRAClient.Post("/redfish/v1/EventService/Subscriptions", bodyBytes)
 	if err != nil {
-		logging.Errorf("Cannot register subscription: %e", err)
+		logging.Errorf("Cannot register subscription: %s", err)
 		return
 	}
 	if rsp.StatusCode != http.StatusAccepted {

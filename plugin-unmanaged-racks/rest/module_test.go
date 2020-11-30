@@ -424,7 +424,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					DELETE(rackURI).
 					WithBasicAuth("admin", "Od!m12$4").
 					Expect().
-					Status(http.StatusOK).
+					Status(http.StatusNoContent).
 					Body().Empty()
 			})
 
@@ -433,7 +433,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					DELETE(rackGroupURI).
 					WithBasicAuth("admin", "Od!m12$4").
 					Expect().
-					Status(http.StatusOK).
+					Status(http.StatusNoContent).
 					NoContent()
 			})
 		})

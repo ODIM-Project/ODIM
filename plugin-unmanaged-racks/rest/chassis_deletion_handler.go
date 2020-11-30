@@ -107,10 +107,6 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 				transactional,
 				requestedChassis, db.CreateContainedInKey(requestedChassisKey.String()).String(), db.CreateContainsKey(chassisToBeDeleted.Links.ContainedBy[0].Oid).String(),
 			)
-
-		mem, e := c.connectionManager.DAO().SMembers(ctx, db.CreateContainsKey("Chassis", "CONTAINS:Chassis:/ODIM/v1/Chassis/1f5780bc-1c86-52cb-b2ed-ba67cd2345f7").String()).Result()
-		fmt.Println(e)
-		fmt.Println(mem)
 	}
 
 	if err != nil {
@@ -119,7 +115,7 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 		return
 	}
 
-	ctx.StatusCode(http.StatusOK)
+	ctx.StatusCode(http.StatusNoContent)
 }
 
 func (c *chassisDeletionHandler) createValidator(chassis *redfish.Chassis) *redfish.CompositeValidator {

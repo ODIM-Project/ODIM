@@ -32,16 +32,16 @@ func main() {
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Error("fatal: error while trying set up configuration: %v", err)
+		log.Error("fatal: error while trying set up configuration: " + err)
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Error("error while trying to check DB connection health: %v", err)
+		log.Error("error while trying to check DB connection health: " + err)
 	}
 
 	err := services.InitializeService(services.Update)
 	if err != nil {
-		log.Error("fatal: error while trying to initialize the service: %v", err)
+		log.Error("fatal: error while trying to initialize the service: " + err)
 	}
 	registerHandlers()
 	// Run server
@@ -54,7 +54,7 @@ func main() {
 func registerHandlers() {
 	err := services.InitializeService(services.Update)
 	if err != nil {
-		log.Error("fatal: error while trying to initialize service: %v", err)
+		log.Error("fatal: error while trying to initialize service: " + err)
 	}
 	updater := rpc.GetUpdater()
 	updateproto.RegisterUpdateHandler(services.Service.Server(), updater)

@@ -26,8 +26,8 @@ type ClientMock struct {
 	mock.Mock
 }
 
-func (c *ClientMock) Get(uri string) response.RPC {
-	args := c.Called(uri)
+func (c *ClientMock) Get(uri string, opts ...CallOption) response.RPC {
+	args := c.Called(uri, opts)
 
 	var r response.RPC
 	if arg0 := args.Get(0); arg0 != nil {

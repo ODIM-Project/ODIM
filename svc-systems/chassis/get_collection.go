@@ -78,7 +78,7 @@ type sourceProviderImpl struct {
 func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
 	sources := []source{&managedChassisProvider{c.getAllKeys}}
 
-	pc, dberr := c.pluginClientFactory("URP_v1.0.0")
+	pc, dberr := c.pluginClientFactory("URP*")
 	if dberr != nil {
 		if dberr.ErrNo() == errors.DBKeyNotFound {
 			return sources, nil
@@ -119,7 +119,7 @@ type unmanagedChassisProvider struct {
 }
 
 func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
-	r := u.c.Get("/redfish/v1/Chassis")
+	r := u.c.Get("/redfish/v1/Chassis", plugin.AggregateResults)
 	if r.StatusCode != http.StatusOK {
 		return nil, &r
 	}

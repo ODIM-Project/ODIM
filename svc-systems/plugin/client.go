@@ -31,22 +31,158 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 type ClientFactory func(name string) (Client, *errors.Error)
 
 func NewClientFactory(t *config.URLTranslation) ClientFactory {
+
+	pluginClientCreator := func(plugin *smodel.Plugin) Client {
+		return &client{plugin: *plugin, translator: &uriTranslator{t}}
+	}
+
 	return func(name string) (Client, *errors.Error) {
-		pc, e := smodel.GetPluginData(name)
-		if e != nil {
-			return nil, e
+		if strings.HasSuffix(name, "*") {
+			plugins, err := findAllPlugins(name)
+			if err != nil {
+				return nil, errors.PackError(errors.UndefinedErrorType, err)
+			}
+
+			return &multiTargetClient{
+				call:         ReturnFirstResponse(&CallConfig{}),
+				createClient: pluginClientCreator,
+				targets:      plugins,
+			}, nil
+		} else {
+			plugin, e := smodel.GetPluginData(name)
+			if e != nil {
+				return nil, e
+			}
+			return pluginClientCreator(&plugin), nil
 		}
-		return &client{plugin: pc, translator: &uriTranslator{t}}, nil
 	}
 }
 
+type multiTargetClient struct {
+	call         *CallConfig
+	createClient func(plugin *smodel.Plugin) Client
+	targets      []*smodel.Plugin
+}
+
+type CallConfig struct {
+	collector Collector
+}
+
+type CallOption func(*CallConfig)
+
+type Collector interface {
+	Collect(response.RPC) error
+	GetResult() response.RPC
+}
+
+type returnFirst struct {
+	resp *response.RPC
+}
+
+func (c *returnFirst) Collect(r response.RPC) error {
+	c.resp = &r
+	return nil
+}
+
+func (c *returnFirst) GetResult() response.RPC {
+	return *c.resp
+}
+
+func ReturnFirstResponse(c *CallConfig) *CallConfig {
+	c.collector = new(returnFirst)
+	return c
+}
+
+func AggregateResults(c *CallConfig) {
+	c.collector = new(collectCollectionMembers)
+}
+
+type collectCollectionMembers struct {
+	collection sresponse.Collection
+	errored    bool
+}
+
+func (c *collectCollectionMembers) Collect(r response.RPC) error {
+	if is2xx(int(r.StatusCode)) {
+		collection := new(sresponse.Collection)
+		err := json.Unmarshal(r.Body.([]byte), collection)
+		if err != nil {
+			return err
+		}
+		for _, m := range collection.Members {
+			c.collection.AddMember(m)
+		}
+	} else {
+		return fmt.Errorf("provided response has unexpecte error code")
+	}
+	return nil
+}
+
+func (c *collectCollectionMembers) GetResult() response.RPC {
+	collectionAsBytes, err := json.Marshal(c.collection)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("Unexpected error: %v", err), nil, nil)
+	}
+	return response.RPC{
+		StatusCode: http.StatusOK,
+		Body:       collectionAsBytes,
+	}
+}
+
+func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
+	for _, opt := range opts {
+		opt(m.call)
+	}
+	for _, target := range m.targets {
+		client := m.createClient(target)
+		resp := client.Get(uri)
+		err := m.call.collector.Collect(resp)
+		if err != nil {
+			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+		}
+	}
+
+	return m.call.collector.GetResult()
+}
+
+func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC {
+	panic("implement me")
+}
+
+func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RPC {
+	for _, target := range m.targets {
+		client := m.createClient(target)
+		resp := client.Patch(uri, body)
+		if is2xx(int(resp.StatusCode)) {
+			return resp
+		} else {
+			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+		}
+	}
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
+}
+
+func (m *multiTargetClient) Delete(uri string) response.RPC {
+	for _, target := range m.targets {
+		client := m.createClient(target)
+		resp := client.Delete(uri)
+		if is2xx(int(resp.StatusCode)) {
+			return resp
+		} else {
+			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+		}
+	}
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
+}
+
 type Client interface {
-	Get(uri string) response.RPC
+	Get(uri string, opts ...CallOption) response.RPC
 	Post(uri string, body *json.RawMessage) response.RPC
 	Patch(uri string, body *json.RawMessage) response.RPC
 	Delete(uri string) response.RPC
@@ -89,7 +225,7 @@ func (c *client) Patch(uri string, body *json.RawMessage) response.RPC {
 	return c.extractResp(resp, err)
 }
 
-func (c *client) Get(uri string) response.RPC {
+func (c *client) Get(uri string, _ ...CallOption) response.RPC {
 	url := fmt.Sprintf("https://%s:%s%s", c.plugin.IP, c.plugin.Port, uri)
 	url = c.translator.toSouthbound(url)
 	resp, err := pmbhandle.ContactPlugin(url, http.MethodGet, "", "", nil, map[string]string{
@@ -171,4 +307,30 @@ func (u *uriTranslator) toNorthbound(data string) string {
 		translated = strings.Replace(translated, k, v, -1)
 	}
 	return translated
+}
+
+func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
+	pluginsAsBytesSlice, err := smodel.FindAll("Plugin", key)
+	if err != nil {
+		return
+	}
+
+	for _, bytes := range pluginsAsBytesSlice {
+		plugin := new(smodel.Plugin)
+		err = json.Unmarshal(bytes, plugin)
+		if err != nil {
+			return nil, err
+		}
+		decryptedPass, err := common.DecryptWithPrivateKey(plugin.Password)
+		if err != nil {
+			return nil, errors.PackError(
+				errors.DecryptionFailed,
+				fmt.Sprintf("error: %s plugin password decryption failed: ", plugin.ID),
+				err.Error(),
+			)
+		}
+		plugin.Password = decryptedPass
+		res = append(res, plugin)
+	}
+	return
 }

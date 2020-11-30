@@ -91,7 +91,7 @@ func TestNewGetHandler_WhenPluginClientFactoryReturnsUnexpectedError(t *testing.
 
 func TestNewGetHandler_WhenPluginClientReturnsError(t *testing.T) {
 	ppc := new(plugin.ClientMock)
-	ppc.On("Get", mock.AnythingOfType("string")).
+	ppc.On("Get", mock.AnythingOfType("string"), mock.AnythingOfType("[]plugin.CallOption")).
 		Return(internalError)
 	sut := NewGetHandler(
 		func(name string) (plugin.Client, *errors.Error) {
@@ -109,7 +109,7 @@ func TestNewGetHandler_WhenPluginClientReturnsError(t *testing.T) {
 
 func TestNewGetHandler_WhenPluginClientReturnsNonErrorResponse(t *testing.T) {
 	ppc := new(plugin.ClientMock)
-	ppc.On("Get", mock.AnythingOfType("string")).
+	ppc.On("Get", mock.AnythingOfType("string"), mock.AnythingOfType("[]plugin.CallOption")).
 		Return(
 			response.RPC{
 				StatusCode: http.StatusOK,

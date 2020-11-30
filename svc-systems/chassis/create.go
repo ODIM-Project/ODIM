@@ -44,23 +44,23 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("cannot acquire database connection: %v", dbErr), nil, nil)
 	}
 
-	m, e := findOrNull(inMemoryConn, "Managers", mbc.Links.ManagedBy[0].Oid)
+	managingManager, e := findOrNull(inMemoryConn, "Managers", mbc.Links.ManagedBy[0].Oid)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("error occured during database access: %v", e), nil, nil)
 	}
 
-	if m == "" {
+	if managingManager == "" {
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, "", []interface{}{"Manager", mbc.Links.ManagedBy[0].Oid}, nil)
 	}
 
 	//todo: not sure why manager in redis is quoted
-	m, e = strconv.Unquote(m)
+	managingManager, e = strconv.Unquote(managingManager)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	nameCarrier := new(nameCarrier)
-	e = json.Unmarshal([]byte(m), nameCarrier)
+	pluginManagingManager := new(nameCarrier)
+	e = json.Unmarshal([]byte(managingManager), pluginManagingManager)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
@@ -71,7 +71,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pc, pe := h.createPluginClient("URP_v1.0.0")
+	pc, pe := h.createPluginClient(pluginManagingManager.Name)
 	if pe != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, pe.Error(), nil, nil)
 	}

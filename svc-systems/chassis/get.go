@@ -49,7 +49,7 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	pluginClient, e := h.createPluginClient("URP_v1.0.0")
+	pluginClient, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		//urp plugin is not registered, requested chassis unknown -> status not found
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", req.URL}, nil)

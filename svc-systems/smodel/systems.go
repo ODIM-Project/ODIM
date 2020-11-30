@@ -17,13 +17,16 @@
 package smodel
 
 import (
-	"fmt"
-	log "github.com/sirupsen/logrus"
-
 	"encoding/json"
+	"fmt"
+	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+
+	"github.com/gomodule/redigo/redis"
+	log "github.com/sirupsen/logrus"
 )
 
 //Target is for sending the requst to south bound/plugin
@@ -95,12 +98,12 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
-func Find(Table, key string, r interface{}) *errors.Error {
+func Find(table, key string, r interface{}) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return err
 	}
-	resourceData, err := conn.Read(Table, key)
+	resourceData, err := conn.Read(table, key)
 	if err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
 	}
@@ -114,6 +117,54 @@ func Find(Table, key string, r interface{}) *errors.Error {
 		return errors.PackError(errors.UndefinedErrorType, errs)
 	}
 	return nil
+}
+
+func FindAll(table, key string) ([][]byte, error) {
+	cp, cpErr := common.GetDBConnection(common.OnDisk)
+	if cpErr != nil {
+		return nil, cpErr
+	}
+
+	affectedKeys, err := scan(cp, strings.Join([]string{table, key}, ":"))
+	if err != nil {
+		return nil, err
+	}
+
+	conn := cp.ReadPool.Get()
+	defer conn.Close()
+
+	return redis.ByteSlices(conn.Do("MGET", affectedKeys...))
+}
+
+func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
+	conn := cp.ReadPool.Get()
+	defer conn.Close()
+
+	var (
+		cursor int64
+		items  []interface{}
+	)
+
+	results := make([]interface{}, 0)
+
+	for {
+		values, err := redis.Values(conn.Do("SCAN", cursor, "MATCH", key))
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = redis.Scan(values, &cursor, &items)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, items...)
+
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return results, nil
 }
 
 //GetAllKeysFromTable fetches all keys in a given table

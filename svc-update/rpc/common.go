@@ -19,7 +19,7 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/update"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 // Updater struct helps to register service
@@ -37,7 +37,7 @@ func GetUpdater() *Updater {
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Warn("error in unmarshalling response object from util-libs", err.Error())
 	}
 	return bytes
 }

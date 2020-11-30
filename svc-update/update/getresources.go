@@ -20,7 +20,7 @@ package update
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -128,7 +128,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 
 	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
-		log.Printf("odimra Doesnt have Servers")
+		log.Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range firmwareCollectionKeysArray {
@@ -165,7 +165,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Printf("error getting firmware inventory details : %v", gerr.Error())
+		log.Warn("Unable to get firmware inventory details : %v", gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
@@ -221,7 +221,7 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 
 	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
-		log.Printf("odimra Doesnt have Servers")
+		log.Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range softwareCollectionKeysArray {
@@ -258,7 +258,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Printf("error getting software inventory details : %v", gerr.Error())
+		log.Warn("Unable to get software inventory details : %v", gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{

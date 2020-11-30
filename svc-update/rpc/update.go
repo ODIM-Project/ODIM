@@ -119,7 +119,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		HTTPMethod:      http.MethodPost,
 	})
 	if err != nil {
-		log.Warn("error while contacting task-service with UpdateTask RPC : %v", err)
+		log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SimpleUpdate(taskID, sessionUserName, req)
 	// return 202 Accepted
@@ -177,7 +177,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Printf("error while contacting task-service with UpdateTask RPC : %v", err)
+		log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.StartUpdate(taskID, sessionUserName, req)
 	// return 202 Accepted

@@ -165,7 +165,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get firmware inventory details : %v", gerr.Error())
+		log.Warn("Unable to get firmware inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
@@ -258,7 +258,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 	}
 	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get software inventory details : %v", gerr.Error())
+		log.Warn("Unable to get software inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{

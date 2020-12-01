@@ -44,7 +44,7 @@ import (
 // Takes:
 // 	data of type interface{}
 //Returns:
-//	none
+//	bool: return false if any error occurred during execution, else returns true
 func PublishEventsToDestination(data interface{}) bool {
 
 	if data == nil {
@@ -61,121 +61,124 @@ func PublishEventsToDestination(data interface{}) bool {
 		requestData = strings.Replace(requestData, key, value, -1)
 	}
 
-	var message common.MessageData
-	err := json.Unmarshal([]byte(requestData), &message)
-	if err != nil {
-		log.Printf("error: Failed to unmarshal the event: %v", err)
-		log.Println("incoming event:", requestData)
-		return false
-	}
-	if message.Events[0].OriginOfCondition == nil {
-		log.Println("Event not forwarded : Originofcondition is empty in incoming event", requestData)
-		return false
-	}
-
-	if len(message.Events[0].OriginOfCondition.Oid) < 1 {
-		log.Println("Event not forwarded : Originofcondition is empty in incoming event", requestData)
-		return false
-	}
-	if strings.EqualFold(message.Events[0].EventType, "ResourceAdded") &&
-		strings.HasPrefix(message.Events[0].OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-		addFabricRPCCall(message.Events[0].OriginOfCondition.Oid, host)
-	}
-
-	var resTypePresent bool
-	originofCond := strings.Split(strings.TrimSuffix(message.Events[0].OriginOfCondition.Oid, "/"), "/")
-	resType := originofCond[len(originofCond)-2]
-	for _, value := range common.ResourceTypes {
-		if strings.Contains(resType, value) {
-			resTypePresent = true
-		}
-	}
-
-	if !resTypePresent {
-		log.Println("Event not forwared: resource type of originofcondition not supported in event", message)
-		return false
-	}
-
 	var flag bool
 	var uuid string
+	var message common.MessageData
 
 	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
 	if err != nil {
-		log.Printf("error: Failed to get the event destinations: %v", err)
+		log.Printf("error: Failed to get the event destinations: %v\n", err)
 		return false
 	}
 
 	if len(deviceSubscription.OriginResources) < 1 {
+		log.Println("error: no origin resources found in device subscriptions")
 		return false
 	}
 
-	originResource := deviceSubscription.OriginResources[0]
-	var eventString string
-	eventString, uuid = formatEvent(originResource, requestData, host)
-	eventRequest := []byte(eventString)
+	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
 
 	subscriptions, err := evmodel.GetEvtSubscriptions(host)
 	if err != nil {
 		return false
 	}
-	for _, sub := range subscriptions {
 
-		// filter and send evemts to destination if destination is not empty
-		// in case of default event subscription destination will be empty
-		if sub.Destination != "" {
-			// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
-			if isHostPresent(sub.Hosts, host) {
-				if filterEventsToBeForwarded(sub, eventRequest, deviceSubscription.OriginResources) {
-					log.Printf("Destination: %v\n", sub.Destination)
-					go postEvent(sub.Destination, eventRequest)
-					flag = true
-				}
-			} else {
-				log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
-				flag = false
+	err = json.Unmarshal([]byte(requestData), &message)
+	if err != nil {
+		log.Printf("error: failed to unmarshal the incoming event %v: %v\n", requestData, err)
+		return false
+	}
+
+	eventMap := make(map[string][]common.Event)
+	for _, inEvent := range message.Events {
+		if inEvent.OriginOfCondition == nil {
+			log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
+			continue
+		}
+
+		if len(inEvent.OriginOfCondition.Oid) < 1 {
+			log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
+			continue
+		}
+		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+			addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+		}
+
+		var resTypePresent bool
+		originofCond := strings.Split(strings.TrimSuffix(inEvent.OriginOfCondition.Oid, "/"), "/")
+		resType := originofCond[len(originofCond)-2]
+		for _, value := range common.ResourceTypes {
+			if strings.Contains(resType, value) {
+				resTypePresent = true
 			}
+		}
 
+		if !resTypePresent {
+			log.Printf("event not forwared: resource type of originofcondition not supported in event with body: %v\n", message)
+			continue
+		}
+
+		for _, sub := range subscriptions {
+
+			// filter and send evemts to destination if destination is not empty
+			// in case of default event subscription destination will be empty
+			if sub.Destination != "" {
+				// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
+				if isHostPresent(sub.Hosts, host) {
+					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
+						eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
+						flag = true
+					}
+				} else {
+					log.Println("event not forwarded : No subscription for the incoming event's originofcondition")
+					flag = false
+				}
+
+			}
+		}
+
+		if strings.EqualFold("Alert", inEvent.EventType) {
+			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
+				go rediscoverSystemInventory(uuid, inEvent.OriginOfCondition.Oid)
+				flag = true
+			}
+			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
+				go updateSystemPowerState(uuid, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
+				flag = true
+			}
 		}
 	}
 
-	if strings.EqualFold("Alert", message.Events[0].EventType) {
-		if strings.Contains(message.Events[0].MessageID, "ServerPostDiscoveryComplete") || strings.Contains(message.Events[0].MessageID, "ServerPostComplete") {
-			go rediscoverSystemInventory(uuid, message.Events[0].OriginOfCondition.Oid)
-			flag = true
+	for key, value := range eventMap {
+		message.Events = value
+		data, err := json.Marshal(message)
+		if err != nil {
+			log.Printf("unable to converts event into bytes: %v", err)
+			continue
 		}
-		if strings.Contains(message.Events[0].MessageID, "ServerPoweredOn") || strings.Contains(message.Events[0].MessageID, "ServerPoweredOff") {
-			go updateSystemPowerState(uuid, message.Events[0].OriginOfCondition.Oid, message.Events[0].MessageID)
-			flag = true
-		}
+		go postEvent(key, data)
 	}
 	return flag
 }
 
-func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte, originResources []string) bool {
+func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.Event, originResources []string) bool {
 	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
-	var message common.MessageData
-	err := json.Unmarshal(events, &message)
-	if err != nil {
-		log.Printf("error: Failed to unmarshal the event: %v", err)
-		return false
-	}
-	originCondition := strings.TrimSuffix(message.Events[0].OriginOfCondition.Oid, "/")
-	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, message.Events[0].EventType, "event type")) &&
-		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, message.Events[0].MessageID, "message id")) &&
-		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, message.Events[0].OriginOfCondition.Oid, subscription.SubordinateResources)) {
+	originCondition := strings.TrimSuffix(event.OriginOfCondition.Oid, "/")
+	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, event.EventType, "event type")) &&
+		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, event.MessageID, "message id")) &&
+		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
 		for _, origin := range originResources {
 			if subscription.SubordinateResources == true {
 				if strings.Contains(originCondition, origin) {
-					log.Println("Filtered Event =: ", message)
 					return true
 				}
 			} else {
 				if origin == originCondition {
-					log.Println("Filtered Event: ", message)
 					return true
 				}
 			}
@@ -187,20 +190,19 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, events []byte,
 
 // formatEvent will format the event string according to the odimra
 // add uuid:systemid/chassisid inplace of systemid/chassisid
-func formatEvent(originResource, eventstring, hostIP string) (string, string) {
+func formatEvent(event, originResource, hostIP string) (string, string) {
 	uuid, _ := getUUID(originResource)
-	var eventRequestString = eventstring
 	if !strings.Contains(hostIP, "Collection") {
 		str := "/redfish/v1/Systems/" + uuid + ":"
-		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Systems/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/Systems/", str, -1)
 		str = "/redfish/v1/systems/" + uuid + ":"
-		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/systems/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/systems/", str, -1)
 		str = "/redfish/v1/Chassis/" + uuid + ":"
-		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Chassis/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/Chassis/", str, -1)
 		str = "/redfish/v1/Managers/" + uuid + ":"
-		eventRequestString = strings.Replace(eventRequestString, "/redfish/v1/Managers/", str, -1)
+		event = strings.Replace(event, "/redfish/v1/Managers/", str, -1)
 	}
-	return eventRequestString, uuid
+	return event, uuid
 }
 
 func isResourceTypeSubscribed(resourceTypes []string, originOfCondition string, subordinateResources bool) bool {

@@ -14,7 +14,7 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -22,7 +22,10 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/rpc"
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.New()
 
 func main() {
 	log.SetFormatter(&log.TextFormatter{})

@@ -14,6 +14,10 @@ require (
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
 
-replace github.com/ODIM-Project/ODIM/lib-utilities => ../lib-utilities
-
-replace github.com/ODIM-Project/ODIM/lib-messagebus => ../lib-messagebus
+replace (
+	github.com/ODIM-Project/ODIM/lib-dmtf => ../lib-dmtf
+	github.com/ODIM-Project/ODIM/lib-messagebus => ../lib-messagebus
+	github.com/ODIM-Project/ODIM/lib-persistence-manager => ../lib-persistence-manager
+	github.com/ODIM-Project/ODIM/lib-rest-client => ../lib-rest-client
+	github.com/ODIM-Project/ODIM/lib-utilities => ../lib-utilities
+)

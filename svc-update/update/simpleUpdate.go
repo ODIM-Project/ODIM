@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strings"
@@ -45,25 +45,25 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	var updateRequest UpdateRequestBody
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
 	if err != nil {
-		errMsg := "error: unable to parse the simple update request" + err.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to parse the simple update request" + err.Error()
+		log.Warn(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	if len(updateRequest.Targets) == 0 {
-		errMsg := "error: 'Targets' parameter cannot be empty"
-		log.Println(errMsg)
+		errMsg := "'Targets' parameter cannot be empty"
+		log.Warn(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
 	}
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateRequest)
 	if err != nil {
-		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to validate request parameters: " + err.Error()
+		log.Warn(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Warn(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return response
 	}
@@ -75,7 +75,8 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	}
 	targetList, err = sortTargetList(updateRequest.Targets)
 	if err != nil {
-		errorMessage := "error: SystemUUID not found"
+		errorMessage := "SystemUUID not found"
+		log.Warn(errorMessage)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, taskInfo)
 	}
 	partialResultFlag := false
@@ -85,8 +86,8 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		updateRequest.Targets = target
 		marshalBody, err := json.Marshal(updateRequest)
 		if err != nil {
-			errMsg := "error: unable to parse the simple update request" + err.Error()
-			log.Println(errMsg)
+			errMsg := "Unable to parse the simple update request" + err.Error()
+			log.Warn(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 		updateRequestBody := string(marshalBody)
@@ -124,8 +125,8 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	}
 	percentComplete = 100
 	if resp.StatusCode != http.StatusOK {
-		errMsg := "one or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
-		log.Println(errMsg)
+		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
+		log.Warn(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
 			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
@@ -145,7 +146,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	log.Println("all SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK
 	args := response.Args{
@@ -169,7 +170,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		log.Println("error while trying to create sub task")
+		log.Warn("Unable to create sub task")
 		return
 	}
 	var subTaskID string
@@ -187,7 +188,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	if gerr != nil {
 		subTaskChannel <- http.StatusBadRequest
 		errMsg := gerr.Error()
-		log.Println(errMsg)
+		log.Warn(errMsg)
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 		return
 	}
@@ -195,8 +196,8 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		err := e.External.GenericSave([]byte(updateRequestBody), "SimpleUpdate", uuid)
 		if err != nil {
 			subTaskChannel <- http.StatusInternalServerError
-			errMsg := "error: unable to save the simple update request" + err.Error()
-			log.Println(errMsg)
+			errMsg := "Unable to save the simple update request" + err.Error()
+			log.Warn(errMsg)
 			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 			return
 		}
@@ -210,8 +211,8 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		errMsg := "error while trying to decrypt device password: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to decrypt device password: " + err.Error()
+		log.Warn(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		return
 	}
@@ -221,8 +222,8 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	plugin, gerr := e.External.GetPluginData(target.PluginID)
 	if gerr != nil {
 		subTaskChannel <- http.StatusNotFound
-		errMsg := "error while getting plugin data: " + gerr.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to get plugin data: " + gerr.Error()
+		log.Warn(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
@@ -243,7 +244,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
-			log.Println(errMsg)
+			log.Warn(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 			return
 		}
@@ -264,7 +265,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Warn(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}

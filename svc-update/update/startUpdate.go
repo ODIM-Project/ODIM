@@ -26,7 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strings"
@@ -49,8 +49,8 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	// Read all the requests from database
 	targetList, err := umodel.GetAllKeysFromTable("SimpleUpdate", common.OnDisk)
 	if err != nil {
-		errMsg := "error: unable to read SimpleUpdate requests from database: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to read SimpleUpdate requests from database: " + err.Error()
+		log.Warn(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	partialResultFlag := false
@@ -77,8 +77,8 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	for _, target := range targetList {
 		data, gerr := e.DB.GetResource("SimpleUpdate", target, common.OnDisk)
 		if gerr != nil {
-			errMsg := "error: unable to retrive the start update request" + gerr.Error()
-			log.Println(errMsg)
+			errMsg := "Unable to retrive the start update request" + gerr.Error()
+			log.Warn(errMsg)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 		go e.startRequest(target, taskID, data, subTaskChannel, sessionUserName)
@@ -112,8 +112,8 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 	}
 	percentComplete = 100
 	if resp.StatusCode != http.StatusOK {
-		errMsg := "one or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
-		log.Println(errMsg)
+		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
+		log.Warn(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
 			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
@@ -133,7 +133,7 @@ func (e *ExternalInterface) StartUpdate(taskID string, sessionUserName string, r
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	log.Println("all SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK
 	args := response.Args{
@@ -157,7 +157,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		log.Println("error while trying to create sub task")
+		log.Warn("Unable to create sub task")
 		return
 	}
 	var subTaskID string
@@ -172,7 +172,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 
 	var percentComplete int32
 	updateRequestBody := strings.Replace(data, uuid+":", "", -1)
-	//replacing the reruest url with south bound translation URL
+	//replacing the request url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
 	}
@@ -180,7 +180,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if gerr != nil {
 		subTaskChannel <- http.StatusBadRequest
 		errMsg := gerr.Error()
-		log.Println(errMsg)
+		log.Warn(errMsg)
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, taskInfo)
 		return
 	}
@@ -188,8 +188,8 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	decryptedPasswordByte, passwdErr := e.External.DevicePassword(target.Password)
 	if passwdErr != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		errMsg := "error while trying to decrypt device password: " + passwdErr.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to decrypt device password: " + passwdErr.Error()
+		log.Warn(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		return
 	}
@@ -199,8 +199,8 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	plugin, gerr := e.External.GetPluginData(target.PluginID)
 	if gerr != nil {
 		subTaskChannel <- http.StatusNotFound
-		errMsg := "error while getting plugin data: " + gerr.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to get plugin data: " + gerr.Error()
+		log.Warn(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
@@ -221,7 +221,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
-			log.Println(errMsg)
+			log.Info(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 			return
 		}
@@ -242,7 +242,7 @@ func (e *ExternalInterface) startRequest(uuid, taskID, data string, subTaskChann
 	if contactErr != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Info(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}

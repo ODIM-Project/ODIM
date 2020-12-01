@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -25,27 +25,28 @@ import (
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{})
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("System Service should not be run as the root user")
+		log.Error("System Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
 
 	err := services.InitializeService(services.Update)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
+		log.Error("fatal: error while trying to initialize the service: " + err.Error())
 	}
 	registerHandlers()
 	// Run server
 	if err := services.Service.Run(); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 }
@@ -53,7 +54,7 @@ func main() {
 func registerHandlers() {
 	err := services.InitializeService(services.Update)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}
 	updater := rpc.GetUpdater()
 	updateproto.RegisterUpdateHandler(services.Service.Server(), updater)

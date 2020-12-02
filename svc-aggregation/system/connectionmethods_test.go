@@ -32,6 +32,8 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
 	} else if table == "Plugin" {
 		return []string{"/redfish/v1/AggregationService/AggregationSources/5de0bd97-c41c-5de0-937d-85d390691b73"}, nil
+	} else if table == "AggregationSource" {
+		return []string{"/redfish/v1/AggregationService/AggregationSources/058c1876-6f24-439a-8968-2af261540813"}, nil
 	}
 	return []string{}, fmt.Errorf("Table not found")
 }

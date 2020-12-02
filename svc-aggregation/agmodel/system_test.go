@@ -1230,12 +1230,13 @@ func TestRemoveElementsFromAggregate(t *testing.T) {
 			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
 		},
 	}
-	err = RemoveElementsFromAggregate(req1, aggregateURI)
-	assert.Nil(t, err, "err should be nil")
 
 	data, err := GetAggregate(aggregateURI)
 	assert.Nil(t, err, "err should be nil")
-	assert.Equal(t, 1, len(data.Elements), "there should be one element")
+	assert.Equal(t, 2, len(data.Elements), "there should be two element")
+
+	err = RemoveElementsFromAggregate(req, aggregateURI)
+	assert.Nil(t, err, "err should be nil")
 
 	invalidAggregateURI := "/redfish/v1/AggregationService/Aggregates/12345"
 	err = RemoveElementsFromAggregate(req1, invalidAggregateURI)

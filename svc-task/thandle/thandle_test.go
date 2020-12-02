@@ -21,7 +21,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/svc-task/tmodel"
-	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"golang.org/x/crypto/sha3"
@@ -114,61 +113,6 @@ func mockGetCompletedTasksIndexModel(searchKey string) ([]string, error) {
 	return taskList, nil
 }
 
-func mockGetCompletedTasksModel(searchKey string) ([]redisearch.Document, error) {
-	docsEmpty := []redisearch.Document{}
-	keyTag := "@UserName:"
-	switch searchKey {
-	case keyTag + "validUserWithNoCompletedTasks":
-	case keyTag + "validUserWithCompletedTasksNotReadyForDelete":
-		// Set the EndTime value to make elapsed time is less than
-		// 4hrs from End time to current time.
-		elapsedTime := "2h"
-		timeNowNano := time.Now().UnixNano()
-		elapsedHours, _ := time.ParseDuration(elapsedTime)
-		endTimeNano := timeNowNano - elapsedHours.Nanoseconds()
-		endTime := time.Unix(0, endTimeNano).UTC()
-		docs := []redisearch.Document{
-			redisearch.Document{
-				Id:      "1",
-				Score:   0.0,
-				Payload: nil,
-				Properties: map[string]interface{}{
-					"ID":      "CompletedTaskID",
-					"EndTime": endTime.String(),
-				},
-			},
-			redisearch.Document{
-				Id:      "2",
-				Score:   0.0,
-				Payload: nil,
-				Properties: map[string]interface{}{
-					"ID":      "CompletedTaskID",
-					"EndTime": time.Now().String(),
-				},
-			},
-		}
-		return docs, nil
-	case keyTag + "validUserWithCompletedTasksReadyForDelete":
-		elapsedTime := "5h"
-		timeNowNano := time.Now().UnixNano()
-		elapsedHours, _ := time.ParseDuration(elapsedTime)
-		endTimeNano := timeNowNano - elapsedHours.Nanoseconds()
-		endTime := time.Unix(0, endTimeNano).UTC()
-		docs := []redisearch.Document{
-			redisearch.Document{
-				Id:      "first",
-				Score:   0.0,
-				Payload: nil,
-				Properties: map[string]interface{}{
-					"ID":      "CompletedTaskID",
-					"EndTime": endTime.String(),
-				},
-			},
-		}
-		return docs, nil
-	}
-	return docsEmpty, nil
-}
 func mockDeleteTaskFromDBModel(task *tmodel.Task) error {
 
 	return nil

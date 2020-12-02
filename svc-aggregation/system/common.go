@@ -298,8 +298,8 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	return strings.Join(key, "/")
 }
 
-func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
-	var resourceURI string
+func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, string, int32, error) {
+	var computeSystemID, resourceURI string
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -310,7 +310,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
 		log.Println(err)
-		return "", progress, err
+		return computeSystemID, resourceURI, progress, err
 	}
 	h.SystemURL = make([]string, 0)
 	h.PluginResponse = string(body)
@@ -323,7 +323,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
 		log.Println("error while trying unmarshal systems collection: ", err.Error())
-		return "", progress, err
+		return computeSystemID, resourceURI, progress, err
 	}
 	systemMembers := systemsMap["Members"]
 	// Loop through System collection members and discover all of them
@@ -333,15 +333,15 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		estimatedWork := alottedWork / int32(len(systemMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		if resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
+		if computeSystemID, resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
 			errorMessage += oDataID + ":err-" + err.Error() + "; "
 			foundErr = true
 		}
 	}
 	if foundErr {
-		return resourceURI, progress, fmt.Errorf("%s]", errorMessage)
+		return computeSystemID, resourceURI, progress, fmt.Errorf("%s]", errorMessage)
 	}
-	return resourceURI, progress, nil
+	return computeSystemID, resourceURI, progress, nil
 }
 
 //Registries Discovery function
@@ -558,7 +558,8 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 	return progress
 }
 
-func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
+func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, string, int32, error) {
+	var computeSystemID, oidKey string
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -570,7 +571,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		}
 		h.StatusCode = getResponse.StatusCode
 		h.lock.Unlock()
-		return "", progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 
 	var computeSystem map[string]interface{}
@@ -581,13 +582,13 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		return "", progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 
 	oid := computeSystem["@odata.id"].(string)
-	computeSystemID := computeSystem["Id"].(string)
+	computeSystemID = computeSystem["Id"].(string)
 	computeSystemUUID := computeSystem["UUID"].(string)
-	oidKey := keyFormation(oid, computeSystemID, req.DeviceUUID)
+	oidKey = keyFormation(oid, computeSystemID, req.DeviceUUID)
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
@@ -596,7 +597,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 			h.StatusCode = http.StatusInternalServerError
 			h.StatusMessage = response.InternalError
 			h.lock.Unlock()
-			return oidKey, progress, err
+			return computeSystemID, oidKey, progress, err
 		}
 		if len(indexList) > 0 {
 			h.lock.Lock()
@@ -605,7 +606,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 			h.ErrorMessage = "Resource already exists"
 			h.MsgArgs = []interface{}{"ComputerSystem", "ComputerSystem", "ComputerSystem"}
 			h.lock.Unlock()
-			return oidKey, progress, fmt.Errorf(h.ErrorMessage)
+			return computeSystemID, oidKey, progress, fmt.Errorf(h.ErrorMessage)
 		}
 
 	}
@@ -618,7 +619,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		return oidKey, progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
@@ -647,9 +648,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
-		return oidKey, progress, err
+		return computeSystemID, oidKey, progress, err
 	}
-	return oidKey, progress, nil
+	return computeSystemID, oidKey, progress, nil
 }
 
 // getStorageInfo is used to rediscover storage data from a system

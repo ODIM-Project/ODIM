@@ -970,7 +970,7 @@ func TestAggregationSource(t *testing.T) {
 		Password: []byte("password"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
 			},
 		},
 	}

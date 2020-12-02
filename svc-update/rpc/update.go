@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
+// SESSAUTHFAILED string constant to raise errors
 const SESSAUTHFAILED string = "Unable to authenticate session"
 
 // GetUpdateService is an rpc handler, it gets invoked during GET on UpdateService API (/redfis/v1/UpdateService/)

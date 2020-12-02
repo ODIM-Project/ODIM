@@ -25,6 +25,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -145,6 +146,13 @@ func PublishEventsToDestination(data interface{}) bool {
 			}
 			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
 				go updateSystemPowerState(uuid, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
+				flag = true
+			}
+		} else if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
+			if strings.Contains(message.Events[0].OriginOfCondition.Oid, "Volumes") {
+				s := strings.Split(message.Events[0].OriginOfCondition.Oid, "/")
+				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])
+				go rediscoverSystemInventory(uuid, storageURI)
 				flag = true
 			}
 		}

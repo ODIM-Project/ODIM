@@ -33,25 +33,44 @@ import (
 )
 
 var connector = &system.ExternalInterface{
-	ContactClient:           mockContactClient,
-	Auth:                    mockIsAuthorized,
-	CreateTask:              createTaskForTesting,
-	CreateChildTask:         mockCreateChildTask,
-	UpdateTask:              mockUpdateTask,
-	DecryptPassword:         stubDevicePassword,
-	GetPluginStatus:         GetPluginStatusForTesting,
-	CreateSubcription:       EventFunctionsForTesting,
-	PublishEvent:            PostEventFunctionForTesting,
-	EncryptPassword:         stubDevicePassword,
-	DeleteComputeSystem:     deleteComputeforTest,
-	DeleteSystem:            deleteSystemforTest,
-	DeleteEventSubscription: mockDeleteSubscription,
-	EventNotification:       mockEventNotification,
-	SubscribeToEMB:          mockSubscribeEMB,
-	GetSessionUserName:      getSessionUserNameForTesting,
-	GetAllKeysFromTable:     mockGetAllKeysFromTable,
-	GetConnectionMethod:     mockGetConnectionMethod,
-	UpdateConnectionMethod:  mockUpdateConnectionMethod,
+	ContactClient:            mockContactClient,
+	Auth:                     mockIsAuthorized,
+	CreateTask:               createTaskForTesting,
+	CreateChildTask:          mockCreateChildTask,
+	UpdateTask:               mockUpdateTask,
+	DecryptPassword:          stubDevicePassword,
+	GetPluginStatus:          GetPluginStatusForTesting,
+	CreateSubcription:        EventFunctionsForTesting,
+	PublishEvent:             PostEventFunctionForTesting,
+	EncryptPassword:          stubDevicePassword,
+	DeleteComputeSystem:      deleteComputeforTest,
+	DeleteSystem:             deleteSystemforTest,
+	DeleteEventSubscription:  mockDeleteSubscription,
+	EventNotification:        mockEventNotification,
+	SubscribeToEMB:           mockSubscribeEMB,
+	GetSessionUserName:       getSessionUserNameForTesting,
+	GetAllKeysFromTable:      mockGetAllKeysFromTable,
+	GetConnectionMethod:      mockGetConnectionMethod,
+	UpdateConnectionMethod:   mockUpdateConnectionMethod,
+	GetAggregationSourceInfo: mockGetAggregationSourceInfo,
+}
+
+func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *errors.Error) {
+	var aggSource agmodel.AggregationSource
+	if reqURI == "/redfish/v1/AggregationService/AggregationSources/36474ba4-a201-46aa-badf-d8104da418e8" {
+		aggSource = agmodel.AggregationSource{
+			HostName: "9.9.9.0",
+			UserName: "admin",
+			Password: []byte("admin12345"),
+			Links: map[string]interface{}{
+				"ConnectionMethod": map[string]interface{}{
+					"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				},
+			},
+		}
+		return aggSource, nil
+	}
+	return aggSource, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+reqURI+" found")
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {

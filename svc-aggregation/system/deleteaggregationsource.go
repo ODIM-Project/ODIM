@@ -55,7 +55,9 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
-	uuid := req.URL[strings.LastIndexByte(req.URL, '/')+1:]
+	requestData := strings.Split(req.URL, ":")
+	resource := requestData[0]
+	uuid := resource[strings.LastIndexByte(resource, '/')+1:]
 	target, terr := agmodel.GetTarget(uuid)
 	if terr != nil || target == nil {
 		cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
@@ -273,16 +275,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Println("error while deleting the event subscription for ", key, " :", subResponse.Body)
 	}
 
-	// Split the key by : (uuid:1) so we will get [uuid 1]
-	k := strings.Split(key[index+1:], ":")
-	if len(k) < 2 {
-		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-	}
-	uuid := k[0]
-
-	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", uuid, common.InMemory)
+	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if derr != nil {
 		log.Printf("error while trying to collect the chassis list: %v", derr)
 	}
@@ -297,6 +290,14 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
+	// Split the key by : (uuid:1) so we will get [uuid 1]
+	k := strings.Split(key[index+1:], ":")
+	if len(k) < 2 {
+		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+	uuid := k[0]
 	// Delete System Details from OnDisk
 	if derr := e.DeleteSystem(uuid); derr != nil {
 		errMsg := "error while trying to delete system: " + derr.Error()

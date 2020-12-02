@@ -14,7 +14,6 @@
 package main
 
 import (
-	
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"

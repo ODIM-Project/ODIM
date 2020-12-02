@@ -50,27 +50,28 @@ type Device struct {
 
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
-	ContactClient           func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                    func(string, []string, []string) response.RPC
-	GetSessionUserName      func(string) (string, error)
-	CreateChildTask         func(string, string) (string, error)
-	CreateTask              func(string) (string, error)
-	UpdateTask              func(common.TaskData) error
-	CreateSubcription       func([]string)
-	PublishEvent            func([]string, string)
-	PublishEventMB          func(string, string, string)
-	GetPluginStatus         func(agmodel.Plugin) bool
-	SubscribeToEMB          func(string, []string)
-	EncryptPassword         func([]byte) ([]byte, error)
-	DecryptPassword         func([]byte) ([]byte, error)
-	DeleteComputeSystem     func(int, string) *errors.Error
-	DeleteSystem            func(string) *errors.Error
-	DeleteEventSubscription func(string) (*eventsproto.EventSubResponse, error)
-	EventNotification       func(string, string, string)
-	GetAllKeysFromTable     func(string) ([]string, error)
-	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
-	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
+	ContactClient            func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth                     func(string, []string, []string) response.RPC
+	GetSessionUserName       func(string) (string, error)
+	CreateChildTask          func(string, string) (string, error)
+	CreateTask               func(string) (string, error)
+	UpdateTask               func(common.TaskData) error
+	CreateSubcription        func([]string)
+	PublishEvent             func([]string, string)
+	PublishEventMB           func(string, string, string)
+	GetPluginStatus          func(agmodel.Plugin) bool
+	SubscribeToEMB           func(string, []string)
+	EncryptPassword          func([]byte) ([]byte, error)
+	DecryptPassword          func([]byte) ([]byte, error)
+	DeleteComputeSystem      func(int, string) *errors.Error
+	DeleteSystem             func(string) *errors.Error
+	DeleteEventSubscription  func(string) (*eventsproto.EventSubResponse, error)
+	EventNotification        func(string, string, string)
+	GetAllKeysFromTable      func(string) ([]string, error)
+	GetConnectionMethod      func(string) (agmodel.ConnectionMethod, *errors.Error)
+	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
+	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
+	GetAggregationSourceInfo func(string) (agmodel.AggregationSource, *errors.Error)
 }
 
 type responseStatus struct {

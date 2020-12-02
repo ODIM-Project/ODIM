@@ -12,10 +12,24 @@ Resource Aggregator for ODIM exposes APIs to retrieve information about managers
 
 -   Other subsystems like plugins
 
+
+**Supported endpoints**
+
+
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/Managers|`GET`| `Login` |
+|/redfish/v1/Managers/\{managerId\}|`GET`| `Login` |
+|/redfish/v1/Managers/\{managerId\}/EthernetInterfaces|`GET`| `Login` |
+|/redfish/v1/Managers/\{managerId\}/HostInterfaces|`GET`| `Login` |
+|/redfish/v1/Managers/\{managerId\}/LogServices|`GET`| `Login` |
+|/redfish/v1/Managers/\{managerId\}/NetworkProtocol|`GET`| `Login` |
+
+
 ##  Modifying Configurations of managers Service
   
-Config File of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
-Refer the section **Modifying Configurations** in the README.md to change the configurations of a odimra service
+Config file of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
+Refer to the section **Modifying Configurations** in the README.md to change the configurations of an odimra service.
   
 **Specific configurations for managers Service are:**
   
@@ -24,24 +38,24 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 /var/log/ODIMRA/managers.log
   
   
-## Supported endpoints
 
-
-|||
-|-------|--------------------|
-|/redfish/v1/Managers|`GET`|
-|/redfish/v1/Managers/\{managerId\}|`GET`|
-|/redfish/v1/Managers/\{managerId\}/EthernetInterfaces|`GET`|
-|/redfish/v1/Managers/\{managerId\}/HostInterfaces|`GET`|
-|/redfish/v1/Managers/\{managerId\}/LogServices|`GET`|
-|/redfish/v1/Managers/\{managerId\}/NetworkProtocol|`GET`|
 
 
 
 
 ##  Collection of managers
 
+|||
+|---------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Managers` |
+|**Description** |A collection of managers.|
+|**Returns** |Links to the manager instances. This collection includes a manager for Resource Aggregator for ODIM itself and other managers.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
 
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -51,10 +65,10 @@ curl -i GET \
 ```
 
 
-> Sample response body 
+>**Sample response body** 
 
 ```
-​{
+{
    "@odata.context":"/redfish/v1/$metadata#ManagerCollection.ManagerCollection",
    "@odata.id":"/redfish/v1/Managers",
    "@odata.type":"#ManagerCollection.ManagerCollection",
@@ -83,25 +97,30 @@ curl -i GET \
    "Members@odata.count":6
 }
 
-​
+
 ```
 
 
 
 
-|||
-|---------|-------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Managers` |
-|**Description** |A collection of managers.|
-|**Returns** |Links to the manager instances. This collection includes a manager for Resource Aggregator for ODIM itself and other managers.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
 
- 
+
+
 
 
 ##  Single manager
+
+|||
+|---------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Managers/{managerId}` |
+|**Description** |A single manager.|
+|**Returns** |Information about a specific management control system or a plugin or Resource Aggregator for ODIM itself. In the JSON schema representing a system \(BMC\) manager, there are links to the managers for:<ul><li>EthernetInterfaces:<br>`/redfish/v1/Managers/{managerId}/EthernetInterfaces`</li><li>HostInterfaces:<br>`/redfish/v1/Managers/{managerId}/HostInterfaces` </li><li>LogServices:<br>`/redfish/v1/Managers/{managerId}/LogServices` </li><li>NetworkProtocol:<br>`/redfish/v1/Managers/{managerId}/NetworkProtocol` <br> To know more about each manager, perform HTTP `GET` on these links.</li></ul>|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -112,7 +131,7 @@ curl -i GET \
 
 
 
-> Sample response body for a system \(BMC\) manager 
+>**Sample response body** for a system \(BMC\) manager 
 
 ```
 { 
@@ -192,7 +211,7 @@ curl -i GET \
 }
 ```
 
-> Sample response body for Resource Aggregator for ODIM manager 
+>**Sample response body** for Resource Aggregator for ODIM manager 
 
 ```
 {
@@ -210,7 +229,7 @@ curl -i GET \
 }
 ```
 
-> Sample response body for a plugin manager
+>**Sample response body** for a plugin manager
 
 ```
 {
@@ -229,14 +248,3 @@ curl -i GET \
    "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
 }
 ```
-
-
-
-|||
-|---------|-------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Managers/{managerId}` |
-|**Description** |A single manager.|
-|**Returns** |Information about a specific management control system or a plugin or Resource Aggregator for ODIM itself. In the JSON schema representing a system \(BMC\) manager, there are links to the managers for:<ul><li>EthernetInterfaces:<br>`/redfish/v1/Managers/{managerId}/EthernetInterfaces`</li><li>HostInterfaces:<br>`/redfish/v1/Managers/{managerId}/HostInterfaces` </li><li>LogServices:<br>`/redfish/v1/Managers/{managerId}/LogServices` </li><li>NetworkProtocol:<br>`/redfish/v1/Managers/{managerId}/NetworkProtocol` <br> To know more about each manager, perform HTTP `GET` on these links.</li></ul>|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|

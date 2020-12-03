@@ -27,4 +27,4 @@ jobs:
           git remote set-url origin https://${{secrets.PAT }}:x-oauth-basic@github.com/$source_repo.git
           git fetch upstream
           git rebase upstream/development
-          git push origin development
+          git push -f origin development

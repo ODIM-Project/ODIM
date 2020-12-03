@@ -19,6 +19,8 @@ jobs:
           upstream_repo='https://github.com/ODIM-Project/ODIM.git'
           user_name='rahulroshan-kachchap'
           email='rahul.kachchap@hpe.com'
+          git clone https://github.com/$source_repo.git
+          cd ODIM
           git config --global user.name ''$user_name''
           git config --global user.email ''$email''
           git remote add upstream $upstream_repo

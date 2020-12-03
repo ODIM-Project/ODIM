@@ -488,7 +488,7 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -546,7 +546,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -603,7 +603,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -700,7 +700,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}

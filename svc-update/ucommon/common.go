@@ -18,8 +18,8 @@ package ucommon
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -212,7 +212,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Println(errorMessage)
+		log.Warn(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -222,13 +222,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			resp.StatusCode = int32(pluginResponse.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			log.Println(errorMessage)
+			log.Warn(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResponse.StatusCode)
 		resp.StatusMessage = response.InternalError
-		log.Println(errorMessage)
+		log.Warn(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -269,10 +269,10 @@ func getPluginStatus(plugin umodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
 	return status
 }
 

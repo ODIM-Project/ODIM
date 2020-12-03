@@ -16,7 +16,7 @@ package rpc
 
 import (
 	"context"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -24,6 +24,9 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
+
+// SESSAUTHFAILED string constant to raise errors
+const SESSAUTHFAILED string = "Unable to authenticate session"
 
 // GetUpdateService is an rpc handler, it gets invoked during GET on UpdateService API (/redfis/v1/UpdateService/)
 func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
@@ -35,7 +38,7 @@ func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateR
 func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
@@ -47,7 +50,7 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
@@ -59,7 +62,7 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
@@ -71,7 +74,7 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
@@ -83,7 +86,7 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
@@ -91,14 +94,14 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+		log.Warn(errMsg)
 		return nil
 	}
 	taskURI, err := a.connector.External.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+		log.Warn(errMsg)
 		return nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -117,7 +120,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		HTTPMethod:      http.MethodPost,
 	})
 	if err != nil {
-		log.Printf("error while contacting task-service with UpdateTask RPC : %v", err)
+		log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.SimpleUpdate(taskID, sessionUserName, req)
 	// return 202 Accepted
@@ -140,7 +143,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	sessionToken := req.SessionToken
 	authResp := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Warn("Unable to authenticate session")
 		fillProtoResponse(resp, authResp)
 		return nil
 	}
@@ -148,14 +151,14 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+		log.Warn(errMsg)
 		return nil
 	}
 	taskURI, err := a.connector.External.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
-		log.Printf(errMsg)
+		log.Warn(errMsg)
 		return nil
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -175,7 +178,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	})
 	if err != nil {
 		// print error as we are unable to communicate with svc-task and then return
-		log.Printf("error while contacting task-service with UpdateTask RPC : %v", err)
+		log.Warn("error while contacting task-service with UpdateTask RPC : " + err.Error())
 	}
 	go a.connector.StartUpdate(taskID, sessionUserName, req)
 	// return 202 Accepted

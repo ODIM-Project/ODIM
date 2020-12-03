@@ -305,3 +305,62 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 	assert.False(t, flag)
 
 }
+
+func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	storeTestEventDetails(t)
+	messages := []common.MessageData{
+		{
+			OdataType: "#Event",
+			Events: []common.Event{
+				common.Event{
+					MemberID:       "1",
+					EventType:      "Alert",
+					EventID:        "123",
+					Severity:       "OK",
+					EventTimestamp: "",
+					Message:        "IndicatorChanged",
+					MessageID:      "IndicatorChanged",
+					OriginOfCondition: &common.Link{
+						Oid: "/redfish/v1/Systems/1",
+					},
+				},
+				common.Event{
+					MemberID:       "1",
+					EventType:      "ResourceAdded",
+					EventID:        "1234",
+					Severity:       "OK",
+					EventTimestamp: "",
+					Message:        "IndicatorChanged",
+					MessageID:      "IndicatorChanged",
+					OriginOfCondition: &common.Link{
+						Oid: "/redfish/v1/Systems/1",
+					},
+				},
+			},
+		},
+	}
+
+	ip := []string{"10.4.1.2", "10.4.1.2", "10.4.1.3", "10.4.1.3"}
+	for i, v := range messages {
+		var event common.Events
+		event.IP = ip[i]
+		message, err := json.Marshal(v)
+		if err != nil {
+			t.Errorf("expected err is nil but got : %v", err)
+		}
+		event.Request = message
+		flag := PublishEventsToDestination(event)
+		assert.True(t, flag)
+	}
+}

@@ -30,6 +30,8 @@ github.com/Microsoft/hcsshim v0.8.6/go.mod h1:Op3hHsoHPAvb6lceZHDtd9OkTew38wNoXn
 github.com/ODIM-Project/ODIM v0.0.0-20200727133207-df3dfb728bd1 h1:xHtMCjvEgospVT6Wr+OQETcLWMechvuySlZf+UsCmQo=
 github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727133207-df3dfb728bd1 h1:8pT0M0eydoMENdhvahO4rFrNMjMbkSuQUJS1j4h6zNQ=
 github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20200727133207-df3dfb728bd1/go.mod h1:SFgC2w23lU3/pQv9ROS3x7iLWQESf4jafMumH/IVS0E=
+github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201123035446-a964157899a1 h1:dg/t1iHn1VPrFSsDYAjWf2sjcb1w1dmODMedcyrDFVg=
+github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201123035446-a964157899a1/go.mod h1:SFgC2w23lU3/pQv9ROS3x7iLWQESf4jafMumH/IVS0E=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7 h1:J58RfJlekckvgdmdkEydb4givP/2MGPYFKO3uv7LtU4=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20200727095517-f2a4bd1bdef7/go.mod h1:NyEEh6a2bgEXock1ThrXDLnp2A5syxleqSGmWwucPPA=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201005194902-ed323c41b4d6 h1:+Ex1pdY+VB6mXoJRQPV6MXks/M6+AbAiccAAjCrq2Ks=

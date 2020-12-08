@@ -84,8 +84,8 @@ func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfis
 				if chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 1 {
 					containedByOid := chassis.Links.ContainedBy[0].Oid
 					_, err := c.cm.DAO().Get(stdCtx.TODO(), db.CreateKey("Chassis", containedByOid).String()).Result()
-					if err != nil {
-						logging.Errorf("cannot validate requested rack: %s", err)
+					if err != nil || err == redis.Nil {
+						logging.Errorf("cannot validate requested rack(%s): %s", chassis.Oid, err)
 					}
 					return err != nil
 				}

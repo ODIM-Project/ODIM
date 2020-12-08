@@ -159,10 +159,15 @@ func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RP
 	for _, target := range m.targets {
 		client := m.createClient(target)
 		resp := client.Patch(uri, body)
-		if is2xx(int(resp.StatusCode)) {
+		switch {
+		case resp.StatusCode == http.StatusNotFound:
+			continue
+		case is2xx(int(resp.StatusCode)):
 			return resp
-		} else {
-			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+		case is4xx(int(resp.StatusCode)):
+			return resp
+		default:
+			log.Printf("execution of PATCH %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)

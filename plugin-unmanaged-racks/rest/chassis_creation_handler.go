@@ -134,7 +134,7 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	toBeCreatedChassisId, toBeCreatedBody, parentChassisKey, err := prepareChassisCreationParams(requestedChassis.IntializeIds())
+	toBeCreatedChassisId, toBeCreatedBody, parentChassisKey, err := prepareChassisCreationParams(redfish.ShapeChassis(requestedChassis))
 	if err != nil {
 		return
 	}

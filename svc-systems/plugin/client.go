@@ -172,9 +172,14 @@ func (m *multiTargetClient) Delete(uri string) response.RPC {
 	for _, target := range m.targets {
 		client := m.createClient(target)
 		resp := client.Delete(uri)
-		if is2xx(int(resp.StatusCode)) {
+		switch {
+		case resp.StatusCode == http.StatusNotFound:
+			continue
+		case is2xx(int(resp.StatusCode)):
 			return resp
-		} else {
+		case is4xx(int(resp.StatusCode)):
+			return resp
+		default:
 			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
 		}
 	}
@@ -283,6 +288,10 @@ func createRPCResponse(s int, h http.Header, b []byte, translator func(string) s
 
 func is2xx(status int) bool {
 	return status/100 == 2
+}
+
+func is4xx(status int) bool {
+	return status/100 == 4
 }
 
 func hasToBeSkipped(header string) bool {

@@ -19,8 +19,9 @@ package datacommunicator
 // -----------------------------------------------------------------------------
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"log"
+
+	"github.com/BurntSushi/toml"
 )
 
 // MQCONFIGFILE define the file name and location of the Client config file for
@@ -57,10 +58,8 @@ type MQF struct {
 // encoding capability.
 type KafkaF struct {
 
-	// KServer defines the Kafka Server URI/Nodename. DEFAULT = localhost
-	KServer string `toml:"KServers"`
-	// KLport defines the Server listening port for Kafka. DEFAULT = 9092
-	KLport int `toml:"KLPort"`
+	// KServersInfo defines the list of Kafka Server URI/Nodename:port. DEFAULT = [localhost:9092]
+	KServersInfo []string `toml:"KServersInfo"`
 	// KTimeout defines the timeout for Kafka Server connection.
 	// DEFAULT = 10 (in seconds)
 	KTimeout int `toml:"KTimeout"`
@@ -85,12 +84,8 @@ func SetConfiguration(filePath string) error {
 	if _, err := toml.DecodeFile(filePath, &mq); err != nil {
 		return fmt.Errorf("Configuration File - %v Read Error: %v", filePath, err)
 	}
-	if mq.KafkaF.KServer == "" {
-		return fmt.Errorf("no value found for KServers in messagebus config file")
-	}
-	if mq.KafkaF.KLport == 0 {
-		log.Println("no value found for KLport in messagebus config file, using default port 9092")
-		mq.KafkaF.KLport = 9092
+	if len(mq.KafkaF.KServersInfo) <= 0 {
+		return fmt.Errorf("no value found for KServersInfo in messagebus config file")
 	}
 	if mq.KafkaF.KTimeout == 0 {
 		log.Println("no value found for KTimeout in messagebus config file, using default time 10 seconds")

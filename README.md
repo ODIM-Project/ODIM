@@ -550,3 +550,43 @@ During the course of this procedure, you will be required to create files and co
          $ sudo service docker restart
          ```
 
+# CI Process
+
+GitHub Action workflows are added to the ODIM repository. These workflows called as checks gets triggered whenever a Pull Request(PR) is raised against the development branch.
+The result from the workflow execution is then updated to the PR. PRs are allowed to review and merge, only if the checks are passed.
+
+Following checks are added as part of CI process:
+
+|Sl No.|Workflow Name|Description|
+|---------|-----------|----------|
+|1|`build_unittest.yml` |Builds and run Unit Tests with code coverage enabled|
+|2|`build_deploy_test.yml` |Builds, Deploys, run sanity tests and upload build artifacts (like odimra logs)|
+|3|`LGTM analysis` |Semantic code analyzer and query tool which finds security vulnerabilities in codebases| 
+
+These checks run in parallel and takes approximately 9 mins to complete.
+
+GitHub Action Workflows details
+-------------------
+
+1. build_unittest.yml
+ - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in link https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
+ - Installs Go 1.13.8 package
+ - Installs and configures Redis 5.0.8 with two instances running on port 6379 and 6380.
+ - Checks out the PR code into the Go module directory
+ - Builds the code
+ - Runs the unit tests
+
+2. build_deploy_test.yml
+ - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in link https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
+ - Checks out the PR code
+ - Build and deploys the following docker containers
+   Odimra
+   Generic redfish plugin
+   Kakfa
+   Zookeeper
+   Consul
+   Redisdb
+ - Runs the sanity tests
+ - Uploads the build artifacts
+
+>   **NOTE:** Build status notifications with the link to the GitHub Actions build job page will be sent to the developer’s email.

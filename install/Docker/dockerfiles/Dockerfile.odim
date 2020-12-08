@@ -25,6 +25,7 @@ COPY svc-managers /ODIM/svc-managers
 COPY svc-systems /ODIM/svc-systems
 COPY svc-task /ODIM/svc-task
 COPY svc-update /ODIM/svc-update
+COPY plugin-redfish /ODIM/plugin-redfish
 COPY lib-dmtf /ODIM/lib-dmtf/
 COPY lib-messagebus /ODIM/lib-messagebus/
 COPY lib-persistence-manager /ODIM/lib-persistence-manager/

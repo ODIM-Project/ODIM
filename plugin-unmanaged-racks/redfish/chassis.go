@@ -34,11 +34,11 @@ type Chassis struct {
 	Name         string `json:"Name"`
 	ChassisType  string `json:"ChassisType"`
 	Links        Links  `json:"Links"`
-	Model        string `json:"Model"`
-	Manufacturer string `json:"Manufacturer"`
-	PartNumber   string `json:"PartNumber"`
-	PowerState   string `json:"PowerState"`
-	SerialNumber string `json:"SerialNumber"`
+	Model        string `json:"Model,omitempty"`
+	Manufacturer string `json:"Manufacturer,omitempty"`
+	PartNumber   string `json:"PartNumber,omitempty"`
+	PowerState   string `json:"PowerState,omitempty"`
+	SerialNumber string `json:"SerialNumber,omitempty"`
 	Status       Status `json:"Status"`
 }
 

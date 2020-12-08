@@ -340,8 +340,9 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						}
 					`)).
 					Expect().
-					Status(http.StatusNoContent).
-					NoContent()
+					Status(http.StatusOK).
+					ContentType("application/json", "UTF-8").
+					JSON().Path(`$.Links.Contains`).Array().Length().Equal(1)
 			})
 
 			t.Run("attach another chassis under rack", func(t *testing.T) {
@@ -363,8 +364,9 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						}
 					`)).
 					Expect().
-					Status(http.StatusNoContent).
-					NoContent()
+					Status(http.StatusOK).
+					ContentType("application/json", "UTF-8").
+					JSON().Path(`$.Links.Contains`).Array().Length().Equal(2)
 			})
 
 			t.Run("try to delete occupied rack", func(t *testing.T) {
@@ -394,8 +396,9 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						}
 					`)).
 					Expect().
-					Status(http.StatusNoContent).
-					NoContent()
+					Status(http.StatusOK).
+					ContentType("application/json", "UTF-8").
+					JSON().Path(`$.Links.Contains`).Array().Length().Equal(1)
 			})
 
 			t.Run("resource removed event detaches Chassis/2 existing under rack", func(t *testing.T) {

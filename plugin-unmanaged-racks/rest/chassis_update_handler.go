@@ -143,7 +143,14 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	ctx.StatusCode(http.StatusNoContent)
+	updatedChassis, err := c.cm.FindChassis(ctx.Request().RequestURI)
+	if err != nil || updatedChassis == nil {
+		createInternalError(ctx, err)
+		return
+	}
+
+	ctx.StatusCode(http.StatusOK)
+	ctx.JSON(updatedChassis)
 }
 
 func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis, requestedChange *rackUpdateRequest) *redfish.CompositeValidator {

@@ -29,7 +29,7 @@ import (
 )
 
 func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
-	pc, e := h.createPluginClient("URP")
+	pc, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
 		return common.GeneralError(http.StatusMethodNotAllowed, response.ActionNotSupported, "", []interface{}{"PATCH"}, nil)
 	}

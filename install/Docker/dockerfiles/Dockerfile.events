@@ -12,19 +12,7 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-FROM golang:1.13.8 as build-stage
-
-WORKDIR /events/
-
-ADD svc-events/go.sum .
-ADD svc-events/go.mod .
-
-RUN go mod download
-
-ADD svc-events .
-RUN go build -i -race .
-COPY install/Docker/dockerfiles/scripts/add-hosts.go .
-RUN go build -o add-hosts add-hosts.go
+FROM odim:1.0 as build-stage
 
 FROM ubuntu:18.04
 
@@ -39,8 +27,8 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
 COPY install/Docker/dockerfiles/scripts/start_events.sh /bin/
 COPY lib-utilities/config/schema.json /etc/odimra_schema
 COPY lib-utilities/etc/* /etc/registrystore/
-COPY --from=build-stage /events/svc-events /bin/
-COPY --chown=root:odimra --from=build-stage /events/add-hosts /bin/
+COPY --from=build-stage /ODIM/svc-events/svc-events /bin/
+COPY --chown=root:odimra --from=build-stage /ODIM/add-hosts /bin/
 RUN chmod 4550 /bin/add-hosts
 USER odimra:odimra
 ENTRYPOINT ["/bin/start_events.sh"]

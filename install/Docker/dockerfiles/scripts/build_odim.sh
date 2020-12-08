@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-LIST=`ls -R | grep -v 'lib-*'`
+LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-'`
 echo $LIST
 for i in $LIST; do
     cd $i

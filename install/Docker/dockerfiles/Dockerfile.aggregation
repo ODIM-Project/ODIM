@@ -16,13 +16,16 @@ FROM golang:1.13.8 as build-stage
 
 WORKDIR /aggregation/
 
-ADD svc-aggregation/go.sum .
-ADD svc-aggregation/go.mod .
+COPY svc-aggregation /aggregation/svc-aggregation
+COPY lib-dmtf /aggregation/lib-dmtf/
+COPY lib-messagebus /aggregation/lib-messagebus/
+COPY lib-persistence-manager /aggregation/lib-persistence-manager/
+COPY lib-rest-client /aggregation/lib-rest-client/
+COPY lib-utilities /aggregation/lib-utilities/
 
-RUN go mod download
+RUN cd svc-aggregation &&  go mod download
 
-ADD svc-aggregation .
-RUN go build -i -race .
+RUN cd svc-aggregation && go build -i -race .
 COPY install/Docker/dockerfiles/scripts/add-hosts.go .
 RUN go build -o add-hosts add-hosts.go
 
@@ -39,7 +42,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
 COPY install/Docker/dockerfiles/scripts/start_aggregation.sh /bin/
 COPY lib-utilities/config/schema.json /etc/odimra_schema
 COPY lib-utilities/etc/* /etc/registrystore/
-COPY --from=build-stage /aggregation/svc-aggregation /bin/
+COPY --from=build-stage /aggregation/svc-aggregation/svc-aggregation /bin/
 COPY --chown=root:odimra --from=build-stage /aggregation/add-hosts /bin/
 RUN chmod 4550 /bin/add-hosts
 USER odimra:odimra

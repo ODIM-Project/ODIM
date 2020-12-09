@@ -21,13 +21,9 @@ for i in $LIST; do
     go mod vendor
     go build -i -race .
     if [ $? -eq 0 ]; then
-        echo Build for odimra service/lib dependencies $i are Successful !!!!
-        arr1+=$i;
+        echo Successfully build $i service
     else
-        echo Build for odimra service/lib dependency $i Failed !!!!
-        arr2+=$i;
-        flag=0
+        echo Failed to build $i service
     fi
     cd ../
 done
-

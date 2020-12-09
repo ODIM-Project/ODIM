@@ -50,27 +50,28 @@ type Device struct {
 
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
-	ContactClient           func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                    func(string, []string, []string) response.RPC
-	GetSessionUserName      func(string) (string, error)
-	CreateChildTask         func(string, string) (string, error)
-	CreateTask              func(string) (string, error)
-	UpdateTask              func(common.TaskData) error
-	CreateSubcription       func([]string)
-	PublishEvent            func([]string, string)
-	PublishEventMB          func(string, string, string)
-	GetPluginStatus         func(agmodel.Plugin) bool
-	SubscribeToEMB          func(string, []string)
-	EncryptPassword         func([]byte) ([]byte, error)
-	DecryptPassword         func([]byte) ([]byte, error)
-	DeleteComputeSystem     func(int, string) *errors.Error
-	DeleteSystem            func(string) *errors.Error
-	DeleteEventSubscription func(string) (*eventsproto.EventSubResponse, error)
-	EventNotification       func(string, string, string)
-	GetAllKeysFromTable     func(string) ([]string, error)
-	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
-	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
+	ContactClient            func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth                     func(string, []string, []string) response.RPC
+	GetSessionUserName       func(string) (string, error)
+	CreateChildTask          func(string, string) (string, error)
+	CreateTask               func(string) (string, error)
+	UpdateTask               func(common.TaskData) error
+	CreateSubcription        func([]string)
+	PublishEvent             func([]string, string)
+	PublishEventMB           func(string, string, string)
+	GetPluginStatus          func(agmodel.Plugin) bool
+	SubscribeToEMB           func(string, []string)
+	EncryptPassword          func([]byte) ([]byte, error)
+	DecryptPassword          func([]byte) ([]byte, error)
+	DeleteComputeSystem      func(int, string) *errors.Error
+	DeleteSystem             func(string) *errors.Error
+	DeleteEventSubscription  func(string) (*eventsproto.EventSubResponse, error)
+	EventNotification        func(string, string, string)
+	GetAllKeysFromTable      func(string) ([]string, error)
+	GetConnectionMethod      func(string) (agmodel.ConnectionMethod, *errors.Error)
+	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
+	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
+	GetAggregationSourceInfo func(string) (agmodel.AggregationSource, *errors.Error)
 }
 
 type responseStatus struct {
@@ -298,8 +299,8 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	return strings.Join(key, "/")
 }
 
-func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
-	var resourceURI string
+func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, string, int32, error) {
+	var computeSystemID, resourceURI string
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -310,7 +311,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
 		log.Println(err)
-		return "", progress, err
+		return computeSystemID, resourceURI, progress, err
 	}
 	h.SystemURL = make([]string, 0)
 	h.PluginResponse = string(body)
@@ -323,7 +324,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
 		log.Println("error while trying unmarshal systems collection: ", err.Error())
-		return "", progress, err
+		return computeSystemID, resourceURI, progress, err
 	}
 	systemMembers := systemsMap["Members"]
 	// Loop through System collection members and discover all of them
@@ -333,15 +334,15 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		estimatedWork := alottedWork / int32(len(systemMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		if resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
+		if computeSystemID, resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
 			errorMessage += oDataID + ":err-" + err.Error() + "; "
 			foundErr = true
 		}
 	}
 	if foundErr {
-		return resourceURI, progress, fmt.Errorf("%s]", errorMessage)
+		return computeSystemID, resourceURI, progress, fmt.Errorf("%s]", errorMessage)
 	}
-	return resourceURI, progress, nil
+	return computeSystemID, resourceURI, progress, nil
 }
 
 //Registries Discovery function
@@ -558,7 +559,8 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 	return progress
 }
 
-func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
+func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, string, int32, error) {
+	var computeSystemID, oidKey string
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -570,7 +572,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		}
 		h.StatusCode = getResponse.StatusCode
 		h.lock.Unlock()
-		return "", progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 
 	var computeSystem map[string]interface{}
@@ -581,13 +583,13 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		return "", progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 
 	oid := computeSystem["@odata.id"].(string)
-	computeSystemID := computeSystem["Id"].(string)
+	computeSystemID = computeSystem["Id"].(string)
 	computeSystemUUID := computeSystem["UUID"].(string)
-	oidKey := keyFormation(oid, computeSystemID, req.DeviceUUID)
+	oidKey = keyFormation(oid, computeSystemID, req.DeviceUUID)
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
@@ -596,7 +598,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 			h.StatusCode = http.StatusInternalServerError
 			h.StatusMessage = response.InternalError
 			h.lock.Unlock()
-			return oidKey, progress, err
+			return computeSystemID, oidKey, progress, err
 		}
 		if len(indexList) > 0 {
 			h.lock.Lock()
@@ -605,7 +607,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 			h.ErrorMessage = "Resource already exists"
 			h.MsgArgs = []interface{}{"ComputerSystem", "ComputerSystem", "ComputerSystem"}
 			h.lock.Unlock()
-			return oidKey, progress, fmt.Errorf(h.ErrorMessage)
+			return computeSystemID, oidKey, progress, fmt.Errorf(h.ErrorMessage)
 		}
 
 	}
@@ -618,7 +620,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		return oidKey, progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
@@ -647,9 +649,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
-		return oidKey, progress, err
+		return computeSystemID, oidKey, progress, err
 	}
-	return oidKey, progress, nil
+	return computeSystemID, oidKey, progress, nil
 }
 
 // getStorageInfo is used to rediscover storage data from a system
@@ -729,12 +731,10 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 		progress = h.getResourceDetails("", progress, estimatedWork, req)
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
-	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
+	searchForm := createServerSearchIndex(computeSystem, systemURI, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
-	} else {
-		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
@@ -1214,9 +1214,9 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
 	}
 
-	// check the firmaware version of plugin is matched with connection method variant version
+	// check the firmware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
-		errMsg := "firmaware is not supported by connection method"
+		errMsg := fmt.Sprintf("Provided firmware version %s does not match supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
 		log.Println(errMsg)
 		getResponse.StatusCode = http.StatusBadRequest
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList
@@ -1233,11 +1233,11 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
-	firmawareVesrion := strings.Split(cm[2], "_")
+	firmwareVersion := strings.Split(cm[2], "_")
 	return connectionMethodVariants{
 		PluginType:        cm[0],
 		PreferredAuthType: cm[1],
 		PluginID:          cm[2],
-		FirmwareVersion:   firmawareVesrion[1],
+		FirmwareVersion:   firmwareVersion[1],
 	}
 }

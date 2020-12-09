@@ -27,7 +27,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
-	uuid "github.com/satori/go.uuid"
 )
 
 func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
@@ -214,5 +213,5 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	e.PublishEvent(managersList, "ManagerCollection")
 	resp.StatusCode = http.StatusCreated
 	log.Println("sucessfully added  plugin with the id ", cmVariants.PluginID)
-	return resp, uuid.NewV4().String(), ciphertext
+	return resp, managerUUID, ciphertext
 }

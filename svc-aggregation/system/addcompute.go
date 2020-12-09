@@ -123,8 +123,8 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	h.TraversedLinks = make(map[string]bool)
 	progress := percentComplete
 	systemsEstimatedWork := int32(65)
-	var resourceURI string
-	if resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
+	var computeSystemID, resourceURI string
+	if computeSystemID, resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
 		errMsg := "error while trying to add compute: " + err.Error()
 		log.Println(errMsg)
 		var msgArg = make([]interface{}, 0)
@@ -230,6 +230,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	saveSystem.Password = ciphertext
+	aggregationSourceID := saveSystem.DeviceUUID + ":" + computeSystemID
 	if err := saveSystem.Create(saveSystem.DeviceUUID); err != nil {
 		go e.rollbackInMemory(resourceURI)
 		errMsg := "error while trying to add compute: " + err.Error()
@@ -239,8 +240,8 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.CreateSubcription(h.SystemURL)
 	pluginContactRequest.PublishEvent(h.SystemURL, "SystemsCollection")
 	// get all managers and chassis info
-	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", saveSystem.DeviceUUID, common.InMemory)
-	managersList, _ := agmodel.GetAllMatchingDetails("Managers", saveSystem.DeviceUUID, common.InMemory)
+	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", aggregationSourceID, common.InMemory)
+	managersList, _ := agmodel.GetAllMatchingDetails("Managers", aggregationSourceID, common.InMemory)
 	pluginContactRequest.PublishEvent(chassisList, "ChassisCollection")
 	pluginContactRequest.PublishEvent(managersList, "ManagerCollection")
 
@@ -256,5 +257,5 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		"Location":     resourceURI,
 	}
 	log.Printf("sucessfully added system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, pluginID)
-	return resp, saveSystem.DeviceUUID, ciphertext
+	return resp, aggregationSourceID, ciphertext
 }

@@ -98,7 +98,7 @@ func GetResource(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-                log.Println("Could not retreive generic resource for", device.Host, ": \n" ,body, ":\n", uri)
+		log.Println("Could not retreive generic resource for", device.Host, ": \n", body, ":\n", uri)
 
 	}
 	respData := string(body)

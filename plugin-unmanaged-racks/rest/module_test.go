@@ -259,13 +259,35 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 				ValueEqual("Name", "RackGroup#1")
 		})
 
-		t.Run("create rack", func(t *testing.T) {
-			rackURI := httptest.New(t, testApp).
+		t.Run("create rack#1", func(t *testing.T) {
+			rack1URI := httptest.New(t, testApp).
 				POST("/ODIM/v1/Chassis").
 				WithBasicAuth("admin", "Od!m12$4").
 				WithBytes([]byte(`
 						{
 							"Name": "Rack#1",
+							"ChassisType": "Rack",
+							"Links": {
+								"ManagedBy": [
+									{"@odata.id": "/ODIM/v1/Managers/99999999-9999-9999-9999-999999999999"}
+								],
+								"ContainedBy": [
+									{"@odata.id": "`+rackGroupURI+`"}
+								]
+							}
+						}`),
+				).
+				Expect().
+				Status(http.StatusCreated).
+				ContentType("application/json", "UTF-8").
+				Headers().Value("Location").NotNull().Array().NotEmpty().Element(0).String().NotEmpty().Raw()
+
+			rack2URI := httptest.New(t, testApp).
+				POST("/ODIM/v1/Chassis").
+				WithBasicAuth("admin", "Od!m12$4").
+				WithBytes([]byte(`
+						{
+							"Name": "Rack#2",
 							"ChassisType": "Rack",
 							"Links": {
 								"ManagedBy": [
@@ -289,7 +311,8 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					Expect().
 					ContentType("application/json", "UTF-8").
 					Status(http.StatusOK).
-					JSON().Path(`$.Links.Contains[0]["@odata.id"]`).String().Equal(rackURI)
+					JSON().
+					Path(`$.Links.Contains[*]["@odata.id"]`).Array().ContainsOnly(rack1URI, rack2URI)
 			})
 
 			t.Run("delete occupied rack-group", func(t *testing.T) {
@@ -301,13 +324,13 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					ContentType("application/json", "UTF-8")
 			})
 
-			t.Run("try to attach system under rack", func(t *testing.T) {
+			t.Run("try to attach non chassis asset under rack", func(t *testing.T) {
 				odimstubapp := odimstub{iris.New()}
 				odimstubapp.Run()
 				defer odimstubapp.Stop()
 
 				httptest.New(t, testApp).
-					PATCH(rackURI).
+					PATCH(rack1URI).
 					WithBasicAuth("admin", "Od!m12$4").
 					WithBytes([]byte(`
 						{
@@ -328,7 +351,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 				defer odimstubapp.Stop()
 
 				httptest.New(t, testApp).
-					PATCH(rackURI).
+					PATCH(rack1URI).
 					WithBasicAuth("admin", "Od!m12$4").
 					WithBytes([]byte(`
 						{
@@ -345,13 +368,34 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					JSON().Path(`$.Links.Contains`).Array().Length().Equal(1)
 			})
 
+			t.Run("attach already attached chassis under another rack", func(t *testing.T) {
+				odimstubapp := odimstub{iris.New()}
+				odimstubapp.Run()
+				defer odimstubapp.Stop()
+
+				httptest.New(t, testApp).
+					PATCH(rack2URI).
+					WithBasicAuth("admin", "Od!m12$4").
+					WithBytes([]byte(`
+						{
+							"Links":{
+								"Contains": [
+									{"@odata.id":"/ODIM/v1/Chassis/1"}
+								]
+							}
+						}
+					`)).
+					Expect().
+					Status(http.StatusBadRequest)
+			})
+
 			t.Run("attach another chassis under rack", func(t *testing.T) {
 				odimstubapp := odimstub{iris.New()}
 				odimstubapp.Run()
 				defer odimstubapp.Stop()
 
 				httptest.New(t, testApp).
-					PATCH(rackURI).
+					PATCH(rack1URI).
 					WithBasicAuth("admin", "Od!m12$4").
 					WithBytes([]byte(`
 						{
@@ -371,7 +415,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 
 			t.Run("try to delete occupied rack", func(t *testing.T) {
 				httptest.New(t, testApp).
-					DELETE(rackURI).
+					DELETE(rack1URI).
 					WithBasicAuth("admin", "Od!m12$4").
 					Expect().
 					Status(http.StatusConflict).
@@ -384,7 +428,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 				defer odimstubapp.Stop()
 
 				httptest.New(t, testApp).
-					PATCH(rackURI).
+					PATCH(rack1URI).
 					WithBasicAuth("admin", "Od!m12$4").
 					WithBytes([]byte(`
 						{
@@ -422,9 +466,18 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 					NoContent()
 			})
 
-			t.Run("delete rack", func(t *testing.T) {
+			t.Run("delete rack 1", func(t *testing.T) {
 				httptest.New(t, testApp).
-					DELETE(rackURI).
+					DELETE(rack1URI).
+					WithBasicAuth("admin", "Od!m12$4").
+					Expect().
+					Status(http.StatusNoContent).
+					Body().Empty()
+			})
+
+			t.Run("delete rack 2", func(t *testing.T) {
+				httptest.New(t, testApp).
+					DELETE(rack2URI).
 					WithBasicAuth("admin", "Od!m12$4").
 					Expect().
 					Status(http.StatusNoContent).

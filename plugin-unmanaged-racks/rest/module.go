@@ -20,6 +20,7 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
@@ -39,6 +40,11 @@ func InitializeAndRun(c *config.PluginConfig, cm *db.ConnectionManager) {
 }
 
 func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.Application {
+	odimraHttpClient := redfish.NewHttpClient(
+		redfish.BaseURL(c.OdimNBUrl),
+		redfish.HttpTransport(c),
+	)
+
 	application := iris.New()
 
 	application.Logger().Install(logging.Logger())
@@ -52,7 +58,7 @@ func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.A
 	basicAuthHandler := NewBasicAuthHandler(c.UserName, c.Password)
 
 	pluginRoutes := application.Party("/ODIM/v1")
-	pluginRoutes.Post("/Startup", basicAuthHandler, newStartupHandler(c))
+	pluginRoutes.Post("/Startup", basicAuthHandler, newStartupHandler(c, odimraHttpClient))
 	pluginRoutes.Get("/Status", newPluginStatusController(c))
 
 	managers := pluginRoutes.Party("/Managers", basicAuthHandler)
@@ -64,7 +70,7 @@ func createApplication(c *config.PluginConfig, cm *db.ConnectionManager) *iris.A
 	chassis.Get("/{id}", NewChassisReadingHandler(cm))
 	chassis.Delete("/{id}", NewChassisDeletionHandler(cm))
 	chassis.Post("", NewCreateChassisHandlerHandler(cm, c))
-	chassis.Patch("/{id}", NewChassisUpdateHandler(cm, c))
+	chassis.Patch("/{id}", NewChassisUpdateHandler(cm, odimraHttpClient))
 
 	return application
 }

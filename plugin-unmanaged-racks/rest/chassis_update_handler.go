@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
@@ -40,13 +39,16 @@ type rackUpdateRequest struct {
 	}
 }
 
-func NewChassisUpdateHandler(cm *db.ConnectionManager, c *config.PluginConfig) context.Handler {
-	return (&chassisUpdateHandler{cm: cm, config: c}).handle
+func NewChassisUpdateHandler(cm *db.ConnectionManager, odimHttpClient *redfish.HttpClient) context.Handler {
+	return (&chassisUpdateHandler{
+		cm:            cm,
+		redfishClient: redfish.NewResponseWrappingClient(odimHttpClient),
+	}).handle
 }
 
 type chassisUpdateHandler struct {
-	cm     *db.ConnectionManager
-	config *config.PluginConfig
+	cm            *db.ConnectionManager
+	redfishClient *redfish.ResponseWrappingClient
 }
 
 func (c *chassisUpdateHandler) handle(ctx context.Context) {
@@ -57,7 +59,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	requestedChassis, err := c.findRequestedChassis(ctx.Request().RequestURI)
+	requestedChassis, err := c.cm.FindChassis(ctx.Request().RequestURI)
 	if err != nil {
 		createInternalError(ctx, err)
 		return
@@ -182,24 +184,34 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 		redfish.Validator{
 			ValidationRule: func() bool {
 				chassisCollection := new(redfish.Collection)
-				if err := redfish.NewRedfishClient(c.config.OdimNBUrl).Get("/redfish/v1/Chassis", chassisCollection); err != nil {
-					logging.Errorf("cannot validate requested chassis: %s", err)
+				if err := c.redfishClient.Get("/redfish/v1/Chassis", chassisCollection); err != nil {
+					logging.Errorf("cannot read validate ODIMRA://redfish/v1/Chassis: %s", err)
 					return true
 				}
-				existingSystems := map[string]interface{}{}
+				existingChassis := map[string]interface{}{}
 				for _, m := range chassisCollection.Members {
-					existingSystems[m.Oid] = m
+					existingChassis[m.Oid] = m
 				}
 				for _, assetUnderChassis := range requestedChange.Links.Contains {
-					_, ok := existingSystems[assetUnderChassis.Oid]
+					_, ok := existingChassis[assetUnderChassis.Oid]
 					if !ok {
 						return true
 					}
 				}
-
+				return false
+			},
+			ErrorGenerator: func() redfish.MsgExtendedInfo {
+				return redfish.NewPropertyValueNotInListMsg(
+					fmt.Sprintf("%s", requestedChange.Links.Contains),
+					"Links.Contains",
+					"Couldn't confirm existence of one or more requested 'Links.Contains' elements")
+			},
+		},
+		redfish.Validator{
+			ValidationRule: func() bool {
 				unmanagedChassisKeys, err := c.cm.DAO().Keys(stdCtx.TODO(), db.CreateKey("Chassis").WithWildcard().String()).Result()
 				if err != nil {
-					logging.Errorf("cannot validate requested chassis: %s", err)
+					logging.Errorf("DB: cannot read info about unmanaged racks: %s", err)
 					return true
 				}
 
@@ -215,27 +227,37 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				return redfish.NewPropertyValueNotInListMsg(
 					fmt.Sprintf("%s", requestedChange.Links.Contains),
 					"Links.Contains",
-					"Couldn't retrieve information about requested links. Make sure that they are existing!")
+					"Unmanaged Chassis Cannot Be Attached Under Rack")
+			},
+		},
+
+		redfish.Validator{
+			ValidationRule: func() bool {
+
+				alreadyAttached := []string{}
+				for _, c := range requestedChassis.Links.Contains {
+					alreadyAttached = append(alreadyAttached, c.Oid)
+				}
+
+				for _, assetUnderChassis := range requestedChange.Links.Contains {
+					if utils.Collection(alreadyAttached).Contains(assetUnderChassis.Oid) {
+						continue
+					}
+					if c.cm.DAO().Exists(stdCtx.TODO(), db.CreateContainedInKey("Chassis", assetUnderChassis.Oid).String()).Val() == 1 {
+						return true
+					}
+				}
+
+				return false
+			},
+			ErrorGenerator: func() redfish.MsgExtendedInfo {
+				return redfish.NewPropertyValueNotInListMsg(
+					fmt.Sprintf("%s", requestedChange.Links.Contains),
+					"Links.Contains",
+					"One of requested 'Links.Contains' element is already attached to another rack")
 			},
 		},
 	}
-}
-
-func (c *chassisUpdateHandler) findRequestedChassis(chassisOid string) (*redfish.Chassis, error) {
-	reply, err := c.cm.DAO().Get(stdCtx.TODO(), db.CreateKey("Chassis", chassisOid).String()).Bytes()
-	if err == redis.Nil {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("%v", redfish.CreateError(redfish.GeneralError, err.Error()))
-	}
-
-	requestedChassis := new(redfish.Chassis)
-	if err := json.Unmarshal(reply, requestedChassis); err != nil {
-		return nil, fmt.Errorf("%v", redfish.CreateError(redfish.GeneralError, err.Error()))
-	}
-
-	return requestedChassis, nil
 }
 
 func decodeRequestBody(ctx context.Context) (*rackUpdateRequest, error) {

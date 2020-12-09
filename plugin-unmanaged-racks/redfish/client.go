@@ -19,6 +19,7 @@ package redfish
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -26,54 +27,64 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/utils"
 )
 
-func NewRedfishClient(baseURL string) RedfishClient {
-	return &redfishClient{
-		NewClient(baseURL),
+type HttpClient struct {
+	baseURL            string
+	httpc              *http.Client
+	requestDecorators  []requestDecorator
+	responseDecorators []responseDecorator
+}
+
+type Option func(rc *HttpClient)
+
+func BaseURL(baseURL string) Option {
+	return func(rc *HttpClient) {
+		rc.baseURL = baseURL
 	}
 }
 
-type RedfishClient interface {
-	Get(uri string, target interface{}) *CommonError
-}
-
-type redfishClient struct {
-	c Client
-}
-
-func (r *redfishClient) Get(uri string, target interface{}) *CommonError {
-	rsp, err := r.c.Get(uri)
-	if err != nil {
-		ce := CreateError(GeneralError, err.Error())
-		return &ce
-	}
-	if rsp.StatusCode != http.StatusOK {
-		ce := CreateError(GeneralError, fmt.Sprintf("GET %s operation finished with status != 200", rsp.Request.URL.String()))
-		return &ce
-	}
-
-	dec := json.NewDecoder(rsp.Body)
-	defer rsp.Body.Close()
-	err = dec.Decode(target)
-	if err != nil {
-		ce := CreateError(GeneralError, fmt.Sprintf("Cannot decode body of GET %s operation: %s", rsp.Request.URL.String(), err))
-		return &ce
-	}
-	return nil
-}
-
-func NewClient(baseURL string) Client {
-	return &httpClient{
-		baseURL: baseURL,
-		httpc: &http.Client{
-			//todo:  configure tls transport
-			Transport: &http.Transport{
+func HttpTransport(c *config.PluginConfig) Option {
+	if utils.Collection([]string{c.PKIRootCAPath, c.PKICertificatePath, c.PKIPrivateKeyPath}).Contains("") {
+		return func(rc *HttpClient) {
+			rc.httpc.Transport = &http.Transport{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},
-			},
-		},
+			}
+			logging.Warn("Configuring unsecure http transport")
+		}
+	} else {
+		return func(rc *HttpClient) {
+			caCert, err := ioutil.ReadFile(c.PKIRootCAPath)
+			if err != nil {
+				panic(err)
+			}
+			pool := x509.NewCertPool()
+			pool.AppendCertsFromPEM(caCert)
+			clientCert, err := tls.LoadX509KeyPair(c.PKICertificatePath, c.PKIPrivateKeyPath)
+			if err != nil {
+				panic(err)
+			}
+			tlsConf := tls.Config{
+				RootCAs:      pool,
+				Certificates: []tls.Certificate{clientCert},
+			}
+			tlsTransport := http.Transport{
+				TLSClientConfig: &tlsConf,
+			}
+			rc.httpc.Transport = &tlsTransport
+		}
+	}
+}
+
+func NewHttpClient(opts ...Option) *HttpClient {
+	c := &HttpClient{
+		httpc: &http.Client{},
 		requestDecorators: []requestDecorator{
 			&basicAuth{
 				u: "admin",
@@ -91,6 +102,11 @@ func NewClient(baseURL string) Client {
 			},
 		},
 	}
+
+	for _, o := range opts {
+		o(c)
+	}
+	return c
 }
 
 type requestDecorator interface {
@@ -101,19 +117,7 @@ type responseDecorator interface {
 	decorate(response *http.Response) error
 }
 
-type Client interface {
-	Get(uri string) (*http.Response, error)
-	Post(uri string, body []byte) (*http.Response, error)
-}
-
-type httpClient struct {
-	baseURL            string
-	httpc              *http.Client
-	requestDecorators  []requestDecorator
-	responseDecorators []responseDecorator
-}
-
-func (h *httpClient) createURL(uri string) (*url.URL, error) {
+func (h *HttpClient) createURL(uri string) (*url.URL, error) {
 	path, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -125,7 +129,7 @@ func (h *httpClient) createURL(uri string) (*url.URL, error) {
 	return baseURL.ResolveReference(path), nil
 }
 
-func (h *httpClient) decorateResponse(r *http.Response) error {
+func (h *HttpClient) decorateResponse(r *http.Response) error {
 	for _, d := range h.responseDecorators {
 		e := d.decorate(r)
 		if e != nil {
@@ -135,7 +139,7 @@ func (h *httpClient) decorateResponse(r *http.Response) error {
 	return nil
 }
 
-func (h *httpClient) decorateRequest(r *http.Request) error {
+func (h *HttpClient) decorateRequest(r *http.Request) error {
 	for _, d := range h.requestDecorators {
 		e := d.decorate(r)
 		if e != nil {
@@ -145,7 +149,7 @@ func (h *httpClient) decorateRequest(r *http.Request) error {
 	return nil
 }
 
-func (h *httpClient) Get(uri string) (*http.Response, error) {
+func (h *HttpClient) Get(uri string) (*http.Response, error) {
 	requestUrl, err := h.createURL(uri)
 	if err != nil {
 		return nil, err
@@ -173,7 +177,7 @@ func (h *httpClient) Get(uri string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (h *httpClient) Post(uri string, bodyBytes []byte) (*http.Response, error) {
+func (h *HttpClient) Post(uri string, bodyBytes []byte) (*http.Response, error) {
 	requestUrl, err := h.createURL(uri)
 	if err != nil {
 		return nil, err
@@ -255,5 +259,34 @@ func (r *responseBodyTranslator) decorate(resp *http.Response) error {
 
 	newBody := strings.Replace(string(*tempTarget), r.old, r.new, -1)
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(newBody)))
+	return nil
+}
+
+func NewResponseWrappingClient(httpClient *HttpClient) *ResponseWrappingClient {
+	return &ResponseWrappingClient{httpClient}
+}
+
+type ResponseWrappingClient struct {
+	c *HttpClient
+}
+
+func (r *ResponseWrappingClient) Get(uri string, target interface{}) *CommonError {
+	rsp, err := r.c.Get(uri)
+	if err != nil {
+		ce := CreateError(GeneralError, err.Error())
+		return &ce
+	}
+	if rsp.StatusCode != http.StatusOK {
+		ce := CreateError(GeneralError, fmt.Sprintf("GET %s operation finished with status != 200", rsp.Request.URL.String()))
+		return &ce
+	}
+
+	dec := json.NewDecoder(rsp.Body)
+	defer rsp.Body.Close()
+	err = dec.Decode(target)
+	if err != nil {
+		ce := CreateError(GeneralError, fmt.Sprintf("Cannot decode body of GET %s operation: %s", rsp.Request.URL.String(), err))
+		return &ce
+	}
 	return nil
 }

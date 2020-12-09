@@ -30,9 +30,9 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-func newStartupHandler(c *config.PluginConfig) context.Handler {
+func newStartupHandler(c *config.PluginConfig, httpClient *redfish.HttpClient) context.Handler {
 	return (&startup{
-		subscriber: newSubscriber(c),
+		subscriber: newSubscriber(c, httpClient),
 	}).handle
 }
 
@@ -47,7 +47,7 @@ func (s *startup) handle(c iris.Context) {
 	c.StatusCode(http.StatusOK)
 }
 
-func newSubscriber(config *config.PluginConfig) *subscriber {
+func newSubscriber(config *config.PluginConfig, httpClient *redfish.HttpClient) *subscriber {
 
 	subscriptionTarget, err := url.Parse("https://" + config.Host + ":" + config.Port + "/EventService/Events")
 	if err != nil {
@@ -56,12 +56,12 @@ func newSubscriber(config *config.PluginConfig) *subscriber {
 
 	return &subscriber{
 		destinationURL: *subscriptionTarget,
-		odimRAClient:   redfish.NewClient(config.OdimNBUrl),
+		odimRAClient:   httpClient,
 	}
 }
 
 type subscriber struct {
-	odimRAClient   redfish.Client
+	odimRAClient   *redfish.HttpClient
 	destinationURL url.URL
 	isRunning      bool
 }

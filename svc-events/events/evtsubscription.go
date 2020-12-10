@@ -1203,6 +1203,11 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
 	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
 
+    subordinateFlag := false
+    if strings.Contains(origin, "Fabrics"){
+        subordinateFlag = true
+    }
+
 	subscriptionPost := evmodel.RequestBody{
 		EventTypes:    eventTypes,
 		MessageIds:    messageIDs,
@@ -1210,6 +1215,7 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 		Context:       context,
 		Destination:   destination,
 		Protocol:      protocol,
+        SubordinateResources: subordinateFlag,
 	}
 	subscriptionPost.OriginResources = []evmodel.OdataIDLink{
 		evmodel.OdataIDLink{

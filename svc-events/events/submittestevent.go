@@ -87,7 +87,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// we need common.MessageData to find the correct destination to send test event
-	var message common.MessageData
+	var message ForwardEventMessageData
 	message.Events = append(message.Events, *testEvent)
 	messageBytes, _ := json.Marshal(message)
 	for _, sub := range subscriptions {
@@ -119,8 +119,8 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 
 }
 
-func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []interface{}) {
-	var testEvent common.Event
+func validAndGenSubTestReq(reqBody []byte) (*ForwardEvent, string, string, []interface{}) {
+	var testEvent ForwardEvent
 	var req map[string]interface{}
 	json.Unmarshal(reqBody, &req)
 	if val, ok := req["MessageId"]; ok {
@@ -202,9 +202,7 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["OriginOfCondition"]; ok {
 		switch v := val.(type) {
 		case string:
-			testEvent.OriginOfCondition = &common.Link{
-				Oid: v,
-			}
+			testEvent.OriginOfCondition = v
 		default:
 			return nil, response.PropertyValueTypeError, "error: optional parameter OriginOfCondition must be of type string", []interface{}{fmt.Sprintf("%v", v), "OriginOfCondition"}
 		}

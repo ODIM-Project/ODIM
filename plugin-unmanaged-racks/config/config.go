@@ -53,10 +53,9 @@ type URLTranslation struct {
 }
 
 type TLSConf struct {
-	MinVersion            string   `yaml:"MinVersion"`
-	MaxVersion            string   `yaml:"MaxVersion"`
-	VerifyPeer            bool     `yaml:"VerifyPeer"`
-	PreferredCipherSuites []string `yaml:"PreferredCipherSuites"`
+	MinVersion            uint16   `yaml:"MinVersion"`
+	MaxVersion            uint16   `yaml:"MaxVersion"`
+	PreferredCipherSuites []uint16 `yaml:"PreferredCipherSuites"`
 }
 
 func ReadPluginConfiguration() (*PluginConfig, error) {
@@ -130,6 +129,12 @@ func validate(pc *PluginConfig) error {
 
 	if pc.TLSConf == nil {
 		return fmt.Errorf("TLSConf not provided, setting default value")
+	}
+	if pc.TLSConf.MinVersion == 0 || pc.TLSConf.MaxVersion == 0 {
+		return fmt.Errorf("configured TLSConf.{MinVersion|MaxVersion} is wrong")
+	}
+	if len(pc.TLSConf.PreferredCipherSuites) == 0 {
+		return fmt.Errorf("configured TLSConf.PreferredCipherSuites cannot be empty")
 	}
 
 	if pc.URLTranslation == nil {

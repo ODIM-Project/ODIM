@@ -545,5 +545,10 @@ func createTestApplication() (*iris.Application, *miniredis.Miniredis) {
 	}
 
 	cm := db.NewConnectionManager(r.Addr(), "")
-	return createApplication(&TEST_CONFIG, cm), r
+
+	odimraHttpClient := redfish.NewHttpClient(
+		redfish.BaseURL(TEST_CONFIG.OdimNBUrl),
+		redfish.InsecureSkipVerifyTransport,
+	)
+	return createApplication(&TEST_CONFIG, cm, odimraHttpClient), r
 }

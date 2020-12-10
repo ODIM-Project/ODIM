@@ -29,8 +29,6 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/utils"
 )
 
 type HttpClient struct {
@@ -48,37 +46,35 @@ func BaseURL(baseURL string) Option {
 	}
 }
 
+//!!!This function is intended to be use only in tests.!!!
+func InsecureSkipVerifyTransport(c *HttpClient) {
+	c.httpc.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+}
+
 func HttpTransport(c *config.PluginConfig) Option {
-	if utils.Collection([]string{c.PKIRootCAPath, c.PKICertificatePath, c.PKIPrivateKeyPath}).Contains("") {
-		return func(rc *HttpClient) {
-			rc.httpc.Transport = &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			}
-			logging.Warn("Configuring unsecure http transport")
+	return func(rc *HttpClient) {
+		caCert, err := ioutil.ReadFile(c.PKIRootCAPath)
+		if err != nil {
+			panic(err)
 		}
-	} else {
-		return func(rc *HttpClient) {
-			caCert, err := ioutil.ReadFile(c.PKIRootCAPath)
-			if err != nil {
-				panic(err)
-			}
-			pool := x509.NewCertPool()
-			pool.AppendCertsFromPEM(caCert)
-			clientCert, err := tls.LoadX509KeyPair(c.PKICertificatePath, c.PKIPrivateKeyPath)
-			if err != nil {
-				panic(err)
-			}
-			tlsConf := tls.Config{
-				RootCAs:      pool,
-				Certificates: []tls.Certificate{clientCert},
-			}
-			tlsTransport := http.Transport{
-				TLSClientConfig: &tlsConf,
-			}
-			rc.httpc.Transport = &tlsTransport
+		pool := x509.NewCertPool()
+		pool.AppendCertsFromPEM(caCert)
+		clientCert, err := tls.LoadX509KeyPair(c.PKICertificatePath, c.PKIPrivateKeyPath)
+		if err != nil {
+			panic(err)
 		}
+		tlsConf := tls.Config{
+			RootCAs:      pool,
+			Certificates: []tls.Certificate{clientCert},
+		}
+		tlsTransport := http.Transport{
+			TLSClientConfig: &tlsConf,
+		}
+		rc.httpc.Transport = &tlsTransport
 	}
 }
 

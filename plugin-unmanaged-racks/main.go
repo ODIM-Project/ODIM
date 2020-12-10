@@ -26,7 +26,7 @@ import (
 var version = "dev"
 
 func main() {
-	logging.Infof("Starting URP v%s\n", version)
+	logging.Infof("Starting URP v%s", version)
 	if pc, err := config.ReadPluginConfiguration(); err != nil {
 		logging.Fatal("error while reading from config", err)
 	} else {

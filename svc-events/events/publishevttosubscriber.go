@@ -68,23 +68,23 @@ type ForwardEvent struct {
 // checkAndAddFabrics this function is used to cross check if an event is for fabrics resource added
 // if yes then it will add the new fabric resource to db
 func checkAndAddFabrics(requestData string, host string) {
-    if strings.Contains(requestData, "/redfish/v1/Fabrics") &&  strings.Contains(requestData, "ResourceAdded") {
-        message, parseStatus := parseEventData(requestData)
-        if !parseStatus {
-            log.Println("Error while trying to parse request data ",requestData)
-            return
-	    }
-        for _, inEvent := range message.Events {
-		    if len(inEvent.OriginOfCondition) < 1 {
-		    	log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
-			    continue
-		    }
-		    if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
-		            strings.HasPrefix(inEvent.OriginOfCondition, "/redfish/v1/Fabrics") {
-			    addFabricRPCCall(inEvent.OriginOfCondition, host)
-		    }
+	if strings.Contains(requestData, "/redfish/v1/Fabrics") && strings.Contains(requestData, "ResourceAdded") {
+		message, parseStatus := parseEventData(requestData)
+		if !parseStatus {
+			log.Println("Error while trying to parse request data ", requestData)
+			return
 		}
-    }
+		for _, inEvent := range message.Events {
+			if len(inEvent.OriginOfCondition) < 1 {
+				log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
+				continue
+			}
+			if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+				strings.HasPrefix(inEvent.OriginOfCondition, "/redfish/v1/Fabrics") {
+				addFabricRPCCall(inEvent.OriginOfCondition, host)
+			}
+		}
+	}
 }
 
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
@@ -111,7 +111,7 @@ func PublishEventsToDestination(data interface{}) bool {
 	var flag bool
 	var uuid string
 
-    checkAndAddFabrics(requestData,host)
+	checkAndAddFabrics(requestData, host)
 
 	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
 	if err != nil {
@@ -126,8 +126,8 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
 	message, parseStatus := parseEventData(requestData)
-    if !parseStatus {
-        log.Println("Error while trying to parse the input request data", message)
+	if !parseStatus {
+		log.Println("Error while trying to parse the input request data", message)
 		return false
 	}
 
@@ -208,7 +208,7 @@ func PublishEventsToDestination(data interface{}) bool {
 }
 
 func filterEventsToBeForwarded(subscription evmodel.Subscription, event ForwardEvent, originResources []string) bool {
-    eventTypes := subscription.EventTypes
+	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
 	originCondition := strings.TrimSuffix(event.OriginOfCondition, "/")

@@ -159,7 +159,8 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 		return
 	}
 	if resp.StatusCode >= 300 {
-		fmt.Printf("Could not retreive generic resource for %s: \n%s\n\n", device.Host, body)
+		log.Println("Could not retreive generic resource for", device.Host, ": \n", body, ":\n", uri)
+
 	}
 	respData := string(body)
 	//replacing the resposne with north bound translation URL

@@ -28,7 +28,7 @@ clean:
 	rm -r ../build/plugin-unmanaged-racks/tmp
 
 run:
-	PLUGIN_CONFIG_FILE_PATH=./config/config.json go run ./main.go
+	PLUGIN_CONFIG_FILE_PATH=./config/config.yml go run ./main.go
 
 lint: lint-deps
 	golangci-lint run ./...

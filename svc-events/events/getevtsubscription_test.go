@@ -105,6 +105,6 @@ func TestGetEventSubscription(t *testing.T) {
 
 	common.TruncateDB(common.OnDisk)
 	resp = pc.GetEventSubscriptionsDetails(req)
-	assert.Equal(t, http.StatusBadRequest, int(resp.StatusCode), "Status Code should be StatusBadRequest")
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
 }

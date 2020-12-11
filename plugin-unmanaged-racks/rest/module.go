@@ -30,25 +30,28 @@ import (
 	"github.com/kataras/iris/v12/middleware/logger"
 )
 
-const _PLUGIN_NAME = "URP"
+const urpPluginName = "URP"
 
-func InitializeAndRun(pluginConfiguration *config.PluginConfig, cm *db.ConnectionManager) {
+// InitializeAndRun Initializes and runs Unamanged Racks Plugin
+func InitializeAndRun(pluginConfiguration *config.PluginConfig) {
 
-	odimraHttpClient := redfish.NewHttpClient(
+	odimraHTTPClient := redfish.NewHTTPClient(
 		redfish.BaseURL(pluginConfiguration.OdimNBUrl),
-		redfish.HttpTransport(pluginConfiguration),
+		redfish.HTTPTransport(pluginConfiguration),
 	)
 
-	createApplication(pluginConfiguration, cm, odimraHttpClient).Run(
+	dao := db.CreateDAO(pluginConfiguration.RedisAddress, pluginConfiguration.SentinelMasterName)
+
+	createApplication(pluginConfiguration, dao, odimraHTTPClient).Run(
 		func(app *iris.Application) error {
 			return app.NewHost(&http.Server{Addr: pluginConfiguration.Host + ":" + pluginConfiguration.Port}).
-				Configure(configureTls(pluginConfiguration)).
+				Configure(configureTLS(pluginConfiguration)).
 				ListenAndServe()
 		},
 	)
 }
 
-func configureTls(c *config.PluginConfig) host.Configurator {
+func configureTLS(c *config.PluginConfig) host.Configurator {
 	return func(su *host.Supervisor) {
 		cert, err := tls.LoadX509KeyPair(c.PKICertificatePath, c.PKIPrivateKeyPath)
 		if err != nil {
@@ -64,8 +67,8 @@ func configureTls(c *config.PluginConfig) host.Configurator {
 	}
 }
 
-func createApplication(pluginConfig *config.PluginConfig, cm *db.ConnectionManager, odimraHttpClient *redfish.HttpClient) *iris.Application {
-	return iris.New().Configure(createLoggersConfigurer(pluginConfig), createApiHandlersConfigurer(odimraHttpClient, cm, pluginConfig))
+func createApplication(pluginConfig *config.PluginConfig, dao *db.DAO, odimraHTTPClient *redfish.HTTPClient) *iris.Application {
+	return iris.New().Configure(createLoggersConfigurer(pluginConfig), createAPIHandlersConfigurer(odimraHTTPClient, dao, pluginConfig))
 }
 
 func createLoggersConfigurer(pluginConfig *config.PluginConfig) iris.Configurator {
@@ -73,36 +76,36 @@ func createLoggersConfigurer(pluginConfig *config.PluginConfig) iris.Configurato
 		//no startup log
 		app.Configure(iris.WithoutStartupLog)
 		//iris app attached to application logger
-		app.Logger().Install(logging.Logger())
+		app.Logger().Install(logging.GetLogger())
 		//iris app log level adjusted to configured one
 		app.Logger().SetLevel(pluginConfig.LogLevel)
 		//app log level adjusted to configured one
-		logging.Logger().SetLevel(pluginConfig.LogLevel)
+		logging.SetLogLevel(pluginConfig.LogLevel)
 		//enable request logger
 		app.Use(logger.New())
 	}
 }
 
-func createApiHandlersConfigurer(odimraHttpClient *redfish.HttpClient, cm *db.ConnectionManager, pluginConfig *config.PluginConfig) iris.Configurator {
+func createAPIHandlersConfigurer(odimraHTTPClient *redfish.HTTPClient, dao *db.DAO, pluginConfig *config.PluginConfig) iris.Configurator {
 	return func(application *iris.Application) {
 
-		basicAuthHandler := NewBasicAuthHandler(pluginConfig.UserName, pluginConfig.Password)
+		basicAuthHandler := newBasicAuthHandler(pluginConfig.UserName, pluginConfig.Password)
 
-		application.Post("/EventService/Events", newEventHandler(cm, pluginConfig.URLTranslation))
+		application.Post("/EventService/Events", newEventHandler(dao))
 
 		pluginRoutes := application.Party("/ODIM/v1")
-		pluginRoutes.Post("/Startup", basicAuthHandler, newStartupHandler(pluginConfig, odimraHttpClient))
+		pluginRoutes.Post("/Startup", basicAuthHandler, newStartupHandler(pluginConfig, odimraHTTPClient))
 		pluginRoutes.Get("/Status", newPluginStatusController(pluginConfig))
 
 		managers := pluginRoutes.Party("/Managers", basicAuthHandler)
-		managers.Get("", NewGetManagersHandler(pluginConfig))
-		managers.Get("/{id}", NewGetPluginManagerHandler(pluginConfig))
+		managers.Get("", newGetManagersHandler(pluginConfig))
+		managers.Get("/{id}", newGetManagerHandler(pluginConfig))
 
 		chassis := pluginRoutes.Party("/Chassis", basicAuthHandler)
-		chassis.Get("", newGetChassisCollectionHandler(cm))
-		chassis.Get("/{id}", NewChassisReadingHandler(cm))
-		chassis.Delete("/{id}", NewChassisDeletionHandler(cm))
-		chassis.Post("", NewCreateChassisHandlerHandler(cm, pluginConfig))
-		chassis.Patch("/{id}", NewChassisUpdateHandler(cm, odimraHttpClient))
+		chassis.Get("", newGetChassisCollectionHandler(dao))
+		chassis.Get("/{id}", newGetChassisHandler(dao))
+		chassis.Delete("/{id}", newDeleteChassisHandler(dao))
+		chassis.Post("", newPostChassisHandler(dao, pluginConfig))
+		chassis.Patch("/{id}", newPatchChassisHandler(dao, odimraHTTPClient))
 	}
 }

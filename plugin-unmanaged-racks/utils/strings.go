@@ -16,10 +16,12 @@
 
 package utils
 
+// Collection is alias for array of strings([]string)
 type Collection []string
 
-func (f Collection) Contains(v string) bool {
-	for _, e := range f {
+// Contains checks whether requested string `v` is contained in collection `c`
+func (c Collection) Contains(v string) bool {
+	for _, e := range c {
 		if e == v {
 			return true
 		}

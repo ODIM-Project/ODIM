@@ -44,18 +44,16 @@ func createPluginManager(pc *config.PluginConfig) redfish.Manager {
 		OdataContext:    "/ODIM/v1/$metadata#Manager.Manager",
 		OdataID:         "/ODIM/v1/Managers/" + pc.RootServiceUUID,
 		OdataType:       "#Manager.v1_3_3.Manager",
-		Name:            _PLUGIN_NAME,
+		Name:            urpPluginName,
 		ManagerType:     "Service",
 		ID:              pc.RootServiceUUID,
 		UUID:            pc.RootServiceUUID,
 		FirmwareVersion: pc.FirmwareVersion,
-		Status: &redfish.ManagerStatus{
-			State: "Enabled",
-		},
+		Status:          &redfish.Status{State: "Enabled"},
 	}
 }
 
-func NewGetPluginManagerHandler(pc *config.PluginConfig) context.Handler {
+func newGetManagerHandler(pc *config.PluginConfig) context.Handler {
 	return (&getPluginManagerHandler{
 		pluginManager: createPluginManager(pc),
 	}).handle

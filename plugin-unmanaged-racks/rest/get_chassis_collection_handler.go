@@ -19,7 +19,6 @@ package rest
 import (
 	stdCtx "context"
 	"net/http"
-	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
@@ -27,27 +26,27 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-func newGetChassisCollectionHandler(cm *db.ConnectionManager) context.Handler {
-	return (&getChassisCollectionHandler{cm}).handle
+func newGetChassisCollectionHandler(dao *db.DAO) context.Handler {
+	return (&getChassisCollectionHandler{dao}).handle
 }
 
 type getChassisCollectionHandler struct {
-	cm *db.ConnectionManager
+	dao *db.DAO
 }
 
 func (c *getChassisCollectionHandler) handle(ctx context.Context) {
 	searchKey := db.CreateKey("Chassis")
-	keys, err := c.cm.DAO().Keys(stdCtx.TODO(), searchKey.WithWildcard().String()).Result()
+	keys, err := c.dao.Keys(stdCtx.TODO(), searchKey.WithWildcard().String()).Result()
 	if err != nil {
 		ctx.StatusCode(http.StatusBadRequest)
 	}
 
 	collection := createChassisCollection()
-	for _, k := range keys {
+	for _, key := range keys {
 		collection.Members = append(
 			collection.Members,
 			redfish.Link{
-				Oid: strings.TrimPrefix(k, searchKey.Prefix()),
+				Oid: db.Key(key).ID(),
 			},
 		)
 		collection.MembersCount++

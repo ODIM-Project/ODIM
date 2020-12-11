@@ -29,35 +29,32 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// PluginConfig struct holds configuration of URP plugin
 type PluginConfig struct {
-	Host               string          `yaml:"Host" envconfig:"HOST"`
-	Port               string          `yaml:"Port" envconfig:"PORT"`
-	UserName           string          `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
-	Password           string          `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
-	RootServiceUUID    string          `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
-	OdimNBUrl          string          `yaml:"OdimNBUrl" envconfig:"ODIM_NORTBOUNND_URL"`
-	FirmwareVersion    string          `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
-	URLTranslation     *URLTranslation `yaml:"URLTranslation"`
-	TLSConf            *TLSConf        `yaml:"TLSConf"`
-	PKIRootCAPath      string          `yaml:"PKIRootCACertificatePath" envconfig:"PKI_ROOT_CA_PATH"`
-	PKIPrivateKeyPath  string          `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
-	PKICertificatePath string          `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
-	LogLevel           string          `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
-	RedisAddress       string          `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
-	SentinelMasterName string          `yaml:"SentinelMasterName" envconfig:"SENTINEL_MASTER_NAME"`
+	Host               string   `yaml:"Host" envconfig:"HOST"`
+	Port               string   `yaml:"Port" envconfig:"PORT"`
+	UserName           string   `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
+	Password           string   `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
+	RootServiceUUID    string   `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
+	OdimNBUrl          string   `yaml:"OdimNBUrl" envconfig:"ODIM_NORTBOUNND_URL"`
+	FirmwareVersion    string   `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
+	TLSConf            *TLSConf `yaml:"TLSConf"`
+	PKIRootCAPath      string   `yaml:"PKIRootCACertificatePath" envconfig:"PKI_ROOT_CA_PATH"`
+	PKIPrivateKeyPath  string   `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
+	PKICertificatePath string   `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
+	LogLevel           string   `yaml:"LogLevel" envconfig:"LOG_LEVEL"`
+	RedisAddress       string   `yaml:"RedisAddress" envconfig:"REDIS_ADDRESS"`
+	SentinelMasterName string   `yaml:"SentinelMasterName" envconfig:"SENTINEL_MASTER_NAME"`
 }
 
-type URLTranslation struct {
-	NorthBoundURL map[string]string `yaml:"NorthBoundURL"` // holds value of NorthBound Translation
-	SouthBoundURL map[string]string `yaml:"SouthBoundURL"` // holds value of SouthBound Translation
-}
-
+// TLSConf holds details related with URP's NB interface TLS configuration
 type TLSConf struct {
 	MinVersion            uint16   `yaml:"MinVersion"`
 	MaxVersion            uint16   `yaml:"MaxVersion"`
 	PreferredCipherSuites []uint16 `yaml:"PreferredCipherSuites"`
 }
 
+// ReadPluginConfiguration loads URP's configuration from path defined behind PLUGIN_CONFIG_FILE_PATH env variable
 func ReadPluginConfiguration() (*PluginConfig, error) {
 	pc := new(PluginConfig)
 
@@ -93,8 +90,7 @@ func validate(pc *PluginConfig) error {
 	}
 
 	if pc.FirmwareVersion == "" {
-		pc.FirmwareVersion = "1.0"
-		logging.Warnf("no value set for FirmwareVersion, setting default: %s", pc.FirmwareVersion)
+		return fmt.Errorf("no value set for FirmwareVersion, setting default: %s", pc.FirmwareVersion)
 	}
 
 	if pc.RootServiceUUID == "" {
@@ -135,30 +131,6 @@ func validate(pc *PluginConfig) error {
 	}
 	if len(pc.TLSConf.PreferredCipherSuites) == 0 {
 		return fmt.Errorf("configured TLSConf.PreferredCipherSuites cannot be empty")
-	}
-
-	if pc.URLTranslation == nil {
-		pc.URLTranslation = &URLTranslation{
-			NorthBoundURL: map[string]string{
-				"ODIM": "redfish",
-			},
-			SouthBoundURL: map[string]string{
-				"redfish": "ODIM",
-			},
-		}
-		logging.Warnf("URL translation not provided, setting defaults: %v", pc.URLTranslation)
-	}
-	if len(pc.URLTranslation.NorthBoundURL) <= 0 {
-		pc.URLTranslation.NorthBoundURL = map[string]string{
-			"ODIM": "redfish",
-		}
-		logging.Warnf("NorthBoundURL is empty, setting defaults: %v", pc.URLTranslation.NorthBoundURL)
-	}
-	if len(pc.URLTranslation.SouthBoundURL) <= 0 {
-		pc.URLTranslation.SouthBoundURL = map[string]string{
-			"redfish": "ODIM",
-		}
-		logging.Warnf("SouthBoundURL is empty, setting defaults: %v", len(pc.URLTranslation.SouthBoundURL))
 	}
 	return nil
 }

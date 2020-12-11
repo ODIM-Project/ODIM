@@ -16,15 +16,16 @@
 
 package redfish
 
-type MessageData struct {
-	OdataType string  `json:"@odata.type"`
-	Name      string  `json:"Name"`
-	Context   string  `json:"@odata.context"`
-	Events    []Event `json:"Events"`
+// Event structs represents Redfish Event
+type Event struct {
+	OdataType string        `json:"@odata.type"`
+	Name      string        `json:"Name"`
+	Context   string        `json:"@odata.context"`
+	Events    []EventRecord `json:"Events"`
 }
 
-// Event contains the details of the event subscribed from PMB
-type Event struct {
+// EventRecord structs represents Redfish EventRecord
+type EventRecord struct {
 	MemberID          string      `json:"MemberId,omitempty"`
 	EventType         string      `json:"EventType"`
 	EventGroupID      int         `json:"EventGroupId,omitempty"`

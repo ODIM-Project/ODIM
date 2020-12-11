@@ -36,20 +36,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var TEST_CONFIG = config.PluginConfig{
+var testConfig = config.PluginConfig{
 	RootServiceUUID: "99999999-9999-9999-9999-999999999999",
 	UserName:        "admin",
 	Password:        "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
 	FirmwareVersion: "0.0.0",
 	OdimNBUrl:       "https://localhost:45000",
-	URLTranslation: &config.URLTranslation{
-		NorthBoundURL: map[string]string{
-			"redfish": "ODIM",
-		},
-		SouthBoundURL: map[string]string{
-			"ODIM": "redfish",
-		},
-	},
+	LogLevel:        "Debug",
 }
 
 func Test_secured_endpoints_return_401_when_unauthorized(t *testing.T) {
@@ -522,7 +515,7 @@ func (o *odimstub) Run() {
 		))
 	})
 
-	odimurl, err := url.Parse(TEST_CONFIG.OdimNBUrl)
+	odimurl, err := url.Parse(testConfig.OdimNBUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -544,11 +537,11 @@ func createTestApplication() (*iris.Application, *miniredis.Miniredis) {
 		panic(err)
 	}
 
-	cm := db.NewConnectionManager(r.Addr(), "")
+	cm := db.CreateDAO(r.Addr(), "")
 
-	odimraHttpClient := redfish.NewHttpClient(
-		redfish.BaseURL(TEST_CONFIG.OdimNBUrl),
+	odimraHTTPClient := redfish.NewHTTPClient(
+		redfish.BaseURL(testConfig.OdimNBUrl),
 		redfish.InsecureSkipVerifyTransport,
 	)
-	return createApplication(&TEST_CONFIG, cm, odimraHttpClient), r
+	return createApplication(&testConfig, cm, odimraHTTPClient), r
 }

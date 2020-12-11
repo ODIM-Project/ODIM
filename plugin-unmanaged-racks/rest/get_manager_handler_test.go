@@ -26,15 +26,15 @@ import (
 func Test_get_urp_manager(t *testing.T) {
 	testApp, _ := createTestApplication()
 	httptest.New(t, testApp).
-		GET("/ODIM/v1/Managers/"+TEST_CONFIG.RootServiceUUID).
+		GET("/ODIM/v1/Managers/"+testConfig.RootServiceUUID).
 		WithBasicAuth("admin", "Od!m12$4").
 		Expect().
 		Status(http.StatusOK).
 		ContentType("application/json", "UTF-8").
 		JSON().Object().
-		ValueEqual("@odata.id", "/ODIM/v1/Managers/"+TEST_CONFIG.RootServiceUUID).
-		ValueEqual("Name", _PLUGIN_NAME).
-		ValueEqual("UUID", TEST_CONFIG.RootServiceUUID).
-		ValueEqual("Id", TEST_CONFIG.RootServiceUUID).
-		ValueEqual("FirmwareVersion", TEST_CONFIG.FirmwareVersion)
+		ValueEqual("@odata.id", "/ODIM/v1/Managers/"+testConfig.RootServiceUUID).
+		ValueEqual("Name", urpPluginName).
+		ValueEqual("UUID", testConfig.RootServiceUUID).
+		ValueEqual("Id", testConfig.RootServiceUUID).
+		ValueEqual("FirmwareVersion", testConfig.FirmwareVersion)
 }

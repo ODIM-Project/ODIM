@@ -16,36 +16,51 @@
 
 package redfish
 
-type ValidationResult []MsgExtendedInfo
+// Validator is an interface of validator. When `Validate()` is called and
+// validator detects problem, non empty array containing error message(s) is returned.
+type Validator interface {
+	Validate() (errors []MsgExtendedInfo)
+}
 
-func (ve *ValidationResult) Error() *CommonError {
-	e := NewError()
-	for _, info := range *ve {
-		e.AddExtendedInfo(info)
+type isViolated func() bool
+type generateError func() MsgExtendedInfo
+
+// NewValidator constructs new instance of `Validator`.
+// `isViolated` function returns true if validation rule is violated.
+// `generateError` function will be called only if `isViolated' will return true.
+func NewValidator(isViolated isViolated, generateError generateError) Validator {
+	return &validator{
+		isViolated:    isViolated,
+		generateError: generateError,
 	}
-	return e
 }
 
-func (ve *ValidationResult) HasErrors() bool {
-	return len(*ve) > 0
+type validator struct {
+	isViolated
+	generateError
 }
 
-type CompositeValidator []Validator
+func (v *validator) Validate() (errors []MsgExtendedInfo) {
+	if v.isViolated() {
+		return []MsgExtendedInfo{v.generateError()}
+	}
+	return nil
+}
 
-func (v *CompositeValidator) Validate() ValidationResult {
-	vr := ValidationResult{}
-	for _, validationStep := range *v {
-		if validationStep.ValidationRule() {
-			vr = append(vr, validationStep.ErrorGenerator())
+// CompositeValidator constructs multiple validators validator.
+// Execution of 'Validate` function verifies all provided validation rules and returns all reported problems.
+func CompositeValidator(v ...Validator) Validator {
+	cv := compositeValidator(v)
+	return &cv
+}
+
+type compositeValidator []Validator
+
+func (v *compositeValidator) Validate() (errors []MsgExtendedInfo) {
+	for _, validator := range *v {
+		if violations := validator.Validate(); violations != nil {
+			errors = append(errors, violations...)
 		}
 	}
-	return vr
-}
-
-type ValidationRule func() bool
-type ErrorGenerator func() MsgExtendedInfo
-
-type Validator struct {
-	ValidationRule
-	ErrorGenerator
+	return
 }

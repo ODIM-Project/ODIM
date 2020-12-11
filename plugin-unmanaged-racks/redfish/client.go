@@ -26,28 +26,32 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 )
 
-type HttpClient struct {
+// HTTPClient is an client for communication with redfish service.
+// In case of URP, it it used for calling ODIMRA's REST API.
+type HTTPClient struct {
 	baseURL            string
 	httpc              *http.Client
 	requestDecorators  []requestDecorator
 	responseDecorators []responseDecorator
 }
 
-type Option func(rc *HttpClient)
+// HTTPClientOption is interface of configuration option for HTTPClient
+type HTTPClientOption func(rc *HTTPClient)
 
-func BaseURL(baseURL string) Option {
-	return func(rc *HttpClient) {
+// BaseURL configures HTTPClient by setting base URL
+func BaseURL(baseURL string) HTTPClientOption {
+	return func(rc *HTTPClient) {
 		rc.baseURL = baseURL
 	}
 }
 
-//!!!This function is intended to be use only in tests.!!!
-func InsecureSkipVerifyTransport(c *HttpClient) {
+// InsecureSkipVerifyTransport configures HTTPClient with insecure transport(skips certificate verification)
+// It is intended to be used only in tests!!!
+func InsecureSkipVerifyTransport(c *HTTPClient) {
 	c.httpc.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
@@ -55,8 +59,9 @@ func InsecureSkipVerifyTransport(c *HttpClient) {
 	}
 }
 
-func HttpTransport(c *config.PluginConfig) Option {
-	return func(rc *HttpClient) {
+// HTTPTransport configures HTTPClient by setting secure TLS transport
+func HTTPTransport(c *config.PluginConfig) HTTPClientOption {
+	return func(rc *HTTPClient) {
 		caCert, err := ioutil.ReadFile(c.PKIRootCAPath)
 		if err != nil {
 			panic(err)
@@ -78,24 +83,20 @@ func HttpTransport(c *config.PluginConfig) Option {
 	}
 }
 
-func NewHttpClient(opts ...Option) *HttpClient {
-	c := &HttpClient{
+// NewHTTPClient creates new instance of HTTPClient.
+// Returned clients is configured regarding to provided configuration options(opts)
+func NewHTTPClient(opts ...HTTPClientOption) *HTTPClient {
+	c := &HTTPClient{
 		httpc: &http.Client{},
 		requestDecorators: []requestDecorator{
 			&basicAuth{
 				u: "admin",
 				p: "Od!m12$4",
 			},
-			&requestTranslator{
-				old: "/ODIM/",
-				new: "/redfish/",
-			},
+			&requestTranslator{},
 		},
 		responseDecorators: []responseDecorator{
-			&responseBodyTranslator{
-				old: "/redfish/",
-				new: "/ODIM/",
-			},
+			&responseBodyTranslator{},
 		},
 	}
 
@@ -113,7 +114,7 @@ type responseDecorator interface {
 	decorate(response *http.Response) error
 }
 
-func (h *HttpClient) createURL(uri string) (*url.URL, error) {
+func (h *HTTPClient) createURL(uri string) (*url.URL, error) {
 	path, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -125,7 +126,7 @@ func (h *HttpClient) createURL(uri string) (*url.URL, error) {
 	return baseURL.ResolveReference(path), nil
 }
 
-func (h *HttpClient) decorateResponse(r *http.Response) error {
+func (h *HTTPClient) decorateResponse(r *http.Response) error {
 	for _, d := range h.responseDecorators {
 		e := d.decorate(r)
 		if e != nil {
@@ -135,7 +136,7 @@ func (h *HttpClient) decorateResponse(r *http.Response) error {
 	return nil
 }
 
-func (h *HttpClient) decorateRequest(r *http.Request) error {
+func (h *HTTPClient) decorateRequest(r *http.Request) error {
 	for _, d := range h.requestDecorators {
 		e := d.decorate(r)
 		if e != nil {
@@ -145,14 +146,15 @@ func (h *HttpClient) decorateRequest(r *http.Request) error {
 	return nil
 }
 
-func (h *HttpClient) Get(uri string) (*http.Response, error) {
-	requestUrl, err := h.createURL(uri)
+// Get executes GET operation against requested endpoint
+func (h *HTTPClient) Get(uri string) (*http.Response, error) {
+	requestedURL, err := h.createURL(uri)
 	if err != nil {
 		return nil, err
 	}
 	req := http.Request{
 		Method: http.MethodGet,
-		URL:    requestUrl,
+		URL:    requestedURL,
 		Header: http.Header{},
 	}
 
@@ -173,8 +175,10 @@ func (h *HttpClient) Get(uri string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (h *HttpClient) Post(uri string, bodyBytes []byte) (*http.Response, error) {
-	requestUrl, err := h.createURL(uri)
+// Post executes POST operation against requested endpoint
+// Executed POST request carries provided body.
+func (h *HTTPClient) Post(uri string, bodyBytes []byte) (*http.Response, error) {
+	requestedURL, err := h.createURL(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +186,7 @@ func (h *HttpClient) Post(uri string, bodyBytes []byte) (*http.Response, error) 
 	body := ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 	req := http.Request{
 		Method: http.MethodPost,
-		URL:    requestUrl,
+		URL:    requestedURL,
 		Body:   body,
 		Header: http.Header{},
 	}
@@ -213,15 +217,13 @@ func (b *basicAuth) decorate(r *http.Request) error {
 	return nil
 }
 
-type requestTranslator struct {
-	old, new string
-}
+type requestTranslator struct{}
 
 func (r *requestTranslator) decorate(req *http.Request) error {
 	for k, hvs := range req.Header {
 		var translated []string
 		for _, v := range hvs {
-			translated = append(translated, strings.Replace(v, r.old, r.new, -1))
+			translated = append(translated, Translator.ODIMToRedfish(v))
 		}
 		req.Header[k] = translated
 	}
@@ -233,14 +235,12 @@ func (r *requestTranslator) decorate(req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	translatedBody := strings.Replace(string(bodyBytes), r.old, r.new, -1)
+	translatedBody := Translator.ODIMToRedfish(string(bodyBytes))
 	req.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(translatedBody)))
 	return nil
 }
 
-type responseBodyTranslator struct {
-	old, new string
-}
+type responseBodyTranslator struct{}
 
 func (r *responseBodyTranslator) decorate(resp *http.Response) error {
 	dec := json.NewDecoder(resp.Body)
@@ -253,19 +253,22 @@ func (r *responseBodyTranslator) decorate(resp *http.Response) error {
 		return err
 	}
 
-	newBody := strings.Replace(string(*tempTarget), r.old, r.new, -1)
+	newBody := Translator.RedfishToODIM(string(*tempTarget))
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(newBody)))
 	return nil
 }
 
-func NewResponseWrappingClient(httpClient *HttpClient) *ResponseWrappingClient {
+// ResponseWrappingClient is a wrapper for HTTPClient. Intentionally it wraps raw `http.Response` into Redfish entity.
+type ResponseWrappingClient struct {
+	c *HTTPClient
+}
+
+// NewResponseWrappingClient creates new instance of ResponseWrappingClient
+func NewResponseWrappingClient(httpClient *HTTPClient) *ResponseWrappingClient {
 	return &ResponseWrappingClient{httpClient}
 }
 
-type ResponseWrappingClient struct {
-	c *HttpClient
-}
-
+// Get executes GET operation, wraps response into `target`, in case of any error CommonError is returned.
 func (r *ResponseWrappingClient) Get(uri string, target interface{}) *CommonError {
 	rsp, err := r.c.Get(uri)
 	if err != nil {

@@ -19,37 +19,37 @@ package db
 import (
 	stdCtx "context"
 	"encoding/json"
-	"errors"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
 	"github.com/go-redis/redis/v8"
 )
 
-var ErrAlreadyExists = errors.New("already exists")
-
-func NewConnectionManager(redisAddress, sentinelMasterName string) *ConnectionManager {
+// CreateDAO creates new instance of DAO
+func CreateDAO(redisAddress, sentinelMasterName string) *DAO {
 	if sentinelMasterName == "" {
-		return &ConnectionManager{
+		return &DAO{
 			redis.NewClient(&redis.Options{
 				Addr: redisAddress,
 			}),
 		}
-	} else {
-		return &ConnectionManager{
-			redis.NewFailoverClient(&redis.FailoverOptions{
-				MasterName:    sentinelMasterName,
-				SentinelAddrs: []string{redisAddress},
-			}),
-		}
+	}
+
+	return &DAO{
+		redis.NewFailoverClient(&redis.FailoverOptions{
+			MasterName:    sentinelMasterName,
+			SentinelAddrs: []string{redisAddress},
+		}),
 	}
 }
 
-type ConnectionManager struct {
+// DAO struct provides access to Redis
+type DAO struct {
 	*redis.Client
 }
 
-func (c *ConnectionManager) FindChassis(chassisOid string) (*redfish.Chassis, error) {
+// FindChassis finds requested chassis or returns nil if chassis doesn't exists
+func (c *DAO) FindChassis(chassisOid string) (*redfish.Chassis, error) {
 	v, err := c.Client.Get(stdCtx.TODO(), CreateKey("Chassis", chassisOid).String()).Result()
 	if err != nil && err == redis.Nil {
 		return nil, nil
@@ -77,44 +77,45 @@ func (c *ConnectionManager) FindChassis(chassisOid string) (*redfish.Chassis, er
 	return chassis, nil
 }
 
-func (c *ConnectionManager) DAO() *redis.Client {
-	return c.Client
-}
-
+// Key is an string alias representing Redis key. Implementation of Key wrapper comes with number of utility functions.
+// Key wraps number of tokens separated with a ":" separator, for example: "foo", "foo:bar", "foo:bar:foobar", etc.
+// Last token is called ID, all other tokens taken together are called PREFIX.
 type Key string
 
+// String returns unwrapped key
 func (k Key) String() string {
 	return string(k)
 }
 
-func (k Key) Prefix() string {
-	return string(k) + ":"
-}
-
-func (k Key) TrimWildcard() Key {
-	return Key(strings.TrimSuffix(string(k), "*"))
-}
-
+// WithWildcard returns key which contains value of current key(k) concatenated with wildcard("*")
 func (k Key) WithWildcard() Key {
 	return k + "*"
 }
 
-func (k Key) Id() string {
-	return k.TrimWildcard().TrimPrefix().String()
+// ID returns unwrapped key with trimmed ending wildcard
+func (k Key) ID() string {
+	return k.trimWildcard().trimPrefix().String()
 }
 
-func (k Key) TrimPrefix() Key {
+func (k Key) trimPrefix() Key {
 	return k[strings.LastIndex(k.String(), ":")+1:]
 }
 
+func (k Key) trimWildcard() Key {
+	return Key(strings.TrimSuffix(string(k), "*"))
+}
+
+// CreateContainsKey utility function which produces key for CONTAINS relation, for example: "CONTAINS:CHASSIS"
 func CreateContainsKey(tokens ...string) Key {
 	return CreateKey(append([]string{"CONTAINS"}, tokens...)...)
 }
 
+// CreateContainedInKey utility function which produces key for CONTAINEDIN relation, for example: "CONTAINEDIN:CHASSIS"
 func CreateContainedInKey(tokens ...string) Key {
 	return CreateKey(append([]string{"CONTAINEDIN"}, tokens...)...)
 }
 
-func CreateKey(keys ...string) Key {
-	return Key(strings.Join(keys, ":"))
+// CreateKey creates new instance of key
+func CreateKey(tokens ...string) Key {
+	return Key(strings.Join(tokens, ":"))
 }

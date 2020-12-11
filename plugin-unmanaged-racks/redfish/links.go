@@ -16,6 +16,7 @@
 
 package redfish
 
+// Link structs represents entity of Redfish link
 type Link struct {
 	Oid string `json:"@odata.id"`
 }

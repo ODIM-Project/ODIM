@@ -39,15 +39,15 @@ type rackUpdateRequest struct {
 	}
 }
 
-func NewChassisUpdateHandler(cm *db.ConnectionManager, odimHttpClient *redfish.HttpClient) context.Handler {
+func newPatchChassisHandler(dao *db.DAO, odimHTTPClient *redfish.HTTPClient) context.Handler {
 	return (&chassisUpdateHandler{
-		cm:            cm,
-		redfishClient: redfish.NewResponseWrappingClient(odimHttpClient),
+		dao:           dao,
+		redfishClient: redfish.NewResponseWrappingClient(odimHTTPClient),
 	}).handle
 }
 
 type chassisUpdateHandler struct {
-	cm            *db.ConnectionManager
+	dao           *db.DAO
 	redfishClient *redfish.ResponseWrappingClient
 }
 
@@ -55,11 +55,11 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 	rur, err := decodeRequestBody(ctx)
 	if err != nil {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewMalformedJsonMsg(err.Error())))
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewMalformedJSONMsg(err.Error())))
 		return
 	}
 
-	requestedChassis, err := c.cm.FindChassis(ctx.Request().RequestURI)
+	requestedChassis, err := c.dao.FindChassis(ctx.Request().RequestURI)
 	if err != nil {
 		createInternalError(ctx, err)
 		return
@@ -70,14 +70,14 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	if vr := c.createValidator(requestedChassis, rur).Validate(); vr.HasErrors() {
+	if r := c.createValidator(requestedChassis, rur).Validate(); r != nil {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(vr.Error())
+		ctx.JSON(redfish.NewError(r...))
 		return
 	}
 
 	chassisContainsSetKey := db.CreateContainsKey("Chassis", requestedChassis.Oid)
-	existingMembers, err := c.cm.DAO().SMembers(stdCtx.TODO(), chassisContainsSetKey.String()).Result()
+	existingMembers, err := c.dao.SMembers(stdCtx.TODO(), chassisContainsSetKey.String()).Result()
 	if err != nil {
 		createInternalError(ctx, err)
 		return
@@ -94,7 +94,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 	}
 
 	sctx := stdCtx.TODO()
-	err = c.cm.DAO().Watch(
+	err = c.dao.Watch(
 		sctx,
 		func(tx *redis.Tx) error {
 			//remove known but not requested
@@ -145,7 +145,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	updatedChassis, err := c.cm.FindChassis(ctx.Request().RequestURI)
+	updatedChassis, err := c.dao.FindChassis(ctx.Request().RequestURI)
 	if err != nil || updatedChassis == nil {
 		createInternalError(ctx, err)
 		return
@@ -155,18 +155,18 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 	ctx.JSON(updatedChassis)
 }
 
-func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis, requestedChange *rackUpdateRequest) *redfish.CompositeValidator {
-	return &redfish.CompositeValidator{
-		redfish.Validator{
-			ValidationRule: func() bool {
+func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis, requestedChange *rackUpdateRequest) redfish.Validator {
+	return redfish.CompositeValidator(
+		redfish.NewValidator(
+			func() bool {
 				return !strings.Contains(strings.Join([]string{"", "Rack"}, "#"), requestedChassis.ChassisType)
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(requestedChassis.ChassisType, "ChassisType", "supported ChassisTypes are: Rack")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				if len(requestedChassis.Links.ContainedBy) > 0 {
 					parent := requestedChassis.Links.ContainedBy[0].Oid
 					for _, l := range requestedChange.Links.Contains {
@@ -175,14 +175,14 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				}
 				return false
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueConflictMsg(
 					"Links.Contains", "Links.ContainedBy", "RackGroup cannot be attached under Rack chassis",
 				)
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				chassisCollection := new(redfish.Collection)
 				if err := c.redfishClient.Get("/redfish/v1/Chassis", chassisCollection); err != nil {
 					logging.Errorf("cannot read validate ODIMRA://redfish/v1/Chassis: %s", err)
@@ -200,16 +200,16 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				}
 				return false
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(
 					fmt.Sprintf("%s", requestedChange.Links.Contains),
 					"Links.Contains",
 					"Couldn't confirm existence of one or more requested 'Links.Contains' elements")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
-				unmanagedChassisKeys, err := c.cm.DAO().Keys(stdCtx.TODO(), db.CreateKey("Chassis").WithWildcard().String()).Result()
+		),
+		redfish.NewValidator(
+			func() bool {
+				unmanagedChassisKeys, err := c.dao.Keys(stdCtx.TODO(), db.CreateKey("Chassis").WithWildcard().String()).Result()
 				if err != nil {
 					logging.Errorf("DB: cannot read info about unmanaged racks: %s", err)
 					return true
@@ -223,16 +223,16 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 
 				return false
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(
 					fmt.Sprintf("%s", requestedChange.Links.Contains),
 					"Links.Contains",
 					"Unmanaged Chassis Cannot Be Attached Under Rack")
 			},
-		},
+		),
 
-		redfish.Validator{
-			ValidationRule: func() bool {
+		redfish.NewValidator(
+			func() bool {
 
 				alreadyAttached := []string{}
 				for _, c := range requestedChassis.Links.Contains {
@@ -243,21 +243,21 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 					if utils.Collection(alreadyAttached).Contains(assetUnderChassis.Oid) {
 						continue
 					}
-					if c.cm.DAO().Exists(stdCtx.TODO(), db.CreateContainedInKey("Chassis", assetUnderChassis.Oid).String()).Val() == 1 {
+					if c.dao.Exists(stdCtx.TODO(), db.CreateContainedInKey("Chassis", assetUnderChassis.Oid).String()).Val() == 1 {
 						return true
 					}
 				}
 
 				return false
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(
 					fmt.Sprintf("%s", requestedChange.Links.Contains),
 					"Links.Contains",
 					"One of requested 'Links.Contains' element is already attached to another rack")
 			},
-		},
-	}
+		),
+	)
 }
 
 func decodeRequestBody(ctx context.Context) (*rackUpdateRequest, error) {

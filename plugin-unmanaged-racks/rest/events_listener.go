@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
@@ -32,18 +31,14 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-func newEventHandler(cm *db.ConnectionManager, translator *config.URLTranslation) context.Handler {
+func newEventHandler(dao *db.DAO) context.Handler {
 	return (&eventHandler{
-		cm: cm,
-		translator: &redfish.Translator{
-			Dictionaries: translator,
-		},
+		dao: dao,
 	}).handleEvent
 }
 
 type eventHandler struct {
-	cm         *db.ConnectionManager
-	translator *redfish.Translator
+	dao *db.DAO
 }
 
 func (eh *eventHandler) handleEvent(c iris.Context) {
@@ -55,8 +50,8 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 		return
 	}
 
-	message := new(redfish.MessageData)
-	err = json.Unmarshal([]byte(eh.translator.RedfishToODIM(string(*raw))), message)
+	message := new(redfish.Event)
+	err = json.Unmarshal([]byte(redfish.Translator.RedfishToODIM(string(*raw))), message)
 	if err != nil {
 		c.StatusCode(http.StatusBadRequest)
 		_, _ = c.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
@@ -66,7 +61,7 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 	for _, e := range message.Events {
 		ctx := stdCtx.TODO()
 		containedInKey := db.CreateContainedInKey("Chassis", e.OriginOfCondition.Oid)
-		rackKey, err := eh.cm.DAO().Get(ctx, containedInKey.String()).Result()
+		rackKey, err := eh.dao.Get(ctx, containedInKey.String()).Result()
 		if err == redis.Nil {
 			continue
 		}
@@ -74,7 +69,7 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 			continue
 		}
 
-		err = eh.cm.DAO().Watch(ctx, func(tx *redis.Tx) error {
+		err = eh.dao.Watch(ctx, func(tx *redis.Tx) error {
 			_, err := tx.TxPipelined(ctx, func(pipeliner redis.Pipeliner) error {
 				if _, err := pipeliner.Del(
 					ctx,

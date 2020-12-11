@@ -19,6 +19,7 @@ package rest
 import (
 	stdCtx "context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -32,58 +33,60 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-func NewCreateChassisHandlerHandler(cm *db.ConnectionManager, pc *config.PluginConfig) context.Handler {
-	return (&createChassisHandler{cm, pc}).handle
+var errAlreadyExists = errors.New("already exists")
+
+func newPostChassisHandler(dao *db.DAO, pc *config.PluginConfig) context.Handler {
+	return (&postChassisHandler{dao, pc}).handle
 }
 
-type createChassisHandler struct {
-	cm *db.ConnectionManager
-	pc *config.PluginConfig
+type postChassisHandler struct {
+	dao *db.DAO
+	pc  *config.PluginConfig
 }
 
-func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfish.CompositeValidator {
-	return &redfish.CompositeValidator{
-		redfish.Validator{
-			ValidationRule: func() bool {
+func (c *postChassisHandler) createValidator(chassis *redfish.Chassis) redfish.Validator {
+	return redfish.CompositeValidator(
+		redfish.NewValidator(
+			func() bool {
 				return len(chassis.Name) == 0
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyMissingMsg("Name", "cannot be empty")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				return !strings.Contains(strings.Join([]string{"", "RackGroup", "Rack"}, "#"), chassis.ChassisType)
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				return chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 0
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueConflictMsg(
 					"ChassisType", "Links.ContainedBy", "Links.ContainedBy is required for creation of \"ChassisType=Rack\"",
 				)
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				return chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) != 1
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueConflictMsg(
 					"ChassisType", "Links.ContainedBy", "len(Links.ContainedBy) should equal 1",
 				)
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				if chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 1 {
 					containedByOid := chassis.Links.ContainedBy[0].Oid
-					_, err := c.cm.DAO().Get(stdCtx.TODO(), db.CreateKey("Chassis", containedByOid).String()).Result()
+					_, err := c.dao.Get(stdCtx.TODO(), db.CreateKey("Chassis", containedByOid).String()).Result()
 					if err != nil || err == redis.Nil {
 						logging.Errorf("cannot validate requested rack(%s): %s", chassis.Oid, err)
 					}
@@ -91,68 +94,68 @@ func (c *createChassisHandler) createValidator(chassis *redfish.Chassis) *redfis
 				}
 				return false
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewResourceNotFoundMsg(
 					"Chassis", chassis.Links.ContainedBy[0].Oid,
 					"Requested Links.ContainedBy[0] is unknown")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				return len(chassis.Links.ManagedBy) == 0
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyMissingMsg("Links.ManagedBy", "cannot be empty")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
+		),
+		redfish.NewValidator(
+			func() bool {
 				return len(chassis.Links.ManagedBy) != 0 && chassis.Links.ManagedBy[0].Oid != "/ODIM/v1/Managers/"+c.pc.RootServiceUUID
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(
 					chassis.Links.ManagedBy[0].Oid,
 					"Links.ManagedBy", "should refer to /ODIM/v1/Managers/"+c.pc.RootServiceUUID,
 				)
 			},
-		},
-	}
+		),
+	)
 }
 
-func (c *createChassisHandler) handle(ctx context.Context) {
+func (c *postChassisHandler) handle(ctx context.Context) {
 	requestedChassis := new(redfish.Chassis)
 	err := ctx.ReadJSON(requestedChassis)
 	if err != nil {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewMalformedJsonMsg(err.Error())))
+		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewMalformedJSONMsg(err.Error())))
 		return
 	}
 
-	if validationResult := c.createValidator(requestedChassis).Validate(); validationResult.HasErrors() {
+	if validationResult := c.createValidator(requestedChassis).Validate(); validationResult != nil {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(validationResult.Error())
+		ctx.JSON(redfish.NewError(validationResult...))
 		return
 	}
 
-	toBeCreatedChassisId, toBeCreatedBody, parentChassisKey, err := prepareChassisCreationParams(redfish.ShapeChassis(requestedChassis))
+	toBeCreatedChassisID, toBeCreatedBody, parentChassisKey, err := prepareChassisCreationParams(redfish.ShapeChassis(requestedChassis))
 	if err != nil {
 		return
 	}
 
 	sctx := stdCtx.TODO()
-	err = c.cm.DAO().Watch(sctx, func(tx *redis.Tx) error {
-		exists, err := tx.Exists(sctx, toBeCreatedChassisId).Result()
+	err = c.dao.Watch(sctx, func(tx *redis.Tx) error {
+		exists, err := tx.Exists(sctx, toBeCreatedChassisID).Result()
 		if err != nil {
 			return err
 		}
 		if exists == 1 {
-			return db.ErrAlreadyExists
+			return errAlreadyExists
 		}
 
 		_, err = tx.TxPipelined(sctx, func(pipe redis.Pipeliner) error {
 			//create chassis
-			if _, err = pipe.SetNX(sctx, toBeCreatedChassisId, toBeCreatedBody, 0).Result(); err != nil {
-				return fmt.Errorf("setnx: %s error: %w", toBeCreatedChassisId, err)
+			if _, err = pipe.SetNX(sctx, toBeCreatedChassisID, toBeCreatedBody, 0).Result(); err != nil {
+				return fmt.Errorf("setnx: %s error: %w", toBeCreatedChassisID, err)
 			}
 			//commit transaction if requested chassis has not parent
 			if parentChassisKey == nil {
@@ -164,22 +167,22 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 				return fmt.Errorf("sadd: %s error: %w", parentChassisKey, err)
 			}
 
-			toBeCreatedContainedInId := db.CreateContainedInKey("Chassis", requestedChassis.Oid).String()
-			if _, err = pipe.Set(sctx, toBeCreatedContainedInId, parentChassisKey.Id(), 0).Result(); err != nil {
-				return fmt.Errorf("set: %s error: %w", toBeCreatedContainedInId, err)
+			toBeCreatedContainedInID := db.CreateContainedInKey("Chassis", requestedChassis.Oid).String()
+			if _, err = pipe.Set(sctx, toBeCreatedContainedInID, parentChassisKey.ID(), 0).Result(); err != nil {
+				return fmt.Errorf("set: %s error: %w", toBeCreatedContainedInID, err)
 			}
 
 			return nil
 		})
 		return err
-	}, toBeCreatedChassisId)
+	}, toBeCreatedChassisID)
 
 	switch err {
 	case nil:
 		ctx.StatusCode(http.StatusCreated)
 		ctx.Header("Location", requestedChassis.Oid)
 		ctx.JSON(requestedChassis)
-	case db.ErrAlreadyExists:
+	case errAlreadyExists:
 		ctx.StatusCode(http.StatusConflict)
 		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceAlreadyExistsMsg("Chassis", "Name", requestedChassis.Name, "")))
 	default:
@@ -188,8 +191,8 @@ func (c *createChassisHandler) handle(ctx context.Context) {
 	}
 }
 
-func prepareChassisCreationParams(rc *redfish.Chassis) (chassisId string, chassisBody []byte, parentChassisId *db.Key, err error) {
-	chassisId = db.CreateKey("Chassis", rc.Oid).String()
+func prepareChassisCreationParams(rc *redfish.Chassis) (chassisID string, chassisBody []byte, parentChassisID *db.Key, err error) {
+	chassisID = db.CreateKey("Chassis", rc.Oid).String()
 
 	chassisBody, err = json.Marshal(rc)
 	if err != nil {
@@ -198,7 +201,7 @@ func prepareChassisCreationParams(rc *redfish.Chassis) (chassisId string, chassi
 
 	if len(rc.Links.ContainedBy) > 0 {
 		k := db.CreateContainsKey("Chassis", rc.Links.ContainedBy[0].Oid)
-		parentChassisId = &k
+		parentChassisID = &k
 	}
 
 	return

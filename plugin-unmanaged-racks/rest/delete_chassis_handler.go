@@ -30,19 +30,19 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-func NewChassisDeletionHandler(cm *db.ConnectionManager) context.Handler {
-	return (&chassisDeletionHandler{cm}).handle
+func newDeleteChassisHandler(dao *db.DAO) context.Handler {
+	return (&deleteChassisHandler{dao}).handle
 }
 
-type chassisDeletionHandler struct {
-	connectionManager *db.ConnectionManager
+type deleteChassisHandler struct {
+	dao *db.DAO
 }
 
-func (c *chassisDeletionHandler) handle(ctx context.Context) {
+func (c *deleteChassisHandler) handle(ctx context.Context) {
 	requestedChassis := ctx.Request().RequestURI
 	requestedChassisKey := db.CreateKey("Chassis", requestedChassis)
 
-	bytes, err := c.connectionManager.DAO().Get(stdCtx.TODO(), requestedChassisKey.String()).Bytes()
+	bytes, err := c.dao.Get(stdCtx.TODO(), requestedChassisKey.String()).Bytes()
 	if err != nil && err == redis.Nil {
 		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(redfish.NewResourceNotFoundMsg("Chassis", requestedChassis, ""))
@@ -62,18 +62,16 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 		return
 	}
 
-	validator := c.createValidator(chassisToBeDeleted)
-	r := validator.Validate()
-	if r.HasErrors() {
+	if r := c.createValidator(chassisToBeDeleted).Validate(); r != nil {
 		ctx.StatusCode(http.StatusConflict)
-		ctx.JSON(r.Error())
+		ctx.JSON(redfish.NewError(r...))
 		return
 	}
 
 	switch chassisToBeDeleted.ChassisType {
 	case "RackGroup":
 		ctx := stdCtx.TODO()
-		err = c.connectionManager.DAO().Watch(ctx, func(tx *redis.Tx) error {
+		err = c.dao.Watch(ctx, func(tx *redis.Tx) error {
 			_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 				_, err = pipe.Del(ctx, requestedChassisKey.String()).Result()
 				return err
@@ -94,14 +92,14 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 					return fmt.Errorf("del: %s error: %w", db.CreateContainedInKey("Chassis", requestedChassis), err)
 				}
 
-				parentContainsId := db.CreateContainsKey("Chassis", chassisToBeDeleted.Links.ContainedBy[0].Oid).String()
-				_, err = pipe.SRem(ctx, parentContainsId, requestedChassis).Result()
+				parentContainsID := db.CreateContainsKey("Chassis", chassisToBeDeleted.Links.ContainedBy[0].Oid).String()
+				_, err = pipe.SRem(ctx, parentContainsID, requestedChassis).Result()
 				return err
 			})
 			return err
 		}
 
-		err = c.connectionManager.DAO().
+		err = c.dao.
 			Watch(
 				ctx,
 				transactional,
@@ -118,24 +116,24 @@ func (c *chassisDeletionHandler) handle(ctx context.Context) {
 	ctx.StatusCode(http.StatusNoContent)
 }
 
-func (c *chassisDeletionHandler) createValidator(chassis *redfish.Chassis) *redfish.CompositeValidator {
-	return &redfish.CompositeValidator{
-		redfish.Validator{
-			ValidationRule: func() bool {
+func (c *deleteChassisHandler) createValidator(chassis *redfish.Chassis) redfish.Validator {
+	return redfish.CompositeValidator(
+		redfish.NewValidator(
+			func() bool {
 				return !strings.Contains(strings.Join([]string{"", "RackGroup", "Rack"}, "#"), chassis.ChassisType)
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack")
 			},
-		},
-		redfish.Validator{
-			ValidationRule: func() bool {
-				hasChildren, err := c.connectionManager.DAO().Exists(stdCtx.TODO(), db.CreateContainsKey("Chassis", chassis.Oid).String()).Result()
+		),
+		redfish.NewValidator(
+			func() bool {
+				hasChildren, err := c.dao.Exists(stdCtx.TODO(), db.CreateContainsKey("Chassis", chassis.Oid).String()).Result()
 				return err != nil || hasChildren == 1
 			},
-			ErrorGenerator: func() redfish.MsgExtendedInfo {
+			func() redfish.MsgExtendedInfo {
 				return redfish.NewResourceInUseMsg("there are existing elements(Links.Contains) under requested chassis")
 			},
-		},
-	}
+		),
+	)
 }

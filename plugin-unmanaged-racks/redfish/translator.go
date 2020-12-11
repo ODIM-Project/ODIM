@@ -18,25 +18,36 @@ package redfish
 
 import (
 	"strings"
-
-	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/config"
 )
 
-type Translator struct {
-	Dictionaries *config.URLTranslation
+// Translator provides ODIMRA|URP API related keywords.
+// URP plugin exposes its endpoints(/ODIM/v1/*) in different domain than ODIMRA(/redfish/v1/*),
+// this static translator instance translates keywords between domains.
+var Translator = &translator{
+	r20: map[string]string{
+		"redfish": "ODIM",
+	},
+	o2r: map[string]string{
+		"ODIM": "redfish",
+	},
 }
 
-func (u *Translator) ODIMToRedfish(data string) string {
+type translator struct {
+	o2r map[string]string
+	r20 map[string]string
+}
+
+func (u *translator) ODIMToRedfish(data string) string {
 	translated := data
-	for k, v := range u.Dictionaries.SouthBoundURL {
+	for k, v := range u.o2r {
 		translated = strings.Replace(translated, k, v, -1)
 	}
 	return translated
 }
 
-func (u *Translator) RedfishToODIM(data string) string {
+func (u *translator) RedfishToODIM(data string) string {
 	translated := data
-	for k, v := range u.Dictionaries.NorthBoundURL {
+	for k, v := range u.r20 {
 		translated = strings.Replace(translated, k, v, -1)
 	}
 	return translated

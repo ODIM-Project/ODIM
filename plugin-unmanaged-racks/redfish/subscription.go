@@ -16,6 +16,7 @@
 
 package redfish
 
+// EvtSubPost struct represents event subscription request for Redfish Service.
 type EvtSubPost struct {
 	Name                 string   `json:"Name"`
 	Destination          string   `json:"Destination"`

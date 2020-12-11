@@ -99,6 +99,7 @@ type MsgExtendedInfo struct {
 	Resolution  string        `json:"Resolution,omitempty"`
 }
 
+// CreateError creates new instance of CommonError
 func CreateError(code string, errorMessage string) CommonError {
 	return CommonError{
 		Error: ErrorClass{
@@ -108,22 +109,25 @@ func CreateError(code string, errorMessage string) CommonError {
 	}
 }
 
-func NewError() *CommonError {
+// NewError creates new instance of CommonError
+func NewError(msgs ...MsgExtendedInfo) *CommonError {
 	return &CommonError{
 		Error: ErrorClass{
 			Code:                GeneralError,
 			Message:             "An error has occurred. See ExtendedInfo for more information.",
-			MessageExtendedInfo: []MsgExtendedInfo{},
+			MessageExtendedInfo: msgs,
 		},
 	}
 }
 
+// AddExtendedInfo adds instance of MsgExtendedInfo to `CommonError.Error.MessageExtendedInfo` collection
 func (e *CommonError) AddExtendedInfo(ei MsgExtendedInfo) *CommonError {
 	e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo, ei)
 	return e
 }
 
-func NewMalformedJsonMsg(errMsg string) MsgExtendedInfo {
+// NewMalformedJSONMsg constructs instance of MsgExtendedInfo representing `MalformedJSON` error message
+func NewMalformedJSONMsg(errMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:  "#Message.v1_0_8.Message",
 		MessageID:  MalformedJSON,
@@ -133,6 +137,7 @@ func NewMalformedJsonMsg(errMsg string) MsgExtendedInfo {
 	}
 }
 
+// NewPropertyMissingMsg constructs instance of MsgExtendedInfo representing `PropertyMissing` error message
 func NewPropertyMissingMsg(missingProperty, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:   "#Message.v1_0_8.Message",
@@ -144,6 +149,7 @@ func NewPropertyMissingMsg(missingProperty, errorMsg string) MsgExtendedInfo {
 	}
 }
 
+// NewPropertyValueNotInListMsg constructs instance of MsgExtendedInfo representing `PropertyValueNotInList` error message
 func NewPropertyValueNotInListMsg(currentValue, propertyName, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:   "#Message.v1_0_8.Message",
@@ -155,6 +161,7 @@ func NewPropertyValueNotInListMsg(currentValue, propertyName, errorMsg string) M
 	}
 }
 
+// NewPropertyValueConflictMsg constructs instance of MsgExtendedInfo representing `PropertyValueConflict` error message
 func NewPropertyValueConflictMsg(propertyName, conflictingPropertyName, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:   "#Message.v1_0_8.Message",
@@ -166,6 +173,7 @@ func NewPropertyValueConflictMsg(propertyName, conflictingPropertyName, errorMsg
 	}
 }
 
+// NewResourceNotFoundMsg constructs instance of MsgExtendedInfo representing `ResourceNotFound` error message
 func NewResourceNotFoundMsg(resourceType, resourceName, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:   "#Message.v1_0_8.Message",
@@ -177,6 +185,7 @@ func NewResourceNotFoundMsg(resourceType, resourceName, errorMsg string) MsgExte
 	}
 }
 
+// NewResourceInUseMsg constructs instance of MsgExtendedInfo representing `ResourceInUse` error message
 func NewResourceInUseMsg(errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:  "#Message.v1_0_8.Message",
@@ -187,6 +196,7 @@ func NewResourceInUseMsg(errorMsg string) MsgExtendedInfo {
 	}
 }
 
+// NewResourceAlreadyExistsMsg constructs instance of MsgExtendedInfo representing `ResourceAlreadyExists` error message
 func NewResourceAlreadyExistsMsg(resourceType, propertyName, propertyValue, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:   "#Message.v1_0_8.Message",
@@ -198,6 +208,7 @@ func NewResourceAlreadyExistsMsg(resourceType, propertyName, propertyValue, erro
 	}
 }
 
+// NewResourceAtURIUnauthorizedMsg constructs instance of MsgExtendedInfo representing `ResourceAtURIUnauthorized` error message
 func NewResourceAtURIUnauthorizedMsg(uri, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
 		OdataType:   "#Message.v1_0_8.Message",

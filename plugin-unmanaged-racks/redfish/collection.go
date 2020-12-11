@@ -16,6 +16,7 @@
 
 package redfish
 
+// Collection structs represents generic Redfish collection asset
 type Collection struct {
 	OdataContext string `json:"@odata.context"`
 	Etag         string `json:"@odata.etag,omitempty"`
@@ -27,10 +28,11 @@ type Collection struct {
 	MembersCount int    `json:"Members@odata.count"`
 }
 
-func NewCollection(odataId, odataType string, members ...Link) Collection {
+// NewCollection created new instance of Collection
+func NewCollection(odataID, odataType string, members ...Link) Collection {
 	return Collection{
 		OdataContext: "/ODIM/v1/$metadata" + odataType,
-		OdataID:      odataId,
+		OdataID:      odataID,
 		OdataType:    odataType,
 		Members:      append([]Link{}, members...),
 		MembersCount: len(members),

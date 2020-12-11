@@ -18,7 +18,7 @@ package chassis
 
 import (
 	"encoding/json"
-	"github.com/prometheus/common/log"
+	"log"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -40,7 +40,7 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	body := new(json.RawMessage)
 	ue := json.Unmarshal(req.RequestBody, body)
 	if ue != nil {
-		log.Error(ue.Error())
+		log.Printf("error: %s", ue.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 

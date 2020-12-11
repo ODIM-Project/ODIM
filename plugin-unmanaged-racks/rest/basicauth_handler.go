@@ -27,7 +27,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func NewBasicAuthHandler(username, hashedPass string) context.Handler {
+func newBasicAuthHandler(username, hashedPass string) context.Handler {
 	bah := basicAuthHandler{
 		username:   username,
 		hashedPass: hashedPass,

@@ -25,55 +25,55 @@ import (
 	"github.com/kataras/iris/v12/context"
 )
 
-type PluginStatusResponse struct {
+type pluginStatusResponse struct {
 	Comment         string          `json:"_comment"`
 	Name            string          `json:"Name"`
 	Version         string          `json:"Version"`
-	Status          Status          `json:"Status"`
-	EventMessageBus EventMessageBus `json:"EventMessageBus"`
+	Status          status          `json:"Status"`
+	EventMessageBus eventMessageBus `json:"EventMessageBus"`
 }
 
-type Status struct {
+type status struct {
 	Available string `json:"Available"`
 	Uptime    string `json:"Uptime"`
 	TimeStamp string `json:"TimeStamp"`
 }
 
-type EventMessageBus struct {
+type eventMessageBus struct {
 	EmbType  string     `json:"EmbType"`
-	EmbQueue []EmbQueue `json:"EmbQueue"`
+	EmbQueue []embQueue `json:"EmbQueue"`
 }
 
-type EmbQueue struct {
+type embQueue struct {
 	QueueName string `json:"EmbQueueName"`
 	QueueDesc string `json:"EmbQueueDesc"`
 }
 
-func (s *Status) Init() *Status {
+func (s *status) Init() *status {
 	s.Refresh()
 	s.Available = "Yes"
 	s.Uptime = s.TimeStamp
 	return s
 }
 
-func (s *Status) Refresh() {
+func (s *status) Refresh() {
 	s.TimeStamp = time.Now().Format(time.RFC3339)
 }
 
 type pluginStatusController struct {
-	status       *Status
+	status       *status
 	pluginConfig *config.PluginConfig
 }
 
 func newPluginStatusController(pc *config.PluginConfig) context.Handler {
-	return pluginStatusController{status: new(Status).Init(), pluginConfig: pc}.getPluginStatus
+	return pluginStatusController{status: new(status).Init(), pluginConfig: pc}.getPluginStatus
 }
 
 func (p pluginStatusController) getPluginStatus(ctx iris.Context) {
 	p.status.Refresh()
-	var resp = PluginStatusResponse{
+	var resp = pluginStatusResponse{
 		Comment: "Unmanaged Racks Plugin",
-		Name:    _PLUGIN_NAME,
+		Name:    urpPluginName,
 		Version: p.pluginConfig.FirmwareVersion,
 		Status:  *p.status,
 	}

@@ -102,11 +102,3 @@ RedisAddress: odimra.local.com:6380
 # Logging                                                                                          #
 ####################################################################################################
 LogLevel: debug
-
-
-### TODO: make this not configurable
-URLTranslation:
-  NorthBoundURL:
-    redfish: ODIM
-  SouthBoundURL:
-    ODIM: redfish

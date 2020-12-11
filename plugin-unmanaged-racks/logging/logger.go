@@ -18,6 +18,7 @@ package logging
 
 import (
 	"github.com/antonfisher/nested-logrus-formatter"
+	"github.com/kataras/golog"
 	"github.com/sirupsen/logrus"
 )
 
@@ -62,42 +63,57 @@ func (l logger) SetLevel(lls string) {
 	l.Logger.SetLevel(ll)
 }
 
-func Logger() logger {
+// SetLogLevel sets log level on URP's logger
+func SetLogLevel(logLevel string) {
+	staticLogger.SetLevel(logLevel)
+}
+
+// GetLogger returns instance of URP logger
+func GetLogger() golog.ExternalLogger {
 	return *staticLogger
 }
 
+// Error logs error message using URP logger
 func Error(i ...interface{}) {
 	staticLogger.Error(i...)
 }
 
+// Errorf logs error message using URP logger
 func Errorf(t string, i ...interface{}) {
 	staticLogger.Errorf(t, i...)
 }
 
+// Warn logs warning message using URP logger
 func Warn(i ...interface{}) {
 	staticLogger.Warn(i...)
 }
 
+// Warnf logs warning message using URP logger
 func Warnf(t string, i ...interface{}) {
 	staticLogger.Warnf(t, i...)
 }
 
+// Info logs info message using URP logger
 func Info(i ...interface{}) {
 	staticLogger.Info(i...)
 }
 
+// Infof logs info message using URP logger
 func Infof(t string, i ...interface{}) {
 	staticLogger.Infof(t, i...)
 }
 
+// Debug logs debug message using URP logger
 func Debug(i ...interface{}) {
 	staticLogger.Debug(i...)
 }
 
+// Debugf logs debug message using URP logger
 func Debugf(t string, i ...interface{}) {
 	staticLogger.Debugf(t, i...)
 }
 
+// Fatal logs fatal message using URP logger
 func Fatal(i ...interface{}) {
 	staticLogger.Fatal(i...)
 }
@@ -105,19 +121,7 @@ func Fatal(i ...interface{}) {
 func init() {
 	ll := logrus.DebugLevel
 	l := logrus.New()
-	l.SetFormatter(&formatter.Formatter{
-		//FieldsOrder:           nil,
-		//TimestampFormat:       "",
-		//HideKeys:              false,
-		//NoColors:              false,
-		//NoFieldsColors:        false,
-		//NoFieldsSpace:         false,
-		//ShowFullLevel:         false,
-		//NoUppercaseLevel:      false,
-		//TrimMessages:          false,
-		//CallerFirst:           false,
-		//CustomCallerFormatter: nil,
-	})
+	l.SetFormatter(&formatter.Formatter{})
 
 	staticLogger = &logger{
 		logLevel: &ll,

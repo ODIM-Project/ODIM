@@ -82,15 +82,22 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 	return password, nil
 }
 
+func stubGenericSave(reqBody []byte, table string, uuid string) error {
+	return nil
+}
+
 func mockGetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		External: External{
-			Auth:           mockIsAuthorized,
-			ContactClient:  mockContactClient,
-			GetTarget:      mockGetTarget,
-			GetPluginData:  mockGetPluginData,
-			ContactPlugin:  mockContactPlugin,
-			DevicePassword: stubDevicePassword,
+			Auth:            mockIsAuthorized,
+			ContactClient:   mockContactClient,
+			GetTarget:       mockGetTarget,
+			GetPluginData:   mockGetPluginData,
+			ContactPlugin:   mockContactPlugin,
+			DevicePassword:  stubDevicePassword,
+			CreateChildTask: mockCreateChildTask,
+			UpdateTask:      mockUpdateTask,
+			GenericSave:     stubGenericSave,
 		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,

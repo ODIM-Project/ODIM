@@ -22,8 +22,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
+	"runtime"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -31,37 +32,42 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
-	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
 
 // SimpleUpdate function handler for simpe update process
-func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) response.RPC {
+func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
+	var percentComplete int32
+	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
+
+	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
+
 	var updateRequest UpdateRequestBody
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
 	if err != nil {
-		errMsg := "error: unable to parse the simple update request" + err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		errMsg := "Unable to parse the simple update request" + err.Error()
+		log.Warn(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	if len(updateRequest.Targets) == 0 {
-		errMsg := "error: 'Targets' parameter cannot be empty"
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, nil)
+		errMsg := "'Targets' parameter cannot be empty"
+		log.Warn(errMsg)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
 	}
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, updateRequest)
 	if err != nil {
-		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		errMsg := "Unable to validate request parameters: " + err.Error()
+		log.Warn(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Warn(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return response
 	}
+
 	targetList := make(map[string][]string)
 	var applyTime []string
 	if updateRequest.RedfishOperationApplyTimeSupport != nil && updateRequest.RedfishOperationApplyTimeSupport.SupportedValues != nil {
@@ -69,59 +75,157 @@ func (e *ExternalInterface) SimpleUpdate(req *updateproto.UpdateRequest) respons
 	}
 	targetList, err = sortTargetList(updateRequest.Targets)
 	if err != nil {
-		errorMessage := "error: SystemUUID not found"
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, nil)
+		errorMessage := "SystemUUID not found"
+		log.Warn(errorMessage)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", fmt.Sprintf("%v", updateRequest.Targets)}, taskInfo)
 	}
-	if len(targetList) > 1 {
-		errMsg := "error: 'Targets' parameter cannot have more than one BMC"
-		log.Println(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, nil)
-	}
+	partialResultFlag := false
+	subTaskChannel := make(chan int32, len(targetList))
+	serverURI := ""
 	for id, target := range targetList {
 		updateRequest.Targets = target
 		marshalBody, err := json.Marshal(updateRequest)
 		if err != nil {
-			errMsg := "error: unable to parse the simple update request" + err.Error()
-			log.Println(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			errMsg := "Unable to parse the simple update request" + err.Error()
+			log.Warn(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
-		updateRequestBody := strings.Replace(string(marshalBody), id+":", "", -1)
-		//replacing the reruest url with south bound translation URL
-		for key, value := range config.Data.URLTranslation.SouthBoundURL {
-			updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
+		updateRequestBody := string(marshalBody)
+		serverURI = "/redfish/v1/Systems/" + id
+		go e.sendRequest(id, taskID, serverURI, updateRequestBody, applyTime, subTaskChannel, sessionUserName)
+	}
+
+	resp.StatusCode = http.StatusOK
+	for i := 0; i < len(targetList); i++ {
+		select {
+		case statusCode := <-subTaskChannel:
+			if statusCode != http.StatusOK {
+				partialResultFlag = true
+				if resp.StatusCode < statusCode {
+					resp.StatusCode = statusCode
+				}
+			}
+			if i < len(targetList)-1 {
+				percentComplete := int32(((i + 1) / len(targetList)) * 100)
+				var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Running, common.OK, percentComplete, http.MethodPost)
+				err := e.External.UpdateTask(task)
+				if err != nil && err.Error() == common.Cancelling {
+					task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.OK, percentComplete, http.MethodPost)
+					e.External.UpdateTask(task)
+					runtime.Goexit()
+				}
+
+			}
 		}
-		resp = e.sendRequest(id, updateRequestBody, applyTime, resp)
+	}
+
+	taskStatus := common.OK
+	if partialResultFlag {
+		taskStatus = common.Warning
+	}
+	percentComplete = 100
+	if resp.StatusCode != http.StatusOK {
+		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
+		log.Warn(errMsg)
+		switch resp.StatusCode {
+		case http.StatusUnauthorized:
+			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
+		case http.StatusNotFound:
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"option", "SimpleUpdate"}, taskInfo)
+		case http.StatusBadRequest:
+			return common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"UpdateService.SimpleUpdate"}, taskInfo)
+		default:
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		}
+	}
+
+	resp.Header = map[string]string{
+		"Cache-Control":     "no-cache",
+		"Connection":        "keep-alive",
+		"Content-type":      "application/json; charset=utf-8",
+		"Transfer-Encoding": "chunked",
+		"OData-Version":     "4.0",
+	}
+	log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	resp.StatusMessage = response.Success
+	resp.StatusCode = http.StatusOK
+	args := response.Args{
+		Code:    resp.StatusMessage,
+		Message: "Request completed successfully",
+	}
+	resp.Body = args.CreateGenericErrorResponse()
+
+	var task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Completed, taskStatus, percentComplete, http.MethodPost)
+	err = e.External.UpdateTask(task)
+	if err != nil && err.Error() == common.Cancelling {
+		task = fillTaskData(taskID, targetURI, string(req.RequestBody), resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		e.External.UpdateTask(task)
+		runtime.Goexit()
 	}
 	return resp
 }
 
-func (e *ExternalInterface) sendRequest(uuid, updateRequestBody string, applyTime []string, resp response.RPC) response.RPC {
+func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBody string, applyTime []string, subTaskChannel chan<- int32, sessionUserName string) {
+	var resp response.RPC
+	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
+	if err != nil {
+		subTaskChannel <- http.StatusInternalServerError
+		log.Warn("Unable to create sub task")
+		return
+	}
+	var subTaskID string
+	strArray := strings.Split(subTaskURI, "/")
+	if strings.HasSuffix(subTaskURI, "/") {
+		subTaskID = strArray[len(strArray)-2]
+	} else {
+		subTaskID = strArray[len(strArray)-1]
+	}
+
+	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: serverURI, UpdateTask: e.External.UpdateTask, TaskRequest: updateRequestBody}
+
+	var percentComplete int32
 	target, gerr := e.External.GetTarget(uuid)
 	if gerr != nil {
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		subTaskChannel <- http.StatusBadRequest
+		errMsg := gerr.Error()
+		log.Warn(errMsg)
+		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
+		return
 	}
 	if len(applyTime) != 0 {
-		err := umodel.GenericSave([]byte(updateRequestBody), "SimpleUpdate", uuid)
+		err := e.External.GenericSave([]byte(updateRequestBody), "SimpleUpdate", uuid)
 		if err != nil {
-			errMsg := "error: unable to save the simple update request" + err.Error()
-			log.Println(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			subTaskChannel <- http.StatusInternalServerError
+			errMsg := "Unable to save the simple update request" + err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			return
 		}
+	}
+	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+":", "", -1)
+	//replacing the reruest url with south bound translation URL
+	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
 	}
 
 	decryptedPasswordByte, err := e.External.DevicePassword(target.Password)
 	if err != nil {
-		// Frame the RPC response body and response Header below
-		errorMessage := "error while trying to decrypt device password: " + err.Error()
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		subTaskChannel <- http.StatusInternalServerError
+		errMsg := "Unable to decrypt device password: " + err.Error()
+		log.Warn(errMsg)
+		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return
 	}
 	target.Password = decryptedPasswordByte
 
 	// Get the Plugin info
 	plugin, gerr := e.External.GetPluginData(target.PluginID)
 	if gerr != nil {
-		errorMessage := "error while trying to get plugin details"
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		subTaskChannel <- http.StatusNotFound
+		errMsg := "Unable to get plugin data: " + gerr.Error()
+		log.Warn(errMsg)
+		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
+		return
 	}
 	var contactRequest ucommon.PluginContactRequest
 	contactRequest.ContactClient = e.External.ContactClient
@@ -138,7 +242,11 @@ func (e *ExternalInterface) sendRequest(uuid, updateRequestBody string, applyTim
 		_, token, getResponse, err := e.External.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
-			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
+			subTaskChannel <- getResponse.StatusCode
+			errMsg := err.Error()
+			log.Warn(errMsg)
+			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
+			return
 		}
 		contactRequest.Token = token
 	} else {
@@ -153,12 +261,13 @@ func (e *ExternalInterface) sendRequest(uuid, updateRequestBody string, applyTim
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 	contactRequest.HTTPMethodType = http.MethodPost
-	body, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
+	_, _, getResponse, err := e.External.ContactPlugin(contactRequest, "error while performing simple update action: ")
 	if err != nil {
-		resp.StatusCode = getResponse.StatusCode
-		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
-		return resp
+		subTaskChannel <- getResponse.StatusCode
+		errMsg := err.Error()
+		log.Warn(errMsg)
+		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
+		return
 	}
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",
@@ -168,12 +277,15 @@ func (e *ExternalInterface) sendRequest(uuid, updateRequestBody string, applyTim
 		"OData-Version":     "4.0",
 	}
 	resp.StatusCode = http.StatusOK
-	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
-	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	percentComplete = 100
+	subTaskChannel <- int32(getResponse.StatusCode)
+	var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Completed, common.OK, percentComplete, http.MethodPost)
+	err = e.External.UpdateTask(task)
+	if err != nil && err.Error() == common.Cancelling {
+		var task = fillTaskData(subTaskID, serverURI, updateRequestBody, resp, common.Cancelled, common.Critical, percentComplete, http.MethodPost)
+		e.External.UpdateTask(task)
 	}
-	return resp
+	return
 }
 
 func sortTargetList(Targets []string) (map[string][]string, error) {

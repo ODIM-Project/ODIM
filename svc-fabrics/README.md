@@ -1,11 +1,65 @@
 #  Host to fabric networking
 
-Resource Aggregator for ODIM exposes Redfish APIs to view and manage simple fabrics. A fabric is a network topology consisting of interconnecting switches, zones, endpoints, and address pools.
+Resource Aggregator for ODIM exposes Redfish APIs to view and manage simple fabrics. A fabric is a network topology consisting of entities such as interconnecting switches, zones, endpoints, and address pools. The Redfish `Fabrics` APIs allow you to create and remove these entities in a fabric.
+
+When creating fabric entities, ensure to create them in the following order:
+
+1.  Zone-specific address pools
+
+2.  Address pools for zone of zones
+
+3.  Zone of zones
+
+4.  Endpoints
+
+5.  Zone of endpoints
+
+
+When deleting fabric entities, ensure to delete them in the following order:
+
+1.  Zone of endpoints
+
+2.  Endpoints
+
+3.  Zone of zones
+
+4.  Address pools for zone of zones
+
+5.  Zone-specific address pools
+
+<blockquote>
+IMPORTANT:
+
+Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework.
+
+</blockquote>
+
+
+**Supported endpoints**
+
+
+
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/Fabrics|GET|`Login` |
+|/redfish/v1/Fabrics/\{fabricId\}|GET|`Login` |
+|/redfish/v1/Fabrics/\{fabricId\}/Switches|GET|`Login` |
+|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|GET|`Login` |
+| /redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |GET|`Login` |
+| /redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |GET|`Login` |
+|/redfish/v1/Fabrics/\{fabricId\}/Zones|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/\{fabricId\}/AddressPools|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/\{fabricId\}/AddressPools/\{addresspoolid\}|GET, DELETE|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/\{fabricId\}/Endpoints|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Fabrics/\{fabricId\}/Endpoints/\{endpointId\}|GET, DELETE|`Login`, `ConfigureComponents` |
+
+
 
 ##  Modifying Configurations of fabric Service
   
-Config File of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
-Refer the section **Modifying Configurations** in the README.md to change the configurations of a odimra service
+Config file of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
+Refer to the section **Modifying Configurations** in the README.md file to change the configurations of an odimra service.
   
 **Specific configurations for Fabric Service are:**
   
@@ -14,58 +68,23 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 /var/log/ODIMRA/fabric.log
   
   
-**NOTE:**
 
--   Before using the `Fabrics` APIs, ensure that the fabric manager is installed and its plugin is deployed and added into the Resource Aggregator for ODIM framework.
-
--  Ensure to create fabric entities in the following order:
-
-       1.  Zone-specific address pools
-
-       2.  Address pools for zone of zones
-
-       3.  Zone of zones
-
-       4.  Endpoints
-
-       5.  Zone of endpoints
-
--  Ensure to delete fabric entities in the following order:
-
-       1.  Zone of endpoints
-
-       2.  Endpoints
-
-       3.  Zone of zones
-
-       4.  Address pools for zone of zones
-
-       5.  Zone-specific address pools
-
-
-##  Supported endpoints
-
-|||
-|-------|--------------------|
-|/redfish/v1/Fabrics|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br>|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports/\{portid\}<br>|`GET`|
-|/redfish/v1/Fabrics/\{fabricId\}/Zones|`GET`, `POST`|
-|/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|`GET`, `PATCH`, `DELETE`|
-|/redfish/v1/Fabrics/\{fabricId\}/AddressPools|`GET`, `POST`|
-|/redfish/v1/Fabrics/\{fabricId\}/AddressPools/\{addresspoolid\}|`GET`, `DELETE`|
-|/redfish/v1/Fabrics/\{fabricId\}/Endpoints|`GET`, `POST`|
-|/redfish/v1/Fabrics/\{fabricId\}/Endpoints/\{endpointId\}|`GET`, `DELETE`|
 
 
 
 
 ##  Collection of fabrics
 
+|||
+|---------------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/Fabrics` |
+|**Description** |A collection of simple fabrics.|
+|**Returns** |Links to the fabric instances.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
 
+>**curl command**
 
 ```
 curl -i GET \
@@ -74,7 +93,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -93,14 +112,7 @@ curl -i GET \
 ```
 
 
-|||
-|---------------|---------------|
-|**Method** | `GET` |
-|**URI** |`/redfish/v1/Fabrics` |
-|**Description** |A collection of simple fabrics.|
-|**Returns** |Links to the fabric instances.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
@@ -112,6 +124,17 @@ curl -i GET \
 
 ## Single fabric
 
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}` |
+|**Description** |Schema representing a specific fabric.|
+|**Returns** |Links to various components contained in this fabric instance - address pools, endpoints, switches, and zones.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
@@ -122,7 +145,7 @@ curl -i GET \
 
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -153,18 +176,23 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}` |
-|**Description** |Schema representing a specific fabric.|
-|**Returns** |Links to various components contained in this fabric instance - address pools, endpoints, switches, and zones.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 ## Collection of switches
+
+|||
+|------------------|----------------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Switches` |
+|**Description** |A collection of switches located in this fabric.|
+|**Returns** |Links to the switch instances.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 
 ```
 curl -i GET \
@@ -173,7 +201,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -201,14 +229,7 @@ curl -i GET \
 
 
 
-|||
-|------------------|----------------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Switches` |
-|**Description** |A collection of switches located in this fabric.|
-|**Returns** |Links to the switch instances.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 
@@ -218,6 +239,18 @@ curl -i GET \
 
 ## Single switch
 
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}` |
+|**Description** |JSON schema representing a particular fabric switch.|
+|**Returns** |Details of this switch and links to its ports.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
+
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
@@ -225,7 +258,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -248,17 +281,22 @@ curl -i GET \
 }
 ```
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}` |
-|**Description** |JSON schema representing a particular fabric switch.|
-|**Returns** |Details of this switch and links to its ports.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 ## Collection of ports
+
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |``/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports`` |
+|**Description** |A collection of ports of this switch.|
+|**Returns** |Links to the port instances.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -267,7 +305,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -290,19 +328,24 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |``/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports`` |
-|**Description** |A collection of ports of this switch.|
-|**Returns** |Links to the port instances.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 
 ## Single port
+
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports/{portid}` |
+|**Description** |JSON schema representing a specific switch port.|
+|**Returns** |Properties of this port.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 ```
 curl -i GET \
@@ -311,7 +354,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -345,20 +388,24 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Switches/{switchID}/Ports/{portid}` |
-|**Description** |JSON schema representing a specific switch port.|
-|**Returns** |Properties of this port.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 
 
 ## Collection of address pools
+
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |``/redfish/v1/Fabrics/{fabricID}/AddressPools`` |
+|**Description** |A collection of address pools.|
+|**Returns** |Links to the address pool instances.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
 
 
 ```
@@ -369,7 +416,7 @@ curl -i GET \
 ```
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -422,14 +469,7 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |``/redfish/v1/Fabrics/{fabricID}/AddressPools`` |
-|**Description** |A collection of address pools.|
-|**Returns** |Links to the address pool instances.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
@@ -442,6 +482,18 @@ curl -i GET \
 
 ## Single address pool
 
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |``/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}`` |
+|**Description** |JSON schema representing a specific address pool.|
+|**Returns** |Properties of this address pool.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
+
 
 ```
 curl -i GET \
@@ -451,7 +503,7 @@ curl -i GET \
 ```
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -494,18 +546,24 @@ curl -i GET \
 ```
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |``/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}`` |
-|**Description** |JSON schema representing a specific address pool.|
-|**Returns** |Properties of this address pool.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 ## Collection of endpoints
+
+
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |``/redfish/v1/Fabrics/{fabricID}/Endpoints`` |
+|**Description** |A collection of fabric endpoints.|
+|**Returns** |Links to the endpoint instances.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 
 ```
 curl -i GET \
@@ -516,7 +574,7 @@ curl -i GET \
 
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -540,18 +598,21 @@ curl -i GET \
 ```
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |``/redfish/v1/Fabrics/{fabricID}/Endpoints`` |
-|**Description** |A collection of fabric endpoints.|
-|**Returns** |Links to the endpoint instances.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 ##  Single endpoint
 
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}` |
+|**Description** |JSON schema representing a specific fabric endpoint.|
+|**Returns** |Details of this endpoint.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
 
 
 ```
@@ -561,7 +622,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -603,17 +664,22 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}` |
-|**Description** |JSON schema representing a specific fabric endpoint.|
-|**Returns** |Details of this endpoint.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 ## Collection of zones
+
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |``/redfish/v1/Fabrics/{fabricID}/Zones`` |
+|**Description** |A collection of fabric zones.|
+|**Returns** |Links to the zone instances.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 
 ```
@@ -624,7 +690,7 @@ curl -i GET \
 ```
 
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -657,17 +723,23 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |``/redfish/v1/Fabrics/{fabricID}/Zones`` |
-|**Description** |A collection of fabric zones.|
-|**Returns** |Links to the zone instances.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
+
 
 
 ## Single zone
+
+
+|||
+|---------------|---------------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}` |
+|**Description** |JSON schema representing a specific fabric zone.|
+|**Returns** |Details of this zone.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 
 ```
 curl -i GET \
@@ -676,7 +748,7 @@ curl -i GET \
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 { 
@@ -715,20 +787,25 @@ curl -i GET \
 
 
 
-|||
-|---------------|---------------|
-|**Method** |`GET` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}` |
-|**Description** |JSON schema representing a specific fabric zone.|
-|**Returns** |Details of this zone.|
-|**Response code** |`200 OK` |
-|**Authentication** |Yes|
+
 
 
 
 
 
 ## Creating a zone-specific address pool
+
+|||
+|---------------|---------------|
+|**Method** |`POST` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/AddressPools` |
+|**Description** |This operation creates an address pool that can be used by a zone of endpoints.|
+|**Returns** |<ul><li>Link to the created address pool in the `Location` header.</li><li>JSON schema representing the created address pool.</li></ul>|
+|**Response code** |`201 Created` |
+|**Authentication** |Yes|
+
+
+>**curl command**
 
 
 ```
@@ -758,19 +835,12 @@ curl -i POST \
 ```
 
 
-|||
-|---------------|---------------|
-|**Method** |`POST` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/AddressPools` |
-|**Description** |This operation creates an address pool that can be used by a zone of endpoints.|
-|**Returns** |<ul><li>Link to the created address pool in the `Location` header.</li><li>JSON schema representing the created address pool.</li></ul>|
-|**Response code** |`201 Created` |
-|**Authentication** |Yes|
 
 
 
 
-> Sample request body
+
+>**Sample request body**
 
 ```
 {
@@ -792,7 +862,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -809,7 +879,7 @@ curl -i POST \
 
 
 
-> Sample response header
+>**Sample response header**
 
 ```
 HTTP/1.1 201 Created
@@ -825,7 +895,7 @@ Transfer-Encoding:chunked
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -888,6 +958,18 @@ Transfer-Encoding:chunked
 
 ## Creating an address pool for zone of zones
 
+|||
+|---------------|---------------|
+|**Method** |`POST` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/AddressPools` |
+|**Description** |This operation creates an address pool for a zone of zones in a specific fabric.|
+|**Returns** |<ul><li>Link to the created address pool in the `Location` header.</li><li>JSON schema representing the created address pool.</li></ul>|
+|**Response code** | `201 Created` |
+|**Authentication** |Yes|
+
+
+>**curl command**
+
 
 ```
 curl -i POST \
@@ -925,20 +1007,13 @@ curl -i POST \
 
 ```
 
-|||
-|---------------|---------------|
-|**Method** |`POST` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/AddressPools` |
-|**Description** |This operation creates an address pool for a zone of zones in a specific fabric.|
-|**Returns** |<ul><li>Link to the created address pool in the `Location` header.</li><li>JSON schema representing the created address pool.</li></ul>|
-|**Response code** | `201 Created` |
-|**Authentication** |Yes|
 
 
 
 
 
-> Sample request body
+
+>**Sample request body**
 
 ```
 {
@@ -972,7 +1047,7 @@ curl -i POST \
 
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -997,7 +1072,7 @@ curl -i POST \
 |RouteTargetList|Array \(optional\)<br> | Route targets. By default, the route targets will be configured as both import and export.<br> |
 |GatewayIPAddressList\}|Array \(required\)<br> | IP pool to assign IPv4 address to the IP interface used by the VRF per switch.<br> |
 
-> Sample response header 
+>**Sample response header** 
 
 ```
 HTTP/1.1 201 Created
@@ -1013,7 +1088,7 @@ Transfer-Encoding:chunked
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1089,6 +1164,8 @@ Transfer-Encoding:chunked
 |**Authentication** |Yes|
 
 
+>**curl command**
+
 
 ```
 curl -i POST \
@@ -1110,7 +1187,7 @@ curl -i POST \
 
 ```
 
-> Sample request body
+>**Sample request body**
 
 ```
 {
@@ -1126,7 +1203,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
@@ -1137,7 +1214,7 @@ curl -i POST \
 |AddressPools|Array \(optional\)<br> | `AddressPool` links supported for the Zone of Zones \(`AddressPool` links created for `ZoneofZones`\).<br> |
 
 
-> Sample response header
+>**Sample response header**
 
 ```
 HTTP/1.1 201 Created
@@ -1152,7 +1229,7 @@ Date:Thu, 14 May 2020 16:19:00 GMT
 Transfer-Encoding:chunked
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1198,6 +1275,8 @@ Transfer-Encoding:chunked
 |**Authentication** |Yes|
 
 
+>**curl command**
+
 
 ```
 curl -i POST \
@@ -1225,7 +1304,7 @@ curl -i POST \
 
 ```
 
-> Sample request body for a single endpoint
+>**Sample request body** for a single endpoint
 
 ```
 {
@@ -1241,7 +1320,7 @@ curl -i POST \
 }
 ```
 
-> Sample request body for a redundant endpoint
+>**Sample request body** for a redundant endpoint
 
 ```
 {
@@ -1263,7 +1342,7 @@ curl -i POST \
 }
 ```
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
@@ -1276,7 +1355,7 @@ curl -i POST \
 |Mode|String|Redundancy mode.|
 |RedundancySet\]|Array| Set of redundancy ports connected to the switches.<br> |
 
-> Sample response header
+>**Sample response header**
 
 ```
 HTTP/1.1 201 Created
@@ -1292,7 +1371,7 @@ Transfer-Encoding:chunked
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1340,6 +1419,18 @@ Transfer-Encoding:chunked
 
 ## Creating a zone of endpoints
 
+|||
+|---------------|---------------|
+|**Method** |`POST` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones` |
+|**Description** |This operation creates a zone of endpoints in a specific fabric.<br>**NOTE:**<br> Ensure that the endpoints are created first before assigning them to the zone of endpoints.|
+|**Returns** |JSON schema representing the created zone.|
+|**Response code** | `201 Created` |
+|**Authentication** |Yes|
+
+
+>**curl command**
+
 
 ```
 curl -i POST \
@@ -1371,19 +1462,12 @@ curl -i POST \
 
 ```
 
-|||
-|---------------|---------------|
-|**Method** |`POST` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones` |
-|**Description** |This operation creates a zone of endpoints in a specific fabric.<br>**NOTE:**<br> Ensure that the endpoints are created first before assigning them to the zone of endpoints.|
-|**Returns** |JSON schema representing the created zone.|
-|**Response code** | `201 Created` |
-|**Authentication** |Yes|
 
 
 
 
-> Sample request body
+
+>**Sample request body**
 
 ```
 {
@@ -1410,7 +1494,7 @@ curl -i POST \
 ```
 
 
-### Request parameters
+**Request parameters**
 
 |Parameter|Value|Description|
 |---------|-----|-----------|
@@ -1428,7 +1512,7 @@ curl -i POST \
 
 
 
-> Sample response header
+>**Sample response header**
 
 ```
 HTTP/1.1 201 Created
@@ -1444,7 +1528,7 @@ Transfer-Encoding: chunked
 
 ```
 
-> Sample response body
+>**Sample response body**
 
 ```
 {
@@ -1484,6 +1568,17 @@ Transfer-Encoding: chunked
 
 ##  Updating a zone
 
+|||
+|---------------|---------------|
+|**Method** |`PATCH` |
+|**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}` |
+|**Description** |This operation assigns or unassigns a collection of endpoints, address pools, zone of zones, or switches to a zone of endpoints or a collection of address pools to a zone of zones in a specific fabric.|
+|**Returns** |JSON schema representing an updated zone.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+>**curl command**
+
 
 ```
 curl -i -X PATCH \
@@ -1502,20 +1597,13 @@ curl -i -X PATCH \
 ```
 
 
-|||
-|---------------|---------------|
-|**Method** |`PATCH` |
-|**URI** |`/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}` |
-|**Description** |This operation assigns or unassigns a collection of endpoints, address pools, zone of zones, or switches to a zone of endpoints or a collection of address pools to a zone of zones in a specific fabric.|
-|**Returns** |JSON schema representing an updated zone.|
-|**Response code** | `200 OK` |
-|**Authentication** |Yes|
 
 
 
 
 
-> Sample request body \(assigning links for a zone of endpoints\)
+
+>**Sample request body** \(assigning links for a zone of endpoints\)
 
 ```
 {
@@ -1527,7 +1615,7 @@ curl -i -X PATCH \
 }
 ```
 
-> Sample request body \(unassigning links for a zone of endpoints\)
+>**Sample request body** \(unassigning links for a zone of endpoints\)
 
 ```
 {
@@ -1537,7 +1625,7 @@ curl -i -X PATCH \
 }
 ```
 
-> Sample request body \(assigning links for a zone of zone\)
+>**Sample request body** \(assigning links for a zone of zone\)
 
 ```
 {
@@ -1549,7 +1637,7 @@ curl -i -X PATCH \
 }
 ```
 
-> Sample request body \(unassigning links for a zone of zone\)
+>**Sample request body** \(unassigning links for a zone of zone\)
 
 ```
 {
@@ -1561,7 +1649,7 @@ curl -i -X PATCH \
 }
 ```
 
-> Sample response body \(assigned links in a zone of endpoints\)
+>**Sample response body** \(assigned links in a zone of endpoints\)
 
 ```
 { 
@@ -1594,7 +1682,7 @@ curl -i -X PATCH \
 ```
 
 
-> Sample response body \(unassigned links in a zone of endpoints\)
+>**Sample response body** \(unassigned links in a zone of endpoints\)
 
 ```
 { 
@@ -1627,15 +1715,6 @@ curl -i -X PATCH \
 
 ## Deleting a zone
 
-```
-curl -i -X DELETE \
-   -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
-
-```
-
-
-
 |||
 |---------------|---------------|
 |**Method** |`DELETE` |
@@ -1645,16 +1724,23 @@ curl -i -X DELETE \
 |**Authentication** |Yes|
 
 
+>**curl command**
+
+
+```
+curl -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/Zones/{zoneId}'
+
+```
+
+
+
+
+
+
 
 ## Deleting an endpoint
-
-
-```
-curl -i DELETE \
-   -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odim_hosts}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
-
-```
 
 |||
 |---------------|---------------|
@@ -1665,16 +1751,21 @@ curl -i DELETE \
 |**Authentication** |Yes|
 
 
+>**curl command**
+
+```
+curl -i DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odim_hosts}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
+
+```
+
+
+
+
 
 
 ## Deleting an address pool
-
-```
-curl -i -X DELETE \
-   -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
-
-```
 
 |||
 |---------------|---------------|
@@ -1683,3 +1774,13 @@ curl -i -X DELETE \
 |**Description** |This operation deletes an address pool in a specific fabric.<br>**NOTE:**<br> If you delete an address pool that is being used in any zone, you will receive an HTTP `400` error. Before attempting to delete, ensure that the address pool you want to delete is not present in any zone. To get the list of address pools in a zone, see links to `addresspools` in the sample response body for a [single zone](#single-zone).|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
+
+>**curl command**
+
+
+```
+curl -i -X DELETE \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
+
+```

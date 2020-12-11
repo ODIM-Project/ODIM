@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -260,6 +261,23 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 	// Check key present in the DB
 	if _, err = connPool.Read("ComputerSystem", key); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+	}
+	var computeData, inventoryData []string
+	editedKeyList := strings.Split(key, "/")
+	editedKey := editedKeyList[len(editedKeyList)-1]
+	systemID := strings.Split(editedKey, ":")[0]
+	if computeData, err = connPool.GetAllMatchingDetails("ComputerSystem", systemID); err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get ComputerSystem details: ", err.Error())
+	}
+	if len(computeData) == 1 {
+		if inventoryData, err = connPool.GetAllMatchingDetails("FirmwareInventory", systemID); err != nil {
+			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+		}
+		for _, value := range inventoryData {
+			if err = connPool.Delete("FirmwareInventory", value); err != nil {
+				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
+			}
+		}
 	}
 
 	//Delete All resources

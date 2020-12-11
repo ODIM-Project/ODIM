@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -65,8 +64,8 @@ type KafkaPacket struct {
 	// towards KAFKA
 	DialerConn *kafka.Dialer
 
-	// Server defines the KAFKA server with port
-	Server string
+	// ServerInfo  defines list of the KAFKA server with port
+	ServersInfo []string
 }
 
 // TLS creates the TLS Configuration object to used by any Broker for Auth and
@@ -108,7 +107,7 @@ func TLS(cCert, cKey, caCert string) (*tls.Config, error) {
 func KafkaConnect(kp *KafkaPacket, messageQueueConfigPath string) error {
 
 	// Using MQF details, connecting to the KAFKA Server.
-	kp.Server = mq.KServer + ":" + strconv.Itoa(mq.KLport)
+	kp.ServersInfo = mq.KServersInfo
 
 	// Creation of TLS Config and Dialer
 	tls, e := TLS(mq.KAFKACertFile, mq.KAFKAKeyFile, mq.KAFKACAFile)
@@ -145,7 +144,7 @@ func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
 	if _, a := kp.Writers[pipe]; a == false {
 
 		kp.Writers[pipe] = kafka.NewWriter(kafka.WriterConfig{
-			Brokers:       []string{kp.Server},
+			Brokers:       kp.ServersInfo,
 			Topic:         pipe,
 			Balancer:      &kafka.LeastBytes{},
 			BatchSize:     1,
@@ -187,7 +186,7 @@ func (kp *KafkaPacket) Accept(pipe string, fn MsgProcess) error {
 	if _, a := kp.Readers[pipe]; a == false {
 
 		kp.Readers[pipe] = kafka.NewReader(kafka.ReaderConfig{
-			Brokers:        []string{kp.Server},
+			Brokers:        kp.ServersInfo,
 			GroupID:        pipe,
 			Topic:          pipe,
 			MinBytes:       10e1,

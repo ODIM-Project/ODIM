@@ -403,7 +403,7 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 		generateResponse(authResp, resp)
 		return nil
 	}
-	data := system.GetAggregationSourceCollection()
+	data := a.connector.GetAggregationSourceCollection()
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
@@ -426,7 +426,7 @@ func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorpr
 		generateResponse(authResp, resp)
 		return nil
 	}
-	data := system.GetAggregationSource(req.URL)
+	data := a.connector.GetAggregationSource(req.URL)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header

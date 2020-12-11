@@ -13,13 +13,15 @@
 
 
 
-# Deploying ODIMRA
+# Deploying the resource aggregator for ODIM (ODIMRA)
+
 ## 1. Setting up OS and Docker environment
 
 **Prerequisites**
 ------------------
-Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
+- Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
 
+- Ensure not to create `odimra` user during the installation of the VM.
 
 **Procedure**
 --------------
@@ -122,7 +124,7 @@ To install `Ubuntu Make`, run the following command:
 
 	   
 ## 2. Installing the resource aggregator for ODIM and GRF plugin
-This section provides a step-by-step procedure for deploying the resource aggregator for ODIM (odimra) and GRF plugin.
+This section provides a step-by-step procedure for deploying ODIMRA and GRF plugin.
 
   
   **NOTE:**
@@ -130,6 +132,19 @@ This section provides a step-by-step procedure for deploying the resource aggreg
   - The following ports are used for deploying odimra and GRF plugin:
     45000, 45001, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
     Ensure that the above ports are not in use.
+  - The following users are created and added to group ids automatically when the certificates are generated during deployment. 
+  
+    |User Id| Group Id|
+	-----|---------|
+	|`odimra`|1234 |
+	|`plugin`|1235 |
+	
+
+     `odimra` is created on both the VM and the container for the resource aggregator.
+	
+	 `plugin` is created  on both the VM and the container for the GRF plugin.
+	
+	  Ensure that these user ids and group ids are not present on the VM prior to deployment.
 
 
 **WARNING:** Do not run the commands provided in this section as root user unless mentioned.
@@ -376,15 +391,15 @@ This section provides a step-by-step procedure for deploying the resource aggreg
 ODIMRA:
 
 ```
-username: admin
-password: Od!m12$4
+Username: admin
+Password: Od!m12$4
 ```
 
-GRF PLUGIN:
+GRF plugin:
 
 ```
-username: admin
-password: GRFPlug!n12$4
+Username: admin
+Password: GRFPlug!n12$4
 ``` 
  
  
@@ -397,7 +412,7 @@ password: GRFPlug!n12$4
      $ docker exec -it build_odimra_1/bin/bash
      ```
 
-2.   Edit the parameters in the `odimra_config.json` file located in this path:   `/etc/odimra_config/odimra_config.json` and save. 
+2.   Edit the parameters in the `odimra_config.json` file located in this path: `/etc/odimra_config/odimra_config.json` and save. 
 
      The parameters that are configurable are listed in the following table.
       > **NOTE:** It is recommended not to modify parameters other than the ones listed in the following table.
@@ -535,3 +550,43 @@ During the course of this procedure, you will be required to create files and co
          $ sudo service docker restart
          ```
 
+# CI Process
+
+GitHub Action workflows are added to the ODIM repository. These workflows called as checks gets triggered whenever a Pull Request(PR) is raised against the development branch.
+The result from the workflow execution is then updated to the PR. PRs are allowed to review and merge, only if the checks are passed.
+
+Following checks are added as part of CI process:
+
+|Sl No.|Workflow Name|Description|
+|---------|-----------|----------|
+|1|`build_unittest.yml` |Builds and run Unit Tests with code coverage enabled|
+|2|`build_deploy_test.yml` |Builds, Deploys, run sanity tests and upload build artifacts (like odimra logs)|
+|3|`LGTM analysis` |Semantic code analyzer and query tool which finds security vulnerabilities in codebases| 
+
+These checks run in parallel and takes approximately 9 mins to complete.
+
+GitHub Action Workflows details
+-------------------
+
+1. build_unittest.yml
+ - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in link https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
+ - Installs Go 1.13.8 package
+ - Installs and configures Redis 5.0.8 with two instances running on port 6379 and 6380.
+ - Checks out the PR code into the Go module directory
+ - Builds the code
+ - Runs the unit tests
+
+2. build_deploy_test.yml
+ - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in link https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
+ - Checks out the PR code
+ - Build and deploys the following docker containers
+   Odimra
+   Generic redfish plugin
+   Kakfa
+   Zookeeper
+   Consul
+   Redisdb
+ - Runs the sanity tests
+ - Uploads the build artifacts
+
+>   **NOTE:** Build status notifications with the link to the GitHub Actions build job page will be sent to the developer’s email.

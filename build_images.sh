@@ -31,7 +31,7 @@ else
                     --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}"
 fi
 
-
+/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.odim -t odim:1.0 .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.accountSession -t account-session:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.aggregation -t aggregation:1.0 $build_args .
 /usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.api -t api:1.0 $build_args .

@@ -351,6 +351,7 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Task"},
 					models.Include{Namespace: "Task.v1_4_2a"},
+					models.Include{Namespace: "Task.v1_5_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MessageRegistryFileCollection_v1.xml",

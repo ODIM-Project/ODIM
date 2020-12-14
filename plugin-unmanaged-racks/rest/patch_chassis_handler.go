@@ -185,7 +185,7 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 			func() bool {
 				chassisCollection := new(redfish.Collection)
 				if err := c.redfishClient.Get("/redfish/v1/Chassis", chassisCollection); err != nil {
-					logging.Errorf("cannot read validate ODIMRA://redfish/v1/Chassis: %s", err)
+					logging.Errorf("cannot read validate https://ODIMRA/redfish/v1/Chassis: %s", err)
 					return true
 				}
 				existingChassis := map[string]interface{}{}
@@ -204,7 +204,7 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				return redfish.NewPropertyValueNotInListMsg(
 					fmt.Sprintf("%s", requestedChange.Links.Contains),
 					"Links.Contains",
-					"Couldn't confirm existence of one or more requested 'Links.Contains' elements")
+					"Couldn't confirm existence of one or more requested 'Links.Contains' elements or one of them is not a pointer to Chassis asset")
 			},
 		),
 		redfish.NewValidator(

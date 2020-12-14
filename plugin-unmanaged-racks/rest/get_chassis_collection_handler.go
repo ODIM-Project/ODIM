@@ -57,5 +57,5 @@ func (c *getChassisCollectionHandler) handle(ctx context.Context) {
 }
 
 func createChassisCollection() redfish.Collection {
-	return redfish.NewCollection("/ODIM/v1/Chassis", "#ManagerCollection.ManagerCollection")
+	return redfish.NewCollection("/ODIM/v1/Chassis", "#ChassisCollection.ChassisCollection")
 }

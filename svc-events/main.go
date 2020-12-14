@@ -61,6 +61,14 @@ func main() {
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
 	consumer.In, consumer.Out = common.CreateJobQueue()
 
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
 	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 1)

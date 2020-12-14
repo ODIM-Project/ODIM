@@ -40,6 +40,13 @@ func main() {
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	err := services.InitializeService(services.Update)
 	if err != nil {

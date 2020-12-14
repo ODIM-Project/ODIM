@@ -30,6 +30,16 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
+// Schema is used to define the allowed values for search/filter
+type Schema struct {
+	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
+	ConditionKeys []string                       `json:"conditionKeys"`
+	QueryKeys     []string                       `json:"queryKeys"`
+}
+
+// SF holds the schema data for search/filter
+var SF Schema
+
 //PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
 	Token           string
@@ -278,4 +288,21 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+func TrackConfigFileChanges(configFilePath string) {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	select {
+	case <-eventChan: // new data arrives through eventChan channel
+		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
+		if err != nil {
+			log.Fatalf("fatal: error while trying to read search/filter schema json: %v", err)
+		}
+		err = json.Unmarshal(schemaFile, &SF)
+		if err != nil {
+			log.Fatalf("fatal: error while trying to fetch search/filter schema json: %v", err)
+		}
+	}
 }

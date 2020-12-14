@@ -61,6 +61,13 @@ func main() {
 	// which is passed to it as Publish method after reading the data from the channel.
 	go common.RunReadWorkers(rfphandler.Out, rfpmessagebus.Publish, 1)
 
+	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatalln("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
+	}
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go rfputilities.TrackConfigFileChanges(configFilePath)
+
 	intializePluginStatus()
 	app()
 }

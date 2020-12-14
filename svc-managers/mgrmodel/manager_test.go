@@ -170,7 +170,7 @@ func TestAddManagertoDB(t *testing.T) {
 		UUID:            "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		State:           "Enabled",
 	}
-	err := mngr.AddManagertoDB()
+	err := AddManagertoDB(mngr)
 	assert.Nil(t, err, "There should be no error")
 
 	data, err := GetManagerByURL("/redfish/v1/Managers/" + mngr.UUID)

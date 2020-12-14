@@ -41,6 +41,14 @@ func main() {
 		log.Fatalf("error while trying to check DB connection health: %v", err)
 	}
 
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+
 	if err := services.InitializeService(services.AccountSession); err != nil {
 		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
 	}

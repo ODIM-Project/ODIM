@@ -123,7 +123,6 @@ var PluginStartUp = false
 
 // GetAllPluginStatus ...
 func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
-	log.Println("==========get all plugin status=====================")
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {

@@ -19,11 +19,11 @@ package redfish
 // Validator is an interface of validator. When `Validate()` is called and
 // validator detects problem, non empty array containing error message(s) is returned.
 type Validator interface {
-	Validate() (errors []MsgExtendedInfo)
+	Validate() (violation *MsgExtendedInfo, errorCode *int)
 }
 
 type isViolated func() bool
-type generateError func() MsgExtendedInfo
+type generateError func() (violation MsgExtendedInfo, errorCode int)
 
 // NewValidator constructs new instance of `Validator`.
 // `isViolated` function returns true if validation rule is violated.
@@ -40,11 +40,12 @@ type validator struct {
 	generateError
 }
 
-func (v *validator) Validate() (errors []MsgExtendedInfo) {
+func (v *validator) Validate() (*MsgExtendedInfo, *int) {
 	if v.isViolated() {
-		return []MsgExtendedInfo{v.generateError()}
+		violation, errCode := v.generateError()
+		return &violation, &errCode
 	}
-	return nil
+	return nil, nil
 }
 
 // CompositeValidator constructs multiple validators validator.
@@ -56,11 +57,11 @@ func CompositeValidator(v ...Validator) Validator {
 
 type compositeValidator []Validator
 
-func (v *compositeValidator) Validate() (errors []MsgExtendedInfo) {
+func (v *compositeValidator) Validate() (*MsgExtendedInfo, *int) {
 	for _, validator := range *v {
-		if violations := validator.Validate(); violations != nil {
-			errors = append(errors, violations...)
+		if violation, errCode := validator.Validate(); violation != nil {
+			return violation, errCode
 		}
 	}
-	return
+	return nil, nil
 }

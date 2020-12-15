@@ -70,9 +70,9 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	if r := c.createValidator(requestedChassis, rur).Validate(); r != nil {
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(redfish.NewError(r...))
+	if violation, errCode := c.createValidator(requestedChassis, rur).Validate(); violation != nil {
+		ctx.StatusCode(*errCode)
+		ctx.JSON(redfish.NewError(*violation))
 		return
 	}
 
@@ -161,8 +161,8 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 			func() bool {
 				return !strings.Contains(strings.Join([]string{"", "Rack"}, "#"), requestedChassis.ChassisType)
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewPropertyValueNotInListMsg(requestedChassis.ChassisType, "ChassisType", "supported ChassisTypes are: Rack")
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewPropertyValueNotInListMsg(requestedChassis.ChassisType, "ChassisType", "supported ChassisTypes are: Rack"), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
@@ -175,10 +175,8 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				}
 				return false
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewPropertyValueConflictMsg(
-					"Links.Contains", "Links.ContainedBy", "RackGroup cannot be attached under Rack chassis",
-				)
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewPropertyValueConflictMsg("Links.Contains", "Links.ContainedBy", "RackGroup cannot be attached under Rack chassis"), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
@@ -200,11 +198,12 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 				}
 				return false
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewPropertyValueNotInListMsg(
-					fmt.Sprintf("%s", requestedChange.Links.Contains),
-					"Links.Contains",
-					"Couldn't confirm existence of one or more requested 'Links.Contains' elements or one of them is not a pointer to Chassis asset")
+						fmt.Sprintf("%s", requestedChange.Links.Contains),
+						"Links.Contains",
+						"Couldn't confirm existence of one or more requested 'Links.Contains' elements or one of them is not a pointer to Chassis asset"),
+					http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
@@ -223,11 +222,12 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 
 				return false
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewPropertyValueNotInListMsg(
-					fmt.Sprintf("%s", requestedChange.Links.Contains),
-					"Links.Contains",
-					"Unmanaged Chassis Cannot Be Attached Under Rack")
+						fmt.Sprintf("%s", requestedChange.Links.Contains),
+						"Links.Contains",
+						"Unmanaged Chassis Cannot Be Attached Under Rack"),
+					http.StatusBadRequest
 			},
 		),
 
@@ -250,11 +250,12 @@ func (c *chassisUpdateHandler) createValidator(requestedChassis *redfish.Chassis
 
 				return false
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewPropertyValueNotInListMsg(
-					fmt.Sprintf("%s", requestedChange.Links.Contains),
-					"Links.Contains",
-					"One of requested 'Links.Contains' element is already attached to another rack")
+						fmt.Sprintf("%s", requestedChange.Links.Contains),
+						"Links.Contains",
+						"One of requested 'Links.Contains' element is already attached to another rack"),
+					http.StatusConflict
 			},
 		),
 	)

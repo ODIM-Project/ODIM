@@ -50,36 +50,36 @@ func (c *postChassisHandler) createValidator(chassis *redfish.Chassis) redfish.V
 			func() bool {
 				return len(chassis.Name) == 0
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewPropertyMissingMsg("Name", "cannot be empty")
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewPropertyMissingMsg("Name", "cannot be empty"), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
 			func() bool {
 				return !strings.Contains(strings.Join([]string{"", "RackGroup", "Rack"}, "#"), chassis.ChassisType)
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack")
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack"), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
 			func() bool {
 				return chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) == 0
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewPropertyValueConflictMsg(
 					"ChassisType", "Links.ContainedBy", "Links.ContainedBy is required for creation of \"ChassisType=Rack\"",
-				)
+				), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
 			func() bool {
 				return chassis.ChassisType == "Rack" && len(chassis.Links.ContainedBy) != 1
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewPropertyValueConflictMsg(
 					"ChassisType", "Links.ContainedBy", "len(Links.ContainedBy) should equal 1",
-				)
+				), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
@@ -94,29 +94,30 @@ func (c *postChassisHandler) createValidator(chassis *redfish.Chassis) redfish.V
 				}
 				return false
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewResourceNotFoundMsg(
-					"Chassis", chassis.Links.ContainedBy[0].Oid,
-					"Requested Links.ContainedBy[0] is unknown")
+						"Chassis", chassis.Links.ContainedBy[0].Oid,
+						"Requested RackGroup described by Links.ContainedBy[0] is unknown"),
+					http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
 			func() bool {
 				return len(chassis.Links.ManagedBy) == 0
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewPropertyMissingMsg("Links.ManagedBy", "cannot be empty")
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewPropertyMissingMsg("Links.ManagedBy", "cannot be empty"), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
 			func() bool {
 				return len(chassis.Links.ManagedBy) != 0 && chassis.Links.ManagedBy[0].Oid != "/ODIM/v1/Managers/"+c.pc.RootServiceUUID
 			},
-			func() redfish.MsgExtendedInfo {
+			func() (redfish.MsgExtendedInfo, int) {
 				return redfish.NewPropertyValueNotInListMsg(
 					chassis.Links.ManagedBy[0].Oid,
 					"Links.ManagedBy", "should refer to /ODIM/v1/Managers/"+c.pc.RootServiceUUID,
-				)
+				), http.StatusBadRequest
 			},
 		),
 	)
@@ -131,9 +132,9 @@ func (c *postChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	if validationResult := c.createValidator(requestedChassis).Validate(); validationResult != nil {
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(redfish.NewError(validationResult...))
+	if violation, errCode := c.createValidator(requestedChassis).Validate(); violation != nil {
+		ctx.StatusCode(*errCode)
+		ctx.JSON(redfish.NewError(*violation))
 		return
 	}
 

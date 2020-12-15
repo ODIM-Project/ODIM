@@ -379,7 +379,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						}
 					`)).
 					Expect().
-					Status(http.StatusBadRequest)
+					Status(http.StatusConflict)
 			})
 
 			t.Run("attach another chassis under rack", func(t *testing.T) {

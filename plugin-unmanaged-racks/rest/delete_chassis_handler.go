@@ -62,9 +62,9 @@ func (c *deleteChassisHandler) handle(ctx context.Context) {
 		return
 	}
 
-	if r := c.createValidator(chassisToBeDeleted).Validate(); r != nil {
-		ctx.StatusCode(http.StatusConflict)
-		ctx.JSON(redfish.NewError(r...))
+	if violation, errCode := c.createValidator(chassisToBeDeleted).Validate(); violation != nil {
+		ctx.StatusCode(*errCode)
+		ctx.JSON(redfish.NewError(*violation))
 		return
 	}
 
@@ -122,8 +122,8 @@ func (c *deleteChassisHandler) createValidator(chassis *redfish.Chassis) redfish
 			func() bool {
 				return !strings.Contains(strings.Join([]string{"", "RackGroup", "Rack"}, "#"), chassis.ChassisType)
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack")
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewPropertyValueNotInListMsg(chassis.ChassisType, "ChassisType", "supported ChassisTypes are: RackGroup|Rack"), http.StatusBadRequest
 			},
 		),
 		redfish.NewValidator(
@@ -131,8 +131,8 @@ func (c *deleteChassisHandler) createValidator(chassis *redfish.Chassis) redfish
 				hasChildren, err := c.dao.Exists(stdCtx.TODO(), db.CreateContainsKey("Chassis", chassis.Oid).String()).Result()
 				return err != nil || hasChildren == 1
 			},
-			func() redfish.MsgExtendedInfo {
-				return redfish.NewResourceInUseMsg("there are existing elements(Links.Contains) under requested chassis")
+			func() (redfish.MsgExtendedInfo, int) {
+				return redfish.NewResourceInUseMsg("there are existing elements(Links.Contains) under requested chassis"), http.StatusConflict
 			},
 		),
 	)

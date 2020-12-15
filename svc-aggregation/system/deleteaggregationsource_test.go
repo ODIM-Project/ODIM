@@ -112,16 +112,7 @@ func mockSystemOperationInfo() *errors.Error {
 }
 
 func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
-	d := &ExternalInterface{
-		DeleteComputeSystem:     deleteComputeforTest,
-		DeleteSystem:            deleteSystemforTest,
-		DeleteEventSubscription: mockDeleteSubscription,
-		ContactClient:           mockContactClientForDelete,
-		EventNotification:       mockEventNotification,
-		DecryptPassword:         stubDevicePassword,
-		GetConnectionMethod:     mockGetConnectionMethod,
-		UpdateConnectionMethod:  mockUpdateConnectionMethod,
-	}
+	d := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -193,13 +184,8 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 }
 
 func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
-	d := &ExternalInterface{
-		EventNotification:      mockEventNotification,
-		ContactClient:          mockContactClientForDelete,
-		DecryptPassword:        stubDevicePassword,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-	}
+	d := getMockExternalInterface()
+	d.ContactClient = mockContactClientForDelete
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
@@ -339,15 +325,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 }
 
 func TestExternalInterface_DeleteBMC(t *testing.T) {
-	d := &ExternalInterface{
-		DeleteComputeSystem:     deleteComputeforTest,
-		DeleteSystem:            deleteSystemforTest,
-		DeleteEventSubscription: mockDeleteSubscription,
-		EventNotification:       mockEventNotification,
-		DecryptPassword:         stubDevicePassword,
-		GetConnectionMethod:     mockGetConnectionMethod,
-		UpdateConnectionMethod:  mockUpdateConnectionMethod,
-	}
+	d := getMockExternalInterface()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)

@@ -114,16 +114,8 @@ func TestExternalInterface_RediscoverResources(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Positive case: All is well.",
-			p: &ExternalInterface{
-				ContactClient:   mockContactClient,
-				Auth:            mockIsAuthorized,
-				PublishEventMB:  mockPublishEventMB,
-				GetPluginStatus: GetPluginStatusForTesting,
-				SubscribeToEMB:  mockSubscribeEMB,
-				DecryptPassword: stubDevicePassword,
-				UpdateTask:      mockUpdateTask,
-			},
+			name:    "Positive case: All is well.",
+			p:       getMockExternalInterface(),
 			wantErr: nil,
 		},
 	}
@@ -192,15 +184,6 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 	mockDeviceData("7a2c6100-67da-5fd6-ab82-6870d29c7279", device2)
 	mockDeviceData("24b243cf-f1e3-5318-92d9-2d6737d6b0b9", device1)
 	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
-	externalInterface := ExternalInterface{
-		ContactClient:   mockContactClient,
-		Auth:            mockIsAuthorized,
-		PublishEventMB:  mockPublishEventMB,
-		GetPluginStatus: GetPluginStatusForTesting,
-		SubscribeToEMB:  mockSubscribeEMB,
-		DecryptPassword: stubDevicePassword,
-		UpdateTask:      mockUpdateTask,
-	}
 
 	type args struct {
 		deviceUUID string
@@ -214,7 +197,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 	}{
 		{
 			name: "Negative Case: target with invalid encrypted password ",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "passwordWithInvalidEncryption",
 				systemURL:  "/redfish/v1/Systems",
@@ -223,7 +206,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 		},
 		{
 			name: "Negative Case: target with non existing device UUID",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "nonExisting",
 				systemURL:  "/redfish/v1/Systems",
@@ -232,7 +215,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 		},
 		{
 			name: "Negative Case: target with unknown plugin ID",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "unknown-plugin-uuid",
 				systemURL:  "/redfish/v1/Systems/unknown-plugin-uuid:1",
@@ -241,7 +224,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 		},
 		{
 			name: "Positive case: All is well, Need redicovery of the resource",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
 				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
@@ -250,7 +233,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 		},
 		{
 			name: "Positive case: All is well, Need redicovery of storage",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
 				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1/Storage",
@@ -259,7 +242,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 		},
 		{
 			name: "Positive case: All is well, dont need redicovery of the resource",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
 				systemURL:  "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
@@ -268,7 +251,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 		},
 		{
 			name: "Positive case: All is well, preferred auth type XauthType",
-			e:    &externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "something",
 				systemURL:  "/redfish/v1/Systems/something:1",
@@ -323,14 +306,6 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 		DeviceUUID:     "Chassis&System&Manager",
 		PluginID:       "GRF",
 	}
-	externalInterface := &ExternalInterface{
-		ContactClient:   mockContactClient,
-		Auth:            mockIsAuthorized,
-		PublishEventMB:  mockPublishEventMB,
-		GetPluginStatus: GetPluginStatusForTesting,
-		SubscribeToEMB:  mockSubscribeEMB,
-		DecryptPassword: stubDevicePassword,
-	}
 	mockPluginData(t, "GRF")
 	mockDeviceData("someUUID", device1)
 	mockDeviceData("ComputerSystem", device2)
@@ -355,7 +330,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 	}{
 		{
 			name: "Negative case: NO Inventory in db,  Resource discovery is required.",
-			e:    externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "someUUID",
 				systemKey:  "/redfish/v1/Systems/1",
@@ -365,7 +340,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 		},
 		{
 			name: "Negative case: Only ComputerSystem Inventory in db,  Resource discovery is required.",
-			e:    externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "ComputerSystem",
 				systemKey:  "/redfish/v1/Systems/1",
@@ -375,7 +350,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 		},
 		{
 			name: "Negative case: Only Chassis and System Inventory in db,  Resource discovery is required.",
-			e:    externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "Chassis&System",
 				systemKey:  "/redfish/v1/Systems/1",
@@ -385,7 +360,7 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 		},
 		{
 			name: "Positive case: ComputerSystem, Chassis and  Manager Inventory in db,  Resource discovery not required.",
-			e:    externalInterface,
+			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "Chassis&System&Manager",
 				systemKey:  "/redfish/v1/Systems/1",

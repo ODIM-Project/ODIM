@@ -34,7 +34,7 @@ type Chassis struct {
 	DepthMm            int              `json:"DepthMm"`
 	EnvironmentalClass string           `json:"EnvironmentalClass"`
 	HeightMm           int              `json:"HeightMm"`
-	IndicatorLED       int              `json:"IndicatorLED"`
+	IndicatorLED       string           `json:"IndicatorLED"`
 	Manufacturer       string           `json:"Manufacturer"`
 	Model              string           `json:"Model"`
 	PartNumber         string           `json:"PartNumber"`

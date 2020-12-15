@@ -195,7 +195,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.type":"#Task.v1_5_0.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
@@ -277,7 +277,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.type":"#Task.v1_5_0.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
@@ -361,7 +361,7 @@ curl -i DELETE \
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.type":"#Task.v1_5_0.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task52589fad-22fb-4505-86fd-cf845d500a33",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task52589fad-22fb-4505-86fd-cf845d500a33",

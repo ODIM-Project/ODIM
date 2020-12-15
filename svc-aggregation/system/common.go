@@ -323,7 +323,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Error("error while trying unmarshal systems collection: ", err.Error())
+		log.Error("error while trying unmarshal systems collection: " + err.Error())
 		return computeSystemID, resourceURI, progress, err
 	}
 	systemMembers := systemsMap["Members"]
@@ -379,7 +379,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Error("error while trying to unmarshal Registries collection: ", err)
+		log.Error("error while trying to unmarshal Registries collection: " + err.Error())
 		return progress
 
 	}
@@ -543,7 +543,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Error("error while trying to unmarshal"+resourceName+": ", err)
+		log.Error("error while trying to unmarshal " + resourceName + ": " + err.Error())
 		return progress
 
 	}
@@ -686,14 +686,14 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+":", -1)
 	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
 	if dbErr != nil {
-		log.Error("error while getting the systems data", dbErr.Error())
+		log.Error("error while getting the systems data" + dbErr.Error())
 		return "", progress, err
 	}
 	// unmarshall the systems data
 	var systemData map[string]interface{}
 	err = json.Unmarshal([]byte(data), &systemData)
 	if err != nil {
-		log.Error("Error while unmarshaling system's data", err)
+		log.Error("Error while unmarshaling system's data" + err.Error())
 		return "", progress, err
 	}
 
@@ -1058,14 +1058,14 @@ func getFirmwareVersion(oid string) string {
 	managerID := strings.Replace(oid, "Systems", "Managers", -1)
 	data, dbErr := agmodel.GetResource("Managers", managerID)
 	if dbErr != nil {
-		log.Error("error while getting the managers data", dbErr.Error())
+		log.Error("error while getting the managers data" + dbErr.Error())
 		return ""
 	}
 	// unmarshall the managers data
 	var managersData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &managersData)
 	if err != nil {
-		log.Error("Error while unmarshaling  the data", err)
+		log.Error("Error while unmarshaling  the data" + err.Error())
 		return ""
 	}
 	var firmwareVersion string

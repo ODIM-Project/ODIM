@@ -250,7 +250,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var list agresponse.List
 	err = json.Unmarshal([]byte(h.PluginResponse), &list)
 	if err != nil {
-		log.Error("Error: ", err)
+		log.Error(err.Error())
 	}
 
 	resp.Header = map[string]string{

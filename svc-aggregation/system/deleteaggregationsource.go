@@ -243,19 +243,20 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Error(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
+		log.Error(" Delete operation for system  ", key, " can't be processed "+dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	if systemOperation.Operation != "" {
-		log.Error("Delete operation or system  ", key, " can't be processed,", systemOperation.Operation, " operation  is under progress")
+		log.Error("Delete operation or system  " + key + " can't be processed," +
+			systemOperation.Operation + " operation  is under progress")
 		errMsg := systemOperation.Operation + " operation  is under progress"
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 	}
 	systemOperation.Operation = "Delete"
 	dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil {
-		log.Error(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
+		log.Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
@@ -272,7 +273,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	// If the DeleteEventSubscription call return status code other than http.StatusNoContent, http.StatusNotFound.
 	//Then return with error(delete event subscription failed).
 	if subResponse.StatusCode != http.StatusNoContent {
-		log.Error("error while deleting the event subscription for ", key, " :", subResponse.Body)
+		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
 	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)

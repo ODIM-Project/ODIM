@@ -107,11 +107,12 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	}
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(udaptedSystemURI)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Error("Rediscovery for system: ", udaptedSystemURI, " can't be processed ", dbErr.Error())
+		log.Error("Rediscovery for system: " + udaptedSystemURI + " can't be processed " + dbErr.Error())
 		return
 	}
 	if systemOperation.Operation == "Delete" {
-		log.Error("Rediscovery for system: ", udaptedSystemURI, " can't be processed,", systemOperation.Operation, " operation is under progress")
+		log.Error("Rediscovery for system: " + udaptedSystemURI + " can't be processed," +
+			systemOperation.Operation + " operation is under progress")
 		return
 	}
 
@@ -119,7 +120,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	systemOperation.Operation = "InventoryRediscovery"
 	dbErr = systemOperation.AddSystemOperationInfo(udaptedSystemURI)
 	if dbErr != nil {
-		log.Error("Rediscovery for system: ", udaptedSystemURI, " can't be processed ", dbErr.Error())
+		log.Error("Rediscovery for system: " + udaptedSystemURI + " can't be processed " + dbErr.Error())
 		return
 	}
 	defer func() {

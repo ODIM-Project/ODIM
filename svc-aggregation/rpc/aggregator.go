@@ -470,7 +470,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: "+ req.SessionToken)
+		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return nil
 	}

@@ -88,7 +88,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
 	if err != nil {
 		errorMessage := err.Error()
-		log.Printf("Unable to get connectionmethod : " + errorMessage)
+		log.Error("Unable to get connectionmethod : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
 		}

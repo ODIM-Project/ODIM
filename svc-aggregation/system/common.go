@@ -18,8 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"reflect"
@@ -201,7 +201,7 @@ func genError(errorMessage string, respPtr *response.RPC, httpStatusCode int32, 
 	respPtr.StatusMessage = StatusMessage
 	respPtr.Body = errors.CreateErrorResponse(respPtr.StatusMessage, errorMessage)
 	respPtr.Header = header
-	log.Printf(errorMessage)
+	log.Error(errorMessage)
 }
 
 // UpdateTaskData update the task with the given data
@@ -263,13 +263,13 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 			resp.StatusCode = int32(pluginResp.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResp.StatusCode)
 		resp.StatusMessage = response.InternalError
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -310,7 +310,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusCode = getResponse.StatusCode
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
-		log.Println(err)
+		log.Error(err)
 		return computeSystemID, resourceURI, progress, err
 	}
 	h.SystemURL = make([]string, 0)
@@ -323,7 +323,7 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying unmarshal systems collection: ", err.Error())
+		log.Error("error while trying unmarshal systems collection: ", err.Error())
 		return computeSystemID, resourceURI, progress, err
 	}
 	systemMembers := systemsMap["Members"]
@@ -352,7 +352,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		log.Printf("error while reading the files from directory %v: %v", registryStore, err)
+		log.Error("error while reading the files from directory " + registryStore + ": " + err.Error())
 		log.Fatal(err)
 	}
 	//Construct the list of file names available
@@ -368,7 +368,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = getResponse.StatusMessage
 		h.StatusCode = getResponse.StatusCode
 		h.lock.Unlock()
-		log.Println(err)
+		log.Error(err)
 		return progress
 	}
 	registriesMap := make(map[string]interface{})
@@ -379,7 +379,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying to unmarshal Registries collection: ", err)
+		log.Error("error while trying to unmarshal Registries collection: ", err)
 		return progress
 
 	}
@@ -531,7 +531,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusCode = getResponse.StatusCode
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
-		log.Println(err)
+		log.Error(err)
 		return progress
 	}
 
@@ -543,7 +543,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying to unmarshal"+resourceName+": ", err)
+		log.Error("error while trying to unmarshal"+resourceName+": ", err)
 		return progress
 
 	}
@@ -593,7 +593,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			h.lock.Lock()
 			h.StatusCode = http.StatusInternalServerError
 			h.StatusMessage = response.InternalError
@@ -686,14 +686,14 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+":", -1)
 	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
 	if dbErr != nil {
-		log.Println("error while getting the systems data", dbErr.Error())
+		log.Error("error while getting the systems data", dbErr.Error())
 		return "", progress, err
 	}
 	// unmarshall the systems data
 	var systemData map[string]interface{}
 	err = json.Unmarshal([]byte(data), &systemData)
 	if err != nil {
-		log.Println("Error while unmarshaling system's data", err)
+		log.Error("Error while unmarshaling system's data", err)
 		return "", progress, err
 	}
 
@@ -894,7 +894,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.ErrorMessage = "error while trying unmarshal : " + err.Error()
 		h.StatusCode = http.StatusInternalServerError
 		h.StatusMessage = response.InternalError
-		log.Println(h.ErrorMessage)
+		log.Error(h.ErrorMessage)
 		h.lock.Unlock()
 		return progress
 	}
@@ -917,7 +917,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.ErrorMessage = "error while trying to save data: " + err.Error()
 		h.StatusCode = http.StatusInternalServerError
 		h.StatusMessage = response.InternalError
-		log.Println(h.ErrorMessage)
+		log.Error(h.ErrorMessage)
 		h.lock.Unlock()
 		return progress
 	}
@@ -1058,14 +1058,14 @@ func getFirmwareVersion(oid string) string {
 	managerID := strings.Replace(oid, "Systems", "Managers", -1)
 	data, dbErr := agmodel.GetResource("Managers", managerID)
 	if dbErr != nil {
-		log.Println("error while getting the managers data", dbErr.Error())
+		log.Error("error while getting the managers data", dbErr.Error())
 		return ""
 	}
 	// unmarshall the managers data
 	var managersData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &managersData)
 	if err != nil {
-		log.Println("Error while unmarshaling  the data", err)
+		log.Error("Error while unmarshaling  the data", err)
 		return ""
 	}
 	var firmwareVersion string
@@ -1078,7 +1078,7 @@ func getFirmwareVersion(oid string) string {
 
 // CreateDefaultEventSubscription will create default events subscriptions
 func CreateDefaultEventSubscription(systemID []string) {
-	log.Printf("info: creation of default subscriptions for %v are initiated.", systemID)
+	log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
 	events := eventsproto.NewEventsService(services.Events, services.Service.Client())
 	_, err := events.CreateDefaultEventSubscription(context.TODO(), &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,
@@ -1088,7 +1088,7 @@ func CreateDefaultEventSubscription(systemID []string) {
 		Protocol:      "Redfish",
 	})
 	if err != nil {
-		log.Printf("error while creating default events: %v", err)
+		log.Error("error while creating default events: " + err.Error())
 		return
 	}
 }
@@ -1184,7 +1184,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Println(errMsg)
+			log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 		}
 		pluginContactRequest.Token = token
@@ -1201,7 +1201,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 	}
 	// extracting the EMB Type and EMB Queue name
@@ -1209,7 +1209,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	err = json.Unmarshal(body, &statusResponse)
 	if err != nil {
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		getResponse.StatusCode = http.StatusInternalServerError
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
 	}
@@ -1217,7 +1217,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	// check the firmware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
 		errMsg := fmt.Sprintf("Provided firmware version %s does not match supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
-		log.Println(errMsg)
+		log.Error(errMsg)
 		getResponse.StatusCode = http.StatusBadRequest
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList
 	}

@@ -17,7 +17,7 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -34,8 +34,8 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 
 	aggregationSource, dbErr := agmodel.GetAggregationSourceInfo(req.URL)
 	if dbErr != nil {
-		log.Printf("error getting  AggregationSource : %v", dbErr)
 		errorMessage := dbErr.Error()
+		log.Error("Unable to get AggregationSource : " + errorMessage)
 		if errors.DBKeyNotFound == dbErr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"AggregationSource", req.URL}, nil)
 		}
@@ -47,8 +47,8 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
 	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
 	if err != nil {
-		log.Printf("error getting  connectionmethod : %v", err)
 		errorMessage := err.Error()
+		log.Error("Unable to get connectionmethod : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
 		}
@@ -62,15 +62,15 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	if terr != nil || target == nil {
 		cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
 		if len(connectionMethod.Links.AggregationSources) > 1 {
-			errMsg := fmt.Sprintf("error: plugin %v can't be removed since it managing some of the devices", cmVariants.PluginID)
-			log.Println(errMsg)
+			errMsg := fmt.Sprintf("Plugin " + cmVariants.PluginID + " can't be removed since it managing devices")
+			log.Info(errMsg)
 			return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 		}
 		// Get the plugin
 		plugin, errs := agmodel.GetPluginData(cmVariants.PluginID)
 		if errs != nil {
 			errMsg := errs.Error()
-			log.Printf(errMsg)
+			log.Error(errMsg)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", cmVariants.PluginID}, nil)
 		}
 		// delete the manager
@@ -80,7 +80,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		systemList, dbErr := agmodel.GetAllMatchingDetails("ComputerSystem", data[1], common.InMemory)
 		if dbErr != nil {
 			errMsg := dbErr.Error()
-			log.Println(errMsg)
+			log.Error(errMsg)
 			if errors.DBKeyNotFound == dbErr.ErrNo() {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Systems", "everything"}, nil)
 			}
@@ -99,14 +99,14 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	if dbErr != nil {
 		errorMessage := "error while trying to delete AggreationSource  " + dbErr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	connectionMethod.Links.AggregationSources = removeAggregationSource(connectionMethod.Links.AggregationSources, agmodel.OdataID{OdataID: req.URL})
 	dbErr = e.UpdateConnectionMethod(connectionMethod, connectionMethodOdataID)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -144,7 +144,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	data, derr := agmodel.GetResource("Managers", oid)
 	if derr != nil {
 		errMsg := "error while getting Managers data: " + derr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Managers", oid}, nil)
 		}
@@ -156,14 +156,14 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Plugin", pluginID}, nil)
 	}
 
 	systems, dberr := agmodel.GetAllSystems()
 	if dberr != nil {
 		errMsg := derr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Systems", "everything"}, nil)
 		}
@@ -178,7 +178,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	}
 	if systemCnt > 0 {
 		errMsg := fmt.Sprintf("error: plugin %v can't be removed since it managing some of the devices", pluginID)
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 	}
 
@@ -197,7 +197,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	_, _, _, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err == nil { // no err means plugin is still up, so we can't remove it
 		errMsg := "error: plugin is still up, so it cannot be removed."
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 	}
 
@@ -205,7 +205,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	dberr = agmodel.DeleteManagersData(oid)
 	if dberr != nil {
 		errMsg := derr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Managers", oid}, nil)
 		}
@@ -215,7 +215,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	dberr = agmodel.DeletePluginData(pluginID)
 	if dberr != nil {
 		errMsg := derr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Plugin", pluginID}, nil)
 		}
@@ -243,19 +243,19 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Println(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
+		log.Error(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	if systemOperation.Operation != "" {
-		log.Println("Delete operation or system  ", key, " can't be processed,", systemOperation.Operation, " operation  is under progress")
+		log.Error("Delete operation or system  ", key, " can't be processed,", systemOperation.Operation, " operation  is under progress")
 		errMsg := systemOperation.Operation + " operation  is under progress"
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
 	}
 	systemOperation.Operation = "Delete"
 	dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil {
-		log.Println(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
+		log.Error(" Delete operation for system  ", key, " can't be processed ", dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
@@ -266,24 +266,24 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	subResponse, err := e.DeleteEventSubscription(key)
 	if err != nil && subResponse == nil {
 		errMsg := fmt.Sprintf("error while trying to delete subscriptions: %v", err)
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// If the DeleteEventSubscription call return status code other than http.StatusNoContent, http.StatusNotFound.
 	//Then return with error(delete event subscription failed).
 	if subResponse.StatusCode != http.StatusNoContent {
-		log.Println("error while deleting the event subscription for ", key, " :", subResponse.Body)
+		log.Error("error while deleting the event subscription for ", key, " :", subResponse.Body)
 	}
 
 	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if derr != nil {
-		log.Printf("error while trying to collect the chassis list: %v", derr)
+		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
 
 	// Delete Compute System Details from InMemory
 	if derr := e.DeleteComputeSystem(index, key); derr != nil {
 		errMsg := "error while trying to delete compute system: " + derr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{index, key}, nil)
 		}
@@ -294,14 +294,14 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	k := strings.Split(key[index+1:], ":")
 	if len(k) < 2 {
 		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	uuid := k[0]
 	// Delete System Details from OnDisk
 	if derr := e.DeleteSystem(uuid); derr != nil {
 		errMsg := "error while trying to delete system: " + derr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"System", uuid}, nil)
 		}

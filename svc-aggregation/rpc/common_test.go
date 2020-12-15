@@ -53,6 +53,9 @@ var connector = &system.ExternalInterface{
 	GetConnectionMethod:      mockGetConnectionMethod,
 	UpdateConnectionMethod:   mockUpdateConnectionMethod,
 	GetAggregationSourceInfo: mockGetAggregationSourceInfo,
+	GenericSave:              mockGenericSave,
+	CheckActiveRequest:       mockCheckActiveRequest,
+	DeleteActiveRequest:      mockDeleteActiveRequest,
 }
 
 func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *errors.Error) {
@@ -391,4 +394,22 @@ func TestGetAggregator(t *testing.T) {
 			}
 		})
 	}
+}
+
+var activeReqFlag bool
+
+func mockGenericSave(data []byte, table, key string) error {
+	common.MuxLock.Lock()
+	activeReqFlag = true
+	common.MuxLock.Unlock()
+	return nil
+}
+
+func mockCheckActiveRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteActiveRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
 }

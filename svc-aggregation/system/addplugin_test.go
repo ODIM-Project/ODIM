@@ -158,21 +158,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 		},
 	}
 
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		SubscribeToEMB:      mockSubscribeEMB,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		GetConnectionMethod: mockGetConnectionMethod,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-	}
+	p := getMockExternalInterface()
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var queueList []string
 	var pluginContactRequest getResourceRequest
@@ -334,21 +320,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		},
 	}
 
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		SubscribeToEMB:      mockSubscribeEMB,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		GetConnectionMethod: mockGetConnectionMethod,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-	}
+	p := getMockExternalInterface()
 	var queueList []string
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var pluginContactRequest getResourceRequest

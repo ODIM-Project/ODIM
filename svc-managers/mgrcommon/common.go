@@ -279,7 +279,8 @@ func RetryManagersOperation(req PluginContactRequest, errorMessage string) ([]by
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	var lock sync.Mutex
+	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
 		mgr := mgrmodel.RAManager{

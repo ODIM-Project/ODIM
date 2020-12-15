@@ -18,6 +18,7 @@ package scommon
 import (
 	"encoding/json"
 	"fmt"
+ "sync"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -293,13 +294,16 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 func TrackConfigFileChanges(configFilePath string) {
 	eventChan := make(chan interface{})
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	var lock sync.Mutex
+	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
+    lock.Lock()
 		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 		if err != nil {
 			log.Fatalf("fatal: error while trying to read search/filter schema json: %v", err)
 		}
+   lock.Unlock()
 		err = json.Unmarshal(schemaFile, &SF)
 		if err != nil {
 			log.Fatalf("fatal: error while trying to fetch search/filter schema json: %v", err)

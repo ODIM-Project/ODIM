@@ -16,6 +16,7 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -66,8 +67,9 @@ func main() {
 		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
+	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
@@ -76,7 +78,7 @@ func main() {
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,
 	}
-	go startUPInterface.GetAllPluginStatus()
+	go startUPInterface.GetAllPluginStatus(&lock)
 	// Run server
 	if err := services.Service.Run(); err != nil {
 		log.Fatal(err)

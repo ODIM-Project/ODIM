@@ -62,7 +62,7 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 	if len(subscriptionDetails) < 1 {
 		log.Printf("Subscription details not found for ID: %v", req.EventSubscriptionID)
 		errorMessage := fmt.Sprintf("Subscription details not found for ID: %v", req.EventSubscriptionID)
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
 
 	for _, evtSubscription := range subscriptionDetails {

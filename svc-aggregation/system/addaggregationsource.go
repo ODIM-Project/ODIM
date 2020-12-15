@@ -80,9 +80,16 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		Password:         aggregationSourceRequest.Password,
 		ConnectionMethod: aggregationSourceRequest.Links.ConnectionMethod,
 	}
-	ActiveReqSet.UpdateMu.Lock()
-	if _, exist := ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress]; exist {
-		ActiveReqSet.UpdateMu.Unlock()
+
+	ipAddr := getKeyFromManagerAddress(addResourceRequest.ManagerAddress)
+
+	exist, dErr := e.CheckActiveRequest(ipAddr)
+	if dErr != nil {
+		errMsg := fmt.Sprintf("error: while trying to collect the active request details from DB: %v", dErr.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+	if exist {
 		var errMsg string
 		mIP, _ := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
 		errMsg = fmt.Sprintf("error: An active request already exists for adding aggregation source IP %v", mIP)
@@ -98,14 +105,18 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
-	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.ConnectionMethod.OdataID
-	ActiveReqSet.UpdateMu.Unlock()
+	err := e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
+	if err != nil {
+		errMsg := fmt.Sprintf("error: while trying to save the active request details from DB: %v", dErr.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
 
 	defer func() {
-		// check if there is an entry added for the server in ongoing requests tracker and remove it
-		ActiveReqSet.UpdateMu.Lock()
-		delete(ActiveReqSet.ReqRecord, addResourceRequest.ManagerAddress)
-		ActiveReqSet.UpdateMu.Unlock()
+		err := e.DeleteActiveRequest(ipAddr)
+		if err != nil {
+			log.Printf("error: while trying to collect the active request details from DB: %v", dErr.Error())
+		}
 	}()
 
 	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)

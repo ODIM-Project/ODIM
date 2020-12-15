@@ -26,7 +26,8 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 )
 
-// Publish ...
+// Publish function will handle events request in two originofcondition format
+// originofcondition can be with or without @odata.id
 func Publish(data interface{}) bool {
 	if data == nil {
 		log.Printf("Error: Invalid data on publishing events")

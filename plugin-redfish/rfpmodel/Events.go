@@ -20,3 +20,27 @@ type Event struct {
 	IP      string
 	Request []byte
 }
+
+// ForwardEventMessageData contains information of Events and message details including arguments
+// it will be send as byte stream on the wire to/from kafka
+type ForwardEventMessageData struct {
+	OdataType string         `json:"@odata.type"`
+	Name      string         `json:"Name"`
+	Context   string         `json:"@odata.context"`
+	Events    []ForwardEvent `json:"Events"`
+}
+
+// ForwardEvent contains the details of the event subscribed from PMB
+type ForwardEvent struct {
+	MemberID          string      `json:"MemberId,omitempty"`
+	EventType         string      `json:"EventType"`
+	EventGroupID      int         `json:"EventGroupId,omitempty"`
+	EventID           string      `json:"EventId"`
+	Severity          string      `json:"Severity"`
+	EventTimestamp    string      `json:"EventTimestamp"`
+	Message           string      `json:"Message"`
+	MessageArgs       []string    `json:"MessageArgs,omitempty"`
+	MessageID         string      `json:"MessageId"`
+	Oem               interface{} `json:"Oem,omitempty"`
+	OriginOfCondition string      `json:"OriginOfCondition,omitempty"`
+}

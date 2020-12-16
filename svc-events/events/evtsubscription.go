@@ -542,7 +542,8 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
 	}
-	if !(strings.Contains(locationHdr, target.ManagerAddress)) {
+	hosts := strings.Split(target.ManagerAddress, ":")
+	if !(strings.Contains(locationHdr, hosts[0])) {
 		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
 	}
 	err = saveDeviceSubscriptionDetails(evtSubscription)
@@ -586,6 +587,14 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 
 	} else {
 		host = target.ManagerAddress
+		addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+		if errorMessage != "" {
+			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+				[]interface{}{}, &resp)
+			log.Printf(errorMessage)
+			return resp, err
+		}
+		host = fmt.Sprintf("%v", addr[0])
 	}
 	// uniqueMap is to ignore duplicate eventTypes
 	// evevntTypes from request  and eventTypes from the all destinations stored in the DB
@@ -990,8 +999,15 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 	var resp errResponse.RPC
 	var err error
 	var deviceSubscription *evmodel.DeviceSubscription
-
-	deviceSubscription, err = evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+	if errorMessage != "" {
+		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+			[]interface{}{}, &resp)
+		log.Printf(errorMessage)
+		return resp, err
+	}
+	deviceIPAddress := fmt.Sprintf("%v", addr[0])
+	deviceSubscription, err = evmodel.GetDeviceSubscriptions(deviceIPAddress)
 	if err != nil {
 		// if its first subscription then no need to check events subscribed
 		if strings.Contains(err.Error(), "No data found for the key") {
@@ -1552,4 +1568,3 @@ func getIPFromHostName(fqdn string) ([]net.IP, string) {
 	}
 	return addr, errorMessage
 }
-

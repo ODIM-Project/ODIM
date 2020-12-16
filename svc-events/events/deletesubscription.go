@@ -56,7 +56,15 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		return resp
 	}
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(target.ManagerAddress)
+	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+	if errorMessage != "" {
+		msgArgs := []interface{}{"Host", target.ManagerAddress}
+		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+		log.Printf(errorMessage)
+		return resp
+	}
+	deviceIPAddress := fmt.Sprintf("%v", addr[0])
+	subscriptionDetails, err := evmodel.GetEvtSubscriptions(deviceIPAddress)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error while getting event subscription details : %v", err)
 		errorMessage := err.Error()
@@ -93,7 +101,7 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		return resp
 	}
 
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)
 	if err != nil {
 		errorMessage := "Error while get subscription details of device : " + err.Error()
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
@@ -418,7 +426,15 @@ func (p *PluginContact) subscribe(subscriptionPost evmodel.EvtSubPost, origin st
 		return err
 	}
 	// Update Location to all destination of device if already subscribed to the device
-	devSub, err := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+	var resp response.RPC
+	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+	if errorMessage != "" {
+		msgArgs := []interface{}{"Host", target.ManagerAddress}
+		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+		log.Printf(errorMessage)
+	}
+	deviceIPAddress := fmt.Sprintf("%v", addr[0])
+	devSub, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)
 	if err != nil {
 		return err
 	}

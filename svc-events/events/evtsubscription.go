@@ -1537,7 +1537,12 @@ func isHostPresent(hosts []string, hostip string) bool {
 }
 
 func getIPFromHostName(fqdn string) ([]net.IP, string) {
-	addr, err := net.LookupIP(fqdn)
+	ip, _, err := net.SplitHostPort(fqdn)
+	if err != nil {
+		ip = fqdn
+	}
+
+	addr, err := net.LookupIP(ip)
 	var errorMessage string
 	if err != nil || len(addr) < 1 {
 		errorMessage = "Can't lookup the ip from host name"
@@ -1547,3 +1552,4 @@ func getIPFromHostName(fqdn string) ([]net.IP, string) {
 	}
 	return addr, errorMessage
 }
+

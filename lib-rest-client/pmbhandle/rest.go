@@ -52,7 +52,7 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 	httpConf := &config.HTTPConfig{
 		CACertificate: &config.Data.KeyCertConf.RootCACertificate,
-	}
+	re
 	httpClient, err := httpConf.GetHTTPClientObj()
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 
 	if resp.StatusCode >= 300 {
-		log.Warn("got %v, while fetching %v with method %v" + resp.Status + url + method)
+		log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
 	}
 
 	return resp, nil

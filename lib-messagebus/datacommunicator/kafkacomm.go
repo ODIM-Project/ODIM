@@ -112,7 +112,7 @@ func KafkaConnect(kp *KafkaPacket, messageQueueConfigPath string) error {
 	// Creation of TLS Config and Dialer
 	tls, e := TLS(mq.KAFKACertFile, mq.KAFKAKeyFile, mq.KAFKACAFile)
 	if e != nil {
-		log.Error("%v" + e.Error())
+		log.Error(e.Error())
 		return e
 	}
 	kp.DialerConn = &kafka.Dialer{
@@ -157,7 +157,7 @@ func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
 	// Encode the message before appending into KAFKA Message struct
 	b, e := Encode(d)
 	if e != nil {
-		log.Error("%v" + e.Error())
+		log.Error(e.Error())
 		return e
 	}
 
@@ -169,7 +169,7 @@ func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
 
 	// Write the messgae in the specified Pipe.
 	if e = kp.Writers[pipe].WriteMessages(context.Background(), km); e != nil {
-		log.Error("%v" + e.Error())
+		log.Error(e.Error())
 		return e
 	}
 
@@ -217,13 +217,13 @@ func (kp *KafkaPacket) Read(p string, fn MsgProcess) error {
 		// explicitly committing the messages
 		m, e := kp.Readers[p].ReadMessage(c)
 		if e != nil {
-			log.Error("%v" + e.Error())
+			log.Error(e.Error())
 			return e
 		}
 
 		// Decode the message before passing it to Callback
 		if e = Decode(m.Value, &d); e != nil {
-			log.Error("%v" + e.Error())
+			log.Error(e.Error())
 			return e
 		}
 		// Callback Function call.

@@ -53,7 +53,7 @@ func main() {
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: ", err.Error())
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
 	var connectionMethoodInterface = agcommon.DBInterface{

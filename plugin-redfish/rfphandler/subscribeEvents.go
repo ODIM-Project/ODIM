@@ -19,11 +19,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	evtConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
@@ -115,7 +115,7 @@ func deleteMatchingSubscriptions(device *rfputilities.RedfishDevice) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: " + device.Location + " got " + resp.StatusCode)
+		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: %v got %v", device.Location, resp.StatusCode)
 		log.Error(errorMessage)
 		return
 	}
@@ -160,7 +160,7 @@ func isOurSubscription(device *rfputilities.RedfishDevice) bool {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: " + device.Location + " got " + resp.StatusCode)
+		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: %v got %v", device.Location, resp.StatusCode)
 		log.Error(errorMessage)
 		return false
 	}

@@ -160,7 +160,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 	}
 	roles, rerr := asmodel.GetAllRoles()
 	if rerr != nil {
-		log.Error("error getting role : " +  rerr.Error())
+		log.Error("error getting role : " + rerr.Error())
 		errorMessage := rerr.Error()
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}

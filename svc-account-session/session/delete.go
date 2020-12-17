@@ -93,7 +93,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 					log.Error(errorMessage)
 					return resp
 				}
-				log.Info("Successfully Deleted: " + err.Error())
+				log.Info("Successfully Deleted: ")
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
 				resp.Header = getHeader()

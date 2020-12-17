@@ -24,9 +24,10 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -572,7 +573,7 @@ func (p *PluginContact) resubscribeFabricsSubscription(subscriptionPost evmodel.
 			}
 		}
 		log.Info("Resubscribe response status code: " + string(response.StatusCode))
-		log.Info("Resubscribe response body: " + response.Body.(string))
+		log.Info("Resubscribe response body: ", response.Body)
 		addr, errorMessage := getIPFromHostName(plugin.IP)
 		if errorMessage != "" {
 			return fmt.Errorf(errorMessage)

@@ -48,7 +48,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to create a new user",
+				ErrorMessage:  "User does not have the privilege to create a new user",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -136,7 +136,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "error: Mandatory fields UserName Password RoleID are empty",
+				ErrorMessage:  "Mandatory fields UserName Password RoleID are empty",
 				MessageArgs:   []interface{}{"UserName Password RoleID"},
 			},
 		},
@@ -147,7 +147,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceAlreadyExists,
-				ErrorMessage:  "error while trying to add new user: error: data with key existingUser already exists",
+				ErrorMessage:  "Unable to add new user: error: data with key existingUser already exists",
 				MessageArgs:   []interface{}{"ManagerAccount", "Id", "existingUser"},
 			},
 		},
@@ -158,7 +158,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
+				ErrorMessage:  "Invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},

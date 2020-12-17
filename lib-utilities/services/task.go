@@ -17,7 +17,7 @@ package services
 
 import (
 	"context"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
@@ -34,7 +34,7 @@ func CreateTask(sessionUserName string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Printf("error: something went wrong with rpc call: %v", err)
+		log.Error("error: something went wrong with rpc call: %v" + err.Error())
 		return "", err
 	}
 	return response.TaskURI, err
@@ -51,7 +51,7 @@ func CreateChildTask(sessionUserName string, parentTaskID string) (string, error
 		},
 	)
 	if err != nil && response == nil {
-		log.Printf("error: something went wrong with rpc call: %v", err)
+		log.Error("Something went wrong with rpc call: %v" + err.Error())
 		return "", err
 	}
 	return response.TaskURI, err
@@ -61,7 +61,7 @@ func CreateChildTask(sessionUserName string, parentTaskID string) (string, error
 func UpdateTask(taskID string, taskState string, taskStatus string, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
 	tspb, err := ptypes.TimestampProto(endTime)
 	if err != nil {
-		log.Printf("error: failed to conver the time to protobuff timestamp: %v", err)
+		log.Error("Failed to conver the time to protobuff timestamp: %v" + err.Error())
 		return err
 	}
 	taskService := taskproto.NewGetTaskService(Tasks, Service.Client())

@@ -19,7 +19,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
@@ -97,7 +97,7 @@ func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.Fa
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

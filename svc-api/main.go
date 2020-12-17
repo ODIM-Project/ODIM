@@ -16,7 +16,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
@@ -31,10 +31,12 @@ import (
 	iris "github.com/kataras/iris/v12"
 )
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Api Service should not be run as the root user")
+		log.Fatal("Api Service should not be run as the root user")
 	}
 	router := router.Router()
 
@@ -55,7 +57,7 @@ func main() {
 			for _, item := range urlNoBasicAuth {
 				if item == path {
 					authRequired = false
-					log.Println("warning: basic auth is provided but not used as URL is: " + path)
+					log.Warn("Basic auth is provided but not used as URL is: " + path)
 					break
 				}
 			}
@@ -66,18 +68,18 @@ func main() {
 					spl := strings.Split(basicAuth, " ")
 					data, err := base64.StdEncoding.DecodeString(spl[1])
 					if err != nil {
-						log.Println("error:", err)
+						log.Error(err.Error())
 						return
 					}
 					userCred := strings.SplitN(string(data), ":", 2)
 					if len(userCred) < 2 {
-						log.Println("error: not a valid basic auth")
+						log.Error("Invalid basic auth provided for " + username)
 						return
 					}
 					username = userCred[0]
 					password = userCred[1]
 				} else {
-					log.Println("error: not a valid basic auth")
+					log.Error("Invalid basic auth provided for " + username)
 					return
 				}
 
@@ -94,7 +96,7 @@ func main() {
 				resp, err := rpc.DoSessionCreationRequest(req)
 				if err != nil && resp == nil {
 					errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-					log.Println(errorMessage)
+					log.Error(errorMessage)
 					w.Header().Set("Content-type", "application/json; charset=utf-8")
 					w.WriteHeader(http.StatusInternalServerError)
 					body, _ := json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
@@ -105,7 +107,7 @@ func main() {
 					w.Header().Set("Content-type", "application/json; charset=utf-8")
 					w.WriteHeader(int(resp.StatusCode))
 					if resp.StatusCode == http.StatusServiceUnavailable {
-						log.Println("error: unable to establish connection with db")
+						log.Error("error: unable to establish connection with db")
 						w.Write(resp.Body)
 						return
 					}
@@ -134,12 +136,12 @@ func main() {
 
 	err := config.SetConfiguration()
 	if err != nil {
-		log.Fatalf("fatal: %v", err)
+		log.Fatal(err.Error())
 	}
 
 	err = services.InitializeService(services.APIClient)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+		log.Fatal("service initialisation failed: " + err.Error())
 	}
 
 	conf := &config.HTTPConfig{
@@ -151,7 +153,7 @@ func main() {
 	}
 	apiServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing server: %v", err)
+		log.Fatal("service initialisation failed: " + err.Error())
 	}
 	router.Run(iris.Server(apiServer))
 }

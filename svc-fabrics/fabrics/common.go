@@ -21,9 +21,10 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabresponse"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -162,7 +163,7 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = response.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -173,12 +174,12 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage := "error while trying to read response body: " + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = response.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		resp.StatusCode = int32(pluginResponse.StatusCode)
-		log.Println(errorMessage)
-		return body, "", resp, fmt.Errorf(errorMessage)
+		log.Info("Read response successfully")
+		return body, "", resp, fmt.Errorf("Read response successfully")
 	}
 	body, err := ioutil.ReadAll(pluginResponse.Body)
 	resp.StatusCode = int32(pluginResponse.StatusCode)
@@ -216,10 +217,10 @@ func getPluginStatus(plugin fabmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -245,7 +246,7 @@ func (f *Fabrics) createToken(plugin fabmodel.Plugin) string {
 	contactRequest.URL = "/ODIM/v1/Sessions"
 	_, token, _, err := contactPlugin(contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 	}
 	if token != "" {
 		Token.storeToken(plugin.ID, token)
@@ -278,7 +279,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	authResp := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}
 
@@ -286,13 +287,13 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		resp = getFabricCollection()
 		return contactRequest, resp, nil
 	}
-	log.Println("request url", req.URL)
+	log.Info("Request url" + req.URL)
 	fabID := getFabricID(req.URL)
-	log.Println("Fabric UUID", fabID)
+	log.Info("Fabric UUID" + fabID)
 	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())
-		log.Println(errMsg)
+		log.Error(errMsg)
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg,
 			[]interface{}{"Plugin", "Fabric"}, nil)
 		return contactRequest, resp, err
@@ -301,7 +302,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	plugin, errs := fabmodel.GetPluginData(fabric.PluginID)
 	if errs != nil {
 		errMsg := fmt.Sprintf("error while trying to get plugin Data: %v", errs.Error())
-		log.Println(errMsg)
+		log.Error(errMsg)
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg,
 			[]interface{}{"Plugin", "Fabric"}, nil)
 		return contactRequest, resp, errs
@@ -313,7 +314,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		token := f.getPluginToken(plugin)
 		if token == "" {
 			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage,
 				[]interface{}{}, nil)
 			return contactRequest, resp, fmt.Errorf(errorMessage)
@@ -348,8 +349,9 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	if !(req.Method == http.MethodGet || req.Method == http.MethodDelete) {
 		err := json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
 		if err != nil {
-			log.Println("error while trying to get JSON request body: ", err)
-			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "error while trying to get JSON request body: "+err.Error(),
+			log.Error("error while trying to get JSON request body: " + err.Error())
+			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON,
+				"error while trying to get JSON request body: "+err.Error(),
 				[]interface{}{}, nil)
 			return contactRequest, resp, fmt.Errorf("error while trying to get JSON request body: %v", err)
 		}
@@ -476,7 +478,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	err := json.Unmarshal(req.RequestBody, &fabricRequest)
 	if err != nil {
 		errMsg := "unable to parse the fabrics request" + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
@@ -484,11 +486,11 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, fabricRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response, fmt.Errorf(errorMessage)
 	}

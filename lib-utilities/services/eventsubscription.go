@@ -29,7 +29,7 @@ func SubscribeToEMB(pluginID string, queueList []string) {
 		EMBQueueName: queueList,
 	})
 	if err != nil {
-		log.Error("error subscribing to EMB  %v" + err.Error())
+		log.Error("error subscribing to EMB  " + err.Error())
 	}
 	return
 }

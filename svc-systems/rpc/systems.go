@@ -17,7 +17,7 @@ package rpc
 
 import (
 	"context"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -44,7 +44,7 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -66,7 +66,7 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -85,7 +85,7 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -109,7 +109,7 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -132,7 +132,7 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -155,7 +155,7 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -178,7 +178,7 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -201,7 +201,7 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}
@@ -221,7 +221,7 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(resp, authResp)
 		return nil
 	}

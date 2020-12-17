@@ -16,7 +16,7 @@ package tmessagebus
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -29,7 +29,7 @@ func Publish(taskURI string, messageID string, eventType string) {
 
 	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
 	if err != nil {
-		log.Println("Unable to connect to kafka", err)
+		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	var eventID = uuid.NewV4().String()
@@ -56,8 +56,8 @@ func Publish(taskURI string, messageID string, eventType string) {
 	}
 
 	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
-		log.Println("unable to publish the event to message bus: ", err)
+		log.Error("unable to publish the event to message bus: " + err.Error())
 		return
 	}
-	log.Println("info: TaskURI:", taskURI, ", EventID:", eventID, ", MessageID:", messageID)
+	log.Error("info: TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID)
 }

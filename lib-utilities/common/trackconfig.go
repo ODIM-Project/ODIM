@@ -44,7 +44,7 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{})
 					log.Info("modified file:" + fileEvent.Name)
 					// update the odim config
 					if err := config.SetConfiguration(); err != nil {
-						log.Error("error while trying to set configuration: %v" + err.Error())
+						log.Error("error while trying to set configuration: " + err.Error())
 					}
 					eventChan <- "config file modified"
 				}

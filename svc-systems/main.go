@@ -34,35 +34,35 @@ var log = logrus.New()
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Error("System Service should not be run as the root user")
+		log.Fatal("System Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Error("fatal: error while trying set up configuration: " + err.Error())
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Error("error while trying to check DB connection health: " + err.Error())
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
 	schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 	if err != nil {
-		log.Error("fatal: error while trying to read search/filter schema json: " + err.Error())
+		log.Fatal("Error while trying to read search/filter schema json: " + err.Error())
 	}
 	err = json.Unmarshal(schemaFile, &systems.SF)
 	if err != nil {
-		log.Error("fatal: error while trying to fetch search/filter schema json: " + err.Error())
+		log.Fatal("Error while trying to fetch search/filter schema json: " + err.Error())
 	}
 
 	err = services.InitializeService(services.Systems)
 	if err != nil {
-		log.Error("fatal: error while trying to initialize the service: " + err.Error())
+		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}
 
 	registerHandler()
 	// Run server
 	if err := services.Service.Run(); err != nil {
-		log.Error(err.Error())
+		log.Fatal(err.Error())
 	}
 }
 

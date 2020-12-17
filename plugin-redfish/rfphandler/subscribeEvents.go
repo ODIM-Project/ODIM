@@ -115,7 +115,7 @@ func deleteMatchingSubscriptions(device *rfputilities.RedfishDevice) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: " + device.Location + " got " + strconv.Itoa(resp.StatusCode))
+		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: " + device.Location + " got " + resp.StatusCode)
 		log.Error(errorMessage)
 		return
 	}
@@ -160,7 +160,7 @@ func isOurSubscription(device *rfputilities.RedfishDevice) bool {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: " + device.Location + " got " + strconv.Itoa(resp.StatusCode))
+		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: " + device.Location + " got " + resp.StatusCode)
 		log.Error(errorMessage)
 		return false
 	}
@@ -316,14 +316,14 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Authtication with the device failed")
-		return errors.New("Authtication with the device failed")
+		return errors.New("Authentication with the device failed")
 	}
 	if resp.StatusCode >= 300 {
 		log.Error("Subscription operation failed: \n%s\n\n" + string(body))
 	}
 	common.SetResponseHeader(ctx, header)
 	ctx.StatusCode(resp.StatusCode)
-	log.Error("Redfish plugin response body: %s \n" + string(body))
+	log.Info("Redfish plugin response body: " + string(body))
 	ctx.WriteString(string(body))
 	return nil
 }

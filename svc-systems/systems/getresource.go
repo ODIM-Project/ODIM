@@ -588,7 +588,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 
 	data, err := smodel.GetResource(tableName, req.URL)
 	if err != nil {
-		log.Error("error getting system details : %v" + err.Error())
+		log.Error("error getting system details : " + err.Error())
 		errorMessage := err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -748,7 +748,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	} else {
 		data, err = smodel.GetSystemByUUID(req.URL)
 		if err != nil {
-			log.Error("error getting system details : %v" + err.Error())
+			log.Error("error getting system details : " + err.Error())
 			errorMessage := err.Error()
 			if errors.DBKeyNotFound == err.ErrNo() {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)

@@ -254,7 +254,7 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 		req.OID = "/ODIM/v1/Sessions"
 		_, token, _, err := contactPlugin(req, "error while getting the details "+req.OID+": ")
 		if err != nil {
-			log.Error(err)
+			log.Error(err.Error())
 			return nil, err
 		}
 		req.Token = token

@@ -41,6 +41,52 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
+// ForwardEventMessageData contains information of Events and message details including arguments
+// it will be send as byte stream on the wire to/from kafka
+type ForwardEventMessageData struct {
+	OdataType string         `json:"@odata.type"`
+	Name      string         `json:"Name"`
+	Context   string         `json:"@odata.context"`
+	Events    []ForwardEvent `json:"Events"`
+}
+
+// ForwardEvent contains the details of the event to be forwarded
+type ForwardEvent struct {
+	MemberID          string      `json:"MemberId,omitempty"`
+	EventType         string      `json:"EventType"`
+	EventGroupID      int         `json:"EventGroupId,omitempty"`
+	EventID           string      `json:"EventId"`
+	Severity          string      `json:"Severity"`
+	EventTimestamp    string      `json:"EventTimestamp"`
+	Message           string      `json:"Message"`
+	MessageArgs       []string    `json:"MessageArgs,omitempty"`
+	MessageID         string      `json:"MessageId"`
+	Oem               interface{} `json:"Oem,omitempty"`
+	OriginOfCondition string      `json:"OriginOfCondition,omitempty"`
+}
+
+// checkAndAddFabrics this function is used to cross check if an event is for fabrics resource added
+// if yes then it will add the new fabric resource to db
+func checkAndAddFabrics(requestData string, host string) {
+	if strings.Contains(requestData, "/redfish/v1/Fabrics") && strings.Contains(requestData, "ResourceAdded") {
+		message, parseStatus := parseEventData(requestData)
+		if !parseStatus {
+			log.Println("Error while trying to parse request data ", requestData)
+			return
+		}
+		for _, inEvent := range message.Events {
+			if len(inEvent.OriginOfCondition) < 1 {
+				log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
+				continue
+			}
+			if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+				strings.HasPrefix(inEvent.OriginOfCondition, "/redfish/v1/Fabrics") {
+				addFabricRPCCall(inEvent.OriginOfCondition, host)
+			}
+		}
+	}
+}
+
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
 // 	data of type interface{}
@@ -64,7 +110,8 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	var flag bool
 	var uuid string
-	var message common.MessageData
+
+	checkAndAddFabrics(requestData, host)
 
 	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
 	if err != nil {
@@ -78,36 +125,26 @@ func PublishEventsToDestination(data interface{}) bool {
 	}
 
 	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
+	message, parseStatus := parseEventData(requestData)
+	if !parseStatus {
+		log.Println("Error while trying to parse the input request data", message)
+		return false
+	}
 
 	subscriptions, err := evmodel.GetEvtSubscriptions(host)
 	if err != nil {
 		return false
 	}
 
-	err = json.Unmarshal([]byte(requestData), &message)
-	if err != nil {
-		log.Printf("error: failed to unmarshal the incoming event %v: %v\n", requestData, err)
-		return false
-	}
-
-	eventMap := make(map[string][]common.Event)
+	eventMap := make(map[string][]ForwardEvent)
 	for _, inEvent := range message.Events {
-		if inEvent.OriginOfCondition == nil {
+		if len(inEvent.OriginOfCondition) < 1 {
 			log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
 			continue
-		}
-
-		if len(inEvent.OriginOfCondition.Oid) < 1 {
-			log.Printf("event not forwarded : Originofcondition is empty in incoming event with body %v\n", requestData)
-			continue
-		}
-		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
-			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
 
 		var resTypePresent bool
-		originofCond := strings.Split(strings.TrimSuffix(inEvent.OriginOfCondition.Oid, "/"), "/")
+		originofCond := strings.Split(strings.TrimSuffix(inEvent.OriginOfCondition, "/"), "/")
 		resType := originofCond[len(originofCond)-2]
 		for _, value := range common.ResourceTypes {
 			if strings.Contains(resType, value) {
@@ -141,16 +178,16 @@ func PublishEventsToDestination(data interface{}) bool {
 
 		if strings.EqualFold("Alert", inEvent.EventType) {
 			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
-				go rediscoverSystemInventory(uuid, inEvent.OriginOfCondition.Oid)
+				go rediscoverSystemInventory(uuid, inEvent.OriginOfCondition)
 				flag = true
 			}
 			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
-				go updateSystemPowerState(uuid, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
+				go updateSystemPowerState(uuid, inEvent.OriginOfCondition, inEvent.MessageID)
 				flag = true
 			}
 		} else if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
-			if strings.Contains(message.Events[0].OriginOfCondition.Oid, "Volumes") {
-				s := strings.Split(message.Events[0].OriginOfCondition.Oid, "/")
+			if strings.Contains(message.Events[0].OriginOfCondition, "Volumes") {
+				s := strings.Split(message.Events[0].OriginOfCondition, "/")
 				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])
 				go rediscoverSystemInventory(uuid, storageURI)
 				flag = true
@@ -170,14 +207,14 @@ func PublishEventsToDestination(data interface{}) bool {
 	return flag
 }
 
-func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.Event, originResources []string) bool {
+func filterEventsToBeForwarded(subscription evmodel.Subscription, event ForwardEvent, originResources []string) bool {
 	eventTypes := subscription.EventTypes
 	messageIds := subscription.MessageIds
 	resourceTypes := subscription.ResourceTypes
-	originCondition := strings.TrimSuffix(event.OriginOfCondition.Oid, "/")
+	originCondition := strings.TrimSuffix(event.OriginOfCondition, "/")
 	if (len(eventTypes) == 0 || isStringPresentInSlice(eventTypes, event.EventType, "event type")) &&
 		(len(messageIds) == 0 || isStringPresentInSlice(messageIds, event.MessageID, "message id")) &&
-		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition.Oid, subscription.SubordinateResources)) {
+		(len(resourceTypes) == 0 || isResourceTypeSubscribed(resourceTypes, event.OriginOfCondition, subscription.SubordinateResources)) {
 		// if SubordinateResources is true then check if originofresource is top level of originofcondition
 		// if SubordinateResources is flase then check originofresource is same as originofcondition
 		for _, origin := range originResources {
@@ -335,7 +372,7 @@ func addFabricRPCCall(origin, address string) {
 	p := PluginContact{
 		ContactClient: pmbhandle.ContactPlugin,
 	}
-	go p.checkCollectionSubscription(origin, "Redfish")
+	p.checkCollectionSubscription(origin, "Redfish")
 	log.Println("info: Fabric Added")
 	return
 }
@@ -373,4 +410,43 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 	}
 	log.Println("info: system power state update initiated")
 	return
+}
+
+// parseEventData is used to parse the input request data and based on the input structure
+// of originofcondition further requests will be created
+func parseEventData(requestData string) (ForwardEventMessageData, bool) {
+	var forwardEventData ForwardEventMessageData
+	var message common.MessageData
+	err := json.Unmarshal([]byte(requestData), &forwardEventData)
+	if err != nil {
+		if err = json.Unmarshal([]byte(requestData), &message); err != nil {
+			log.Printf("error: Failed to unmarshal the event: %v", err)
+			log.Println("incoming event:", requestData)
+			return forwardEventData, false
+		}
+		// map the std event format to forwarding event format
+		forwardEventData.Context = message.Context
+		forwardEventData.Name = message.Name
+		forwardEventData.OdataType = message.OdataType
+		var events []ForwardEvent
+		for i := 0; i < len(forwardEventData.Events); i++ {
+			var event ForwardEvent
+			event.EventGroupID = message.Events[i].EventGroupID
+			event.EventID = message.Events[i].EventID
+			event.EventTimestamp = message.Events[i].EventTimestamp
+			event.EventType = message.Events[i].EventType
+			event.MemberID = message.Events[i].MemberID
+			event.Message = message.Events[i].Message
+			event.MessageArgs = message.Events[i].MessageArgs
+			event.MessageID = message.Events[i].MessageID
+			event.Oem = message.Events[i].Oem
+			event.Severity = message.Events[i].Severity
+			if message.Events[i].OriginOfCondition != nil {
+				event.OriginOfCondition = message.Events[i].OriginOfCondition.Oid
+			}
+			events = append(events, event)
+		}
+		forwardEventData.Events = events
+	}
+	return forwardEventData, true
 }

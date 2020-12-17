@@ -77,9 +77,7 @@ func TestExternalInterface_CreateAggregate(t *testing.T) {
 	})
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
-	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -175,9 +173,7 @@ func TestExternalInterface_GetAllAggregates(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -225,9 +221,7 @@ func TestExternalInterface_GetAggregate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -289,9 +283,7 @@ func TestExternalInterface_DeleteAggregate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -391,9 +383,7 @@ func TestExternalInterface_AddElementsToAggregate(t *testing.T) {
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
-	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -540,9 +530,7 @@ func TestExternalInterface_RemoveElementsFromAggregate(t *testing.T) {
 
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
-	p := &ExternalInterface{
-		Auth: mockIsAuthorized,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -702,14 +690,7 @@ func TestExternalInterface_ResetElementsOfAggregate(t *testing.T) {
 
 	missingparamReq, _ := json.Marshal(ResetRequest{})
 
-	p := &ExternalInterface{
-		ContactClient:   mockContactClient,
-		Auth:            mockIsAuthorized,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-		DecryptPassword: stubDevicePassword,
-		GetPluginStatus: GetPluginStatusForTesting,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		taskID          string
 		sessionUserName string
@@ -847,14 +828,7 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 		t.Fatalf("error: %v", err)
 	}
 
-	p := &ExternalInterface{
-		ContactClient:   mockContactClient,
-		Auth:            mockIsAuthorized,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-		DecryptPassword: stubDevicePassword,
-		GetPluginStatus: GetPluginStatusForTesting,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		taskID          string
 		sessionUserName string

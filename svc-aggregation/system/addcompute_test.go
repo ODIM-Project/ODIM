@@ -23,7 +23,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -38,14 +37,6 @@ func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 }
 func mockSubscribeEMB(pluginID string, list []string) {
 	return
-}
-func testContactClientWithDelay(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
-	time.Sleep(4 * time.Second)
-	fBody := `{"Members":[{"@odata.id":"/ODIM/v1/Systems/1"}]}`
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(bytes.NewBufferString(fBody)),
-	}, nil
 }
 
 func mockContactClientForDuplicate(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
@@ -278,18 +269,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 		},
 	}
 
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-	}
+	p := getMockExternalInterface()
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var percentComplete int32
 	var pluginContactRequest getResourceRequest

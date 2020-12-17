@@ -43,7 +43,7 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 		},
 	)
 	if err != nil && response == nil {
-		errMsg := fmt.Sprintf("rpc call failed: %v", err)
+		errMsg := fmt.Sprintf("rpc call failed: ", err)
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
 	}
@@ -64,7 +64,7 @@ func GetSessionUserName(sessionToken string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("something went wrong with rpc call: %v" + err.Error())
+		log.Error("something went wrong with rpc call: " + err.Error())
 		return "", err
 	}
 	return response.UserName, err

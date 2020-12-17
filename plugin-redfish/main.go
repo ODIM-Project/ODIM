@@ -48,7 +48,7 @@ func main() {
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("error while reading from config" + err.Error())
+		log.Fatal("error while reading from config " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
@@ -81,7 +81,7 @@ func app() {
 	}
 	pluginServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatal("Unable to initialize plugin :" + err.Error())
+		log.Fatal("Unable to initialize plugin : " + err.Error())
 	}
 	app.Run(iris.Server(pluginServer))
 }
@@ -224,7 +224,7 @@ func eventsrouters() {
 	}
 	evtServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatal("Unable to initialize event server: v" + err.Error())
+		log.Fatal("Unable to initialize event server: " + err.Error())
 	}
 	app.Run(iris.Server(evtServer))
 }

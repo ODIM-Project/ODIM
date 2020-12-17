@@ -70,7 +70,7 @@ func validateOEMPrivileges(oemPrivileges []string) (*Status, []interface{}, erro
 	//Get OEM privileges from database
 	oemPrivilegeRegistry, err := asmodel.GetOEMPrivileges()
 	if err != nil {
-		log.Error("error getting OEM Privileges: ", err.Error())
+		log.Error("error getting OEM Privileges: " + err.Error())
 		return &Status{Code: http.StatusInternalServerError, Message: response.InternalError}, []interface{}{}, fmt.Errorf("error getting OEM Privileges: %v", err)
 	}
 

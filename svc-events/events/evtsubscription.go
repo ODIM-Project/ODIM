@@ -537,20 +537,20 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		return "", resp
 	}
 	deviceIPAddress := fmt.Sprintf("%v", addr[0])
- 
+
 	evtSubscription := evmodel.Subscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
 	}
- 
-	FQDN ,_,err:= net.SplitHostPort(target.ManagerAddress)
- if err !=nil{
- 		FQDN=target.ManagerAddress
- }
-	if !(strings.Contains(locationHdr,FQDN)) {   
+
+	fqdn, _, err := net.SplitHostPort(target.ManagerAddress)
+	if err != nil {
+		fqdn = target.ManagerAddress
+	}
+	if !(strings.Contains(locationHdr, fqdn)) {
 		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
-   	}
+	}
 	err = saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription of device data: " + err.Error()

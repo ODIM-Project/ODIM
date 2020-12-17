@@ -19,7 +19,7 @@ package datacommunicator
 // -----------------------------------------------------------------------------
 import (
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/BurntSushi/toml"
 )
@@ -88,7 +88,7 @@ func SetConfiguration(filePath string) error {
 		return fmt.Errorf("no value found for KServersInfo in messagebus config file")
 	}
 	if mq.KafkaF.KTimeout == 0 {
-		log.Println("no value found for KTimeout in messagebus config file, using default time 10 seconds")
+		log.Warn("no value found for KTimeout in messagebus config file, using default time 10 seconds")
 		mq.KafkaF.KTimeout = 10
 	}
 	if mq.KafkaF.KAFKACertFile == "" {

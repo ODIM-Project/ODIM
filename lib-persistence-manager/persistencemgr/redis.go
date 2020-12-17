@@ -18,7 +18,7 @@ package persistencemgr
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"math/big"
 	"strconv"
 	"strings"
@@ -108,10 +108,11 @@ func resetDBWriteConection(dbFlag DbType) {
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getInMemoryDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Println("Inmemory MasterIP:" + currentMasterIP)
+			log.Info("Inmemory MasterIP:" + currentMasterIP)
 			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
+					log.Info("Write pool is nil")
 					return
 				}
 				inMemDBConnPool.Mux.Lock()
@@ -126,7 +127,7 @@ func resetDBWriteConection(dbFlag DbType) {
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getOnDiskDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Println("Ondisk MasterIP:" + currentMasterIP)
+			log.Info("Ondisk MasterIP:" + currentMasterIP)
 			if onDiskDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
@@ -1070,7 +1071,7 @@ func (p *ConnPool) GetDeviceSubscription(index string, match string) ([]string, 
 			if err != nil {
 				return []string{}, err
 			}
-			log.Println("No of data records for get device subscription query : ", len(data))
+			log.Info("No of data records for get device subscription query : " + strconv.Itoa(len(data)))
 			if len(data) < 1 {
 				return []string{}, fmt.Errorf("No data found for the key: %v", match)
 			}

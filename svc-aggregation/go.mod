@@ -10,6 +10,7 @@ require (
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/satori/go.uuid v1.2.0
+	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.5.1
 )
 

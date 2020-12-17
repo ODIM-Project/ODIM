@@ -16,7 +16,7 @@ package agmessagebus
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -28,7 +28,7 @@ import (
 func Publish(systemID, eventType, collectionType string) {
 	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
 	if err != nil {
-		log.Println("Unable to connect to kafka", err)
+		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 
@@ -55,9 +55,9 @@ func Publish(systemID, eventType, collectionType string) {
 	}
 
 	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
-		log.Println("Unable Publish events to kafka", err)
+		log.Error("Unable Publish events to kafka" + err.Error())
 		return
 	}
-	log.Println("Event Published")
+	log.Info("Event Published")
 
 }

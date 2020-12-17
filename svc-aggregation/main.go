@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -36,6 +36,8 @@ type Schema struct {
 	ConditionKeys []string `json:"conditionKeys"`
 	QueryKeys     []string `json:"queryKeys"`
 }
+
+var log = logrus.New()
 
 func main() {
 	// verifying the uid of the user

@@ -544,11 +544,11 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		OriginResource: origin,
 	}
 
-	fqdn, _, err := net.SplitHostPort(target.ManagerAddress)
+	host, _, err := net.SplitHostPort(target.ManagerAddress)
 	if err != nil {
-		fqdn = target.ManagerAddress
+		host = target.ManagerAddress
 	}
-	if !(strings.Contains(locationHdr, fqdn)) {
+	if !(strings.Contains(locationHdr, host)) {
 		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
 	}
 	err = saveDeviceSubscriptionDetails(evtSubscription)

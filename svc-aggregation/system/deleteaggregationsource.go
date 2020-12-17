@@ -243,7 +243,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Error(" Delete operation for system  ", key, " can't be processed "+dbErr.Error())
+		log.Error(" Delete operation for system  " + key + " can't be processed " + dbErr.Error())
 		errMsg := "error while trying to delete compute system: " + dbErr.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}

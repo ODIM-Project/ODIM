@@ -16,8 +16,8 @@
 package rfphandler
 
 import (
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -35,7 +35,6 @@ func TokenValidation(token string) bool {
 	for _, v := range tokenDetails {
 		if token == v.Token {
 			flag = true
-			log.Println(time.Since(v.LastUsed).Minutes())
 			if time.Since(v.LastUsed).Minutes() > pluginConfig.Data.SessionTimeoutInMinutes {
 				return flag
 			}
@@ -49,7 +48,7 @@ func Validate(ctx iris.Context) {
 	//Get token from Request
 	if ctx.GetHeader("X-Auth-Token") == "" && ctx.GetHeader("Authorization") == "" {
 		ctx.StatusCode(http.StatusUnauthorized)
-		log.Println("No valid authorization")
+		log.Error("No valid authorization")
 		ctx.WriteString("No valid authorization")
 		return
 	}
@@ -58,7 +57,7 @@ func Validate(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -68,7 +67,7 @@ func Validate(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("Unable to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -81,7 +80,7 @@ func Validate(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		rfpresponse.SetErrorResponse(ctx, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -89,21 +88,21 @@ func Validate(ctx iris.Context) {
 	//Get ServiceRoot of the device
 	err = redfishClient.GetRootService(device)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		rfpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 		return
 	}
 	//Doing Get on device using basic Authentication
 	resp, err := redfishClient.BasicAuthWithDevice(device, device.RootNode.Systems.Oid)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		rfpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		rfpresponse.SetErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -115,7 +114,7 @@ func Validate(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Printf("Could not retreive ComputerSystems for %s: \n%s\n\n", device.Host, body)
+		log.Error("Could not retrieve ComputerSystems for " + device.Host + " :" + string(body))
 	}
 
 	response := rfpresponse.Device{

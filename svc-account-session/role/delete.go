@@ -25,14 +25,14 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	"github.com/ODIM-Project/ODIM/svc-account-session/session"
 
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.Session, error) {
 	sess, err := auth.CheckSessionTimeOut(sessionToken)
 	if err != nil {
-		errorMessage := "error while authorizing session token: " + err.Error()
+		errorMessage := "Unable to authorize session token: " + err.Error()
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
@@ -47,16 +47,16 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 			"OData-Version":     "4.0",
 			"X-Frame-Options":   "sameorigin",
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return nil, err
 	}
 	if errs := session.UpdateLastUsedTime(sessionToken); errs != nil {
-		errorMessage := "error while updating last used time of session with token " + sessionToken + ": " + errs.Error()
+		errorMessage := "Unable to update last used time of session with token " + sessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return nil, errs
 	}
 	return sess, nil
@@ -79,7 +79,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		"X-Frame-Options":   "sameorigin",
 	}
 	if !sess.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "error: the session token didn't have required privilege"
+		errorMessage := "The session token doesn't have required privilege"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -94,19 +94,19 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return &resp
 	}
 	users, uerr := asmodel.GetAllUsers()
 	if uerr != nil {
-		errorMessage := "error: unable to get users list: " + uerr.Error()
-		log.Printf(errorMessage)
+		errorMessage := "Unable to get users list: " + uerr.Error()
+		log.Error(errorMessage)
 		resp.CreateInternalErrorResponse(errorMessage)
 		return &resp
 	}
 	for _, key := range users {
 		if req.ID == key.RoleID {
-			errorMessage := "error: role is assigned to a user"
+			errorMessage := "Role is assigned to a user"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.ResourceInUse
 			args := response.Args{
@@ -121,13 +121,13 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return &resp
 		}
 	}
 	role, gerr := asmodel.GetRoleDetailsByID(req.ID)
 	if gerr != nil {
-		errorMessage := "error while trying to get role details: " + gerr.Error()
+		errorMessage := "Unable to get role details: " + gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -147,11 +147,11 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return &resp
 	}
 	if role.IsPredefined {
-		errorMessage := "error: the predifined roles cannot be deleted."
+		errorMessage := "A predefined role cannot be deleted."
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -166,14 +166,14 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return &resp
 	}
 
 	if derr := role.Delete(); derr != nil {
-		errorMessage := "error while trying to delete role: " + derr.Error()
+		errorMessage := "Unable to delete role: " + derr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return &resp
 	}
 

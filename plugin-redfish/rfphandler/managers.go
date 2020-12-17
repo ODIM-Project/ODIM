@@ -17,8 +17,8 @@ package rfphandler
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -38,7 +38,7 @@ func GetManagersCollection(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -83,7 +83,7 @@ func GetManagersInfo(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -128,8 +128,8 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	}
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Internal processing error: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -138,8 +138,8 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	//Fetching generic resource details from the device
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
-		errMsg := "error: authentication failed: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Authentication failed: " + err.Error()
+		log.Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -155,12 +155,11 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Authtication with the device failed")
+		ctx.WriteString("Authentication with the device failed")
 		return
 	}
 	if resp.StatusCode >= 300 {
-		log.Println("Could not retreive generic resource for", device.Host, ": \n", body, ":\n", uri)
-
+		log.Error("Could not retrieve generic resource for " + device.Host + ": \n" + string(body) + ":\n" + uri)
 	}
 	respData := string(body)
 	//replacing the resposne with north bound translation URL

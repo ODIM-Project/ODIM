@@ -18,7 +18,7 @@ package tmodel
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -206,7 +206,7 @@ func GetTaskStatus(taskID string, db common.DbType) (*Task, error) {
 	var taskData string
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		log.Printf("error while trying to get the db connection")
+		log.Error("error while trying to get the db connection")
 		return task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
 	}
 	taskData, err = connPool.Read("task", taskID)
@@ -257,12 +257,12 @@ func Transaction(key string, cb func(string) error) error {
 func ValidateTaskUserName(userName string) error {
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		log.Printf("error while trying to get the db connection")
+		log.Error("error while trying to get the db connection")
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
 	// If the user not found in the db, below call sets err to non nil value
 	if _, err = connPool.Read("User", userName); err != nil {
-		log.Printf("error while trying to read from the db : %v", err.Error())
+		log.Error("error while trying to read from the db : " + err.Error())
 		return fmt.Errorf("error while trying to read from DB: %v", err.Error())
 	}
 	return nil

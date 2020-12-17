@@ -11,6 +11,7 @@ require (
 	github.com/micro/go-micro v1.13.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/satori/uuid v1.2.0
+	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 )
 

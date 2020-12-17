@@ -15,7 +15,7 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 
 	"io/ioutil"
@@ -29,38 +29,40 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("System Service should not be run as the root user")
+		log.Error("System Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
 
 	schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to read search/filter schema json: %v", err)
+		log.Error("fatal: error while trying to read search/filter schema json: " + err.Error())
 	}
 	err = json.Unmarshal(schemaFile, &systems.SF)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to fetch search/filter schema json: %v", err)
+		log.Error("fatal: error while trying to fetch search/filter schema json: " + err.Error())
 	}
 
 	err = services.InitializeService(services.Systems)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
+		log.Error("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
 	registerHandler()
 	// Run server
 	if err := services.Service.Run(); err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}
 }
 

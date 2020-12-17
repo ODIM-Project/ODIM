@@ -116,7 +116,7 @@ func StartUpdate(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("Error while trying to collect data from request: ", err)
+		log.Error("Error while trying to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return

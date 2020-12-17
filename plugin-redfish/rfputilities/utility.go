@@ -37,8 +37,10 @@ import (
 	"encoding/pem"
 	"log"
 
+	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
+	"github.com/fsnotify/fsnotify"
 )
 
 // GetPlainText ...
@@ -75,3 +77,40 @@ func GetPlainText(password []byte) ([]byte, error) {
 
 //Status holds the Status of plugin it will be intizaied during startup time
 var Status rfpresponse.Status
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+func TrackConfigFileChanges(configFilePath string) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = watcher.Add(configFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	go func() {
+		for {
+			select {
+			case fileEvent, ok := <-watcher.Events:
+				if !ok {
+					continue
+				}
+				log.Println("event:", fileEvent)
+				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
+					log.Println("modified file:", fileEvent.Name)
+					// update the odim config
+					if err := config.SetConfiguration(); err != nil {
+						log.Printf("error while trying to set configuration: %v", err)
+					}
+				}
+				//Reading file to continue the watch
+				watcher.Add(configFilePath)
+			case err, _ := <-watcher.Errors:
+				if err != nil {
+					log.Println(err)
+					defer watcher.Close()
+				}
+			}
+		}
+	}()
+}

@@ -65,6 +65,11 @@ type PluginToken struct {
 // Token variable hold the all the XAuthToken  against the plguin ID
 var Token PluginToken
 
+// DBInterface hold interface for db functions
+type DBInterface struct {
+	AddManagertoDBInterface func(mgrmodel.RAManager) error
+}
+
 // StoreToken to store the token ioto the  map
 func (p *PluginToken) StoreToken(plguinID, token string) {
 	p.lock.Lock()
@@ -269,4 +274,26 @@ func RetryManagersOperation(req PluginContactRequest, errorMessage string) ([]by
 	req.Token = token
 	return ContactPlugin(req, errorMessage)
 
+}
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
+	eventChan := make(chan interface{})
+	var lock sync.Mutex
+	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	select {
+	case <-eventChan: // new data arrives through eventChan channel
+		mgr := mgrmodel.RAManager{
+			Name:            "odimra",
+			ManagerType:     "Service",
+			FirmwareVersion: config.Data.FirmwareVersion,
+			ID:              config.Data.RootServiceUUID,
+			UUID:            config.Data.RootServiceUUID,
+			State:           "Enabled",
+		}
+		err := dbInterface.AddManagertoDBInterface(mgr)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }

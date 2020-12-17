@@ -18,12 +18,13 @@ package common
 import (
 	"github.com/fsnotify/fsnotify"
 	"log"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 // TrackConfigFileChanges monitors the config changes using fsnotfiy
-func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{}) {
+func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{}, lock *sync.Mutex) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -43,9 +44,11 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{})
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
 					log.Println("modified file:", fileEvent.Name)
 					// update the odim config
+					lock.Lock()
 					if err := config.SetConfiguration(); err != nil {
 						log.Printf("error while trying to set configuration: %v", err)
 					}
+					lock.Unlock()
 					eventChan <- "config file modified"
 				}
 				//Reading file to continue the watch

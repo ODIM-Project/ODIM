@@ -16,6 +16,7 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -45,6 +46,16 @@ func main() {
 		log.Fatalf("fatal: error while trying to initialize service: %v", err)
 	}
 	fabrics.Token.Tokens = make(map[string]string)
+
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	var lock sync.Mutex
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+
 	registerHandlers()
 	if err := services.Service.Run(); err != nil {
 		log.Fatal("failed to run a service: ", err)

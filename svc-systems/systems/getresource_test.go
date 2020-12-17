@@ -32,9 +32,9 @@ import (
 )
 
 func mockSystemIndex(table, uuid string, indexData map[string]interface{}) error {
-	SF.QueryKeys = []string{"filter"}
-	SF.ConditionKeys = []string{"eq", "gt", "lt", "ge", "le", "ne"}
-	SF.SearchKeys = []map[string]map[string]string{
+	scommon.SF.QueryKeys = []string{"filter"}
+	scommon.SF.ConditionKeys = []string{"eq", "gt", "lt", "ge", "le", "ne"}
+	scommon.SF.SearchKeys = []map[string]map[string]string{
 		{
 			"ProcessorSummary/Count": {
 				"type": "float64",

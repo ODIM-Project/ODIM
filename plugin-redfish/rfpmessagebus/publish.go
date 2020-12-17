@@ -48,7 +48,7 @@ func Publish(data interface{}) bool {
 	if err != nil {
 		var messageData rfpmodel.ForwardEventMessageData
 		if err := json.Unmarshal(event.Request, &messageData); err != nil {
-      log.Error("Failed to unmarshal the event: " + err.Error())
+			log.Error("Failed to unmarshal the event: " + err.Error())
 			return false
 		}
 		message.Context = messageData.Context

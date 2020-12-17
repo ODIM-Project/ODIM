@@ -18,8 +18,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"

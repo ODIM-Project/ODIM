@@ -43,7 +43,7 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 		},
 	)
 	if err != nil && response == nil {
-		errMsg := fmt.Sprintf("rpc call failed: ", err)
+		errMsg := fmt.Sprintf("rpc call failed: %v", err)
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
 	}

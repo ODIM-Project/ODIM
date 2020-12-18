@@ -19,7 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -45,7 +45,7 @@ type Events struct {
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }
@@ -70,7 +70,8 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	privileges := []string{common.PrivilegeLogin}
 	authResp := e.IsAuthorizedRPC(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		log.Error("error while trying to authenticate session: status code: " + string(authResp.StatusCode) +
+			", status message: " + authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusMessage = authResp.StatusMessage
 		resp.StatusCode = authResp.StatusCode
@@ -172,7 +173,8 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	// Athorize the request here
 	authResp := e.IsAuthorizedRPC(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		log.Error("error while trying to authenticate session: status code: " +
+			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusCode = authResp.StatusCode
 		return nil
@@ -182,7 +184,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		errorMessage := "error while trying to get the session username: " + err.Error()
 		resp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
 		resp.StatusCode = http.StatusUnauthorized
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return err
 	}
 	// Create the task and get the taskID
@@ -197,7 +199,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error   headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return fmt.Errorf(resp.StatusMessage)
 	}
 	strArray := strings.Split(taskURI, "/")
@@ -235,7 +237,7 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for submit test event: " + err.Error()
-		log.Printf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
 		return fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
@@ -262,7 +264,7 @@ func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *event
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Printf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
 		return nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -289,7 +291,7 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Printf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
 		return nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -322,7 +324,7 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Printf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
 		return nil
 	}
 	resp.StatusCode = data.StatusCode
@@ -345,7 +347,7 @@ func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *events
 //SubsribeEMB defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
 func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest, resp *eventsproto.SubscribeEMBResponse) error {
-	log.Println("Subscribing on emb for plugin ", req.PluginID)
+	log.Info("Subscribing on emb for plugin " + req.PluginID)
 	for i := 0; i < len(req.EMBQueueName); i++ {
 		evcommon.EMBTopics.ConsumeTopic(req.EMBQueueName[i])
 	}

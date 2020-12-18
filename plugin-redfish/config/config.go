@@ -18,8 +18,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"os"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -119,14 +119,14 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if Data.FirmwareVersion == "" {
-		log.Println("warn: no value set for FirmwareVersion, setting default value")
+		log.Warn("No value set for FirmwareVersion, setting default value")
 		Data.FirmwareVersion = "1.0"
 	}
 	if Data.RootServiceUUID == "" {
 		return fmt.Errorf("error: no value set for rootServiceUUID")
 	}
 	if Data.SessionTimeoutInMinutes == 0 {
-		log.Println("warn: no value set for SessionTimeoutInMinutes, setting default value")
+		log.Warn("No value set for SessionTimeoutInMinutes, setting default value")
 		Data.SessionTimeoutInMinutes = 30
 	}
 	if err := checkPluginConf(); err != nil {
@@ -154,7 +154,7 @@ func checkPluginConf() error {
 		return fmt.Errorf("error: no value found for PluginConf")
 	}
 	if Data.PluginConf.ID == "" {
-		log.Println("warn: no value set for Plugin ID, setting default value")
+		log.Warn("No value set for Plugin ID, setting default value")
 		Data.PluginConf.ID = "GRF"
 	}
 	if Data.PluginConf.Host == "" {
@@ -175,7 +175,7 @@ func checkPluginConf() error {
 //check load balancer configuration
 func checkLBConf() {
 	if Data.LoadBalancerConf == nil {
-		log.Println("warn: no value set for LoadBalancerConf, setting default value")
+		log.Warn("No value set for LoadBalancerConf, setting default value")
 		Data.LoadBalancerConf = &LoadBalancerConf{
 			Host: Data.EventConf.ListenerHost,
 			Port: Data.EventConf.ListenerPort,
@@ -183,7 +183,7 @@ func checkLBConf() {
 		return
 	}
 	if Data.LoadBalancerConf.Host == "" || Data.LoadBalancerConf.Port == "" {
-		log.Println("warn: no value set for LBHost/LBPort, setting ListenerHost/ListenerPort value")
+		log.Warn("No value set for LBHost/LBPort, setting ListenerHost/ListenerPort value")
 		Data.LoadBalancerConf.Host = Data.EventConf.ListenerHost
 		Data.LoadBalancerConf.Port = Data.EventConf.ListenerPort
 	}
@@ -214,11 +214,11 @@ func checkMessageBusConf() error {
 		return fmt.Errorf("error: value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
 	}
 	if Data.MessageBusConf.EmbType == "" {
-		log.Println("warn: no value set for MessageBusType, setting default value")
+		log.Warn("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.EmbType = "Kafka"
 	}
 	if len(Data.MessageBusConf.EmbQueue) <= 0 {
-		log.Println("warn: no value set for MessageBusQueue, setting default value")
+		log.Warn("No value set for MessageBusQueue, setting default value")
 		Data.MessageBusConf.EmbQueue = []string{"REDFISH-EVENTS-TOPIC"}
 	}
 	return nil
@@ -245,7 +245,7 @@ func checkCertsAndKeysConf() error {
 //Check or apply default values for URL translation from ODIM <=> redfish
 func checkURLTranslationConf() {
 	if Data.URLTranslation == nil {
-		log.Println("warn: URL translation not provided, setting default value")
+		log.Warn("URL translation not provided, setting default value")
 		Data.URLTranslation = &URLTranslation{
 			NorthBoundURL: map[string]string{
 				"ODIM": "redfish",
@@ -257,13 +257,13 @@ func checkURLTranslationConf() {
 		return
 	}
 	if len(Data.URLTranslation.NorthBoundURL) <= 0 {
-		log.Println("warn: NorthBoundURL is empty, setting default value")
+		log.Warn("NorthBoundURL is empty, setting default value")
 		Data.URLTranslation.NorthBoundURL = map[string]string{
 			"ODIM": "redfish",
 		}
 	}
 	if len(Data.URLTranslation.SouthBoundURL) <= 0 {
-		log.Println("warn: SouthBoundURL is empty, setting default value")
+		log.Warn("SouthBoundURL is empty, setting default value")
 		Data.URLTranslation.SouthBoundURL = map[string]string{
 			"redfish": "ODIM",
 		}
@@ -272,7 +272,7 @@ func checkURLTranslationConf() {
 
 func checkTLSConf() error {
 	if Data.TLSConf == nil {
-		log.Println("warn: TLSConf not provided, setting default value")
+		log.Warn("TLSConf not provided, setting default value")
 		Data.TLSConf = &TLSConf{}
 		lutilconf.SetDefaultTLSConf()
 		return nil

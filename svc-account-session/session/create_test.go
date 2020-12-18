@@ -99,7 +99,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session creation credentials: error: username or password missing",
+				ErrorMessage:  "Unable to authorize session creation credentials: error: username or password missing",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -111,7 +111,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session creation credentials: error: password mismatch ",
+				ErrorMessage:  "Unable to authorize session creation credentials: error: password mismatch ",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -122,7 +122,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "user doesn't have required privilege to create a session",
+				ErrorMessage:  "User doesn't have required privilege to create a session",
 				MessageArgs:   []interface{}{},
 			},
 		},

@@ -378,18 +378,18 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSources/123466 found"
 	resp3 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSources/123466"}, nil)
 	param := "HostName "
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp4 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "UserName "
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp5 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "Password "
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp6 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "HostName UserName Password "
 	errMsg = "error while trying to authenticate the compute server: error: invalid resource username/password"
 	resp7 := common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{"https://localhost:9091/ODIM/v1/validate"}, nil)
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)

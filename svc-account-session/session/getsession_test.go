@@ -62,7 +62,7 @@ func TestGetSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -73,7 +73,7 @@ func TestGetSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: no session with id invalid-sessionID found.",
+				ErrorMessage:  "No session with id invalid-sessionID found.",
 				MessageArgs:   []interface{}{"Session", "invalid-sessionID"},
 			},
 		},
@@ -174,7 +174,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error: no session token found in header",
+				ErrorMessage:  "Unable to authorize session token: error: no session token found in header",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -185,7 +185,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
+				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
 				MessageArgs:   []interface{}{},
 			},
 		},

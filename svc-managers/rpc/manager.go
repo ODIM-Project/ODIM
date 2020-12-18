@@ -17,7 +17,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -40,7 +40,7 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -65,7 +65,7 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -90,7 +90,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -108,7 +108,7 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

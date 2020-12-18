@@ -20,9 +20,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	evtConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
@@ -74,8 +75,8 @@ func CreateEventSubscription(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Internal processing error: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -85,7 +86,7 @@ func CreateEventSubscription(ctx iris.Context) {
 	//Subscribe to Events
 	resp, err = redfishClient.SubscribeForEvents(device)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(err.Error())
 		return
@@ -102,31 +103,31 @@ func deleteMatchingSubscriptions(device *rfputilities.RedfishDevice) {
 	device.Location = "https://" + device.Host + "/redfish/v1/EventService/Subscriptions"
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		log.Println("error: internal processing error:", err)
+		log.Error("Internal processing error:" + err.Error())
 		return
 	}
 
 	//Get Subscription details to check if it is really ours
 	resp, err := redfishClient.GetSubscriptionDetail(device)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		errorMessage := fmt.Sprintf("error: while getting subscription details for URI: %v got %v", device.Location, resp.StatusCode)
-		log.Println(errorMessage)
+		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: %v got %v", device.Location, resp.StatusCode)
+		log.Error(errorMessage)
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	var subscriptionCollectionBody interface{}
 	err = json.Unmarshal(body, &subscriptionCollectionBody)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	members := subscriptionCollectionBody.(map[string]interface{})["Members"]
@@ -136,7 +137,7 @@ func deleteMatchingSubscriptions(device *rfputilities.RedfishDevice) {
 		if isOurSubscription(device) {
 			resp, err = redfishClient.DeleteSubscriptionDetail(device)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			resp.Body.Close()
@@ -148,30 +149,30 @@ func isOurSubscription(device *rfputilities.RedfishDevice) bool {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		log.Println("error: internal processing error:", err)
+		log.Error("Internal processing error: " + err.Error())
 		return false
 	}
 	//Get Subscription details to check if it is really ours
 	resp, err := redfishClient.GetSubscriptionDetail(device)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		errorMessage := fmt.Sprintf("error: while getting subscription details for URI: %v got %v", device.Location, resp.StatusCode)
-		log.Println(errorMessage)
+		errorMessage := fmt.Sprintf("Unable to get subscription details for URI: %v got %v", device.Location, resp.StatusCode)
+		log.Error(errorMessage)
 		return false
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return false
 	}
 	var subscriptionBody interface{}
 	err = json.Unmarshal(body, &subscriptionBody)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return false
 	}
 	subscriptionDestinationFromDevice := subscriptionBody.(map[string]interface{})["Destination"].(string)
@@ -191,8 +192,8 @@ func DeleteEventSubscription(ctx iris.Context) {
 	}
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Internal processing error: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -201,7 +202,7 @@ func DeleteEventSubscription(ctx iris.Context) {
 	//Delete Subscription details
 	resp, err := redfishClient.DeleteSubscriptionDetail(device)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(err.Error())
 		return
@@ -222,7 +223,7 @@ func getDeviceDetails(ctx iris.Context) (*rfputilities.RedfishDevice, *rfpmodel.
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return nil, nil, fmt.Errorf("Invalid/Expired X-Auth-Token")
@@ -234,7 +235,7 @@ func getDeviceDetails(ctx iris.Context) (*rfputilities.RedfishDevice, *rfpmodel.
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("Unable to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return nil, nil, err
@@ -269,7 +270,7 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 	var err error
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(err.Error())
 		return err
@@ -283,8 +284,8 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 			// Subscribe to Events
 			redfishClient, err := rfputilities.GetRedfishClient()
 			if err != nil {
-				errMsg := "error: internal processing error: " + err.Error()
-				log.Println(errMsg)
+				errMsg := "Internal processing error: " + err.Error()
+				log.Error(errMsg)
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(errMsg)
 				return err
@@ -292,7 +293,7 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 
 			resp, err = redfishClient.SubscribeForEvents(device)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(err.Error())
 				return err
@@ -300,7 +301,7 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 			defer resp.Body.Close()
 			body, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(err.Error())
 				return err
@@ -315,14 +316,14 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Authtication with the device failed")
-		return errors.New("Authtication with the device failed")
+		return errors.New("Authentication with the device failed")
 	}
 	if resp.StatusCode >= 300 {
-		log.Printf("Subscription operation failed: \n%s\n\n", body)
+		log.Error("Subscription operation failed: \n%s\n\n" + string(body))
 	}
 	common.SetResponseHeader(ctx, header)
 	ctx.StatusCode(resp.StatusCode)
-	log.Printf("Redfish plugin response body: %s \n", body)
+	log.Info("Redfish plugin response body: " + string(body))
 	ctx.WriteString(string(body))
 	return nil
 }

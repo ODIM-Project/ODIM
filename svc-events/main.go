@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -29,26 +29,28 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
 )
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Event Service should not be run as the root user")
+		log.Fatal("Event Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
 	if err := services.InitializeService(services.Events); err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
+		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
 	// Intializing the TopicsList
@@ -71,7 +73,7 @@ func main() {
 	go startUPInterface.GetAllPluginStatus()
 	// Run server
 	if err := services.Service.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 }
 

@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"time"
@@ -39,18 +39,20 @@ type TokenObject struct {
 	PublicKey []byte `json:"publicKey"`
 }
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Plugin Service should not be run as the root user")
+		log.Fatal("Plugin Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalln("error while reading from config", err)
+		log.Fatal("error while reading from config " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
@@ -79,7 +81,7 @@ func app() {
 	}
 	pluginServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing plugin server: %v", err)
+		log.Fatal("Unable to initialize plugin : " + err.Error())
 	}
 	app.Run(iris.Server(pluginServer))
 }
@@ -222,7 +224,7 @@ func eventsrouters() {
 	}
 	evtServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing event server: %v", err)
+		log.Fatal("Unable to initialize event server: " + err.Error())
 	}
 	app.Run(iris.Server(evtServer))
 }

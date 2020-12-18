@@ -17,7 +17,7 @@ package smodel
 
 import (
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"encoding/json"
 
@@ -161,7 +161,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Printf("warning: skipped saving of duplicate data with key %v", key)
+		log.Warn("Skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }

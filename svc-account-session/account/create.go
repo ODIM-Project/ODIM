@@ -22,8 +22,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -51,8 +51,8 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	var createAccount asmodel.Account
 	err := json.Unmarshal(req.RequestBody, &createAccount)
 	if err != nil {
-		errMsg := "error: unable to parse the create account request" + err.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to parse the create account request" + err.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
@@ -68,12 +68,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
 	if err != nil {
-		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While validating request parameters: " + err.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -85,7 +85,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	}
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := "error: user does not have the privilege to create a new user"
+		errorMessage := "User does not have the privilege to create a new user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -103,12 +103,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	invalidParams := validateRequest(user)
 	if invalidParams != "" {
-		errorMessage := "error: Mandatory fields " + invalidParams + " are empty"
+		errorMessage := "Mandatory fields " + invalidParams + " are empty"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		args := response.Args{
@@ -126,12 +126,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
-		errorMessage := "error: invalid RoleID present " + gerr.Error()
-		log.Printf(errorMessage)
+		errorMessage := "Invalid RoleID present " + gerr.Error()
+		log.Error(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
 	}
 	if err := validatePassword(user.UserName, user.Password); err != nil {
@@ -153,7 +153,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return resp, err
 
 	}
@@ -164,7 +164,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	user.Password = hashedPassword
 	user.AccountTypes = []string{"Redfish"}
 	if cerr := e.CreateUser(user); cerr != nil {
-		errorMessage := "error while trying to add new user: " + cerr.Error()
+		errorMessage := "Unable to add new user: " + cerr.Error()
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict
 			resp.StatusMessage = response.ResourceAlreadyExists
@@ -187,7 +187,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 

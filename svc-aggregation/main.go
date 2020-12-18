@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -37,21 +37,23 @@ type Schema struct {
 	QueryKeys     []string `json:"queryKeys"`
 }
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Aggregation Service should not be run as the root user")
 	}
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("error while trying to set configuration: %v", err)
+		log.Fatal("error while trying to set configuration: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
 	var connectionMethoodInterface = agcommon.DBInterface{
@@ -61,12 +63,12 @@ func main() {
 		DeleteInterface:              agmodel.Delete,
 	}
 	if err := connectionMethoodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
-		log.Fatalf("error while trying add connection method: %v", err)
+		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
 	err := services.InitializeService(services.Aggregator)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}
 
 	aggregator := rpc.GetAggregator()
@@ -86,11 +88,11 @@ func main() {
 	go p.RediscoverResources()
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {
-		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	go agcommon.TrackConfigFileChanges(connectionMethoodInterface)
 	if err = services.Service.Run(); err != nil {
-		log.Fatalf("failed to run a service: %v", err)
+		log.Fatal("failed to run a service: " + err.Error())
 	}
 
 }

@@ -17,9 +17,10 @@ package evcommon
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -126,7 +127,7 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
-			log.Println(err)
+			log.Error(err.Error())
 			return
 		}
 		for i := 0; i < len(pluginList); i++ {
@@ -157,31 +158,32 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
 		if status && !PluginStartUp {
 			allServers, err = st.getAllServers(pluginID)
 			if err != nil {
-				log.Println("Error While getting the servers", pluginID, err)
+				log.Error("Error While getting the servers" + pluginID + err.Error())
 				continue
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
 					err = callPluginStartUp(allServers, pluginID)
 					if err != nil {
-						log.Println("Error While trying call plugin startup", pluginID, err)
+						log.Error("Error While trying call plugin startup" +
+							pluginID + err.Error())
 					}
 					break
 				}
 				batchServers := allServers[:StartUpResourceBatchSize]
 				err = callPluginStartUp(batchServers, pluginID)
 				if err != nil {
-					log.Println("Error While trying call plugin startup", pluginID, err)
+					log.Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
 				}
 				allServers = allServers[StartUpResourceBatchSize:]
@@ -216,7 +218,7 @@ func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, err
 			if err != nil {
 				// Frame the RPC response body and response Header below
 				errorMessage := "error while trying to decrypt device password for the host: " + s.ManagerAddress + ":" + err.Error()
-				log.Printf(errorMessage)
+				log.Error(errorMessage)
 				continue
 			}
 			s.Password = decryptedPasswordByte
@@ -245,10 +247,10 @@ func GetPluginStatus(plugin *evmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -263,7 +265,8 @@ func callPluginStartUp(servers []SavedSystems, pluginID string) error {
 		var err error
 		s.Location, s.EventTypes, err = getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
-			log.Println("Error while retrieving the Subsction details from DB for device: ", server.ManagerAddress, err)
+			log.Error("Error while retrieving the Subsction details from DB for device: " +
+				server.ManagerAddress + err.Error())
 			continue
 		}
 		s.Device = server
@@ -303,7 +306,7 @@ func callPluginStartUp(servers []SavedSystems, pluginID string) error {
 	//return updateDeviceSubscriptionLocation(startUpMap[0].Device.ManagerAddress, response.Header.Get("location"))
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		return err
 	}
 	var r map[string]string
@@ -382,8 +385,8 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 		if location != "" {
 			deviceSubscription, err := evmodel.GetDeviceSubscriptions(serverAddress)
 			if err != nil {
-				log.Println("Error getting the device event subscription from DB ",
-					" for server address : ", serverAddress, err)
+				log.Error("Error getting the device event subscription from DB " +
+					" for server address : " + serverAddress + err.Error())
 				continue
 			}
 			var updatedDeviceSubscription evmodel.DeviceSubscription
@@ -393,8 +396,8 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			updatedDeviceSubscription.OriginResources = deviceSubscription.OriginResources
 			err = evmodel.UpdateDeviceSubscriptionLocation(updatedDeviceSubscription)
 			if err != nil {
-				log.Println("Error updating the subscription location in to DB for ",
-					"server address : ", serverAddress, err)
+				log.Error("Error updating the subscription location in to DB for " +
+					"server address : " + serverAddress + err.Error())
 				continue
 			}
 		}

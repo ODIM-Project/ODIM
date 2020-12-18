@@ -18,7 +18,7 @@ package rfpmessagebus
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -30,7 +30,7 @@ import (
 // originofcondition can be with or without @odata.id
 func Publish(data interface{}) bool {
 	if data == nil {
-		log.Printf("Error: Invalid data on publishing events")
+		log.Error("Nil data passed to event publisher")
 		return false
 	}
 	event := data.(common.Events)
@@ -48,7 +48,7 @@ func Publish(data interface{}) bool {
 	if err != nil {
 		var messageData rfpmodel.ForwardEventMessageData
 		if err := json.Unmarshal(event.Request, &messageData); err != nil {
-			log.Printf("error: Failed to unmarshal the event: %v", err)
+			log.Error("Failed to unmarshal the event: " + err.Error())
 			return false
 		}
 		message.Context = messageData.Context
@@ -79,7 +79,7 @@ func Publish(data interface{}) bool {
 		fmt.Println("Unable Publish events to kafka", err)
 		return false
 	}
-	log.Println("forwarded event", string(event.Request))
+	log.Info("forwarded event" + string(event.Request))
 	for _, eventMessage := range message.Events {
 		fmt.Printf("Event %v Published\n", eventMessage.EventType)
 	}

@@ -12,7 +12,7 @@
 package system
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -28,8 +28,8 @@ import (
 func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
 	aggregationSourceKeys, err := e.GetAllKeysFromTable("AggregationSource")
 	if err != nil {
-		log.Printf("error getting aggregation source : %v", err.Error())
 		errorMessage := err.Error()
+		log.Error("Unable to get aggregation source : " + errorMessage)
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}
 	var members = make([]agresponse.ListMember, 0)
@@ -74,8 +74,8 @@ func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
 func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	aggregationSource, err := e.GetAggregationSourceInfo(reqURI)
 	if err != nil {
-		log.Printf("error getting  AggregationSource : %v", err)
 		errorMessage := err.Error()
+		log.Error("Unable to get aggregation source : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"AggregationSource", reqURI}, nil)
 		}
@@ -87,8 +87,8 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	connectionMethodOdataID := connectionMethodLink["@odata.id"].(string)
 	connectionMethod, err := e.GetConnectionMethod(connectionMethodOdataID)
 	if err != nil {
-		log.Printf("error getting  connectionmethod : %v", err)
 		errorMessage := err.Error()
+		log.Error("Unable to get connectionmethod : " + errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ConnectionMethod", connectionMethodOdataID}, nil)
 		}

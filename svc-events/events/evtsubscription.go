@@ -596,7 +596,7 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 		host = target.ManagerAddress
 		addr, errorMessage := getIPFromHostName(target.ManagerAddress)
 		if errorMessage != "" {
-			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 				[]interface{}{}, &resp)
 			log.Printf(errorMessage)
 			return resp, err
@@ -1008,7 +1008,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 	var deviceSubscription *evmodel.DeviceSubscription
 	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
-		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
+		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			[]interface{}{}, &resp)
 		log.Printf(errorMessage)
 		return resp, err
@@ -1560,12 +1560,11 @@ func isHostPresent(hosts []string, hostip string) bool {
 }
 
 func getIPFromHostName(fqdn string) ([]net.IP, string) {
-	ip, _, err := net.SplitHostPort(fqdn)
+	host, _, err := net.SplitHostPort(fqdn)
 	if err != nil {
-		ip = fqdn
+		host = fqdn
 	}
-
-	addr, err := net.LookupIP(ip)
+	addr, err := net.LookupIP(host)
 	var errorMessage string
 	if err != nil || len(addr) < 1 {
 		errorMessage = "Can't lookup the ip from host name"

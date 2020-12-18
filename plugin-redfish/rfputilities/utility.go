@@ -82,11 +82,11 @@ var Status rfpresponse.Status
 func TrackConfigFileChanges(configFilePath string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	err = watcher.Add(configFilePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	go func() {
 		for {
@@ -97,17 +97,17 @@ func TrackConfigFileChanges(configFilePath string) {
 				}
 				log.Println("event:", fileEvent)
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Println("modified file:", fileEvent.Name)
+					log.Info("modified file:", fileEvent.Name)
 					// update the odim config
 					if err := config.SetConfiguration(); err != nil {
-						log.Printf("error while trying to set configuration: %v", err)
+						log.Error("error while trying to set configuration: %v", err)
 					}
 				}
 				//Reading file to continue the watch
 				watcher.Add(configFilePath)
 			case err, _ := <-watcher.Errors:
 				if err != nil {
-					log.Println(err)
+					log.Error(err)
 					defer watcher.Close()
 				}
 			}

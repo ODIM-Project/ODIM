@@ -301,12 +301,12 @@ func TrackConfigFileChanges(configFilePath string) {
 		lock.Lock()
 		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 		if err != nil {
-			log.Error("error while trying to read search/filter schema json: %v", err)
+			log.Error("error while trying to read search/filter schema json" + err.Error())
 		}
 		lock.Unlock()
 		err = json.Unmarshal(schemaFile, &SF)
 		if err != nil {
-			log.Error("error while trying to fetch search/filter schema json: %v", err)
+			log.Error("error while trying to fetch search/filter schema json" + err.Error())
 		}
 	}
 }

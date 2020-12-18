@@ -63,7 +63,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get  account: error while trying to get user: no data with the with key xyz found",
+				ErrorMessage:  "Unable to get account: error while trying to get user: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},
@@ -74,7 +74,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to update other accounts",
+				ErrorMessage:  "User does not have the privilege to update other accounts",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -85,7 +85,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: roles, user is associated with, doesn't allow changing own or other users password",
+				ErrorMessage:  "Roles, user is associated with, doesn't allow changing own or other users password",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -97,7 +97,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to update any account role, including his own account",
+				ErrorMessage:  "User does not have the privilege to update any account role, including his own account",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -109,7 +109,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "error: Invalid RoleID xyz present",
+				ErrorMessage:  "Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"xyz", "RoleID"},
 			},
 		},
@@ -141,7 +141,7 @@ func TestUpdate(t *testing.T) {
 
 	genArgs := response.Args{
 		Code:    response.GeneralError,
-		Message: "error: username cannot be modified",
+		Message: "Username cannot be modified",
 	}
 	type args struct {
 		req     *accountproto.UpdateAccountRequest

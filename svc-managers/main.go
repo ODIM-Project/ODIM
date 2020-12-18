@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -27,34 +27,36 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
 )
 
+var log = logrus.New()
+
 func main() {
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Manager Service should not be run as the root user")
+		log.Fatal("Manager Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Fatal("fatal: error while trying set up configuration: %v" + err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalln(err)
+		log.Fatal(err.Error())
 	}
 
 	err := addManagertoDB()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err.Error())
 	}
 
 	err = services.InitializeService(services.Managers)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	mgrcommon.Token.Tokens = make(map[string]string)
 	registerHandlers()
 	if err = services.Service.Run(); err != nil {
-		log.Fatal("failed to run a service: ", err)
+		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
 

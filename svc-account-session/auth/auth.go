@@ -16,7 +16,7 @@
 package auth
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
@@ -31,22 +31,22 @@ import (
 func Auth(req *authproto.AuthRequest) (int32, string) {
 	go expiredSessionCleanUp()
 	if req.SessionToken == "" {
-		log.Printf("error while validating the token, is empty")
+		log.Error("Unable to validate the token, is empty")
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	if len(req.Privileges) == 0 {
-		log.Printf("error while validating the privileges, is empty")
+		log.Error("Unable to validate the privileges, is empty")
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	session, err := CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		log.Printf("error while trying to check session timeout: %v", err.Error())
+		log.Error("Unable to check session timeout: " + err.Error())
 		return err.GetAuthStatusCodeAndMessage()
 	}
 	session.LastUsedTime = time.Now()
 	// Update Session
 	if err = session.Update(); err != nil {
-		log.Printf("error while trying to update session: %v", err.Error())
+		log.Error("Unable to update session: " + err.Error())
 		return err.GetAuthStatusCodeAndMessage()
 	}
 
@@ -60,6 +60,6 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 
 	// TODO: Need to check OEM Privileges
 
-	log.Println("Authorization successful")
+	log.Info("Authorization successful")
 	return http.StatusOK, response.Success
 }

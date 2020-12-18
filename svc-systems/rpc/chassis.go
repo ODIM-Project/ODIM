@@ -18,7 +18,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -44,7 +44,7 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	sessionToken := req.SessionToken
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillChassisProtoResponse(resp, authResp)
 		return nil
 	}
@@ -66,7 +66,7 @@ func (cha *ChassisRPC) GetChassisCollection(ctx context.Context, req *chassispro
 	sessionToken := req.SessionToken
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillChassisProtoResponse(resp, authResp)
 		return nil
 	}
@@ -85,7 +85,7 @@ func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.Get
 	sessionToken := req.SessionToken
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Println("error while trying to authenticate session")
+		log.Error("error while trying to authenticate session")
 		fillChassisProtoResponse(resp, authResp)
 		return nil
 	}
@@ -97,7 +97,7 @@ func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.Get
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"time"
 
@@ -203,7 +203,7 @@ func ValidateConfiguration() error {
 
 func checkMiscellaneousConf() error {
 	if Data.FirmwareVersion == "" {
-		log.Println("warn: no value set for FirmwareVersion, setting default value")
+		log.Warn("No value set for FirmwareVersion, setting default value")
 		Data.FirmwareVersion = DefaultFirmwareVersion
 	}
 	if Data.RootServiceUUID == "" {
@@ -238,7 +238,7 @@ func checkDBConf() error {
 		return fmt.Errorf("error: DBConf is not provided")
 	}
 	if Data.DBConf.Protocol != DefaultDBProtocol {
-		log.Println("warn: incorrect value configured for DB Protocol, setting default value")
+		log.Warn("Incorrect value configured for DB Protocol, setting default value")
 		Data.DBConf.Protocol = DefaultDBProtocol
 	}
 	if Data.DBConf.InMemoryHost == "" {
@@ -254,11 +254,11 @@ func checkDBConf() error {
 		return fmt.Errorf("error: no value configured for DB OnDiskPort")
 	}
 	if Data.DBConf.MaxActiveConns == 0 {
-		log.Println("warn: no value configured for MaxActiveConns, setting default value")
+		log.Warn("No value configured for MaxActiveConns, setting default value")
 		Data.DBConf.MaxActiveConns = DefaultDBMaxActiveConns
 	}
 	if Data.DBConf.MaxIdleConns == 0 {
-		log.Println("warn: no value configured for MaxIdleConns, setting default value")
+		log.Warn("No value configured for MaxIdleConns, setting default value")
 		Data.DBConf.MaxIdleConns = DefaultDBMaxIdleConns
 	}
 	if Data.DBConf.RedisHAEnabled {
@@ -310,7 +310,7 @@ func checkKeyCertConf() error {
 
 func checkAuthConf() {
 	if Data.AuthConf == nil {
-		log.Println("warn: no value found for AuthConf, setting default value")
+		log.Warn("No value found for AuthConf, setting default value")
 		Data.AuthConf = &AuthConf{
 			SessionTimeOutInMins:            DefaultSessionTimeOutInMins,
 			ExpiredSessionCleanUpTimeInMins: DefaultExpiredSessionCleanUpTimeInMins,
@@ -323,11 +323,11 @@ func checkAuthConf() {
 		return
 	}
 	if Data.AuthConf.SessionTimeOutInMins == 0 {
-		log.Println("warn: no value set for SessionTimeOutInMin, setting default value")
+		log.Warn("No value set for SessionTimeOutInMin, setting default value")
 		Data.AuthConf.SessionTimeOutInMins = DefaultSessionTimeOutInMins
 	}
 	if Data.AuthConf.ExpiredSessionCleanUpTimeInMins == 0 {
-		log.Println("warn: no value set for ExpiredSessionCleanUpTimeInMins, setting default value")
+		log.Warn("No value set for ExpiredSessionCleanUpTimeInMins, setting default value")
 		Data.AuthConf.ExpiredSessionCleanUpTimeInMins = DefaultExpiredSessionCleanUpTimeInMins
 	}
 	checkPasswordRulesConf()
@@ -335,7 +335,7 @@ func checkAuthConf() {
 
 func checkPasswordRulesConf() {
 	if Data.AuthConf.PasswordRules == nil {
-		log.Println("warn: PasswordRules configuration is found empty, setting default value")
+		log.Warn("PasswordRules configuration is found empty, setting default value")
 		Data.AuthConf.PasswordRules = &PasswordRules{
 			MinPasswordLength:       DefaultMinPasswordLength,
 			MaxPasswordLength:       DefaultMaxPasswordLength,
@@ -344,15 +344,15 @@ func checkPasswordRulesConf() {
 		return
 	}
 	if Data.AuthConf.PasswordRules.MinPasswordLength <= 0 {
-		log.Println("warn: no value set for MinPasswordLength, setting default value")
+		log.Warn("No value set for MinPasswordLength, setting default value")
 		Data.AuthConf.PasswordRules.MinPasswordLength = DefaultMinPasswordLength
 	}
 	if Data.AuthConf.PasswordRules.MaxPasswordLength <= 0 {
-		log.Println("warn: no value set for MaxPasswordLength, setting default value")
+		log.Warn("No value set for MaxPasswordLength, setting default value")
 		Data.AuthConf.PasswordRules.MaxPasswordLength = DefaultMaxPasswordLength
 	}
 	if Data.AuthConf.PasswordRules.AllowedSpecialCharcters == "" {
-		log.Println("warn: no value set for AllowedSpecialCharcters, setting default value")
+		log.Warn("No value set for AllowedSpecialCharcters, setting default value")
 		Data.AuthConf.PasswordRules.AllowedSpecialCharcters = DefaultAllowedSpecialCharcters
 	}
 }
@@ -379,7 +379,7 @@ func checkAPIGatewayConf() error {
 
 func checkAddComputeSkipResources() {
 	if Data.AddComputeSkipResources == nil {
-		log.Println("warn: no value found for AddComputeRetrival, setting default value")
+		log.Warn("No value found for AddComputeRetrival, setting default value")
 		Data.AddComputeSkipResources = &AddComputeSkipResources{
 			SystemCollection:  DefaultSystemCollection,
 			ChassisCollection: DefaultChassisCollection,
@@ -388,22 +388,22 @@ func checkAddComputeSkipResources() {
 		return
 	}
 	if len(Data.AddComputeSkipResources.SystemCollection) == 0 {
-		log.Println("warn: no value found for SystemCollection, setting default value")
+		log.Warn("No value found for SystemCollection, setting default value")
 		Data.AddComputeSkipResources.SystemCollection = DefaultSystemCollection
 	}
 	if len(Data.AddComputeSkipResources.ChassisCollection) == 0 {
-		log.Println("warn: no value found for ChassisCollection, setting default value")
+		log.Warn("No value found for ChassisCollection, setting default value")
 		Data.AddComputeSkipResources.ChassisCollection = DefaultChassisCollection
 	}
 	if len(Data.AddComputeSkipResources.OtherCollection) == 0 {
-		log.Println("warn: no value found for OtherCollection, setting default value")
+		log.Warn("No value found for OtherCollection, setting default value")
 		Data.AddComputeSkipResources.OtherCollection = DefaultOtherCollection
 	}
 }
 
 func checkURLTranslation() {
 	if Data.URLTranslation == nil {
-		log.Println("warn: URL translation not provided, setting default value")
+		log.Warn("URL translation not provided, setting default value")
 		Data.URLTranslation = &URLTranslation{
 			NorthBoundURL: map[string]string{
 				"ODIM": "redfish",
@@ -415,13 +415,13 @@ func checkURLTranslation() {
 		return
 	}
 	if len(Data.URLTranslation.NorthBoundURL) <= 0 {
-		log.Println("warn: NorthBoundURL is empty, setting default value")
+		log.Warn("NorthBoundURL is empty, setting default value")
 		Data.URLTranslation.NorthBoundURL = map[string]string{
 			"ODIM": "redfish",
 		}
 	}
 	if len(Data.URLTranslation.SouthBoundURL) <= 0 {
-		log.Println("warn: SouthBoundURL is empty, setting default value")
+		log.Warn("SouthBoundURL is empty, setting default value")
 		Data.URLTranslation.SouthBoundURL = map[string]string{
 			"redfish": "ODIM",
 		}
@@ -430,7 +430,7 @@ func checkURLTranslation() {
 
 func checkPluginStatusPolling() {
 	if Data.PluginStatusPolling == nil {
-		log.Println("warn: PluginStatusPolling not provided, setting default value")
+		log.Warn("PluginStatusPolling not provided, setting default value")
 		Data.PluginStatusPolling = &PluginStatusPolling{
 			PollingFrequencyInMins:  DefaultPollingFrequencyInMins,
 			MaxRetryAttempt:         DefaultMaxRetryAttempt,
@@ -441,30 +441,30 @@ func checkPluginStatusPolling() {
 		return
 	}
 	if Data.PluginStatusPolling.PollingFrequencyInMins <= 0 {
-		log.Println("warn: no value found for PollingFrequencyInMins, setting default value")
+		log.Warn("No value found for PollingFrequencyInMins, setting default value")
 		Data.PluginStatusPolling.PollingFrequencyInMins = DefaultPollingFrequencyInMins
 	}
 	if Data.PluginStatusPolling.MaxRetryAttempt <= 0 {
-		log.Println("warn: no value found for MaxRetryAttempt, setting default value")
+		log.Warn("No value found for MaxRetryAttempt, setting default value")
 		Data.PluginStatusPolling.MaxRetryAttempt = DefaultMaxRetryAttempt
 	}
 	if Data.PluginStatusPolling.RetryIntervalInMins <= 0 {
-		log.Println("warn: no value found for RetryIntervalInMins, setting default value")
+		log.Warn("No value found for RetryIntervalInMins, setting default value")
 		Data.PluginStatusPolling.RetryIntervalInMins = DefaultRetryIntervalInMins
 	}
 	if Data.PluginStatusPolling.ResponseTimeoutInSecs <= 0 {
-		log.Println("warn: no value found for ResponseTimeoutInSecs, setting default value")
+		log.Warn("No value found for ResponseTimeoutInSecs, setting default value")
 		Data.PluginStatusPolling.ResponseTimeoutInSecs = DefaultResponseTimeoutInSecs
 	}
 	if Data.PluginStatusPolling.StartUpResouceBatchSize <= 0 {
-		log.Println("warn: no value found for StartUpResouceBatchSize, setting default value")
+		log.Warn("No value found for StartUpResouceBatchSize, setting default value")
 		Data.PluginStatusPolling.StartUpResouceBatchSize = DefaultStartUpResouceBatchSize
 	}
 }
 
 func checkExecPriorityDelayConf() {
 	if Data.ExecPriorityDelayConf == nil {
-		log.Println("warn: ExecPriorityDelayConf not provided, setting default value")
+		log.Warn("ExecPriorityDelayConf not provided, setting default value")
 		Data.ExecPriorityDelayConf = &ExecPriorityDelayConf{
 			MinResetPriority:    DefaultMinResetPriority,
 			MaxResetPriority:    DefaultMinResetPriority + 1,
@@ -473,23 +473,23 @@ func checkExecPriorityDelayConf() {
 		return
 	}
 	if Data.ExecPriorityDelayConf.MinResetPriority <= 0 {
-		log.Println("warn: no value found for MinResetPriority, setting default value")
+		log.Warn("No value found for MinResetPriority, setting default value")
 		Data.ExecPriorityDelayConf.MinResetPriority = DefaultMinResetPriority
 	}
 	if Data.ExecPriorityDelayConf.MaxResetPriority <= Data.ExecPriorityDelayConf.MinResetPriority {
-		log.Println("warn: no value found for MaxResetPriority, setting default value")
+		log.Warn("no value found for MaxResetPriority, setting default value")
 		Data.ExecPriorityDelayConf.MaxResetPriority = Data.ExecPriorityDelayConf.MinResetPriority + 1
 	}
 	if Data.ExecPriorityDelayConf.MaxResetDelayInSecs <= 0 ||
 		Data.ExecPriorityDelayConf.MaxResetDelayInSecs > DefaultMaxResetDelay {
-		log.Println("warn: no value found for MaxResetDelayInSecs, setting default value")
+		log.Warn("No value found for MaxResetDelayInSecs, setting default value")
 		Data.ExecPriorityDelayConf.MaxResetDelayInSecs = DefaultMaxResetDelay
 	}
 }
 
 func checkTLSConf() error {
 	if Data.TLSConf == nil {
-		log.Println("warn: TLSConf not provided, setting default value")
+		log.Warn("TLSConf not provided, setting default value")
 		Data.TLSConf = &TLSConf{}
 		SetDefaultTLSConf()
 		return nil

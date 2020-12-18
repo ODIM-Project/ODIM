@@ -18,7 +18,7 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strings"
@@ -57,13 +57,13 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	var setOrderReq AggregationSetDefaultBootOrderRequest
 	if err := json.Unmarshal(req.RequestBody, &setOrderReq); err != nil {
 		errMsg := "error while trying to set default boot order: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 
 	if len(setOrderReq.Systems) == 0 {
 		errMsg := "error while trying to validate request fields"
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Systems"}, taskInfo)
 	}
 
@@ -71,11 +71,11 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, &AggregationSetDefaultBootOrderRequest{})
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
@@ -116,7 +116,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 	percentComplete = 100
 	if resp.StatusCode != http.StatusOK {
 		errMsg := "one or more of the SetDefaultBootOrder requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
-		log.Println(errMsg)
+		log.Error(errMsg)
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
 			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", setOrderReq.Systems)}, taskInfo)
@@ -134,7 +134,7 @@ func (e *ExternalInterface) SetDefaultBootOrder(taskID string, sessionUserName s
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	log.Println("all SetDefaultBootOrder requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
+	log.Info("all SetDefaultBootOrder requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK
 	args := response.Args{
@@ -159,7 +159,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	subTaskURI, err := e.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
-		log.Println("error while trying to create sub task")
+		log.Error("error while trying to create sub task")
 		return
 	}
 	var subTaskID string
@@ -177,7 +177,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	if err != nil {
 		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while trying to get system ID from " + serverURI + ": " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"SystemID", serverURI}, taskInfo)
 		return
 	}
@@ -186,7 +186,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	if err != nil {
 		subTaskChannel <- http.StatusNotFound
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"target", uuid}, taskInfo)
 		return
 	}
@@ -194,7 +194,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	if err != nil {
 		subTaskChannel <- http.StatusInternalServerError
 		errMsg := "error while trying to decrypt device password: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		return
 	}
@@ -205,7 +205,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	if errs != nil {
 		subTaskChannel <- http.StatusNotFound
 		errMsg := "error while getting plugin data: " + errs.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"PluginData", target.PluginID}, taskInfo)
 		return
 	}
@@ -228,7 +228,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 		if err != nil {
 			subTaskChannel <- getResponse.StatusCode
 			errMsg := err.Error()
-			log.Println(errMsg)
+			log.Error(errMsg)
 			common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 			return
 		}
@@ -250,7 +250,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 	if err != nil {
 		subTaskChannel <- getResponse.StatusCode
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}

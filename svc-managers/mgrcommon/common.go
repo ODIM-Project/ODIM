@@ -17,9 +17,10 @@ package mgrcommon
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -157,7 +158,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -167,13 +168,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
@@ -203,10 +204,10 @@ func getPluginStatus(plugin mgrmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Error("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -244,7 +245,7 @@ func createToken(req PluginContactRequest) string {
 	contactRequest.OID = "/ODIM/v1/Sessions"
 	_, token, _, err := ContactPlugin(contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 	}
 	if token != "" {
 		Token.StoreToken(req.Plugin.ID, token)

@@ -18,7 +18,7 @@ package services
 import (
 	"context"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -43,8 +43,8 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 		},
 	)
 	if err != nil && response == nil {
-		errMsg := fmt.Sprintf("error: rpc call failed: %v", err)
-		log.Println(errMsg)
+		errMsg := fmt.Sprintf("rpc call failed: %v", err)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
 	}
 	var msgArgs []interface{}
@@ -64,7 +64,7 @@ func GetSessionUserName(sessionToken string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Printf("error: something went wrong with rpc call: %v", err)
+		log.Error("something went wrong with rpc call: " + err.Error())
 		return "", err
 	}
 	return response.UserName, err

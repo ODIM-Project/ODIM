@@ -15,6 +15,7 @@ package role
 
 import (
 	"encoding/json"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -62,7 +63,7 @@ func TestUpdate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to update the role",
+				ErrorMessage:  "User does not have the privilege to update the role",
 				MessageArgs:   []interface{}{},
 			},
 		},

@@ -17,7 +17,7 @@ package system
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -34,7 +34,8 @@ import (
 // Upon successfull operation this api returns Systems root UUID in the response body with 200 OK.
 func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, percentComplete int32, addResourceRequest AddResourceRequest, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
 	var resp response.RPC
-	log.Printf("started adding system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, pluginID)
+	log.Info("started adding system with manager address " + addResourceRequest.ManagerAddress +
+		" using plugin id: " + pluginID)
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: pluginContactRequest.TaskRequest}
 
@@ -43,7 +44,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	plugin, errs := agmodel.GetPluginData(pluginID)
 	if errs != nil {
 		errMsg := "error while getting plugin data: " + errs.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, taskInfo), "", nil
 	}
 
@@ -67,7 +68,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Println(errMsg)
+			log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 		}
 		pluginContactRequest.Token = token
@@ -86,7 +87,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while trying to authenticate the compute server: ")
 	if err != nil {
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), "", nil
 	}
 
@@ -94,7 +95,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	err = json.Unmarshal(body, &commonError)
 	if err != nil {
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 
@@ -126,7 +127,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var computeSystemID, resourceURI string
 	if computeSystemID, resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
 		errMsg := "error while trying to add compute: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		var msgArg = make([]interface{}, 0)
 		var skipFlag bool
 		switch h.StatusMessage {
@@ -218,7 +219,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 	if h.ErrorMessage != "" && h.StatusCode != http.StatusServiceUnavailable && h.StatusCode != http.StatusNotFound && h.StatusCode != http.StatusInternalServerError && h.StatusCode != http.StatusBadRequest {
 		go e.rollbackInMemory(resourceURI)
-		log.Println(h.ErrorMessage)
+		log.Error(h.ErrorMessage)
 		return common.GeneralError(h.StatusCode, h.StatusMessage, h.ErrorMessage, h.MsgArgs, taskInfo), "", nil
 	}
 
@@ -226,7 +227,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	if err != nil {
 		go e.rollbackInMemory(resourceURI)
 		errMsg := "error while trying to encrypt: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	saveSystem.Password = ciphertext
@@ -234,7 +235,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	if err := saveSystem.Create(saveSystem.DeviceUUID); err != nil {
 		go e.rollbackInMemory(resourceURI)
 		errMsg := "error while trying to add compute: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	pluginContactRequest.CreateSubcription(h.SystemURL)
@@ -249,13 +250,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var list agresponse.List
 	err = json.Unmarshal([]byte(h.PluginResponse), &list)
 	if err != nil {
-		log.Println("Error: ", err)
+		log.Error(err.Error())
 	}
 
 	resp.Header = map[string]string{
 		"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		"Location":     resourceURI,
 	}
-	log.Printf("sucessfully added system with manager address %v using plugin id %v.", addResourceRequest.ManagerAddress, pluginID)
+	log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
+		" using plugin id: " + pluginID)
 	return resp, aggregationSourceID, ciphertext
 }

@@ -27,7 +27,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	uuid "github.com/satori/go.uuid"
-	"log"
+	log "github.com/sirupsen/logrus"
+
 	"net/http"
 	"time"
 )
@@ -50,42 +51,42 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	var createSession asmodel.CreateSession
 	genErr := json.Unmarshal(req.RequestBody, &createSession)
 	if genErr != nil {
-		errMsg := "unable to parse the create session request" + genErr.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to parse the create session request" + genErr.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	}
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, genErr := common.RequestParamsCaseValidator(req.RequestBody, createSession)
 	if genErr != nil {
-		errMsg := "error while validating request parameters: " + genErr.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to validate request parameters: " + genErr.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), ""
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, ""
 	}
 
 	user, err := auth.CheckSessionCreationCredentials(createSession.UserName, createSession.Password)
 	if err != nil {
-		errMsg := "error while authorizing session creation credentials: " + err.Error()
+		errMsg := "Unable to authorize session creation credentials: " + err.Error()
 		if err.ErrNo() == errors.DBConnFailed {
 			msgArgs := []interface{}{fmt.Sprintf("%v:%v", config.Data.DBConf.OnDiskHost, config.Data.DBConf.OnDiskPort)}
 			resp = common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errMsg, msgArgs, nil)
 		} else {
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 		}
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return resp, ""
 	}
 
 	role, err := asmodel.GetRoleDetailsByID(user.RoleID)
 	if err != nil {
-		errorMessage := "error while trying to get role privileges for session creation: " + err.Error()
+		errorMessage := "Unable to get role privileges for session creation: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, ""
 	}
 	rolePrivilege := make(map[string]bool)
@@ -94,8 +95,8 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	}
 	//User requires Login privelege to create a session
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
-		errorMessage := "user doesn't have required privilege to create a session"
-		log.Println(errorMessage)
+		errorMessage := "User doesn't have required privilege to create a session"
+		log.Error(errorMessage)
 		return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, errorMessage, nil, nil), ""
 	}
 
@@ -119,7 +120,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		} else {
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 		}
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return resp, ""
 	}
 

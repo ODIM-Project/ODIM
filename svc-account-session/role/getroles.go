@@ -16,7 +16,7 @@
 package role
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -54,7 +54,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
-		errorMessage := "error: user does not have the privilege to get the role"
+		errorMessage := "User does not have the privilege to get the role"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -69,14 +69,14 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	//Get role from database using role ID
 	role, err := asmodel.GetRoleDetailsByID(req.Id)
 	if err != nil {
-		errorMessage := "error while getting the role : " + err.Error()
-		log.Printf(errorMessage)
+		errorMessage := "Error while getting the role : " + err.Error()
+		log.Error(errorMessage)
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -140,7 +140,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
-		errorMessage := "error: user does not have the privilege to get the roles"
+		errorMessage := "User does not have the privilege to get the roles"
 		resp.StatusCode = int32(status.Code)
 		resp.StatusMessage = status.Message
 		args := response.Args{
@@ -154,13 +154,13 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 				},
 			},
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}
 	roles, rerr := asmodel.GetAllRoles()
 	if rerr != nil {
-		log.Printf("error getting role : %v", rerr.Error())
+		log.Error("error getting role : " + rerr.Error())
 		errorMessage := rerr.Error()
 		return common.GeneralError(http.StatusServiceUnavailable, response.CouldNotEstablishConnection, errorMessage, []interface{}{config.Data.DBConf.OnDiskHost + ":" + config.Data.DBConf.OnDiskPort}, nil)
 	}

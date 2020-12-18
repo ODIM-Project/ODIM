@@ -17,7 +17,7 @@ package rfphandler
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -39,12 +39,11 @@ func RedfishEvents(ctx iris.Context) {
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("error: bad request")
 		return
 	}
-	log.Println("Event Request", req)
 	remoteAddr := ctx.RemoteAddr()
 	request, _ := json.Marshal(req)
 

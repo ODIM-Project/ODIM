@@ -80,7 +80,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to get the role",
+				ErrorMessage:  "User does not have the privilege to get the role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -91,7 +91,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
+				ErrorMessage:  "Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
 				MessageArgs:   []interface{}{"Role", common.RoleClient},
 			},
 		},
@@ -204,7 +204,7 @@ func TestGetAllRoles(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to get the roles",
+				ErrorMessage:  "User does not have the privilege to get the roles",
 				MessageArgs:   []interface{}{},
 			},
 		},

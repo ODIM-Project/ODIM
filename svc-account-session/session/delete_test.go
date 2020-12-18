@@ -77,7 +77,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error: while trying to delete session: error while trying to get the session from DB: no data with the with key  found",
+				ErrorMessage:  "Unable to delete session: error while trying to get the session from DB: no data with the with key  found",
 				MessageArgs:   []interface{}{},
 			},
 		},

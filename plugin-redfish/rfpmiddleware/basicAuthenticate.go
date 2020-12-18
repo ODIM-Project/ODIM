@@ -19,8 +19,9 @@ import (
 	"encoding/base64"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"log"
+
 	"net/http"
 	"strings"
 )
@@ -35,15 +36,14 @@ func BasicAuth(ctx iris.Context) {
 			spl := strings.Split(basicAuth, " ")
 			data, err := base64.StdEncoding.DecodeString(spl[1])
 			if err != nil {
-				log.Println("error:", err)
-				log.Println(err.Error())
+				log.Error(err.Error())
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(err.Error())
 				return
 			}
 			userCred := strings.SplitN(string(data), ":", 2)
 			if len(userCred) < 2 {
-				log.Println("error: not a valid basic auth")
+				log.Error("Not a valid basic auth")
 				ctx.StatusCode(http.StatusUnauthorized)
 				ctx.WriteString("error: not a valid basic auth")
 				return
@@ -51,7 +51,7 @@ func BasicAuth(ctx iris.Context) {
 			username = userCred[0]
 			password = userCred[1]
 		} else {
-			log.Println("error: not a valid basic auth")
+			log.Error("Not a valid basic auth")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("error: not a valid basic auth")
 			return

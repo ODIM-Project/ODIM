@@ -21,7 +21,7 @@ package datacommunicator
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 // BrokerType defines the underline MQ platform to be selected for the
@@ -90,7 +90,7 @@ func Encode(d interface{}) ([]byte, error) {
 
 	data, err := json.Marshal(d)
 	if err != nil {
-		log.Println("error: Failed to encode the given event data: ", err)
+		log.Error("Failed to encode the given event data: " + err.Error())
 		return nil, err
 	}
 	return data, nil
@@ -101,7 +101,7 @@ func Encode(d interface{}) ([]byte, error) {
 func Decode(d []byte, a interface{}) error {
 	err := json.Unmarshal(d, &a)
 	if err != nil {
-		log.Println("error: Failed to decode the event data: ", err)
+		log.Error("error: Failed to decode the event data: " + err.Error())
 		return err
 	}
 	return nil

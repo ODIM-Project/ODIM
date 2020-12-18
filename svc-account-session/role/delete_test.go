@@ -121,7 +121,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: the session token didn't have required privilege",
+				ErrorMessage:  "The session token doesn't have required privilege",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -132,7 +132,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get role details: error while trying to get role details: no data with the with key xyz found",
+				ErrorMessage:  "Unable to get role details: error while trying to get role details: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
@@ -143,7 +143,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -154,7 +154,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: the predifined roles cannot be deleted.",
+				ErrorMessage:  "A predefined role cannot be deleted.",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -165,7 +165,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceInUse,
-				ErrorMessage:  "error: role is assigned to a user",
+				ErrorMessage:  "Role is assigned to a user",
 				MessageArgs:   []interface{}{},
 			},
 		},

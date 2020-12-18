@@ -17,19 +17,19 @@ package services
 import (
 	"context"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 // SubscribeToEMB method will subscribe to respective  event queue of the plugin
 func SubscribeToEMB(pluginID string, queueList []string) {
-	log.Println("info: subscribing to EMB for plugin ", pluginID)
+	log.Info("subscribing to EMB for plugin " + pluginID)
 	events := eventsproto.NewEventsService(Events, Service.Client())
 	_, err := events.SubsribeEMB(context.TODO(), &eventsproto.SubscribeEMBRequest{
 		PluginID:     pluginID,
 		EMBQueueName: queueList,
 	})
 	if err != nil {
-		log.Printf("error subscribing to EMB  %v", err)
+		log.Error("error subscribing to EMB  " + err.Error())
 	}
 	return
 }

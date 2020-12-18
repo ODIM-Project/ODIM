@@ -17,8 +17,8 @@ package rfphandler
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -41,7 +41,7 @@ func CreateVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -53,7 +53,7 @@ func CreateVolume(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("Unable to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -67,8 +67,8 @@ func CreateVolume(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Internal processing error: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -90,7 +90,7 @@ func CreateVolume(ctx iris.Context) {
 		fmt.Println(err)
 		ctx.WriteString("Error while trying to create volume: " + errorMessage)
 	}
-	log.Println("Response body: ", string(body))
+	log.Error("Response body: " + string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }
@@ -108,7 +108,7 @@ func DeleteVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -120,7 +120,7 @@ func DeleteVolume(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("Unable to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -134,8 +134,8 @@ func DeleteVolume(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Internal processing error: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -157,7 +157,7 @@ func DeleteVolume(ctx iris.Context) {
 		fmt.Println(err)
 		ctx.WriteString("Error while trying to delete volume: " + errorMessage)
 	}
-	log.Println("Response body: ", string(body))
+	log.Error("Response body: " + string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }

@@ -21,8 +21,8 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	testhttp "net/http/httptest"
@@ -156,7 +156,7 @@ func startTestServer(handler mockHandlerFunc) *testhttp.Server {
 	// create a listener with the desired port.
 	l, err := net.Listen("tcp", "localhost:1234")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	ts := testhttp.NewUnstartedServer(
@@ -178,14 +178,14 @@ func startTestServer(handler mockHandlerFunc) *testhttp.Server {
 
 	cert, err := tls.X509KeyPair(hostCert, hostPrivKey)
 	if err != nil {
-		log.Fatalf("error: failed to load key pair: %v", err)
+		log.Fatal("Failed to load key pair: " + err.Error())
 	}
 	tlsConfig.Certificates = []tls.Certificate{cert}
 	tlsConfig.BuildNameToCertificate()
 
 	capool := x509.NewCertPool()
 	if !capool.AppendCertsFromPEM(hostCA) {
-		log.Fatalf("error: failed to load CA certificate")
+		log.Fatal("Failed to load CA certificate")
 	}
 	tlsConfig.RootCAs = capool
 	tlsConfig.ClientCAs = capool

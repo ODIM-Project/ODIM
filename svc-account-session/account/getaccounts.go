@@ -25,7 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -47,7 +47,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	var resp response.RPC
 
 	if !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "user " + session.UserName + " does not have the privilege to view all users"
+		errorMessage := "User " + session.UserName + " does not have the privilege to view all users"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -65,18 +65,18 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
-		errorMessage := "error while getting users: " + err.Error()
+		errorMessage := "Unable to get users: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	//Build response body and headers
@@ -137,7 +137,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		if accountID != session.UserName || !(session.Privileges[common.PrivilegeConfigureSelf]) {
-			errorMessage := "error: " + session.UserName + " does not have the privilege to view other user's details"
+			errorMessage := session.UserName + " does not have the privilege to view other user's details"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -155,14 +155,14 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 			resp.Header = map[string]string{
 				"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 			}
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return resp
 		}
 	}
 
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
-		errorMessage := "error while trying to get  account: " + err.Error()
+		errorMessage := "Unable to get account: " + err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -184,7 +184,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 

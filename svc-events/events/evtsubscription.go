@@ -1007,11 +1007,11 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 	var err error
 	var deviceSubscription *evmodel.DeviceSubscription
 	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
-	if errorMessage != "" {
-		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
-			&resp, []interface{}{"ManagerAddress", target.ManagerAddress})
-		log.Error(errorMessage)
-		return "", resp
+if errorMessage != "" {
+		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+			[]interface{}{}, &resp)
+		log.Printf(errorMessage)
+		return resp, err
 	}
 	deviceIPAddress := fmt.Sprintf("%v", addr[0])
 	deviceSubscription, err = evmodel.GetDeviceSubscriptions(deviceIPAddress)

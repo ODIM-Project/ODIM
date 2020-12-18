@@ -14,7 +14,7 @@
 package main
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 	"sync"
 
@@ -28,18 +28,20 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/rpc"
 )
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("AccountSession Service should not be run as the root user")
+		log.Fatal("AccountSession Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: %v", err)
+		log.Fatal(err.Error())
 	}
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("Error while trying to check DB connection health: " + err.Error())
 	}
 
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -52,12 +54,12 @@ func main() {
 	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
 
 	if err := services.InitializeService(services.AccountSession); err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
+		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}
 
 	registerHandlers()
 	if err := services.Service.Run(); err != nil {
-		log.Fatal("failed to run a service: ", err)
+		log.Fatal("Failed to run a service: " + err.Error())
 	}
 }
 

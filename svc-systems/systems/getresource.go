@@ -20,7 +20,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"regexp"
@@ -44,7 +44,7 @@ func setRegexFlag(val string) bool {
 	var re = regexp.MustCompile(`(?m)[\[\]!@#$%^&*(),.?":{}|<>]`)
 
 	for i, match := range re.FindAllString(val, -1) {
-		log.Println(match, " found at ", i)
+		log.Info("Matched entry no.: " + string(i) + " match=" + match)
 		return true
 	}
 	return false
@@ -64,7 +64,7 @@ func ifMatches(strPara string, operator string, resp response.RPC) (response.RPC
 
 		resp, err := errorResp(e, resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 	}
@@ -75,14 +75,14 @@ func validate(strPara string, resp response.RPC) (response.RPC, error) {
 	if strings.Contains(strPara, "and") {
 		resp, err := ifMatches(strPara, "and", resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 	}
 	if strings.Contains(strPara, "or") {
 		resp, err := ifMatches(strPara, "or", resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 	}
@@ -243,7 +243,7 @@ func getAllSystemIDs(resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	var mems []dmtf.Link
 	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
 	if err != nil {
-		log.Printf("error getting all keys of systemcollection table : %v", err)
+		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
 			return nil, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil), err
@@ -412,14 +412,14 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 			var inter [][]dmtf.Link
 			resp, err = validate(strPara, resp)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return resp, err
 			}
 			if strings.Contains(strPara, " and ") {
 				for _, e := range strings.Split(strPara, " and ") {
 					resp, err = errorResp(e, resp)
 					if err != nil {
-						log.Println(err.Error())
+						log.Error(err.Error())
 						return resp, err
 					}
 					_ = json.Unmarshal([]byte(e), &ww)
@@ -431,7 +431,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 				for _, e := range strings.Split(strPara, " or ") {
 					resp, err = errorResp(e, resp)
 					if err != nil {
-						log.Println(err.Error())
+						log.Error(err.Error())
 						return resp, err
 					}
 					_ = json.Unmarshal([]byte(e), &ww)
@@ -458,14 +458,14 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 		var inter [][]dmtf.Link
 		resp, err = validate(strPara, resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 		if strings.Contains(strPara, " and ") {
 			for _, each := range strings.Split(strPara, " and ") {
 				resp, err = errorResp(each, resp)
 				if err != nil {
-					log.Println(err.Error())
+					log.Error(err.Error())
 					return resp, err
 				}
 				ww, resp, err = GetMembers(allowed, strings.Split(each, " "), resp)
@@ -480,7 +480,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 			for _, each := range strings.Split(strPara, " or ") {
 				resp, err = errorResp(each, resp)
 				if err != nil {
-					log.Println(err.Error())
+					log.Error(err.Error())
 					return resp, err
 				}
 				ww, resp, err = GetMembers(allowed, strings.Split(each, " "), resp)
@@ -578,7 +578,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 
 	data, err := smodel.GetResource(tableName, req.URL)
 	if err != nil {
-		log.Printf("error getting system details : %v", err.Error())
+		log.Error("error getting system details : " + err.Error())
 		errorMessage := err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -621,10 +621,10 @@ func rediscoverStorageInventory(systemID, systemURL string) {
 		SystemURL: systemURL,
 	})
 	if err != nil {
-		log.Println("Error while rediscoverStorageInventroy")
+		log.Error("Error while rediscoverStorageInventroy")
 		return
 	}
-	log.Println("info: rediscovery of system storage started.")
+	log.Info("rediscovery of system storage started.")
 	return
 }
 
@@ -665,7 +665,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	}
 	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
 	if err != nil {
-		log.Printf("error getting all keys of systemcollection table : %v", err)
+		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil)
@@ -738,7 +738,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	} else {
 		data, err = smodel.GetSystemByUUID(req.URL)
 		if err != nil {
-			log.Printf("error getting system details : %v", err.Error())
+			log.Error("error getting system details : " + err.Error())
 			errorMessage := err.Error()
 			if errors.DBKeyNotFound == err.ErrNo() {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -830,7 +830,7 @@ func parseRegexData(data []string, regex string) ([]string, error) {
 		values := strings.Split(data[i], "::")
 		found, err := regexp.MatchString(regex, values[0])
 		if err != nil {
-			log.Println("regular expression error: ", err)
+			log.Error("regular expression error: " + err.Error())
 			return list, err
 		}
 		if found {

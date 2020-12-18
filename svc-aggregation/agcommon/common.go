@@ -16,7 +16,7 @@ package agcommon
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
 
@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	uuid "github.com/satori/go.uuid"
+	"strconv"
 )
 
 // DBInterface hold interface for db functions
@@ -67,10 +68,10 @@ func GetPluginStatus(plugin agmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Unable to get the plugin status for " + plugin.ID + " error : " + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin " + plugin.ID + ": " + strconv.FormatBool(status))
 	return status
 }
 
@@ -79,13 +80,13 @@ func GetStorageResources(oid string) map[string]interface{} {
 	resourceData := make(map[string]interface{})
 	data, dbErr := agmodel.GetResourceDetails(oid)
 	if dbErr != nil {
-		log.Println("error while getting the system data", dbErr.Error())
+		log.Error("Unable to get system data : " + dbErr.Error())
 		return resourceData
 	}
 	// unmarshall the resourceData
 	err := json.Unmarshal([]byte(data), &resourceData)
 	if err != nil {
-		log.Println("Error while unmarshaling  the data", err)
+		log.Error("Unable to unmarshall  the data: " + err.Error())
 		return resourceData
 	}
 	return resourceData
@@ -95,7 +96,7 @@ func GetStorageResources(oid string) map[string]interface{} {
 func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.ConnectionMethodConf) error {
 	connectionMethodsKeys, err := e.GetAllKeysFromTableInterface("ConnectionMethod")
 	if err != nil {
-		log.Printf("error getting connection methods : %v", err.Error())
+		log.Error("Unable to get connection methods : " + err.Error())
 		return err
 	}
 	var connectionMethodInfo = make(map[string]agmodel.ConnectionMethod)
@@ -104,7 +105,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	for i := 0; i < len(connectionMethodsKeys); i++ {
 		connectionmethod, err := e.GetConnectionMethodInterface(connectionMethodsKeys[i])
 		if err != nil {
-			log.Printf("error getting connection method : %v", err)
+			log.Error("Unable to get connection method : " + err.Error())
 			return err
 		}
 		connectionMethodInfo[connectionMethodsKeys[i]] = connectionmethod
@@ -112,12 +113,15 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 	}
 	for i := 0; i < len(connectionMethodConf); i++ {
 		if !SupportedConnectionMethodTypes[connectionMethodConf[i].ConnectionMethodType] {
-			log.Printf("Connection method type %v is not supported.", connectionMethodConf[i].ConnectionMethodType)
+			log.Error("Connection method type " + connectionMethodConf[i].ConnectionMethodType + " is not supported")
 			continue
 		}
 		if connectionMethodID, present := connectionMehtodIDMap[connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant]; present {
-			log.Printf("Connection Method Info with Connection Method Type %s and Connection Method Variant %s alredy present in ODIM", connectionMethodConf[i].ConnectionMethodType, connectionMethodConf[i].ConnectionMethodVariant)
-			delete(connectionMehtodIDMap, connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
+			log.Error("Connection Method Info with Connection Method Type " +
+				connectionMethodConf[i].ConnectionMethodType + " and Connection Method Variant " +
+				connectionMethodConf[i].ConnectionMethodVariant + " already present in ODIM")
+			delete(connectionMehtodIDMap,
+				connectionMethodConf[i].ConnectionMethodType+":"+connectionMethodConf[i].ConnectionMethodVariant)
 			delete(connectionMethodInfo, connectionMethodID)
 		} else {
 			connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
@@ -130,25 +134,30 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 			}
 			err := e.AddConnectionMethodInterface(connectionMethod, connectionMethodURI)
 			if err != nil {
-				log.Printf("error adding connection methods : %v", err.Error())
+				log.Error("Unable to add connection method : " + err.Error())
 				return err
 			}
-			log.Printf("Connection Method Info with Connection Method Type %s and Connection Method Variant %s added to ODIM", connectionMethodConf[i].ConnectionMethodType, connectionMethodConf[i].ConnectionMethodVariant)
+			log.Info(
+				"Connection method info with connection method type " + connectionMethodConf[i].ConnectionMethodType +
+					" and connection method variant " + connectionMethodConf[i].ConnectionMethodVariant + " added to ODIM")
 		}
 	}
 	// loop thorugh the remaining connection method data from connectionMethodInfo map
 	// delete the connection from ODIM if doesn't manage any aggreation source else log the error
 	for connectionMethodID, connectionMethodData := range connectionMethodInfo {
 		if len(connectionMethodData.Links.AggregationSources) > 0 {
-			log.Println("Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
-				" and Connection Method Variant", connectionMethodData.ConnectionMethodType, " managing ", string(len(connectionMethodData.Links.AggregationSources)), " Aggregation Sources it can't be removed")
+			log.Error("Connection Method ID: " + connectionMethodID + " with connection method type " +
+				connectionMethodData.ConnectionMethodType + " and connection method variant " +
+				connectionMethodData.ConnectionMethodVariant + " managing " +
+				string(len(connectionMethodData.Links.AggregationSources)) + " aggregation sources it can't be removed")
 
 		} else {
-			log.Println("Removing Connection Method ID ", connectionMethodID, " with Connection Method Type", connectionMethodData.ConnectionMethodType,
+			log.Info("Removing connection method id "+connectionMethodID+
+				" with Connection Method Type"+connectionMethodData.ConnectionMethodType+
 				" and Connection Method Variant", connectionMethodData.ConnectionMethodVariant)
 			err := e.DeleteInterface("ConnectionMethod", connectionMethodID, common.OnDisk)
 			if err != nil {
-				log.Printf("error removing connection methods : %v", err.Error())
+				log.Error("Unable to removing connection method : " + err.Error())
 				return err
 			}
 		}

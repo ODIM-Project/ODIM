@@ -17,7 +17,7 @@ package auth
 
 import (
 	"encoding/base64"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 
@@ -77,21 +77,21 @@ func expiredSessionCleanUp() {
 	if time.Since(lastExpiredSessionCleanUpTime).Minutes() > config.Data.AuthConf.ExpiredSessionCleanUpTimeInMins {
 		sessionTokens, err := asmodel.GetAllSessionKeys()
 		if err != nil {
-			log.Printf("error while trying to get all session tokens from DB: %v", err)
+			log.Error("Unable to get all session tokens from DB: %v" + err.Error())
 			return
 		}
 
 		for _, token := range sessionTokens {
 			session, err := asmodel.GetSession(token)
 			if err != nil {
-				log.Printf("error while trying to get session details with the token %v: %v", token, err)
+				log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 				continue
 			}
 			// checking for the timed out sessions
 			if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
 				err = session.Delete()
 				if err != nil {
-					log.Printf("error while trying to expired session with token %v: %v", token, err)
+					log.Printf("Unable to delete expired session with token " + token + ": " + err.Error())
 					continue
 				}
 			}

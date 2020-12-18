@@ -35,7 +35,7 @@ import (
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/pem"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
@@ -51,16 +51,16 @@ func GetPlainText(password []byte) ([]byte, error) {
 	b := block.Bytes
 	var err error
 	if enc {
-		log.Println("is encrypted pem block")
+		log.Info("is encrypted pem block")
 		b, err = x509.DecryptPEMBlock(block, nil)
 		if err != nil {
-			log.Println("Error: " + err.Error())
+			log.Error(err.Error())
 			return []byte{}, err
 		}
 	}
 	key, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
-		log.Println("Error: " + err.Error())
+		log.Println(err.Error())
 		return []byte{}, err
 	}
 

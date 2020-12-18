@@ -18,8 +18,8 @@ package agmodel
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -185,7 +185,7 @@ func GetComputeSystem(deviceUUID string) (dmtfmodel.ComputerSystem, error) {
 //SaveComputeSystem will save the compute server complete details into the database
 func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string) error {
 	//use dmtf logic to save data into database
-	log.Println("Saving server details into database")
+	log.Info("Saving server details into database")
 	err := computeServer.SaveInMemory(deviceUUID)
 	if err != nil {
 		return err
@@ -196,7 +196,7 @@ func SaveComputeSystem(computeServer dmtfmodel.ComputerSystem, deviceUUID string
 //SaveChassis will save the chassis details into the database
 func SaveChassis(chassis dmtfmodel.Chassis, deviceUUID string) error {
 	//use dmtf logic to save data into database
-	log.Println("Saving server details into database")
+	log.Info("Saving server details into database")
 	err := chassis.SaveInMemory(deviceUUID)
 	if err != nil {
 		return err
@@ -228,7 +228,7 @@ func SaveRegistryFile(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist != err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Printf("warning: skipped saving of duplicate data with key %v", key)
+		log.Warn("Skipped saving of duplicate data with key " + key)
 		return nil
 	}
 	return nil
@@ -377,7 +377,7 @@ func SaveIndex(searchForm map[string]interface{}, table, uuid string) error {
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	log.Println("Creating index")
+	log.Info("Creating index")
 	searchForm["UUID"] = uuid
 	if err := conn.CreateIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to index the document: %v", err)

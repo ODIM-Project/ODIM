@@ -24,7 +24,7 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -38,7 +38,8 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	var resp response.RPC
 	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		log.Error("error while trying to authenticate session: status code: " +
+			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		return authResp
 	}
 	// First get the UserName from SessionToken
@@ -46,13 +47,13 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 	}
 
 	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
 	if statusMessage != response.Success {
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
 	}
 
@@ -61,7 +62,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	err = json.Unmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -69,11 +70,11 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, eventObj)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
@@ -83,7 +84,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// we need common.MessageData to find the correct destination to send test event
@@ -95,7 +96,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 		for _, origin := range sub.OriginResources {
 			if sub.Destination != "" {
 				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
-					log.Printf("Destination: %v\n", sub.Destination)
+					log.Info("Destination: " + sub.Destination)
 					go postEvent(sub.Destination, messageBytes)
 				}
 			}

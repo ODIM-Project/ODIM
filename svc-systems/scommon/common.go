@@ -18,12 +18,12 @@ package scommon
 import (
 	"encoding/json"
 	"fmt"
- "sync"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -214,7 +214,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -224,11 +224,11 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	log.Println("Response", string(body))
-	log.Println("response.StatusCode", response.StatusCode)
+	log.Info("Response" + string(body))
+	log.Info("response.StatusCode" + string(response.StatusCode))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)
@@ -272,10 +272,10 @@ func GetPluginStatus(plugin smodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -298,15 +298,15 @@ func TrackConfigFileChanges(configFilePath string) {
 	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
-    lock.Lock()
+		lock.Lock()
 		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 		if err != nil {
-			log.Fatalf("fatal: error while trying to read search/filter schema json: %v", err)
+			log.Error("error while trying to read search/filter schema json: %v", err)
 		}
-   lock.Unlock()
+		lock.Unlock()
 		err = json.Unmarshal(schemaFile, &SF)
 		if err != nil {
-			log.Fatalf("fatal: error while trying to fetch search/filter schema json: %v", err)
+			log.Error("error while trying to fetch search/filter schema json: %v", err)
 		}
 	}
 }

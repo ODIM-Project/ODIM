@@ -18,7 +18,7 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -56,7 +56,7 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 	// Add servers as manager in manager collection
 	managersCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Managers")
 	if err != nil || len(managersCollectionKeysArray) == 0 {
-		log.Printf("odimra Doesnt have Servers")
+		log.Error("odimra Doesnt have Servers")
 	}
 
 	for _, key := range managersCollectionKeysArray {
@@ -84,7 +84,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 	if req.ManagerID == config.Data.RootServiceUUID {
 		manager, err := e.getManagerDetails(req.ManagerID)
 		if err != nil {
-			log.Printf("error getting manager details : %v", err.Error())
+			log.Error("error getting manager details : " + err.Error())
 			errArgs := []interface{}{"Managers", req.ManagerID}
 			errorMessage := err.Error()
 			resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -102,7 +102,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		uuid := requestData[0]
 		data, err := e.DB.GetManagerByURL(req.URL)
 		if err != nil {
-			log.Printf("error getting manager details : %v", err.Error())
+			log.Error("error getting manager details : " + err.Error())
 			var errArgs = []interface{}{}
 			var statusCode int
 			var StatusMessage string
@@ -124,7 +124,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		jerr := json.Unmarshal([]byte(data), &managerData)
 		if jerr != nil {
 			errorMessage := "error unmarshalling manager details: " + jerr.Error()
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 				nil, nil)
 			return resp
@@ -138,7 +138,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if managerType != common.ManagerTypeService && managerType != "" {
 			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
-				log.Printf("warning: Device %v is unreachable: %v", req.URL, err)
+				log.Error("Device " + req.URL + " is unreachable: " + err.Error())
 				// Updating the state
 				managerData["Status"] = map[string]string{
 					"State": "Absent",
@@ -147,7 +147,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 				jerr := json.Unmarshal([]byte(deviceData), &managerData)
 				if jerr != nil {
 					errorMessage := "error unmarshaling manager details: " + jerr.Error()
-					log.Println(errorMessage)
+					log.Error(errorMessage)
 					resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 						nil, nil)
 					return resp
@@ -156,7 +156,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 			err = e.DB.UpdateManagersData(req.URL, managerData)
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
-				log.Println(errorMessage)
+				log.Error(errorMessage)
 				resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 					nil, nil)
 				return resp
@@ -164,7 +164,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 			dataBytes, err := json.Marshal(managerData)
 			if err != nil {
 				errorMessage := "error while marshalling manager details: " + err.Error()
-				log.Println(errorMessage)
+				log.Error(errorMessage)
 				resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 					nil, nil)
 				return resp
@@ -244,13 +244,13 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 			var err error
 			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
 				errorMessage := "unable to get resource details from device: " + err.Error()
-				log.Println(errorMessage)
+				log.Error(errorMessage)
 				errArgs := []interface{}{tableName, req.ManagerID}
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 			}
 		} else {
 			errorMessage := "unable to get managers details: " + err.Error()
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
 		}
 	}
@@ -268,7 +268,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
 	if dberr != nil {
-		log.Printf("unable to get manager details : %v", dberr.Error())
+		log.Error("unable to get manager details : " + dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
 		errorMessage := dberr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -279,7 +279,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	jerr := json.Unmarshal([]byte(data), &managerData)
 	if jerr != nil {
 		errorMessage := "unable to unmarshal manager details: " + jerr.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
 		return resp
@@ -288,7 +288,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
-		log.Printf("unable to get manager details : %v", gerr.Error())
+		log.Error("unable to get manager details : " + gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}
 		errorMessage := gerr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -348,7 +348,7 @@ func fillResponse(body []byte) response.RPC {
 	var respData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &respData)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}

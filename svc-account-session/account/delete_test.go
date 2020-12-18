@@ -62,7 +62,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while deleting user: no data with the with key xyz found",
+				ErrorMessage:  "Unable to delete user: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},
@@ -73,7 +73,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: SomeOne does not have the privilege to delete user",
+				ErrorMessage:  "SomeOne does not have the privilege to delete user",
 				MessageArgs:   []interface{}{},
 			},
 		},

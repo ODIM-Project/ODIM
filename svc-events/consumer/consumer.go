@@ -19,7 +19,7 @@ package consumer
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -42,7 +42,7 @@ func KafkaSubscriber(event interface{}) {
 
 	err := json.Unmarshal(byteData, &kafkaMessage)
 	if err != nil {
-		log.Println("error while unmarshaling the event", err)
+		log.Error("error while unmarshaling the event" + err.Error())
 		return
 	}
 	writeEventToJobQueue(kafkaMessage)
@@ -63,12 +63,12 @@ func Consume(topicName string) {
 	// connecting to kafka
 	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
 	if err != nil {
-		log.Println("Unable to connect to kafka", err)
+		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
 	if err := k.Accept(topicName, KafkaSubscriber); err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		return
 	}
 	return

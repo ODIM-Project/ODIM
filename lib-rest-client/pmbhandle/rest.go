@@ -18,7 +18,7 @@ package pmbhandle
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -32,7 +32,7 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		return nil, err
 	}
 
@@ -63,7 +63,7 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	}
 
 	if resp.StatusCode >= 300 {
-		log.Printf("warning: got %v, while fetching %v with method %v", resp.Status, url, method)
+		log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
 	}
 
 	return resp, nil

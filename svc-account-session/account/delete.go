@@ -19,7 +19,7 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -58,12 +58,12 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := "error: " + session.UserName + " does not have the privilege to delete user"
+		errorMessage := session.UserName + " does not have the privilege to delete user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -81,12 +81,12 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
 	if derr := asmodel.DeleteUser(accountID); derr != nil {
-		errorMessage := "error while deleting user: " + derr.Error()
+		errorMessage := "Unable to delete user: " + derr.Error()
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -108,7 +108,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		resp.Header = map[string]string{
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 

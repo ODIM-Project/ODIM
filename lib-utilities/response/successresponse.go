@@ -16,7 +16,7 @@ package response
 
 import (
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 // CreateGenericResponse will fill the response with respective data
@@ -41,7 +41,7 @@ func (r *Response) CreateGenericResponse(statusMessage string) {
 	case TaskStarted:
 		r.NumberOfArgs = len(r.MessageArgs)
 		if r.NumberOfArgs < 1 {
-			log.Println("warning: MessageArgs in Response is missing")
+			log.Warn("MessageArgs in Response is missing")
 		}
 		r.Message = fmt.Sprintf("The task with id %v has started.", r.MessageArgs[0])
 	}

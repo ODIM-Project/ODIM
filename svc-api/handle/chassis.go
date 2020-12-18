@@ -16,7 +16,7 @@
 package handle
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -38,8 +38,8 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		errorMessage := "no X-Auth-Token found in request header"
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
@@ -47,8 +47,8 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 	}
 	resp, err := chassis.GetChassisCollectionRPC(req)
 	if err != nil {
-		errorMessage := "error:  RPC error:" + err.Error()
-		log.Println(errorMessage)
+		errorMessage := " RPC error:" + err.Error()
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
@@ -70,8 +70,8 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 		RequestParam: ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		errorMessage := "no X-Auth-Token found in request header"
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
@@ -79,8 +79,8 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 	}
 	resp, err := chassis.GetChassisResourceRPC(req)
 	if err != nil {
-		errorMessage := "error:  RPC error:" + err.Error()
-		log.Println(errorMessage)
+		errorMessage := " RPC error:" + err.Error()
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
@@ -102,8 +102,8 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		RequestParam: ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		errorMessage := "no X-Auth-Token found in request header"
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
@@ -112,7 +112,7 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	resp, err := chassis.GetChassisRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)

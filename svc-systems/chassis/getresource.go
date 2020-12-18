@@ -17,7 +17,7 @@ package chassis
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -72,7 +72,7 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	}
 	data, gerr := smodel.GetResource(tableName, req.URL)
 	if gerr != nil {
-		log.Printf("error getting system details : %v", gerr.Error())
+		log.Error("error getting system details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
@@ -83,15 +83,15 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 				DevicePassword:  p.DecryptPassword,
 				GetPluginStatus: p.GetPluginStatus,
 			}
-			log.Println("Request Url", req.URL)
+			log.Info("Request Url" + req.URL)
 			var err error
 			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
-				log.Printf("error while getting resource: %v", err)
+				log.Error("error while getting resource: " + err.Error())
 				errorMsg := err.Error()
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil)
 			}
 		} else {
-			log.Printf("error while getting resource: %v", errorMessage)
+			log.Error("error while getting resource: " + errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
 	}
@@ -118,7 +118,7 @@ func GetChassisCollection(req *chassisproto.GetChassisRequest) response.RPC {
 	}
 	chassisCollectionKeysArray, err := smodel.GetAllKeysFromTable("Chassis")
 	if err != nil {
-		log.Printf("error getting all keys of ChassisCollection table : %v", err)
+		log.Error("error getting all keys of ChassisCollection table : " + err.Error())
 		errorMessage := err.Error()
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
@@ -166,7 +166,7 @@ func GetChassisInfo(req *chassisproto.GetChassisRequest) response.RPC {
 	}
 	data, gerr := smodel.GetResource("Chassis", req.URL)
 	if gerr != nil {
-		log.Printf("error getting system details : %v", gerr.Error())
+		log.Error("error getting system details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound

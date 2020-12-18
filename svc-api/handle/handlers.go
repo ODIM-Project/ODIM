@@ -18,8 +18,8 @@ package handle
 import (
 	"encoding/json"
 	"encoding/xml"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -580,7 +580,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
 		ctx.JSON(&response.Body)
@@ -588,7 +588,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authorize token")
+		log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		SetResponseHeaders(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -606,7 +606,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	//Construct the Response body
 	var listMembers []response.ListMember
@@ -663,7 +663,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
 		ctx.JSON(&response.Body)
@@ -671,7 +671,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authorize token")
+		log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		SetResponseHeaders(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -690,7 +690,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 	reqRegistryFileName := regFileID + ".json"
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 	}
 	// Constuct the registry file names slice
 	var regFileNames []string
@@ -702,7 +702,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	regFileKeys, err := models.GetAllRegistryFileNamesFromDB("Registries")
 	if err != nil {
 		// log Critical message but proceed
-		log.Println("error: while trying to get the Registry files (Keys/FileNames only)from DB")
+		log.Error("error: while trying to get the Registry files (Keys/FileNames only)from DB")
 	}
 	regFileNames = append(regFileNames, regFileKeys...)
 	for _, regFile := range regFileNames {
@@ -717,7 +717,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 		}
 		SetResponseHeaders(ctx, responseHeader)
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 		ctx.StatusCode(http.StatusNotFound) // TODO: add error      headers
 		ctx.JSON(&response.Body)
@@ -764,7 +764,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		responseHeader := map[string]string{
 			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 		}
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
 		SetResponseHeaders(ctx, responseHeader)
@@ -773,7 +773,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authorize token")
+		log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
 		SetResponseHeaders(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
@@ -797,12 +797,12 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		content, err = models.GetRegistryFile("Registries", regFileID)
 		if content == nil {
 			// file Not found, send 404 error
-			log.Printf("got error while retreiving fom DB")
+			log.Error("got error while retreiving fom DB")
 			errorMessage := "error: Resource not found"
 			responseHeader := map[string]string{
 				"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 			}
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 			ctx.StatusCode(http.StatusNotFound) // TODO: add error      headers
 			SetResponseHeaders(ctx, responseHeader)
@@ -811,16 +811,16 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		}
 	}
 	var data interface{}
-	log.Printf("Before Unmarshalling Data")
+	log.Error("Before Unmarshalling Data")
 	err = json.Unmarshal(content, &data)
 	if err != nil {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		errorMessage := "error: Resource not found"
 		responseHeader := map[string]string{
 			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
 		}
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		SetResponseHeaders(ctx, responseHeader)

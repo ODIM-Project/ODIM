@@ -61,7 +61,7 @@ func TestGetAllAccounts(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "user SomeOne does not have the privilege to view all users",
+				ErrorMessage:  "User SomeOne does not have the privilege to view all users",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -164,7 +164,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: testUser2 does not have the privilege to view other user's details",
+				ErrorMessage:  "testUser2 does not have the privilege to view other user's details",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -175,7 +175,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get  account: error while trying to get user: no data with the with key testUser4 found",
+				ErrorMessage:  "Unable to get account: error while trying to get user: no data with the with key testUser4 found",
 				MessageArgs:   []interface{}{"Account", "testUser4"},
 			},
 		},

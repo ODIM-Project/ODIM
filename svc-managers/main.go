@@ -53,7 +53,7 @@ func main() {
 	}
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 

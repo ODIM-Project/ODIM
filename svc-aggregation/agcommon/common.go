@@ -175,7 +175,7 @@ func TrackConfigFileChanges(dbInterface DBInterface) {
 	case <-eventChan: // new data arrives through eventChan channel
 		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 		if err != nil {
-			log.Printf("error while trying to Add connection methods: %s", err)
+			log.Error("error while trying to Add connection methods:" + err.Error())
 		}
 	}
 }

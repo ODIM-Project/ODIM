@@ -60,7 +60,7 @@ func GetPlainText(password []byte) ([]byte, error) {
 	}
 	key, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
-		log.Println(err.Error())
+		log.Info(err.Error())
 		return []byte{}, err
 	}
 
@@ -95,12 +95,12 @@ func TrackConfigFileChanges(configFilePath string) {
 				if !ok {
 					continue
 				}
-				log.Println("event:", fileEvent)
+				log.Info("event:", fileEvent)
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
 					log.Info("modified file:", fileEvent.Name)
 					// update the odim config
 					if err := config.SetConfiguration(); err != nil {
-						log.Error("error while trying to set configuration: %v", err)
+						log.Error("error while trying to set configuration" + err.Error())
 					}
 				}
 				//Reading file to continue the watch

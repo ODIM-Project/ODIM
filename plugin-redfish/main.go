@@ -65,7 +65,7 @@ func main() {
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		log.Fatalln("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
+		log.Fatal("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go rfputilities.TrackConfigFileChanges(configFilePath)

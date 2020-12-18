@@ -133,9 +133,11 @@ func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
 		for i := 0; i < len(pluginList); i++ {
 			go st.getPluginStatus(pluginList[i])
 		}
+		var pollingTime int
 		lock.Lock()
-		time.Sleep(time.Minute * time.Duration(config.Data.PluginStatusPolling.PollingFrequencyInMins))
+		pollingTime = config.Data.PluginStatusPolling.PollingFrequencyInMins
 		lock.Unlock()
+		time.Sleep(time.Minute * time.Duration(pollingTime))
 	}
 
 }

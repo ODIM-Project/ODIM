@@ -61,7 +61,7 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 	if errorMessage != "" {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	deviceIPAddress := fmt.Sprintf("%v", addr[0])
@@ -432,7 +432,7 @@ func (p *PluginContact) subscribe(subscriptionPost evmodel.EvtSubPost, origin st
 	if errorMessage != "" {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 	}
 	deviceIPAddress := fmt.Sprintf("%v", addr[0])
 	devSub, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)

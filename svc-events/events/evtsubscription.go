@@ -598,7 +598,7 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 		if errorMessage != "" {
 			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 				[]interface{}{}, &resp)
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return resp, err
 		}
 		host = fmt.Sprintf("%v", addr[0])
@@ -1010,7 +1010,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 if errorMessage != "" {
 		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			[]interface{}{}, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, err
 	}
 	deviceIPAddress := fmt.Sprintf("%v", addr[0])

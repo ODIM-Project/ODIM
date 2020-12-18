@@ -1007,7 +1007,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 	var err error
 	var deviceSubscription *evmodel.DeviceSubscription
 	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
-if errorMessage != "" {
+	if errorMessage != "" {
 		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			[]interface{}{}, &resp)
 		log.Error(errorMessage)

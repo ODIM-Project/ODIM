@@ -60,7 +60,7 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
-		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		log.Error(errorMessage)
 		return resp
 	}

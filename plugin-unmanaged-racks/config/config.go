@@ -36,9 +36,13 @@ type PluginConfig struct {
 	UserName           string   `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
 	Password           string   `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
 	RootServiceUUID    string   `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
-	OdimNBUrl          string   `yaml:"OdimNBUrl" envconfig:"ODIM_NORTBOUNND_URL"`
+	OdimUrl            string   `yaml:"OdimURL" envconfig:"ODIM_URL"`
+	OdimUserName       string   `yaml:"OdimUserName" envconfig:"ODIM_USERNAME"`
+	OdimPassword       string   `yaml:"OdimPassword" envconfig:"ODIM_PASSWORD"`
 	FirmwareVersion    string   `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
 	TLSConf            *TLSConf `yaml:"TLSConf"`
+	RSAPrivateKeyPath  string   `yaml:"RSAPrivateKeyPath" envconfig:"RSA_PRIVATE_KEY_PATH"`
+	RSAPublicKeyPath   string   `yaml:"RSAPublicKeyPath" envconfig:"RSA_PUBLIC_KEY_PATH"`
 	PKIRootCAPath      string   `yaml:"PKIRootCACertificatePath" envconfig:"PKI_ROOT_CA_PATH"`
 	PKIPrivateKeyPath  string   `yaml:"PKIPrivateKeyPath" envconfig:"PKI_PRIVATE_KEY_PATH"`
 	PKICertificatePath string   `yaml:"PKICertificatePath" envconfig:"PKI_CERTIFICATE_PATH_PATH"`
@@ -77,12 +81,12 @@ func validate(pc *PluginConfig) error {
 	if pc.LogLevel == "" {
 		pc.LogLevel = "debug"
 	}
-	if pc.OdimNBUrl == "" {
-		return fmt.Errorf("OdimraNBUrl has to be specified")
+	if pc.OdimUrl == "" {
+		return fmt.Errorf("OdimURL has to be specified")
 	}
 
-	if _, e := url.Parse(pc.OdimNBUrl); e != nil {
-		return fmt.Errorf("given OdimraNBUrl is not correct URL")
+	if _, e := url.Parse(pc.OdimUrl); e != nil {
+		return fmt.Errorf("given OdimURL is not correct URL")
 	}
 
 	if _, err := uuid.FromString(pc.RootServiceUUID); err != nil {

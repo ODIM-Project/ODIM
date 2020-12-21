@@ -118,6 +118,11 @@ func Fatal(i ...interface{}) {
 	staticLogger.Fatal(i...)
 }
 
+// Fatalf logs fatal message using URP logger
+func Fatalf(t string, i ...interface{}) {
+	staticLogger.Fatalf(t, i...)
+}
+
 func init() {
 	ll := logrus.DebugLevel
 	l := logrus.New()

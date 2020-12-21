@@ -41,7 +41,7 @@ var testConfig = config.PluginConfig{
 	UserName:        "admin",
 	Password:        "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
 	FirmwareVersion: "0.0.0",
-	OdimNBUrl:       "https://localhost:45000",
+	OdimUrl:         "https://localhost:45000",
 	LogLevel:        "Debug",
 }
 
@@ -515,7 +515,7 @@ func (o *odimstub) Run() {
 		))
 	})
 
-	odimurl, err := url.Parse(testConfig.OdimNBUrl)
+	odimurl, err := url.Parse(testConfig.OdimUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -540,7 +540,7 @@ func createTestApplication() (*iris.Application, *miniredis.Miniredis) {
 	cm := db.CreateDAO(r.Addr(), "")
 
 	odimraHTTPClient := redfish.NewHTTPClient(
-		redfish.BaseURL(testConfig.OdimNBUrl),
+		redfish.BaseURL(testConfig.OdimUrl),
 		redfish.InsecureSkipVerifyTransport,
 	)
 	return createApplication(&testConfig, cm, odimraHTTPClient), r

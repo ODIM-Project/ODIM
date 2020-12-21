@@ -144,7 +144,7 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 		resp := client.Get(uri)
 		err := m.call.collector.Collect(resp)
 		if err != nil {
-			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+			log.Printf("execution of GET %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
 		}
 	}
 

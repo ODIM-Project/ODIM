@@ -15,20 +15,31 @@
 COMMIT := $(shell git rev-parse --short HEAD)
 DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
 VERSION := $(COMMIT)-$(DATE)
+BUILD_DIR := ../build/plugin-unmanaged-racks/tmp
+DEFAULT_ODIMRA_PASS := 'Od!m12$$4'
+
+ENCRYPT_PASSWORD := echo -n ${DEFAULT_ODIMRA_PASS} \
+		| openssl pkeyutl -encrypt -inkey ../build/cert_generator/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512 \
+		| openssl base64 -A
 
 ifneq ($(shell git status --porcelain),)
     VERSION := $(VERSION)-dirty
 endif
 
-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -ldflags "-X main.version=$(VERSION)" -o ../build/plugin-unmanaged-racks/tmp/urp main.go
-	cp ./config/config.yml ../build/plugin-unmanaged-racks/tmp/
-
 clean:
-	rm -r ../build/plugin-unmanaged-racks/tmp
+	rm -r BUILD_DIR
 
-run:
-	PLUGIN_CONFIG_FILE_PATH=./config/config.yml go run ./main.go
+compile:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -ldflags "-X main.version=$(VERSION)" -o ../build/plugin-unmanaged-racks/tmp/urp main.go
+
+configure:
+	@mkdir --parents ${BUILD_DIR}
+	@sed "s|\#password\#|$(shell $(ENCRYPT_PASSWORD))|" config/config.yml > ${BUILD_DIR}/config.yml
+
+build: configure compile
+
+run: configure
+	PLUGIN_CONFIG_FILE_PATH=${BUILD_DIR}/config.yml go run ./main.go
 
 lint: lint-deps
 	golangci-lint run ./...

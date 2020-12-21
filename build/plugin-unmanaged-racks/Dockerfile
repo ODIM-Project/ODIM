@@ -14,5 +14,5 @@
 
 FROM scratch
 
-COPY plugin-unmanaged-racks/tmp/* /
+COPY tmp/* /
 CMD ["/urp"]

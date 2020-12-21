@@ -24,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/db"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/redfish"
+	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/utils"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/core/host"
@@ -35,9 +36,12 @@ const urpPluginName = "URP"
 // InitializeAndRun Initializes and runs Unamanged Racks Plugin
 func InitializeAndRun(pluginConfiguration *config.PluginConfig) {
 
+	enigma := utils.NewEnigma(pluginConfiguration.RSAPrivateKeyPath, pluginConfiguration.RSAPublicKeyPath)
+
 	odimraHTTPClient := redfish.NewHTTPClient(
-		redfish.BaseURL(pluginConfiguration.OdimNBUrl),
+		redfish.BaseURL(pluginConfiguration.OdimUrl),
 		redfish.HTTPTransport(pluginConfiguration),
+		redfish.BasicAuth(pluginConfiguration.OdimUserName, enigma.Decrypt(pluginConfiguration.OdimPassword)),
 	)
 
 	dao := db.CreateDAO(pluginConfiguration.RedisAddress, pluginConfiguration.SentinelMasterName)

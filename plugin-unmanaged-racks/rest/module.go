@@ -39,7 +39,7 @@ func InitializeAndRun(pluginConfiguration *config.PluginConfig) {
 	enigma := utils.NewEnigma(pluginConfiguration.RSAPrivateKeyPath, pluginConfiguration.RSAPublicKeyPath)
 
 	odimraHTTPClient := redfish.NewHTTPClient(
-		redfish.BaseURL(pluginConfiguration.OdimUrl),
+		redfish.BaseURL(pluginConfiguration.OdimURL),
 		redfish.HTTPTransport(pluginConfiguration),
 		redfish.BasicAuth(pluginConfiguration.OdimUserName, enigma.Decrypt(pluginConfiguration.OdimPassword)),
 	)

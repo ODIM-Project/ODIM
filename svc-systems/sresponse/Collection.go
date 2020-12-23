@@ -42,8 +42,8 @@ func NewChassisCollection() Collection {
 		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
 		OdataID:      "/redfish/v1/Chassis/",
 		OdataType:    "#ChassisCollection.ChassisCollection",
-		Description:  "Computer System Chassis view",
-		Name:         "Computer System Chassis",
+		Description:  "Chassis Collection",
+		Name:         "Chassis Collection",
 		Members:      []dmtf.Link{},
 	}
 }

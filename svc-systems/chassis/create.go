@@ -44,7 +44,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("cannot acquire database connection: %v", dbErr), nil, nil)
 	}
 
-	managingManager, e := findOrNull(inMemoryConn, "Managers", mbc.Links.ManagedBy[0].Oid)
+	managingManager, e := inMemoryConn.FindOrNull("Managers", mbc.Links.ManagedBy[0].Oid)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("error occured during database access: %v", e), nil, nil)
 	}

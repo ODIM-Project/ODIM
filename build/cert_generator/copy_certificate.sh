@@ -145,7 +145,7 @@ cd /etc/plugincert/
 if [ $? -eq 0 ];
 then
 	a=`echo \`ls | wc -l\` `
-	if [ $a -eq 5 ];
+	if [ $a -eq 7 ];
 	then 
 		echo "Plugin Certificates copied successfully"
 	else

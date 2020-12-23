@@ -36,7 +36,7 @@ type PluginConfig struct {
 	UserName           string   `yaml:"UserName" envconfig:"BASIC_AUTH_USERNAME"`
 	Password           string   `yaml:"Password" envconfig:"BASIC_AUTH_PASSWORD"`
 	RootServiceUUID    string   `yaml:"RootServiceUUID" envconfig:"SERVICE_ROOT_UUID"`
-	OdimUrl            string   `yaml:"OdimURL" envconfig:"ODIM_URL"`
+	OdimURL            string   `yaml:"OdimURL" envconfig:"ODIM_URL"`
 	OdimUserName       string   `yaml:"OdimUserName" envconfig:"ODIM_USERNAME"`
 	OdimPassword       string   `yaml:"OdimPassword" envconfig:"ODIM_PASSWORD"`
 	FirmwareVersion    string   `yaml:"FirmwareVersion" envconfig:"FIRMWARE_VERSION"`
@@ -81,11 +81,11 @@ func validate(pc *PluginConfig) error {
 	if pc.LogLevel == "" {
 		pc.LogLevel = "debug"
 	}
-	if pc.OdimUrl == "" {
+	if pc.OdimURL == "" {
 		return fmt.Errorf("OdimURL has to be specified")
 	}
 
-	if _, e := url.Parse(pc.OdimUrl); e != nil {
+	if _, e := url.Parse(pc.OdimURL); e != nil {
 		return fmt.Errorf("given OdimURL is not correct URL")
 	}
 

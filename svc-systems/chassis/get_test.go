@@ -17,6 +17,7 @@
 package chassis
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"net/http"
 	"testing"
 
@@ -28,6 +29,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+var internalError = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error", nil, nil)
 
 func TestNewGetHandler(t *testing.T) {
 	managedChassis := dmtf.Chassis{}

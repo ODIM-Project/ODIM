@@ -28,11 +28,13 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 )
 
+// Enigma offers encryption/decryption API which utilizes provided private/public key pair.
 type Enigma struct {
 	priv *rsa.PrivateKey
 	pub  *rsa.PublicKey
 }
 
+// Decrypt decrypts provided toBeDecrypted string.
 func (e *Enigma) Decrypt(toBeDecrypted string) []byte {
 	decoded, err := base64.StdEncoding.DecodeString(toBeDecrypted)
 	if err != nil {
@@ -47,6 +49,7 @@ func (e *Enigma) Decrypt(toBeDecrypted string) []byte {
 	return plaintext
 }
 
+// Encrypt encrypts provided toBeEncrypted string.
 func (e *Enigma) Encrypt(toBeEncrypted []byte) string {
 	hash := sha512.New()
 	encrypted, err := rsa.EncryptOAEP(hash, rand.Reader, e.pub, toBeEncrypted, nil)
@@ -57,6 +60,7 @@ func (e *Enigma) Encrypt(toBeEncrypted []byte) string {
 	return base64.StdEncoding.EncodeToString(encrypted)
 }
 
+// NewEnigma constructs Enigma by loading private/public key pair from provided paths
 func NewEnigma(privKeyPath, pubKeyPath string) *Enigma {
 	privateKeyBytes, err := ioutil.ReadFile(privKeyPath)
 	if err != nil {
@@ -74,6 +78,7 @@ func NewEnigma(privKeyPath, pubKeyPath string) *Enigma {
 	}
 }
 
+// CreateEnigma constructs Enigma using provided private/public key pair
 func CreateEnigma(privateKeyBytes, publicKeyBytes []byte) *Enigma {
 	return &Enigma{
 		priv: bytesToPrivateKey(privateKeyBytes),

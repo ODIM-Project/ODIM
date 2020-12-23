@@ -24,22 +24,22 @@ import (
 // URP plugin exposes its endpoints(/ODIM/v1/*) in different domain than ODIMRA(/redfish/v1/*),
 // this static translator instance translates keywords between domains.
 var Translator = &translator{
-	r20: map[string]string{
+	redfish2odim: map[string]string{
 		"redfish": "ODIM",
 	},
-	o2r: map[string]string{
+	odim2redfish: map[string]string{
 		"ODIM": "redfish",
 	},
 }
 
 type translator struct {
-	o2r map[string]string
-	r20 map[string]string
+	odim2redfish map[string]string
+	redfish2odim map[string]string
 }
 
 func (u *translator) ODIMToRedfish(data string) string {
 	translated := data
-	for k, v := range u.o2r {
+	for k, v := range u.odim2redfish {
 		translated = strings.Replace(translated, k, v, -1)
 	}
 	return translated
@@ -47,7 +47,7 @@ func (u *translator) ODIMToRedfish(data string) string {
 
 func (u *translator) RedfishToODIM(data string) string {
 	translated := data
-	for k, v := range u.r20 {
+	for k, v := range u.redfish2odim {
 		translated = strings.Replace(translated, k, v, -1)
 	}
 	return translated

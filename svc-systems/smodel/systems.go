@@ -130,6 +130,10 @@ func FindAll(table, key string) ([][]byte, error) {
 		return nil, err
 	}
 
+	if len(affectedKeys) == 0 {
+		return [][]byte{}, nil
+	}
+
 	conn := cp.ReadPool.Get()
 	defer conn.Close()
 

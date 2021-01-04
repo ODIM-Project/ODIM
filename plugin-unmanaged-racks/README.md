@@ -45,7 +45,7 @@ make run
 
 ## Register URP in ODIMRA
 
-1. Make `https://localhost:45000/redfish/v1/AggregationService/ConnectionMethods` endpoint exposes connection method required by URP plugin. `ConnectionMethodVariant` should be `Compute:BasicAuth:URP_v1.0.0`.
+1. Make `https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods` endpoint exposes connection method required by URP plugin. `ConnectionMethodVariant` should be `Compute:BasicAuth:URP_v1.0.0`.
 
 ```
 {
@@ -65,11 +65,11 @@ make run
 
 2. Execute plugin registration request:
 ```
-POST https://odimra.local.com:45000/redfish/v1/AggregationService/AggregationSources
+POST https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 
 {
- "HostName": "odimra.local.com:45003",
+ "HostName": "{urp_plugin_host}:{urp_plugin_port}",
  "Password":"Od!m12$4",
  "UserName":"admin",
  "Links": {
@@ -82,7 +82,7 @@ Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 
 ## Create RackGroup
 ```
-POST https://localhost:45000/redfish/v1/Chassis
+POST https://{odim_host}:{port}/redfish/v1/Chassis
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 
 {
@@ -100,7 +100,7 @@ Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 ```
 ## Create Rack
 ```
-POST https://odimra.local.com:45000/redfish/v1/Chassis
+POST https://{odim_host}:{port}/redfish/v1/Chassis
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 
 {
@@ -123,7 +123,7 @@ Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 ```
 ## Attach selected Chassis under Rack
 ```
-PATCH https://odimra.local.com:45000/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
+PATCH https://{odim_host}:{port}/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 Content-Type: application/json
 
@@ -140,7 +140,7 @@ Content-Type: application/json
 
 ## Detach Chassis from Rack
 ```
-PATCH https://odimra.local.com:45000/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
+PATCH https://{odim_host}:{port}/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 Content-Type: application/json
 
@@ -153,12 +153,12 @@ Content-Type: application/json
 
 ## Delete Rack
 ```
-DELETE https://odimra.local.com:45000/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
+DELETE https://{odim_host}:{port}/redfish/v1/Chassis/3061416c-5144-5d96-9ec8-69d670a89a8b
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 ```
 
 ## Delete RackGroup
 ```
-DELETE https://odimra.local.com:45000/redfish/v1/Chassis/1be678f0-86dd-58ac-ac38-16bf0f6dafee
+DELETE https://{odim_host}:{port}/redfish/v1/Chassis/1be678f0-86dd-58ac-ac38-16bf0f6dafee
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=
 ```

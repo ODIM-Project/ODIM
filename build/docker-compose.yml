@@ -214,6 +214,8 @@ services:
     hostname: urp
     user: 1235:1235
     restart: always
+    extra_hosts:
+      - $FQDN:$HOSTIP
     depends_on:
       - odimra
       - redis
@@ -224,7 +226,7 @@ services:
       PLUGIN_BASIC_AUTH_USERNAME: admin
       PLUGIN_BASIC_AUTH_PASSWORD: O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==
       PLUGIN_SERVICE_ROOT_UUID: 99999999-9999-9999-9999-999999999999
-      PLUGIN_ODIM_URL: https://$HOSTIP:45000
+      PLUGIN_ODIM_URL: https://$FQDN:45000
       PLUGIN_ODIM_USERNAME: admin
       PLUGIN_FIRMWARE_VERSION: v1.0.0
       PLUGIN_LOG_LEVEL: debug

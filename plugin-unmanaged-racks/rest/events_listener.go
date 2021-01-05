@@ -45,22 +45,22 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 	raw := new(json.RawMessage)
 	err := c.ReadJSON(raw)
 	if err != nil {
+		logging.Errorf("Cannot read message body: %s", err)
 		c.StatusCode(http.StatusBadRequest)
-		_, _ = c.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
 		return
 	}
 
 	message := new(redfish.Event)
 	err = json.Unmarshal([]byte(redfish.Translator.RedfishToODIM(string(*raw))), message)
 	if err != nil {
+		logging.Errorf("Cannot load '%s' message into redfish.Event struct: %s", string(*raw), err)
 		c.StatusCode(http.StatusBadRequest)
-		_, _ = c.JSON(redfish.CreateError(redfish.GeneralError, err.Error()))
 		return
 	}
 
 	for _, e := range message.Events {
 		ctx := stdCtx.TODO()
-		containedInKey := db.CreateContainedInKey("Chassis", e.OriginOfCondition.Oid)
+		containedInKey := db.CreateContainedInKey("Chassis", e.OriginOfCondition)
 		rackKey, err := eh.dao.Get(ctx, containedInKey.String()).Result()
 		if err == redis.Nil {
 			continue
@@ -80,7 +80,7 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 
 				if _, err := pipeliner.SRem(
 					ctx,
-					db.CreateContainsKey("Chassis", rackKey).String(), e.OriginOfCondition.Oid,
+					db.CreateContainsKey("Chassis", rackKey).String(), e.OriginOfCondition,
 				).Result(); err != nil {
 					return fmt.Errorf("srem: %s error: %w", db.CreateContainsKey("Chassis", rackKey).String(), err)
 				}

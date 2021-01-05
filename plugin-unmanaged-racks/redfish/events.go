@@ -36,5 +36,5 @@ type EventRecord struct {
 	MessageArgs       []string    `json:"MessageArgs,omitempty"`
 	MessageID         string      `json:"MessageId"`
 	Oem               interface{} `json:"Oem,omitempty"`
-	OriginOfCondition *Link       `json:"OriginOfCondition,omitempty"`
+	OriginOfCondition string      `json:"OriginOfCondition,omitempty"`
 }

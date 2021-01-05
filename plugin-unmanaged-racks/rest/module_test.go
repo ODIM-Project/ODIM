@@ -449,7 +449,7 @@ func Test_unmanaged_chassis_chain(t *testing.T) {
 						{
 							"Events": [
 								{
-									"OriginOfCondition": {"@odata.id": "/redfish/v1/Chassis/2"}
+									"OriginOfCondition": "/redfish/v1/Chassis/2"
 								}
 							]
 						}

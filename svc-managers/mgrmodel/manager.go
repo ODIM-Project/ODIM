@@ -179,7 +179,7 @@ func GenericSave(body []byte, table string, key string) error {
 }
 
 // AddManagertoDB will add odimra Manager details to DB
-func (mgr *RAManager) AddManagertoDB() error {
+func AddManagertoDB(mgr RAManager) error {
 	key := "/redfish/v1/Managers/" + mgr.UUID
 	data, err := json.Marshal(mgr)
 	if err != nil {

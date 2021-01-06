@@ -40,16 +40,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
-// Schema is used to define the allowed values for search/filter
-type Schema struct {
-	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
-	ConditionKeys []string                       `json:"conditionKeys"`
-	QueryKeys     []string                       `json:"queryKeys"`
-}
-
-// SF holds the schema data for search/filter
-var SF Schema
-
 func setRegexFlag(val string) bool {
 	var re = regexp.MustCompile(`(?m)[\[\]!@#$%^&*(),.?":{}|<>]`)
 
@@ -131,18 +121,18 @@ func GetMembers(allowed map[string]map[string]bool, expression []string, resp re
 
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
-	for _, value := range SF.SearchKeys {
+	for _, value := range scommon.SF.SearchKeys {
 		for k := range value {
 			allowed["searchKeys"][k] = true
 		}
 	}
-	for _, value := range SF.ConditionKeys {
+	for _, value := range scommon.SF.ConditionKeys {
 		allowed["conditionKeys"][value] = true
 	}
 	var members []dmtf.Link
 	var regexFlag, typeFlag, arrayFlag bool
 	for amp, pam := range expression {
-		for _, value := range SF.SearchKeys {
+		for _, value := range scommon.SF.SearchKeys {
 			for k, v := range value {
 				if k == pam {
 					if v["type"] != "string" && v["type"] != "[]string" {
@@ -312,7 +302,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 	allowed["queryKeys"] = make(map[string]bool)
 	allowed["logicalOperators"] = make(map[string]bool)
 
-	for _, value := range SF.QueryKeys {
+	for _, value := range scommon.SF.QueryKeys {
 		value = "$" + value
 		allowed["queryKeys"][value] = true
 	}
@@ -645,15 +635,15 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
 	allowed["queryKeys"] = make(map[string]bool)
-	for _, value := range SF.SearchKeys {
+	for _, value := range scommon.SF.SearchKeys {
 		for k := range value {
 			allowed["searchKeys"][k] = true
 		}
 	}
-	for _, value := range SF.ConditionKeys {
+	for _, value := range scommon.SF.ConditionKeys {
 		allowed["conditionKeys"][value] = true
 	}
-	for _, value := range SF.QueryKeys {
+	for _, value := range scommon.SF.QueryKeys {
 		allowed["queryKeys"][value] = true
 	}
 	var resp response.RPC

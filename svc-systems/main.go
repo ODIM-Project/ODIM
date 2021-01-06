@@ -26,6 +26,7 @@ import (
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 )
 
@@ -49,10 +50,16 @@ func main() {
 	if err != nil {
 		log.Fatal("Error while trying to read search/filter schema json: " + err.Error())
 	}
-	err = json.Unmarshal(schemaFile, &systems.SF)
+	err = json.Unmarshal(schemaFile, &scommon.SF)
 	if err != nil {
 		log.Fatal("Error while trying to fetch search/filter schema json: " + err.Error())
 	}
+
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	go scommon.TrackConfigFileChanges(configFilePath)
 
 	err = services.InitializeService(services.Systems)
 	if err != nil {

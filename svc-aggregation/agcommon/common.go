@@ -18,12 +18,12 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
-	"github.com/fsnotify/fsnotify"
 	uuid "github.com/satori/go.uuid"
 	"strconv"
 )
@@ -142,8 +142,8 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 					" and connection method variant " + connectionMethodConf[i].ConnectionMethodVariant + " added to ODIM")
 		}
 	}
-	// loop thorugh the remaing connection method data from connectionMethodInfo map
-	// delete the connection from ODIM if doesn't manage any aggreation source  else log the error
+	// loop thorugh the remaining connection method data from connectionMethodInfo map
+	// delete the connection from ODIM if doesn't manage any aggreation source else log the error
 	for connectionMethodID, connectionMethodData := range connectionMethodInfo {
 		if len(connectionMethodData.Links.AggregationSources) > 0 {
 			log.Error("Connection Method ID: " + connectionMethodID + " with connection method type " +
@@ -168,41 +168,14 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
 func TrackConfigFileChanges(dbInterface DBInterface) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = watcher.Add(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	go func() {
-		for {
-			select {
-			case fileEvent, ok := <-watcher.Events:
-				if !ok {
-					continue
-				}
-				log.Info("event:", fileEvent)
-				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Info("modified file:", fileEvent.Name)
-					// update the odim config
-					if err := config.SetConfiguration(); err != nil {
-						log.Error("Unable to set configuration: " + err.Error())
-					}
-					err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
-					if err != nil {
-						log.Error("Unable to add connection methods: " + err.Error())
-					}
-				}
-				//Reading file to continue the watch
-				watcher.Add(ConfigFilePath)
-			case err, _ := <-watcher.Errors:
-				if err != nil {
-					log.Error(err)
-					defer watcher.Close()
-				}
-			}
+	eventChan := make(chan interface{})
+	var lock sync.Mutex
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, &lock)
+	select {
+	case <-eventChan: // new data arrives through eventChan channel
+		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
+		if err != nil {
+			log.Error("error while trying to Add connection methods:" + err.Error())
 		}
-	}()
+	}
 }

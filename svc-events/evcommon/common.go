@@ -123,7 +123,7 @@ var EMBTopics EmbTopic
 var PluginStartUp = false
 
 // GetAllPluginStatus ...
-func (st *StartUpInteraface) GetAllPluginStatus() {
+func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
@@ -133,7 +133,11 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 		for i := 0; i < len(pluginList); i++ {
 			go st.getPluginStatus(pluginList[i])
 		}
-		time.Sleep(time.Minute * time.Duration(config.Data.PluginStatusPolling.PollingFrequencyInMins))
+		var pollingTime int
+		lock.Lock()
+		pollingTime = config.Data.PluginStatusPolling.PollingFrequencyInMins
+		lock.Unlock()
+		time.Sleep(time.Minute * time.Duration(pollingTime))
 	}
 
 }

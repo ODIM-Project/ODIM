@@ -44,10 +44,18 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	err := addManagertoDB()
+	var managerInterface = mgrcommon.DBInterface{
+		AddManagertoDBInterface: mgrmodel.AddManagertoDB,
+	}
+	err := addManagertoDB(managerInterface)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 
 	err = services.InitializeService(services.Managers)
 	if err != nil {
@@ -69,7 +77,7 @@ func registerHandlers() {
 	managersproto.RegisterManagersHandler(services.Service.Server(), manager)
 }
 
-func addManagertoDB() error {
+func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	mgr := mgrmodel.RAManager{
 		Name:            "odimra",
 		ManagerType:     "Service",
@@ -78,6 +86,6 @@ func addManagertoDB() error {
 		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
 	}
-	return mgr.AddManagertoDB()
+	return managerInterface.AddManagertoDBInterface(mgr)
 
 }

@@ -23,12 +23,23 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
+
+// Schema is used to define the allowed values for search/filter
+type Schema struct {
+	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
+	ConditionKeys []string                       `json:"conditionKeys"`
+	QueryKeys     []string                       `json:"queryKeys"`
+}
+
+// SF holds the schema data for search/filter
+var SF Schema
 
 //PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
@@ -278,4 +289,24 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+func TrackConfigFileChanges(configFilePath string) {
+	eventChan := make(chan interface{})
+	var lock sync.Mutex
+	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	select {
+	case <-eventChan: // new data arrives through eventChan channel
+		lock.Lock()
+		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
+		if err != nil {
+			log.Error("error while trying to read search/filter schema json" + err.Error())
+		}
+		lock.Unlock()
+		err = json.Unmarshal(schemaFile, &SF)
+		if err != nil {
+			log.Error("error while trying to fetch search/filter schema json" + err.Error())
+		}
+	}
 }

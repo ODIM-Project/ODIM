@@ -276,11 +276,10 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
-	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
+	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key[index+1:], common.InMemory)
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
-
 	// Delete Compute System Details from InMemory
 	if derr := e.DeleteComputeSystem(index, key); derr != nil {
 		errMsg := "error while trying to delete compute system: " + derr.Error()

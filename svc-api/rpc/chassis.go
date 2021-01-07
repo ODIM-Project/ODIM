@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -47,6 +48,33 @@ func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetCh
 func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	asService := chassisproto.NewChassisService(services.Systems, services.Service.Client())
 	resp, err := asService.GetChassisInfo(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	resp, err := service.CreateChassis(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	resp, err := service.DeleteChassis(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+func UpdateChassis(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	resp, err := service.UpdateChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}

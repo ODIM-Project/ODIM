@@ -1,4 +1,5 @@
 #(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#(C) Copyright 2020 Intel Corporation
 #
 #Licensed under the Apache License, Version 2.0 (the "License"); you may
 #not use this file except in compliance with the License. You may obtain
@@ -30,7 +31,10 @@ copy: build/odimra/odimra
 dep: copy
 	build/odimra/makedep.sh
 
-build-containers: dep
+urp:
+	cd plugin-unmanaged-racks && $(MAKE) build
+
+build-containers: dep urp
 	cd build && ./run_pre_reqs.sh && docker-compose build --force-rm --build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}
 
 standup-containers: build-containers
@@ -43,5 +47,7 @@ all: standup-containers
 
 clean: 
 	build/cleanupbuild.sh
-deepclean: 
+	cd plugin-unmanaged-racks && $(MAKE) clean
+
+deepclean:
 	build/deepcleanupbuild.sh

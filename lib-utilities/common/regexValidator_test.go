@@ -27,6 +27,16 @@ func TestURIValidator(t *testing.T) {
 		want bool
 	}{
 		{
+			name: "Valid one word hostname",
+			uri:  "https://URP:45003/EventService/Events",
+			want: true,
+		},
+		{
+			name: "Valid localhost",
+			uri:  "https://localhost/EventService/Events",
+			want: true,
+		},
+		{
 			name: "Valid URI with IPv4 address",
 			uri:  "https://1.2.3.4:5678/redfish/v1",
 			want: true,

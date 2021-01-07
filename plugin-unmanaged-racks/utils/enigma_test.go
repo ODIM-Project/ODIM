@@ -1,0 +1,102 @@
+/*
+ * Copyright (c) 2020 Intel Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package utils
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+const privateKey = `
+-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----
+`
+
+const publicKey = `
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA22C8yny2N1UrXvQhik75
++LYmTRbh4rPckUlfXxnghcxnIHnHLT8G3NZoc6TGFDERL5yGqNGfgD/lq0I23ILS
+hx6udl/ygycOU9uyKFhjE+9VkvE+fDiIikUwjyhGRhDPkF4LGrowmFvHnp+emIf9
+DxVT7H7gOnAcl1TLWWFNIhAm1vsDtsdw4CytQqsMhuEYryXTvX9eW/m0LDboKr6Z
+YYAnaes6UXvXGpAj2bSeWvAhm7fLDui5A5sbWzymuC0Zcde8pLPundGQgm0ffq+V
+3i0/mEhR05oFQZ+Dec5bxbccNsRQGJUDuEI7Dzb6xBNWbLRBumZ1If8NqhPleBKg
+m8bQejU/fJ/LbZ2jEJJ3qqC8KHg5thVJe4qKGVcasBTRh8Ddlz3lRpMrOXwDlTbB
+BGCtGJpPOCqCfMubZ9xeQv5Hsn6wDbk+nEXJ5txvAnFkePggLQwXtE5D5A4cAqNH
+Ib+BNdWGXBqPoxuJjsI02/YTBLFmVPv3KZrgNZDI3wjrhTrkDVz0Ul7WpXQB3cqi
+kxM4GB3W/BWT52+8gkj39nvAgyiOJqXkQip70igfXo0rbYaEVh23hEWPWw4F6k0E
+ssKb5dwmAg/Hc7Yz5gtrXnKbEW7cJs2MTp8mH21LhQmnwqgQsRza/YYGuh0KeC3q
+aNyi/1K7T+22s2mf5rfEWqECAwEAAQ==
+-----END PUBLIC KEY-----
+`
+
+func Test_Enigma(t *testing.T) {
+	e := CreateEnigma([]byte(privateKey), []byte(publicKey))
+	secret := []byte("Od!m12$4")
+	encrypted := e.Encrypt(secret)
+	decrypted := e.Decrypt(encrypted)
+	assert.Equal(t, secret, decrypted)
+}

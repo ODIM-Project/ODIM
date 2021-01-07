@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -17,7 +18,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"net/http"
 	"testing"
 
@@ -118,24 +123,16 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 }
 
 func TestChassis_GetAllChassis(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1\"`)
-	err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	if err != nil {
-		t.Fatalf("Error in creating mock resource data :%v", err)
-	}
-	cha := new(ChassisRPC)
-	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha := NewChassisRPC(
+		mockIsAuthorized,
+		nil,
+		chassis.NewGetCollectionHandler(
+			func(name string) (plugin.Client, *errors.Error) {
+				return nil, errors.PackError(errors.DBKeyNotFound, "error")
+			}, func(table string) ([]string, error) {
+				return []string{}, nil
+			}), nil, nil, nil)
+
 	type args struct {
 		ctx  context.Context
 		req  *chassisproto.GetChassisRequest
@@ -198,6 +195,10 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 	}
 	cha := new(ChassisRPC)
 	cha.IsAuthorizedRPC = mockIsAuthorized
+	cha.GetHandler = chassis.NewGetHandler(
+		func(name string) (plugin.Client, *errors.Error) {
+			return nil, errors.PackError(errors.DBKeyNotFound, "urp os not registered")
+		}, smodel.Find)
 	type args struct {
 		ctx  context.Context
 		req  *chassisproto.GetChassisRequest

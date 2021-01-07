@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -29,4 +30,20 @@ type Collection struct {
 	Name         string      `json:"Name"`
 	Members      []dmtf.Link `json:"Members"`
 	MembersCount int         `json:"Members@odata.count"`
+}
+
+func (c *Collection) AddMember(m dmtf.Link) {
+	c.Members = append(c.Members, m)
+	c.MembersCount = len(c.Members)
+}
+
+func NewChassisCollection() Collection {
+	return Collection{
+		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
+		OdataID:      "/redfish/v1/Chassis/",
+		OdataType:    "#ChassisCollection.ChassisCollection",
+		Description:  "Chassis Collection",
+		Name:         "Chassis Collection",
+		Members:      []dmtf.Link{},
+	}
 }

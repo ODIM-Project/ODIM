@@ -366,6 +366,20 @@ func (p *ConnPool) Read(table, key string) (string, *errors.Error) {
 	return string(data), nil
 }
 
+// FindOrNull is a wrapper for Read function. If requested asset doesn't exist errors.DBKeyNotFound error returned by Read is converted to nil
+func (p *ConnPool) FindOrNull(table, key string) (string, error) {
+	r, e := p.Read(table, key)
+	if e != nil {
+		switch e.ErrNo() {
+		case errors.DBKeyNotFound:
+			return "", nil
+		default:
+			return "", e
+		}
+	}
+	return r, nil
+}
+
 //GetAllDetails will fetch all the keys present in the database
 func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 	readConn := p.ReadPool.Get()

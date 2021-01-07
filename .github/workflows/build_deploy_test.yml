@@ -45,8 +45,9 @@ jobs:
         export HOSTIP=${HOSTIP}
         make all
         sleep 15s
-        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish'`
-        if [ $b -eq 20 ];
+        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish|urp'`
+        echo "Detected number of ODIM related processes: " $b
+        if [ $b -eq 21 ];
         then
             echo "ODIMRA processes & GRF plugin are up & running"
             echo "Deployment sucessful" 
@@ -100,7 +101,17 @@ jobs:
         else
           echo "ALL Sanity Tests Passed Sucessfully"
         fi
-        
+
+    - name: Prepare Build Artifacts
+      run: |
+        sudo mkdir /var/log/odim-infra
+        docker-compose -f build/docker-compose.yml logs kafka | sudo tee /var/log/odim-infra/kafka.log
+        docker-compose -f build/docker-compose.yml logs zookeeper| sudo tee /var/log/odim-infra/zookeeper.log
+        docker-compose -f build/docker-compose.yml logs consul | sudo tee /var/log/odim-infra/consul.log
+        docker-compose -f build/docker-compose.yml logs redis | sudo tee /var/log/odim-infra/redis.log
+        sudo mkdir /var/log/odim-plugins
+        docker-compose -f build/docker-compose.yml logs urp |sudo tee /var/log/odim-plugins/urp.log
+        sudo cp /var/log/GRF_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
       if: always()
@@ -108,5 +119,6 @@ jobs:
        name: my-artifiact
        path: |
         /var/log/odimra
-        /var/log/GRF_PLUGIN
+        /var/log/odim-plugins
+        /var/log/odim-infra
   

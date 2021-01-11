@@ -3,12 +3,18 @@
 
 # Table of contents
 
-- [Deploying ODIMRA](#deploying-odimra)
+- [Deploying the resource aggregator for ODIM (ODIMRA)](#deploying-the-resource-aggregator-for-odim--odimra-)
   * [1. Setting up OS and Docker environment](#1-setting-up-os-and-docker-environment)
-  * [2. Installing the resource aggregator for ODIM and GRF plugin](#2-installing-the-resource-aggregator-for-odim-and-grf-plugin)
-    + [Default user credentials for ODIMRA and GRF Plugin](#default-user-credentials-for-odimra-and-grf-plugin)
+  * [2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim--the-generic-redfish--grf--plugin--and-the-unmanaged-rack-plugin--urp-)
+    + [Default user credentials for ODIMRA, the GRF Plugin, and the URP](#default-user-credentials-for-odimra--the-grf-plugin--and-the-urp)
 - [Modifying default configuration parameters for the resource aggregator](#modifying-default-configuration-parameters-for-the-resource-aggregator)
 - [Configuring proxy for Docker](#configuring-proxy-for-docker)
+- [Uninstalling ODIMRA](#uninstalling-odimra)
+- [CI Process](#ci-process)
+  * [GitHub action workflow details](#github-action-workflow-details)
+
+
+
    
 
 
@@ -123,14 +129,14 @@ To install `Ubuntu Make`, run the following command:
 
 
 	   
-## 2. Installing the resource aggregator for ODIM and GRF plugin
-This section provides a step-by-step procedure for deploying ODIMRA and GRF plugin.
+## 2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)
+This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin, and URP.
 
   
   **NOTE:**
-  - All configuration parameters are set to default values in the configuration files for odimra and GRF plugin. 
-  - The following ports are used for deploying odimra and GRF plugin:
-    45000, 45001, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
+  - All configuration parameters are set to default values in the configuration files for ODIMRA and GRF plugin. 
+  - The following ports are used for deploying ODIMRA, GRF plugin, and URP:
+    45000, 45001, 45003, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
     Ensure that the above ports are not in use.
   - The following users are created and added to group ids automatically when the certificates are generated during deployment. 
   
@@ -142,7 +148,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
 
      `odimra` is created on both the VM and the container for the resource aggregator.
 	
-	 `plugin` is created  on both the VM and the container for the GRF plugin.
+	 `plugin` is created  on both the VM and the container for the GRF plugin and URP.
 	
 	  Ensure that these user ids and group ids are not present on the VM prior to deployment.
 
@@ -151,7 +157,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
 
 **Procedure**
 --------------
-1. Clone the odimra repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user.
+1. Clone the ODIMRA repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user.
    ```
    $ git clone https://github.com/ODIM-Project/ODIM.git
    ```
@@ -191,10 +197,10 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
    **NOTE:**
    - Self-signed Root CA (Certificate Authority) certificate and key are generated with 4096 key length and sha512 digest algorithm.
    - Using the generated CA certificate, certificates and private keys for the resource aggregator services are also generated with 4096 key length and sha512 digest algorithm. They are valid for services matching the provided FQDN. You can use one-word description of the certificate as the common name.
-   - Certificates are used by the resource aggregator services to communicate    internally (Remote Procedure Call) and with the plugin services.
+   - Certificates are used by the resource aggregator services to communicate internally (Remote Procedure Call) and with the plugin services.
    - If you are using an intermediate CA for signing certificates assigned to the resource aggregator and the plugin services, ensure to:
         - Append all the intermediate certificates to the server certificate file in   the order such that each certificate has signed the preceding one.
-        - Append the Root CA used for signing the intermediate CA to the resource   aggregator CA file.
+        - Append the Root CA used for signing the intermediate CA to the resource aggregator CA file.
 
 
     **Procedure**
@@ -204,9 +210,9 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
        $ cd ODIM/build/cert_generator
       ```
 
-    > NOTE: `ODIM/build/cert_generator` contains the automated scripts to        generate the resource aggregator and GRF plugin TLS and Kafka TLS  certificates.
+    > NOTE: `ODIM/build/cert_generator` contains the automated scripts to generate the TLS certificates for the resource aggregator, the GRF plugin and Kafka.
 
-   b. Use the following command to generate the resource aggregator and the      GRF plugin certificates. Provide FQDN as a command-line argument.
+   b. Use the following command to generate certificates for the resource aggregator, the GRF plugin, and the URP. Provide FQDN as a command-line argument.
       ```
       $ ./generate_odimra_cert.sh <FQDN>
       ```
@@ -218,7 +224,7 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       ```
        $ ./generate_zookeeper_certs.sh zookeeper
       ```
-   e. Use the following command to copy the resource aggregator, the GRF  plugin, the Kafka and Zookeeper TLS certificates:
+   e. Use the following command to copy the TLS certificates of the resource aggregator, the GRF  plugin, the URP, Kafka and Zookeeper:
      ```
       $ sudo ./copy_certificate.sh
      ```
@@ -263,63 +269,46 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       - build_redis_1
       - build_consul_1
       - build_grf_plugin_1
+	  - build_urp_1
 
 10. Verify that the resource aggregator services are running successfully.
    ```
    $ ps -eaf | grep svc
    ```
+   
    All the resource aggregator services are listed:
    ```
-   root 8343 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-api --registry=consul --registry_address=consul:8500 --
-   client_request_timeout=1m
-   bruce 8346 8343 0 15:20 ? 00:00:00 ./svc-api --
-   registry=consul --registry_address=consul:8500 --client_request_timeout=1m
-   root 8406 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-account-session --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45101
-   bruce 8408 8406 0 15:20 ? 00:00:00 ./svc-account-session --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45101
-   root 8424 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-aggregation --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45102
-   bruce 8426 8424 0 15:20 ? 00:00:00 ./svc-aggregation --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45102
-   root 8441 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-events --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45103
-   bruce 8443 8441 0 15:20 ? 00:00:00 ./svc-events --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45103
-   root 8458 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-systems --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45104
-   bruce 8460 8458 0 15:20 ? 00:00:00 ./svc-systems --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45104
-   root 8474 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-task --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45105
-   bruce 8476 8474 0 15:20 ? 00:00:00 ./svc-task --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45105
-   root 8492 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-fabrics --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45106
-   bruce 8494 8492 0 15:20 ? 00:00:00 ./svc-fabrics --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45106
-   root 8519 8233 0 15:20 ? 00:00:00 sudo -E -u odim nohup ./
-   svc-managers --registry=consul --registry_address=consul:8500 --
-   server_address=odim:45107
-   bruce 8521 8519 0 15:20 ? 00:00:00 ./svc-managers --
-   registry=consul --registry_address=consul:8500 --server_address=odim:45107
+   root     26491 30077  0 Jan10 ?        00:00:00 sudo -E -u odimra nohup ./svc-events --registry=consul --registry_address=consul:8500 --server_address=odimra:45103 --client_request_timeout=300s
+   odimra   26499 26491  0 Jan10 ?        00:09:51 ./svc-events --registry=consul --registry_address=consul:8500 --server_address=odimra:45103 --client_request_timeout=300s
+   root     30291 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-task --registry=consul --registry_address=consul:8500 --server_address=odimra:45105 --client_request_timeout=300s
+   root     30301 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-update --registry=consul --registry_address=consul:8500 --server_address=odimra:45108 --client_request_timeout=300s
+   root     30304 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-account-session --registry=consul --registry_address=consul:8500 --server_address=odimra:45101
+   root     30306 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-fabrics --registry=consul --registry_address=consul:8500 --server_address=odimra:45106 --client_request_timeout=300s
+   root     30314 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-systems --registry=consul --registry_address=consul:8500 --server_address=odimra:45104 --client_request_timeout=300s
+   root     30321 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-managers --registry=consul --registry_address=consul:8500 --server_address=odimra:45107 --client_request_timeout=300s
+   odimra   30326 30304  0 Jan07 ?        00:41:25 ./svc-account-session --registry=consul --registry_address=consul:8500 --server_address=odimra:45101
+   root     30344 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-aggregation --registry=consul --registry_address=consul:8500 --server_address=odimra:45102 --client_request_timeout=300s
+   root     30366 30077  0 Jan07 ?        00:00:00 sudo -E -u odimra nohup ./svc-api --registry=consul --registry_address=consul:8500 --client_request_timeout=302s
+   odimra   30374 30301  0 Jan07 ?        00:01:42 ./svc-update --registry=consul --registry_address=consul:8500 --server_address=odimra:45108 --client_request_timeout=300s
+   odimra   30375 30291  0 Jan07 ?        00:31:24 ./svc-task --registry=consul --registry_address=consul:8500 --server_address=odimra:45105 --client_request_timeout=300s
+   odimra   30381 30344  0 Jan07 ?        00:04:27 ./svc-aggregation --registry=consul --registry_address=consul:8500 --server_address=odimra:45102 --client_request_timeout=300s
+   odimra   30398 30306  0 Jan07 ?        00:01:25 ./svc-fabrics --registry=consul --registry_address=consul:8500 --server_address=odimra:45106 --client_request_timeout=300s
+   odimra   30399 30314  0 Jan07 ?        00:03:13 ./svc-systems --registry=consul --registry_address=consul:8500 --server_address=odimra:45104 --client_request_timeout=300s
+   odimra   30414 30321  0 Jan07 ?        00:01:14 ./svc-managers --registry=consul --registry_address=consul:8500 --server_address=odimra:45107 --client_request_timeout=300s
+   odimra   30426 30366  0 Jan07 ?        00:17:52 ./svc-api --registry=consul --registry_address=consul:8500 --client_request_timeout=302s
    ```
 
 
-    **NOTE:**
-    - The resource aggregator configuration files are available at `/etc/odimra_config`.
-    -  The GRF configuration files are available at `/etc/grf_plugin_config`.
-    - The resource aggregator API service runs on the default port 45000.
-    - The GRF plugin API service runs on default port 45001.
-    - The resource aggregator logs are available at `/var/log/odimra`.
-    - The GRF plugin logs are available at `/var/log/GRF_PLUGIN`.
+  **NOTE:**
+  - The resource aggregator configuration files are available at `/etc/odimra_config`.
+  - The GRF configuration files are available at `/etc/grf_plugin_config`.
+  - The URP configuration files are available at `/etc/urp_plugin_config`.
+  - The resource aggregator API service runs on the default port 45000.
+  - The GRF plugin API service runs on the default port 45001.
+  - The URP API service runs on the default port 45003.
+  - The resource aggregator logs are available at `/var/log/odimra`.
+  - The GRF plugin logs are available at `/var/log/GRF_PLUGIN`.
+  - The URP logs are available at `/var/log/URP_PLUGIN`.
 
 
 11. To configure log rotation, do the following:
@@ -328,7 +317,11 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
     ```
     $ cd /etc/logrotate.d
     ```
-    b. Edit a file by name odimra (`$ sudo vi odimra`) and add the following content:
+    b. Open the `odimra` file to edit:
+	```
+    $ sudo vi odimra
+    ```	
+	c. Add the following content and save:
      ```
     /var/log/GRF_PLUGIN/*.log
      /var/log/odimra/*.log {
@@ -343,11 +336,15 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
     copytruncate
     }
     ``` 
-    c. Navigate to the `/etc/cron.hourly` directory.
+    d. Navigate to the `/etc/cron.hourly` directory.
        ```
        $ cd /etc/cron.hourly
        ```
-    d. Edit a file by name logrotate (`$ sudo vi logrotate`) and add following content:
+    e. Open the `logrotate` file:
+	   ```
+	   $ sudo vi logrotate
+	   ```
+	f. Add following content and save:
 	   ```
        logrotate -s /var/lib/logrotate/status /etc/logrotate.d/odimra
 	   ```
@@ -356,36 +353,13 @@ This section provides a step-by-step procedure for deploying ODIMRA and GRF plug
       $ sudo logrotate -v -f /etc/logrotate.d/odimra
   	  ```
   
-12.  Use following commands to undeploy odimra solution and remove the docker images, persistent data, logs.
 
-     ```
-     $ make clean
-     ```
-     The above command will perform below tasks:
-     - brings down all the deployed containers.
-     - remove only those docker images which were created and deployed as containers.
-     - removes data stored by Consul, Redis & Kafka.
 
-     ```
-     $ make deepclean
-     ```
-     The above command will perform below tasks: 
-     - brings down the deployed conatiners
-     - remove all the docker images, as well as intermediate/dependent images created as part of deployment.
-     - removes configuration & data stored by Consul, Redis & Kafka
-     - removes all generated certifictes.
-     - removes logs files created for odimra services and grfplugin.
-
-     [NOTE] Provide the sudo password when prompted by above commands.
-
-     [CAUTION] The above commands are not encouraged to be executed in production envoirnment as this will erase important data.
-               The action is irrecoverable and will wipe all the odimra completely. 
-
-13. To add the Generic Redfish Plugin and servers to the resource aggregator for ODIM, refer to the following readme.  
+12. To add the Generic Redfish Plugin, the URP, and servers to the resource aggregator for ODIM, see "Adding a plugin as an aggregation source" and "Adding a server as an aggregation source" in the following readme.  
     https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
 	
 	
-### Default user credentials for ODIMRA and GRF Plugin 
+### Default user credentials for ODIMRA, the GRF Plugin, and the URP
 
 
 ODIMRA:
@@ -401,6 +375,14 @@ GRF plugin:
 Username: admin
 Password: GRFPlug!n12$4
 ``` 
+
+URP:
+
+```
+Username: admin
+Password: Od!m12$4
+``` 
+
  
  
   
@@ -433,7 +415,7 @@ Password: GRFPlug!n12$4
      |TLSConf{|Array|TLS configuration parameters.<br> Note: It is not recommended to change these settings. |
      |MinVersion|String|Default value: `TLS1.2`<br> Supported values: `TLS1.0, TLS1.1, TLS1.2`<br> Recommended value: `TLS1.2`|
      |MaxVersion|String|Default value: `TLS1.2`<br> Supported values: `TLS1.0, TLS1.1, TLS1.2`<br>  Recommended value: `TLS1.2`<br>  NOTE: If `MinVersion` and `MaxVersion` are not specified, they will be set to default values.<br> If `MinVersion` and `MaxVersion` are set to unsupported values, the resource aggregator and the plugin services will exit with errors.|
-     |VerifyPeer|Boolean| Default value: true<br>  Recommended value: true<br>  NOTE:<br>  - `VerifyPeer` is set to true, by default. For secure plugin interaction, add root CA certificate (that is used to sign the certificates of the southbound entities) to root CA certificate file.  If `VerifyPeer` is set to false, SSL communication will be insecure.  After setting `VerifyPeer` to false, restart the resource aggregator container (`odim_1`).<br>  - If `TLS1.2` is used, ensure that the entity certificate has `SAN` field for successful validation.  - Northbound entities interacting with resource aggregator `API` service can use root CA that signed odimra's certificate.|
+     |VerifyPeer|Boolean| Default value: true<br>  Recommended value: true<br>  NOTE:<br>  - `VerifyPeer` is set to true, by default. For secure plugin interaction, add root CA certificate (that is used to sign the certificates of the southbound entities) to root CA certificate file.  If `VerifyPeer` is set to false, SSL communication will be insecure.  After setting `VerifyPeer` to false, restart the resource aggregator container (`odim_1`).<br>  - If `TLS1.2` is used, ensure that the entity certificate has `SAN` field for successful validation.  - Northbound entities interacting with resource aggregator `API` service can use root CA that signed ODIMRA's certificate.|
      |PreferredCipherSuites}|List| Default and supported values: See "List of supported (default) cipher suites".<br> IMPORTANT:<br>  - If `PreferredCipherSuites` is not specified, it will be set to default cipher (secure) suites.<br>  - If `PreferredCipherSuites` is set to unsupported cipher suites, the resource aggregator and the plugin services will exit with errors.|
 
      List of supported (default) cipher suites:
@@ -481,7 +463,7 @@ During the course of this procedure, you will be required to create files and co
 **Procedure**
 --------------
 
-1.   In the home directory of odimra user, create a hidden directory called .docker, and then create a file called config.json inside it.
+1.   In the home directory of ODIMRA user, create a hidden directory called .docker, and then create a file called config.json inside it.
 
       ```
        mkdir .docker
@@ -548,45 +530,81 @@ During the course of this procedure, you will be required to create files and co
 
          ```
          $ sudo service docker restart
+
          ```
+		 
+# Uninstalling ODIMRA
+
+  To uninstall ODIMRA, use either of the two commands listed in this section.
+
+  Use the following command to:
+  - Remove all the deployed Docker containers.
+  - Remove only those Docker images which were created and deployed as containers.
+  - Remove data stored by Consul, Redis, and Kafka.	
+
+```
+$ make clean
+```
+	
+  You will be prompted for the sudo passowrd: enter the password.
+	 
+  Use the following command to:
+  - Remove all the deployed Docker containers.
+  - Remove all the Docker images including the intermediate or dependent images created during the deployment.
+  - Remove configuration information and data stored by Consul, Redis & Kafka.
+  - Remove all generated certificates.
+  - Remove logs files created for the ODIMRA services, the GRF plugin, and the URP.
+
+```
+$ make deepclean
+```
+     
+  You will be prompted for the sudo passowrd: enter the password.
+
+  >**CAUTION**:
+ 	Running these commands will unistall ODIMRA and remove all related data completely. It is best to not run these commands unless absolutely necessary.
+               
 
 # CI Process
 
-GitHub Action workflows are added to the ODIM repository. These workflows called as checks gets triggered whenever a Pull Request(PR) is raised against the development branch.
-The result from the workflow execution is then updated to the PR. PRs are allowed to review and merge, only if the checks are passed.
+GitHub action workflows, also called as checks, are added to the ODIM repository. They are triggered whenever a Pull Request(PR) is raised against the development branch.
+The result from the workflow execution is then updated to the PR.
+ 
+>**Note:** You can review and merge PRs only if the checks are passed.
 
-Following checks are added as part of CI process:
+Following checks are added as part of the CI process:
 
 |Sl No.|Workflow Name|Description|
 |---------|-----------|----------|
-|1|`build_unittest.yml` |Builds and run Unit Tests with code coverage enabled|
-|2|`build_deploy_test.yml` |Builds, Deploys, run sanity tests and upload build artifacts (like odimra logs)|
-|3|`LGTM analysis` |Semantic code analyzer and query tool which finds security vulnerabilities in codebases| 
+|1|`build_unittest.yml` |Builds and runs Unit Tests with code coverage enabled.|
+|2|`build_deploy_test.yml` |Builds, Deploys, runs sanity tests, and uploads build artifacts (like odimra logs).|
+|3|`LGTM analysis` |Semantic code analyzer and query tool which finds security vulnerabilities in codebases.| 
 
-These checks run in parallel and takes approximately 9 mins to complete.
+These checks run in parallel and take approximately nine minutes to complete.
 
-GitHub Action Workflows details
--------------------
+GitHub action workflow details
+------------------------------
 
 1. build_unittest.yml
- - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in link https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
- - Installs Go 1.13.8 package
- - Installs and configures Redis 5.0.8 with two instances running on port 6379 and 6380.
- - Checks out the PR code into the Go module directory
- - Builds the code
- - Runs the unit tests
+ - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md.
+ - Installs Go 1.13.8 package.
+ - Installs and configures Redis 5.0.8 with two instances running on ports 6379 and 6380.
+ - Checks out the PR code into the Go module directory.
+ - Builds the code.
+ - Runs the unit tests.
 
 2. build_deploy_test.yml
- - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in link https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
- - Checks out the PR code
- - Build and deploys the following docker containers
-   Odimra
+ - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md.
+ - Checks out the PR code.
+ - Builds and deploys the following docker containers
+   ODIMRA
    Generic redfish plugin
+   Unmanaged Rack Plugin
    Kakfa
    Zookeeper
    Consul
    Redisdb
- - Runs the sanity tests
- - Uploads the build artifacts
+ - Runs the sanity tests.
+ - Uploads the build artifacts.
 
->   **NOTE:** Build status notifications with the link to the GitHub Actions build job page will be sent to the developer’s email.
+> **NOTE:** Build status notifications having a link to the GitHub Actions' build job page will be sent to the developer’s email.

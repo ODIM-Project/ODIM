@@ -53,6 +53,10 @@ Refer to the section **Modifying Configurations** in the README.md file to chang
   
   
 
+
+
+
+
 ## Viewing the aggregation service root
 |||
 |-----|-------|
@@ -127,7 +131,6 @@ Transfer-Encoding":chunked
    }
 }
 ```
-
 
 
 ## Connection methods
@@ -232,7 +235,7 @@ curl -i GET \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |ConnectionMethodType|String| The type of this connection method.<br> For possible property values, see "Connection method types" table.<br> |
-|ConnectionMethodVariant|String|The variant of connection method shown as: `PluginType:PrefferedAuthType:PluginID_Firmwareversion`.<br>**PluginType**<br>The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric.<br>**PrefferedAuthType**<br>Preferred authentication method to connect to the plugin - *BasicAuth* or *XAuthToken*<br>**PluginID_Firmwareversion**<br>The id of the plugin along with the version of the firmware.<br>Example: GRF_v1.0.0, ILO_v1.0.0|
+|ConnectionMethodVariant|String|The variant of connection method. For more information, see [Connection method variants](#connection-method-variants).|
 |Links \{|Object|Links to other resources that are related to this connection method.|
 |AggregationSources \[ \{<br> @odata.id<br> \} \]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
 
@@ -247,7 +250,30 @@ curl -i GET \
 | Redfish<br> | Redfish connection method.<br> |
 | SNMP<br> | Simple Network Management Protocol.<br> |
 
+#### Connection method variants
 
+A connection method variant provides details about a plugin and is displayed in the following format:
+
+*`PluginType:PrefferedAuthType:PluginID_Firmwareversion`*. 
+ It consists of the following parameters:
+
+- **PluginType:**
+   The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric. 
+- **PrefferedAuthType:**   
+   Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
+- **PluginID\_Firmwareversion:**
+   The id of the plugin along with the version of the firmware. To know the plugin Ids for all the supported plugins, see "Mapping of plugins and plugin Ids" table.<br>
+   Allowed values: GRF\_v1.0.0, ILO\_v1.0.0, and URP\_v1.0.0.<br>  
+   Example: `Compute:BasicAuth:GRF_v1.0.0` <br>
+
+
+>**Mapping of plugins and plugin Ids**
+
+|Plugin Id|Plugin name|
+|---------|-----------|
+|GRF|Generic Redfish Plugin|
+|ILO|HPE ILO Plugin|
+|URP|Unmanaged Rack Plugin|
 
 
 ##  Adding a plugin as an aggregation source
@@ -261,19 +287,20 @@ curl -i GET \
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
-
-**Usage**
+**Usage information**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
 				
 A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
 To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
 		
+
 After the plugin is successfully added as an aggregation source, it will also be available as a manager resource at:
 
 `/redfish/v1/Managers`.
 
  
+
 
 NOTE:
 
@@ -302,6 +329,7 @@ curl -i POST \
 ```
 
 
+
 >**Sample request body**
 
 ```
@@ -321,14 +349,15 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
+|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>The default port for the URP is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
 |UserName|String \(required\)<br> |The plugin username.|
 |Password|String \(required\)<br> |The plugin password.|
-|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0`</li></ul>|
-
+|PluginID|String \(required\)<br> |The id of the plugin you want to add. Example: GRF \(Generic Redfish Plugin\), ILO, URP |
+|PreferredAuthType|String \(required\)<br> |Preferred authentication method to connect to the plugin - `BasicAuth` or `XAuthToken`.|
+|PluginType|String \(required\)<br> |The string that represents the type of the plugin. Allowed values: `Compute`, and `Fabric` <br> |
+|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in [Viewing a connection method](#viewing-a-connection-method)</li></ul>|
 
 >**Sample response header \(HTTP 202 status\)**
-
 
 ```
 Connection:keep-alive
@@ -341,9 +370,7 @@ Content-Length:491 bytes
 
 ```
 
-
 >**Sample response header \(HTTP 201 status\)**
-
 
 ```
 "cache-control":"no-cache
@@ -357,9 +384,7 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
-
 >**Sample response body \(HTTP 202 status\)**
-
 
 ```
 {
@@ -418,8 +443,7 @@ x-frame-options":"sameorigin"
 |<strong>Response Code</strong> |On success, `202 Accepted` On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
-
-**Usage**
+**Usage information**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see [Connection methods](#connection-methods).
 				
@@ -463,6 +487,7 @@ curl -i -X POST \
 ```
 
 
+
 >**Sample request body**
 
 ```
@@ -486,12 +511,10 @@ curl -i -X POST \
 |UserName|String \(required\)<br> |The username of the BMC administrator account.|
 |Password|String \(required\)<br> |The password of the BMC administrator account.|
 |Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
-|ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0`</li></ul>|
+|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](#adding-a-plugin-as-an-aggregation-source).|
+|ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
 >**Sample response header \(HTTP 202 status\)**
-
-|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](#adding-a-plugin-as-an-aggregation-source).|
-
 
 ```
 Connection:keep-alive
@@ -504,9 +527,7 @@ Content-Length:491 bytes
 
 ```
 
-
 >**Sample response header \(HTTP 201 status\)**
-
 
 ```
 "cache-control":"no-cache
@@ -520,9 +541,7 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
-
 >**Sample response body \(HTTP 202 status\)**
-
 
 ```
 {
@@ -542,8 +561,8 @@ x-frame-options":"sameorigin"
 ```
 
 
->**Sample response body \(HTTP 201 status\)**
 
+>** Sample response body \(HTTP 201 status\)**
 ```
  {
    "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
@@ -638,8 +657,8 @@ curl -i GET \
    "HostName":"10.24.0.4",
    "UserName":"admin",
    "Links":{
-      "ConnectionMethod": {
-         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+      "Oem":{
+         "PluginID":"GRF"
       }     
    }   
 }
@@ -699,8 +718,8 @@ curl -i PATCH \
    "HostName":"10.24.0.4",
    "UserName":"admin",
    "Links":{
-      "ConnectionMethod": {
-         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+      "Oem":{
+         "PluginID":"GRF"
       }     
    }   
 }
@@ -724,9 +743,7 @@ curl -i PATCH \
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
 
-
-**Usage**
-
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -885,9 +902,7 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-
-**Usage**
-
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -1033,8 +1048,7 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
 
-
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -1368,7 +1382,7 @@ curl -i POST \
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -1503,7 +1517,7 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -1647,7 +1661,7 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|Elements|Array \(required\)<br> |An array of links to the computer system resources that you want to remove from this aggregate.|
+|Elements|Array \(required\)<br> |An array of links to the Computer system resources that you want to remove from this aggregate.|
 
 >**Sample response body**
 
@@ -1666,6 +1680,5 @@ curl -i POST \
    ]
 }
 ```
-
 
 

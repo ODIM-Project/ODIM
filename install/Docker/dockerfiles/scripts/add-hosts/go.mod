@@ -1,4 +1,4 @@
-module github.com/irappa-pattar/ODIM/install/Docker/dockerfiles/scripts/add-hosts
+module github.com/ODIM-Project/ODIM/install/Docker/dockerfiles/scripts/add-hosts
 
 go 1.13
 

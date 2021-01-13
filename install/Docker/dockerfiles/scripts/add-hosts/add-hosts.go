@@ -17,12 +17,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
- "time"
- "strings"
- "github.com/fsnotify/fsnotify"
+	"strings"
+	"time"
 )
 
 const (
@@ -46,17 +46,11 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	log.Println("Input file path",inputFile)
 	go trackConfigFileChanges(inputFile)
 	data, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		log.Fatal("Failed to read ", err.Error())
 	}
-
-	//if len(data) < 3 {
-	//	log.Println("User configuration is empty, exiting")
-	//	os.Exit(0)
-	//}
 
 	fd, err := os.OpenFile(hostsFilePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -68,16 +62,16 @@ func main() {
 	if _, err := fd.Write([]byte(hostsData)); err != nil {
 		log.Fatal("Failed to write to file ", err.Error())
 	}
-  
-  // to prevent exiting the program
-  go forever()
-  select {} // block forever
+
+	// to prevent exiting the program
+	go forever()
+	select {} // block forever
 }
 
 func forever() {
-    for {
-        time.Sleep(time.Second)
-    }
+	for {
+		time.Sleep(time.Second)
+	}
 }
 
 // trackConfigFileChanges monitors the host file using fsnotfiy
@@ -95,7 +89,7 @@ func trackConfigFileChanges(configFilePath string) {
 			select {
 			case fileEvent, ok := <-watcher.Events:
 				if !ok {
-      		continue
+					continue
 				}
 				log.Info("event:" + fileEvent.String())
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
@@ -115,22 +109,20 @@ func trackConfigFileChanges(configFilePath string) {
 	}()
 }
 
-func addHost(inputFile string){
-	log.Println("inside add host")
+func addHost(inputFile string) {
 	data, err := ioutil.ReadFile(inputFile)
 	if err != nil {
-		log.Info("Failed to read file ",err.Error())
+		log.Info("Failed to read file ", err.Error())
 	}
 
+	etcHostData, err := ioutil.ReadFile(hostsFilePath)
+	if err != nil {
+		log.Info(err.Error())
+	}
 
-	etcHostData, err := ioutil.ReadFile(hostsFilePath) 
-    if err != nil {
-        log.Info(err.Error())
-    }
-	  
-	str:=strings.Split(string(etcHostData), contentHeader)
-    hostsData := fmt.Sprintf("%s\n%s\n%s\n%s", str[0], contentHeader, data, contentFooter)
-    err = ioutil.WriteFile(hostsFilePath, []byte(hostsData), 0644)
+	str := strings.Split(string(etcHostData), contentHeader)
+	hostsData := fmt.Sprintf("%s\n%s\n%s\n%s", str[0], contentHeader, data, contentFooter)
+	err = ioutil.WriteFile(hostsFilePath, []byte(hostsData), 0644)
 	if err != nil {
 		log.Info(err.Error())
 	}

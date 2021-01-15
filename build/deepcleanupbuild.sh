@@ -27,8 +27,10 @@ if [ -a build/docker-compose.yml ]; then
 	rm -rf odimra/odimra_config/schema.json
 	rm -rf odimra/odimra_config/registrystore/*
         rm -rf RFPlugin/plugin_config/*
+		rm -rf DELLPlugin/dellplugin_config/*
 	sudo rm -rf /var/log/odimra
 	sudo rm -rf /var/log/GRF_PLUGIN
+	sudo rm -rf /var/log/DELL_PLUGIN
 	sudo rm -rf Consul/data/*
 	sudo rm -rf Redis/redis-persistence/*
 	sudo rm -rf /etc/kafka/conf/*

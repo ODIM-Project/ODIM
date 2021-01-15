@@ -28,14 +28,14 @@ RUN mkdir /var/dell_plugin_config
 RUN mkdir /etc/dell_plugin_config
 RUN mkdir /etc/dell_plugin_certs
 
-RUN  groupadd -r -g 1235 dell_plugin
-RUN  useradd -s /bin/bash -u 1235 -m -d /home/dell_plugin -r -g dell_plugin dell_plugin
+RUN  groupadd -r -g 1236 dell_plugin
+RUN  useradd -s /bin/bash -u 1236 -m -d /home/dell_plugin -r -g dell_plugin dell_plugin
 
-COPY DellPlugin/dell_plugin_config/config_redfish_plugin.json /var/dell_plugin_config/
-COPY DellPlugin/dell_plugin_config/platformconfig.toml /var/dell_plugin_config/
-COPY DellPlugin/start_plugin.sh /bin/
-COPY DellPlugin/edit_config.sh /var/tmp/dell_plugin-edit_config.sh
-COPY DellPlugin/command.sh /bin/
+COPY DELLPlugin/dell_plugin_config/config_dell_plugin.json /var/dell_plugin_config/
+COPY DELLPlugin/dell_plugin_config/platformconfig.toml /var/dell_plugin_config/
+COPY DELLPlugin/start_plugin.sh /bin/
+COPY DELLPlugin/edit_config.sh /var/tmp/dell_plugin-edit_config.sh
+COPY DELLPlugin/command.sh /bin/
 COPY --from=build-stage /odimra/plugin-dell/plugin-dell /bin/
 
 RUN  chown -R dell_plugin:dell_plugin /etc/dell_plugin_config

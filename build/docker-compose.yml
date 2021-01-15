@@ -250,16 +250,16 @@ services:
   dell_plugin:
     build:
       context: ./.
-      dockerfile: DellPlugin/Dockerfile.dell_plugin
+      dockerfile: DELLPlugin/Dockerfile.dell_plugin
       args:
           http_proxy: $http_proxy
           https_proxy: $https_proxy
-    hostname: plugin
+    hostname: dell_plugin
     restart: always
     privileged: true
     environment:
       - HOSTIP=$HOSTIP
-    image: grf-plugin:1.0
+    image: dell-plugin:1.0
     depends_on:
       - "odimra"
     ports:

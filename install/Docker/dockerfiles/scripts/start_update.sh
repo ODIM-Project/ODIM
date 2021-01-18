@@ -15,15 +15,6 @@
 
 declare PID=0
 
-add_host()
-{
-        /bin/add-hosts -file /tmp/host.append
-        if [ $? -ne 0 ]; then
-                echo "Appending host entry to /etc/hosts file Failed"
-                exit 0
-        fi
-}
-
 sigterm_handler()
 {
         if [[ $PID -ne 0 ]]; then
@@ -54,6 +45,7 @@ start_update()
 	nohup ./svc-update --registry=consul --registry_address=consul:8500 --server_address=update:45108 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/update.log 2>&1 &
 	PID=$!
 	sleep 2s
+  nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/add-hosts.log 2>&1 &
 }
 
 monitor_process()

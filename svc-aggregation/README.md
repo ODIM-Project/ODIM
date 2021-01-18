@@ -1099,7 +1099,7 @@ Content-Length:491 bytes
 
 An aggregate is a user-defined collection of resources.
 
-The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—the aggregates are available and accessible in the Resource Aggregator for ODIM environment until you delete them.
+The aggregate schema provides a mechanism to formally group the southbound resources of your choice. The advantage of creating aggregates is that they are more persistent than the random groupings—the aggregates are available and accessible in the environment of Resource Aggregator for ODIM until you delete them.
 
 The resource aggregator allows you to:
 

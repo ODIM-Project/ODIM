@@ -32,4 +32,4 @@ else
 fi
 
 
-/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.dellplugin -t dell-plugin:1.0 $build_args .
+/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t ur-plugin:1.0 $build_args .

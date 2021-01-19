@@ -15,11 +15,11 @@ services:
       - HOSTIP=$HOSTIP
     image: ur-plugin:1.0
     ports:
-      - '45005:45005'
-      - '45006:45006'
+      - '45007:45007'
+      - '45008:45008'
     expose:
-      - '45005'
-      - '45006'
+      - '45007'
+      - '45008'
     volumes:
       - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
       - '/var/log/UR_PLUGIN:/var/log/ur_plugin_logs'

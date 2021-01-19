@@ -10,14 +10,14 @@ data:
     	"PluginConf": {
     		"ID": "URP",
     		"Host": {{ .Values.urplugin.urPluginHost | quote }},
-    		"Port": "45005",
+    		"Port": "45007",
     		"UserName": {{ .Values.urplugin.urPluginUsername | quote }},
     		"Password": {{ .Values.urplugin.urPluginPassword | quote }}
     	},
     	"EventConf": {
     		"DestinationURI": "/redfishEventListener",
     		"ListenerHost": {{ .Values.urplugin.urEventHost | quote }},
-    		"ListenerPort": "45006"
+    		"ListenerPort": "45008"
     	},
     	"KeyCertConf": {
     		"RootCACertificatePath": "/etc/urplugin_certs/rootCA.crt",

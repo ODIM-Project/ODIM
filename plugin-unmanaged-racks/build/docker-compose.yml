@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+  ur_plugin:
+    build:
+      context: ./.
+      dockerfile: Dockerfile.urplugin
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+   # command: "/lib/systemd/systemd"
+    hostname: plugin
+    privileged: true
+    environment:
+      - HOSTIP=$HOSTIP
+    image: ur-plugin:1.0
+    ports:
+      - '45005:45005'
+      - '45006:45006'
+    expose:
+      - '45005'
+      - '45006'
+    volumes:
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '/var/log/UR_PLUGIN:/var/log/ur_plugin_logs'
+      - '/etc/ur_plugin_config:/etc/ur_plugin_config:rw'
+      - '/etc/plugincert/rootCA.crt:/etc/plugin_certs/rootCA.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/etc/plugin_certs/odimra_server.key:ro'
+      - '/etc/plugincert/odimra_server.crt:/etc/plugin_certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_kafka_client.key:/etc/plugin_certs/odimra_kafka_client.key:ro'
+      - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
+      - '../build/plugin.service:/etc/systemd/system/plugin.service:rw'
+    command: bash -c "cp -r /var/ur_plugin_config/ /etc/ && rm -rf /var/ur_plugin_config/* && /ur-plugin/start_plugin.sh"
+

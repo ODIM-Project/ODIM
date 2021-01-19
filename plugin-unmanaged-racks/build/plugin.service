@@ -1,0 +1,17 @@
+[Unit]
+Description=UR Plugin
+Requires=network-online.target
+After=network-online.target
+[Service]
+Type=forking
+Restart=always
+ExecStart=/bin/sh -c 'cd bin ; export PLUGIN_CONFIG_FILE_PATH=/etc/ur_plugin_config/ur_config.json ; sudo -E -u plugin nohup ./plugin-ur --client_request_timeout=1m >> /var/log/ur_plugin_logs/ur-plugin.log 2>&1 &'
+KillMode=process
+KillSignal=SIGTERM
+User=root
+StartLimitBurst=3
+RestartSec=3
+StartLimitInterval=10000
+[Install]
+WantedBy=multi-user.target
+

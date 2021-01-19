@@ -1,0 +1,9 @@
+urplugin:
+  namespace: 
+  urPluginRootServiceUUID:
+  urPluginUsername: 
+  urPluginPassword: 
+  urPluginHost: urplugin
+  urEventHost: urplugin
+  urPluginLBHost:
+  urPluginLBPort: 

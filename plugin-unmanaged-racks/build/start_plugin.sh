@@ -10,7 +10,7 @@ sed -i 's@"RootCACertificatePath":\s*".*",@"RootCACertificatePath": "/etc/plugin
 sed -i 's@"PrivateKeyPath":\s*".*",@"PrivateKeyPath": "/etc/plugin_certs/odimra_server.key",@g' /etc/ur_plugin_config/ur_config.json
 sed -i 's@"CertificatePath":\s*".*"@"CertificatePath": "/etc/plugin_certs/odimra_server.crt"@g' /etc/ur_plugin_config/ur_config.json
 sed -i "s#.*LBHost.*# \"LBHost\": \"${ip}\",#" /etc/ur_plugin_config/ur_config.json
-sed -i "s#.*LBPort.*# \"LBPort\": \"45006\"#" /etc/ur_plugin_config/ur_config.json
+sed -i "s#.*LBPort.*# \"LBPort\": \"45008\"#" /etc/ur_plugin_config/ur_config.json
 sed -i 's@"MessageQueueConfigFilePath":\s*".*",@"MessageQueueConfigFilePath": "/etc/ur_plugin_config/platformconfig.toml",@g' /etc/ur_plugin_config/ur_config.json
 
 sed -i "s#.*KServersInfo.*#KServersInfo      = [\"kafka:9092\"]#" /etc/ur_plugin_config/platformconfig.toml

@@ -7,7 +7,7 @@ metadata:
     app: urplugin
 spec:
   ports:
-    - port: 45005
+    - port: 45007
   selector:
     app: urplugin
 
@@ -23,7 +23,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 45006
+  - port: 45008
     nodePort: {{ .Values.urplugin.pluginEventNodePort }}
     protocol: TCP
   externalTrafficPolicy: Local

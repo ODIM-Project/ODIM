@@ -63,8 +63,8 @@ spec:
           image: ur-plugin:{{ .Values.urplugin.pluginImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 45005
-            - containerPort: 45006
+            - containerPort: 45007
+            - containerPort: 45008
           volumeMounts:
             - name: urplugin-config-vol
               mountPath: /etc/urplugin_config

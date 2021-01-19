@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: urplugin
+  namespace: {{ .Values.urplugin.namespace }}
+  labels:
+    app: urplugin
+spec:
+  ports:
+    - port: 45005
+  selector:
+    app: urplugin
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: urplugin-events
+  namespace: {{ .Values.urplugin.namespace }}
+  labels:
+    app: urplugin
+spec:
+  type: NodePort
+  ports:
+  - port: 45006
+    nodePort: {{ .Values.urplugin.pluginEventNodePort }}
+    protocol: TCP
+  externalTrafficPolicy: Local
+  selector:
+    app: urplugin

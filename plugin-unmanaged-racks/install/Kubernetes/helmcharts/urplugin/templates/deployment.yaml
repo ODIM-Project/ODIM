@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: urplugin
+  namespace: {{ .Values.urplugin.namespace }}
+spec:
+  replicas: {{ .Values.urplugin.pluginReplicaCount }}
+  selector:
+    matchLabels:
+      app: urplugin
+  template:
+    metadata:
+      labels:
+        app: urplugin
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      hostname: urplugin
+      volumes:
+        - name: urplugin-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: urplugin-config
+            - configMap:
+                name: urplugin-platformconfig
+        - name: configure-hosts
+          configMap:
+            name: configure-hosts
+            items:
+            - key: hosts
+              path: host.append
+              mode: 0644
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+        - name: urplugin-log
+          persistentVolumeClaim:
+            claimName: urplugin-log-claim
+      securityContext:
+        fsGroup: {{ .Values.urplugin.groupID }}
+      containers:
+        - name: urplugin
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+          image: ur-plugin:{{ .Values.urplugin.pluginImageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 45005
+            - containerPort: 45006
+          volumeMounts:
+            - name: urplugin-config-vol
+              mountPath: /etc/urplugin_config
+            - name: configure-hosts
+              mountPath: /tmp
+            - name: urplugin-log
+              mountPath: /var/log/urplugin_logs
+            - name: odimra-secret
+              mountPath: /etc/urplugin_certs
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - {{ .Values.urplugin.hostname }}

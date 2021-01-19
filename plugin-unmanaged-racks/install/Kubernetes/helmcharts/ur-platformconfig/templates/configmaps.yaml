@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: urplugin-platformconfig
+  namespace: {{ .Values.urplugin.namespace }}
+data: 
+  platformconfig.toml: | 
+    [KAFKA]
+    #Defines the list of Kafka Server URI/Nodename:port. Example: ["localhost:9092"].
+    KServersInfo   = [ "{{ .Values.urplugin.kafkaHost }}:{{ .Values.urplugin.kafkaPort }}"]
+    # Timeout of KAFKA Server connection drop / Keepalive.
+    KTimeout      = 10
+    # TLS Configuration Data
+    KAFKACertFile = "/etc/urplugin_certs/odimra_kafka_client.crt"
+    KAFKAKeyFile  = "/etc/urplugin_certs/odimra_kafka_client.key"
+    KAFKACAFile   = "/etc/urplugin_certs/rootCA.crt"

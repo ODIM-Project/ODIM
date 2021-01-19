@@ -1,0 +1,7 @@
+urplugin:
+  namespace: 
+  groupID: 
+  hostname:
+  pluginReplicaCount: 
+  pluginEventNodePort: 
+  pluginImageTag: "1.0"

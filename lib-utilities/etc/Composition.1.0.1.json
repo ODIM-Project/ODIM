@@ -1,0 +1,104 @@
+{
+    "@Redfish.Copyright": "Copyright 2019-2020 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "Composition.1.0.1",
+    "Name": "Composition Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for composition related events",
+    "RegistryPrefix": "Composition",
+    "RegistryVersion": "1.0.1",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "ResourceBlockChanged": {
+            "Description": "Indicates that a resource block has changed.  This is not used whenever there is another event message for that specific change, such as only the state has changed.",
+            "LongDescription": "This message shall be used to indicate that one or more properties of a resource block have changed.  This message shall not be used for cases where a more specific message could be used in its place.",
+            "Message": "The resource block '%1' has changed on the service.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource block that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the `Id` property of the resource block that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the resource block to get the updated information from the service."
+        },
+        "ResourceBlockStateChanged": {
+            "Description": "Indicates that the state of a resource block has changed, specifically the value of the `State` property within `Status` has changed.",
+            "LongDescription": "This message shall be used to indicate that the `State` property within the `Status` object of a resource block has changed.",
+            "Message": "The state of the resource block '%1' has changed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource block that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the `Id` property of the resource block that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the resource block to get the updated information from the service."
+        },
+        "ResourceBlockCompositionStateChanged": {
+            "Description": "Indicates that the composition state of a resource block has changed, specifically the value of the `CompositionState` property within `CompositionStatus` has changed.",
+            "LongDescription": "This message shall be used to indicate that the `CompositionState` property within the `CompositionStatus` object of a resource block has changed.",
+            "Message": "The composition status of the resource block '%1' has changed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource block that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the `Id` property of the resource block that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the resource block to get the updated information from the service."
+        },
+        "ResourceZoneMembershipChanged": {
+            "Description": "Indicates that the membership of a resource zone has changed due to resource blocks being added or removed from the resource zone.",
+            "LongDescription": "This message shall be used to indicate that entries found in the `ResourceBlocks` array within the `Links` object for a resource zone have been added or removed.",
+            "Message": "The membership of resource zone '%1' has been changed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource zone that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the `Id` property of the resource zone that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the resource zone to get the updated information from the service."
+        },
+        "ResourceBlockInUse": {
+            "Description": "Indicates that the composition request contains a resource block that is unable to participate in more compositions.",
+            "LongDescription": "This message shall be used to indicate that the composition request contains a resource block that is unable to participate in more compositions due to restrictions specified in its `CompositionStatus` property.  For example, the resource block has reached its composition limit specified by the `MaxCompositions` property.",
+            "Message": "The resource block with Id '%1' cannot be part of any new compositions.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource block that cannot be part of any new compositions."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the `Id` property of the resource block that cannot be part of any new compositions."
+            ],
+            "Resolution": "Remove the resource block from the request and resubmit the request."
+        }
+    }
+}

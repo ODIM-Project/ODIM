@@ -308,7 +308,10 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
   - The URP API service runs on the default port 45003.
   - The resource aggregator logs are available at `/var/log/odimra`.
   - The GRF plugin logs are available at `/var/log/GRF_PLUGIN`.
-  - The URP logs are available at `/var/log/URP_PLUGIN`.
+  - To see the URP logs, run the following command:
+    ```
+    $ docker logs build_urp_1
+	```
 
 
 11. To configure log rotation, do the following:

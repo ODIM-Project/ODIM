@@ -21,12 +21,11 @@ ADD go.mod .
 
 RUN go mod download
 
-ADD dphandler  /urplugin/dphandler
-ADD dpmessagebus  /urplugin/dpmessagebus
-ADD dpmiddleware  /urplugin/dpmiddleware
-ADD dpmodel  /urplugin/dpmodel
-ADD dpresponse  /urplugin/dpresponse
-ADD dputilities  /urplugin/dputilities
+ADD db  /urplugin/db
+ADD logging  /urplugin/logging
+ADD redfish  /urplugin/redfish
+ADD rest  /urplugin/rest
+ADD utils  /urplugin/utils
 ADD main.go /urplugin/
 ADD config /urplugin/config
 RUN go build -i -race .
@@ -43,7 +42,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
 && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
 && mkdir /etc/urplugin_config && chown odimra:odimra /etc/urplugin_config
 COPY install/Docker/dockerfiles/scripts/start_urplugin.sh /bin/
-COPY --from=build-stage urplugin/plugin-ur /bin/
+COPY --from=build-stage urplugin/plugin-unmanaged-racks /bin/
 COPY --chown=root:odimra --from=build-stage /urplugin/add-hosts /bin/
 RUN chmod 4550 /bin/add-hosts
 USER odimra:odimra

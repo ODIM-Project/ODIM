@@ -1,0 +1,170 @@
+{
+    "@Redfish.Copyright": "Copyright 2019 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_3_1.MessageRegistry",
+    "Id": "NetworkDevice.1.0.0",
+    "Name": "Network Device Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for networking devices",
+    "RegistryPrefix": "NetworkDevice",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "CableInserted": {
+            "Description": "Indicates that a network cable has been inserted.",
+            "LongDescription": "This message shall be used to indicate that a network cable has been inserted.  This message shall not be sent for a backplane connection.",
+            "Message": "A network cable has been inserted into network adapter '%1' port '%2'.",
+            "Severity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The Id of the network adapter.",
+                "The Id of the network port."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the Id property of network adapter into which a cable has been plugged.",
+                "The value of this argument shall be a string containing the value of the Id property of network port into which a cable has been plugged."
+            ],
+            "Resolution": "Refresh your cached version of the network port to get the updated information from the service.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "CableRemoved"
+                ]
+            }
+        },
+        "CableRemoved": {
+            "Description": "Indicates that a network cable has been removed.",
+            "LongDescription": "This message shall be used to indicate that a network cable has been removed.  This message shall not be sent for a backplane connection.",
+            "Message": "A cable has been removed from network adapter '%1' port '%2'.",
+            "Severity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The Id of the network adapter.",
+                "The Id of the network port."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the Id property of network adapter from which a cable has been unplugged.",
+                "The value of this argument shall be a string containing the value of the Id property of network port from which a cable has been unplugged."
+            ],
+            "Resolution": "Refresh your cached version of the network port to get the updated information from the service."
+        },
+        "ConnectionDropped": {
+            "Description": "Indicates that a network connection has been dropped.",
+            "LongDescription": "This message shall be used to indicate that the link for a network connection is no longer intact.",
+            "Message": "The connection is no longer active for network adapter '%1' port '%2' function '%3'.",
+            "Severity": "OK",
+            "NumberOfArgs": 3,
+            "ParamTypes": [
+                "string",
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The Id of the network adapter.",
+                "The Id of the network port.",
+                "The Id of the network function."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the Name property of network adapter from which a connection has dropped.",
+                "The value of this argument shall be a string containing the value of the Name property of network port from which a connection has dropped.",
+                "The value of this argument shall be a string containing the value of the Name property of network device function from which a connection has dropped."
+            ],
+            "Resolution": "Refresh your cached version of the network port to get the updated information from the service."
+        },
+        "ConnectionEstablished": {
+            "Description": "Indicates that a network connection has been established.",
+            "LongDescription": "This message shall be used to indicate that the link for a network connection is newly established.",
+            "Message": "A network connection has been established for network adapter '%1' port '%2' function '%3'.",
+            "Severity": "OK",
+            "NumberOfArgs": 3,
+            "ParamTypes": [
+                "string",
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The Id of the network adapter.",
+                "The Id of the network port.",
+                "The Id of the network function."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the Id property of network adapter to which a connection has been established.",
+                "The value of this argument shall be a string containing the value of the Id property of network port to which a connection has been established.",
+                "The value of this argument shall be a string containing the value of the Id property of network device function to which a connection has been established."
+            ],
+            "Resolution": "Refresh your cached version of the network port to get the updated information from the service.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "ConnectionDropped"
+                ]
+            }
+        },
+        "DegradedConnectionEstablished": {
+            "Description": "Indicates that a network connection has been established, but at an unexpectedly low link speed.",
+            "LongDescription": "This message shall be used to indicate that a network connection is newly established, but that the link speed is lower than provisioned for the channel.",
+            "Message": "A degraded network connection has been established for network adapter '%1' port '%2' function '%3'.",
+            "Severity": "Warning",
+            "NumberOfArgs": 3,
+            "ParamTypes": [
+                "string",
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The Id of the network adapter.",
+                "The Id of the network port.",
+                "The Id of the network function."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the Id property of network adapter to which a connection has been established.",
+                "The value of this argument shall be a string containing the value of the Id property of network port to which a connection has been established.",
+                "The value of this argument shall be a string containing the value of the Id property of network device function to which a connection has been established."
+            ],
+            "Resolution": "Refresh your cached version of the network port to get the updated information from the service.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "ConnectionDropped"
+                ]
+            }
+        },
+        "LinkFlapDetected": {
+            "Description": "Indicates that a network connection is highly unstable.",
+            "LongDescription": "This message shall be used to indicate that a network connection has repeatedly been established and dropped. This message shall not be repeated more than once in any 24 hour period.",
+            "Message": "The network connection for network adapter '%1' port '%2' function '%3' has been established and dropped '%4' times in the last '%5' minutes.",
+            "Severity": "Warning",
+            "NumberOfArgs": 5,
+            "ParamTypes": [
+                "string",
+                "string",
+                "string",
+                "number",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The Id of the network adapter.",
+                "The Id of the network port.",
+                "The Id of the network function.",
+                "The number of times the link has flapped.",
+                "The number of minutes over which the link has flapped."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the value of the Id property of network adapter to which a connection has been established.",
+                "The value of this argument shall be a string containing the value of the Id property of network port to which a connection has been established.",
+                "The value of this argument shall be a string containing the value of the Id property of network device function to which a connection has been established.",
+                "The value of this argument shall be a number representing the count of link establishment/disconnection cycles.",
+                "The value of this argument shall be a number representing the number of minutes over which link flapping activity has been detected."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        }
+    }
+}

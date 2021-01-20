@@ -178,10 +178,10 @@ Resource Aggregator for ODIM framework comprises the following two components.
 - One or more plugins
 
 This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs
-are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.8.0](http://redfish.dmtf.org/schemas/DSP0266_1.8.0.pdf). 
-Redfish® is an open industry standard specification, API, and schema, which specifies a RESTful interface and uses JSON and OData. The Redfish
-standards are designed to deliver simple and secure management for converged, hybrid IT in a multivendor environment.
-These APIs are fully Redfish-compliant.
+are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.11.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.11.1.pdf) and are fully Redfish-compliant.
+Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish
+standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+
 
 ##  Resource Aggregator for ODIM logical architecture
 
@@ -198,8 +198,8 @@ The following figure shows these functional layers of Resource Aggregator for OD
 This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from
 the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The
 northbound clients communicate with this layer through a REST-based protocol that is fully compliant with
-DMTF's Redfish® specifications (Schema 2019.3 and Specification 1.8.0).
-The API layer sends user requests to the plugins through the aggregation, event, and fabric services.
+DMTF's Redfish® specifications (Schema 2020.3 and Specification 1.11.1).
+The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 - **Services layer**
 
@@ -245,7 +245,7 @@ you will want to write your own scripting code to perform requests.
 
 
 This guide contains sample request and response payloads. For information on response payload parameters, refer to 
-[Redfish® Scalable Platforms API (Redfish) schema 2019.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2019.3.pdf).
+[Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
 
 **HTTP headers**
 
@@ -296,7 +296,7 @@ supports HTTPS.
 For a complete list of curl flags, see information provided at [https://curl.haxx.se](https://curl.haxx.se).
 
 
->**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command, before running a curl command.<br>
+>**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command before running a curl command.<br>
     ```
     $ export no_proxy="127.0.0.1,localhost,{odimra_host}"
      ```
@@ -313,7 +313,7 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
 
 
 
-1. If you are running curl commands on the server where the resource aggregator is   deployed, provide the `rootCA.crt` file as shown in the curl command:
+1. If you are running curl commands on the server where the resource aggregator is deployed, provide the `rootCA.crt` file as shown in the curl command:
    ```
    curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
    ```
@@ -327,7 +327,7 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
     5. Scroll to the end of the file, add the following line, and save:
        `{odim_server_ipv4_address} {FQDN}`
     6. Check if curl is working using the curl command:
-        ```curl
+        ```
         curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
         ```
 
@@ -404,14 +404,14 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
 |/redfish/v1/Systems?filter=\{searchKeys\}%20\{conditionKeys\}%20\{value/regEx\}|`GET`|
-| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
+|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|`POST`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
 
 |Chassis||
 |-------|--------------------|
-|/redfish/v1/Chassis|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}|`GET`|
+|/redfish/v1/Chassis|`GET`, `POST`|
+|/redfish/v1/Chassis/\{chassisId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Chassis/\{chassisId\}/Thermal|`GET`|
 |/redfish/v1/Chassis/\{ChassisId\}/Power|`GET`|
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|`GET`|
@@ -449,8 +449,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Fabrics/\{fabricId\}|`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Switches|`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|`GET`|
-| /redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
-| /redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
+|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
+|/redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Zones|`GET`, `POST`|
 |/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Fabrics/\{fabricId\}/AddressPools|`GET`, `POST`|
@@ -463,8 +463,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/TaskService|`GET`|
 |/redfish/v1/TaskService/Tasks|`GET`|
 |/redfish/v1/TaskService/Tasks/\{taskId\}|`GET`, `DELETE`|
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
+| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
+| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
 
 
 
@@ -484,9 +484,9 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 
 
 >**NOTE:**
-`ComputerSystemId` is the unique identifier of a system. It is specified by Resource Aggregator for ODIM.
-`ComputerSystemId` is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
-universally unique identifier of a system (Example: ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1).
+`ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM.
+It is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
+universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1*.
 
 
 ## Viewing the list of supported Redfish services
@@ -773,13 +773,13 @@ A session represents a window of user's login with a Redfish service and contain
 
 Resource Aggregator for ODIM offers Redfish `SessionService` interface for creating and managing sessions. It exposes APIs to achieve the following:
 
--   Fetching the `SessionService` root
+-   Fetching the `SessionService` root.
 
--   Creating a session
+-   Creating a session.
 
--   Listing active sessions
+-   Listing active sessions.
 
--   Deleting a session
+-   Deleting a session.
 
 
 **Supported APIs**

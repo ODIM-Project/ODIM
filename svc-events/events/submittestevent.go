@@ -203,6 +203,7 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["OriginOfCondition"]; ok {
 		switch v := val.(type) {
 		case string:
+			// As per EventService spec in the SubmitTestEvent schema OriginOfCondition is a string. However we need to convert this to an object as the event publisher will drop these events.
 			testEvent.OriginOfCondition = &common.Link{
 				Oid: v,
 			}

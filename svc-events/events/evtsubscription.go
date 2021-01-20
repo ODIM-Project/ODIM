@@ -395,6 +395,12 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 			return p.createFabricSubscription(postRequest, origin, collectionName, collectionFlag)
 		}
 		target, resp, err = getTargetDetails(origin)
+		deviceSubscription,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+		if deviceSubscription.EventHostIP==target.ManagerAddress{
+			deviceSubscription.OriginResources = append(deviceSubscription.OriginResources,origin)
+			resp.Response=deviceSubscription
+			return "", resp
+		}
 		if err != nil {
 			return "", resp
 		}

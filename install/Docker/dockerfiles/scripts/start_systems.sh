@@ -42,7 +42,11 @@ start_systems()
 {
 	cd /bin
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup ./svc-systems --registry=consul --registry_address=consul:8500 --server_address=systems:45104 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/systems.log 2>&1 &
+	if [ $HA_ENABLED != 'true' ]; then
+		nohup ./svc-systems --registry=consul --registry_address=consul:8500 --server_address=systems:45104 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/systems.log 2>&1 &
+	else
+		nohup ./svc-systems --registry=consul --registry_address=[consul1:8500,consul2:8500,consul3:8500] --server_address=systems:45104 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/systems.log 2>&1 &
+	fi
 	PID=$!
 	sleep 2s
   nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/add-hosts.log 2>&1 &

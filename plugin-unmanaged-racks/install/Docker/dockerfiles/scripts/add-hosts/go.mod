@@ -1,4 +1,4 @@
-module github.hpe.com/Bruce/plugin-ur/install/Docker/dockerfiles/scripts/add-hosts
+module github.com/ODIM-Project/ODIM/install/Docker/dockerfiles/scripts/add-hosts
 
 go 1.13
 

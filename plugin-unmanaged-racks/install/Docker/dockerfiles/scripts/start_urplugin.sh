@@ -42,7 +42,7 @@ start_urplugin()
 {
 	cd /bin
 	export PLUGIN_CONFIG_FILE_PATH=/etc/urplugin_config/config.json
-	nohup ./plugin-ur >> /var/log/urplugin_logs/urplugin.log 2>&1 &
+	nohup ./plugin-unmanaged-racks >> /var/log/urplugin_logs/urplugin.log 2>&1 &
 	PID=$!
 	sleep 2s
   nohup /bin/add-hosts -file /tmp/host.append >> /var/log/urplugin_logs/add-hosts.log 2>&1 &
@@ -51,7 +51,7 @@ start_urplugin()
 monitor_process()
 {
         while true; do
-                pid=$(pgrep plugin-ur 2> /dev/null)
+                pid=$(pgrep plugin-unmanaged-racks 2> /dev/null)
                 if [[ $pid -eq 0 ]]; then
                         echo "urplugin has exited" >> /var/log/urplugin_logs/urplugin.log 2>&1 &
                         exit 1

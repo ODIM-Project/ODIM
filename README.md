@@ -327,7 +327,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
 	c. Add the following content and save:
      ```
     /var/log/GRF_PLUGIN/*.log
-     /var/log/odimra/*.log {
+    /var/log/odimra/*.log {
     hourly
     missingok
     rotate 10
@@ -549,7 +549,7 @@ During the course of this procedure, you will be required to create files and co
 $ make clean
 ```
 	
-  You will be prompted for the sudo passowrd: enter the password.
+  When prompted for password, enter the sudo password.
 	 
   Use the following command to:
   - Remove all the deployed Docker containers.
@@ -562,7 +562,7 @@ $ make clean
 $ make deepclean
 ```
      
-  You will be prompted for the sudo passowrd: enter the password.
+  When prompted for password, enter the sudo password.
 
   >**CAUTION**:
  	Running these commands will unistall ODIMRA and remove all related data completely. It is best to not run these commands unless absolutely necessary.

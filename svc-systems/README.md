@@ -1367,7 +1367,7 @@ curl -i GET \
 
 >**Sample response body** 
 
-1. **Computer system chassis
+1. **Computer system chassis**
 
 ```
 { 

@@ -29,6 +29,7 @@ for i in $LIST; do
     fi
     cd ../
 done
-if [ flag -eq 0 ]; then
+if [ $flag -eq 0 ]; then
 	echo "Failed to build $arr services"
 	exit 1
+fi

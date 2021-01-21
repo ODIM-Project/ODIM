@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|add-hosts'`
+LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|add-hosts'`
 echo $LIST
 for i in $LIST; do
     cd $i
@@ -24,6 +24,12 @@ for i in $LIST; do
         echo Successfully build $i service
     else
         echo Failed to build $i service
+	arr+=$i;
+	flag=0
     fi
     cd ../
 done
+if [ "$flag" -eq 0 ]; then
+	echo "Failed to build $arr services"
+	exit 1
+fi

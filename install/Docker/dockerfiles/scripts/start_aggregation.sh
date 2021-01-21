@@ -42,10 +42,14 @@ start_aggregation()
 {
 	cd /bin
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup ./svc-aggregation --registry=consul --registry_address=consul:8500 --server_address=aggregation:45102 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/aggregation.log 2>&1 &
+        registry_address="consul:8500"
+        if [ $HA_ENABLED == true ]; then
+                registry_address="[consul1:8500,consul2:8500,consul3:8500]"
+        fi
+	nohup ./svc-aggregation --registry=consul --registry_address=${registry_address} --server_address=aggregation:45102 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/aggregation.log 2>&1 &
 	PID=$!
 	sleep 2s
-  nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/add-hosts.log 2>&1 &
+  	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/add-hosts.log 2>&1 &
 }
 
 monitor_process()

@@ -24,12 +24,12 @@ for i in $LIST; do
         echo Successfully build $i service
     else
         echo Failed to build $i service
-	arr+=$i;
+	arr+=$i,;
 	flag=0
     fi
     cd ../
 done
-if [ "$flag" -eq 0 ]; then
+if [[ "$flag" -eq 0 ]]; then
 	echo "Failed to build $arr services"
 	exit 1
 fi

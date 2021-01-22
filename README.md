@@ -116,7 +116,7 @@ To install `Ubuntu Make`, run the following command:
       
    >  **NOTE:** To enable Docker service to start on reboot, run the following command:
    
-       `$ sudo systemctl enable docker`
+       $ sudo systemctl enable docker
   
    
 	   

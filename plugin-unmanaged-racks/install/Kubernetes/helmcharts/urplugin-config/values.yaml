@@ -6,4 +6,6 @@ urplugin:
   urPluginHost: urplugin
   urEventHost: urplugin
   urPluginLBHost:
-  urPluginLBPort: 
+  urPluginLBPort:
+  odimUsername:
+  odimPassword:

@@ -93,10 +93,23 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	pluginData := agmodel.Plugin{
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
+		
 	}
 	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
 	// create plugin with bad data
 	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
+ //create a plugin with Duplicate Manager UUID
+    err = mockPluginData(t, "STG2_v1.0.0")
+	if err != nil {
+		t.Fatalf("Error in creating mock PluginData :%v", err)
+	}
+	pluginDataWithDuplicateUUID:= agmodel.Plugin{
+		Password: []byte("password"),
+		ID:       "PluginWithDuplicateUUID",
+		ManagerUUID:       "duplicate-mgr-addr",
+	}
+	mockData(t, common.OnDisk, "Plugin", "PluginWithDuplicateUUID", pluginDataWithDuplicateUUID)
+
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -155,6 +168,14 @@ func TestExternalInterface_Plugin(t *testing.T) {
 		Password:       "password",
 		ConnectionMethod: &ConnectionMethod{
 			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/4298f256-c279-44e2-94f2-3987bb7d8f53",
+		},
+	}
+	reqPluginWithDuplciateUUID := AddResourceRequest{
+		ManagerAddress: "localhost:9091",
+		UserName:       "admin",
+		Password:       "password",
+		ConnectionMethod: &ConnectionMethod{
+			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7e821c50-ecc7-4f45-ba15-2a31b389df1e",
 		},
 	}
 
@@ -246,6 +267,18 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:PluginWithBadData_v1.0.0"),
 			},
 
+			want: response.RPC{
+				StatusCode: http.StatusConflict,
+			},
+		},
+		{
+			name: "Adding plugin with duplicate managre uuid",
+			p:    p,
+			args: args{
+				taskID:     "123",
+				req:        reqPluginWithDuplciateUUID,
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:STG2_v1.0.0"),
+			},
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
 			},

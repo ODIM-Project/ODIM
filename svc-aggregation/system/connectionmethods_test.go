@@ -100,7 +100,6 @@ func TestGetConnectionCollection(t *testing.T) {
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	commonResponse.CreateGenericResponse(response.Success)
 	resp1.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: 1,

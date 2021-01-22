@@ -50,6 +50,12 @@ spec:
             - key: odimra_kafka_clientkey
               path: odimra_kafka_client.key
               mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
         - name: urplugin-log
           persistentVolumeClaim:
             claimName: urplugin-log-claim

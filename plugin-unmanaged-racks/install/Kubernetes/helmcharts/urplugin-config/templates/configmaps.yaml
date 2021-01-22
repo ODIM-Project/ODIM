@@ -4,56 +4,30 @@ metadata:
   name: urplugin-config
   namespace: {{ .Values.urplugin.namespace }}
 data: 
-  config.json: |
-    {
-    	"RootServiceUUID": {{ .Values.urplugin.urPluginRootServiceUUID | quote }},
-    	"PluginConf": {
-    		"ID": "URP",
-    		"Host": {{ .Values.urplugin.urPluginHost | quote }},
-    		"Port": "45007",
-    		"UserName": {{ .Values.urplugin.urPluginUsername | quote }},
-    		"Password": {{ .Values.urplugin.urPluginPassword | quote }}
-    	},
-    	"EventConf": {
-    		"DestinationURI": "/redfishEventListener",
-    		"ListenerHost": {{ .Values.urplugin.urEventHost | quote }},
-    		"ListenerPort": "45008"
-    	},
-    	"KeyCertConf": {
-    		"RootCACertificatePath": "/etc/urplugin_certs/rootCA.crt",
-    		"PrivateKeyPath": "/etc/urplugin_certs/odimra_server.key",
-    		"CertificatePath": "/etc/urplugin_certs/odimra_server.crt"
-    	},
-    	"TLSConf" : {
-    		"MinVersion": "TLS_1.2",
-    		"MaxVersion": "TLS_1.2",
-    		"VerifyPeer": true,
-    		"PreferredCipherSuites": [
-    			"TLS_RSA_WITH_AES_128_GCM_SHA256",
-    			"TLS_RSA_WITH_AES_256_GCM_SHA384",
-    			"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-    			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-    			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-    			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
-    		]
-    	},
-    	"FirmwareVersion": "v1.0.0",
-    	"SessionTimeoutInMinutes": 30,
-    	"LoadBalancerConf": {
-    		"LBHost": {{ .Values.urplugin.urPluginLBHost | quote }},
-    		"LBPort": {{ .Values.urplugin.urPluginLBPort | quote }}
-    	},
-    	"MessageBusConf": {
-    		"MessageQueueConfigFilePath": "/etc/urplugin_config/platformconfig.toml",
-    		"MessageBusType": "Kafka",
-    		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
-    	},
-    	"URLTranslation": {
-    		"NorthBoundURL": {
-    			"redfish": "ODIM"
-    		},
-    		"SouthBoundURL": {
-    			"ODIM": "redfish"
-    		}
-    	}
-    }
+  config.yaml: |
+    Host: {{ .Values.urplugin.urPluginHost }}
+    Port: 45007
+    UserName: {{ .Values.urplugin.urPluginUsername }}
+    Password: {{ .Values.urplugin.urPluginPassword }}
+    RootServiceUUID: {{ .Values.urplugin.urPluginRootServiceUUID }}
+    OdimURL: https://api:45000
+    OdimUserName: {{ .Values.urplugin.odimUserName }}
+    OdimPassword: {{ .Values.urplugin.odimPassword }}
+    FirmwareVersion: v1.0.0
+    LogLevel: debug
+    PKIRootCACertificatePath: /etc/urplugin_certs/rootCA.crt
+    PKIPrivateKeyPath: /etc/urplugin_certs/odimra_server.key
+    PKICertificatePath: /etc/urplugin_certs/odimra_server.crt
+    RSAPrivateKeyPath: /etc/urplugin_certs/odimra_rsa.private
+    RSAPublicKeyPath: /etc/urplugin_certs/odimra_rsa.public
+    RedisAddress: redis-ondisk:6379
+    TLSConf:
+      MinVersion: 0x0303
+      MaxVersion: 0x0303
+      PreferredCipherSuites:
+        - 0x009c #TLS_RSA_WITH_AES_128_GCM_SHA256
+        - 0x009d #TLS_RSA_WITH_AES_256_GCM_SHA384
+        - 0xc02f #TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - 0xc030 #TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - 0xc02b #TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - 0xc02c #TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384

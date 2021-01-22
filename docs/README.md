@@ -247,6 +247,9 @@ you will want to write your own scripting code to perform requests.
 This guide contains sample request and response payloads. For information on response payload parameters, refer to 
 [Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
 
+**IMPORTANT:**
+The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
+
 **HTTP headers**
 
 Include the following HTTP headers:
@@ -4382,7 +4385,7 @@ curl -i GET \
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before creating a volume.</li><li>Power on the system once the operation is successful. The volume will be available in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
+|<strong>Description</strong>| This operation creates a volume in a specific storage subsystem.|
 |<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
@@ -4437,7 +4440,7 @@ curl -i -X POST \
 |RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
 |Drives\[\{|Array \(required\)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id \}\]<br> |String|A link to a drive resource.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume will be available only after you have successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume will be available in the system immediately after the operation is successfully completed.|
 
 >**Sample response body** 
 
@@ -4466,7 +4469,7 @@ curl -i -X POST \
 |----------|-----------|
 |<strong>Method</strong>  | `DELETE` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
-|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br>**NOTE:** Reset the computer system once the operation is successful. The changes will be reflected in the system only after a successful reset. To know how to reset, see [Resetting a computer system](#resetting-a-computer-system).|
+|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.|
 |<strong>Response code</strong>|On success, `204 No Content` |
 |<strong>Authentication</strong>  |Yes|
 
@@ -4494,7 +4497,7 @@ curl -i -X DELETE \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you reset the system.<br> |
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you have successfully reset the system.<br> `Immediate` indicates that the volume will be deleted immediatley after the operation is completed successfully.|
 
 
 
@@ -6013,7 +6016,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
 
 
 
-#  Managers
+# Managers
 
 Resource Aggregator for ODIM exposes APIs to retrieve information about managers. Examples of managers include:
 

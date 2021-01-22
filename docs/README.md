@@ -272,9 +272,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
     have changed the default port in the `odim_config.json` file, use that as the port.
 	
 	
-To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed.
- 
->**NOTE**: To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
+>**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 
 **curl usage**
@@ -5894,7 +5892,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. The changes will be seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
-|**Response code** |`200 OK` |
+|**Response code** |`200 OK`|
 |**Authentication** |Yes|
 
 >**curl command**
@@ -6133,7 +6131,7 @@ curl -i GET \
 
 
 
->**Sample response body** for a system \(BMC\) manager 
+>**Sample response body for a system \(BMC\) manager** 
 
 ```
 { 
@@ -6213,7 +6211,7 @@ curl -i GET \
 }
 ```
 
->**Sample response body** for Resource Aggregator for ODIM manager 
+>**Sample response body for Resource Aggregator for ODIM manager**
 
 ```
 {
@@ -6231,7 +6229,7 @@ curl -i GET \
 }
 ```
 
->**Sample response body** for a plugin manager
+>**Sample response body for a plugin manager**
 
 ```
 {
@@ -6239,7 +6237,7 @@ curl -i GET \
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
    "@odata.type":"#Manager.v1_3_3.Manager",
-   "FirmwareVersion":"1.0",
+   "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",
    "Name":"GRF",
@@ -6564,7 +6562,7 @@ curl -i POST \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
 "Password": "<password>",
-"Targets": [],
+"Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
 "TransferProtocol": "",
 "Username": "<username>"
 }' \
@@ -8868,7 +8866,7 @@ Content-Length:491 bytes
 
  
 
-##  Deleting a task
+## Deleting a task
 
 |||
 |-----------|----------|

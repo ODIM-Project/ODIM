@@ -260,6 +260,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				StatusCode: http.StatusConflict,
 			},
 		},
+  
 		{
 			name: "Adding plugin with duplicate managre uuid",
 			p:    p,
@@ -269,6 +270,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:STGtest_v1.0.0"),
 			},
 			want: response.RPC{
+       //StatusCode would be changed to StatusConflict once the code is fixed.
 				StatusCode: http.StatusCreated,
 			},
 		},

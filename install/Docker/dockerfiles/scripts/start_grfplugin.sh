@@ -64,8 +64,6 @@ monitor_process()
 ###############  MAIN  #######################
 ##############################################
 
-add_host
-
 start_grfplugin
 
 create_signal_trap

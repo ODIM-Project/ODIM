@@ -68,8 +68,6 @@ monitor_process()
 ###############  MAIN  #######################
 ##############################################
 
-add_host
-
 start_manager
 
 create_signal_trap

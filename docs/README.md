@@ -272,7 +272,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 
 - {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you
-    have changed the default port in the `odim_config.json` file, use that as the port.
+    have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port.
 	
 	
 >**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
@@ -282,7 +282,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 The examples shown in this guide use curl to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. odimra
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. The resource aggregator for ODIM
 supports HTTPS.
 
 **curl command options (flags):**

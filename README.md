@@ -6,7 +6,7 @@
 - [Deploying the resource aggregator for ODIM (ODIMRA)](#deploying-the-resource-aggregator-for-odim--odimra-)
   * [1. Setting up OS and Docker environment](#1-setting-up-os-and-docker-environment)
   * [2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim--the-generic-redfish--grf--plugin--and-the-unmanaged-rack-plugin--urp-)
-    + [Default user credentials for ODIMRA, the GRF Plugin, and the URP](#default-user-credentials-for-odimra--the-grf-plugin--and-the-urp)
+    + [Default user credentials for ODIMRA, the GRF Plugin, and the URP](#default-user-credentials-for-odimra--the-grf-plugin--and-urp)
 - [Modifying default configuration parameters for the resource aggregator](#modifying-default-configuration-parameters-for-the-resource-aggregator)
 - [Configuring proxy for Docker](#configuring-proxy-for-docker)
 - [Uninstalling ODIMRA](#uninstalling-odimra)
@@ -27,19 +27,19 @@
 ------------------
 - Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
 
-- Ensure not to create `odimra` user during the installation of the VM.
+- Ensure not to create `odimra` user on the system where you want to deploy ODIMRA.
 
 **Procedure**
 --------------
 Perform the following steps on the system where you want to deploy ODIMRA:
 1. Download and install `Ubuntu 18.04 LTS`.
     >   **NOTE:**  Before installation, configure your system IP to access the data center network.
-2. Install `Ubuntu Make`.
+2. Install `Ubuntu Make`. It is required to build ODIMRA services.
    To install `Ubuntu Make`, run the following command:
    ```
    $ sudo apt install make
    ```
-3. Install `Java 11`.
+3. Install `Java 11`. It is required to create keystores for Kafka and Zookeeper services.
    To install `Java 11`, run the following command:
    ```
     $ sudo apt install openjdk-11-jre-headless -y
@@ -78,16 +78,20 @@ Perform the following steps on the system where you want to deploy ODIMRA:
       amd64 Packages
       ```
      
-      > **NOTE:** docker-ce is not installed, but the candidate for  installation is from the Docker repository for Ubuntu 18.04 (bionic).
+      > **NOTE:** docker-ce is not installed, but the candidate for installation is from the Docker repository for Ubuntu 18.04 (bionic).
      
     7. ```
        $ sudo apt install docker-ce -y
        ```
     8. ```
-       $ sudo apt-get install docker-compose -y
+       $ wget https://github.com/docker/compose/releases/download/1.25.5/docker-compose-Linux-x86_64
+       ```
+	   
+	   ```
+       $ sudo cp docker-compose-Linux-x86_64 /usr/bin/docker-compose
        ```
         
-       >  **NOTE:** To run the commands without sudo, add your username to the docker group using the following command:
+       >  **NOTE:** To run the commands without sudo, add your username to the Docker group using the following command:
         ```
          $ sudo usermod -aG docker ${USER}
         ```
@@ -113,17 +117,20 @@ Perform the following steps on the system where you want to deploy ODIMRA:
    containerd.toml
    ```
      
-   >  **NOTE:** If your system is behind a corporate proxy, ensure to configure Docker to use proxy server and restart docker services. To know how to configure Docker proxy, see [Configuring Docker proxy](#configuring-proxy-for-docker).
+   >  **NOTE:** If your system is behind a corporate proxy, ensure to configure Docker to use proxy server and restart the Docker services. To know how to configure Docker proxy, see [Configuring Docker proxy](#configuring-proxy-for-docker).
 						   
      
-   c. Restart the system.
+   c. To enable Docker service to start on reboot, run the following command:
       ```
-     $ sudo init 6
-     ```
+      $ sudo systemctl enable docker
+	  ```
       
-   >  **NOTE:** To enable Docker service to start on reboot, run the following command:
+	
+   d. Restart the system.
+      ```
+      $ sudo reboot
+      ```
    
-       $ sudo systemctl enable docker
   
    
 	   
@@ -131,15 +138,15 @@ Perform the following steps on the system where you want to deploy ODIMRA:
 
 	   
 ## 2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)
-This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin, and URP.
+This section provides a step-by-step procedure for deploying ODIMRA, the GRF plugin, and URP.
 
   
-**IMPORTANT**:
-  - All configuration parameters are set to default values in the configuration files for ODIMRA and GRF plugin. 
-  - The following ports are used for deploying ODIMRA, GRF plugin, and URP:
+Following are some important points to consider before starting the deployment:
+  - All configuration parameters are set to default values in the configuration files for ODIMRA and the GRF plugin. 
+  - The following ports are used for deploying ODIMRA, the GRF plugin, and URP:
     45000, 45001, 45003, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
-    Ensure that the above ports are not in use.
-  - The following users are created and added to group ids automatically when the certificates are generated during deployment. 
+    > **NOTE:** Ensure that the above ports are not in use.
+  - The following users are created and added to group Ids automatically when the certificates are generated during the deployment. 
   
     |User Id| Group Id|
 	-----|---------|
@@ -147,11 +154,11 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
 	|`plugin`|1235 |
 	
 
-     `odimra` is created on both the VM and the container for the resource aggregator.
+     `odimra` is created on both the system and the container for the resource aggregator.
 	
-	 `plugin` is created  on both the VM and the container for the GRF plugin and URP.
+	 `plugin` is created  on both the system and the container for the GRF plugin and URP.
 	
-	  Ensure that these user ids and group ids are not present on the VM prior to deployment.
+	 > **NOTE:** Ensure that these user Ids and group Ids are not present on the system prior to deployment.
 
 
 **WARNING:** Do not run the commands provided in this section as a root user unless mentioned.
@@ -164,7 +171,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
    ```
 2. Choose a Fully Qualified Domain Name (FQDN) for the resource aggregator server. 
    Example: odim.local.com.
-3. Set FQDN to environment of the host machine using the following command:
+3. Set FQDN to the environment of the host machine using the following command:
     ```
     $ export FQDN=<user_preferred_fqdn_for_host>
     ```
@@ -173,7 +180,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
    $ export HOSTIP=<ip_address_of_your_system>
    ```
 
-5. Set the following environment variables for user and group ID to be used for ODIMRA.
+5. Set the following environment variables for the ODIMRA user and group IDs.
    ```
    $ export ODIMRA_USER_ID=1234
    $ export ODIMRA_GROUP_ID=1234
@@ -206,14 +213,14 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
 
     **Procedure**
    
-   a. Navigate to the path: `ODIM/build/cert_generator`
+   a. Navigate to the path: `ODIM/build/cert_generator`:
       ```
        $ cd ODIM/build/cert_generator
       ```
 
-    > NOTE: `ODIM/build/cert_generator` contains the automated scripts to generate the TLS certificates for the resource aggregator, the GRF plugin, the URP, and Kafka.
+    > **NOTE:** `ODIM/build/cert_generator` contains the automated scripts to generate the TLS certificates for the resource aggregator, the GRF plugin, URP, and Kafka.
 
-   b. Use the following command to generate certificates for the resource aggregator, the GRF plugin, and the URP. Provide FQDN as a command-line argument.
+   b. Use the following command to generate certificates for the resource aggregator, the GRF plugin, and URP. Provide FQDN as a command-line argument.
       ```
       $ ./generate_odimra_cert.sh <FQDN>
       ```
@@ -225,11 +232,11 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
       ```
        $ ./generate_zookeeper_certs.sh zookeeper
       ```
-   e. Use the following command to copy the TLS certificates of the resource aggregator, the GRF  plugin, the URP, Kafka and Zookeeper:
+   e. Use the following command to copy the TLS certificates of the resource aggregator, the GRF  plugin, URP, Kafka, and Zookeeper:
      ```
       $ sudo ./copy_certificate.sh
      ```
-     The following files are copied in the path: `/etc/odimracert/`:
+     The following files are copied in the path - `/etc/odimracert/`:
       - rootCA.crt
       - odimra_server.key
       - odimra_server.crt
@@ -238,15 +245,15 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
       - odimra_kafka_client.key
       - odimra_kafka_client.crt
 
-     The following files are copied in the path: `/etc/kafka/conf/`:
+     The following files are copied in the path - `/etc/kafka/conf/`:
       - kafka.keystore.jks
       - kafka.truststore.jks
 
-     The following files are copied in the path: `/etc/zookeeper/conf`:
+     The following files are copied in the path - `/etc/zookeeper/conf`:
       - zookeeper.keystore.jks
       - zookeeper.trustore.jks
       
-    The following files are copied in the path: `/etc/plugincert/`:
+    The following files are copied in the path - `/etc/plugincert/`:
       - rootCA.crt
       - odimra_server.key
       - odimra_server.crt
@@ -363,7 +370,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
     https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
 	
 	
-### Default user credentials for ODIMRA, the GRF Plugin, and the URP
+### Default user credentials for ODIMRA, the GRF Plugin, and URP
 
 
 ODIMRA:
@@ -373,7 +380,7 @@ Username: admin
 Password: Od!m12$4
 ```
 
-GRF plugin:
+The GRF plugin:
 
 ```
 Username: admin
@@ -395,7 +402,7 @@ Password: Od!m12$4
 1.   Navigate to the `build_odimra_1` container using the following command: 
 
       ```
-     $ docker exec -it build_odimra_1/bin/bash
+     $ docker exec -it build_odimra_1 /bin/bash
      ```
 
 2.   Edit the parameters in the `odimra_config.json` file located in this path: `/etc/odimra_config/odimra_config.json` and save. 
@@ -459,7 +466,7 @@ During the course of this procedure, you will be required to create files and co
 |Parameter|Description|
 |---------|-----------|
 |`<Proxy_URL>` |Your company URL.|
-|`<ODIM_server_VM_IP>` |The IP address of the system where the resource aggregator is installed.|
+|`<ODIM_server_IP>` |The IP address of the system where the resource aggregator is installed.|
 |`<FQDN>` |FQDN of the resource aggregator server.|
 
 </blockquote>
@@ -467,7 +474,7 @@ During the course of this procedure, you will be required to create files and co
 **Procedure**
 --------------
 
-1.   In the home directory of the ODIMRA user, create a hidden directory called *.docker*, and then create a file called *config.json* inside it.
+1.   In the home directory of the logged in user, create a hidden directory called *.docker*, and then create a file called *config.json* inside it.
 
       ```
        mkdir .docker
@@ -491,7 +498,7 @@ During the course of this procedure, you will be required to create files and co
           {
              "httpProxy": "<Proxy_URL>",
              "httpsProxy": "<Proxy_URL>",
-             "noProxy": "localhost,127.0.0.1, <ODIM_server_VM_IP>"
+             "noProxy": "localhost,127.0.0.1, <ODIM_server_IP>"
           }
         }
       }
@@ -503,7 +510,7 @@ During the course of this procedure, you will be required to create files and co
       ```
       export http_proxy=<Proxy_URL>
       export https_proxy=<Proxy_URL>
-      HOSTIP=<ODIM_server_VM_IP>
+      HOSTIP=<ODIM_server_IP>
       FQDN=<FQDN>
       ```
 
@@ -522,7 +529,7 @@ During the course of this procedure, you will be required to create files and co
          [Service]
          Environment="HTTP_PROXY=<Proxy_URL>"
          Environment="HTTPS_PROXY=<Proxy_URL>"
-         Environment="NO_PROXY=localhost,127.0.0.1, <ODIM_server_VM_IP>"
+         Environment="NO_PROXY=localhost,127.0.0.1, <ODIM_server_IP>"
         
          ```
 

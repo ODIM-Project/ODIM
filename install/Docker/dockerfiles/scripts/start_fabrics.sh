@@ -65,8 +65,6 @@ monitor_process()
 ###############  MAIN  #######################
 ##############################################
 
-add_host
-
 start_fabrics
 
 create_signal_trap

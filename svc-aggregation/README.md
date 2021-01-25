@@ -259,7 +259,12 @@ It consists of the following parameters:
 - **PluginID\_Firmwareversion:**
    The id of the plugin along with the version of the firmware. To know the plugin Ids for all the supported plugins, see "Mapping of plugins and plugin Ids" table.<br>
    Allowed values: GRF\_v1.0.0, ILO\_v1.0.0, and URP\_v1.0.0.<br>  
-   Example: `Compute:BasicAuth:GRF_v1.0.0` <br>
+
+
+Examples:
+1. `Compute:BasicAuth:GRF_v1.0.0`
+2. `Compute:BasicAuth:URP_v1.0.0` 
+
 
 
 >**Mapping of plugins and plugin Ids**
@@ -276,7 +281,7 @@ It consists of the following parameters:
 | | |
 |-------|------|
 |<strong>Method</strong> | `POST` |
-|<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationSources` |
+|<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link \(having the aggregation source Id\) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
@@ -325,7 +330,7 @@ curl -i POST \
 
 
 
->**Sample request body**
+>**Sample request body for adding the GRF plugin**
 
 ```
 {
@@ -339,6 +344,22 @@ curl -i POST \
    }
 }
 ```
+
+>**Sample request body for adding the URP**
+
+```
+{
+   "HostName":"{plugin_host}:45003",
+   "UserName":"admin",
+   "Password":"Od!m12$4",
+   "Links":{
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a171e66c-b4a8-137f-981b-1c07ddfeacbb"
+      }
+   }
+}
+```
+
 
 **Request parameters**
 

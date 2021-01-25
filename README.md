@@ -31,14 +31,15 @@
 
 **Procedure**
 --------------
-1. Download and install `Ubuntu 18.04 LTS` on your system.
+Perform the following steps on the system where you want to deploy ODIMRA:
+1. Download and install `Ubuntu 18.04 LTS`.
     >   **NOTE:**  Before installation, configure your system IP to access the data center network.
-2. Install `Ubuntu Make` on your system.
-To install `Ubuntu Make`, run the following command:
+2. Install `Ubuntu Make`.
+   To install `Ubuntu Make`, run the following command:
    ```
    $ sudo apt install make
    ```
-3. Install `Java 11` on your system.
+3. Install `Java 11`.
    To install `Java 11`, run the following command:
    ```
     $ sudo apt install openjdk-11-jre-headless -y
@@ -115,7 +116,7 @@ To install `Ubuntu Make`, run the following command:
    >  **NOTE:** If your system is behind a corporate proxy, ensure to configure Docker to use proxy server and restart docker services. To know how to configure Docker proxy, see [Configuring Docker proxy](#configuring-proxy-for-docker).
 						   
      
-   c. Restart the server.
+   c. Restart the system.
       ```
      $ sudo init 6
      ```
@@ -133,7 +134,7 @@ To install `Ubuntu Make`, run the following command:
 This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin, and URP.
 
   
-  **NOTE:**
+**IMPORTANT**:
   - All configuration parameters are set to default values in the configuration files for ODIMRA and GRF plugin. 
   - The following ports are used for deploying ODIMRA, GRF plugin, and URP:
     45000, 45001, 45003, 45101-45110, 9092, 9082, 6380, 6379, 8500, 8300, 8302, 8301, 8600
@@ -153,7 +154,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
 	  Ensure that these user ids and group ids are not present on the VM prior to deployment.
 
 
-**WARNING:** Do not run the commands provided in this section as root user unless mentioned.
+**WARNING:** Do not run the commands provided in this section as a root user unless mentioned.
 
 **Procedure**
 --------------
@@ -172,7 +173,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
    $ export HOSTIP=<ip_address_of_your_system>
    ```
 
-5. Set below environment variables with user and group ID to be used for odimra
+5. Set the following environment variables for user and group ID to be used for ODIMRA.
    ```
    $ export ODIMRA_USER_ID=1234
    $ export ODIMRA_GROUP_ID=1234
@@ -199,7 +200,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
    - Using the generated CA certificate, certificates and private keys for the resource aggregator services are also generated with 4096 key length and sha512 digest algorithm. They are valid for services matching the provided FQDN. You can use one-word description of the certificate as the common name.
    - Certificates are used by the resource aggregator services to communicate internally (Remote Procedure Call) and with the plugin services.
    - If you are using an intermediate CA for signing certificates assigned to the resource aggregator and the plugin services, ensure to:
-        - Append all the intermediate certificates to the server certificate file in   the order such that each certificate has signed the preceding one.
+        - Append all the intermediate certificates to the server certificate file in the order such that each certificate has signed the preceding one.
         - Append the Root CA used for signing the intermediate CA to the resource aggregator CA file.
 
 
@@ -210,7 +211,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
        $ cd ODIM/build/cert_generator
       ```
 
-    > NOTE: `ODIM/build/cert_generator` contains the automated scripts to generate the TLS certificates for the resource aggregator, the GRF plugin and Kafka.
+    > NOTE: `ODIM/build/cert_generator` contains the automated scripts to generate the TLS certificates for the resource aggregator, the GRF plugin, the URP, and Kafka.
 
    b. Use the following command to generate certificates for the resource aggregator, the GRF plugin, and the URP. Provide FQDN as a command-line argument.
       ```
@@ -228,7 +229,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
      ```
       $ sudo ./copy_certificate.sh
      ```
-     The following files are copied in the path: `/etc/odimracert/`
+     The following files are copied in the path: `/etc/odimracert/`:
       - rootCA.crt
       - odimra_server.key
       - odimra_server.crt
@@ -237,15 +238,15 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
       - odimra_kafka_client.key
       - odimra_kafka_client.crt
 
-     The following files are copied in the path: `/etc/kafka/conf/`
+     The following files are copied in the path: `/etc/kafka/conf/`:
       - kafka.keystore.jks
       - kafka.truststore.jks
 
-     The following files are copied in the path: - /etc/zookeeper/conf
+     The following files are copied in the path: `/etc/zookeeper/conf`:
       - zookeeper.keystore.jks
       - zookeeper.trustore.jks
       
-    The following files are copied in the path: `/etc/plugincert/`
+    The following files are copied in the path: `/etc/plugincert/`:
       - rootCA.crt
       - odimra_server.key
       - odimra_server.crt
@@ -253,7 +254,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
       - odimra_kafka_client.crt
       
 
-8. Navigate to the odimra folder.
+8. Navigate to the ODIMRA folder.
    ```
    $ cd ~/ODIM
    ```
@@ -262,7 +263,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
    ```
    $ make all
    ```
-    The following containers are loaded.
+    The following containers are loaded:
       - build_odimra_1
       - build_kafka_1
       - build_zookeeper_1
@@ -300,7 +301,7 @@ This section provides a step-by-step procedure for deploying ODIMRA, GRF plugin,
 
 
   **NOTE:**
-  - The resource aggregator configuration files are available at `/etc/odimra_config`.
+  - The configuration files of the resource aggregator are available at `/etc/odimra_config`.
   - The GRF configuration files are available at `/etc/grf_plugin_config`.
   - The URP configuration files are available at `/etc/urp_plugin_config`.
   - The resource aggregator API service runs on the default port 45000.
@@ -466,7 +467,7 @@ During the course of this procedure, you will be required to create files and co
 **Procedure**
 --------------
 
-1.   In the home directory of ODIMRA user, create a hidden directory called .docker, and then create a file called config.json inside it.
+1.   In the home directory of the ODIMRA user, create a hidden directory called *.docker*, and then create a file called *config.json* inside it.
 
       ```
        mkdir .docker
@@ -480,7 +481,7 @@ During the course of this procedure, you will be required to create files and co
        vi config.json
       ```	   
 
-2.   Add the following content in the config.json file and save: 
+2.   Add the following content in the `config.json` file and save: 
 
       ```
       {
@@ -539,33 +540,34 @@ During the course of this procedure, you will be required to create files and co
 # Uninstalling ODIMRA
 
   To uninstall ODIMRA, use either of the two commands listed in this section.
+  
+1. ```
+   $ make clean
+   ```
 
-  Use the following command to:
-  - Remove all the deployed Docker containers.
-  - Remove only those Docker images which were created and deployed as containers.
-  - Remove data stored by Consul, Redis, and Kafka.	
-
-```
-$ make clean
-```
+   Use the following command to:
+   - Remove all the deployed Docker containers.
+   - Remove only those Docker images which were created and deployed as containers.
+   - Remove data stored by Consul, Redis, and Kafka.	
 	
   When prompted for password, enter the sudo password.
 	 
-  Use the following command to:
-  - Remove all the deployed Docker containers.
-  - Remove all the Docker images including the intermediate or dependent images created during the deployment.
-  - Remove configuration information and data stored by Consul, Redis & Kafka.
-  - Remove all generated certificates.
-  - Remove logs files created for the ODIMRA services, the GRF plugin, and the URP.
-
-```
-$ make deepclean
-```
-     
+  
+2. ```
+   $ make deepclean
+   ``` 
+  
+   Use the following command to:
+   - Remove all the deployed Docker containers.
+   - Remove all the Docker images including the intermediate or dependent images created during the deployment.
+   - Remove configuration information and data stored by Consul, Redis, and Kafka.
+   - Remove all generated certificates.
+   - Remove log files created for the ODIMRA services, the GRF plugin, and the URP.
+   
   When prompted for password, enter the sudo password.
 
-  >**CAUTION**:
- 	Running these commands will unistall ODIMRA and remove all related data completely. It is best to not run these commands unless absolutely necessary.
+>**CAUTION**:
+ Running these commands will unistall ODIMRA and all the data related to it completely. It is best to not run these commands unless absolutely necessary.
                
 
 # CI Process

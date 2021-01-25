@@ -5,8 +5,8 @@
 
 - [Deploying the resource aggregator for ODIM (ODIMRA)](#deploying-the-resource-aggregator-for-odim--odimra-)
   * [1. Setting up OS and Docker environment](#1-setting-up-os-and-docker-environment)
-  * [2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim--the-generic-redfish--grf--plugin--and-the-unmanaged-rack-plugin--urp-)
-    + [Default user credentials for ODIMRA, the GRF Plugin, and the URP](#default-user-credentials-for-odimra--the-grf-plugin--and-urp)
+  * [2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim-the-generic-redfish-grf-plugin-and-the-unmanaged-rack-plugin-urp)
+    + [Default user credentials for ODIMRA, the GRF Plugin, and URP](#default-user-credentials-for-odimra--the-grf-plugin-and-urp)
 - [Modifying default configuration parameters for the resource aggregator](#modifying-default-configuration-parameters-for-the-resource-aggregator)
 - [Configuring proxy for Docker](#configuring-proxy-for-docker)
 - [Uninstalling ODIMRA](#uninstalling-odimra)
@@ -35,11 +35,13 @@ Perform the following steps on the system where you want to deploy ODIMRA:
 1. Download and install `Ubuntu 18.04 LTS`.
     >   **NOTE:**  Before installation, configure your system IP to access the data center network.
 2. Install `Ubuntu Make`. It is required to build ODIMRA services.
+
    To install `Ubuntu Make`, run the following command:
    ```
    $ sudo apt install make
    ```
 3. Install `Java 11`. It is required to create keystores for Kafka and Zookeeper services.
+
    To install `Java 11`, run the following command:
    ```
     $ sudo apt install openjdk-11-jre-headless -y
@@ -161,11 +163,15 @@ Following are some important points to consider before starting the deployment:
 	 > **NOTE:** Ensure that these user Ids and group Ids are not present on the system prior to deployment.
 
 
-**WARNING:** Do not run the commands provided in this section as a root user unless mentioned.
+
 
 **Procedure**
 --------------
-1. Clone the ODIMRA repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user.
+
+**WARNING:** Do not run the commands provided in this section as a root user unless mentioned.
+
+
+1. Clone the ODIMRA repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user:
    ```
    $ git clone https://github.com/ODIM-Project/ODIM.git
    ```
@@ -175,12 +181,12 @@ Following are some important points to consider before starting the deployment:
     ```
     $ export FQDN=<user_preferred_fqdn_for_host>
     ```
-4. Set the environment variable, `HOSTIP` to the IP address of your system.
+4. Set the environment variable, `HOSTIP` to the IP address of your system:
    ```
    $ export HOSTIP=<ip_address_of_your_system>
    ```
 
-5. Set the following environment variables for the ODIMRA user and group IDs.
+5. Set the following environment variables for the ODIMRA user and group IDs:
    ```
    $ export ODIMRA_USER_ID=1234
    $ export ODIMRA_GROUP_ID=1234
@@ -324,7 +330,7 @@ Following are some important points to consider before starting the deployment:
 
 11. To configure log rotation, do the following:
 
-    a. Navigate to the `/etc/logrotate.d` directory.
+    a. Navigate to the `/etc/logrotate.d` directory:
     ```
     $ cd /etc/logrotate.d
     ```
@@ -347,7 +353,7 @@ Following are some important points to consider before starting the deployment:
     copytruncate
     }
     ``` 
-    d. Navigate to the `/etc/cron.hourly` directory.
+    d. Navigate to the `/etc/cron.hourly` directory:
        ```
        $ cd /etc/cron.hourly
        ```
@@ -366,7 +372,7 @@ Following are some important points to consider before starting the deployment:
   
 
 
-12. To add the Generic Redfish Plugin, the URP, and servers to the resource aggregator for ODIM, see "Adding a plugin as an aggregation source" and "Adding a server as an aggregation source" in the following readme.  
+12. To add the Generic Redfish Plugin, URP, and servers to the resource aggregator for ODIM, see "*Adding a plugin as an aggregation source*" and "*Adding a server as an aggregation source*" in the following readme.  
     https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
 	
 	
@@ -427,7 +433,7 @@ Password: Od!m12$4
      |MinVersion|String|Default value: `TLS1.2`<br> Supported values: `TLS1.0, TLS1.1, TLS1.2`<br> Recommended value: `TLS1.2`|
      |MaxVersion|String|Default value: `TLS1.2`<br> Supported values: `TLS1.0, TLS1.1, TLS1.2`<br>  Recommended value: `TLS1.2`<br>  NOTE: If `MinVersion` and `MaxVersion` are not specified, they will be set to default values.<br> If `MinVersion` and `MaxVersion` are set to unsupported values, the resource aggregator and the plugin services will exit with errors.|
      |VerifyPeer|Boolean| Default value: true<br>  Recommended value: true<br>  NOTE:<br>  - `VerifyPeer` is set to true, by default. For secure plugin interaction, add root CA certificate (that is used to sign the certificates of the southbound entities) to root CA certificate file.  If `VerifyPeer` is set to false, SSL communication will be insecure.  After setting `VerifyPeer` to false, restart the resource aggregator container (`odim_1`).<br>  - If `TLS1.2` is used, ensure that the entity certificate has `SAN` field for successful validation.  - Northbound entities interacting with resource aggregator `API` service can use root CA that signed ODIMRA's certificate.|
-     |PreferredCipherSuites}|List| Default and supported values: See "List of supported (default) cipher suites".<br> IMPORTANT:<br>  - If `PreferredCipherSuites` is not specified, it will be set to default cipher (secure) suites.<br>  - If `PreferredCipherSuites` is set to unsupported cipher suites, the resource aggregator and the plugin services will exit with errors.|
+     |PreferredCipherSuites}|List| Default and supported values: See "List of supported (default) cipher suites".<br> IMPORTANT:<br>  - If `PreferredCipherSuites` is not specified, it will be set to default cipher (secure) suites.<br><br>  - If `PreferredCipherSuites` is set to unsupported cipher suites, the resource aggregator and the plugin services will exit with errors.|
 
      List of supported (default) cipher suites:
      
@@ -557,7 +563,7 @@ During the course of this procedure, you will be required to create files and co
    - Remove only those Docker images which were created and deployed as containers.
    - Remove data stored by Consul, Redis, and Kafka.	
 	
-  When prompted for password, enter the sudo password.
+    When prompted for password, enter the sudo password.
 	 
   
 2. ```
@@ -569,12 +575,12 @@ During the course of this procedure, you will be required to create files and co
    - Remove all the Docker images including the intermediate or dependent images created during the deployment.
    - Remove configuration information and data stored by Consul, Redis, and Kafka.
    - Remove all generated certificates.
-   - Remove log files created for the ODIMRA services, the GRF plugin, and the URP.
+   - Remove log files created for the ODIMRA services, the GRF plugin, and URP.
    
-  When prompted for password, enter the sudo password.
+    When prompted for password, enter the sudo password.
 
 >**CAUTION**:
- Running these commands will unistall ODIMRA and all the data related to it completely. It is best to not run these commands unless absolutely necessary.
+ Running these commands will unistall ODIMRA and all the data related to it completely. It is best not to run these commands unless absolutely necessary.
                
 
 # CI Process
@@ -598,25 +604,25 @@ GitHub action workflow details
 ------------------------------
 
 1. build_unittest.yml
- - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md.
- - Installs Go 1.13.8 package.
- - Installs and configures Redis 5.0.8 with two instances running on ports 6379 and 6380.
- - Checks out the PR code into the Go module directory.
- - Builds the code.
- - Runs the unit tests.
+   - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md.
+   - Installs Go 1.13.8 package.
+   - Installs and configures Redis 5.0.8 with two instances running on ports 6379 and 6380.
+   - Checks out the PR code into the Go module directory.
+   - Builds the code.
+   - Runs the unit tests.
 
 2. build_deploy_test.yml
- - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md.
- - Checks out the PR code.
- - Builds and deploys the following docker containers
-   ODIMRA
-   Generic redfish plugin
-   Unmanaged Rack Plugin
-   Kakfa
-   Zookeeper
-   Consul
-   Redisdb
- - Runs the sanity tests.
- - Uploads the build artifacts.
+   - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md.
+   - Checks out the PR code.
+   - Builds and deploys the following docker containers
+     ODIMRA
+     Generic redfish plugin
+     Unmanaged Rack Plugin
+     Kakfa
+     Zookeeper
+     Consul
+     Redisdb
+   - Runs the sanity tests.
+   - Uploads the build artifacts.
 
 > **NOTE:** Build status notifications having a link to the GitHub Actions' build job page will be sent to the developer’s email.

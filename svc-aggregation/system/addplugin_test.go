@@ -269,7 +269,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:STGtest_v1.0.0"),
 			},
 			want: response.RPC{
-				StatusCode: http.StatusConflict,
+				StatusCode: http.StatusCreated,
 			},
 		},
 	}

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020 Intel Corporation
+ * Copyright (c) 2020 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +61,7 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 
 	for _, e := range message.Events {
 		ctx := stdCtx.TODO()
-		containedInKey := db.CreateContainedInKey("Chassis", e.OriginOfCondition)
+		containedInKey := db.CreateContainedInKey("Chassis", e.OriginOfCondition.Oid)
 		rackKey, err := eh.dao.Get(ctx, containedInKey.String()).Result()
 		if err == redis.Nil {
 			continue
@@ -80,7 +81,7 @@ func (eh *eventHandler) handleEvent(c iris.Context) {
 
 				if _, err := pipeliner.SRem(
 					ctx,
-					db.CreateContainsKey("Chassis", rackKey).String(), e.OriginOfCondition,
+					db.CreateContainsKey("Chassis", rackKey).String(), e.OriginOfCondition.Oid,
 				).Result(); err != nil {
 					return fmt.Errorf("srem: %s error: %w", db.CreateContainsKey("Chassis", rackKey).String(), err)
 				}

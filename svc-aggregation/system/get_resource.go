@@ -43,7 +43,7 @@ func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
 		StatusMessage: response.Success,
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+		OdataType:    "#AggregationSourceCollection.AggregationSourceCollection",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources",
 		OdataContext: "/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
 		ID:           "AggregationSource",

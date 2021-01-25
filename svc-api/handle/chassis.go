@@ -24,8 +24,8 @@ import (
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 // ChassisRPCs defines all the RPC methods in system service

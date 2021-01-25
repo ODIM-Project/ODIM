@@ -1,0 +1,384 @@
+{
+    "@Redfish.Copyright": "Copyright 2020 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "StorageDevice.1.0.0",
+    "Name": "Storage Device Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for storage devices.",
+    "RegistryPrefix": "StorageDevice",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "ControllerOK": {
+            "Description": "The storage controller status has changed to OK.",
+            "LongDescription": "This message shall be used to indicate that the storage controller status has changed to OK.",
+            "Message": "The status of the storage controller located in '%1' has changed to OK.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "No action required.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "ControllerFailure"
+                ]
+            }
+        },
+        "ControllerFailure": {
+            "Description": "A storage controller failure has been detected.",
+            "LongDescription": "This message shall be used to indicate that a storage controller failure condition has been detected due to a hardware, communication, or firmware failure.",
+            "Message": "A failure condition for the storage controller located in '%1' has been detected.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "Reseat the storage controller in the PCI slot.  Update the controller to the latest firmware version.  If the issue persists, replace the controller."
+        },
+        "DriveOK": {
+            "Description": "The status of a physical drive has changed to OK.",
+            "LongDescription": "This message shall be used to indicate a drive status has changed to OK.",
+            "Message": "The status of the drive located in '%1' has changed to OK.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DrivePredictiveFailure",
+                    "DriveFailure"
+                ]
+            }
+        },
+        "DrivePredictiveFailure": {
+            "Description": "A predictive drive failure condition has been detected.",
+            "LongDescription": "This message shall be used to indicate a drive predictive failure condition has been detected.",
+            "Message": "A predictive failure condition for the drive located in '%1' has been detected.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "If this drive is not part of a fault-tolerant volume, first back up all data, then replace the drive and restore all data afterward.  If this drive is part of a fault-tolerant volume, replace this drive as soon as possible as long as the volume status is OK."
+        },
+        "DrivePredictiveFailureCleared": {
+            "Description": "A previously detected predictive failure condition on a drive has been cleared.",
+            "LongDescription": "This message shall be used to indicate a predictive failure condition on a drive has been cleared, but any other failure conditions remain.",
+            "Message": "A predictive failure condition for the drive located in '%1' has been cleared.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DrivePredictiveFailure"
+                ]
+            }
+        },
+        "DriveFailure": {
+            "Description": "A drive failure condition has been detected.",
+            "LongDescription": "This message shall be used to indicate a drive failure condition detected due to a drive not installed correctly or has failed.",
+            "Message": "A failure condition for the drive located in '%1' has been detected.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "Ensure all cables are properly and securely connected.  Ensure all drives are fully seated.  Replace the defective cables, drive, or both.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DrivePredictiveFailure"
+                ]
+            }
+        },
+        "DriveFailureCleared": {
+            "Description": "A previously detected failure condition on a drive has been cleared.",
+            "LongDescription": "This message shall be used to indicate a failure condition on a drive has been cleared, but any predictive failure or other conditions remain.",
+            "Message": "A failure condition for the drive located in '%1' has been cleared.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DriveFailure"
+                ]
+            }
+        },
+        "DriveInserted": {
+            "Description": "A drive has been inserted.",
+            "LongDescription": "This message shall be used to indicate a drive has been inserted.",
+            "Message": "The drive located at '%1' was inserted.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "If the drive is not properly displayed, attempt to refresh the cached data.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DriveRemoved",
+                    "DrivePredictiveFailure",
+                    "DriveFailure"
+                ]
+            }
+        },
+        "DriveRemoved": {
+            "Description": "A drive has been removed.",
+            "LongDescription": "This message shall be used to indicate a drive has been removed.",
+            "Message": "The drive located in '%1' was removed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the drive."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the drive location."
+            ],
+            "Resolution": "If the drive is still displayed, attempt to refresh the cached data.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DriveInserted",
+                    "DrivePredictiveFailure",
+                    "DriveFailure"
+                ]
+            }
+        },
+        "VolumeOK": {
+            "Description": "A volume status has changed to OK.",
+            "LongDescription": "This message shall be used to indicate a volume status has changed to OK.",
+            "Message": "The status of volume '%1' that is attached to the storage controller located in '%2' has changed to OK.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identifier of the volume.",
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing an identifier for the volume.  The identifier may contain `Id`, `Name`, `Identifiers`, `LogicalUnitNumber`, or other data used to uniquely identify the volume.",
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "VolumeFailure",
+                    "VolumeDegraded"
+                ]
+            }
+        },
+        "VolumeDegraded": {
+            "Description": "The storage controller has detected a degraded volume condition.",
+            "LongDescription": "This message shall be used to indicate a volume degraded condition was detected due to one or more drives not installed correctly, missing, or has failed.",
+            "Message": "The volume '%1' attached to the storage controller located in '%2' is in degraded state.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identifier of the volume.",
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing an identifier for the volume.  The identifier may contain `Id`, `Name`, `Identifiers`, `LogicalUnitNumber`, or other data used to uniquely identify the volume.",
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "Ensure all cables are properly and securely connected.  Replace failed drives."
+        },
+        "VolumeFailure": {
+            "Description": "The storage controller has detected a failed volume condition.",
+            "LongDescription": "This message shall be used to indicate a volume failure condition was detected due to one or more drives not installed correctly, missing, or has failed.",
+            "Message": "The volume '%1' attached to the storage controller located in '%2' has failed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identifier of the volume.",
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing an identifier for the volume.  The identifier may contain `Id`, `Name`, `Identifiers`, `LogicalUnitNumber`, or other data used to uniquely identify the volume.",
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "Ensure all cables are properly and securely connected.  Ensure all drives are fully seated and operational."
+        },
+        "WriteCacheProtected": {
+            "Description": "A storage controller write cache state is in protected mode.",
+            "LongDescription": "This message shall be used to indicate a controller write cache state is in protected mode.",
+            "Message": "The write cache state on the storage controller located in '%1' is in protected mode.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "WriteCacheTemporarilyDegraded",
+                    "WriteCacheDegraded"
+                ]
+            }
+        },
+        "WriteCacheTemporarilyDegraded": {
+            "Description": "The write cache state is temporarily degraded.",
+            "LongDescription": "This message shall be used to indicate write cache state temporarily degraded due to battery charging or data recovery rebuild operation pending.",
+            "Message": "The write cache state on the storage controller located in '%1' is temporarily degraded.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "Check the controller to determine the cause of write cache temporarily degraded state, such as a battery is charging or a data recovery rebuild operation is pending.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "WriteCacheDegraded"
+                ]
+            }
+        },
+        "WriteCacheDegraded": {
+            "Description": "The write cache state is degraded.",
+            "LongDescription": "This message shall be used to indicate the write cache state degraded due to a missing battery or hardware failure.",
+            "Message": "The write cache state on the storage controller located in '%1' is degraded.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "Check the controller to determine the cause of write cache degraded state, such as a missing battery or hardware failure.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "WriteCacheTemporarilyDegraded"
+                ]
+            }
+        },
+        "WriteCacheDataLoss": {
+            "Description": "The write cache is reporting loss of data in posted-writes memory.",
+            "LongDescription": "This message shall be used to indicate the write cache is reporting loss of data in posted-writes cache memory due to loss of battery power when the server lost power or a hardware error.",
+            "Message": "The write cache on the storage controller located in '%1' has data loss.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The location of the storage controller."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the storage controller location."
+            ],
+            "Resolution": "Check the controller resource properties to determine cause of the write cache data loss."
+        }
+    }
+}

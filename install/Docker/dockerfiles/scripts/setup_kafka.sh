@@ -55,7 +55,7 @@ configure_kafka_properties()
 	update_param "zookeeper.connect" ${KAFKA_ZOOKEEPER_CONNECT}
 	update_param "listeners" ${KAFKA_LISTENERS}
 	update_param "advertised.listeners" ${KAFKA_ADV_LISTENERS}
-       	update_param "listener.security.protocol.map" "SSL:SSL"
+       	update_param "listener.security.protocol.map" "SSL:SSL,EXTERNAL:SSL"
         update_param "security.inter.broker.protocol" "SSL"
  	update_param "ssl.enabled.protocols" "TLSv1.2"
         update_param "ssl.keystore.location" ${KAFKA_KEYSTORE_PATH}

@@ -6,7 +6,7 @@
 - [Deploying the resource aggregator for ODIM (ODIMRA)](#deploying-the-resource-aggregator-for-odim--odimra-)
   * [1. Setting up OS and Docker environment](#1-setting-up-os-and-docker-environment)
   * [2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim-the-generic-redfish-grf-plugin-and-the-unmanaged-rack-plugin-urp)
-    + [Default user credentials for ODIMRA, the GRF Plugin, and URP](#default-user-credentials-for-odimra--the-grf-plugin-and-urp)
+    + [Default user credentials for ODIMRA, the GRF Plugin, and URP](#default-user-credentials-for-odimra-the-grf-plugin-and-urp)
 - [Modifying default configuration parameters for the resource aggregator](#modifying-default-configuration-parameters-for-the-resource-aggregator)
 - [Configuring proxy for Docker](#configuring-proxy-for-docker)
 - [Uninstalling ODIMRA](#uninstalling-odimra)
@@ -25,7 +25,7 @@
 
 **Prerequisites**
 ------------------
-- Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at `https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/`.  
+- Ensure that the Internet is available. If your system is behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see information provided at https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-set-the-proxy-for-apt-for-ubuntu-18-04/.  
 
 - Ensure not to create `odimra` user on the system where you want to deploy ODIMRA.
 
@@ -372,7 +372,7 @@ Following are some important points to consider before starting the deployment:
   
 
 
-12. To add the Generic Redfish Plugin, URP, and servers to the resource aggregator for ODIM, see "*Adding a plugin as an aggregation source*" and "*Adding a server as an aggregation source*" in the following readme.  
+12. To add the Generic Redfish Plugin, URP, and servers to the resource aggregator for ODIM, see "*Adding a plugin as an aggregation source*" and "*Adding a server as an aggregation source*" in the following readme:  
     https://github.com/ODIM-Project/ODIM/blob/development/svc-aggregation/README.md
 	
 	
@@ -432,7 +432,7 @@ Password: Od!m12$4
      |TLSConf{|Array|TLS configuration parameters.<br> Note: It is not recommended to change these settings. |
      |MinVersion|String|Default value: `TLS1.2`<br> Supported values: `TLS1.0, TLS1.1, TLS1.2`<br> Recommended value: `TLS1.2`|
      |MaxVersion|String|Default value: `TLS1.2`<br> Supported values: `TLS1.0, TLS1.1, TLS1.2`<br>  Recommended value: `TLS1.2`<br>  NOTE: If `MinVersion` and `MaxVersion` are not specified, they will be set to default values.<br> If `MinVersion` and `MaxVersion` are set to unsupported values, the resource aggregator and the plugin services will exit with errors.|
-     |VerifyPeer|Boolean| Default value: true<br>  Recommended value: true<br>  NOTE:<br>  - `VerifyPeer` is set to true, by default. For secure plugin interaction, add root CA certificate (that is used to sign the certificates of the southbound entities) to root CA certificate file.  If `VerifyPeer` is set to false, SSL communication will be insecure.  After setting `VerifyPeer` to false, restart the resource aggregator container (`odim_1`).<br>  - If `TLS1.2` is used, ensure that the entity certificate has `SAN` field for successful validation.  - Northbound entities interacting with resource aggregator `API` service can use root CA that signed ODIMRA's certificate.|
+     |VerifyPeer|Boolean| Default value: true<br>  Recommended value: true<br>  NOTE:<br>  - `VerifyPeer` is set to true, by default. For secure plugin interaction, add root CA certificate (that is used to sign the certificates of the southbound entities) to root CA certificate file.  If `VerifyPeer` is set to false, SSL communication will be insecure.  After setting `VerifyPeer` to false, restart the resource aggregator container (`odim_1`).<br><br>  - If `TLS1.2` is used, ensure that the entity certificate has `SAN` field for successful validation.  - Northbound entities interacting with resource aggregator `API` service can use root CA that signed ODIMRA's certificate.|
      |PreferredCipherSuites}|List| Default and supported values: See "List of supported (default) cipher suites".<br> IMPORTANT:<br>  - If `PreferredCipherSuites` is not specified, it will be set to default cipher (secure) suites.<br><br>  - If `PreferredCipherSuites` is set to unsupported cipher suites, the resource aggregator and the plugin services will exit with errors.|
 
      List of supported (default) cipher suites:

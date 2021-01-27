@@ -3,9 +3,11 @@
 
 # Table of contents
 
-- [Deploying the resource aggregator for ODIM (ODIMRA)](#deploying-the-resource-aggregator-for-odim--odimra-)
+- [Introduction](#introduction)
+  * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
+- [Deploying ODIMRA](#deploying-odimra)
   * [1. Setting up OS and Docker environment](#1-setting-up-os-and-docker-environment)
-  * [2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim-the-generic-redfish-grf-plugin-and-the-unmanaged-rack-plugin-urp)
+  * [2. Installing the resource aggregator for ODIM, the Generic redfish plugin (GRF), and the Unmanaged Rack Plugin (URP)](#2-installing-the-resource-aggregator-for-odim-the-generic-redfish-plugin-grf-and-the-unmanaged-rack-plugin-urp)
     + [Default user credentials for ODIMRA, the GRF Plugin, and URP](#default-user-credentials-for-odimra-the-grf-plugin-and-urp)
 - [Modifying default configuration parameters for the resource aggregator](#modifying-default-configuration-parameters-for-the-resource-aggregator)
 - [Configuring proxy for Docker](#configuring-proxy-for-docker)
@@ -15,11 +17,97 @@
 
 
 
+# Introduction 
+
+ Welcome to Resource Aggregator for Open Distributed Infrastructure Management!
+
+Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for
+simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for
+converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and
+secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
+
+ODIMRA framework comprises the following two components.
+
+- The resource aggregation function (the resource aggregator)
+
+  The resource aggregation function is the single point of contact between the northbound clients and the
+  southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes
+  Redfish-compliant APIs to allow northbound infrastructure management systems to:
+    - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the
+      resource inventory.
+    - Gather crucial configuration information about southbound resources.
+    - Manipulate groups of resources in a single action.
+    - Listen to similar events from multiple southbound resources.
+	
+- One or more plugins
+
+  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through
+  RESTful APIs. HPE Resource Aggregator for ODIM supports:
+ 
+    - Generic Redfish plugin for ODIM (GRF): Generic Redfish plugin that can be used as a plugin for any Redfishcompliant
+      device.
+	- Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks. 
+    - Integration of additional third-party plugins.  
+
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs
+are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.11.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.11.1.pdf) and are fully Redfish-compliant.
+Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish
+standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+
+
+##  Resource Aggregator for ODIM logical architecture
+
+Resource Aggregator for ODIM framework adopts a layered architecture and has many functional layers.
+
+
+The following figure shows these functional layers of Resource Aggregator for ODIM deployed in a data center.
+
+![ODIM_architecture](images/arch.png)
+
+- **API layer**
+
+
+This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from
+the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The
+northbound clients communicate with this layer through a REST-based protocol that is fully compliant with
+DMTF's Redfish® specifications (Schema 2020.3 and Specification 1.11.1).
+The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
+
+- **Services layer**
+
+
+The services layer is where all the services are hosted. This layer implements service logic for all use cases
+through an extensible domain model (Redfish Data Model). Requests coming from the API layer and the
+responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
+for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).
+
+![Redfish_data_model](images/redfish_data_model.png)
+
+- **Event message bus layer**
+
+
+This layer hosts a message broker which acts as a communication channel between the upper layers and the
+plugin layer. It supports common messaging architecture and real-time streaming. Resource Aggregator for
+ODIM uses Kafka as the event message bus.
+The services and the event message bus layers host Redis data store.
+
+- **Plugin layer**
+
+
+This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper
+layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use
+to communicate with the resources. It uses REST-based communication which is based on OpenAPI Specification
+v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
+event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
+The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
+language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed
+Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
+
    
 
 
 
-# Deploying the resource aggregator for ODIM (ODIMRA)
+# Deploying ODIMRA
 
 ## 1. Setting up OS and Docker environment
 
@@ -139,7 +227,7 @@ Perform the following steps on the system where you want to deploy ODIMRA:
 
 
 	   
-## 2. Installing the resource aggregator for ODIM, the Generic redfish (GRF) plugin, and the Unmanaged Rack Plugin (URP)
+## 2. Installing the resource aggregator for ODIM, the Generic redfish plugin (GRF), and the Unmanaged Rack Plugin (URP)
 This section provides a step-by-step procedure for deploying ODIMRA, the GRF plugin, and URP.
 
   

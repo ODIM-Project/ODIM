@@ -168,14 +168,33 @@
 
  Welcome to Resource Aggregator for Open Distributed Infrastructure Management!
 
-Resource Aggregator for Open Distributed Infrastructure Management (ODIM) is a modular, open framework for
-simplified management and orchestration of distributed workloads. It provides a unified management platform for
+Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for
+simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for
 converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and
 secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
-Resource Aggregator for ODIM framework comprises the following two components.
+
+ODIMRA framework comprises the following two components.
 
 - The resource aggregation function (the resource aggregator)
+
+  The resource aggregation function is the single point of contact between the northbound clients and the
+  southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes
+  Redfish-compliant APIs to allow northbound infrastructure management systems to:
+    - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the
+      resource inventory.
+    - Gather crucial configuration information about southbound resources.
+    - Manipulate groups of resources in a single action.
+    - Listen to similar events from multiple southbound resources.
+	
 - One or more plugins
+
+  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through
+  RESTful APIs. HPE Resource Aggregator for ODIM supports:
+ 
+    - Generic Redfish plugin for ODIM (GRF): Generic Redfish plugin that can be used as a plugin for any Redfishcompliant
+      device.
+	- Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks. 
+    - Integration of additional third-party plugins.  	
 
 This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs
 are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.11.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.11.1.pdf) and are fully Redfish-compliant.
@@ -228,8 +247,8 @@ to communicate with the resources. It uses REST-based communication which is bas
 v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
 event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding. To know how to develop plugins, refer to *Resource Aggregator for Open Distributed
-Infrastructure Management Plugin Developer's Guide*.
+language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed
+Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 
 # API usage and access guidelines
@@ -247,7 +266,7 @@ you will want to write your own scripting code to perform requests.
 This guide contains sample request and response payloads. For information on response payload parameters, refer to 
 [Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
 
-**IMPORTANT:**
+> **IMPORTANT:**
 The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
 
 **HTTP headers**
@@ -573,7 +592,7 @@ Transfer-Encoding:chunked
    "Oem":{
 
    },
-   "RedfishVersion": "1.8.0",
+   "RedfishVersion": "1.11.1",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
@@ -629,7 +648,7 @@ Following are the HTTP status codes with their descriptions:
 
 
 >**NOTE:**
-This guide provides success codes (200, 201, 202, 204) for all the referenced API operations. For failed operations, refer to the error codes listed in this section.
+This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
 
@@ -2255,7 +2274,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+   "@odata.type":"#AggregationSourceCollection.AggregationSourceCollection",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSource",
    "@odata.context":"/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
    "Name":"Aggregation Source",

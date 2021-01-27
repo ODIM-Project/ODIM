@@ -408,6 +408,11 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	var plugin *evmodel.Plugin
 	var contactRequest evcommon.PluginContactRequest
 	var target *evmodel.Target
+	var prev_res = &evresponse.MutexLock{
+		//Response: make(map[string]evresponse.EventResponse),
+		Response: errResponse.RPC,
+		Lock:     &sync.Mutex{},
+	}
 	if !collectionFlag {
 		if strings.Contains(origin, "Fabrics") {
 			return p.createFabricSubscription(postRequest, origin, collectionName, collectionFlag)
@@ -415,9 +420,14 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		target, resp, err = getTargetDetails(origin)
 		fmt.Print("this is a check OF LOGS BEINGS PRINTED: .....")
 		deviceSubscription,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+		fmt.Println(deviceSubscription.EventHostIP)
+		fmt.Println(target.ManagerAddress)
 		if deviceSubscription.EventHostIP==target.ManagerAddress{
 			deviceSubscription.OriginResources = append(deviceSubscription.OriginResources,origin)
-			resp.Response=deviceSubscription
+			//resp.Response=deviceSubscription
+			resp.Response=prev_res.Response
+			fmt.Println("resp that is returned here is: ")
+			fmt.Println(deviceSubscription)
 			return "", resp
 		}
 		if err != nil {
@@ -598,6 +608,12 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 			&resp, []interface{}{})
 		log.Error(errorMessage)
 		return "", resp
+	}
+	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+	if target.ManagerAddress==deviceSubscriptions.EventHostIP{
+		prev_res.Lock.Lock()
+		prev_res.Response = outBody
+		prev_res.Lock.Unlock()
 	}
 	resp.Response = outBody
 	resp.StatusCode = response.StatusCode

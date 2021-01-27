@@ -93,13 +93,11 @@ func TestExternalInterface_Plugin(t *testing.T) {
 	pluginData := agmodel.Plugin{
 		Password: []byte("password"),
 		ID:       "PluginWithBadPassword",
-		
 	}
 	mockData(t, common.OnDisk, "Plugin", "PluginWithBadPassword_v1.0.0", pluginData)
 	// create plugin with bad data
 	mockData(t, common.OnDisk, "Plugin", "PluginWithBadData_v1.0.0", "PluginWithBadData")
 
-  
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -260,7 +258,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				StatusCode: http.StatusConflict,
 			},
 		},
-  
+
 		{
 			name: "Adding plugin with duplicate managre uuid",
 			p:    p,
@@ -270,8 +268,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:STGtest_v1.0.0"),
 			},
 			want: response.RPC{
-       //StatusCode would be changed to StatusConflict once the code is fixed.
-				StatusCode: http.StatusCreated,
+				StatusCode: http.StatusConflict,
 			},
 		},
 	}

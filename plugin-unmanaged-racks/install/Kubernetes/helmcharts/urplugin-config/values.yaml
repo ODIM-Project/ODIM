@@ -9,3 +9,5 @@ urplugin:
   urPluginLBPort:
   odimUsername:
   odimPassword:
+  redisAddress:
+  sentinelMasterName:

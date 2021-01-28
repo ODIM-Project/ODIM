@@ -49,10 +49,7 @@ ODIMRA framework comprises the following two components.
 	- Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks. 
     - Integration of additional third-party plugins.  
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs
-are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.11.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.11.1.pdf) and are fully Redfish-compliant.
-Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish
-standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+
 
 
 ##  Resource Aggregator for ODIM logical architecture

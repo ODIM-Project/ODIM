@@ -258,7 +258,7 @@ It consists of the following parameters:
    Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
 - **PluginID\_Firmwareversion:**
    The id of the plugin along with the version of the firmware. To know the plugin Ids for all the supported plugins, see "Mapping of plugins and plugin Ids" table.<br>
-   Allowed values: GRF\_v1.0.0, ILO\_v1.0.0, and URP\_v1.0.0.<br>  
+   Supported values: GRF\_v1.0.0 and URP\_v1.0.0.<br>  
 
 
 Examples:
@@ -272,7 +272,6 @@ Examples:
 |Plugin Id|Plugin name|
 |---------|-----------|
 |GRF|Generic Redfish Plugin|
-|ILO|HPE ILO Plugin|
 |URP|Unmanaged Rack Plugin|
 
 
@@ -323,7 +322,7 @@ curl -i POST \
       }
    }
 }' \
- 'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationSources'
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
 
 
 ```
@@ -345,7 +344,7 @@ curl -i POST \
 }
 ```
 
->**Sample request body for adding the URP**
+>**Sample request body for adding URP**
 
 ```
 {
@@ -468,7 +467,7 @@ When the task is successfully complete, you will receive aggregation source Id o
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
 
-To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [collection of computer systems](#).
+To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [Collection of computer systems](#(#collection-of-computer-systems)).
 
  `ComputerSystemId` is unique information about the BMC specified by Resource Aggregator for ODIM. It is represented as `<UUID:n>`, where `UUID` is the aggregation source Id of the BMC. Save it as it is required to perform subsequent actions such as `delete, reset`, and `setdefaultbootorder` on this BMC.
 
@@ -619,7 +618,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+   "@odata.type":"#AggregationSourceCollection.AggregationSourceCollection",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSource",
    "@odata.context":"/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
    "Name":"Aggregation Source",
@@ -752,7 +751,7 @@ curl -i PATCH \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".<br><blockquote>IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br><br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".<br><blockquote>IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
 

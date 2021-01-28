@@ -57,7 +57,9 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	config.TLSConfMutex.RLock()
 	resp, err := httpClient.Do(req)
+	config.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}

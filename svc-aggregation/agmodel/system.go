@@ -957,7 +957,7 @@ func SavePluginManagerInfo(body []byte, table string, key string) error {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err := conn.Create(table, key, string(body)); err != nil {
-		return errors.PackError(err.ErrNo(), "error while trying to save plugin manager data, duplicate UUID: ", err.Error())
+		return errors.PackError(err.ErrNo(), "Unable to save the plugin data with SavePluginManagerInfo:  duplicate UUID: ", err.Error())
 	}
 
 	return nil

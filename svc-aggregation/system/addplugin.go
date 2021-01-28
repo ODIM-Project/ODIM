@@ -183,8 +183,9 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 		dbErr := agmodel.SavePluginManagerInfo(updateManagerName(data, plugin.ID), "Managers", oid)
 		if dbErr != nil {
-			errMsg := "Unable to save the plugin data with SavePluginManagerInfo: " + dbErr.Error()
+			errMsg := dbErr.Error()
 			log.Error(errMsg)
+
 			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 		}
 		listMembers = append(listMembers, agresponse.ListMember{

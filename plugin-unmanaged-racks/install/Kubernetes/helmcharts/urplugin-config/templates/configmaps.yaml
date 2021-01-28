@@ -11,7 +11,7 @@ data:
     Password: {{ .Values.urplugin.urPluginPassword }}
     RootServiceUUID: {{ .Values.urplugin.urPluginRootServiceUUID }}
     OdimURL: https://api:45000
-    OdimUserName: {{ .Values.urplugin.odimUserName }}
+    OdimUserName: {{ .Values.urplugin.odimUsername }}
     OdimPassword: {{ .Values.urplugin.odimPassword }}
     FirmwareVersion: v1.0.0
     LogLevel: debug
@@ -20,7 +20,8 @@ data:
     PKICertificatePath: /etc/urplugin_certs/odimra_server.crt
     RSAPrivateKeyPath: /etc/urplugin_certs/odimra_rsa.private
     RSAPublicKeyPath: /etc/urplugin_certs/odimra_rsa.public
-    RedisAddress: redis-ondisk:6379
+    RedisAddress: {{ .Values.urplugin.redisAddress }}:6379
+    SentinelMasterName: {{ .Values.urplugin.sentinelMasterName }}
     TLSConf:
       MinVersion: 0x0303
       MaxVersion: 0x0303

@@ -59,7 +59,7 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 		OdataType:      "#ServiceRoot.v1_5_0.ServiceRoot",
 		ID:             "RootService",
 		Name:           "Root Service",
-		RedfishVersion: "1.8.0",
+		RedfishVersion: "1.11.1",
 		UUID:           uuid, //TODO: persistence of the uuid should be discussed.
 		OdataContext:   "/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
 		OdataID:        "/redfish/v1/",

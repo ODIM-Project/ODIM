@@ -263,9 +263,12 @@ Following are some important points to consider before starting the deployment:
 **WARNING:** Do not run the commands provided in this section as a root user unless mentioned.
 
 
-1. Clone the ODIMRA repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user:
+1. Clone the ODIMRA repository form `https://github.com/ODIM-Project/ODIM.git` to the home directory of the user and checkout the Release branch:
    ```
    $ git clone https://github.com/ODIM-Project/ODIM.git
+   ```
+   ```
+   $ git checkout Release_21.01
    ```
 2. Choose a Fully Qualified Domain Name (FQDN) for the resource aggregator server. 
    Example: odim.local.com.

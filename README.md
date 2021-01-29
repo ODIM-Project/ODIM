@@ -177,6 +177,9 @@ Perform the following steps on the system where you want to deploy ODIMRA:
 	   ```
        $ sudo cp docker-compose-Linux-x86_64 /usr/bin/docker-compose
        ```
+	   ```
+       $ sudo chmod +x /usr/bin/docker-compose
+       ```
         
        >  **NOTE:** To run the commands without sudo, add your username to the Docker group using the following command:
         ```

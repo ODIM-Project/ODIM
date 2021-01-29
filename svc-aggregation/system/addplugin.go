@@ -177,20 +177,22 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 		managersData[pluginContactRequest.OID] = body
 	}
-	e.SubscribeToEMB(plugin.ID, queueList)
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
-		dbErr := agmodel.GenericSave(updateManagerName(data, plugin.ID), "Managers", oid)
-		if err != nil {
-			errMsg := "error: while saving the plugin data with generic save: " + dbErr.Error()
+
+		dbErr := agmodel.SavePluginManagerInfo(updateManagerName(data, plugin.ID), "Managers", oid)
+		if dbErr != nil {
+			errMsg := dbErr.Error()
 			log.Error(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 		}
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})
 	}
+	e.SubscribeToEMB(plugin.ID, queueList)
 
 	// store encrypted password
 	plugin.Password = ciphertext

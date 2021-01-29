@@ -158,11 +158,11 @@ Perform the following steps on the system where you want to deploy ODIMRA:
       ```
       docker-ce:
       Installed: (none)
-      Candidate: 18.03.1~ce~3-0~ubuntu
+      Candidate: 5:20.10.2~3-0~ubuntu-bionic
       Version table:
-      18.03.1~ce~3-0~ubuntu 500
-      500 https://download.docker.com/linux/ubuntu bionic/stable
-      amd64 Packages
+         5:20.10.2~3-0~ubuntu-bionic 500
+         500 https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+
       ```
      
       > **NOTE:** docker-ce is not installed, but the candidate for installation is from the Docker repository for Ubuntu 18.04 (bionic).

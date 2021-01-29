@@ -57,7 +57,7 @@ func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *er
 }
 func TestGetAggregationSourceCollection(t *testing.T) {
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+		OdataType:    "#AggregationSourceCollection.AggregationSourceCollection",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources",
 		OdataContext: "/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
 		Name:         "Aggregation Source",

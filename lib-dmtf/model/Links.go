@@ -12,8 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dmtfmodel
-package dmtfmodel
+package model
 
 // Links - this is Common to all resources
 type Links struct {
@@ -37,11 +36,11 @@ type Links struct {
 	Switches                 []Link `json:",omitempty"`
 }
 
-// Link
+// Link holds the odata id redfish links
 type Link struct {
 	Oid string `json:"@odata.id"`
 }
 
-// Oem
+// Oem holds the vendor specific details which is addtional to redfish contents
 type Oem struct {
 }

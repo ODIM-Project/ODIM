@@ -15,15 +15,6 @@
 
 declare PID=0
 
-add_host()
-{
-        /bin/add-hosts -file /tmp/host.append
-        if [ $? -ne 0 ]; then
-                echo "Appending host entry to /etc/hosts file Failed"
-                exit 0
-        fi
-}
-
 sigterm_handler()
 {
         if [[ $PID -ne 0 ]]; then
@@ -54,6 +45,7 @@ start_grfplugin()
 	nohup ./plugin-redfish >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
 	PID=$!
 	sleep 2s
+  nohup /bin/add-hosts -file /tmp/host.append >> /var/log/grfplugin_logs/add-hosts.log 2>&1 &
 }
 
 monitor_process()
@@ -71,8 +63,6 @@ monitor_process()
 ##############################################
 ###############  MAIN  #######################
 ##############################################
-
-add_host
 
 start_grfplugin
 

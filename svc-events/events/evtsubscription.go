@@ -409,8 +409,8 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	var contactRequest evcommon.PluginContactRequest
 	var target *evmodel.Target
 	var prev_res = &evresponse.MutexLock{
-		//Response: make(map[string]evresponse.EventResponse),
-		Response: errResponse.RPC,
+		Response: make(map[string]evresponse.EventResponse),
+		//Response: interface{},
 		Lock:     &sync.Mutex{},
 	}
 	if !collectionFlag {
@@ -602,6 +602,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	var outBody interface{}
 	body, err := ioutil.ReadAll(response.Body)
 	err = json.Unmarshal(body, &outBody)
+	fmt.Println("%%%%%%%%% here is the response from LOCKKKKKKKKKKKK: ")
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
@@ -609,15 +610,30 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		log.Error(errorMessage)
 		return "", resp
 	}
-	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
-	if target.ManagerAddress==deviceSubscriptions.EventHostIP{
-		prev_res.Lock.Lock()
-		prev_res.Response = outBody
-		prev_res.Lock.Unlock()
-	}
+//	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+//	if target.ManagerAddress==deviceSubscriptions.EventHostIP{
+//		prev_res.Lock.Lock()
+//		prev_res.Response = outBody
+//		prev_res.Lock.Unlock()
+//	}
 	resp.Response = outBody
 	resp.StatusCode = response.StatusCode
 	resp.Location = response.Header.Get("location")
+//	fmt.Println("%%%%%%%%% here is the response from outsiddeeeeeee LOCKKKKKKKKKKKK: ")
+	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+//	fmt.Println("%%%%%%%%% here is the response from outsiddeeeeeee LOCKKKKKKKKKKKK: ")
+        if target.ManagerAddress!=deviceSubscriptions.EventHostIP{
+                prev_res.Lock.Lock()
+		var respo evresponse.EventResponse
+		respo.Response = resp.Response
+	//	fmt.Println("%%%%%%%%% here is the response from LOCKKKKKKKKKKKK: ")
+		fmt.Println(respo.Response)
+		respo.StatusCode = response.StatusCode
+		respo.Location = response.Header.Get("location")
+                prev_res.Response[target.ManagerAddress] = respo
+                prev_res.Lock.Unlock()
+        }
+
 	return deviceIPAddress, resp
 }
 

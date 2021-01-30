@@ -268,6 +268,9 @@ Following are some important points to consider before starting the deployment:
    $ git clone https://github.com/ODIM-Project/ODIM.git
    ```
    ```
+   $ cd ODIM
+   ```
+   ```
    $ git checkout Release_21.01
    ```
 2. Choose a Fully Qualified Domain Name (FQDN) for the resource aggregator server. 

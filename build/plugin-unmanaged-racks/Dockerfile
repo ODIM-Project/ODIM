@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM odimra_builddep:tst as build-stage
 FROM scratch
 
-COPY tmp/* /
+COPY --from=build-stage /odimra/plugin-unmanaged-racks/tmp/* /
+
 CMD ["/urp"]
+

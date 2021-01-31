@@ -319,7 +319,7 @@ Following are some important points to consider before starting the deployment:
    
    a. Navigate to the path: `ODIM/build/cert_generator`:
       ```
-       $ cd ODIM/build/cert_generator
+       $ cd ~/ODIM/build/cert_generator
       ```
 
     > **NOTE:** `ODIM/build/cert_generator` contains the automated scripts to generate the TLS certificates for the resource aggregator, the GRF plugin, URP, and Kafka.

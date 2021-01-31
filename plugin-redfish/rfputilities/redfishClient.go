@@ -105,9 +105,8 @@ func (client *RedfishClient) Get(device *RedfishDevice, requestURI string) (*htt
 		req.Header.Set("X-Auth-Token", device.Token)
 	}
 	req.Close = true
-	lutilconf.TLSConfMutex.RLock()
+
 	resp, err := client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return resp, err
 	}
@@ -156,9 +155,7 @@ func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 
 	req.Close = true
 
-	lutilconf.TLSConfMutex.RLock()
 	resp, err := client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return err
 	}
@@ -189,9 +186,7 @@ func (client *RedfishClient) BasicAuthWithDevice(device *RedfishDevice, requestU
 	req.Header.Add("Content-Type", "application/json")
 	req.Close = true
 
-	lutilconf.TLSConfMutex.RLock()
 	resp, err := client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -216,9 +211,7 @@ func (client *RedfishClient) GetWithBasicAuth(device *RedfishDevice, requestURI 
 	req.Header.Add("Content-Type", "application/json")
 	req.Close = true
 
-	lutilconf.TLSConfMutex.RLock()
 	resp, err := client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -241,9 +234,7 @@ func (client *RedfishClient) SubscribeForEvents(device *RedfishDevice) (*http.Re
 	req.Header.Set("Content-Type", "application/json")
 	req.Close = true
 	var resp *http.Response
-	lutilconf.TLSConfMutex.RLock()
 	resp, err = client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -268,9 +259,7 @@ func (client *RedfishClient) ResetComputerSystem(device *RedfishDevice, uri stri
 	req.Header.Set("Content-Type", "application/json")
 	req.Close = true
 	var resp *http.Response
-	lutilconf.TLSConfMutex.RLock()
 	resp, err = client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -295,9 +284,7 @@ func (client *RedfishClient) SetDefaultBootOrder(device *RedfishDevice, uri stri
 	req.Header.Set("Content-Type", "application/json")
 	req.Close = true
 	var resp *http.Response
-	lutilconf.TLSConfMutex.RLock()
 	resp, err = client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -321,9 +308,7 @@ func (client *RedfishClient) DeleteSubscriptionDetail(device *RedfishDevice) (*h
 	req.Header.Set("Accept", "application/json")
 	req.Close = true
 
-	lutilconf.TLSConfMutex.RLock()
 	resp, err := client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -347,9 +332,7 @@ func (client *RedfishClient) DeviceCall(device *RedfishDevice, url, method strin
 	req.Header.Set("Content-Type", "application/json")
 	req.Close = true
 	var resp *http.Response
-	lutilconf.TLSConfMutex.RLock()
 	resp, err = client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
@@ -373,9 +356,7 @@ func (client *RedfishClient) GetSubscriptionDetail(device *RedfishDevice) (*http
 	req.Header.Add("Content-Type", "application/json")
 	req.Close = true
 
-	lutilconf.TLSConfMutex.RLock()
 	resp, err := client.httpClient.Do(req)
-	lutilconf.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}

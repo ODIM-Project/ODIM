@@ -44,7 +44,7 @@ type HTTPConfig struct {
 
 var (
 	// TLSConfMutex is used for avoiding race conditions
-	TLSConfMutex = &sync.RWMutex{}
+	TLSConfMutex = &sync.Mutex{}
 	// configuredCipherSuiteList contains the list of configured cipher suites
 	configuredCipherSuiteList = make([]uint16, 0)
 	// configuredTLSMinVersion is the configured TLS minimum version

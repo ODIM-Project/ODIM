@@ -175,10 +175,7 @@ func (p *PluginStatus) getStatus(requestBody *bytes.Buffer, statusChan chan bool
 		CACertificate: p.CACertificate,
 	}
 	httpClient, err := httpConf.GetHTTPClientObj()
-
-	config.TLSConfMutex.RLock()
 	resp, err := httpClient.Do(req)
-	config.TLSConfMutex.RUnlock()
 	if err != nil {
 		errChan <- fmt.Errorf("error while trying to make the request to the plugin: %v", err)
 		statusChan <- false
@@ -247,10 +244,7 @@ func (p *PluginStatus) login() error {
 		CACertificate: p.CACertificate,
 	}
 	httpClient, err := httpConf.GetHTTPClientObj()
-
-	config.TLSConfMutex.RLock()
 	resp, err := httpClient.Do(req)
-	config.TLSConfMutex.RUnlock()
 	if err != nil {
 		return fmt.Errorf("error while trying to make the request to the plugin: %v", err)
 	}

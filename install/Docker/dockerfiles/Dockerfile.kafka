@@ -33,7 +33,7 @@ RUN apt-get update -q=3 && apt-get -q install -q=3 -y \
 
 RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
 	&& mkdir -p /opt/kafka/conf /opt/kafka/data /opt/kafka/scripts /kafka/tmp \
-        && export KAFKA_IMAGE_URL=http://www-us.apache.org/dist/kafka/2.5.0/kafka_2.12-2.5.0.tgz \
+        && export KAFKA_IMAGE_URL=https://archive.apache.org/dist/kafka/2.5.0/kafka_2.12-2.5.0.tgz \
         && export KAFKA_IMAGE_NAME=kafka_2.12-2.5.0.tgz \
         && wget -q $KAFKA_IMAGE_URL -P /kafka/ \
         && tar -xzf /kafka/${KAFKA_IMAGE_NAME} --strip-components 1 -C /kafka/tmp \

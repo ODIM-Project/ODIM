@@ -16,10 +16,13 @@ package model
 
 // Links - this is Common to all resources
 type Links struct {
+	AddressPools             []Link `json:"AddressPools,omitempty"`
 	Chassis                  []Link `json:"Chassis,omitempty"`
 	ComputerSystems          []Link `json:"ComputerSystems,omitempty"`
+	ConnectedPorts           []Link `json:"ConnectedPorts,omitempty"`
 	ConsumingComputerSystems []Link `json:"ConsumingComputerSystems,omitempty"`
 	ContainedBy              []Link `json:"ContainedBy,omitempty"`
+	ContainedByZones         []Link `json:"ContainedByZones,omitempty"`
 	CooledBy                 []Link `json:"CooledBy,omitempty"`
 	Endpoints                []Link `json:"Endpoints,omitempty"`
 	EndpointsCount           int    `json:"Endpoints@odata.count,omitempty"`

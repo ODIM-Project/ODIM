@@ -68,12 +68,12 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
 	if err != nil {
-		log.Info("error: Failed to get the event destinations: ", err.Error())
+		log.Error("Failed to get the event destinations: ", err.Error())
 		return false
 	}
 
 	if len(deviceSubscription.OriginResources) < 1 {
-		log.Info("error: no origin resources found in device subscriptions")
+		log.Info("no origin resources found in device subscriptions")
 		return false
 	}
 
@@ -86,7 +86,7 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	err = json.Unmarshal([]byte(requestData), &message)
 	if err != nil {
-		log.Info("error: failed to unmarshal the incoming event:", requestData, "with the error:", err.Error())
+		log.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
 
@@ -162,7 +162,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		message.Events = value
 		data, err := json.Marshal(message)
 		if err != nil {
-			log.Info("unable to converts event into bytes: ", err.Error())
+			log.Error("unable to converts event into bytes: ", err.Error())
 			continue
 		}
 		go postEvent(key, data)
@@ -192,7 +192,7 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 			}
 		}
 	}
-	log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
+	log.Info("Event not forwarded : No subscription for the incoming event's originofcondition")
 	return false
 }
 
@@ -246,7 +246,7 @@ func isResourceTypeSubscribed(resourceTypes []string, originOfCondition string, 
 			}
 		}
 	}
-	log.Println("Event not forwarded : No subscription for the incoming event's originofcondition")
+	log.Info("Event not forwarded : No subscription for the incoming event's originofcondition")
 	return false
 }
 
@@ -260,7 +260,7 @@ func isStringPresentInSlice(slice []string, str, message string) bool {
 			return true
 		}
 	}
-	log.Printf("Event not forwarded : No subscription for the incoming event's  %s", message)
+	log.Info("Event not forwarded : No subscription for the incoming event's ", message)
 	return false
 }
 
@@ -271,12 +271,12 @@ func postEvent(destination string, event []byte) {
 	}
 	httpClient, err := httpConf.GetHTTPClientObj()
 	if err != nil {
-		log.Println("error: failed to get http client object:", err)
+		log.Error("failed to get http client object: ", err.Error())
 		return
 	}
 	req, err := http.NewRequest("POST", destination, bytes.NewBuffer(event))
 	if err != nil {
-		log.Printf("error while getting new http request:%v", err)
+		log.Error("error while getting new http request: ", err.Error())
 		return
 	}
 	req.Close = true
@@ -284,19 +284,18 @@ func postEvent(destination string, event []byte) {
 	var resp *http.Response
 	count := evcommon.DeliveryRetryAttempts + 1
 	for i := 0; i < count; i++ {
-		config.TLSConfMutex.Lock()
+		config.TLSConfMutex.RLock()
 		resp, err = httpClient.Do(req)
+		config.TLSConfMutex.RUnlock()
 		if err == nil {
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
-			config.TLSConfMutex.Unlock()
 			return
 		}
-		config.TLSConfMutex.Unlock()
 		log.Println("Retrying event posting")
 		time.Sleep(time.Second * evcommon.DeliveryRetryIntervalSeconds)
 	}
-	log.Printf("error while make https call to send the event:%v", err)
+	log.Error("error while make https call to send the event: ", err.Error())
 	return
 }
 
@@ -311,10 +310,10 @@ func rediscoverSystemInventory(systemID, systemURL string) {
 		SystemURL: systemURL,
 	})
 	if err != nil {
-		log.Println("Error while rediscoverSystemInventroy")
+		log.Info("Error while rediscoverSystemInventroy")
 		return
 	}
-	log.Println("info: rediscovery of system and chasis started.")
+	log.Info("info: rediscovery of system and chasis started.")
 	return
 }
 
@@ -329,14 +328,14 @@ func addFabricRPCCall(origin, address string) {
 		Address:        address,
 	})
 	if err != nil {
-		log.Println("Error while AddFabric", err)
+		log.Error("Error while AddFabric ", err.Error())
 		return
 	}
 	p := PluginContact{
 		ContactClient: pmbhandle.ContactPlugin,
 	}
 	p.checkCollectionSubscription(origin, "Redfish")
-	log.Println("info: Fabric Added")
+	log.Info("info: Fabric Added")
 	return
 }
 
@@ -351,7 +350,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 	id := systemURI[index+1:]
 
 	if strings.ContainsAny(id, ":/-") {
-		log.Println("error: event contains invalid origin of condition -", systemURI)
+		log.Info("error: event contains invalid origin of condition - ", systemURI)
 		return
 	}
 	if strings.Contains(state, "ServerPoweredOn") {
@@ -368,9 +367,9 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 		UpdateVal:  state,
 	})
 	if err != nil {
-		log.Println("error: system power state update failed with", err)
+		log.Error("system power state update failed with ", err.Error())
 		return
 	}
-	log.Println("info: system power state update initiated")
+	log.Info("info: system power state update initiated")
 	return
 }

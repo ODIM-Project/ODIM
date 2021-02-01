@@ -27,7 +27,7 @@ type AddressPool struct {
 	Links        *Links               `json:"Links,omitempty"`
 	Name         string               `json:"Name"`
 	Oem          *Oem                 `json:"Oem,omitempty"`
-	Status       string               `json:"Status,omitempty"`
+	Status       *Status              `json:"Status,omitempty"`
 }
 
 // OemActions redfish model

@@ -165,7 +165,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {

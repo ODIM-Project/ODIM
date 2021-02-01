@@ -948,3 +948,17 @@ func DeleteActiveRequest(key string) *errors.Error {
 	}
 	return nil
 }
+
+//SavePluginManagerInfo will save plugin manager  data into the database
+func SavePluginManagerInfo(body []byte, table string, key string) error {
+
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("Unable to save the plugin data with SavePluginManagerInfo: %v", err.Error())
+	}
+	if err := conn.Create(table, key, string(body)); err != nil {
+		return errors.PackError(err.ErrNo(), "Unable to save the plugin data with SavePluginManagerInfo:  duplicate UUID: ", err.Error())
+	}
+
+	return nil
+}

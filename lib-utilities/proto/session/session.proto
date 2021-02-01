@@ -1,0 +1,52 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http:#www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License
+
+syntax = "proto3";
+
+service Session {
+    rpc CreateSession(SessionCreateRequest) returns (SessionCreateResponse) {}
+    rpc DeleteSession(SessionRequest) returns (SessionResponse) {}
+    rpc GetAllActiveSessions(SessionRequest) returns (SessionResponse) {}
+    rpc GetSession(SessionRequest) returns (SessionResponse) {}
+    rpc GetSessionUserName(SessionRequest) returns (SessionUserName) {}
+    rpc GetSessionService(SessionRequest) returns (SessionResponse) {}
+}
+
+message SessionCreateRequest {
+    bytes RequestBody = 1;
+}
+
+message SessionUserName {
+    string userName = 1;
+}
+
+message SessionCreateResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    string sessionId = 3;
+    bytes body = 4;
+    map<string, string> header = 5;
+}
+
+message SessionRequest {
+    string sessionId = 1;
+    string sessionToken = 2;
+}
+
+message SessionResponse {
+    int32 statusCode = 1;
+    string statusMessage =2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}

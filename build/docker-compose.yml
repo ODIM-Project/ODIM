@@ -1,0 +1,249 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#(C) Copyright 2020 Intel Corporation
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+version: '2.4'
+
+services:
+  consul:
+    image: 'consul:1.6'
+    hostname: consul
+    restart: always
+    ports:
+      - '8600:8600'
+      - '8500:8500'
+      - '8301:8301'
+      - '8302:8302'
+      - '8300:8300'
+    volumes:
+      - './Consul/data:/consul/data:rw'
+      - './Consul/config:/consul/config:rw'
+  redis:
+    build:
+      context: ./.
+      dockerfile: Redis/Dockerfile.redis
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    image: odimra_redis2db
+    hostname: redis
+    restart: always
+    ports:
+      - '6380:6380'
+      - '6379:6379'
+    expose:
+      - '6380'
+      - '6379'
+    environment:
+      - LD_LIBRARY_PATH=/usr/lib/redis/modules
+    volumes:
+      - './Redis/6380.conf:/usr/local/etc/redis/6380.conf:ro'
+      - './Redis/6379.conf:/usr/local/etc/redis/6379.conf:ro'
+      - './Redis/redis-persistence:/data:rw'
+  zookeeper:
+    build:
+      context: ./.
+      dockerfile: ./Kafka/Dockerfiles/Dockerfile.zookeeper
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    container_name: odim_zookeeper
+    image: odim_zookeeper:1.0
+    hostname: zookeeper
+    restart: on-failure
+    ports:
+     - '2181:2181'
+    external_links:
+      - kafka
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    user: odimra
+    domainname: zookeeper
+    environment:
+      - IS_ZOOKEEPER_CLUSTER='false'
+      - ZOOKEEPER_SSL_CLIENT_PORT=2181
+      - ZOOKEEPER_DATA_DIR=/opt/zookeeper/data
+      - ZOOKEEPER_DATA_LOG_DIR=/opt/zookeeper/data/log
+      - ZOOKEEPER_KEYSTORE_PATH=/opt/zookeeper/conf/zookeeper.keystore.jks
+      - ZOOKEEPER_KEYSTORE_PASSWORD=K@fk@_store1
+      - ZOOKEEPER_TRUSTSTORE_PATH=/opt/zookeeper/conf/zookeeper.truststore.jks
+      - ZOOKEEPER_TRUSTSTORE_PASSWORD=K@fk@_store1
+    expose:
+      - '2181'
+    volumes:
+      - '/etc/zookeeper/conf:/opt/zookeeper/conf:ro'
+      - '/etc/zookeeper/data:/opt/zookeeper/data:rw'
+    command: bash -c "/opt/zookeeper/scripts/start_zookeeper.sh"
+
+  kafka:
+    build:
+      context: ./.
+      dockerfile: ./Kafka/Dockerfiles/Dockerfile.kafka
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    container_name: odim_kafka
+    image: odim_kafka:1.0
+    hostname: kafka
+    ports:
+      - '9092:9092'
+    expose:
+      - '9092'
+    external_links:
+      - zookeeper
+    restart: on-failure
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    user: odimra
+    domainname: kafka
+    environment:
+      - IS_KAFKA_CLUSTER='false'
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=SSL://:9092
+      - KAFKA_CLIENT_AUTH=none
+      - KAFKA_KEYSTORE_PATH=/opt/kafka/conf/kafka.keystore.jks
+      - KAFKA_TRUSTSTORE_PATH=/opt/kafka/conf/kafka.truststore.jks
+      - KAFKA_KEYSTORE_PASSWORD=K@fk@_store1
+      - KAFKA_TRUSTSTORE_PASSWORD=K@fk@_store1
+      - KAFKA_LOG_DIRS=/opt/kafka/data
+      - KAFKA_ADV_LISTENERS=SSL://kafka:9092
+    depends_on:
+      - "zookeeper"
+    volumes:
+      - '/etc/kafka/conf:/opt/kafka/conf:ro'
+      - '/etc/kafka/data:/opt/kafka/data:rw'
+    command: bash -c "/opt/kafka/scripts/start_kafka.sh"
+
+  odimra:
+    build:
+      context: ./.
+      dockerfile: odimra/Dockerfile.odimra
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    hostname: odimra
+    privileged: true
+    restart: always
+    extra_hosts:
+      - $FQDN:$HOSTIP
+    environment:
+      - FQDN=$FQDN
+      - HOSTIP=$HOSTIP
+    image: odimra:1.0
+    depends_on:
+      - "kafka"
+      - "redis"
+      - "consul"
+    ports:
+      - '45000:45000'
+    expose:
+      - '45000'
+    volumes:
+      - '/var/log/odimra:/var/log/odimra_logs'
+      - '/etc/odimra_config:/etc/odimra_config:rw'
+      - '/etc/odimracert/rootCA.crt:/etc/odimra_certs/rootCA.crt:ro'
+      - '/etc/odimracert/odimra_kafka_client.key:/etc/odimra_certs/odimra_kafka_client.key:ro'
+      - '/etc/odimracert/odimra_kafka_client.crt:/etc/odimra_certs/odimra_kafka_client.crt:ro'
+      - '/etc/odimracert/odimra_server.key:/etc/odimra_certs/odimra_server.key:ro'
+      - '/etc/odimracert/odimra_server.crt:/etc/odimra_certs/odimra_server.crt:ro'
+      - '/etc/odimracert/odimra_rsa.public:/etc/odimra_certs/odimra_rsa.public:ro'
+      - '/etc/odimracert/odimra_rsa.private:/etc/odimra_certs/odimra_rsa.private:ro'
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '../build/odimra/api.service:/etc/systemd/system/api.service:rw'
+      - '../build/odimra/account_session.service:/etc/systemd/system/account_session.service:rw'
+      - '../build/odimra/aggregation.service:/etc/systemd/system/aggregation.service:rw'
+      - '../build/odimra/event.service:/etc/systemd/system/event.service:rw'
+      - '../build/odimra/systems.service:/etc/systemd/system/systems.service:rw'
+      - '../build/odimra/task.service:/etc/systemd/system/task.service:rw'
+      - '../build/odimra/fabrics.service:/etc/systemd/system/fabrics.service:rw'
+      - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
+      - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
+    command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh" 
+
+  grf_plugin:
+    build:
+      context: ./.
+      dockerfile: RFPlugin/Dockerfile.plugin
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    hostname: plugin
+    restart: always
+    privileged: true
+    environment:
+      - HOSTIP=$HOSTIP
+    image: grf-plugin:1.0
+    depends_on:
+      - "odimra"
+    ports:
+      - '45001:45001'
+      - '45002:45002'
+    expose:
+      - '45001'
+      - '45002'
+    volumes:
+      - '/var/log/GRF_PLUGIN:/var/log/plugin_logs'
+      - '/etc/grf_plugin_config:/etc/plugin_config:rw'
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '/etc/plugincert/rootCA.crt:/etc/plugin_certs/rootCA.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/etc/plugin_certs/odimra_server.key:ro'
+      - '/etc/plugincert/odimra_server.crt:/etc/plugin_certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_kafka_client.key:/etc/plugin_certs/odimra_kafka_client.key:ro'
+      - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
+      - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw' 
+    command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh" 
+
+
+  urp:
+    build:
+      context: plugin-unmanaged-racks/.
+      dockerfile: ./Dockerfile
+      args:
+        http_proxy: $http_proxy
+        https_proxy: $https_proxy
+    hostname: urp
+    user: 1235:1235
+    restart: always
+    extra_hosts:
+      - $FQDN:$HOSTIP
+    depends_on:
+      - odimra
+      - redis
+    environment:
+      PLUGIN_CONFIG_FILE_PATH: /config.yml
+      PLUGIN_HOST: URP
+      PLUGIN_PORT: 45003
+      PLUGIN_BASIC_AUTH_USERNAME: admin
+      PLUGIN_BASIC_AUTH_PASSWORD: O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==
+      PLUGIN_SERVICE_ROOT_UUID: a03deede-8d0f-43b1-825c-a7e3bcd07aba
+      PLUGIN_ODIM_URL: https://$FQDN:45000
+      PLUGIN_ODIM_USERNAME: admin
+      PLUGIN_FIRMWARE_VERSION: v1.0.0
+      PLUGIN_LOG_LEVEL: debug
+      PLUGIN_PKI_ROOT_CA_PATH: /certs/rootCA.crt
+      PLUGIN_PKI_PRIVATE_KEY_PATH: /certs/odimra_server.key
+      PLUGIN_PKI_CERTIFICATE_PATH_PATH: /certs/odimra_server.crt
+      PLUGIN_RSA_PRIVATE_KEY_PATH: /certs/odimra_rsa.private
+      PLUGIN_RSA_PUBLIC_KEY_PATH: /certs/odimra_rsa.public
+      PLUGIN_REDIS_ADDRESS: redis:6380
+    image: urp:1.0
+    ports:
+      - '45003:45003'
+    expose:
+      - '45003'
+    volumes:
+      - '/etc/plugincert/odimra_rsa.private:/certs/odimra_rsa.private:ro'
+      - '/etc/plugincert/odimra_rsa.public:/certs/odimra_rsa.public:ro'
+      - '/etc/plugincert/odimra_server.crt:/certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/certs/odimra_server.key:ro'
+      - '/etc/plugincert/rootCA.crt:/certs/rootCA.crt:ro'

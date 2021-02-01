@@ -1,0 +1,124 @@
+{
+	"RootServiceUUID": "",
+	"LocalhostFQDN": "",
+	"MessageQueueConfigFilePath": "",
+	"SearchAndFilterSchemaPath": "",
+	"RegistryStorePath": "",
+	"KeyCertConf": {
+		"RootCACertificatePath": "",
+		"RPCPrivateKeyPath": "",
+		"RPCCertificatePath": "",
+		"RSAPublicKeyPath": "",
+		"RSAPrivateKeyPath": ""
+	},
+	"APIGatewayConf": {
+		"Host": "",
+		"Port": "45000",
+		"PrivateKeyPath": "",
+		"CertificatePath": ""
+	},
+	"DBConf": {
+		"Protocol": "tcp",
+		"InMemoryHost": "localhost",
+		"InMemoryPort": "6379",
+		"OnDiskHost": "localhost",
+		"OnDiskPort": "6380",
+		"MaxIdleConns": 10,
+		"MaxActiveConns": 120,
+		"RedisHAEnabled": false,
+		"InMemorySentinelPort": "26379",
+		"OnDiskSentinelPort": "26379",
+		"InMemoryMasterSet": "mymaster",
+		"OnDiskMasterSet": "mymaster"
+	},
+	"TLSConf" : {
+		"MinVersion": "TLS_1.2",
+		"MaxVersion": "TLS_1.2",
+		"VerifyPeer": true,
+		"PreferredCipherSuites": [
+			"TLS_RSA_WITH_AES_128_GCM_SHA256",
+			"TLS_RSA_WITH_AES_256_GCM_SHA384",
+			"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+		]
+	},
+	"FirmwareVersion": "1.0",
+	"SouthBoundRequestTimeoutInSecs": 300,
+	"ServerRediscoveryBatchSize": 30,
+	"AuthConf": {
+		"SessionTimeOutInMins": 30,
+		"ExpiredSessionCleanUpTimeInMins": 15,
+		"PasswordRules":{
+			"MinPasswordLength": 12,
+			"MaxPasswordLength": 16,
+			"AllowedSpecialCharcters": "~!@#$%^&*-+_|(){}:;<>,.?/"
+		}
+	},
+	"AddComputeSkipResources": { 
+		"SystemCollection": [ 
+			"Chassis",
+			"LogServices",
+			"WorkloadPerformanceAdvisor"
+		],
+		"ChassisCollection": [ 
+			"Managers",
+			"Systems",
+			"Devices"
+		],
+		"OtherCollection": [
+			"Power",
+			"Thermal",
+			"SmartStorage",
+			"LogServices"
+		]
+	},
+	"URLTranslation": {
+		"NorthBoundURL": {
+			"ODIM": "redfish"
+		},
+		"SouthBoundURL": {
+			"redfish": "ODIM"
+		}
+	},
+	"PluginStatusPolling": {
+		"PollingFrequencyInMins": 30,
+		"MaxRetryAttempt": 3,
+		"RetryIntervalInMins": 2,
+		"ResponseTimeoutInSecs": 30,
+		"StartUpResouceBatchSize": 10
+	},
+	"ExecPriorityDelayConf": {
+		"MinResetPriority": 1,
+		"MaxResetPriority": 10,
+		"MaxResetDelayInSecs": 36000
+	},
+	"EnabledServices": [
+		"SessionService",
+		"AccountService",
+		"AggregationService",
+		"Systems",
+		"Chassis",
+		"TaskService",
+		"EventService",
+		"Fabrics",
+		"Managers",
+		"UpdateService"
+	],
+	"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
+  "ConnectionMethodConf": [
+      {
+         "ConnectionMethodType": "Redfish",
+         "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
+      },
+      {
+         "ConnectionMethodType": "Redfish",
+         "ConnectionMethodVariant": "Storage:BasicAuth:STG_v1.0.0"
+      },
+	  {
+		  "ConnectionMethodType": "Redfish",
+		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
+	  }
+   ]
+}

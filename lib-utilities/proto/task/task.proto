@@ -1,0 +1,69 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http:#www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License
+
+syntax="proto3";
+
+import "google/protobuf/timestamp.proto";
+
+message Payload {
+     map<string, string> HTTPHeaders = 1;
+     string HTTPOperation = 2;
+     string JSONBody = 3;
+     int32 StatusCode = 4;
+     string TargetURI = 5;
+     bytes ResponseBody = 6;
+}
+message GetTaskRequest {
+      string taskID = 1;
+      string subTaskID = 2;
+      string sessionToken = 3;
+}
+
+message TaskResponse {
+      int32 statusCode = 1;
+      string statusMessage = 2;
+      map<string, string> header = 3;
+      bytes body = 4;
+}  
+message CreateTaskRequest {
+      string userName = 1;
+      string parentTaskID = 2;
+}
+message CreateTaskResponse {
+      string taskURI = 1;
+}
+message UpdateTaskRequest {
+      string taskID = 1;
+      string taskState = 2;
+      string taskStatus = 3;
+      int32 percentComplete = 4;
+      Payload payLoad = 5;
+      google.protobuf.Timestamp endTime = 6;
+}
+message UpdateTaskResponse {
+      string statusMessage = 1;
+}
+
+service GetTaskService {
+    rpc DeleteTask (GetTaskRequest) returns (TaskResponse) {}
+    rpc GetTasks (GetTaskRequest) returns (TaskResponse) {}
+    rpc GetSubTasks (GetTaskRequest) returns (TaskResponse) {}
+    rpc GetSubTask (GetTaskRequest) returns (TaskResponse) {}
+    rpc TaskCollection (GetTaskRequest) returns (TaskResponse) {}
+    rpc GetTaskService (GetTaskRequest) returns (TaskResponse) {}
+    rpc GetTaskMonitor (GetTaskRequest) returns (TaskResponse) {}
+    rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {}
+    rpc CreateChildTask (CreateTaskRequest) returns (CreateTaskResponse) {}
+    rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse) {}
+}

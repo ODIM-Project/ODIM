@@ -1,0 +1,72 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http:#www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+service Aggregator {
+    rpc GetAggregationService(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc Reset(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc SetDefaultBootOrder(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc RediscoverSystemInventory(RediscoverSystemInventoryRequest) returns (RediscoverSystemInventoryResponse) {}
+    rpc UpdateSystemState(UpdateSystemStateRequest) returns (UpdateSystemStateResponse) {}
+    rpc AddAggregationSource(AggregatorRequest) returns (AggregatorResponse){}
+    rpc GetAllAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
+    rpc GetAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
+    rpc UpdateAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
+    rpc DeleteAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc CreateAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAllAggregates(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc DeleteAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc AddElementsToAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc RemoveElementsFromAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc ResetElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc SetDefaultBootOrderElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAllConnectionMethods(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetConnectionMethod(AggregatorRequest) returns (AggregatorResponse) {}
+  }
+
+message AggregatorRequest {
+    string SessionToken = 1;
+    bytes RequestBody = 2;
+    string URL=3;
+}
+
+
+message AggregatorResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}
+
+message RediscoverSystemInventoryRequest{
+    string SystemID=1;
+    string SystemURL=2;
+}
+message RediscoverSystemInventoryResponse{
+    string TaskURL=1;
+}
+
+message UpdateSystemStateRequest{
+	string SystemUUID=1;
+	string SystemID=2;
+	string SystemURI=3;
+	string UpdateKey=4;
+	string UpdateVal=5;
+}
+
+message UpdateSystemStateResponse{
+	string TaskURL=1;
+}

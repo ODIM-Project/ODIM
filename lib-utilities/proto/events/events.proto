@@ -1,0 +1,65 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http:#www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License
+
+syntax = "proto3";
+
+service Events {
+    rpc GetEventService(EventSubRequest) returns (EventSubResponse) {}
+    rpc SubmitTestEvent(EventSubRequest) returns (EventSubResponse) {}
+    rpc CreateEventSubscription(EventSubRequest) returns (EventSubResponse) {}
+    rpc GetEventSubscription(EventRequest) returns (EventSubResponse) {}
+    rpc DeleteEventSubscription(EventRequest) returns (EventSubResponse) {}
+    rpc CreateDefaultEventSubscription(DefaultEventSubRequest) returns (DefaultEventSubResponse) {}
+    rpc GetEventSubscriptionsCollection(EventRequest) returns (EventSubResponse) {}
+    rpc SubsribeEMB(SubscribeEMBRequest) returns (SubscribeEMBResponse){}
+}
+
+message EventSubRequest {
+    string SessionToken = 1;
+    bytes PostBody = 2;
+}
+
+message EventSubResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    string location = 3;
+    bytes body = 4;
+    map<string, string> header = 5;
+}
+
+message EventRequest{
+    string SessionToken = 1;
+    string EventSubscriptionID = 2;
+    string UUID = 3;
+}
+message DefaultEventSubRequest{
+   repeated string SystemID=1;
+   repeated string EventTypes=2;
+   repeated string MessageIDs=3;
+   repeated string ResourceTypes=4;
+   string Protocol=5;
+}
+
+message DefaultEventSubResponse{
+    string TaskURL=1;
+}
+message SubscribeEMBRequest{
+    string PluginID=1;
+    string EMBType=2;
+    repeated string EMBQueueName=3;
+}
+
+message SubscribeEMBResponse{
+    bool Status=1;
+}

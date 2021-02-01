@@ -1,9 +1,23 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+
 name: build_deploy_test
 
 on:
   pull_request:
-    branches: [ development ]
-
+    branches:
+      - '**'
 jobs:
 
   build:
@@ -19,18 +33,21 @@ jobs:
         echo $ip
         export FQDN=odimra.local.com
         export HOSTIP=$ip
+        export ODIMRA_USER_ID=1234
+        export ODIMRA_GROUP_ID=1234
         sudo echo "$HOSTIP $FQDN" | sudo tee -a /etc/hosts
         echo $FQDN
         echo $HOSTIP
-        cd build/cert_generator; ./generate_odimra_cert.sh $FQDN; ./generate_kafka_tls.sh kafka
+        cd build/cert_generator; ./generate_odimra_cert.sh $FQDN; ./generate_kafka_certs.sh kafka; ./generate_zookeeper_certs.sh zookeeper
         ./copy_certificate.sh
         cd ../..
         export FQDN=${FQDN}
         export HOSTIP=${HOSTIP}
         make all
         sleep 15s
-        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|plugin-redfish'`
-        if [ $b -eq 18 ];
+        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish|urp'`
+        echo "Detected number of ODIM related processes: " $b
+        if [ $b -eq 21 ];
         then
             echo "ODIMRA processes & GRF plugin are up & running"
             echo "Deployment sucessful" 
@@ -44,7 +61,7 @@ jobs:
       run: |
         flag=0
         echo "Create Session using the URI /redfish/v1/Sessionservice/Sessions"
-          run=$(curl --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"Username": "admin","Password": "Od!m12$4"}' 'https://odimra.local.com:45000/redfish/v1/SessionService/Sessions')
+        run=$(curl --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://odimra.local.com:45000/redfish/v1/SessionService/Sessions')
         if [ $run -eq 201 ];
         then 
             echo "Session Created Sucessfully"
@@ -66,7 +83,7 @@ jobs:
             flag=1
         fi
         echo "POST Admin creating account - (args - username, password, roleID)"
-        run2=$(curl --user admin:Od\!m12\$4 --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"Username":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://odimra.local.com:45000/redfish/v1/AccountService/Accounts')
+        run2=$(curl --user admin:Od\!m12\$4 --cacert /etc/odimracert/rootCA.crt -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://odimra.local.com:45000/redfish/v1/AccountService/Accounts')
         if [ $run2 -eq 201 ];
         then 
             echo "Account Created Sucessfully"
@@ -84,13 +101,24 @@ jobs:
         else
           echo "ALL Sanity Tests Passed Sucessfully"
         fi
-        
+
+    - name: Prepare Build Artifacts
+      run: |
+        sudo mkdir /var/log/odim-infra
+        docker-compose -f build/docker-compose.yml logs kafka | sudo tee /var/log/odim-infra/kafka.log
+        docker-compose -f build/docker-compose.yml logs zookeeper| sudo tee /var/log/odim-infra/zookeeper.log
+        docker-compose -f build/docker-compose.yml logs consul | sudo tee /var/log/odim-infra/consul.log
+        docker-compose -f build/docker-compose.yml logs redis | sudo tee /var/log/odim-infra/redis.log
+        sudo mkdir /var/log/odim-plugins
+        docker-compose -f build/docker-compose.yml logs urp |sudo tee /var/log/odim-plugins/urp.log
+        sudo cp /var/log/GRF_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
+      if: always()
       with:
        name: my-artifiact
-       if: always()
        path: |
         /var/log/odimra
-        /var/log/GRF_PLUGIN
+        /var/log/odim-plugins
+        /var/log/odim-infra
   

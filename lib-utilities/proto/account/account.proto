@@ -1,0 +1,56 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http:#www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License
+
+syntax = "proto3";
+
+service Account {
+    rpc Create(CreateAccountRequest) returns (AccountResponse) {}
+    rpc GetAllAccounts(AccountRequest) returns (AccountResponse) {}
+    rpc GetAccount(GetAccountRequest) returns (AccountResponse) {}
+    rpc GetAccountServices(AccountRequest) returns (AccountResponse) {}
+    rpc Update(UpdateAccountRequest) returns (AccountResponse) {}
+    rpc Delete(DeleteAccountRequest) returns (AccountResponse) {}
+}
+
+message AccountResponse {
+    int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string, string> header = 3;
+    bytes body = 4;
+}
+
+message CreateAccountRequest {
+    string SessionToken = 1;
+    bytes RequestBody = 2;
+}
+
+message AccountRequest {
+    string SessionToken = 1;
+}
+
+message GetAccountRequest {
+    string SessionToken = 1;
+    string AccountID = 2;
+}
+
+message UpdateAccountRequest {
+    string SessionToken = 1;
+    string AccountID = 2;
+    bytes RequestBody = 3;
+}
+
+message DeleteAccountRequest {
+    string SessionToken = 1;
+    string AccountID = 2;
+}

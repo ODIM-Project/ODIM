@@ -1,0 +1,55 @@
+//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+// Package evresponse have error and response struct
+// and also have functionality to create error response
+package evresponse
+
+//ErrorResopnse struct is response Error struct
+type ErrorResopnse struct {
+	Error Error `json:"Error"`
+}
+
+//Error struct is standard response struct
+type Error struct {
+	Code                string            `json:"Code"`
+	Message             string            `json:"Message"`
+	MessageExtendedInfo []MsgExtendedInfo `json:"@Message.ExtendedInfo"`
+}
+
+//MsgExtendedInfo struct definition
+type MsgExtendedInfo struct {
+	MessageID   string   `json:"MessageId,omitempty"`
+	Message     string   `json:"Message,omitempty"`
+	MessageArgs []string `json:"MessageArgs,omitempty"`
+	OdataType   string   `json:"@odata.type,omitempty"`
+	Severity    string   `json:"Severity,omitempty"`
+	Resolution  string   `json:"Resolution,omitempty"`
+}
+
+// CreateErrorResponse will accrpts the message string and create standard error resopnse
+func CreateErrorResponse(message string) ErrorResopnse {
+	var err = ErrorResopnse{
+		Error{
+			Code:    "Base.1.0.ExtendedInfo",
+			Message: "See @Message.ExtendedInfo for more information.",
+			MessageExtendedInfo: []MsgExtendedInfo{
+				MsgExtendedInfo{
+					MessageID: "Base.1.0." + message,
+				},
+			},
+		},
+	}
+	return err
+}

@@ -1,0 +1,32 @@
+{
+    "@Redfish.Copyright": "Copyright 2020 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "LogService.1.0.0",
+    "Name": "Log Service Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for log service related events",
+    "RegistryPrefix": "LogService",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "DiagnosticDataCollected": {
+            "Description": "Indicates that diagnostic data has been collected due to a client invoking the `CollectDiagnosticData` action.",
+            "LongDescription": "This message shall be used to indicate that diagnostic data has been collected due to a client invoking the `CollectDiagnosticData` action.",
+            "Message": "'%1' diagnostic data collected.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The value of the `DiagnosticDataType` parameter."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall be a string containing the `DiagnosticDataType` parameter provided by the client when the `CollectDiagnosticData` action was invoked."
+            ],
+            "Resolution": "None."
+        }
+    }
+}

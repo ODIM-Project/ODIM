@@ -471,7 +471,7 @@ Following are some important points to consider before starting the deployment:
 
 
 12. To add the Generic Redfish Plugin, URP, and servers to the resource aggregator for ODIM, see "*Adding a plugin as an aggregation source*" and "*Adding a server as an aggregation source*" in the following readme:  
-    https://github.com/ODIM-Project/ODIM/tree/Release_21.01/svc-aggregation/README.md
+    https://github.com/ODIM-Project/ODIM/blob/main/svc-aggregation/README.md
 	
 	
 ### Default user credentials for ODIMRA, the GRF Plugin, and URP

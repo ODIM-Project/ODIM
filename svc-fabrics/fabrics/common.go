@@ -63,72 +63,9 @@ type PluginToken struct {
 
 // Zones struct to check request body cases
 type Zones struct {
-	Name     string `json:"Name"`
-	ZoneType string `json:"ZoneType"`
-	Links    Links  `json:"Links"`
-}
-
-// Links struct to check request body cases in Zones
-type Links struct {
-	AddressPools     []OdataID `json:"AddressPools"`
-	ContainedByZones []OdataID `json:"ContainedByZones"`
-	Endpoints        []OdataID `json:"Endpoints"`
-	ConnectedPorts   []OdataID `json:"ConnectedPorts"`
-}
-
-// OdataID struct to check request body cases
-type OdataID struct {
-	OdataID string `json:"@odata.id"`
-}
-
-// TODO: The implementation of the AddressPools model is incorrect.
-// We will be replacing this with the AddressPool model available
-// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
-
-// AddressPools struct to check request body cases
-type AddressPools struct {
-	Name        string  `json:"Name"`
-	Description string  `json:"Description"`
-	IPv4        IPv4    `json:"IPv4"`
-	Ebgp        Ebgp    `json:"EBGP"`
-	BgpEvpn     BgpEvpn `json:"BGPEvpn"`
-}
-
-// TODO: The implementation of the IPv4 model is incorrect.
-// We will be replacing this with the IPv4 model available
-// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
-
-// IPv4 struct to check request body cases in AddressPools
-type IPv4 struct {
-	VlanIdentifierAddressRange *dmtf.NumberRange  `json:"VLANIdentifierAddressRange"`
-	IbgpAddressRange           *dmtf.AddressRange `json:"IBGPAddressRange"`
-	EbgpAddressRange           *dmtf.AddressRange `json:"EBGPAddressRange"`
-	NativeVLAN                 int                `json:"NativeVLAN"`
-}
-
-// TODO: The implementation of the Ebgp model is incorrect.
-// We will be replacing this with the EBGP model available
-// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
-
-//Ebgp struct to check request body cases
-type Ebgp struct {
-	AsNumberRange *dmtf.NumberRange `json:"AsNumberRange"`
-}
-
-// TODO: The implementation of the BgpEvpn model is incorrect.
-// We will be replacing this with the BGPEvpn model available
-// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
-
-//BgpEvpn struct to check request body cases
-type BgpEvpn struct {
-	GatewayIPAddressList    []string           `json:"GatewayIPAddressList"`
-	RouteDistinguisherList  []string           `json:"RouteDistinguisherList"`
-	RouteTargetList         []string           `json:"RouteTargetList"`
-	AnycastGatewayIPAddress string             `json:"AnycastGatewayIPAddress"`
-	GatewayIPAddressRange   *dmtf.AddressRange `json:"GatewayIPAddressRange"`
-	RouteDistinguisherRange *dmtf.AddressRange `json:"RouteDistinguisherRange"`
-	RouteTargetRange        *dmtf.AddressRange `json:"RouteTargetRange"`
-	EVINumberRange          *dmtf.NumberRange  `json:"EVINumberRange"`
+	Name     string     `json:"Name"`
+	ZoneType string     `json:"ZoneType"`
+	Links    dmtf.Links `json:"Links"`
 }
 
 //Endpoints struct to check request body cases
@@ -136,13 +73,13 @@ type Endpoints struct {
 	Name        string       `json:"Name"`
 	Description string       `json:"Description"`
 	Redundancy  []Redundancy `json:"Redundancy"`
-	Links       Links        `json:"Links"`
+	Links       dmtf.Links   `json:"Links"`
 }
 
 //Redundancy struct to check request body cases
 type Redundancy struct {
-	Mode          string    `json:"Mode"`
-	RedundencySet []OdataID `json:"RedundencySet"`
+	Mode          string      `json:"Mode"`
+	RedundencySet []dmtf.Link `json:"RedundencySet"`
 }
 
 // Token variable hold the all the XAuthToken  against the plguin ID
@@ -478,10 +415,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	if strings.Contains(req.URL, "/Zones") {
 		fabricRequest = &Zones{}
 	} else if strings.Contains(req.URL, "/AddressPools") {
-		// TODO: The implementation of the AddressPools model is incorrect.
-		// We will be replacing this with the AddressPool model available
-		// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
-		fabricRequest = &AddressPools{}
+		fabricRequest = &dmtf.AddressPool{}
 	} else if strings.Contains(req.URL, "/Endpoints") {
 		fabricRequest = &Endpoints{}
 	}

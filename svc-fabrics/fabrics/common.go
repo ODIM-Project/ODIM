@@ -81,45 +81,54 @@ type OdataID struct {
 	OdataID string `json:"@odata.id"`
 }
 
+// TODO: The implementation of the AddressPools model is incorrect.
+// We will be replacing this with the AddressPool model available
+// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
+
 // AddressPools struct to check request body cases
 type AddressPools struct {
 	Name        string  `json:"Name"`
 	Description string  `json:"Description"`
 	IPv4        IPv4    `json:"IPv4"`
-	Ebgp        Ebgp    `json:"Ebgp"`
-	BgpEvpn     BgpEvpn `json:"BgpEvpn"`
+	Ebgp        Ebgp    `json:"EBGP"`
+	BgpEvpn     BgpEvpn `json:"BGPEvpn"`
 }
+
+// TODO: The implementation of the IPv4 model is incorrect.
+// We will be replacing this with the IPv4 model available
+// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
 
 // IPv4 struct to check request body cases in AddressPools
 type IPv4 struct {
-	VlanIdentifierAddressRange AddressRangeInt    `json:"VlanIdentifierAddressRange"`
-	IbgpAddressRange           AddressRangeString `json:"IbgpAddressRange"`
-	EbgpAddressRange           AddressRangeString `json:"EbgpAddressRange"`
+	VlanIdentifierAddressRange *dmtf.NumberRange  `json:"VLANIdentifierAddressRange"`
+	IbgpAddressRange           *dmtf.AddressRange `json:"IBGPAddressRange"`
+	EbgpAddressRange           *dmtf.AddressRange `json:"EBGPAddressRange"`
+	NativeVLAN                 int                `json:"NativeVLAN"`
 }
 
-//AddressRangeString struct to check request body cases
-type AddressRangeString struct {
-	Lower string `json:"Lower"`
-	Upper string `json:"Upper"`
-}
-
-//AddressRangeInt struct to check request body cases
-type AddressRangeInt struct {
-	Lower int `json:"Lower"`
-	Upper int `json:"Upper"`
-}
+// TODO: The implementation of the Ebgp model is incorrect.
+// We will be replacing this with the EBGP model available
+// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
 
 //Ebgp struct to check request body cases
 type Ebgp struct {
-	AsNumberRange AddressRangeInt `json:"AsNumberRange"`
+	AsNumberRange *dmtf.NumberRange `json:"AsNumberRange"`
 }
+
+// TODO: The implementation of the BgpEvpn model is incorrect.
+// We will be replacing this with the BGPEvpn model available
+// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
 
 //BgpEvpn struct to check request body cases
 type BgpEvpn struct {
-	GatewayIPAddressList    []string `json:"GatewayIPAddressList"`
-	RouteDistinguisherList  []string `json:"RouteDistinguisherList"`
-	RouteTargetList         []string `json:"RouteTargetList"`
-	AnycastGatewayIPAddress string   `json:"AnycastGatewayIPAddress"`
+	GatewayIPAddressList    []string           `json:"GatewayIPAddressList"`
+	RouteDistinguisherList  []string           `json:"RouteDistinguisherList"`
+	RouteTargetList         []string           `json:"RouteTargetList"`
+	AnycastGatewayIPAddress string             `json:"AnycastGatewayIPAddress"`
+	GatewayIPAddressRange   *dmtf.AddressRange `json:"GatewayIPAddressRange"`
+	RouteDistinguisherRange *dmtf.AddressRange `json:"RouteDistinguisherRange"`
+	RouteTargetRange        *dmtf.AddressRange `json:"RouteTargetRange"`
+	EVINumberRange          *dmtf.NumberRange  `json:"EVINumberRange"`
 }
 
 //Endpoints struct to check request body cases
@@ -469,6 +478,9 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	if strings.Contains(req.URL, "/Zones") {
 		fabricRequest = &Zones{}
 	} else if strings.Contains(req.URL, "/AddressPools") {
+		// TODO: The implementation of the AddressPools model is incorrect.
+		// We will be replacing this with the AddressPool model available
+		// in lib-dmtf as soon as the fabric plugin is ready to accomadate it.
 		fabricRequest = &AddressPools{}
 	} else if strings.Contains(req.URL, "/Endpoints") {
 		fabricRequest = &Endpoints{}

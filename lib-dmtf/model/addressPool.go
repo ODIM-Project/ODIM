@@ -14,7 +14,7 @@
 
 package model
 
-// AddressPool is the redfish AddressPool model for 2020.3 release
+// AddressPool is the redfish AddressPool model according to the 2020.3 release
 type AddressPool struct {
 	ODataContext string               `json:"@odata.context,omitempty"`
 	ODataEtag    string               `json:"@odata.etag,omitempty"`

@@ -9,5 +9,5 @@ urplugin:
   urPluginLBPort:
   odimUsername:
   odimPassword:
-  redisAddress:
+  haDeploymentEnabled:
   sentinelMasterName:

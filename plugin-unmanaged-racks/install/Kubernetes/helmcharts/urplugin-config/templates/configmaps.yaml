@@ -20,7 +20,11 @@ data:
     PKICertificatePath: /etc/urplugin_certs/odimra_server.crt
     RSAPrivateKeyPath: /etc/urplugin_certs/odimra_rsa.private
     RSAPublicKeyPath: /etc/urplugin_certs/odimra_rsa.public
-    RedisAddress: {{ .Values.urplugin.redisAddress }}:6379
+    {{ if eq .Values.urplugin.haDeploymentEnabled false }}
+    RedisAddress: redis-ondisk:6379
+    {{ else }}
+    RedisAddress: redis-ha-ondisk:6379
+    {{ end }}
     SentinelMasterName: {{ .Values.urplugin.sentinelMasterName }}
     TLSConf:
       MinVersion: 0x0303

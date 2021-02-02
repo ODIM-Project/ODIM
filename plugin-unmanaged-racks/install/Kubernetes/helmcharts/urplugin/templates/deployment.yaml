@@ -22,8 +22,6 @@ spec:
             sources:
             - configMap:
                 name: urplugin-config
-            - configMap:
-                name: urplugin-platformconfig
         - name: configure-hosts
           configMap:
             name: configure-hosts
@@ -44,12 +42,6 @@ spec:
             - key: odimra_serverkey
               path: odimra_server.key
               mode: 0444
-            - key: odimra_kafka_clientcrt
-              path: odimra_kafka_client.crt
-              mode: 0444
-            - key: odimra_kafka_clientkey
-              path: odimra_kafka_client.key
-              mode: 0444
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
@@ -66,11 +58,10 @@ spec:
           env:
             - name: GET_HOSTS_FROM
               value: dns
-          image: ur-plugin:{{ .Values.urplugin.pluginImageTag }}
+          image: urplugin:{{ .Values.urplugin.pluginImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45007
-            - containerPort: 45008
           volumeMounts:
             - name: urplugin-config-vol
               mountPath: /etc/urplugin_config

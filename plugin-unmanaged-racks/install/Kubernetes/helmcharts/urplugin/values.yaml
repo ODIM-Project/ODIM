@@ -1,7 +1,15 @@
-urplugin:
-  namespace: 
-  groupID: 
+odimra:
+  namespace: odim
+  groupID:
+iloplugin:
   hostname:
-  pluginReplicaCount: 
-  pluginEventNodePort: 
-  pluginImageTag: "1.0"
+  eventListenerNodePort:
+  imageTag: "1.0"
+  iloPluginRootServiceUUID:
+  username:
+  password:
+  host: urplugin
+  eventHost: urplugin
+  lbHost:
+  lbPort:
+  logPath:

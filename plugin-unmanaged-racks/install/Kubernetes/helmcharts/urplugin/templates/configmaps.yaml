@@ -5,10 +5,10 @@ metadata:
   namespace: {{ .Values.urplugin.namespace }}
 data: 
   config.yaml: |
-    Host: {{ .Values.urplugin.urPluginHost }}
+    Host: {{ .Values.urplugin.host }}
     Port: 45007
-    UserName: {{ .Values.urplugin.urPluginUsername }}
-    Password: {{ .Values.urplugin.urPluginPassword }}
+    UserName: {{ .Values.urplugin.username }}
+    Password: {{ .Values.urplugin.password }}
     RootServiceUUID: {{ .Values.urplugin.urPluginRootServiceUUID }}
     OdimURL: https://api:45000
     OdimUserName: {{ .Values.urplugin.odimUsername }}

@@ -9,7 +9,7 @@ spec:
   type: NodePort
   ports:
     - port: 45007
-      nodePort: {{ .Values.urplugin.pluginEventNodePort }}
+      nodePort: {{ .Values.urplugin.eventListenerNodePort }}
   externalTrafficPolicy: Local
   selector:
     app: urplugin

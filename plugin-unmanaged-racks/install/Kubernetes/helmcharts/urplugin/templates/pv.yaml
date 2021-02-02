@@ -16,4 +16,4 @@ spec:
     namespace: {{ .Values.urplugin.namespace }}
     name: urplugin-log-claim
   hostPath:
-    path: {{ .Values.urplugin.pluginLogPath }}
+    path: {{ .Values.urplugin.logPath }}

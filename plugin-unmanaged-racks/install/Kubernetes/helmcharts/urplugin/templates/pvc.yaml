@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: urplugin-log-claim
-  namespace: {{ .Values.urplugin.namespace }}
+  namespace: {{ .Values.odimra.namespace }}
 spec:
   storageClassName: manual
   accessModes:

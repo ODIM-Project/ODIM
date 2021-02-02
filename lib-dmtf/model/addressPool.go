@@ -21,6 +21,7 @@ type AddressPool struct {
 	ODataID      string               `json:"@odata.id"`
 	ODataType    string               `json:"@odata.type"`
 	Actions      *OemActions          `json:"Actions,omitempty"`
+	Description  string               `json:"Description,omitempty"`
 	Ethernet     *AddressPoolEthernet `json:"Ethernet,omitempty"`
 	GenZ         *GenZ                `json:"GenZ,omitempty"`
 	ID           string               `json:"id"`

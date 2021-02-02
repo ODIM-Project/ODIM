@@ -13,13 +13,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-declare PID=0
+declare OWN_PID=$$
 
 sigterm_handler()
 {
         if [[ $PID -ne 0 ]]; then
-                # will wait for other instances to gracefully announce quorum exit
-                sleep 5
+                sleep 1
                 kill -9 $PID
                 wait "$PID" 2>/dev/null
         fi
@@ -42,9 +41,9 @@ start_urplugin()
 {
 	cd /bin
 	export PLUGIN_CONFIG_FILE_PATH=/etc/urplugin_config/config.yaml
-	nohup ./plugin-unmanaged-racks >> /var/log/urplugin_logs/urplugin.log 2>&1 &
+	nohup /bin/plugin-unmanaged-racks >> /var/log/urplugin_logs/urplugin.log 2>&1 &
 	PID=$!
-	sleep 2s
+	sleep 3
   nohup /bin/add-hosts -file /tmp/host.append >> /var/log/urplugin_logs/add-hosts.log 2>&1 &
 }
 
@@ -52,8 +51,9 @@ monitor_process()
 {
         while true; do
                 pid=$(pgrep plugin-unmanage 2> /dev/null)
-                if [[ $pid -eq 0 ]]; then
+                if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
                         echo "urplugin has exited" >> /var/log/urplugin_logs/urplugin.log 2>&1 &
+                        kill -15 ${OWN_PID}
                         exit 1
                 fi
                 sleep 5

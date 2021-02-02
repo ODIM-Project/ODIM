@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: urplugin
-  namespace: {{ .Values.urplugin.namespace }}
+  namespace: {{ .Values.odimra.namespace }}
 spec:
-  replicas: {{ .Values.urplugin.pluginReplicaCount }}
+  replicas: {{ .Values.ReplicaCount | default 1}}
   selector:
     matchLabels:
       app: urplugin
@@ -52,13 +52,13 @@ spec:
           persistentVolumeClaim:
             claimName: urplugin-log-claim
       securityContext:
-        fsGroup: {{ .Values.urplugin.groupID }}
+        fsGroup: {{ .Values.odimra.groupID }}
       containers:
         - name: urplugin
           env:
             - name: GET_HOSTS_FROM
               value: dns
-          image: urplugin:{{ .Values.urplugin.pluginImageTag }}
+          image: urplugin:{{ .Values.urplugin.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45007

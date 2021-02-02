@@ -18,7 +18,7 @@ fi
 declare VALIDATION=false
 declare DRYRUN=false
 declare DEPLOY=false
-LIST="urplugin-pv-pvc urplugin-config urplugin"
+LIST="urplugin"
 
 if [ -z "$2" ]
 then

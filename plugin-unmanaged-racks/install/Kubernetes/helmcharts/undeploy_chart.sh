@@ -16,7 +16,7 @@ else
 fi
 
 declare UNDEPLOY=false
-LIST="urplugin-pv-pvc urplugin-config urplugin"
+LIST="urplugin"
 
 if [ -z "$2" ]
 then

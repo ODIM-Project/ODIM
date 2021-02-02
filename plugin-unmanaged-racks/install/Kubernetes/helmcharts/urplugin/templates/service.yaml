@@ -6,26 +6,10 @@ metadata:
   labels:
     app: urplugin
 spec:
-  ports:
-    - port: 45007
-  selector:
-    app: urplugin
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: urplugin-events
-  namespace: {{ .Values.urplugin.namespace }}
-  labels:
-    app: urplugin
-spec:
   type: NodePort
   ports:
-  - port: 45008
-    nodePort: {{ .Values.urplugin.pluginEventNodePort }}
-    protocol: TCP
+    - port: 45007
+      nodePort: {{ .Values.urplugin.pluginEventNodePort }}
   externalTrafficPolicy: Local
   selector:
     app: urplugin

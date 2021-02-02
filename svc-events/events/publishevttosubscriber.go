@@ -41,6 +41,26 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
+// addFabric will add the new fabric resource to db when an event is ResourceAdded and
+// originofcondition has fabrics odataid.
+func addFabric(requestData, host string) {
+	var message common.MessageData
+	if err := json.Unmarshal([]byte(requestData), &message); err != nil {
+				   log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
+				   return
+	}
+	for _, inEvent := range message.Events {
+				   if inEvent.OriginOfCondition == nil ||  len(inEvent.OriginOfCondition.Oid) < 1 {
+								 log.Info("event not forwarded : Originofcondition is empty in incoming event")
+								 continue
+				   }
+				   if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+								 strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+								 addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+				   }
+	}
+}
+
 // PublishEventsToDestination This method sends the event/alert to subscriber's destination
 // Takes:
 // 	data of type interface{}
@@ -65,6 +85,8 @@ func PublishEventsToDestination(data interface{}) bool {
 	var flag bool
 	var uuid string
 	var message common.MessageData
+
+	addFabric(requestData, host)
 
 	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
 	if err != nil {
@@ -100,10 +122,6 @@ func PublishEventsToDestination(data interface{}) bool {
 		if len(inEvent.OriginOfCondition.Oid) < 1 {
 			log.Info("event not forwarded : Originofcondition is empty in incoming event with body: ", requestData)
 			continue
-		}
-		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
-			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
 
 		var resTypePresent bool

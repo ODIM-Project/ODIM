@@ -12,15 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dmtfmodel
-package dmtfmodel
+package model
 
 import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-// Chassis
+// Chassis redfish structure
 type Chassis struct {
 	Ocontext           string           `json:"@odata.context"`
 	Oid                string           `json:"@odata.id"`
@@ -57,7 +56,7 @@ type Chassis struct {
 	Thermal            Thermal          `json:"Thermal"`
 }
 
-// Location
+// Location redfish structure
 type Location struct {
 	Oid string `json:"@odata.id"`
 }
@@ -85,44 +84,44 @@ type LogServices struct {
 	Status              Status  `json:"Status,omitempty"`
 }
 
-//Entries
+//Entries redfish structure
 type Entries struct {
 	Oid string `json:"@odata.id"`
 }
 
-// Assembly
+// Assembly redfish structure
 type Assembly struct {
 	Oid string `json:"@odata.id"`
 }
 
-// NetworkAdapters
+// NetworkAdapters redfish structure
 type NetworkAdapters struct {
 	Oid string `json:"@odata.id"`
 }
 
-// PCIeSlots
+// PCIeSlots redfish structure
 type PCIeSlots struct {
 	Oid string `json:"@odata.id"`
 }
 
-// PhysicalSecurity
+// PhysicalSecurity redfish structure
 type PhysicalSecurity struct {
 	IntrusionSensor       string
 	IntrusionSensorNumber int
 	IntrusionSensorReArm  string
 }
 
-// Power
+// Power redfish structure
 type Power struct {
 	Oid string `json:"@odata.id"`
 }
 
-// Sensors
+// Sensors redfish structure
 type Sensors struct {
 	Oid string `json:"@odata.id"`
 }
 
-// Status
+// Status redfish structure
 type Status struct {
 	Oid          string `json:"@odata.id"`
 	Ocontext     string `json:"@odata.context,omitempty"`
@@ -137,7 +136,7 @@ type Status struct {
 	Oem          Oem    `json:"Oem,omitempty"`
 }
 
-// Thermal
+// Thermal redfish structure
 type Thermal struct {
 	Oid string `json:"@odata.id"`
 }

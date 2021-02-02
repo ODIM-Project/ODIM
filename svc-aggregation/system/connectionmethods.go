@@ -58,7 +58,6 @@ func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.Aggrega
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	commonResponse.CreateGenericResponse(response.Success)
 	resp.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: len(members),
@@ -97,15 +96,12 @@ func (e *ExternalInterface) GetConnectionMethodInfo(req *aggregatorproto.Aggrega
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	commonResponse.CreateGenericResponse(response.Success)
 	links := connectionmethod.Links
 	if len(links.AggregationSources) == 0 {
 		links = agmodel.Links{
 			AggregationSources: []agmodel.OdataID{},
 		}
 	}
-	commonResponse.Message = ""
-	commonResponse.MessageID = ""
 	resp.Body = agresponse.ConnectionMethodResponse{
 		Response:                commonResponse,
 		ConnectionMethodType:    connectionmethod.ConnectionMethodType,

@@ -59,7 +59,9 @@ Resource Aggregator for ODIM framework adopts a layered architecture and has man
 
 The following figure shows these functional layers of Resource Aggregator for ODIM deployed in a data center.
 
+
 ![ODIM_architecture](docs/images/arch.png)
+
 
 - **API layer**
 
@@ -78,7 +80,9 @@ through an extensible domain model (Redfish Data Model). Requests coming from th
 responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
 for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).
 
+
 ![Redfish_data_model](docs/images/redfish_data_model.png)
+
 
 - **Event message bus layer**
 

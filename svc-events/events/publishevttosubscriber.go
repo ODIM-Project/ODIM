@@ -46,18 +46,18 @@ import (
 func addFabric(requestData, host string) {
 	var message common.MessageData
 	if err := json.Unmarshal([]byte(requestData), &message); err != nil {
-				   log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
-				   return
+		log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
+		return
 	}
 	for _, inEvent := range message.Events {
-				   if inEvent.OriginOfCondition == nil ||  len(inEvent.OriginOfCondition.Oid) < 1 {
-								 log.Info("event not forwarded : Originofcondition is empty in incoming event")
-								 continue
-				   }
-				   if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
-								 strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-								 addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
-				   }
+		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
+			log.Info("event not forwarded : Originofcondition is empty in incoming event")
+			continue
+		}
+		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
+			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+			addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+		}
 	}
 }
 

@@ -23,7 +23,7 @@ data:
     {{ if eq .Values.urplugin.haDeploymentEnabled false }}
     RedisAddress: redis-ondisk:6379
     {{ else }}
-    RedisAddress: redis-ha-ondisk:6379
+    RedisAddress: redis-ha-ondisk.{{ .Values.urplugin.namespace }}.svc.cluster.local:26379
     {{ end }}
     SentinelMasterName: {{ .Values.urplugin.sentinelMasterName }}
     TLSConf:

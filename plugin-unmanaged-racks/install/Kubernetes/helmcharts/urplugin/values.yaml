@@ -1,19 +1,15 @@
 odimra:
-  namespace: odim
+  namespace:
   groupID:
-iloplugin:
+  haDeploymentEnabled:
+urplugin:
   hostname:
-  eventListenerNodePort:
   imageTag: "1.0"
   urPluginRootServiceUUID:
   username:
   password:
   host: urplugin
-  eventHost: urplugin
-  odimUsername: admin
+  odimUsername:
   odimPassword:
-  haDeploymentEnabled: true
   sentinelMasterName: primaryset
-  lbHost:
-  lbPort:
   logPath:

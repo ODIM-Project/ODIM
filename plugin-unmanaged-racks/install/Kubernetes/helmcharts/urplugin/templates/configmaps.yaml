@@ -20,7 +20,7 @@ data:
     PKICertificatePath: /etc/urplugin_certs/odimra_server.crt
     RSAPrivateKeyPath: /etc/urplugin_certs/odimra_rsa.private
     RSAPublicKeyPath: /etc/urplugin_certs/odimra_rsa.public
-    {{ if eq .Values.urplugin.haDeploymentEnabled false }}
+    {{ if eq .Values.odimra.haDeploymentEnabled false }}
     RedisAddress: redis-ondisk:6379
     {{ else }}
     # RedisAddress here is a SentinelAddress used when HA deployment is enabled

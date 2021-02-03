@@ -44,6 +44,7 @@ type AddressPoolEthernet struct {
 	IPv4              *IPv4                `json:"IPv4,omitempty"`
 	MultiProtocolEBGP *EBGP                `json:"MultiProtocolEBGP,omitempty"`
 	MultiProtocolIBGP *CommonBGPProperties `json:"MultiProtocolIBGP,omitempty"`
+	SystemMACRange    *AddressRange        `json:"SystemMACRange,omitempty"`
 }
 
 // GenZ redfish model
@@ -68,20 +69,21 @@ type BFDSingleHopOnly struct {
 
 // BGPEvpn redfish structure
 type BGPEvpn struct {
-	ARPProxyEnabled                  bool         `json:"ARPProxyEnabled,omitempty"`
-	ARPSupressionEnabled             bool         `json:"ARPSupressionEnabled,omitempty"`
-	AnycastGatewayIPAddress          string       `json:"AnycastGatewayIPAddress,omitempty"`
-	AnycastGatewayMACAddress         string       `json:"AnycastGatewayMACAddress,omitempty"`
-	ESINumberRange                   *NumberRange `json:"ESINumberRange,omitempty"`
-	EVINumberRange                   *NumberRange `json:"EVINumberRange,omitempty"`
-	GatewayIPAddress                 string       `json:"GatewayIPAddress,omitempty"`
-	NDPProxyEnabled                  bool         `json:"NDPProxyEnabled,omitempty"`
-	NDPSupressionEnabled             bool         `json:"NDPSupressionEnabled,omitempty"`
-	RouteDistinguisherRange          *NumberRange `json:"RouteDistinguisherRange,omitempty"`
-	RouteTargetRange                 *NumberRange `json:"RouteTargetRange,omitempty"`
-	UnderlayMulticastEnabled         bool         `json:"UnderlayMulticastEnabled,omitempty"`
-	UnknownUnicastSuppressionEnabled bool         `json:"UnknownUnicastSuppressionEnabled,omitempty"`
-	VLANIdentifierAddressRange       *NumberRange `json:"VLANIdentifierAddressRange,omitempty"`
+	ARPProxyEnabled                  bool          `json:"ARPProxyEnabled,omitempty"`
+	ARPSupressionEnabled             bool          `json:"ARPSupressionEnabled,omitempty"`
+	AnycastGatewayIPAddress          string        `json:"AnycastGatewayIPAddress,omitempty"`
+	AnycastGatewayMACAddress         string        `json:"AnycastGatewayMACAddress,omitempty"`
+	ESINumberRange                   *NumberRange  `json:"ESINumberRange,omitempty"`
+	EVINumberRange                   *NumberRange  `json:"EVINumberRange,omitempty"`
+	GatewayIPAddress                 string        `json:"GatewayIPAddress,omitempty"`
+	GatewayIPAddressRange            *AddressRange `json:"GatewayIPAddressRange,omitempty"`
+	NDPProxyEnabled                  bool          `json:"NDPProxyEnabled,omitempty"`
+	NDPSupressionEnabled             bool          `json:"NDPSupressionEnabled,omitempty"`
+	RouteDistinguisherRange          *AddressRange `json:"RouteDistinguisherRange,omitempty"`
+	RouteTargetRange                 *AddressRange `json:"RouteTargetRange,omitempty"`
+	UnderlayMulticastEnabled         bool          `json:"UnderlayMulticastEnabled,omitempty"`
+	UnknownUnicastSuppressionEnabled bool          `json:"UnknownUnicastSuppressionEnabled,omitempty"`
+	VLANIdentifierAddressRange       *NumberRange  `json:"VLANIdentifierAddressRange,omitempty"`
 }
 
 // EBGP redfish structure

@@ -6,10 +6,7 @@ metadata:
   labels:
     app: urplugin
 spec:
-  type: NodePort
   ports:
     - port: 45007
-      nodePort: {{ .Values.urplugin.eventListenerNodePort }}
-  externalTrafficPolicy: Local
   selector:
     app: urplugin

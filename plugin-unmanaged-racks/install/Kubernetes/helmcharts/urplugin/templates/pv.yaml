@@ -3,7 +3,7 @@ kind: PersistentVolume
 apiVersion: v1
 metadata:
   name: urplugin-log
-  namespace: {{ .Values.urplugin.namespace }}
+  namespace: {{ .Values.odimra.namespace }}
   labels:
     type: local
 spec:
@@ -13,7 +13,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   claimRef:
-    namespace: {{ .Values.urplugin.namespace }}
+    namespace: {{ .Values.odimra.namespace }}
     name: urplugin-log-claim
   hostPath:
     path: {{ .Values.urplugin.logPath }}

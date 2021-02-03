@@ -1,15 +1,15 @@
 odimra:
   namespace: odim
-  groupID:
+  groupID: 2021
 urplugin:
   hostname: urplugin
-  eventListenerNodePort: 30083
+  eventListenerNodePort: 30085
   urPluginRootServiceUUID:
   username: admin
   password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
   lbHost:
-  lbPort: 30083
-  logPath: /var/log/iloplugin_logs
+  lbPort: 30085
+  logPath: /var/log/urplugin_logs
   odimUsername: admin
   odimPassword:
   haDeploymentEnabled: true

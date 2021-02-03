@@ -5,11 +5,15 @@ iloplugin:
   hostname:
   eventListenerNodePort:
   imageTag: "1.0"
-  iloPluginRootServiceUUID:
+  urPluginRootServiceUUID:
   username:
   password:
   host: urplugin
   eventHost: urplugin
+  odimUsername: admin
+  odimPassword:
+  haDeploymentEnabled: true
+  sentinelMasterName: primaryset
   lbHost:
   lbPort:
   logPath:

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: urplugin
-  namespace: {{ .Values.urplugin.namespace }}
+  namespace: {{ .Values.odimra.namespace }}
   labels:
     app: urplugin
 spec:

@@ -158,11 +158,12 @@ func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(url stri
 	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
 	var data = strings.Split(url, "/redfish/v1/AggregationService/AggregationSources/")
 	uuid := url[strings.LastIndexByte(url, '/')+1:]
-	target, terr := agmodel.GetTarget(uuid)
+	uuidData := strings.Split(uuid, ":")
+	target, terr := agmodel.GetTarget(uuidData[0])
 	if terr != nil || target == nil {
 		return e.updateManagerAggregationSource(data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
 	}
-	return e.updateBMCAggregationSource(data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
+	return e.updateBMCAggregationSource(uuidData[0], cmVariants.PluginID, updateRequest, hostNameUpdated)
 }
 
 func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID, pluginID string, updateRequest map[string]interface{}, hostNameUpdated bool) response.RPC {

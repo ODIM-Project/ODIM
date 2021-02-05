@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-COMMIT := $(shell git rev-parse --short HEAD)
-DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
-VERSION := $(COMMIT)-$(DATE)
-BUILD_DIR := ../build/plugin-unmanaged-racks/tmp
+DATE := $(shell date +%Y%m%d)
+VERSION := $(DATE)
+BUILD_DIR := tmp
 DEFAULT_ODIMRA_PASS := 'Od!m12$$4'
 
 ENCRYPT_PASSWORD := echo -n ${DEFAULT_ODIMRA_PASS} \
-		| openssl pkeyutl -encrypt -inkey ../build/cert_generator/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512 \
+		| openssl pkeyutl -encrypt -inkey ../cert_generator/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512 \
 		| openssl base64 -A
 
 ifneq ($(shell git status --porcelain),)
@@ -30,7 +29,7 @@ clean:
 	rm -r BUILD_DIR
 
 compile:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -ldflags "-X main.version=$(VERSION)" -o ../build/plugin-unmanaged-racks/tmp/urp main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -ldflags "-X main.version=$(VERSION)" -o tmp/urp main.go
 
 configure:
 	@mkdir --parents ${BUILD_DIR}

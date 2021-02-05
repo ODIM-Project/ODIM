@@ -446,7 +446,7 @@ type PCIeInterface struct {
 	PCIeType    string `json:"PCIeType"` //enum
 }
 
-/* 
+/*
 PCIeFunction 1.2.2
 This resource shall be used to represent a PCIeFunction attached to a System.
 URIs:

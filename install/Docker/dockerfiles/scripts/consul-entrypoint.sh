@@ -14,7 +14,7 @@ set -e
 # If deployment type is HA mode, need to add the other consul instances
 # to form the quorum
 
-if [ -n "$IS_CONSUL_CLUSTER" ]; then
+if [[ ${IS_CONSUL_CLUSTER,,} == true ]]; then
 	OLDIFS=$OIFS
 	IFS=','
 	members=($CONSUL_CLUSTER_MEMBERS)

@@ -70,17 +70,15 @@ var (
 
 // GetHTTPClientObj is for obtaining a client instance for making http(s) queries
 func (config *HTTPConfig) GetHTTPClientObj() (*http.Client, error) {
-	TLSConfMutex.Lock()
-	defer TLSConfMutex.Unlock()
 	tlsConfig := &tls.Config{}
 	if err := config.LoadCertificates(tlsConfig); err != nil {
 		return nil, err
 	}
 	Client.SetTLSConfig(tlsConfig)
-
+  TLSConfMutex.Lock()
 	DefaultHTTPTransport.TLSClientConfig = tlsConfig
 	DefaultHTTPClient.Transport = DefaultHTTPTransport
-
+  TLSConfMutex.Unlock()
 	return DefaultHTTPClient, nil
 }
 
@@ -101,6 +99,7 @@ func (config *HTTPConfig) GetHTTPServerObj() (*http.Server, error) {
 
 // LoadCertificates is for including passed certificates in tls.Config
 func (config *HTTPConfig) LoadCertificates(tlsConfig *tls.Config) error {
+	
 	// for client mode interaction certificates will not be required and
 	// just CA certificate needs to be loaded for server validation
 	if config.loadCertificates {

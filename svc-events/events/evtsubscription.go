@@ -292,19 +292,38 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	fmt.Print("......this is originResourceProcessedCount: ")
 	fmt.Println(originResourceProcessedCount)
 	fmt.Print("result response here: ")
-	fmt.Print(result.Response)
+	fmt.Println(result.Response)
+//	for i:=0;i<originResourceProcessedCount;i++{
+//		origin1:= strings.SplitAfterN(result.Response[i],"/",2)
+//		fmt.Print("here is the split OR::::")
+//		fmt.Println(origin1)
+//	}
+        i:=0
+	fmt.Println("i value: ")
+	fmt.Println(i)
 	for originResource, evtResponse := range result.Response {
-		fmt.Print(".....here it is entering for loop")
-		fmt.Println(originResource)
-		fmt.Print(" response is: ")
-		fmt.Println(evtResponse)
-
+		origin1:= strings.SplitAfter(originResource,"/")
+		origin11:=origin1[len(origin1)-1]
+		fmt.Println("...origin11 here : ")
+		fmt.Println(origin11)
+		var uuidd string
+		if i==0 {
+			uuidd=origin11
+			fmt.Print("UUIIDD: ")
+			fmt.Println(uuidd)
+		}
+		if origin11==uuidd{
+			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
+			fmt.Print("successfulSubscriptionList: ")
+			fmt.Println(successfulSubscriptionList)
+		}
+		i+=1
 		if evtResponse.StatusCode == http.StatusCreated {
-			fmt.Print(".....here it is entering if condition: ")
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
 			successfulResponses[originResource] = evtResponse
 		}
 	}
+	fmt.Println(".......NEW EDITION OF COUNT:")
 	result.Response = successfulResponses
 	successOriginResourceCount := len(successfulSubscriptionList)
 	fmt.Print(".....this is count for successOriginResourceCount :")
@@ -408,28 +427,28 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	var plugin *evmodel.Plugin
 	var contactRequest evcommon.PluginContactRequest
 	var target *evmodel.Target
-	var prev_res = &evresponse.MutexLock{
-		Response: make(map[string]evresponse.EventResponse),
-		//Response: interface{},
-		Lock:     &sync.Mutex{},
-	}
+//	var prev_res = &evresponse.MutexLock{
+//		Response: make(map[string]evresponse.EventResponse),
+//		//Response: interface{},
+//		Lock:     &sync.Mutex{},
+//	}
 	if !collectionFlag {
 		if strings.Contains(origin, "Fabrics") {
 			return p.createFabricSubscription(postRequest, origin, collectionName, collectionFlag)
 		}
 		target, resp, err = getTargetDetails(origin)
 		fmt.Print("this is a check OF LOGS BEINGS PRINTED: .....")
-		deviceSubscription,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
-		fmt.Println(deviceSubscription.EventHostIP)
-		fmt.Println(target.ManagerAddress)
-		if deviceSubscription.EventHostIP==target.ManagerAddress{
-			deviceSubscription.OriginResources = append(deviceSubscription.OriginResources,origin)
+//		deviceSubscription,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+//		fmt.Println(deviceSubscription.EventHostIP)
+//		fmt.Println(target.ManagerAddress)
+//		if deviceSubscription.EventHostIP==target.ManagerAddress{
+//			deviceSubscription.OriginResources = append(deviceSubscription.OriginResources,origin)
 			//resp.Response=deviceSubscription
-			resp.Response=prev_res.Response
-			fmt.Println("resp that is returned here is: ")
-			fmt.Println(deviceSubscription)
-			return "", resp
-		}
+//			resp.Response=prev_res.Response
+//			fmt.Println("resp that is returned here is: ")
+//			fmt.Println(deviceSubscription)
+		//	return "", resp
+	//	}
 		if err != nil {
 			return "", resp
 		}
@@ -602,7 +621,6 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	var outBody interface{}
 	body, err := ioutil.ReadAll(response.Body)
 	err = json.Unmarshal(body, &outBody)
-	fmt.Println("%%%%%%%%% here is the response from LOCKKKKKKKKKKKK: ")
 	if err != nil {
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
@@ -620,19 +638,19 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	resp.StatusCode = response.StatusCode
 	resp.Location = response.Header.Get("location")
 //	fmt.Println("%%%%%%%%% here is the response from outsiddeeeeeee LOCKKKKKKKKKKKK: ")
-	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+//	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
 //	fmt.Println("%%%%%%%%% here is the response from outsiddeeeeeee LOCKKKKKKKKKKKK: ")
-        if target.ManagerAddress!=deviceSubscriptions.EventHostIP{
-                prev_res.Lock.Lock()
-		var respo evresponse.EventResponse
-		respo.Response = resp.Response
-	//	fmt.Println("%%%%%%%%% here is the response from LOCKKKKKKKKKKKK: ")
-		fmt.Println(respo.Response)
-		respo.StatusCode = response.StatusCode
-		respo.Location = response.Header.Get("location")
-                prev_res.Response[target.ManagerAddress] = respo
-                prev_res.Lock.Unlock()
-        }
+//        if target.ManagerAddress!=deviceSubscriptions.EventHostIP{
+//                prev_res.Lock.Lock()
+//		var respo evresponse.EventResponse
+//		respo.Response = resp.Response
+//	//	fmt.Println("%%%%%%%%% here is the response from LOCKKKKKKKKKKKK: ")
+//		fmt.Println(respo.Response)
+//		respo.StatusCode = response.StatusCode
+//		respo.Location = response.Header.Get("location")
+  //              prev_res.Response[target.ManagerAddress] = respo
+    //            prev_res.Lock.Unlock()
+      //  }
 
 	return deviceIPAddress, resp
 }

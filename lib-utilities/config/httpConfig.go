@@ -70,16 +70,16 @@ var (
 
 // GetHTTPClientObj is for obtaining a client instance for making http(s) queries
 func (config *HTTPConfig) GetHTTPClientObj() (*http.Client, error) {
+	TLSConfMutex.Lock()
+	defer TLSConfMutex.Unlock()
 	tlsConfig := &tls.Config{}
 	if err := config.LoadCertificates(tlsConfig); err != nil {
 		return nil, err
 	}
 	Client.SetTLSConfig(tlsConfig)
 
-	TLSConfMutex.Lock()
 	DefaultHTTPTransport.TLSClientConfig = tlsConfig
 	DefaultHTTPClient.Transport = DefaultHTTPTransport
-	TLSConfMutex.Unlock()
 
 	return DefaultHTTPClient, nil
 }
@@ -124,6 +124,8 @@ func (config *HTTPConfig) LoadCertificates(tlsConfig *tls.Config) error {
 
 // SetTLSConfig is for setting updating common fields of tls.Config
 func (host Host) SetTLSConfig(tlsConfig *tls.Config) {
+	TLSConfMutex.RLock()
+	defer TLSConfMutex.RUnlock()
 	tlsConfig.MinVersion = configuredTLSMinVersion
 	tlsConfig.MaxVersion = configuredTLSMaxVersion
 	if !verifyPeer {
@@ -139,6 +141,8 @@ func (host Host) SetTLSConfig(tlsConfig *tls.Config) {
 
 // SetDefaultTLSConf is for updating TLS conf with default values
 func SetDefaultTLSConf() {
+	TLSConfMutex.RLock()
+	defer TLSConfMutex.RUnlock()
 	verifyPeer = DefaultTLSServerVerify
 	configuredTLSMinVersion = DefaultTLSMinVersion
 	configuredTLSMaxVersion = DefaultTLSMaxVersion
@@ -180,6 +184,7 @@ func SetTLSMaxVersion(version string) error {
 
 // SetPreferredCipherSuites is for setting configuredCipherSuiteList
 func SetPreferredCipherSuites(cipherList []string) error {
+
 	if len(cipherList) == 0 {
 		configuredCipherSuiteList = DefaultCipherSuiteList
 		return nil

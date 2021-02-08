@@ -15,8 +15,7 @@ package main
 
 import (
 	"os"
-	"sync"
-
+	
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
@@ -46,9 +45,8 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	err := services.InitializeService(services.Update)
 	if err != nil {

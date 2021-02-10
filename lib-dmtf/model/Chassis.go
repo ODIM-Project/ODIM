@@ -133,7 +133,7 @@ type Status struct {
 	Health       string `json:"Health,omitempty"`
 	HealthRollup string `json:"HealthRollup,omitempty"`
 	State        string `json:"State,omitempty"`
-	Oem          Oem    `json:"Oem,omitempty"`
+	Oem          *Oem   `json:"Oem,omitempty"`
 }
 
 // Thermal redfish structure

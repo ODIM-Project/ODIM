@@ -131,6 +131,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.TargetURI = targetURI
 	pluginContactRequest.UpdateTask = e.UpdateTask
+	pluginContactRequest.TaskRequest = reqBody
 	var aggregationSourceUUID string
 	var cipherText []byte
 

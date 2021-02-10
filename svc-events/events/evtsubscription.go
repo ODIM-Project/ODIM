@@ -289,33 +289,20 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
-	fmt.Print("......this is originResourceProcessedCount: ")
-	fmt.Println(originResourceProcessedCount)
-	fmt.Print("result response here: ")
-	fmt.Println(result.Response)
-//	for i:=0;i<originResourceProcessedCount;i++{
-//		origin1:= strings.SplitAfterN(result.Response[i],"/",2)
-//		fmt.Print("here is the split OR::::")
-//		fmt.Println(origin1)
-//	}
         i:=0
-	fmt.Println("i value: ")
-	fmt.Println(i)
+        var resourceId string
+//        var subordinateResource string
+
 	for originResource, evtResponse := range result.Response {
-		origin1:= strings.SplitAfter(originResource,"/")
-		origin11:=origin1[len(origin1)-1]
-		fmt.Println("...origin11 here : ")
-		fmt.Println(origin11)
-		var uuidd string
+		OriginResource:= strings.SplitAfter(originResource,"/")
+		originResourceId:=OriginResource[len(OriginResource)-1]
+//		subordinateResourceName:=OriginResource[len(OriginResource)-2]
 		if i==0 {
-			uuidd=origin11
-			fmt.Print("UUIIDD: ")
-			fmt.Println(uuidd)
+			resourceId=originResourceId
+//			subordinateResource = subordinateResourceName
 		}
-		if origin11==uuidd{
+		if originResourceId==resourceId && i>0{
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
-			fmt.Print("successfulSubscriptionList: ")
-			fmt.Println(successfulSubscriptionList)
 		}
 		i+=1
 		if evtResponse.StatusCode == http.StatusCreated {
@@ -323,11 +310,8 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 			successfulResponses[originResource] = evtResponse
 		}
 	}
-	fmt.Println(".......NEW EDITION OF COUNT:")
 	result.Response = successfulResponses
 	successOriginResourceCount := len(successfulSubscriptionList)
-	fmt.Print(".....this is count for successOriginResourceCount :")
-	fmt.Print(successOriginResourceCount)
 	result.Lock.Unlock()
 	// remove the underlaying resource uri's from successfulSubscriptionList
 	for i := 0; i < len(collectionList); i++ {
@@ -427,28 +411,11 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	var plugin *evmodel.Plugin
 	var contactRequest evcommon.PluginContactRequest
 	var target *evmodel.Target
-//	var prev_res = &evresponse.MutexLock{
-//		Response: make(map[string]evresponse.EventResponse),
-//		//Response: interface{},
-//		Lock:     &sync.Mutex{},
-//	}
 	if !collectionFlag {
 		if strings.Contains(origin, "Fabrics") {
 			return p.createFabricSubscription(postRequest, origin, collectionName, collectionFlag)
 		}
 		target, resp, err = getTargetDetails(origin)
-		fmt.Print("this is a check OF LOGS BEINGS PRINTED: .....")
-//		deviceSubscription,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
-//		fmt.Println(deviceSubscription.EventHostIP)
-//		fmt.Println(target.ManagerAddress)
-//		if deviceSubscription.EventHostIP==target.ManagerAddress{
-//			deviceSubscription.OriginResources = append(deviceSubscription.OriginResources,origin)
-			//resp.Response=deviceSubscription
-//			resp.Response=prev_res.Response
-//			fmt.Println("resp that is returned here is: ")
-//			fmt.Println(deviceSubscription)
-		//	return "", resp
-	//	}
 		if err != nil {
 			return "", resp
 		}
@@ -628,29 +595,9 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		log.Error(errorMessage)
 		return "", resp
 	}
-//	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
-//	if target.ManagerAddress==deviceSubscriptions.EventHostIP{
-//		prev_res.Lock.Lock()
-//		prev_res.Response = outBody
-//		prev_res.Lock.Unlock()
-//	}
 	resp.Response = outBody
 	resp.StatusCode = response.StatusCode
 	resp.Location = response.Header.Get("location")
-//	fmt.Println("%%%%%%%%% here is the response from outsiddeeeeeee LOCKKKKKKKKKKKK: ")
-//	deviceSubscriptions,_ := evmodel.GetDeviceSubscriptions(target.ManagerAddress)
-//	fmt.Println("%%%%%%%%% here is the response from outsiddeeeeeee LOCKKKKKKKKKKKK: ")
-//        if target.ManagerAddress!=deviceSubscriptions.EventHostIP{
-//                prev_res.Lock.Lock()
-//		var respo evresponse.EventResponse
-//		respo.Response = resp.Response
-//	//	fmt.Println("%%%%%%%%% here is the response from LOCKKKKKKKKKKKK: ")
-//		fmt.Println(respo.Response)
-//		respo.StatusCode = response.StatusCode
-//		respo.Location = response.Header.Get("location")
-  //              prev_res.Response[target.ManagerAddress] = respo
-    //            prev_res.Lock.Unlock()
-      //  }
 
 	return deviceIPAddress, resp
 }

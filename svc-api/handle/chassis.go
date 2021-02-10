@@ -46,6 +46,7 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -178,6 +179,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
                 ctx.StatusCode(http.StatusBadRequest)
+		common.SetResponseHeader(ctx, response.Header)
                 ctx.JSON(&response.Body)
 		return
 	}

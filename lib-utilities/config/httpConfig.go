@@ -74,11 +74,11 @@ func (config *HTTPConfig) GetHTTPClientObj() (*http.Client, error) {
 	if err := config.LoadCertificates(tlsConfig); err != nil {
 		return nil, err
 	}
+	TLSConfMutex.Lock()
 	Client.SetTLSConfig(tlsConfig)
-  TLSConfMutex.Lock()
 	DefaultHTTPTransport.TLSClientConfig = tlsConfig
 	DefaultHTTPClient.Transport = DefaultHTTPTransport
-  TLSConfMutex.Unlock()
+	TLSConfMutex.Unlock()
 	return DefaultHTTPClient, nil
 }
 
@@ -99,7 +99,6 @@ func (config *HTTPConfig) GetHTTPServerObj() (*http.Server, error) {
 
 // LoadCertificates is for including passed certificates in tls.Config
 func (config *HTTPConfig) LoadCertificates(tlsConfig *tls.Config) error {
-	
 	// for client mode interaction certificates will not be required and
 	// just CA certificate needs to be loaded for server validation
 	if config.loadCertificates {
@@ -123,8 +122,6 @@ func (config *HTTPConfig) LoadCertificates(tlsConfig *tls.Config) error {
 
 // SetTLSConfig is for setting updating common fields of tls.Config
 func (host Host) SetTLSConfig(tlsConfig *tls.Config) {
-	TLSConfMutex.RLock()
-	defer TLSConfMutex.RUnlock()
 	tlsConfig.MinVersion = configuredTLSMinVersion
 	tlsConfig.MaxVersion = configuredTLSMaxVersion
 	if !verifyPeer {

@@ -18,7 +18,7 @@ package common
 import (
 	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
-	
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 

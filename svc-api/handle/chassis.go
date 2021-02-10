@@ -178,9 +178,9 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-                ctx.StatusCode(http.StatusBadRequest)
+        ctx.StatusCode(http.StatusBadRequest)
 		common.SetResponseHeader(ctx, response.Header)
-                ctx.JSON(&response.Body)
+        ctx.JSON(&response.Body)
 		return
 	}
 	rr, rerr := chassis.UpdateChassisRPC(chassisproto.UpdateChassisRequest{

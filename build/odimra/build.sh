@@ -19,7 +19,11 @@
 LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin|^odimra'` 
 for i in $LIST; do
 	cd $i
-	go build -race .
+	if [[ "$i" == "plugin-unmanaged-racks" ]]; then
+                make  build
+        else
+                go build -i -race .
+        fi
 	if [ $? -eq 0 ]; then
 		echo Build for odimra service/lib $i is Successful !!!!
 		arr1+=$i;

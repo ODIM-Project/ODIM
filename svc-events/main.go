@@ -73,7 +73,7 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 1)
+	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 5)
 	startUPInterface := evcommon.StartUpInteraface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,

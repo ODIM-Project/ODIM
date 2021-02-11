@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -82,7 +83,8 @@ type Collector interface {
 }
 
 type returnFirst struct {
-	resp *response.RPC
+	ReqURI string
+	resp   *response.RPC
 }
 
 func (c *returnFirst) Collect(r response.RPC) error {
@@ -91,6 +93,10 @@ func (c *returnFirst) Collect(r response.RPC) error {
 }
 
 func (c *returnFirst) GetResult() response.RPC {
+	if c.resp == nil {
+		r := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", c.ReqURI}, nil)
+		c.resp = &r
+	}
 	return *c.resp
 }
 
@@ -148,7 +154,14 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 		}
 	}
 
+	chassisID := getChassisID(uri)
+	reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI").SetString(chassisID)
 	return m.call.collector.GetResult()
+}
+
+func getChassisID(uri string) string {
+	parts := strings.Split(uri, "/")
+	return parts[len(parts)-1]
 }
 
 func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC {

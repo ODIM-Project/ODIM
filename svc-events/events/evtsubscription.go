@@ -285,15 +285,12 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	originResourceProcessedCount := len(result.Response)
         i:=0
         var resourceId string
-//        var subordinateResource string
 
 	for originResource, evtResponse := range result.Response {
 		OriginResource:= strings.SplitAfter(originResource,"/")
 		originResourceId:=OriginResource[len(OriginResource)-1]
-//		subordinateResourceName:=OriginResource[len(OriginResource)-2]
 		if i==0 {
 			resourceId=originResourceId
-//			subordinateResource = subordinateResourceName
 		}
 		if originResourceId==resourceId && i>0{
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)

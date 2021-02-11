@@ -210,13 +210,9 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	// remove odataid in the originresources
 	originResources := removeOdataIDfromOriginResources(postRequest.OriginResources)
 	originResourcesCount := len(originResources)
-	fmt.Print("........this is COUNT 1, for len(originResources) : ")
-	fmt.Print(originResourcesCount)
 
 	// check and remove if duplicate OriginResources exist in the request
 	removeDuplicatesFromSlice(&originResources, &originResourcesCount)
-	fmt.Print(".....origin resource count after remove duplicate: ")
-	fmt.Print(originResourcesCount)
 
 	// If origin resource is nil then subscribe to all collection
 	if originResourcesCount <= 0 {
@@ -228,8 +224,6 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 			"/redfish/v1/TaskService/Tasks",
 		}
 		originResourcesCount = len(originResources)
-		fmt.Print("here is the count 3")
-		fmt.Print(originResourcesCount)
 	}
 	var collectionList = make([]string, 0)
 	subTaskChan := make(chan int32, originResourcesCount)
@@ -541,8 +535,6 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		resp.StatusCode = response.StatusCode
 		log.Error(errorMessage)
 		return "", resp
-		fmt.Print("this is the final resp returned: ")
-		fmt.Print(resp)
 	}
 	// if Subscription location is empty then don't store event details in DB
 	locationHdr := response.Header.Get("location")
@@ -598,7 +590,6 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	resp.Response = outBody
 	resp.StatusCode = response.StatusCode
 	resp.Location = response.Header.Get("location")
-
 	return deviceIPAddress, resp
 }
 

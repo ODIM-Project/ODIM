@@ -81,6 +81,7 @@ authorityKeyIdentifier=keyid,issuer
 subjectAltName = @alternate_names
 [ alternate_names ]
 DNS.1 = $localhostFQDN
+DNS.2 = URP
 EOF
 ) -in  odimra_server.csr -CA  rootCA.crt -CAkey  rootCA.key  -CAcreateserial -out odimra_server.crt -days 500 -sha512
 echo

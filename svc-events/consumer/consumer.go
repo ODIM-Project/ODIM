@@ -54,7 +54,7 @@ func writeEventToJobQueue(kafkaMessage common.Events) {
 	var events = make([]interface{}, 0)
 	events = append(events, kafkaMessage)
 
-	go common.RunWriteWorkers(In, events, 1, done)
+	go common.RunWriteWorkers(In, events, 5, done)
 }
 
 // Consume create a consumer for message bus

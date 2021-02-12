@@ -20,12 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"reflect"
-	"strings"
-
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -33,6 +27,11 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"reflect"
+	"strings"
 )
 
 type ClientFactory func(name string) (Client, *errors.Error)

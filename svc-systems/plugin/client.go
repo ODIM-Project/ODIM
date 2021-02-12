@@ -94,8 +94,7 @@ func (c *returnFirst) Collect(r response.RPC) error {
 
 func (c *returnFirst) GetResult() response.RPC {
 	if c.resp == nil {
-		r := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", c.ReqURI}, nil)
-		c.resp = &r
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", c.ReqURI}, nil)
 	}
 	return *c.resp
 }
@@ -153,9 +152,11 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 			log.Printf("execution of GET %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
 		}
 	}
-
-	chassisID := getChassisID(uri)
-	reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI").SetString(chassisID)
+	field := reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI")
+	if field.IsValid() {
+		chassisID := getChassisID(uri)
+		reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI").SetString(chassisID)
+	}
 	return m.call.collector.GetResult()
 }
 

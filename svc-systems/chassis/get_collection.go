@@ -62,12 +62,15 @@ func (h *GetCollection) Handle() (r response.RPC) {
 		}
 	}
 
+	h.sourcesProvider.findSwitches(&allChassisCollection)
+
 	initializeRPCResponse(&r, allChassisCollection)
 	return
 }
 
 type sourceProvider interface {
 	findSources() ([]source, *response.RPC)
+	findSwitches(c *sresponse.Collection)
 }
 
 type sourceProviderImpl struct {
@@ -89,6 +92,10 @@ func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
 
 	sources = append(sources, &unmanagedChassisProvider{c: pc})
 	return sources, nil
+}
+
+func (c *sourceProviderImpl) findSwitches(collection *sresponse.Collection) {
+	
 }
 
 type source interface {

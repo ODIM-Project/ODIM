@@ -152,9 +152,9 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 			log.Printf("execution of GET %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
 		}
 	}
-	// Checking whether the struct passed as the interface has a reqURI field.
+	// Checking whether the struct passed as the interface has a ReqURI field.
 	// If it is a collection request then the ReqURI field won't be present.
-	// Only struct associating with individual resource collection requires the reqURI field.
+	// Only struct associating with individual resource collection requires the ReqURI field.
 	field := reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI")
 	if field.IsValid() {
 		chassisID := getChassisID(uri)

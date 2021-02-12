@@ -158,7 +158,7 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 	field := reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI")
 	if field.IsValid() {
 		chassisID := getChassisID(uri)
-		reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI").SetString(chassisID)
+		field.SetString(chassisID)
 	}
 	return m.call.collector.GetResult()
 }

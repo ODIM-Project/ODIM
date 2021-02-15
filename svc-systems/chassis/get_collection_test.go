@@ -44,7 +44,7 @@ func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 	r := sut.Handle()
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.IsType(t, sresponse.NewChassisCollection(), r.Body)
-	require.Equal(t, []dmtfmodel.Link{{"1"}, {"3"}, {"2"}, {"4"}}, r.Body.(sresponse.Collection).Members)
+	require.Equal(t, []dmtfmodel.Link{{"1"}, {"3"}, {"2"}, {"4"}, {"5"}}, r.Body.(sresponse.Collection).Members)
 	require.Equal(t, map[string]string{
 		"Allow":             `"GET"`,
 		"Cache-Control":     "no-cache",
@@ -182,8 +182,9 @@ func (c *collectionSourceProviderMock) findSources() ([]source, *response.RPC) {
 }
 
 func (c *collectionSourceProviderMock) findSwitchChassis(col *sresponse.Collection) {
-	args := c.Mock.Called()
-	link := args.Get(0).(dmtfmodel.Link)
+	link := dmtfmodel.Link{
+		Oid: "5",
+	}
 	col.AddMember(link)
 }
 

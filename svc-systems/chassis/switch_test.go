@@ -93,7 +93,7 @@ func contactClientMock(url, method, token string, odataID string, body interface
 			},
 		},
 	}
-	if token == "" {
+	if token != "" {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(tokenBody))
 	} else {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(basicAuthBody))

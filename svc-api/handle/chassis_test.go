@@ -203,7 +203,43 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 		"Location":        {"/redfish/odim/blebleble"},
 	})
 }
+func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
+	expectedRPCResponse := chassisproto.GetChassisResponse{
+		StatusCode: http.StatusBadRequest,
+		Body: []byte(`{
+  "error": {
+    "code": "Base.1.6.1.GeneralError",
+    "message": "An error has occurred. See ExtendedInfo for more information.",
+    "@Message.ExtendedInfo": [
+      {
+        "@odata.type": "#Message.v1_0_8.Message",
+        "MessageId": "Base.1.6.1.MalformedJSON",
+        "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
+        "Severity": "Critical",
+        "Resolution": "Ensure that the request body is valid JSON and resubmit the request."
+      }
+    ]
+  }
+}
+`),
+	}
 
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+			return &expectedRPCResponse, nil
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"Sample":"Body","Links":{[],},}`)).
+		Expect()
+	resp.Status(http.StatusBadRequest)
+	resp.Body().Contains(string(expectedRPCResponse.Body))
+
+}
 var redfishErrorSchema = `
 {
    "$schema": "http://json-schema.org/draft-04/schema#",

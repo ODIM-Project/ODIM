@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-"sync"	
+	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -283,7 +283,7 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
-    config.TLSConfMutex.RLock()
+		config.TLSConfMutex.RLock()
 		mgr := mgrmodel.RAManager{
 			Name:            "odimra",
 			ManagerType:     "Service",
@@ -292,7 +292,7 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 			UUID:            config.Data.RootServiceUUID,
 			State:           "Enabled",
 		}
-    config.TLSConfMutex.RUnlock()
+		config.TLSConfMutex.RUnlock()
 		err := dbInterface.AddManagertoDBInterface(mgr)
 		if err != nil {
 			log.Error(err)

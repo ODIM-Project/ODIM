@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"

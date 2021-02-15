@@ -16,7 +16,7 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"os"
-	
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"

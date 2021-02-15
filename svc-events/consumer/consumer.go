@@ -61,10 +61,10 @@ func writeEventToJobQueue(kafkaMessage common.Events) {
 // the topic can be defined inside configuration file config.toml
 func Consume(topicName string) {
 	config.TLSConfMutex.RLock()
-	messageQueueConfigFilePath := config.Data.MessageQueueConfigFilePath	
-config.TLSConfMutex.RUnlock()
-  // connecting to kafka
-  k, err := dc.Communicator(dc.KAFKA,messageQueueConfigFilePath)
+	messageQueueConfigFilePath := config.Data.MessageQueueConfigFilePath
+	config.TLSConfMutex.RUnlock()
+	// connecting to kafka
+	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

@@ -16,7 +16,7 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"os"
-	
+
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"

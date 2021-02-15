@@ -92,7 +92,7 @@ func (f *switchFactory) getSwitchCollection(plugin smodel.Plugin) {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
-	links, err := f.collectChassisCollection(req)
+	links, err := collectChassisCollection(req)
 	if err != nil {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
@@ -137,7 +137,7 @@ func (f *switchFactory) createChassisRequest(plugin smodel.Plugin) (*pluginConta
 	}, nil
 }
 
-func (f *switchFactory) collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
+func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
 	body, _, statusCode, err := contactPlugin(pluginRequest)
 	if err != nil {
 		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + err.Error())

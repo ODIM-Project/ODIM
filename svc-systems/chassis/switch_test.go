@@ -26,18 +26,6 @@ import (
 	"testing"
 )
 
-func getSwitchFactoryMock(collection *sresponse.Collection) *switchFactory {
-	chassisMap := make(map[string]bool)
-	return &switchFactory{
-		collection:        collection,
-		chassisMap:        chassisMap,
-		wg:                &sync.WaitGroup{},
-		mu:                &sync.Mutex{},
-		getFabricManagers: getFabricManagersMock,
-		contactClient:     contactClientMock,
-	}
-}
-
 func Test_sourceProviderImpl_findSwitchChassis(t *testing.T) {
 	config.SetUpMockConfig(t)
 	col := sresponse.NewChassisCollection()
@@ -64,6 +52,18 @@ func Test_sourceProviderImpl_findSwitchChassis(t *testing.T) {
 			tt.c.findSwitchChassis(tt.args.collection)
 			assert.Equal(t, 2, tt.args.collection.MembersCount)
 		})
+	}
+}
+
+func getSwitchFactoryMock(collection *sresponse.Collection) *switchFactory {
+	chassisMap := make(map[string]bool)
+	return &switchFactory{
+		collection:        collection,
+		chassisMap:        chassisMap,
+		wg:                &sync.WaitGroup{},
+		mu:                &sync.Mutex{},
+		getFabricManagers: getFabricManagersMock,
+		contactClient:     contactClientMock,
 	}
 }
 

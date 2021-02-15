@@ -16,7 +16,6 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"os"
-	"sync"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -53,9 +52,8 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	if err := services.InitializeService(services.Tasks); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())

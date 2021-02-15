@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -162,9 +161,8 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	router.Run(iris.Server(apiServer))
 }

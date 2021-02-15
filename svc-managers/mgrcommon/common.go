@@ -280,10 +280,10 @@ func RetryManagersOperation(req PluginContactRequest, errorMessage string) ([]by
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
+		config.TLSConfMutex.RLock()
 		mgr := mgrmodel.RAManager{
 			Name:            "odimra",
 			ManagerType:     "Service",
@@ -292,6 +292,7 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 			UUID:            config.Data.RootServiceUUID,
 			State:           "Enabled",
 		}
+		config.TLSConfMutex.RUnlock()
 		err := dbInterface.AddManagertoDBInterface(mgr)
 		if err != nil {
 			log.Error(err)

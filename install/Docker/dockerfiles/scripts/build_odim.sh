@@ -20,7 +20,7 @@ for i in $LIST; do
     cd $i
     go mod download
     go mod vendor
-    go build -i -race .
+    go build -i .
     if [ $? -eq 0 ]; then
         echo Successfully build $i service
     else

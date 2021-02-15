@@ -18,7 +18,7 @@ package chassis
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -29,6 +29,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
+const collectionURL = "/redfish/v1/Chassis"
+
 func NewGetCollectionHandler(
 	pcf plugin.ClientFactory,
 	imkp func(table string) ([]string, error)) *GetCollection {
@@ -37,6 +39,7 @@ func NewGetCollectionHandler(
 		&sourceProviderImpl{
 			pluginClientFactory: pcf,
 			getAllKeys:          imkp,
+			getSwitchFactory: getSwitchFactory,
 		},
 	}
 }
@@ -62,7 +65,7 @@ func (h *GetCollection) Handle() (r response.RPC) {
 		}
 	}
 
-	h.sourcesProvider.findSwitches(&allChassisCollection)
+	h.sourcesProvider.findSwitchChassis(&allChassisCollection)
 
 	initializeRPCResponse(&r, allChassisCollection)
 	return
@@ -70,12 +73,13 @@ func (h *GetCollection) Handle() (r response.RPC) {
 
 type sourceProvider interface {
 	findSources() ([]source, *response.RPC)
-	findSwitches(c *sresponse.Collection)
+	findSwitchChassis(c *sresponse.Collection)
 }
 
 type sourceProviderImpl struct {
 	pluginClientFactory plugin.ClientFactory
 	getAllKeys          func(table string) ([]string, error)
+	getSwitchFactory func(collection *sresponse.Collection) (*switchFactory)
 }
 
 func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
@@ -94,10 +98,6 @@ func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
 	return sources, nil
 }
 
-func (c *sourceProviderImpl) findSwitches(collection *sresponse.Collection) {
-	
-}
-
 type source interface {
 	read() ([]dmtf.Link, *response.RPC)
 }
@@ -109,7 +109,7 @@ type managedChassisProvider struct {
 func (m *managedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
-		log.Printf("error getting all keys of ChassisCollection table : %v", e)
+		log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
 		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}
@@ -126,7 +126,7 @@ type unmanagedChassisProvider struct {
 }
 
 func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
-	r := u.c.Get("/redfish/v1/Chassis", plugin.AggregateResults)
+	r := u.c.Get(collectionURL, plugin.AggregateResults)
 	if r.StatusCode != http.StatusOK {
 		return nil, &r
 	}
@@ -151,4 +151,18 @@ func initializeRPCResponse(target *response.RPC, body sresponse.Collection) {
 		"OData-Version":     "4.0",
 	}
 	target.StatusCode = http.StatusOK
+}
+
+func (c *sourceProviderImpl) findSwitchChassis(collection *sresponse.Collection) {
+	f := c.getSwitchFactory(collection)
+	managers, err := f.getFabricManagers()
+	if err != nil {
+		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		return
+	}
+	for _, manager := range managers {
+		f.wg.Add(1)
+		go f.getSwitchCollection(manager)
+	}
+	f.wg.Wait()
 }

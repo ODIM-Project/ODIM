@@ -181,6 +181,12 @@ func (c *collectionSourceProviderMock) findSources() ([]source, *response.RPC) {
 	return args.Get(0).([]source), getErrorOrNil(args.Get(1))
 }
 
+func (c *collectionSourceProviderMock) findSwitchChassis(col *sresponse.Collection) {
+	args := c.Mock.Called()
+	link := args.Get(0).(dmtfmodel.Link)
+	col.AddMember(link)
+}
+
 func getErrorOrNil(a interface{}) *response.RPC {
 	if a == nil {
 		return nil

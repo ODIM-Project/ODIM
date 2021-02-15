@@ -23,7 +23,7 @@ import (
 
 // Fabric is the model to collect fabric plugin id from DB
 type Fabric struct {
-	PluginID   string
+	PluginID string
 }
 
 // GetFabricManagers fetches all the fabrics details from DB
@@ -41,16 +41,16 @@ func GetFabricManagers() ([]Plugin, error) {
 		var fabric Fabric
 		fabricData, err := conn.Read("Fabric", key)
 		if err != nil {
-			log.Warn("while trying to read DB contents for "+key+ " in Fabric table, got "+err.Error())
+			log.Warn("while trying to read DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
 		if errs := json.Unmarshal([]byte(fabricData), &fabric); errs != nil {
-			log.Warn("while trying to unmarshal DB contents for "+key+ " in Fabric table, got "+err.Error())
+			log.Warn("while trying to unmarshal DB contents for " + key + " in Fabric table, got " + err.Error())
 			continue
 		}
 		manager, err := GetPluginData(fabric.PluginID)
 		if err != nil {
-			log.Warn("while trying to collect DB contents for "+fabric.PluginID+ " in Plugin table, got "+err.Error())
+			log.Warn("while trying to collect DB contents for " + fabric.PluginID + " in Plugin table, got " + err.Error())
 			continue
 		}
 		managers = append(managers, manager)

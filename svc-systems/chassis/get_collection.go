@@ -39,7 +39,7 @@ func NewGetCollectionHandler(
 		&sourceProviderImpl{
 			pluginClientFactory: pcf,
 			getAllKeys:          imkp,
-			getSwitchFactory: getSwitchFactory,
+			getSwitchFactory:    getSwitchFactory,
 		},
 	}
 }
@@ -79,7 +79,7 @@ type sourceProvider interface {
 type sourceProviderImpl struct {
 	pluginClientFactory plugin.ClientFactory
 	getAllKeys          func(table string) ([]string, error)
-	getSwitchFactory func(collection *sresponse.Collection) (*switchFactory)
+	getSwitchFactory    func(collection *sresponse.Collection) *switchFactory
 }
 
 func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
@@ -151,18 +151,4 @@ func initializeRPCResponse(target *response.RPC, body sresponse.Collection) {
 		"OData-Version":     "4.0",
 	}
 	target.StatusCode = http.StatusOK
-}
-
-func (c *sourceProviderImpl) findSwitchChassis(collection *sresponse.Collection) {
-	f := c.getSwitchFactory(collection)
-	managers, err := f.getFabricManagers()
-	if err != nil {
-		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
-		return
-	}
-	for _, manager := range managers {
-		f.wg.Add(1)
-		go f.getSwitchCollection(manager)
-	}
-	f.wg.Wait()
 }

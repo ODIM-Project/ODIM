@@ -18,38 +18,37 @@ import (
 	"encoding/json"
 	"fmt"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 type switchFactory struct {
-	collection *sresponse.Collection
-	chassisMap map[string]bool
-	wg *sync.WaitGroup
-	mu *sync.Mutex
+	collection        *sresponse.Collection
+	chassisMap        map[string]bool
+	wg                *sync.WaitGroup
+	mu                *sync.Mutex
 	getFabricManagers func() ([]smodel.Plugin, error)
-	contactClient func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	
+	contactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
 func getSwitchFactory(collection *sresponse.Collection) *switchFactory {
 	chassisMap := make(map[string]bool)
 	return &switchFactory{
-		collection: collection,
-		chassisMap: chassisMap,
-		wg: &sync.WaitGroup{},
-		mu: &sync.Mutex{},
+		collection:        collection,
+		chassisMap:        chassisMap,
+		wg:                &sync.WaitGroup{},
+		mu:                &sync.Mutex{},
 		getFabricManagers: smodel.GetFabricManagers,
-		contactClient: pmbhandle.ContactPlugin,
+		contactClient:     pmbhandle.ContactPlugin,
 	}
 }
 
@@ -72,16 +71,30 @@ type PluginToken struct {
 // Token variable hold the all the XAuthToken  against the plguin ID
 var Token PluginToken
 
+func (c *sourceProviderImpl) findSwitchChassis(collection *sresponse.Collection) {
+	f := c.getSwitchFactory(collection)
+	managers, err := f.getFabricManagers()
+	if err != nil {
+		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
+		return
+	}
+	for _, manager := range managers {
+		f.wg.Add(1)
+		go f.getSwitchCollection(manager)
+	}
+	f.wg.Wait()
+}
+
 func (f *switchFactory) getSwitchCollection(plugin smodel.Plugin) {
 	defer f.wg.Done()
 	req, err := f.createChassisRequest(plugin)
 	if err != nil {
-		log.Warn("while trying to create fabric plugin request for " +plugin.ID+ ", got "+err.Error())
+		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
 	links, err := f.collectChassisCollection(req)
 	if err != nil {
-		log.Warn("while trying to create fabric plugin request for " +plugin.ID+ ", got "+err.Error())
+		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
 	for _, link := range links {
@@ -92,7 +105,6 @@ func (f *switchFactory) getSwitchCollection(plugin smodel.Plugin) {
 		}
 		f.mu.Unlock()
 	}
-
 
 }
 
@@ -116,22 +128,22 @@ func (f *switchFactory) createChassisRequest(plugin smodel.Plugin) (*pluginConta
 	}
 
 	return &pluginContactRequest{
-		Token: token,
+		Token:           token,
 		LoginCredential: cred,
-		ContactClient: f.contactClient,
-		Plugin: plugin,
-		HTTPMethodType: http.MethodGet,
-		URL: url,
+		ContactClient:   f.contactClient,
+		Plugin:          plugin,
+		HTTPMethodType:  http.MethodGet,
+		URL:             url,
 	}, nil
 }
 
 func (f *switchFactory) collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
 	body, _, statusCode, err := contactPlugin(pluginRequest)
 	if err != nil {
-		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin "+pluginRequest.Plugin.ID+", got "+err.Error())
+		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + err.Error())
 	}
 	if !is2xx(statusCode) {
-		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin "+pluginRequest.Plugin.ID+", got "+strconv.Itoa(statusCode))
+		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + strconv.Itoa(statusCode))
 	}
 	return extractChassisCollection(body)
 }

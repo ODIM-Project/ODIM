@@ -50,6 +50,8 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
+	chassis.Token.Tokens = make(map[string]string)
+
 	schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 	if err != nil {
 		log.Fatal("Error while trying to read search/filter schema json: " + err.Error())

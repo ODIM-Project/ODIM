@@ -446,7 +446,7 @@ type PCIeInterface struct {
 	PCIeType    string `json:"PCIeType"` //enum
 }
 
-/* 
+/*
 PCIeFunction 1.2.2
 This resource shall be used to represent a PCIeFunction attached to a System.
 URIs:
@@ -595,11 +595,6 @@ type ProcessorSummary struct {
 	Model                 string  `json:"Model"`
 	Metrics               Metrics `json:"Metrics"`
 	Status                Status  `json:"Status"`
-}
-
-// Redundancy redfish structure
-type Redundancy struct {
-	Oid string `json:"@odata.id"`
 }
 
 // SecureBoot redfish structure

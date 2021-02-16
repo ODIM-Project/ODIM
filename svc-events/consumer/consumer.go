@@ -54,14 +54,17 @@ func writeEventToJobQueue(kafkaMessage common.Events) {
 	var events = make([]interface{}, 0)
 	events = append(events, kafkaMessage)
 
-	go common.RunWriteWorkers(In, events, 1, done)
+	go common.RunWriteWorkers(In, events, 5, done)
 }
 
 // Consume create a consumer for message bus
 // the topic can be defined inside configuration file config.toml
 func Consume(topicName string) {
+	config.TLSConfMutex.RLock()
+	messageQueueConfigFilePath := config.Data.MessageQueueConfigFilePath
+	config.TLSConfMutex.RUnlock()
 	// connecting to kafka
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

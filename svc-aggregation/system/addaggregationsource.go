@@ -107,7 +107,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	}
 	err := e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
 	if err != nil {
-		errMsg := fmt.Sprintf("while trying to save the active request details from DB: %v", err.Error())
+		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
@@ -115,7 +115,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	defer func() {
 		err := e.DeleteActiveRequest(ipAddr)
 		if err != nil {
-			log.Printf("while trying to collect the active request details from DB: %v", err.Error())
+			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
 		}
 	}()
 

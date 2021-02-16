@@ -34,7 +34,7 @@ func CreateTask(sessionUserName string) (string, error) {
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("Something went wrong with rpc call: " + err.Error())
+		log.Error("rpc error: " + err.Error())
 		return "", err
 	}
 	return response.TaskURI, err
@@ -51,7 +51,7 @@ func CreateChildTask(sessionUserName string, parentTaskID string) (string, error
 		},
 	)
 	if err != nil && response == nil {
-		log.Error("Something went wrong with rpc call: " + err.Error())
+		log.Error("rpc error: " + err.Error())
 		return "", err
 	}
 	return response.TaskURI, err

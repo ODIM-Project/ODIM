@@ -35,7 +35,7 @@ type fabricFactory struct {
 	collection        *sresponse.Collection
 	chassisMap        map[string]bool
 	wg                *sync.WaitGroup
-	mu                *sync.Mutex
+	mu                *sync.RWMutex
 	getFabricManagers func() ([]smodel.Plugin, error)
 	contactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
@@ -46,7 +46,7 @@ func getFabricFactory(collection *sresponse.Collection) *fabricFactory {
 		collection:        collection,
 		chassisMap:        chassisMap,
 		wg:                &sync.WaitGroup{},
-		mu:                &sync.Mutex{},
+		mu:                &sync.RWMutex{},
 		getFabricManagers: smodel.GetFabricManagers,
 		contactClient:     pmbhandle.ContactPlugin,
 	}
@@ -65,7 +65,7 @@ type pluginContactRequest struct {
 // PluginToken interface to hold the token
 type PluginToken struct {
 	Tokens map[string]string
-	lock   sync.Mutex
+	lock   sync.RWMutex
 }
 
 // Token variable hold the all the XAuthToken  against the plguin ID
@@ -80,12 +80,12 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 	}
 	for _, manager := range managers {
 		f.wg.Add(1)
-		go f.getFabricCollection(manager)
+		go f.getFabricManagerChassis(manager)
 	}
 	f.wg.Wait()
 }
 
-func (f *fabricFactory) getFabricCollection(plugin smodel.Plugin) {
+func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	defer f.wg.Done()
 	req, err := f.createChassisRequest(plugin, collectionURL)
 	if err != nil {
@@ -232,8 +232,8 @@ func (p *PluginToken) storeToken(plguinID, token string) {
 }
 
 func (p *PluginToken) getToken(pluginID string) string {
-	p.lock.Lock()
-	defer p.lock.Unlock()
+	p.lock.RLock()
+	defer p.lock.RUnlock()
 	return p.Tokens[pluginID]
 }
 

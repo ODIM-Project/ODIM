@@ -87,7 +87,7 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 
 func (f *fabricFactory) getFabricCollection(plugin smodel.Plugin) {
 	defer f.wg.Done()
-	req, err := f.createChassisRequest(plugin)
+	req, err := f.createChassisRequest(plugin, collectionURL)
 	if err != nil {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
@@ -108,10 +108,9 @@ func (f *fabricFactory) getFabricCollection(plugin smodel.Plugin) {
 
 }
 
-func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin) (*pluginContactRequest, error) {
+func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url string) (*pluginContactRequest, error) {
 	var token string
 	cred := make(map[string]string)
-	url := collectionURL
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token = f.getPluginToken(plugin)

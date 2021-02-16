@@ -96,7 +96,7 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
-	log.Info("GetCurrentMasterHostPort MasterIP: " + masterIP)
+	log.Info("GetCurrentMasterHostPort masterIP: " + masterIP)
 	log.Info("GetCurrentMasterHostPort masterPort: " + masterPort)
 	return masterIP, masterPort
 }

@@ -207,8 +207,7 @@ func (f *switchFactory) getPluginToken(plugin smodel.Plugin) string {
 }
 
 func (f *switchFactory) createToken(plugin smodel.Plugin) string {
-	var contactRequest *pluginContactRequest
-
+	var contactRequest pluginContactRequest
 	contactRequest.ContactClient = f.contactClient
 	contactRequest.Plugin = plugin
 	contactRequest.HTTPMethodType = http.MethodPost
@@ -217,7 +216,7 @@ func (f *switchFactory) createToken(plugin smodel.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, token, _, err := contactPlugin(contactRequest)
+	_, token, _, err := contactPlugin(&contactRequest)
 	if err != nil {
 		log.Error(err.Error())
 	}

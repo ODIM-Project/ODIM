@@ -27,6 +27,7 @@ import (
 )
 
 func Test_sourceProviderImpl_findSwitchChassis(t *testing.T) {
+	Token.Tokens = make(map[string]string)
 	config.SetUpMockConfig(t)
 	col := sresponse.NewChassisCollection()
 	type args struct {
@@ -72,6 +73,8 @@ func getFabricManagersMock() ([]smodel.Plugin, error) {
 		{
 			ID:                "1",
 			PreferredAuthType: "XAuthToken",
+			Username:          "someUser",
+			Password:          []byte("password"),
 		},
 		{
 			ID:                "2",

@@ -109,9 +109,7 @@ func resetDBWriteConection(dbFlag DbType) {
 			config := getInMemoryDBConfig()
 			log.Debug("getInMemoryDBConfig: ", config)
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Info("InMemory currentMaster IP in  resetDBWriteConection function: " + currentMasterIP)
-			log.Info("InMemory currentMaster Port in resetDBWriteConection fucntion: " + currentMasterPort)
-			log.Info("inMemoryDBConnPool.MasterIP in resetDBWriteConection fucntion: " + inMemDBConnPool.MasterIP)
+			log.Info("InMemory currentMaster IP: "+currentMasterIP, "CurrentMaster Port: "+currentMasterPort, "inMemDBConnPool.MasterIP: "+inMemDBConnPool.MasterIP)
 			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				log.Info("Reintializing inmemory write pool")
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
@@ -133,9 +131,7 @@ func resetDBWriteConection(dbFlag DbType) {
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getOnDiskDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Info("Ondisk currentMasterIP in resetDBWriteConection function: " + currentMasterIP)
-			log.Info("Ondisk currentMasterPort in resetDBWriteConection fucntion: " + currentMasterPort)
-			log.Info("OnDiskDBConnPool.MasterIP in resetDBWriteConection fucntion: " + onDiskDBConnPool.MasterIP)
+			log.Info("InMemory currentMaster IP: "+currentMasterIP, "CurrentMaster Port: "+currentMasterPort, "onDiskDBConnPool.MasterIP: "+onDiskDBConnPool.MasterIP)
 			if onDiskDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				log.Info("Reintializing ondisk  write pool")
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)

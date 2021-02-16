@@ -31,7 +31,7 @@ import (
 	"sync"
 )
 
-type switchFactory struct {
+type fabricFactory struct {
 	collection        *sresponse.Collection
 	chassisMap        map[string]bool
 	wg                *sync.WaitGroup
@@ -40,9 +40,9 @@ type switchFactory struct {
 	contactClient     func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 }
 
-func getSwitchFactory(collection *sresponse.Collection) *switchFactory {
+func getFabricFactory(collection *sresponse.Collection) *fabricFactory {
 	chassisMap := make(map[string]bool)
-	return &switchFactory{
+	return &fabricFactory{
 		collection:        collection,
 		chassisMap:        chassisMap,
 		wg:                &sync.WaitGroup{},
@@ -71,8 +71,8 @@ type PluginToken struct {
 // Token variable hold the all the XAuthToken  against the plguin ID
 var Token PluginToken
 
-func (c *sourceProviderImpl) findSwitchChassis(collection *sresponse.Collection) {
-	f := c.getSwitchFactory(collection)
+func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection) {
+	f := c.getFabricFactory(collection)
 	managers, err := f.getFabricManagers()
 	if err != nil {
 		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
@@ -80,12 +80,12 @@ func (c *sourceProviderImpl) findSwitchChassis(collection *sresponse.Collection)
 	}
 	for _, manager := range managers {
 		f.wg.Add(1)
-		go f.getSwitchCollection(manager)
+		go f.getFabricCollection(manager)
 	}
 	f.wg.Wait()
 }
 
-func (f *switchFactory) getSwitchCollection(plugin smodel.Plugin) {
+func (f *fabricFactory) getFabricCollection(plugin smodel.Plugin) {
 	defer f.wg.Done()
 	req, err := f.createChassisRequest(plugin)
 	if err != nil {
@@ -108,7 +108,7 @@ func (f *switchFactory) getSwitchCollection(plugin smodel.Plugin) {
 
 }
 
-func (f *switchFactory) createChassisRequest(plugin smodel.Plugin) (*pluginContactRequest, error) {
+func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin) (*pluginContactRequest, error) {
 	var token string
 	cred := make(map[string]string)
 	url := collectionURL
@@ -198,7 +198,7 @@ func getPluginStatus(plugin smodel.Plugin) bool {
 }
 
 // getPluginToken will verify the if any token present to the plugin else it will create token for the new plugin
-func (f *switchFactory) getPluginToken(plugin smodel.Plugin) string {
+func (f *fabricFactory) getPluginToken(plugin smodel.Plugin) string {
 	authToken := Token.getToken(plugin.ID)
 	if authToken == "" {
 		return f.createToken(plugin)
@@ -206,7 +206,7 @@ func (f *switchFactory) getPluginToken(plugin smodel.Plugin) string {
 	return authToken
 }
 
-func (f *switchFactory) createToken(plugin smodel.Plugin) string {
+func (f *fabricFactory) createToken(plugin smodel.Plugin) string {
 	var contactRequest pluginContactRequest
 	contactRequest.ContactClient = f.contactClient
 	contactRequest.Plugin = plugin
@@ -247,7 +247,7 @@ func extractChassisCollection(body []byte) ([]dmtf.Link, error) {
 	}
 	err := json.Unmarshal([]byte(data), &resp)
 	if err != nil {
-		return resp.Members, fmt.Errorf("while unmarshalling the chassis switch collection, got: %v", err)
+		return resp.Members, fmt.Errorf("while unmarshalling the chassis fabric collection, got: %v", err)
 	}
 
 	return resp.Members, nil

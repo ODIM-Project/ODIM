@@ -26,7 +26,7 @@ import (
 	"testing"
 )
 
-func Test_sourceProviderImpl_findSwitchChassis(t *testing.T) {
+func Test_sourceProviderImpl_findFabricChassis(t *testing.T) {
 	Token.Tokens = make(map[string]string)
 	config.SetUpMockConfig(t)
 	col := sresponse.NewChassisCollection()
@@ -39,9 +39,9 @@ func Test_sourceProviderImpl_findSwitchChassis(t *testing.T) {
 		args args
 	}{
 		{
-			name: "multiple switch chassis collection available for multiple plugins",
+			name: "multiple fabric chassis collection available for multiple plugins",
 			c: &sourceProviderImpl{
-				getSwitchFactory: getSwitchFactoryMock,
+				getFabricFactory: getFabricFactoryMock,
 			},
 			args: args{
 				collection: &col,
@@ -50,15 +50,15 @@ func Test_sourceProviderImpl_findSwitchChassis(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.c.findSwitchChassis(tt.args.collection)
+			tt.c.findFabricChassis(tt.args.collection)
 			assert.Equal(t, 2, tt.args.collection.MembersCount)
 		})
 	}
 }
 
-func getSwitchFactoryMock(collection *sresponse.Collection) *switchFactory {
+func getFabricFactoryMock(collection *sresponse.Collection) *fabricFactory {
 	chassisMap := make(map[string]bool)
-	return &switchFactory{
+	return &fabricFactory{
 		collection:        collection,
 		chassisMap:        chassisMap,
 		wg:                &sync.WaitGroup{},

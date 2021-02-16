@@ -39,7 +39,7 @@ func NewGetCollectionHandler(
 		&sourceProviderImpl{
 			pluginClientFactory: pcf,
 			getAllKeys:          imkp,
-			getSwitchFactory:    getSwitchFactory,
+			getFabricFactory:    getFabricFactory,
 		},
 	}
 }
@@ -65,7 +65,7 @@ func (h *GetCollection) Handle() (r response.RPC) {
 		}
 	}
 
-	h.sourcesProvider.findSwitchChassis(&allChassisCollection)
+	h.sourcesProvider.findFabricChassis(&allChassisCollection)
 
 	initializeRPCResponse(&r, allChassisCollection)
 	return
@@ -73,13 +73,13 @@ func (h *GetCollection) Handle() (r response.RPC) {
 
 type sourceProvider interface {
 	findSources() ([]source, *response.RPC)
-	findSwitchChassis(c *sresponse.Collection)
+	findFabricChassis(c *sresponse.Collection)
 }
 
 type sourceProviderImpl struct {
 	pluginClientFactory plugin.ClientFactory
 	getAllKeys          func(table string) ([]string, error)
-	getSwitchFactory    func(collection *sresponse.Collection) *switchFactory
+	getFabricFactory    func(collection *sresponse.Collection) *fabricFactory
 }
 
 func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {

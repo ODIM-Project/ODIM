@@ -181,7 +181,7 @@ func (c *collectionSourceProviderMock) findSources() ([]source, *response.RPC) {
 	return args.Get(0).([]source), getErrorOrNil(args.Get(1))
 }
 
-func (c *collectionSourceProviderMock) findSwitchChassis(col *sresponse.Collection) {
+func (c *collectionSourceProviderMock) findFabricChassis(col *sresponse.Collection) {
 	link := dmtfmodel.Link{
 		Oid: "5",
 	}

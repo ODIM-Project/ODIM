@@ -83,14 +83,12 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-
 	return rdb
 }
 
 //GetCurrentMasterHostPort is to get the current Redis Master IP and Port from Sentinel.
 func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 	sentinelClient := sentinelNewClient(dbConfig)
-	log.Debug("sentinelClient in GetCurrentMasterHostPort : ", sentinelClient)
 	stringSlice := redisExtCalls.getMasterAddrByName(dbConfig.MasterSet, sentinelClient)
 	var masterIP string
 	var masterPort string
@@ -98,6 +96,8 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
+	log.Info("GetCurrentMasterHostPort MasterIP: " + masterIP)
+	log.Info("GetCurrentMasterHostPort masterPort: " + masterPort)
 	return masterIP, masterPort
 }
 

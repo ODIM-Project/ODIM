@@ -85,6 +85,8 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 	f.wg.Wait()
 }
 
+// getFabricManagerChassis will send a request to the plugin for the chassis collection,
+// and add them to the existing chassis collection.
 func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	defer f.wg.Done()
 	req, err := f.createChassisRequest(plugin, collectionURL)
@@ -99,7 +101,7 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	}
 	for _, link := range links {
 		f.mu.Lock()
-		if !f.chassisMap[link.Oid] {
+		if !f.chassisMap[link.Oid] { // uniqueness check for the chassis URI
 			f.chassisMap[link.Oid] = true
 			f.collection.AddMember(link)
 		}
@@ -108,6 +110,7 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 
 }
 
+// createChassisRequest creates the parameters ready for the plugin communication
 func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url string) (*pluginContactRequest, error) {
 	var token string
 	cred := make(map[string]string)
@@ -136,6 +139,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url string) (
 	}, nil
 }
 
+// collectChassisCollection contacts the plugin and collect the chassis response
 func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
 	body, _, statusCode, err := contactPlugin(pluginRequest)
 	if err != nil {
@@ -237,6 +241,7 @@ func (p *PluginToken) getToken(pluginID string) string {
 	return p.Tokens[pluginID]
 }
 
+// extractChassisCollection unmarshals the plugin response and returns the collection members
 func extractChassisCollection(body []byte) ([]dmtf.Link, error) {
 	var resp sresponse.Collection
 	data := string(body)

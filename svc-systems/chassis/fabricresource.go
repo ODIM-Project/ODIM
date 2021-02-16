@@ -15,15 +15,22 @@
 package chassis
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
+	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	log "github.com/sirupsen/logrus"
 )
 
-func (f *fabricFactory) getFabricResource(rID string) response.RPC {
+// getFabricChassisResource will collect the individual
+// fabric chassis resourse from all the fabric plugin
+func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 	var resp response.RPC
 	ch := make(chan response.RPC)
 	
@@ -47,13 +54,38 @@ func (f *fabricFactory) getFabricResource(rID string) response.RPC {
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 }
 
+// getResource is for collecting the fabric chassis from the individual plugin,
+// and returns the result through the channel ch
 func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan response.RPC) {
-	req, err := f.createChassisRequest(plugin, collectionURL)
+	req, err := f.createChassisRequest(plugin, fmt.Sprintf("%s/%s", collectionURL, rID))
 	if err != nil {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		return
 	}
+	ch <- collectChassisResource(req)
+}
 
-	ch <- common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
+// collectChassisResource contacts the plugin with the details available in the
+// pluginContactRequest, and returns the RPC response
+func collectChassisResource(pluginRequest *pluginContactRequest) (r response.RPC) {
+	body, _, _, err := contactPlugin(pluginRequest)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+
+	data := string(body)
+	//replacing the resposne with north bound translation URL
+	for key, value := range config.Data.URLTranslation.NorthBoundURL {
+		data = strings.Replace(data, key, value, -1)
+	}
+	
+	var resp dmtfmodel.Chassis
+	err = json.Unmarshal([]byte(data), &resp)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+
+	initializeRPCResponse(&r, resp)
+	return
 }

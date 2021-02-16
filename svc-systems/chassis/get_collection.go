@@ -139,7 +139,7 @@ func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	return c.Members, nil
 }
 
-func initializeRPCResponse(target *response.RPC, body sresponse.Collection) {
+func initializeRPCResponse(target *response.RPC, body interface{}) {
 	target.StatusMessage = response.Success
 	target.Body = body
 	target.Header = map[string]string{

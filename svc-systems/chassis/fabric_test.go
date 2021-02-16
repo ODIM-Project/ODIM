@@ -96,13 +96,13 @@ func contactClientMock(url, method, token string, odataID string, body interface
 			},
 		},
 	}
-	if url == "/ODIM/v1/Chassis" {
+	if url == "https://:/ODIM/v1/Chassis" {
 		if token != "" {
 			resp.Body = ioutil.NopCloser(bytes.NewBufferString(tokenBody))
 		} else {
 			resp.Body = ioutil.NopCloser(bytes.NewBufferString(basicAuthBody))
 		}
-	} else if url == "/ODIM/v1/Chassis/valid" {
+	} else if url == "https://:/ODIM/v1/Chassis/valid" {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(tokenBody))
 	} else {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(tokenBody))

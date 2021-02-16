@@ -86,6 +86,7 @@ configure_kafka_properties()
 
 	update_param "broker.id" "-1"
 	update_param "auto.create.topics.enable" "true"
+	update_param "num.partitions" "50"
 	update_param "log.dirs" ${KAFKA_LOG_DIRS}
 	update_param "zookeeper.connect" ${KAFKA_ZOOKEEPER_CONNECT}
 	update_param "listeners" ${KAFKA_LISTENERS}
@@ -110,9 +111,10 @@ configure_kafka_properties()
 	update_param "zookeeper.ssl.truststore.password" ${KAFKA_TRUSTSTORE_PASSWORD}
 	update_param "zookeeper.ssl.truststore.type" "JKS"
 	if $IS_KAFKA_CLUSTER; then
-		update_param "offsets.topic.replication.factor" "1"
-		update_param "transaction.state.log.replication.factor" "1"
+		update_param "min.insync.replicas" "2"
 		update_param "default.replication.factor" "3"
+		update_param "offsets.topic.replication.factor" "3"
+		update_param "transaction.state.log.replication.factor" "3"
 	fi
 
 	add_modify_footer

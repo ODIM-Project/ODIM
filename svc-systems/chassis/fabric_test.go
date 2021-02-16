@@ -62,7 +62,7 @@ func getFabricFactoryMock(collection *sresponse.Collection) *fabricFactory {
 		collection:        collection,
 		chassisMap:        chassisMap,
 		wg:                &sync.WaitGroup{},
-		mu:                &sync.Mutex{},
+		mu:                &sync.RWMutex{},
 		getFabricManagers: getFabricManagersMock,
 		contactClient:     contactClientMock,
 	}

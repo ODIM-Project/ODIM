@@ -1226,6 +1226,9 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	if err != nil {
 		errMsg := err.Error()
 		log.Error(errMsg)
+		if getResponse.StatusCode == http.StatusNotFound {
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil), getResponse.StatusCode, queueList
+		}
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 	}
 	// extracting the EMB Type and EMB Queue name

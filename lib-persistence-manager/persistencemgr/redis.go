@@ -83,7 +83,6 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-
 	return rdb
 }
 
@@ -97,7 +96,7 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
-
+	log.Info("GetCurrentMasterHostPort masterIP: " + masterIP, "masterPort: " + masterPort)
 	return masterIP, masterPort
 }
 
@@ -107,10 +106,13 @@ func resetDBWriteConection(dbFlag DbType) {
 	case InMemory:
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getInMemoryDBConfig()
+			log.Debug("getInMemoryDBConfig: ", config)
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Info("Inmemory MasterIP:" + currentMasterIP)
+			log.Info("InMemory currentMaster IP: "+currentMasterIP, "CurrentMaster Port: "+currentMasterPort, "inMemDBConnPool.MasterIP: "+inMemDBConnPool.MasterIP)
 			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
+				log.Info("Reintializing inmemory write pool")
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
+				log.Info("WritePool(InMemory): ", writePool)
 				if writePool == nil {
 					log.Info("Write pool is nil")
 					return
@@ -118,6 +120,7 @@ func resetDBWriteConection(dbFlag DbType) {
 				inMemDBConnPool.Mux.Lock()
 				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&inMemDBConnPool.WritePool)), unsafe.Pointer(writePool))
 				inMemDBConnPool.MasterIP = currentMasterIP
+				log.Info("Updated value of inMemDBConnPool.MasterIP: " + inMemDBConnPool.MasterIP)
 				inMemDBConnPool.PoolUpdatedTime = time.Now()
 				inMemDBConnPool.Mux.Unlock()
 			}
@@ -127,8 +130,9 @@ func resetDBWriteConection(dbFlag DbType) {
 		if config.Data.DBConf.RedisHAEnabled {
 			config := getOnDiskDBConfig()
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Info("Ondisk MasterIP:" + currentMasterIP)
+			log.Info("Ondisk currentMaster IP: "+currentMasterIP, "CurrentMaster Port: "+currentMasterPort, "onDiskDBConnPool.MasterIP: "+onDiskDBConnPool.MasterIP)
 			if onDiskDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
+				log.Info("Reintializing ondisk  write pool")
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
 				if writePool == nil {
 					return
@@ -136,6 +140,7 @@ func resetDBWriteConection(dbFlag DbType) {
 				onDiskDBConnPool.Mux.Lock()
 				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&onDiskDBConnPool.WritePool)), unsafe.Pointer(writePool))
 				onDiskDBConnPool.MasterIP = currentMasterIP
+				log.Info("Updated value of onDiskDBConnPool.MasterIP: " + onDiskDBConnPool.MasterIP)
 				onDiskDBConnPool.PoolUpdatedTime = time.Now()
 				onDiskDBConnPool.Mux.Unlock()
 			}
@@ -145,6 +150,7 @@ func resetDBWriteConection(dbFlag DbType) {
 		return
 	}
 }
+
 func getInMemoryDBConfig() *Config {
 	return &Config{
 		Port:         config.Data.DBConf.InMemoryPort,
@@ -176,6 +182,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			inMemDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if inMemDBConnPool.WritePool == nil {
+			log.Info("GetDBConnection : inMemDBConnPool.WritePool is nil, invoking resetDBWriteConection ")
 			resetDBWriteConection(InMemory)
 		}
 
@@ -189,6 +196,7 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 			onDiskDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if onDiskDBConnPool.WritePool == nil {
+			log.Info("GetDBConnection : onDiskDBConnPool.WritePool is nil, invoking resetDBWriteConection ")
 			resetDBWriteConection(OnDisk)
 		}
 		return onDiskDBConnPool, err

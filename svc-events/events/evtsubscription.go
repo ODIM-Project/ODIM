@@ -283,7 +283,19 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
+        i:=0
+        var resourceId string
+
 	for originResource, evtResponse := range result.Response {
+		OriginResource:= strings.SplitAfter(originResource,"/")
+		originResourceId:=OriginResource[len(OriginResource)-1]
+		if i==0 {
+			resourceId=originResourceId
+		}
+		if originResourceId==resourceId && i>0{
+			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
+		}
+		i+=1
 		if evtResponse.StatusCode == http.StatusCreated {
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
 			successfulResponses[originResource] = evtResponse

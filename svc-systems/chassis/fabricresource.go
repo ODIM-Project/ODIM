@@ -48,5 +48,12 @@ func (f *fabricFactory) getFabricResource(rID string) response.RPC {
 }
 
 func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan response.RPC) {
+	req, err := f.createChassisRequest(plugin, collectionURL)
+	if err != nil {
+		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
+		ch <- common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return
+	}
+
 	ch <- common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", rID}, nil)
 }

@@ -41,7 +41,7 @@ run_forever()
 start_update()
 {
         registry_address="consul:8500"
-        if [[ ${HA_ENABLED,,}} == true ]]; then
+        if [[ ${HA_ENABLED,,} == true ]]; then
                 registry_address="[consul1:8500,consul2:8500,consul3:8500]"
         fi
 

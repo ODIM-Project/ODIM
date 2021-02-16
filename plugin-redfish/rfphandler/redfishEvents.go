@@ -22,7 +22,6 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
-	iris "github.com/kataras/iris/v12"
 	"strings"
 )
 
@@ -35,16 +34,28 @@ var (
 
 // RedfishEvents receives the subscribed events from the south bound system
 // Then it will send the received data and ip to publish method
-func RedfishEvents(ctx iris.Context) {
+func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	var req interface{}
-	err := ctx.ReadJSON(&req)
+	// Try to decode the request body into the struct. If there is an error,
+	// respond to the client with the error message and a 400 status code.
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		log.Error(err.Error())
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("error: bad request")
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	remoteAddr := ctx.RemoteAddr()
+
+	remoteAddr := r.RemoteAddr
+	// if southbound entities are behind a proxy, then
+	// originator address is expected to be in X-Forwarded-For header
+	forwardedFor := r.Header.Get("X-Forwarded-For")
+	if forwardedFor != "" {
+		log.Printf("Request contains X-Forwarded-For: %s; RemoteAddr: %s", forwardedFor, remoteAddr)
+		addrList := strings.Split(forwardedFor, ",")
+		// if multiple proxies are present, then the first address
+		// in the X-Forwarded-For header is considered as originator address
+		remoteAddr = addrList[0]
+	}
 	request, _ := json.Marshal(req)
 
 	reqData := string(request)
@@ -59,8 +70,7 @@ func RedfishEvents(ctx iris.Context) {
 
 	// Call writeEventToJobQueue to write events to worker pool
 	writeEventToJobQueue(event)
-	ctx.StatusCode(http.StatusOK)
-
+	w.WriteHeader(http.StatusOK)
 }
 
 // writeEventToJobQueue will write events to worker pool
@@ -69,5 +79,5 @@ func writeEventToJobQueue(event common.Events) {
 	//events := make([]interface{}, 0)
 	events = append(events, event)
 	done := make(chan bool)
-	go common.RunWriteWorkers(In, events, 1, done)
+	go common.RunWriteWorkers(In, events, 5, done)
 }

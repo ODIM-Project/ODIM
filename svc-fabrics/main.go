@@ -16,7 +16,6 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"os"
-	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -54,9 +53,8 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	registerHandlers()
 	if err := services.Service.Run(); err != nil {

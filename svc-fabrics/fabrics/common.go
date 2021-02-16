@@ -63,63 +63,9 @@ type PluginToken struct {
 
 // Zones struct to check request body cases
 type Zones struct {
-	Name     string `json:"Name"`
-	ZoneType string `json:"ZoneType"`
-	Links    Links  `json:"Links"`
-}
-
-// Links struct to check request body cases in Zones
-type Links struct {
-	AddressPools     []OdataID `json:"AddressPools"`
-	ContainedByZones []OdataID `json:"ContainedByZones"`
-	Endpoints        []OdataID `json:"Endpoints"`
-	ConnectedPorts   []OdataID `json:"ConnectedPorts"`
-}
-
-// OdataID struct to check request body cases
-type OdataID struct {
-	OdataID string `json:"@odata.id"`
-}
-
-// AddressPools struct to check request body cases
-type AddressPools struct {
-	Name        string  `json:"Name"`
-	Description string  `json:"Description"`
-	IPv4        IPv4    `json:"IPv4"`
-	Ebgp        Ebgp    `json:"Ebgp"`
-	BgpEvpn     BgpEvpn `json:"BgpEvpn"`
-}
-
-// IPv4 struct to check request body cases in AddressPools
-type IPv4 struct {
-	VlanIdentifierAddressRange AddressRangeInt    `json:"VlanIdentifierAddressRange"`
-	IbgpAddressRange           AddressRangeString `json:"IbgpAddressRange"`
-	EbgpAddressRange           AddressRangeString `json:"EbgpAddressRange"`
-}
-
-//AddressRangeString struct to check request body cases
-type AddressRangeString struct {
-	Lower string `json:"Lower"`
-	Upper string `json:"Upper"`
-}
-
-//AddressRangeInt struct to check request body cases
-type AddressRangeInt struct {
-	Lower int `json:"Lower"`
-	Upper int `json:"Upper"`
-}
-
-//Ebgp struct to check request body cases
-type Ebgp struct {
-	AsNumberRange AddressRangeInt `json:"AsNumberRange"`
-}
-
-//BgpEvpn struct to check request body cases
-type BgpEvpn struct {
-	GatewayIPAddressList    []string `json:"GatewayIPAddressList"`
-	RouteDistinguisherList  []string `json:"RouteDistinguisherList"`
-	RouteTargetList         []string `json:"RouteTargetList"`
-	AnycastGatewayIPAddress string   `json:"AnycastGatewayIPAddress"`
+	Name     string     `json:"Name"`
+	ZoneType string     `json:"ZoneType"`
+	Links    dmtf.Links `json:"Links"`
 }
 
 //Endpoints struct to check request body cases
@@ -127,13 +73,13 @@ type Endpoints struct {
 	Name        string       `json:"Name"`
 	Description string       `json:"Description"`
 	Redundancy  []Redundancy `json:"Redundancy"`
-	Links       Links        `json:"Links"`
+	Links       dmtf.Links   `json:"Links"`
 }
 
 //Redundancy struct to check request body cases
 type Redundancy struct {
-	Mode          string    `json:"Mode"`
-	RedundencySet []OdataID `json:"RedundencySet"`
+	Mode          string      `json:"Mode"`
+	RedundencySet []dmtf.Link `json:"RedundencySet"`
 }
 
 // Token variable hold the all the XAuthToken  against the plguin ID
@@ -469,7 +415,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	if strings.Contains(req.URL, "/Zones") {
 		fabricRequest = &Zones{}
 	} else if strings.Contains(req.URL, "/AddressPools") {
-		fabricRequest = &AddressPools{}
+		fabricRequest = &dmtf.AddressPool{}
 	} else if strings.Contains(req.URL, "/Endpoints") {
 		fabricRequest = &Endpoints{}
 	}

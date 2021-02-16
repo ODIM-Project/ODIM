@@ -16,14 +16,16 @@ package chassis
 
 import (
 	"bytes"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-	"github.com/stretchr/testify/assert"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
 	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_sourceProviderImpl_findFabricChassis(t *testing.T) {
@@ -88,6 +90,8 @@ func getFabricManagersMock() ([]smodel.Plugin, error) {
 func contactClientMock(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	tokenBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/1"}]}`
 	basicAuthBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/2"}]}`
+	chassisResource := `{"ChassisType":"valid_type","SerialNumber":"valid_serial_number"}`
+	notFound := `{"MessageId":"Base.1.6.1.GeneralError"}`
 	resp := &http.Response{
 		StatusCode: http.StatusOK,
 		Header: map[string][]string{
@@ -103,9 +107,18 @@ func contactClientMock(url, method, token string, odataID string, body interface
 			resp.Body = ioutil.NopCloser(bytes.NewBufferString(basicAuthBody))
 		}
 	} else if url == "https://:/ODIM/v1/Chassis/valid" {
-		resp.Body = ioutil.NopCloser(bytes.NewBufferString(tokenBody))
+		resp.Header = map[string][]string{
+			"Allow":             []string{`"GET"`},
+			"Cache-Control":     []string{"no-cache"},
+			"Connection":        []string{"keep-alive"},
+			"Content-type":      []string{"application/json; charset=utf-8"},
+			"Transfer-Encoding": []string{"chunked"},
+			"OData-Version":     []string{"4.0"},
+		}
+		resp.Body = ioutil.NopCloser(bytes.NewBufferString(chassisResource))
 	} else {
-		resp.Body = ioutil.NopCloser(bytes.NewBufferString(tokenBody))
+		resp.Body = ioutil.NopCloser(bytes.NewBufferString(notFound))
+		resp.StatusCode = http.StatusNotFound
 	}
 	
 	return resp, nil

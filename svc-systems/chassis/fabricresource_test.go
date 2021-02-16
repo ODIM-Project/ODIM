@@ -33,8 +33,6 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 	initializeRPCResponse(
 		&r,
 		dmtfmodel.Chassis{
-			ID: "valid_id",
-			Name: "valid_name",
 			ChassisType: "valid_type",
 			SerialNumber: "valid_serial_number",
 		},
@@ -67,7 +65,7 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.f.getFabricChassisResource(tt.args.rID); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := tt.f.getFabricChassisResource(tt.args.rID); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("fabricFactory.getFabricChassisResource() = %v, want %v", got, tt.want)
 			}
 		})

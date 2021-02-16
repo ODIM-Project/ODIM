@@ -69,9 +69,12 @@ func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan re
 // collectChassisResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
 func collectChassisResource(pluginRequest *pluginContactRequest) (r response.RPC) {
-	body, _, _, err := contactPlugin(pluginRequest)
+	body, _, statusCode, err := contactPlugin(pluginRequest)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	if !is2xx(int(statusCode)) {
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", pluginRequest.URL}, nil)
 	}
 
 	data := string(body)

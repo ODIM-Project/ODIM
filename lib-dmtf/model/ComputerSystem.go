@@ -597,11 +597,6 @@ type ProcessorSummary struct {
 	Status                Status  `json:"Status"`
 }
 
-// Redundancy redfish structure
-type Redundancy struct {
-	Oid string `json:"@odata.id"`
-}
-
 // SecureBoot redfish structure
 type SecureBoot struct {
 	Oid                   string `json:"@odata.id"`

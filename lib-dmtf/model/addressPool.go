@@ -27,7 +27,7 @@ type AddressPool struct {
 	ID           string               `json:"id"`
 	Links        *Links               `json:"Links,omitempty"`
 	Name         string               `json:"Name"`
-	Oem          *Oem                 `json:"Oem,omitempty"`
+	Oem          interface{}          `json:"Oem,omitempty"`
 	Status       *Status              `json:"Status,omitempty"`
 }
 

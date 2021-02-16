@@ -33,9 +33,9 @@ import (
 
 func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 	source1 := new(sourceMock)
-	source1.mock.On("read").Return([]dmtfmodel.Link{{"1"}, {"3"}}, nil)
+	source1.On("read").Return([]dmtfmodel.Link{dmtfmodel.Link{Oid: "1"}, dmtfmodel.Link{Oid: "3"}}, nil)
 	source2 := new(sourceMock)
-	source2.mock.On("read").Return([]dmtfmodel.Link{{"2"}, {"4"}}, nil)
+	source2.On("read").Return([]dmtfmodel.Link{{Oid: "2"}, {Oid: "4"}}, nil)
 
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1, source2}, nil)
@@ -44,7 +44,7 @@ func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 	r := sut.Handle()
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.IsType(t, sresponse.NewChassisCollection(), r.Body)
-	require.Equal(t, []dmtfmodel.Link{{"1"}, {"3"}, {"2"}, {"4"}, {"5"}}, r.Body.(sresponse.Collection).Members)
+	require.Equal(t, []dmtfmodel.Link{{Oid: "1"}, {Oid: "3"}, {Oid: "2"}, {Oid: "4"}, {Oid: "5"}}, r.Body.(sresponse.Collection).Members)
 	require.Equal(t, map[string]string{
 		"Allow":             `"GET"`,
 		"Cache-Control":     "no-cache",
@@ -68,7 +68,7 @@ func Test_GetCollectionHandler_WhenCollectionSourcesCannotBeDetermined(t *testin
 
 func Test_GetCollectionHandler_WhenFirstSourceReturnsError(t *testing.T) {
 	source1 := new(sourceMock)
-	source1.mock.On("read").Return([]dmtfmodel.Link{}, &internalError)
+	source1.On("read").Return([]dmtfmodel.Link{}, &internalError)
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1}, nil)
 	sut := GetCollection{cspMock}
@@ -80,10 +80,10 @@ func Test_GetCollectionHandler_WhenFirstSourceReturnsError(t *testing.T) {
 
 func Test_GetCollectionHandler_WhenNonFirstSourceReturnsError(t *testing.T) {
 	source1 := new(sourceMock)
-	source1.mock.On("read").Return([]dmtfmodel.Link{{"1"}}, nil)
+	source1.On("read").Return([]dmtfmodel.Link{{Oid: "1"}}, nil)
 
 	source2 := new(sourceMock)
-	source2.mock.On("read").Return([]dmtfmodel.Link{}, &internalError)
+	source2.On("read").Return([]dmtfmodel.Link{}, &internalError)
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1, source2}, nil)
 	sut := GetCollection{cspMock}
@@ -168,7 +168,7 @@ func Test_managedChassisProvider_WhenUnderlyingDBReturnsSomeKeys(t *testing.T) {
 	require.Nil(t, e)
 	require.Len(t, r, 3)
 	require.Equal(t, []dmtfmodel.Link{
-		{Oid: "first"}, {"second"}, {"third"},
+		{Oid: "first"}, {Oid: "second"}, {Oid: "third"},
 	}, r)
 }
 
@@ -196,10 +196,10 @@ func getErrorOrNil(a interface{}) *response.RPC {
 }
 
 type sourceMock struct {
-	mock mock.Mock
+	mock.Mock
 }
 
 func (s *sourceMock) read() ([]dmtfmodel.Link, *response.RPC) {
-	args := s.mock.Called()
+	args := s.Mock.Called()
 	return args.Get(0).([]dmtfmodel.Link), getErrorOrNil(args.Get(1))
 }

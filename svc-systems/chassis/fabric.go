@@ -121,7 +121,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 		token = f.getPluginToken(plugin)
 		if token == "" {
 			*errResp = common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
-			return nil, errResp, fmt.Errorf("unable to create session for plugin "+plugin.ID)
+			return nil, errResp, fmt.Errorf("unable to create session for plugin " + plugin.ID)
 		}
 	} else {
 		cred["Username"] = plugin.Username

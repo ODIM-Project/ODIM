@@ -31,12 +31,10 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 	f := getFabricFactoryMock(nil)
 	var r response.RPC
 	successReq := json.RawMessage(`{"Name":"someNewName"}`)
-	invalidReq := json.RawMessage(`{"xyz":"abc"}`)
 
 	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))
 
-	errMsg := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase"
-	errResp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"xyz"}, nil)
+	errResp := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", "/ODIM/v1/Chassis/invalid_for_update"}, nil)
 
 	type args struct {
 		url  string
@@ -58,11 +56,11 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 			want: r,
 		},
 		{
-			name: "fabric resource update with invalid body",
+			name: "fabric resource update with invalid url",
 			f: f,
 			args: args{
 				url: "/redfish/v1/Chassis/invalid_for_update",
-				body: &invalidReq,
+				body: &successReq,
 			},
 			want: errResp,
 		},

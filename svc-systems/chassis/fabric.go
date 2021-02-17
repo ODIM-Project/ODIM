@@ -91,9 +91,9 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 // and add them to the existing chassis collection.
 func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	defer f.wg.Done()
-	req, errResp := f.createChassisRequest(plugin, collectionURL, http.MethodGet, nil)
+	req, errResp, err := f.createChassisRequest(plugin, collectionURL, http.MethodGet, nil)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + errResp.Body.(string))
+		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
 	links, err := collectChassisCollection(req)
@@ -113,7 +113,7 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 }
 
 // createChassisRequest creates the parameters ready for the plugin communication
-func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method string, body *json.RawMessage) (pReq *pluginContactRequest, errResp *response.RPC) {
+func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method string, body *json.RawMessage) (pReq *pluginContactRequest, errResp *response.RPC, err error) {
 	var token string
 	cred := make(map[string]string)
 
@@ -121,7 +121,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 		token = f.getPluginToken(plugin)
 		if token == "" {
 			*errResp = common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
-			return nil, errResp
+			return nil, errResp, fmt.Errorf("unable to create session for plugin "+plugin.ID)
 		}
 	} else {
 		cred["Username"] = plugin.Username
@@ -132,7 +132,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 	if strings.EqualFold(method, http.MethodPatch) {
 		errResp = validateReqParamsCase(body)
 		if errResp != nil {
-			return nil, errResp
+			return nil, errResp, fmt.Errorf("validation of request body failed")
 		}
 	}
 
@@ -152,7 +152,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 		URL:             url,
 		PostBody:        body,
 	}
-	return pReq, nil
+	return pReq, nil, nil
 }
 
 // collectChassisCollection contacts the plugin and collect the chassis response

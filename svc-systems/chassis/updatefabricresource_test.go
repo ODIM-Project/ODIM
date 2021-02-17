@@ -48,18 +48,18 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 	}{
 		{
 			name: "successful fabric resource update",
-			f: f,
+			f:    f,
 			args: args{
-				url: "/redfish/v1/Chassis/valid_for_update",
+				url:  "/redfish/v1/Chassis/valid_for_update",
 				body: &successReq,
 			},
 			want: r,
 		},
 		{
 			name: "fabric resource update with invalid url",
-			f: f,
+			f:    f,
 			args: args{
-				url: "/redfish/v1/Chassis/invalid_for_update",
+				url:  "/redfish/v1/Chassis/invalid_for_update",
 				body: &successReq,
 			},
 			want: errResp,

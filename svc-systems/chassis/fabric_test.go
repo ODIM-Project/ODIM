@@ -116,7 +116,7 @@ func contactClientMock(url, method, token string, odataID string, body interface
 			"OData-Version":     []string{"4.0"},
 		}
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(chassisResource))
-	} else if url == "https://:/ODIM/v1/Chassis/valid_for_update"{
+	} else if url == "https://:/ODIM/v1/Chassis/valid_for_update" {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(successBody))
 	} else {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(notFound))

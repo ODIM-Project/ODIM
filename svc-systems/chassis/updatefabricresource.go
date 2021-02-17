@@ -86,7 +86,7 @@ func validateReqParamsCase(req *json.RawMessage) *response.RPC {
 	// parsing the fabricRequest
 	err := json.Unmarshal(*req, &chassisRequest)
 	if err != nil {
-		errResp = common.GeneralError(http.StatusInternalServerError, response.InternalError, "unable to parse the fabrics request"+err.Error(), nil, nil)
+		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
 		return &errResp
 	}
 

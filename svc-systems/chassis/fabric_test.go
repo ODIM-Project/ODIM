@@ -91,6 +91,7 @@ func contactClientMock(url, method, token string, odataID string, body interface
 	basicAuthBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/2"}]}`
 	chassisResource := `{"ChassisType":"valid_type","SerialNumber":"valid_serial_number"}`
 	notFound := `{"MessageId":"Base.1.6.1.GeneralError"}`
+	successBody := `{"MessageId":"Success"}`
 	resp := &http.Response{
 		StatusCode: http.StatusOK,
 		Header: map[string][]string{
@@ -115,6 +116,8 @@ func contactClientMock(url, method, token string, odataID string, body interface
 			"OData-Version":     []string{"4.0"},
 		}
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(chassisResource))
+	} else if url == "https://:/ODIM/v1/Chassis/valid_for_update"{
+		resp.Body = ioutil.NopCloser(bytes.NewBufferString(successBody))
 	} else {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(notFound))
 		resp.StatusCode = http.StatusNotFound

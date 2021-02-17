@@ -63,7 +63,10 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 	resp := pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
 	if !is2xx(int(resp.StatusCode)) {
 		f := h.getFabricFactory(nil)
-		return f.getFabricChassisResource(req.RequestParam)
+		r := f.getFabricChassisResource(req.RequestParam)
+		if is2xx(int(r.StatusCode)) {
+			return r
+		}
 	}
 	return resp
 }

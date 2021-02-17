@@ -16,7 +16,6 @@ package chassis
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"

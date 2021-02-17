@@ -119,6 +119,6 @@ func contactClientMock(url, method, token string, odataID string, body interface
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(notFound))
 		resp.StatusCode = http.StatusNotFound
 	}
-	
+
 	return resp, nil
 }

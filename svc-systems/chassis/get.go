@@ -74,7 +74,7 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 type Get struct {
 	findInMemoryDB     func(table, key string, r interface{}) *errors.Error
 	createPluginClient plugin.ClientFactory
-	getFabricFactory	func(collection *sresponse.Collection) *fabricFactory
+	getFabricFactory   func(collection *sresponse.Collection) *fabricFactory
 }
 
 func NewGetHandler(
@@ -84,6 +84,6 @@ func NewGetHandler(
 	return &Get{
 		createPluginClient: pluginClientCreator,
 		findInMemoryDB:     inMemoryDBFinder,
-		getFabricFactory:	getFabricFactory,
+		getFabricFactory:   getFabricFactory,
 	}
 }

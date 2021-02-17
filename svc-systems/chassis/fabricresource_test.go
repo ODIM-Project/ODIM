@@ -33,7 +33,7 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 	initializeRPCResponse(
 		&r,
 		dmtfmodel.Chassis{
-			ChassisType: "valid_type",
+			ChassisType:  "valid_type",
 			SerialNumber: "valid_serial_number",
 		},
 	)
@@ -48,7 +48,7 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 	}{
 		{
 			name: "successful GET on fabric chassis resource",
-			f: f,
+			f:    f,
 			args: args{
 				rID: "valid",
 			},
@@ -56,7 +56,7 @@ func Test_fabricFactory_getFabricChassisResource(t *testing.T) {
 		},
 		{
 			name: "GET with invalid resource id",
-			f: f,
+			f:    f,
 			args: args{
 				rID: "invalid",
 			},

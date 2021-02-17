@@ -33,7 +33,7 @@ import (
 func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 	var resp response.RPC
 	ch := make(chan response.RPC)
-	
+
 	managers, err := f.getFabricManagers()
 	if err != nil {
 		log.Warn("while trying to collect fabric managers details from DB, got " + err.Error())
@@ -82,7 +82,7 @@ func collectChassisResource(pluginRequest *pluginContactRequest) (r response.RPC
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
-	
+
 	var resp dmtfmodel.Chassis
 	err = json.Unmarshal([]byte(data), &resp)
 	if err != nil {

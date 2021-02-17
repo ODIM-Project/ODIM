@@ -57,9 +57,9 @@ func (f *fabricFactory) getFabricChassisResource(rID string) response.RPC {
 // getResource is for collecting the fabric chassis from the individual plugin,
 // and returns the result through the channel ch
 func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan response.RPC) {
-	req, errResp := f.createChassisRequest(plugin, fmt.Sprintf("%s/%s", collectionURL, rID), http.MethodGet, nil)
+	req, errResp, err := f.createChassisRequest(plugin, fmt.Sprintf("%s/%s", collectionURL, rID), http.MethodGet, nil)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + errResp.Body.(string))
+		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}

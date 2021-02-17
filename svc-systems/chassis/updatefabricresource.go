@@ -43,8 +43,7 @@ func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMe
 
 	for i := 0; i < len(managers); i++ {
 		resp = <-ch
-		if is2xx(int(resp.StatusCode)) || resp.StatusCode == http.StatusBadRequest {
-			// returning if the patch is successful or the validator returns bad request
+		if is2xx(int(resp.StatusCode)) {
 			return resp
 		}
 	}
@@ -54,9 +53,9 @@ func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMe
 // updateResource will validate the request body, creates the request model for communicating
 // with the plugin and returns the response
 func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *json.RawMessage, ch chan response.RPC) {
-	req, errResp := f.createChassisRequest(plugin, url, http.MethodPatch, body)
+	req, errResp, err := f.createChassisRequest(plugin, url, http.MethodPatch, body)
 	if errResp != nil {
-		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + errResp.Body.(string))
+		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		ch <- *errResp
 		return
 	}

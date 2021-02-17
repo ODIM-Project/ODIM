@@ -18,6 +18,7 @@ package rfphandler
 import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
+	"net"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -44,7 +45,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	log.Println("Event Request", req)
 	remoteAddr := r.RemoteAddr
 	// if southbound entities are behind a proxy, then
 	// originator address is expected to be in X-Forwarded-For header
@@ -56,6 +57,12 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		// in the X-Forwarded-For header is considered as originator address
 		remoteAddr = addrList[0]
 	}
+	ip, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		ip = remoteAddr
+	}
+	log.Println("After splitting remote address, IP is: ", ip)
+
 	request, _ := json.Marshal(req)
 
 	reqData := string(request)
@@ -64,7 +71,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		reqData = strings.Replace(reqData, key, value, -1)
 	}
 	event := common.Events{
-		IP:      remoteAddr,
+		IP:      ip,
 		Request: []byte(reqData),
 	}
 

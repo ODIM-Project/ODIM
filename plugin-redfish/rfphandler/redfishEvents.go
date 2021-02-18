@@ -20,10 +20,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
-	"strings"
 )
 
 var (
@@ -45,7 +45,13 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Info("Event Request: ", req)
+	strReq, err := convertToString(req)
+	if err != nil {
+		log.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Info("Event Request: ", strReq)
 	remoteAddr := r.RemoteAddr
 	// if southbound entities are behind a proxy, then
 	// originator address is expected to be in X-Forwarded-For header
@@ -87,4 +93,13 @@ func writeEventToJobQueue(event common.Events) {
 	events = append(events, event)
 	done := make(chan bool)
 	go common.RunWriteWorkers(In, events, 5, done)
+}
+
+func convertToString(req interface{}) (string, error) {
+	mapData, err := json.Marshal(req)
+	if err != nil {
+		return "", err
+	}
+
+	return string(mapData), nil
 }

@@ -16,29 +16,29 @@ package model
 
 // Links - this is Common to all resources
 type Links struct {
-	AddressPools             []Link      `json:"AddressPools,omitempty"`
-	Chassis                  []Link      `json:"Chassis,omitempty"`
-	ComputerSystems          []Link      `json:"ComputerSystems,omitempty"`
-	ConnectedPorts           []Link      `json:"ConnectedPorts,omitempty"`
-	ConsumingComputerSystems []Link      `json:"ConsumingComputerSystems,omitempty"`
-	ContainedBy              Link        `json:"ContainedBy,omitempty"`
-	ContainedByZones         []Link      `json:"ContainedByZones,omitempty"`
-	CooledBy                 []Link      `json:"CooledBy,omitempty"`
-	Endpoints                []Link      `json:"Endpoints,omitempty"`
+	AddressPools             []*Link     `json:"AddressPools,omitempty"`
+	Chassis                  []*Link     `json:"Chassis,omitempty"`
+	ComputerSystems          []*Link     `json:"ComputerSystems,omitempty"`
+	ConnectedPorts           []*Link     `json:"ConnectedPorts,omitempty"`
+	ConsumingComputerSystems []*Link     `json:"ConsumingComputerSystems,omitempty"`
+	ContainedBy              *Link       `json:"ContainedBy,omitempty"`
+	ContainedByZones         []*Link     `json:"ContainedByZones,omitempty"`
+	CooledBy                 []*Link     `json:"CooledBy,omitempty"`
+	Endpoints                []*Link     `json:"Endpoints,omitempty"`
 	EndpointsCount           int         `json:"Endpoints@odata.count,omitempty"`
-	Drives                   []Link      `json:"Drives,omitempty"`
-	ManagedBy                []Link      `json:"ManagedBy,omitempty"`
+	Drives                   []*Link     `json:"Drives,omitempty"`
+	ManagedBy                []*Link     `json:"ManagedBy,omitempty"`
 	Oem                      interface{} `json:"Oem,omitempty"`
-	ManagersInChassis        []Link      `json:"ManagersInChassis,omitempty"`
-	PCIeDevices              []Link      `json:"PCIeDevices,omitempty"`
-	PCIeFunctions            []Link      `json:"PCIeFunctions,omitempty"`
-	PoweredBy                []Link      `json:"PoweredBy,omitempty"`
-	Processors               []Link      `json:"Processors,omitempty"`
-	ResourceBlocks           []Link      `json:"ResourceBlocks,omitempty"`
-	Storage                  []Link      `json:"Storage,omitempty"`
-	SupplyingComputerSystems []Link      `json:"SupplyingComputerSystems,omitempty"`
-	Switches                 []Link      `json:"Switches,omitempty"`
-	Zones                    []Link      `json:"Zones,omitempty"`
+	ManagersInChassis        []*Link     `json:"ManagersInChassis,omitempty"`
+	PCIeDevices              []*Link     `json:"PCIeDevices,omitempty"`
+	PCIeFunctions            []*Link     `json:"PCIeFunctions,omitempty"`
+	PoweredBy                []*Link     `json:"PoweredBy,omitempty"`
+	Processors               []*Link     `json:"Processors,omitempty"`
+	ResourceBlocks           []*Link     `json:"ResourceBlocks,omitempty"`
+	Storage                  []*Link     `json:"Storage,omitempty"`
+	SupplyingComputerSystems []*Link     `json:"SupplyingComputerSystems,omitempty"`
+	Switches                 []*Link     `json:"Switches,omitempty"`
+	Zones                    []*Link     `json:"Zones,omitempty"`
 	ZonesCount               int         `json:"Zones@odata.count,omitempty"`
 }
 

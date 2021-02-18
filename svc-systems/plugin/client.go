@@ -169,7 +169,10 @@ func getChassisID(uri string) string {
 }
 
 func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC {
-	panic("implement me")
+	// TODO: Implement this
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }
 
 func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RPC {

@@ -45,7 +45,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println("Event Request", req)
+	log.Info("Event Request: ", req)
 	remoteAddr := r.RemoteAddr
 	// if southbound entities are behind a proxy, then
 	// originator address is expected to be in X-Forwarded-For header
@@ -61,7 +61,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		ip = remoteAddr
 	}
-	log.Println("After splitting remote address, IP is: ", ip)
+	log.Info("After splitting remote address, IP is: ", ip)
 
 	request, _ := json.Marshal(req)
 

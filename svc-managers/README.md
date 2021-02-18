@@ -131,7 +131,7 @@ curl -i GET \
 
 
 
->**Sample response body** for a system \(BMC\) manager 
+>**Sample response body for a system \(BMC\) manager** 
 
 ```
 { 
@@ -211,7 +211,7 @@ curl -i GET \
 }
 ```
 
->**Sample response body** for Resource Aggregator for ODIM manager 
+>**Sample response body for Resource Aggregator for ODIM manager** 
 
 ```
 {
@@ -229,7 +229,7 @@ curl -i GET \
 }
 ```
 
->**Sample response body** for a plugin manager
+>**Sample response body for a plugin manager**
 
 ```
 {
@@ -237,7 +237,7 @@ curl -i GET \
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
    "@odata.type":"#Manager.v1_3_3.Manager",
-   "FirmwareVersion":"1.0",
+   "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",
    "Name":"GRF",

@@ -33,9 +33,9 @@ import (
 
 func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 	source1 := new(sourceMock)
-	source1.On("read").Return([]dmtfmodel.Link{{"1"}, {"3"}}, nil)
+	source1.On("read").Return([]dmtfmodel.Link{dmtfmodel.Link{Oid: "1"}, dmtfmodel.Link{Oid: "3"}}, nil)
 	source2 := new(sourceMock)
-	source2.On("read").Return([]dmtfmodel.Link{{"2"}, {"4"}}, nil)
+	source2.On("read").Return([]dmtfmodel.Link{{Oid: "2"}, {Oid: "4"}}, nil)
 
 	cspMock := new(collectionSourceProviderMock)
 	cspMock.On("findSources").Return([]source{source1, source2}, nil)
@@ -44,7 +44,7 @@ func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 	r := sut.Handle()
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.IsType(t, sresponse.NewChassisCollection(), r.Body)
-	require.Equal(t, []dmtfmodel.Link{{"1"}, {"3"}, {"2"}, {"4"}}, r.Body.(sresponse.Collection).Members)
+	require.Equal(t, []dmtfmodel.Link{{Oid: "1"}, {Oid: "3"}, {Oid: "2"}, {Oid: "4"}, {Oid: "5"}}, r.Body.(sresponse.Collection).Members)
 	require.Equal(t, map[string]string{
 		"Allow":             `"GET"`,
 		"Cache-Control":     "no-cache",
@@ -80,7 +80,7 @@ func Test_GetCollectionHandler_WhenFirstSourceReturnsError(t *testing.T) {
 
 func Test_GetCollectionHandler_WhenNonFirstSourceReturnsError(t *testing.T) {
 	source1 := new(sourceMock)
-	source1.On("read").Return([]dmtfmodel.Link{{"1"}}, nil)
+	source1.On("read").Return([]dmtfmodel.Link{{Oid: "1"}}, nil)
 
 	source2 := new(sourceMock)
 	source2.On("read").Return([]dmtfmodel.Link{}, &internalError)
@@ -168,7 +168,7 @@ func Test_managedChassisProvider_WhenUnderlyingDBReturnsSomeKeys(t *testing.T) {
 	require.Nil(t, e)
 	require.Len(t, r, 3)
 	require.Equal(t, []dmtfmodel.Link{
-		{Oid: "first"}, {"second"}, {"third"},
+		{Oid: "first"}, {Oid: "second"}, {Oid: "third"},
 	}, r)
 }
 
@@ -179,6 +179,13 @@ type collectionSourceProviderMock struct {
 func (c *collectionSourceProviderMock) findSources() ([]source, *response.RPC) {
 	args := c.Mock.Called()
 	return args.Get(0).([]source), getErrorOrNil(args.Get(1))
+}
+
+func (c *collectionSourceProviderMock) findFabricChassis(col *sresponse.Collection) {
+	link := dmtfmodel.Link{
+		Oid: "5",
+	}
+	col.AddMember(link)
 }
 
 func getErrorOrNil(a interface{}) *response.RPC {

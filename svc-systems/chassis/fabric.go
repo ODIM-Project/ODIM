@@ -157,7 +157,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 
 // collectChassisCollection contacts the plugin and collect the chassis response
 func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
-	body, _, statusCode, err := contactPlugin(pluginRequest)
+	body, _, statusCode, _, err := contactPlugin(pluginRequest)
 	if err != nil {
 		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + err.Error())
 	}
@@ -167,22 +167,33 @@ func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link,
 	return extractChassisCollection(body)
 }
 
-func contactPlugin(req *pluginContactRequest) ([]byte, string, int, error) {
+func contactPlugin(req *pluginContactRequest) ([]byte, string, int, string, error) {
 	pluginResponse, err := callPlugin(req)
 	if err != nil {
 		if getPluginStatus(req.Plugin) {
 			pluginResponse, err = callPlugin(req)
 		}
 		if err != nil {
-			return nil, "", http.StatusInternalServerError, fmt.Errorf(err.Error())
+			return nil, "", http.StatusInternalServerError, response.InternalError, fmt.Errorf(err.Error())
 		}
 	}
 	defer pluginResponse.Body.Close()
 	body, err := ioutil.ReadAll(pluginResponse.Body)
 	if err != nil {
-		return nil, "", http.StatusInternalServerError, fmt.Errorf(err.Error())
+		return nil, "", http.StatusInternalServerError, response.InternalError, fmt.Errorf(err.Error())
 	}
-	return body, pluginResponse.Header.Get("X-Auth-Token"), pluginResponse.StatusCode, nil
+	var statusMessage string
+	switch pluginResponse.StatusCode {
+	case http.StatusOK:
+		statusMessage = response.Success
+	case http.StatusUnauthorized:
+		statusMessage = response.ResourceAtURIUnauthorized
+	case http.StatusNotFound:
+		statusMessage = response.ResourceNotFound
+	default:
+		statusMessage = response.CouldNotEstablishConnection
+	}
+	return body, pluginResponse.Header.Get("X-Auth-Token"), pluginResponse.StatusCode, statusMessage, nil
 }
 
 func callPlugin(req *pluginContactRequest) (*http.Response, error) {
@@ -235,7 +246,7 @@ func (f *fabricFactory) createToken(plugin smodel.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, token, _, err := contactPlugin(&contactRequest)
+	_, token, _, _, err := contactPlugin(&contactRequest)
 	if err != nil {
 		log.Error(err.Error())
 	}

@@ -65,12 +65,16 @@ func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *j
 // patchResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
 func patchResource(pluginRequest *pluginContactRequest) (r response.RPC) {
-	_, _, statusCode, err := contactPlugin(pluginRequest)
+	body, _, statusCode, statusMessage, err := contactPlugin(pluginRequest)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
-	if !is2xx(int(statusCode)) {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", pluginRequest.URL}, nil)
+	if !is2xx(statusCode) {
+		json.Unmarshal(body, &r.Body)
+		r.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+		r.StatusCode = int32(statusCode)
+		r.StatusMessage = statusMessage
+		return
 	}
 
 	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))

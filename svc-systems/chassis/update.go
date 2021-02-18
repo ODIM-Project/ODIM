@@ -50,7 +50,7 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	if !is2xx(int(resp.StatusCode)) {
 		f := h.getFabricFactory(nil)
 		r := f.updateFabricChassisResource(req.URL, body)
-		if is2xx(int(r.StatusCode)) {
+		if is2xx(int(r.StatusCode)) || r.StatusCode == http.StatusBadRequest || r.StatusCode == http.StatusUnauthorized {
 			return r
 		}
 	}

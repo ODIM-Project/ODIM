@@ -89,7 +89,7 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 // and add them to the existing chassis collection.
 func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	defer f.wg.Done()
-	req, err := f.createChassisRequest(plugin)
+	req, err := f.createChassisRequest(plugin, collectionURL)
 	if err != nil {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
@@ -111,10 +111,9 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 }
 
 // createChassisRequest creates the parameters ready for the plugin communication
-func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin) (*pluginContactRequest, error) {
+func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url string) (*pluginContactRequest, error) {
 	var token string
 	cred := make(map[string]string)
-	url := collectionURL
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token = f.getPluginToken(plugin)

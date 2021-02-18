@@ -35,9 +35,9 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 	initializeRPCResponse(&r, common.GeneralError(http.StatusOK, response.Success, "", nil, nil))
 
 	errResp := response.RPC{
-		StatusCode: http.StatusNotFound,
+		StatusCode:    http.StatusNotFound,
 		StatusMessage: response.ResourceNotFound,
-		Header: map[string]string{"Content-type": "application/json; charset=utf-8"},
+		Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 	}
 	json.Unmarshal([]byte(`{"MessageId":"Base.1.6.1.GeneralError"}`), &errResp.Body)
 	type args struct {

@@ -35,6 +35,7 @@
   * [Connection methods](#connection-methods)
     + [Viewing a collection of connection methods](#viewing-a-collection-of-connection-methods)
     + [Viewing a connection method](#viewing-a-connection-method)
+      - [Connection method variants](#connection-method-variants)
   * [Adding a plugin as an aggregation source](#adding-a-plugin-as-an-aggregation-source)
   * [Adding a server as an aggregation source](#adding-a-server-as-an-aggregation-source)
   * [Viewing a collection of aggregation sources](#viewing-a-collection-of-aggregation-sources)
@@ -52,10 +53,7 @@
   * [Resetting an aggregate of computer systems](#resetting-an-aggregate-of-computer-systems)
   * [Setting boot order of an aggregate to default settings](#setting-boot-order-of-an-aggregate-to-default-settings)
   * [Removing elements from an aggregate](#removing-elements-from-an-aggregate)
-  * [Connection methods](#connection-methods)
-  * [Viewing a collection of connection methods](#viewing-a-collection-of-connection-methods)
-  * [Viewing a connection method](#viewing-a-connection-method)
-  * [Resource inventory](#resource-inventory)
+- [Resource inventory](#resource-inventory)
   * [Collection of computer systems](#collection-of-computer-systems)
   * [Single computer system](#single-computer-system)
   * [Memory collection](#memory-collection)
@@ -78,12 +76,19 @@
   * [SecureBoot](#secureboot)
   * [Processors](#processors)
   * [Single processor](#single-processor)
-  * [Collection of chassis](#collection-of-chassis)
-  * [Single chassis](#single-chassis)
-  * [Thermal metrics](#thermal-metrics)
-  * [Collection of network adapters](#collection-of-network-adapters)
-  * [Single network adapter](#single-network-adapter)
-  * [Power](#power)
+  * [Chassis](#chassis)
+    + [Collection of chassis](#collection-of-chassis)
+    + [Single chassis](#single-chassis)
+    + [Thermal metrics](#thermal-metrics)
+    + [Collection of network adapters](#collection-of-network-adapters)
+    + [Single network adapter](#single-network-adapter)
+    + [Power](#power)
+    + [Creating a rack group](#creating-a-rack-group)
+    + [Creating a rack](#creating-a-rack)
+    + [Attaching chassis to a rack](#attaching-chassis-to-a-rack)
+    + [Detaching chassis from a rack](#detaching-chassis-from-a-rack)
+    + [Deleting a rack](#deleting-a-rack)
+    + [Deleting a rack group](#deleting-a-rack-group)
   * [Searching the inventory](#searching-the-inventory)
     + [Request URI parameters](#request-uri-parameters)
 - [Actions on a computer system](#actions-on-a-computer-system)
@@ -102,6 +107,7 @@
   * [Viewing a specific software resource](#viewing-a-specific-software-resource)
   * [Actions](#actions)
     + [Simple update](#simple-update)
+      - [Request parameters](#request-parameters)
     + [Start update](#start-update)
 - [Host to fabric networking](#host-to-fabric-networking)
   * [Collection of fabrics](#collection-of-fabrics)
@@ -155,24 +161,46 @@
 
 
 
+
+
+
 # Introduction 
 
  Welcome to Resource Aggregator for Open Distributed Infrastructure Management!
 
-Resource Aggregator for Open Distributed Infrastructure Management (ODIM) is a modular, open framework for
-simplified management and orchestration of distributed workloads. It provides a unified management platform for
+Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for
+simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for
 converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and
 secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
-Resource Aggregator for ODIM framework comprises the following two components.
+
+ODIMRA framework comprises the following two components.
 
 - The resource aggregation function (the resource aggregator)
+
+  The resource aggregation function is the single point of contact between the northbound clients and the
+  southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes
+  Redfish-compliant APIs to allow northbound infrastructure management systems to:
+    - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the
+      resource inventory.
+    - Gather crucial configuration information about southbound resources.
+    - Manipulate groups of resources in a single action.
+    - Listen to similar events from multiple southbound resources.
+	
 - One or more plugins
 
+  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through
+  RESTful APIs. HPE Resource Aggregator for ODIM supports:
+ 
+    - Generic Redfish plugin for ODIM (GRF): Generic Redfish plugin that can be used as a plugin for any Redfishcompliant
+      device.
+	- Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks. 
+    - Integration of additional third-party plugins.  	
+
 This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs
-are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.8.0](http://redfish.dmtf.org/schemas/DSP0266_1.8.0.pdf). 
-Redfish® is an open industry standard specification, API, and schema, which specifies a RESTful interface and uses JSON and OData. The Redfish
-standards are designed to deliver simple and secure management for converged, hybrid IT in a multivendor environment.
-These APIs are fully Redfish-compliant.
+are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.11.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.11.1.pdf) and are fully Redfish-compliant.
+Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish
+standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+
 
 ##  Resource Aggregator for ODIM logical architecture
 
@@ -189,8 +217,8 @@ The following figure shows these functional layers of Resource Aggregator for OD
 This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from
 the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The
 northbound clients communicate with this layer through a REST-based protocol that is fully compliant with
-DMTF's Redfish® specifications (Schema 2019.3 and Specification 1.8.0).
-The API layer sends user requests to the plugins through the aggregation, event, and fabric services.
+DMTF's Redfish® specifications (Schema 2020.3 and Specification 1.11.1).
+The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 - **Services layer**
 
@@ -219,8 +247,8 @@ to communicate with the resources. It uses REST-based communication which is bas
 v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
 event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding. To know how to develop plugins, refer to *Resource Aggregator for Open Distributed
-Infrastructure Management Plugin Developer's Guide*.
+language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed
+Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 
 # API usage and access guidelines
@@ -236,7 +264,10 @@ you will want to write your own scripting code to perform requests.
 
 
 This guide contains sample request and response payloads. For information on response payload parameters, refer to 
-[Redfish® Scalable Platforms API (Redfish) schema 2019.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2019.3.pdf).
+[Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
+
+> **IMPORTANT:**
+The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
 
 **HTTP headers**
 
@@ -260,19 +291,17 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 
 - {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you
-    have changed the default port in the `odim_config.json` file, use that as the port.
+    have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port.
 	
 	
-To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed.
- 
->**NOTE**: To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
+>**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 
 **curl usage**
 
 The examples shown in this guide use curl to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. odimra
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. The resource aggregator for ODIM
 supports HTTPS.
 
 **curl command options (flags):**
@@ -287,7 +316,7 @@ supports HTTPS.
 For a complete list of curl flags, see information provided at [https://curl.haxx.se](https://curl.haxx.se).
 
 
->**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command, before running a curl command.<br>
+>**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command before running a curl command.<br>
     ```
     $ export no_proxy="127.0.0.1,localhost,{odimra_host}"
      ```
@@ -304,7 +333,7 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
 
 
 
-1. If you are running curl commands on the server where the resource aggregator is   deployed, provide the `rootCA.crt` file as shown in the curl command:
+1. If you are running curl commands on the server where the resource aggregator is deployed, provide the `rootCA.crt` file as shown in the curl command:
    ```
    curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
    ```
@@ -318,7 +347,7 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
     5. Scroll to the end of the file, add the following line, and save:
        `{odim_server_ipv4_address} {FQDN}`
     6. Check if curl is working using the curl command:
-        ```curl
+        ```
         curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
         ```
 
@@ -395,14 +424,14 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
 |/redfish/v1/Systems?filter=\{searchKeys\}%20\{conditionKeys\}%20\{value/regEx\}|`GET`|
-| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
+|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|`POST`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
 
 |Chassis||
 |-------|--------------------|
-|/redfish/v1/Chassis|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}|`GET`|
+|/redfish/v1/Chassis|`GET`, `POST`|
+|/redfish/v1/Chassis/\{chassisId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Chassis/\{chassisId\}/Thermal|`GET`|
 |/redfish/v1/Chassis/\{ChassisId\}/Power|`GET`|
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|`GET`|
@@ -440,8 +469,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Fabrics/\{fabricId\}|`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Switches|`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|`GET`|
-| /redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
-| /redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
+|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
+|/redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Zones|`GET`, `POST`|
 |/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Fabrics/\{fabricId\}/AddressPools|`GET`, `POST`|
@@ -454,12 +483,10 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/TaskService|`GET`|
 |/redfish/v1/TaskService/Tasks|`GET`|
 |/redfish/v1/TaskService/Tasks/\{taskId\}|`GET`, `DELETE`|
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
+| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
+| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
 
 
-
->**NOTE:** Subtask URIs are not available in the current Redfish standard (1.8.0). They will be available in the next Redfish standard.
 
 
 
@@ -475,9 +502,9 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 
 
 >**NOTE:**
-`ComputerSystemId` is the unique identifier of a system. It is specified by Resource Aggregator for ODIM.
-`ComputerSystemId` is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
-universally unique identifier of a system (Example: ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1).
+`ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM.
+It is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
+universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1*.
 
 
 ## Viewing the list of supported Redfish services
@@ -565,7 +592,7 @@ Transfer-Encoding:chunked
    "Oem":{
 
    },
-   "RedfishVersion": "1.8.0",
+   "RedfishVersion": "1.11.1",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
@@ -621,7 +648,7 @@ Following are the HTTP status codes with their descriptions:
 
 
 >**NOTE:**
-This guide provides success codes (200, 201, 202, 204) for all the referenced API operations. For failed operations, refer to the error codes listed in this section.
+This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
 
@@ -709,7 +736,7 @@ With Resource Aggregator for ODIM, there are two kinds of defined roles:
 
 
 <blockquote>
-**NOTE:**
+NOTE:
 
 -   Redfish predefined roles cannot be modified.
 
@@ -764,13 +791,13 @@ A session represents a window of user's login with a Redfish service and contain
 
 Resource Aggregator for ODIM offers Redfish `SessionService` interface for creating and managing sessions. It exposes APIs to achieve the following:
 
--   Fetching the `SessionService` root
+-   Fetching the `SessionService` root.
 
--   Creating a session
+-   Creating a session.
 
--   Listing active sessions
+-   Listing active sessions.
 
--   Deleting a session
+-   Deleting a session.
 
 
 **Supported APIs**
@@ -1640,9 +1667,10 @@ curl  -i -X DELETE \
 
 
 
-# Resource aggregation and management
+#  Resource aggregation and management
 
-The resource aggregator allows users to add and group southbound infrastructure into collections for easy management. It exposes Redfish aggregation service endpoints to achieve the following:
+
+The resource aggregator allows you to add southbound infrastructure to its database, create resource collections, and perform actions in combination on these collections. It exposes Redfish aggregation service endpoints to achieve the following:
 
 -   Adding a resource and building its inventory.
 
@@ -1653,7 +1681,6 @@ The resource aggregator allows users to add and group southbound infrastructure 
 -   Removing a resource from the inventory which is no longer managed.
 
 
-Using these endpoints, you can add or remove only one resource at a time. You can group the resources into one collection and perform actions \(`reset` and `setdefaultbootorder`\) in combination on that group.
 
 All aggregation actions are performed as [tasks](#tasks) in Resource Aggregator for ODIM. The actions performed on a group of resources \(resetting or changing the boot order to default settings\) are carried out as a set of subtasks.
 
@@ -1859,7 +1886,7 @@ curl -i GET \
 |Parameter|Type|Description|
 |---------|----|-----------|
 |ConnectionMethodType|String| The type of this connection method.<br> For possible property values, see "Connection method types" table.<br> |
-|ConnectionMethodVariant|String|The variant of connection method shown as: `PluginType:PrefferedAuthType:PluginID_Firmwareversion`.<br>**PluginType**<br>The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric.<br>**PrefferedAuthType**<br>Preferred authentication method to connect to the plugin - *BasicAuth* or *XAuthToken*<br>**PluginID_Firmwareversion**<br>The id of the plugin along with the version of the firmware.<br>Example: GRF_v1.0.0, ILO_v1.0.0|
+|ConnectionMethodVariant|String|The variant of connection method. For more information, see [Connection method variants](#connection-method-variants).|
 |Links \{|Object|Links to other resources that are related to this connection method.|
 |AggregationSources \[ \{<br> @odata.id<br> \} \]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
 
@@ -1874,6 +1901,34 @@ curl -i GET \
 | Redfish<br> | Redfish connection method.<br> |
 | SNMP<br> | Simple Network Management Protocol.<br> |
 
+#### Connection method variants
+
+A connection method variant provides details about a plugin and is displayed in the following format:
+
+*`PluginType:PrefferedAuthType:PluginID_Firmwareversion`*. 
+
+It consists of the following parameters:
+
+- **PluginType:**
+   The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric. 
+- **PrefferedAuthType:**   
+   Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
+- **PluginID\_Firmwareversion:**
+   The id of the plugin along with the version of the firmware. To know the plugin Ids for all the supported plugins, see "Mapping of plugins and plugin Ids" table.<br>
+   Supported values: GRF\_v1.0.0 and URP\_v1.0.0.<br>  
+
+
+Examples:
+1. `Compute:BasicAuth:GRF_v1.0.0`
+2. `Compute:BasicAuth:URP_v1.0.0`
+
+
+>**Mapping of plugins and plugin Ids**
+
+|Plugin Id|Plugin name|
+|---------|-----------|
+|GRF|Generic Redfish Plugin|
+|URP|Unmanaged Rack Plugin|
 
 
 ##  Adding a plugin as an aggregation source
@@ -1881,13 +1936,13 @@ curl -i GET \
 | | |
 |-------|------|
 |<strong>Method</strong> | `POST` |
-|<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationSources` |
+|<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link \(having the aggregation source Id\) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
 				
@@ -1902,7 +1957,7 @@ After the plugin is successfully added as an aggregation source, it will also be
  
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can add a plugin. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -1923,14 +1978,14 @@ curl -i POST \
       }
    }
 }' \
- 'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationSources'
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
 
 
 ```
 
 
 
->**Sample request body**
+>**Sample request body for adding the GRF plugin**
 
 ```
 {
@@ -1945,14 +2000,30 @@ curl -i POST \
 }
 ```
 
+>**Sample request body for adding URP**
+
+```
+{
+   "HostName":"{plugin_host}:45003",
+   "UserName":"admin",
+   "Password":"Od!m12$4",
+   "Links":{
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a171e66c-b4a8-137f-981b-1c07ddfeacbb"
+      }
+   }
+}
+```
+
 **Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
+|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>The default port for the URP is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
 |UserName|String \(required\)<br> |The plugin username.|
 |Password|String \(required\)<br> |The plugin password.|
-|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0`</li></ul>|
+|Links\{|Object \(required\)<br> |Links to other resources that are related to this resource.|
+|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in [Viewing a connection method](#viewing-a-connection-method)</li></ul>|
 
 >**Sample response header \(HTTP 202 status\)**
 
@@ -1974,8 +2045,8 @@ Content-Length:491 bytes
 connection":"keep-alive
 content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
-link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a/>; rel=describedby
-location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a
+link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a:1/>; rel=describedby
+location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a:1
 odata-version:4.0
 transfer-encoding:"chunked
 x-frame-options":"sameorigin"
@@ -2037,10 +2108,10 @@ x-frame-options":"sameorigin"
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a Base Management Controller \(BMC\), discovers information, and performs a detailed inventory of it.<br> The `AggregationSource` schema provides information about a BMC such as the IP address, the username, the password, and more.<br> This operation is performed in the background as a Redfish task.<br> |
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link \(having the aggregation source Id\) to the added BMC in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>|
-|<strong>Response Code</strong> |On success, `202 Accepted` On successful completion of the task, `201 Created` <br> |
+|<strong>Response Code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see [Connection methods](#connection-methods).
 				
@@ -2051,12 +2122,12 @@ When the task is successfully complete, you will receive aggregation source Id o
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
 
-To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [collection of computer systems](#).
+To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [Collection of computer systems](#collection-of-computer-systems).
 
  `ComputerSystemId` is unique information about the BMC specified by Resource Aggregator for ODIM. It is represented as `<UUID:n>`, where `UUID` is the aggregation source Id of the BMC. Save it as it is required to perform subsequent actions such as `delete, reset`, and `setdefaultbootorder` on this BMC.
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can add a server. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2108,7 +2179,7 @@ curl -i -X POST \
 |UserName|String \(required\)<br> |The username of the BMC administrator account.|
 |Password|String \(required\)<br> |The password of the BMC administrator account.|
 |Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
-|ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0`</li></ul>|
+|ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
 >**Sample response header \(HTTP 202 status\)**
 
@@ -2202,7 +2273,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+   "@odata.type":"#AggregationSourceCollection.AggregationSourceCollection",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSource",
    "@odata.context":"/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
    "Name":"Aggregation Source",
@@ -2212,7 +2283,7 @@ curl -i GET \
          "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
       },
       {
-         "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
+         "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660:1"
       }
    ]   
 }
@@ -2255,8 +2326,8 @@ curl -i GET \
    "Links":{
       "ConnectionMethod": {
          "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
-      }     
-   }   
+      }
+   }
 }
 ```
 
@@ -2307,17 +2378,17 @@ curl -i PATCH \
 ```
 {
    "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
-   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
+   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
-   "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
+   "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
    "Name":"Aggregation Source",
    "HostName":"10.24.0.4",
    "UserName":"admin",
    "Links":{
       "ConnectionMethod": {
-         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
-      }    
-   }   
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a172e66c-b4a8-437c-981b-1c07ddfeacab"
+      }
+   } 
 }
 ```
 
@@ -2335,11 +2406,11 @@ curl -i PATCH \
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
 |<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)". IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br><br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".<br><blockquote>IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2348,7 +2419,7 @@ To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in 
 You can perform reset on a group of servers by specifying multiple target URIs in the request.
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2494,11 +2565,11 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` |
 |<strong>Description</strong> |This action changes the boot order of one or more servers to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-  Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".IMPORTANT:<br>Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See "Sample response body \(HTTP 200 status\)".<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br><br>-  Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".<blockquote><br>IMPORTANT:<br>Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See "Sample response body \(HTTP 200 status\)".<br>|
 |<strong>Response code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2507,7 +2578,7 @@ To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in 
 You can perform `setDefaultBootOrder` action on a group of servers by specifying multiple server URIs in the request.
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2640,16 +2711,16 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `DELETE` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}` |
 |<strong>Description</strong> |This operation removes a specific aggregation source \(plugin, BMC, or any manager\) from the inventory. Deleting an aggregation source also deletes all event subscriptions associated with the BMC. This operation is performed in the background as a Redfish task.<br> |
-|<strong>Returns</strong> |`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".<br>|
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can delete a server. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2703,7 +2774,7 @@ Content-Length:491 bytes
 
 An aggregate is a user-defined collection of resources.
 
-The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—the aggregates are available and accessible in the Resource Aggregator for ODIM environment until you delete them.
+The aggregate schema provides a mechanism to formally group the southbound resources of your choice. The advantage of creating aggregates is that they are more persistent than the random groupings—the aggregates are available and accessible in the environment of Resource Aggregator for ODIM until you delete them.
 
 The resource aggregator allows you to:
 
@@ -2978,14 +3049,14 @@ curl -i POST \
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -3113,14 +3184,14 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-**Usage**
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -3284,9 +3355,15 @@ curl -i POST \
 
 
 
+
+
 #  Resource inventory
 
-Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems`, `Chassis`, and `Managers` endpoints. It also offers the capability to search inventory information based on one or more configuration parameters and exposes APIs to manage the added resources.
+Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems`, `Chassis`, and `Managers` endpoints. 
+It also offers the capability to:	
+- Search inventory information based on one or more configuration parameters.	
+- Manage the resources added in the inventory. 
+
 
 To discover crucial configuration information about a resource, including chassis, perform `GET` on these endpoints.
 
@@ -3319,12 +3396,11 @@ To discover crucial configuration information about a resource, including chassi
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
-|/redfish/v1/Chassis|GET|`Login` |
-|/redfish/v1/Chassis/\{chassisId\}|GET|`Login` |
-|/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login` |
+|/redfish/v1/Chassis|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Chassis/\{chassisId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents`|
+|/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login`|
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|GET|`Login` |
-|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login` |
-
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login`|
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
@@ -4219,7 +4295,6 @@ The drive schema represents a single physical drive for a system, including link
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
-
 >**curl command**
 
 
@@ -4347,7 +4422,7 @@ curl -i GET \
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before creating a volume.</li><li>Power on the system once the operation is successful. The volume will be available in the system only after a successful reset.</li><li>You cannot create another volume when the system reset is in progress.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
+|<strong>Description</strong>| This operation creates a volume in a specific storage subsystem.|
 |<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
@@ -4402,7 +4477,7 @@ curl -i -X POST \
 |RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
 |Drives\[\{|Array \(required\)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id \}\]<br> |String|A link to a drive resource.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume will be available only after you have successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume will be available in the system immediately after the operation is successfully completed.|
 
 >**Sample response body** 
 
@@ -4431,7 +4506,7 @@ curl -i -X POST \
 |----------|-----------|
 |<strong>Method</strong>  | `DELETE` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
-|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br>NOTE:<ul><li>Reset the computer system once the operation is successful. The changes will be reflected in the system only after a successful reset.</li><li>You cannot delete an existing volume when the system reset is in progress.</li></ul> To know how to reset, see [Resetting a computer system](#resetting-a-computer-system). |
+|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.|
 |<strong>Response code</strong>|On success, `204 No Content` |
 |<strong>Authentication</strong>  |Yes|
 
@@ -4459,7 +4534,7 @@ curl -i -X DELETE \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you reset the system.<br> |
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you have successfully reset the system.<br> `Immediate` indicates that the volume will be deleted immediatley after the operation is completed successfully.|
 
 
 
@@ -4540,10 +4615,17 @@ curl -i GET \
 ```
 
 
+## Chassis
+
+Chassis represents the physical components of a system—sheet-metal confined spaces, logical zones such as racks, enclosures, chassis and all other containers, and subsystems \(like sensors\).
+
+To view, create, and manage racks or rack groups, ensure that the URP \(Unmanaged Rack Plugin\) is running and is added into the Resource Aggregator for ODIM framework. To know how to add a plugin, see [Adding a plugin as an aggregation source](#adding-a-plugin-as-an-aggregation-source).
+
+>**NOTE:**
+URP is installed automatically during the deployment of the resource aggregator.
 
 
-
-## Collection of chassis
+### Collection of chassis
 
 |||
 |-------|-------|
@@ -4617,13 +4699,13 @@ curl -i GET \
 
 
 
-## Single chassis
+### Single chassis
 
 |||
 |---------|-------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Chassis/{ChassisId}` |
-|**Description** |This operation fetches information on a specific chassis.|
+|**Description** |This operation fetches information on a specific computer system chassis, rack group, or a rack.|
 |**Returns** |JSON schema representing this chassis instance.|
 |**Response code** |On success, `200 OK` |
 |**Authentication** |Yes|
@@ -4640,6 +4722,8 @@ curl -i GET \
 ```
 
 >**Sample response body** 
+
+1. **Computer system chassis**
 
 ```
 { 
@@ -4752,6 +4836,68 @@ curl -i GET \
 }
 ```
 
+2. **Rack group chassis**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
+   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
+   "Description":"My RackGroup",
+   "Name":"RG8",
+   "ChassisType":"RackGroup",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+3. **Rack chassis**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
 
 
 
@@ -4759,7 +4905,9 @@ curl -i GET \
 
 
 
-##  Thermal metrics
+
+
+###  Thermal metrics
 
 |||
 |---------|-------|
@@ -4784,10 +4932,7 @@ curl -i GET \
 
 
 
-
-## Collection of network adapters
-
-
+### Collection of network adapters
 
 |||
 |---------|-------|
@@ -4805,13 +4950,13 @@ curl -i GET \
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}'
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters'
 
 
 ```
 
 
-## Single network adapter
+### Single network adapter
 
 |||
 |---------|-------|
@@ -4973,7 +5118,7 @@ curl -i GET \
 
 
 
-##  Power
+###  Power
 
 |||
 |---------|-------|
@@ -4995,7 +5140,472 @@ curl -i GET \
 
 ```
 
+### Creating a rack group
 
+|||
+|---------|-------|
+|Method | `POST` |
+|URI |`/redfish/v1/Chassis`|
+|Description |This operation creates a rack group.|
+|Returns |<ul><li>`Location` header that contains a link to the created rack group \(highlighted in bold in the sample response header\).</li><li>JSON schema representing the created rack group.<br></li></ul>|
+|Response code |On success, `201 Created`|
+|Authentication |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "ChassisType": "RackGroup",
+  "Description": "My RackGroup",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/{managerId}"
+      }
+    ]
+  },
+  "Name": "RG5"
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "ChassisType": "RackGroup",
+  "Description": "My RackGroup",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+      }
+    ]
+  },
+  "Name": "RG5"
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|ChassisType|String \(required\)<br> |The type of chassis. The type to be used to create a rack group is RackGroup.<br> |
+|Description|String \(optional\)<br> |Description of this rack group.|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack group.|
+|ManagedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP \(Unmanaged Rack Plugin\) manager. Provide the link to the URP manager.<br> |
+|Name|String \(required\)<br> |Name for this rack group.|
+
+
+>**Sample response header**
+
+```
+Connection:keep-alive
+Content-Type:application/json; charset=UTF-8
+Date:Wed,06 Jan 2021 09:37:43 GMT+15m 26s
+**Location:/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d**
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Content-Length:462 bytes
+```
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
+   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
+   "Description":"My RackGroup",
+   "Name":"RG5",
+   "ChassisType":"RackGroup",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+### Creating a rack
+
+|||
+|---------|-------|
+|**Method** | `POST` |
+|**URI** |`/redfish/v1/Chassis`|
+|**Description**|This operation creates a rack.|
+|**Returns** |<ul><li>`Location` header that contains a link to the created rack \(highlighted in bold in the sample response header\).</li><li>JSON schema representing the created rack.<br></li></ul>|
+|**Response code** |On success, `201 Created`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "ChassisType": "Rack",
+  "Description": "rack number one",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/{managerId}"
+      }
+    ],
+    "ContainedBy": [
+      {
+	    "@odata.id":"/redfish/v1/Chassis/{chassisId}"
+	  }
+    ]
+  },
+  "Name": "RACK#1"
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "ChassisType": "Rack",
+  "Description": "rack number one",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/675560ae-e903-41d9-bfb2-561951999999"
+      }
+    ],
+    "ContainedBy": [
+      {
+	    "@odata.id":"/redfish/v1/Chassis/1be678f0-86dd-58ac-ac38-16bf0f6dafee"
+	  }
+    ]
+  },
+  "Name": "RACK#1"
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|ChassisType|String \(required\)<br> |The type of chassis. The type to be used to create a rack is Rack.<br> |
+|Description|String \(optional\)<br> |Description of this rack.|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
+|ManagedBy \[\{<br> @odata.id<br> \}\]<br> |Array \(required\)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP \(Unmanaged Rack Plugin\) manager. Provide the link to the URP manager.<br> |
+|ContainedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the rack groups for containing this rack.|
+|Name|String \(required\)<br> |Name for this rack group.|
+
+
+>**Sample response header**
+
+```
+Connection:keep-alive
+Content-Type:application/json; charset=UTF-8
+Date:Wed,06 Jan 2021 09:37:43 GMT+15m 26s
+**Location:/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2**
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Content-Length:462 bytes
+```
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+
+### Attaching chassis to a rack
+
+|||
+|---------|-------|
+|**Method** | `PATCH` |
+|**URI** |`/redfish/v1/Chassis/{rackId}`|
+|**Description** |This operation attaches chassis to a specific rack.|
+|**Returns** |JSON schema for the modified rack having links to the attached chassis.|
+|**Response code** |On success, `200 Ok`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i PATCH \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "Links": {
+    "Contains": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/{chassisId}"
+      }
+    ]
+  }
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "Links": {
+    "Contains": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/46db63a9-2dcb-43b3-bdf2-54ce9c42e9d9:1"
+      }
+    ]
+  }
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
+|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the computer system chassis resources to be attached to this rack.|
+
+
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "Contains":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/4159c951-d0d0-4263-858b-0294f5be6377:1"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+### Detaching chassis from a rack
+
+|||
+|---------|-------|
+|**Method** | `PATCH` |
+|**URI** |`/redfish/v1/Chassis/{rackId}`|
+|**Description** |This operation detaches chassis from a specific rack.|
+|**Returns** |JSON schema representing the modified rack.|
+|**Response code** |On success, `200 Ok`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i PATCH \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "Links": {
+    "Contains": []
+  }
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "Links": {
+    "Contains": []
+  }
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
+|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the computer system chassis resources to be attached to this rack. To detach chassis from this rack, provide an empty array as value.|
+
+
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+### Deleting a rack
+
+|||
+|---------|-------|
+|**Method** | `DELETE` |
+|**URI** |`/redfish/v1/Chassis/{rackId}`|
+|**Description** |This operation deletes a specific rack.<br>**IMPORTANT:**<br> If you try to delete a nonempty rack, you will receive an HTTP `409 Conflict` error. Ensure to detach the chassis attached to a rack before deleting it.<br>|
+|**Response code** |On success, `204 No Content`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i DELETE \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
+```
+   
+
+>**Sample request body**
+
+None.
+
+### Deleting a rack group
+
+|||
+|---------|-------|
+|**Method**| `DELETE` |
+|**URI**|`/redfish/v1/Chassis/{rackGroupId}``|
+|**Description**|This operation deletes a specific rack group.<br>**IMPORTANT:**<br>If you try to delete a nonempty rack group, you will receive an HTTP `409 Conflict` error. Ensure to remove all the racks contained in a rack group before deleting it.<br>|
+|**Response code**|On success, `204 No Content`|
+|**Authentication**|Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i DELETE \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   'https://{odim_host}:{port}/redfish/v1/Chassis/{rackGroupId}`'
+```
+   
+
+>**Sample request body**
+
+None.
 
 
 
@@ -5322,7 +5932,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. The changes will be seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
-|**Response code** |`200 OK` |
+|**Response code** |`200 OK`|
 |**Authentication** |Yes|
 
 >**curl command**
@@ -5443,7 +6053,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
 
 
 
-#  Managers
+# Managers
 
 Resource Aggregator for ODIM exposes APIs to retrieve information about managers. Examples of managers include:
 
@@ -5561,7 +6171,7 @@ curl -i GET \
 
 
 
->**Sample response body** for a system \(BMC\) manager 
+>**Sample response body for a system \(BMC\) manager** 
 
 ```
 { 
@@ -5641,7 +6251,7 @@ curl -i GET \
 }
 ```
 
->**Sample response body** for Resource Aggregator for ODIM manager 
+>**Sample response body for Resource Aggregator for ODIM manager**
 
 ```
 {
@@ -5659,7 +6269,7 @@ curl -i GET \
 }
 ```
 
->**Sample response body** for a plugin manager
+>**Sample response body for a plugin manager**
 
 ```
 {
@@ -5667,7 +6277,7 @@ curl -i GET \
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
    "@odata.type":"#Manager.v1_3_3.Manager",
-   "FirmwareVersion":"1.0",
+   "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",
    "Name":"GRF",
@@ -5980,7 +6590,7 @@ curl -i GET \
 |<strong>Authentication</strong> |Yes|
 
  
-**Usage** 
+**Usage information** 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
@@ -5992,7 +6602,7 @@ curl -i POST \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
 "Password": "<password>",
-"Targets": [],
+"Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
 "TransferProtocol": "",
 "Username": "<username>"
 }' \
@@ -6108,7 +6718,7 @@ Content-Length:491 bytes
 |<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-**Usage** 
+**Usage information** 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
@@ -6120,7 +6730,6 @@ curl -i POST \
 
 
 ```
-
 
 > Sample request body
 
@@ -6158,9 +6767,7 @@ Content-Length:491 bytes
 }
 ```
 
-
->**Sample response body**
-
+>**Sample response body \(HTTP 200 status\)**
 
 ```
 {
@@ -6173,6 +6780,9 @@ Content-Length:491 bytes
       "code":"iLO.0.10.ExtendedInfo",
       "message":"See @Message.ExtendedInfo for more information."
 ```
+
+
+
 
 
 
@@ -8158,36 +8768,34 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "@odata.type":"#Task.v1_5_0.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
-   "Name":"Task task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
+   "Name":"Task task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "TaskState":"Completed",
-   "StartTime":"2020-04-17T06:52:15.632439043Z",
-   "EndTime":"2020-04-17T06:52:15.947796761Z",
+   "StartTime":"2021-01-21T07:09:03.366954469Z",
+   "EndTime":"2021-01-21T07:10:30.311241695Z",
    "TaskStatus":"OK",
    "SubTasks":"",
-   "TaskMonitor":"/taskmon/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "TaskMonitor":"/taskmon/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "PercentComplete":100,
    "Payload":{
-      "HttpHeaders":{
-         "Cache-Control":"no-cache",
-         "Connection":"keep-alive",
-         "Content-type":"application/json; charset=utf-8",
-         "Location":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1",
-         "OData-Version":"4.0",
-         "Transfer-Encoding":"chunked"
-      },
+      "HttpHeaders":[
+         "Transfer-Encoding: chunked",
+         "Cache-Control: no-cache",
+         "Connection: keep-alive",
+         "Content-type: application/json; charset=utf-8",
+         "Link: </redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d:1/>; rel=describedby",
+         "Location: /redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d:1",
+         "OData-Version: 4.0"
+      ],
       "HttpOperation":"POST",
-      "JsonBody":{
-         "code":"Base.1.6.1.Success",
-         "message":"Request completed successfully."
-      },
-      "TargetUri":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1"
+      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\"}},\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
+      "TargetUri":"/redfish/v1/AggregationService/AggregationSources"
    },
    "Messages":[
-
+      
    ]
 }
 ```
@@ -8298,7 +8906,7 @@ Content-Length:491 bytes
 
  
 
-##  Deleting a task
+## Deleting a task
 
 |||
 |-----------|----------|
@@ -8306,7 +8914,7 @@ Content-Length:491 bytes
 |**URI** |`/redfish/v1/TaskService/Tasks/{TaskID}` |
 |**Description** |This operation deletes a specific task. Deleting a running task aborts the operation being carried out.<br>**NOTE:**<br> Only a user having `ConfigureComponents` privilege is authorized to delete a task. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.|
 |**Returns** |JSON schema representing the deleted task.|
-|**Response code** |`202 Accepted` |
+|**Response code** |`204 No Content` |
 |**Authentication** |Yes|
 
 
@@ -8320,46 +8928,7 @@ curl -i DELETE \
 
 ```
 
->**Sample response body** 
 
-```
-{
-   "@odata.type":"#Task.v1_4_2a.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task52589fad-22fb-4505-86fd-cf845d500a33",
-   "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task52589fad-22fb-4505-86fd-cf845d500a33",
-   "Name":"Task task52589fad-22fb-4505-86fd-cf845d500a33",
-   "Message":"The task with id task52589fad-22fb-4505-86fd-cf845d500a33 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
-   "MessageArgs":[
-      "task52589fad-22fb-4505-86fd-cf845d500a33"
-   ],
-   "NumberOfArgs":1,
-   "Severity":"OK",
-   "TaskState":"Completed",
-   "StartTime":"2020-04-13T10:29:21.406470494Z",
-   "EndTime":"2020-04-13T10:29:21.927909927Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task52589fad-22fb-4505-86fd-cf845d500a33",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":{
-         "Content-type":"application/json; charset=utf-8",
-         "Location":"/redfish/v1/Managers/a6ddc4c0-2568-4e16-975d-fa771b0be853"
-      },
-      "HttpOperation":"POST",
-      "JsonBody":{
-         "code":"Base.1.6.1.Success",
-         "message":"Request completed successfully."
-      },
-      "TargetUri":"/redfish/v1/AggregationService/Actions/AggregationService.Add"
-   },
-   "Messages":[
-
-   ]
-}
-```
 
 
 
@@ -8572,7 +9141,6 @@ Transfer-Encoding:chunked
 |**Response code** |<ul><li>`202 Accepted`</li><li>`201 Created`</li></ul>|
 |**Authentication** |Yes|
 
-**Usage**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -8685,7 +9253,6 @@ curl -i POST \
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
-|/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 
 **Event types**
 

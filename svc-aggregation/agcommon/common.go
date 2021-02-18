@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -169,13 +168,14 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 // Whenever  any config file changes and events  will be  and  reload the configuration and verify the existing connection methods
 func TrackConfigFileChanges(dbInterface DBInterface) {
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
-	go common.TrackConfigFileChanges(ConfigFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
+		config.TLSConfMutex.RLock()
 		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 		if err != nil {
 			log.Error("error while trying to Add connection methods:" + err.Error())
 		}
+		config.TLSConfMutex.RUnlock()
 	}
 }

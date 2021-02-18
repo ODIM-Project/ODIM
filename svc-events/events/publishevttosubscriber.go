@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -74,7 +75,11 @@ func PublishEventsToDestination(data interface{}) bool {
 	}
 	// Extract the Hostname/IP of the event source and Event from input parameter
 	event := data.(common.Events)
-	host := event.IP
+	host, _, err := net.SplitHostPort(event.IP)
+	if err != nil {
+		host = event.IP
+	}
+	log.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
 	//replacing the resposne with north bound translation URL

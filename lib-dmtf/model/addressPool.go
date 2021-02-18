@@ -24,7 +24,7 @@ type AddressPool struct {
 	Description  string               `json:"Description,omitempty"`
 	Ethernet     *AddressPoolEthernet `json:"Ethernet,omitempty"`
 	GenZ         *GenZ                `json:"GenZ,omitempty"`
-	ID           string               `json:"Id"`
+	ID           string               `json:"id"`
 	Links        *Links               `json:"Links,omitempty"`
 	Name         string               `json:"Name"`
 	Oem          interface{}          `json:"Oem,omitempty"`

@@ -61,7 +61,7 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(rfphandler.Out, rfpmessagebus.Publish, 1)
+	go common.RunReadWorkers(rfphandler.Out, rfpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
@@ -141,7 +141,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS", rfphandler.GetResource)
 		systems.Get("/{id}/EthernetInterfaces/{id2}/VLANS/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/NetworkInterfaces/{rid}", rfphandler.GetResource)
-		systems.Get("/{id}/PCIDevices/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/PCIeDevices/{rid}", rfphandler.GetResource)
 		systems.Patch("/{id}", rfphandler.ChangeSettings)
 
 		systemsAction := systems.Party("/{id}/Actions")
@@ -220,8 +220,6 @@ func routers() *iris.Application {
 }
 
 func eventsrouters() {
-	app := iris.New()
-	app.Post(config.Data.EventConf.DestURI, rfphandler.RedfishEvents)
 	conf := &lutilconf.HTTPConfig{
 		Certificate:   &config.Data.KeyCertConf.Certificate,
 		PrivateKey:    &config.Data.KeyCertConf.PrivateKey,
@@ -233,7 +231,10 @@ func eventsrouters() {
 	if err != nil {
 		log.Fatal("Unable to initialize event server: " + err.Error())
 	}
-	app.Run(iris.Server(evtServer))
+	mux := http.NewServeMux()
+	mux.HandleFunc(config.Data.EventConf.DestURI, rfphandler.RedfishEvents)
+	evtServer.Handler = mux
+	log.Fatal(evtServer.ListenAndServeTLS("", ""))
 }
 
 // intializePluginStatus sets plugin status

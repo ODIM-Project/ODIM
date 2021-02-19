@@ -59,7 +59,7 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(dphandler.Out, dpmessagebus.Publish, 1)
+	go common.RunReadWorkers(dphandler.Out, dpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
@@ -218,8 +218,6 @@ func routers() *iris.Application {
 }
 
 func eventsrouters() {
-	app := iris.New()
-	app.Post(config.Data.EventConf.DestURI, dphandler.RedfishEvents)
 	conf := &lutilconf.HTTPConfig{
 		Certificate:   &config.Data.KeyCertConf.Certificate,
 		PrivateKey:    &config.Data.KeyCertConf.PrivateKey,
@@ -231,7 +229,10 @@ func eventsrouters() {
 	if err != nil {
 		log.Fatalf("fatal: error while initializing event server: %v", err)
 	}
-	app.Run(iris.Server(evtServer))
+	mux := http.NewServeMux()
+	mux.HandleFunc(config.Data.EventConf.DestURI, dphandler.RedfishEvents)
+	evtServer.Handler = mux
+	log.Fatal(evtServer.ListenAndServeTLS("", ""))
 }
 
 // intializePluginStatus sets plugin status

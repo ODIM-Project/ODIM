@@ -17,18 +17,20 @@ package chassis
 import (
 	"encoding/json"
 	"fmt"
-	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	log "github.com/sirupsen/logrus"
 )
 
 type fabricFactory struct {
@@ -89,8 +91,8 @@ func (c *sourceProviderImpl) findFabricChassis(collection *sresponse.Collection)
 // and add them to the existing chassis collection.
 func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 	defer f.wg.Done()
-	req, err := f.createChassisRequest(plugin, collectionURL)
-	if err != nil {
+	req, errResp, err := f.createChassisRequest(plugin, collectionURL, http.MethodGet, nil)
+	if errResp != nil {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
@@ -111,37 +113,51 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 }
 
 // createChassisRequest creates the parameters ready for the plugin communication
-func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url string) (*pluginContactRequest, error) {
+func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method string, body *json.RawMessage) (pReq *pluginContactRequest, errResp *response.RPC, err error) {
 	var token string
 	cred := make(map[string]string)
 
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		token = f.getPluginToken(plugin)
 		if token == "" {
-			return nil, fmt.Errorf("unable to create session for plugin " + plugin.ID)
+			*errResp = common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, "unable to create session for plugin "+plugin.ID, []interface{}{url}, nil)
+			return nil, errResp, fmt.Errorf("unable to create session for plugin " + plugin.ID)
 		}
 	} else {
 		cred["Username"] = plugin.Username
 		cred["Password"] = string(plugin.Password)
 	}
 
+	// validating Patch request properties are in uppercamelcase or not
+	if strings.EqualFold(method, http.MethodPatch) {
+		errResp = validateReqParamsCase(body)
+		if errResp != nil {
+			return nil, errResp, fmt.Errorf("validation of request body failed")
+		}
+	}
+
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		if body != nil {
+			*body = json.RawMessage(strings.Replace(string(*body), key, value, -1))
+		}
 		url = strings.Replace(url, key, value, -1)
 	}
 
-	return &pluginContactRequest{
+	pReq = &pluginContactRequest{
 		Token:           token,
 		LoginCredential: cred,
 		ContactClient:   f.contactClient,
 		Plugin:          plugin,
-		HTTPMethodType:  http.MethodGet,
+		HTTPMethodType:  method,
 		URL:             url,
-	}, nil
+		PostBody:        body,
+	}
+	return pReq, nil, nil
 }
 
 // collectChassisCollection contacts the plugin and collect the chassis response
 func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
-	body, _, statusCode, err := contactPlugin(pluginRequest)
+	body, _, statusCode, _, err := contactPlugin(pluginRequest)
 	if err != nil {
 		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + err.Error())
 	}
@@ -151,22 +167,33 @@ func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link,
 	return extractChassisCollection(body)
 }
 
-func contactPlugin(req *pluginContactRequest) ([]byte, string, int, error) {
+func contactPlugin(req *pluginContactRequest) ([]byte, string, int, string, error) {
 	pluginResponse, err := callPlugin(req)
 	if err != nil {
 		if getPluginStatus(req.Plugin) {
 			pluginResponse, err = callPlugin(req)
 		}
 		if err != nil {
-			return nil, "", http.StatusInternalServerError, fmt.Errorf(err.Error())
+			return nil, "", http.StatusInternalServerError, response.InternalError, fmt.Errorf(err.Error())
 		}
 	}
 	defer pluginResponse.Body.Close()
 	body, err := ioutil.ReadAll(pluginResponse.Body)
 	if err != nil {
-		return nil, "", http.StatusInternalServerError, fmt.Errorf(err.Error())
+		return nil, "", http.StatusInternalServerError, response.InternalError, fmt.Errorf(err.Error())
 	}
-	return body, pluginResponse.Header.Get("X-Auth-Token"), pluginResponse.StatusCode, nil
+	var statusMessage string
+	switch pluginResponse.StatusCode {
+	case http.StatusOK:
+		statusMessage = response.Success
+	case http.StatusUnauthorized:
+		statusMessage = response.ResourceAtURIUnauthorized
+	case http.StatusNotFound:
+		statusMessage = response.ResourceNotFound
+	default:
+		statusMessage = response.CouldNotEstablishConnection
+	}
+	return body, pluginResponse.Header.Get("X-Auth-Token"), pluginResponse.StatusCode, statusMessage, nil
 }
 
 func callPlugin(req *pluginContactRequest) (*http.Response, error) {
@@ -219,7 +246,7 @@ func (f *fabricFactory) createToken(plugin smodel.Plugin) string {
 		"Password": string(plugin.Password),
 	}
 	contactRequest.URL = "/ODIM/v1/Sessions"
-	_, token, _, err := contactPlugin(&contactRequest)
+	_, token, _, _, err := contactPlugin(&contactRequest)
 	if err != nil {
 		log.Error(err.Error())
 	}

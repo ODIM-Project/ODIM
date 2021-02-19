@@ -123,7 +123,7 @@ type Sensors struct {
 
 // Status redfish structure
 type Status struct {
-	Oid          string `json:"@odata.id"`
+	Oid          string `json:"@odata.id,omitempty"`
 	Ocontext     string `json:"@odata.context,omitempty"`
 	Oetag        string `json:"@odata.etag,omitempty"`
 	Otype        string `json:"@odata.type,omitempty"`

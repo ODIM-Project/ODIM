@@ -42,7 +42,12 @@ start_event()
 {
         registry_address="consul:8500"
         if [[ ${HA_ENABLED,,} == true ]]; then
-                registry_address="[consul1:8500,consul2:8500,consul3:8500]"
+                if [[ -z "${ODIM_NAMESPACE}" ]]; then
+                        echo "[$(date)] -- ERROR -- ODIM_NAMESPACE variable not set, exiting"
+                        exit 1
+                fi
+                consul_addr_suffix="consul.${ODIM_NAMESPACE}.svc.cluster.local:8500"
+                registry_address="consul1.${consul_addr_suffix},consul2.${consul_addr_suffix},consul3.${consul_addr_suffix}"
         fi
 
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
@@ -58,7 +63,7 @@ monitor_process()
 	while true; do
 		pid=$(pgrep -fc svc-events 2> /dev/null)
 		if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
-			echo "svc-events has exited"
+			echo "[$(date)] -- ERROR -- svc-events not found running, exiting"
 			kill -15 ${OWN_PID}
 			exit 1
 		fi

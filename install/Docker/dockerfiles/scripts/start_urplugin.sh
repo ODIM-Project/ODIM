@@ -53,7 +53,7 @@ monitor_process()
         while true; do
                 pid=$(pgrep -fc plugin-unmanage 2> /dev/null)
                 if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
-                        echo "urplugin has exited" >> /var/log/urplugin_logs/urplugin.log 2>&1 &
+                        echo "[$(date)] -- ERROR -- plugin-unmanaged-racks not found running, exiting" >> /var/log/urplugin_logs/urplugin.log 2>&1 &
                         kill -15 ${OWN_PID}
                         exit 1
                 fi

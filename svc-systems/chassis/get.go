@@ -25,6 +25,7 @@ import (
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 // GetChassisInfo is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -59,12 +60,21 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
-	return pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
+	resp := pluginClient.Get("/ODIM/v1/Chassis/" + req.RequestParam)
+	if !is2xx(int(resp.StatusCode)) {
+		f := h.getFabricFactory(nil)
+		r := f.getFabricChassisResource(req.RequestParam)
+		if is2xx(int(r.StatusCode)) {
+			return r
+		}
+	}
+	return resp
 }
 
 type Get struct {
 	findInMemoryDB     func(table, key string, r interface{}) *errors.Error
 	createPluginClient plugin.ClientFactory
+	getFabricFactory   func(collection *sresponse.Collection) *fabricFactory
 }
 
 func NewGetHandler(
@@ -74,5 +84,6 @@ func NewGetHandler(
 	return &Get{
 		createPluginClient: pluginClientCreator,
 		findInMemoryDB:     inMemoryDBFinder,
+		getFabricFactory:   getFabricFactory,
 	}
 }

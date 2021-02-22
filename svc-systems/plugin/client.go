@@ -20,11 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"strings"
-
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -32,6 +27,11 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"reflect"
+	"strings"
 )
 
 type ClientFactory func(name string) (Client, *errors.Error)
@@ -82,7 +82,8 @@ type Collector interface {
 }
 
 type returnFirst struct {
-	resp *response.RPC
+	ReqURI string
+	resp   *response.RPC
 }
 
 func (c *returnFirst) Collect(r response.RPC) error {
@@ -91,6 +92,9 @@ func (c *returnFirst) Collect(r response.RPC) error {
 }
 
 func (c *returnFirst) GetResult() response.RPC {
+	if c.resp == nil {
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", c.ReqURI}, nil)
+	}
 	return *c.resp
 }
 
@@ -144,15 +148,30 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 		resp := client.Get(uri)
 		err := m.call.collector.Collect(resp)
 		if err != nil {
-			log.Printf("execution of GET %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+			log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + resp.Body.(string))
 		}
 	}
-
+	// Checking whether the struct passed as the interface has a ReqURI field.
+	// If it is a collection request then the ReqURI field won't be present.
+	// Only struct associating with individual resource collection requires the ReqURI field.
+	field := reflect.ValueOf(m.call.collector).Elem().FieldByName("ReqURI")
+	if field.IsValid() {
+		chassisID := getChassisID(uri)
+		field.SetString(chassisID)
+	}
 	return m.call.collector.GetResult()
 }
 
+func getChassisID(uri string) string {
+	parts := strings.Split(uri, "/")
+	return parts[len(parts)-1]
+}
+
 func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC {
-	panic("implement me")
+	// TODO: Implement this
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }
 
 func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RPC {
@@ -167,7 +186,7 @@ func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RP
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Printf("execution of PATCH %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+			log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + resp.Body.(string))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -185,7 +204,7 @@ func (m *multiTargetClient) Delete(uri string) response.RPC {
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Printf("execution of DELETE %s on %s plugin returned non 2xx status code; %v", uri, target.ID, resp.Body)
+			log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + resp.Body.(string))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -263,7 +282,7 @@ func (c *client) extractResp(httpResponse *http.Response, err error) response.RP
 		ce := new(response.CommonError)
 		err := dec.Decode(ce)
 		if err != nil {
-			log.Println("WARNING: ", "Cannot decode CommonError: ", err)
+			log.Error("Cannot decode CommonError: " + err.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, string(body), nil, nil)
 		}
 	}

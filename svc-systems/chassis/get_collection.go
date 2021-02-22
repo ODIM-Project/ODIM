@@ -18,7 +18,7 @@ package chassis
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
@@ -29,6 +29,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
+const collectionURL = "/redfish/v1/Chassis"
+
 func NewGetCollectionHandler(
 	pcf plugin.ClientFactory,
 	imkp func(table string) ([]string, error)) *GetCollection {
@@ -37,6 +39,7 @@ func NewGetCollectionHandler(
 		&sourceProviderImpl{
 			pluginClientFactory: pcf,
 			getAllKeys:          imkp,
+			getFabricFactory:    getFabricFactory,
 		},
 	}
 }
@@ -62,17 +65,21 @@ func (h *GetCollection) Handle() (r response.RPC) {
 		}
 	}
 
+	h.sourcesProvider.findFabricChassis(&allChassisCollection)
+
 	initializeRPCResponse(&r, allChassisCollection)
 	return
 }
 
 type sourceProvider interface {
 	findSources() ([]source, *response.RPC)
+	findFabricChassis(c *sresponse.Collection)
 }
 
 type sourceProviderImpl struct {
 	pluginClientFactory plugin.ClientFactory
 	getAllKeys          func(table string) ([]string, error)
+	getFabricFactory    func(collection *sresponse.Collection) *fabricFactory
 }
 
 func (c *sourceProviderImpl) findSources() ([]source, *response.RPC) {
@@ -102,7 +109,7 @@ type managedChassisProvider struct {
 func (m *managedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	keys, e := m.inMemoryKeysProvider("Chassis")
 	if e != nil {
-		log.Printf("error getting all keys of ChassisCollection table : %v", e)
+		log.Error("while getting all keys of ChassisCollection table, got " + e.Error())
 		ge := common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 		return nil, &ge
 	}
@@ -119,7 +126,7 @@ type unmanagedChassisProvider struct {
 }
 
 func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
-	r := u.c.Get("/redfish/v1/Chassis", plugin.AggregateResults)
+	r := u.c.Get(collectionURL, plugin.AggregateResults)
 	if r.StatusCode != http.StatusOK {
 		return nil, &r
 	}
@@ -132,7 +139,7 @@ func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 	return c.Members, nil
 }
 
-func initializeRPCResponse(target *response.RPC, body sresponse.Collection) {
+func initializeRPCResponse(target *response.RPC, body interface{}) {
 	target.StatusMessage = response.Success
 	target.Body = body
 	target.Header = map[string]string{

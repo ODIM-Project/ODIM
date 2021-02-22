@@ -16,7 +16,7 @@
 if [ -a build/docker-compose.yml ]; then
 	cd build
 	docker-compose down
-	LIST=`docker image ls | grep -v REPOSITORY | grep -vE 'odimra_builddep|golang' | awk '{print $3}'`
+	LIST=`docker image ls | grep -v REPOSITORY | grep -vwE 'consul|golang|ubuntu|redis' | awk '{print $3}'`
 	docker rmi $LIST
 	rm -rf odimra/odimra
 	rm -rf odimra/odimra_config/odimra_config.json

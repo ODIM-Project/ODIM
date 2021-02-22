@@ -14,21 +14,12 @@
 # under the License.
 
 declare PID=0
-
-add_host()
-{
-        /bin/add-hosts -file /tmp/host.append
-        if [ $? -ne 0 ]; then
-                echo "Appending host entry to /etc/hosts file Failed"
-                exit 0
-        fi
-}
+declare OWN_PID=$$
 
 sigterm_handler()
 {
         if [[ $PID -ne 0 ]]; then
-                # will wait for other instances to gracefully announce quorum exit
-                sleep 5
+                sleep 1
                 kill -9 $PID
                 wait "$PID" 2>/dev/null
         fi
@@ -49,19 +40,26 @@ run_forever()
 
 start_manager()
 {
-	cd /bin
+        registry_address="consul:8500"
+        if [[ ${HA_ENABLED,,} == true ]]; then
+                registry_address="[consul1:8500,consul2:8500,consul3:8500]"
+        fi
+
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup ./svc-managers --registry=consul --registry_address=consul:8500 --server_address=managers:45107 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/managers.log 2>&1 &
+	nohup /bin/svc-managers --registry=consul --registry_address=${registry_address} --server_address=managers:45107 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/managers.log 2>&1 &
 	PID=$!
-	sleep 2s
+	sleep 3
+
+	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/managers-add-hosts.log 2>&1 &
 }
 
 monitor_process()
 {
         while true; do
-                pid=$(pgrep svc-managers 2> /dev/null)
-                if [[ $pid -eq 0 ]]; then
+                pid=$(pgrep -fc svc-managers 2> /dev/null)
+                if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
                         echo "svc-managers has exited"
+			kill -15 ${OWN_PID}
                         exit 1
                 fi
                 sleep 5
@@ -71,8 +69,6 @@ monitor_process()
 ##############################################
 ###############  MAIN  #######################
 ##############################################
-
-add_host
 
 start_manager
 

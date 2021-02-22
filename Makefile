@@ -17,7 +17,7 @@
 build/odimra/odimra:
 	mkdir build/odimra/odimra
 
-COPY = svc-account-session svc-aggregation svc-api svc-events svc-fabrics svc-managers svc-systems svc-task svc-update lib-dmtf lib-messagebus lib-persistence-manager lib-utilities plugin-redfish lib-rest-client plugin-dell
+COPY =plugin-unmanaged-racks build/cert_generator  svc-account-session svc-aggregation svc-api svc-events svc-fabrics svc-managers svc-systems svc-task svc-update lib-dmtf lib-messagebus lib-persistence-manager lib-utilities plugin-redfish lib-rest-client plugin-dell
 
 copy: build/odimra/odimra
 	$(foreach var,$(COPY),cp -a $(var) build/odimra/odimra/;)
@@ -33,10 +33,8 @@ copy: build/odimra/odimra
 dep: copy
 	build/odimra/makedep.sh
 
-urp:
-	cd plugin-unmanaged-racks && $(MAKE) build
 
-build-containers: dep urp
+build-containers: dep 
 	cd build && ./run_pre_reqs.sh && docker-compose build --force-rm --build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}
 
 standup-containers: build-containers
@@ -49,7 +47,6 @@ all: standup-containers
 
 clean: 
 	build/cleanupbuild.sh
-	cd plugin-unmanaged-racks && $(MAKE) clean
 
 deepclean:
 	build/deepcleanupbuild.sh

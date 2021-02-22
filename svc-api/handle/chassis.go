@@ -24,8 +24,8 @@ import (
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 // ChassisRPCs defines all the RPC methods in system service
@@ -44,8 +44,10 @@ func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
 		log.Error(errorMessage)
-		re := common.GeneralError(http.StatusBadRequest, response.GeneralError, errorMessage, nil, nil)
-		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.JSON(&response.Body)
 		return
 	}
 
@@ -175,8 +177,10 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
 		log.Println(errorMessage)
-		re := common.GeneralError(http.StatusBadRequest, response.GeneralError, errorMessage, nil, nil)
-		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.JSON(&response.Body)
 		return
 	}
 	rr, rerr := chassis.UpdateChassisRPC(chassisproto.UpdateChassisRequest{

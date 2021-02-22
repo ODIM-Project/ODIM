@@ -196,35 +196,33 @@ curl -i GET \
 ```
 {
    "@odata.type":"#Task.v1_5_0.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
-   "Name":"Task task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
+   "Name":"Task task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "TaskState":"Completed",
-   "StartTime":"2020-04-17T06:52:15.632439043Z",
-   "EndTime":"2020-04-17T06:52:15.947796761Z",
+   "StartTime":"2021-01-21T07:09:03.366954469Z",
+   "EndTime":"2021-01-21T07:10:30.311241695Z",
    "TaskStatus":"OK",
    "SubTasks":"",
-   "TaskMonitor":"/taskmon/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "TaskMonitor":"/taskmon/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "PercentComplete":100,
    "Payload":{
-      "HttpHeaders":{
-         "Cache-Control":"no-cache",
-         "Connection":"keep-alive",
-         "Content-type":"application/json; charset=utf-8",
-         "Location":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1",
-         "OData-Version":"4.0",
-         "Transfer-Encoding":"chunked"
-      },
+      "HttpHeaders":[
+         "Transfer-Encoding: chunked",
+         "Cache-Control: no-cache",
+         "Connection: keep-alive",
+         "Content-type: application/json; charset=utf-8",
+         "Link: </redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d:1/>; rel=describedby",
+         "Location: /redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d:1",
+         "OData-Version: 4.0"
+      ],
       "HttpOperation":"POST",
-      "JsonBody":{
-         "code":"Base.1.6.1.Success",
-         "message":"Request completed successfully."
-      },
-      "TargetUri":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1"
+      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\"}},\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
+      "TargetUri":"/redfish/v1/AggregationService/AggregationSources"
    },
    "Messages":[
-
+      
    ]
 }
 ```
@@ -343,7 +341,7 @@ Content-Length:491 bytes
 |**URI** |`/redfish/v1/TaskService/Tasks/{TaskID}` |
 |**Description** |This operation deletes a specific task. Deleting a running task aborts the operation being carried out.<br>**NOTE:**<br> Only a user having `ConfigureComponents` privilege is authorized to delete a task. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.|
 |**Returns** |JSON schema representing the deleted task.|
-|**Response code** |`202 Accepted` |
+|**Response code** |`204 No Content` |
 |**Authentication** |Yes|
 
 
@@ -357,43 +355,4 @@ curl -i DELETE \
 
 ```
 
->**Sample response body** 
 
-```
-{
-   "@odata.type":"#Task.v1_5_0.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task52589fad-22fb-4505-86fd-cf845d500a33",
-   "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task52589fad-22fb-4505-86fd-cf845d500a33",
-   "Name":"Task task52589fad-22fb-4505-86fd-cf845d500a33",
-   "Message":"The task with id task52589fad-22fb-4505-86fd-cf845d500a33 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
-   "MessageArgs":[
-      "task52589fad-22fb-4505-86fd-cf845d500a33"
-   ],
-   "NumberOfArgs":1,
-   "Severity":"OK",
-   "TaskState":"Completed",
-   "StartTime":"2020-04-13T10:29:21.406470494Z",
-   "EndTime":"2020-04-13T10:29:21.927909927Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task52589fad-22fb-4505-86fd-cf845d500a33",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":{
-         "Content-type":"application/json; charset=utf-8",
-         "Location":"/redfish/v1/Managers/a6ddc4c0-2568-4e16-975d-fa771b0be853"
-      },
-      "HttpOperation":"POST",
-      "JsonBody":{
-         "code":"Base.1.6.1.Success",
-         "message":"Request completed successfully."
-      },
-      "TargetUri":"/redfish/v1/AggregationService/Actions/AggregationService.Add"
-   },
-   "Messages":[
-
-   ]
-}
-```

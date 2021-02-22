@@ -51,7 +51,7 @@ type StartUpInteraface struct {
 // EmbTopic hold the list all consuming topics after
 type EmbTopic struct {
 	TopicsList map[string]bool
-	lock       sync.Mutex
+	lock       sync.RWMutex
 	EMBConsume func(string)
 }
 
@@ -107,8 +107,8 @@ func (p *PluginToken) GetToken(pluginID string) string {
 
 // ConsumeTopic check the existing topic list if it is not present then it will add topic name to list and consume that topic
 func (e *EmbTopic) ConsumeTopic(topicName string) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
+	e.lock.RLock()
+	defer e.lock.RUnlock()
 	if ok := e.TopicsList[topicName]; !ok {
 		go consumer.Consume(topicName)
 		e.TopicsList[topicName] = true
@@ -123,7 +123,7 @@ var EMBTopics EmbTopic
 var PluginStartUp = false
 
 // GetAllPluginStatus ...
-func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
+func (st *StartUpInteraface) GetAllPluginStatus() {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
@@ -134,9 +134,9 @@ func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
 			go st.getPluginStatus(pluginList[i])
 		}
 		var pollingTime int
-		lock.Lock()
+		config.TLSConfMutex.RLock()
 		pollingTime = config.Data.PluginStatusPolling.PollingFrequencyInMins
-		lock.Unlock()
+		config.TLSConfMutex.RUnlock()
 		time.Sleep(time.Minute * time.Duration(pollingTime))
 	}
 
@@ -144,6 +144,7 @@ func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
 func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	PluginsMap := make(map[string]bool)
 	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -159,13 +160,14 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		PluginPrefferedAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
+	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
 		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
@@ -196,7 +198,9 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		}
 	}
 	// Adding the topics to the list
+	EMBTopics.lock.Lock()
 	EMBTopics.EMBConsume = st.EMBConsume
+	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
 		EMBTopics.ConsumeTopic(topicsList[j])
 	}

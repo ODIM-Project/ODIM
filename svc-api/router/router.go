@@ -392,6 +392,7 @@ func Router() *iris.Application {
 	fabrics.Patch("/{id}/Zones/{zone_uuid}", fab.UpdateFabricResource)
 	fabrics.Patch("/{id}/Endpoints/{endpoint_uuid}", fab.UpdateFabricResource)
 	fabrics.Patch("/{id}/AddressPools/{addresspool_uuid}", fab.UpdateFabricResource)
+	fabrics.Patch("/{id}/Switches/{switchID}/Ports/{port_uuid}", fab.UpdateFabricResource)
 	fabrics.Delete("/{id}/Zones/{zone_uuid}", fab.DeleteFabricResource)
 	fabrics.Delete("/{id}/Endpoints/{endpoint_uuid}", fab.DeleteFabricResource)
 	fabrics.Delete("/{id}/AddressPools/{addresspool_uuid}", fab.DeleteFabricResource)

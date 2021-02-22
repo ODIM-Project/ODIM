@@ -12,36 +12,41 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dmtfmodel
-package dmtfmodel
+package model
 
 // Links - this is Common to all resources
 type Links struct {
-	Chassis                  []Link `json:",omitempty"`
-	ComputerSystems          []Link `json:",omitempty"`
-	ConsumingComputerSystems []Link `json:",omitempty"`
-	ContainedBy              []Link `json:",omitempty"`
-	CooledBy                 []Link `json:",omitempty"`
-	Endpoints                []Link `json:",omitempty"`
-	Drives                   []Link `json:",omitempty"`
-	ManagedBy                []Link `json:",omitempty"`
-	Oem                      *Oem   `json:",omitempty"`
-	ManagersInChassis        []Link `json:",omitempty"`
-	PCIeDevices              []Link `json:",omitempty"`
-	PCIeFunctions            []Link `json:",omitempty"`
-	PoweredBy                []Link `json:",omitempty"`
-	Processors               []Link `json:",omitempty"`
-	ResourceBlocks           []Link `json:",omitempty"`
-	Storage                  []Link `json:",omitempty"`
-	SupplyingComputerSystems []Link `json:",omitempty"`
-	Switches                 []Link `json:",omitempty"`
+	AddressPools             []*Link     `json:"AddressPools,omitempty"`
+	Chassis                  []*Link     `json:"Chassis,omitempty"`
+	ComputerSystems          []*Link     `json:"ComputerSystems,omitempty"`
+	ConnectedPorts           []*Link     `json:"ConnectedPorts,omitempty"`
+	ConsumingComputerSystems []*Link     `json:"ConsumingComputerSystems,omitempty"`
+	ContainedBy              *Link       `json:"ContainedBy,omitempty"`
+	ContainedByZones         []*Link     `json:"ContainedByZones,omitempty"`
+	CooledBy                 []*Link     `json:"CooledBy,omitempty"`
+	Endpoints                []*Link     `json:"Endpoints,omitempty"`
+	EndpointsCount           int         `json:"Endpoints@odata.count,omitempty"`
+	Drives                   []*Link     `json:"Drives,omitempty"`
+	ManagedBy                []*Link     `json:"ManagedBy,omitempty"`
+	Oem                      interface{} `json:"Oem,omitempty"`
+	ManagersInChassis        []*Link     `json:"ManagersInChassis,omitempty"`
+	PCIeDevices              []*Link     `json:"PCIeDevices,omitempty"`
+	PCIeFunctions            []*Link     `json:"PCIeFunctions,omitempty"`
+	PoweredBy                []*Link     `json:"PoweredBy,omitempty"`
+	Processors               []*Link     `json:"Processors,omitempty"`
+	ResourceBlocks           []*Link     `json:"ResourceBlocks,omitempty"`
+	Storage                  []*Link     `json:"Storage,omitempty"`
+	SupplyingComputerSystems []*Link     `json:"SupplyingComputerSystems,omitempty"`
+	Switches                 []*Link     `json:"Switches,omitempty"`
+	Zones                    []*Link     `json:"Zones,omitempty"`
+	ZonesCount               int         `json:"Zones@odata.count,omitempty"`
 }
 
-// Link
+// Link holds the odata id redfish links
 type Link struct {
 	Oid string `json:"@odata.id"`
 }
 
-// Oem
+// Oem holds the vendor specific details which is addtional to redfish contents
 type Oem struct {
 }

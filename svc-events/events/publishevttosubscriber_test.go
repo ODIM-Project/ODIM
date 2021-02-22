@@ -306,45 +306,6 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 
 }
 
-func TestPublishEventsWithoutOdataidOOC(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	message := ForwardEventMessageData{
-		OdataType: "#Event",
-		Events: []ForwardEvent{
-			ForwardEvent{
-				MemberID:          "1",
-				EventType:         "Alert",
-				EventID:           "123",
-				Severity:          "OK",
-				EventTimestamp:    "",
-				Message:           "IndicatorChanged",
-				MessageID:         "IndicatorChanged",
-				OriginOfCondition: "/redfish/v1/Systems/1",
-			},
-		},
-	}
-
-	var event common.Events
-	event.IP = "10.4.1.2"
-	msg, err := json.Marshal(message)
-	if err != nil {
-		t.Errorf("expected err is nil but got : %v", err)
-	}
-	event.Request = msg
-	flag := PublishEventsToDestination(event)
-	assert.False(t, flag)
-}
-
 func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
 	config.SetUpMockConfig(t)
 	defer func() {

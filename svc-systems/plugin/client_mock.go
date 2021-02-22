@@ -18,6 +18,8 @@ package plugin
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/stretchr/testify/mock"
 )
@@ -37,13 +39,22 @@ func (c *ClientMock) Get(uri string, opts ...CallOption) response.RPC {
 }
 
 func (c *ClientMock) Post(uri string, body *json.RawMessage) response.RPC {
-	panic("implement me")
+	// TODO: Implement this
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }
 
 func (c *ClientMock) Delete(uri string) response.RPC {
-	panic("implement me")
+	// TODO: Implement this
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }
 
 func (c *ClientMock) Patch(uri string, body *json.RawMessage) response.RPC {
-	panic("implement me")
+	// TODO: Implement this
+	return response.RPC{
+		StatusCode: http.StatusNotImplemented,
+	}
 }

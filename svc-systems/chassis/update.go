@@ -18,14 +18,16 @@ package chassis
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
 func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
@@ -40,19 +42,30 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	body := new(json.RawMessage)
 	ue := json.Unmarshal(req.RequestBody, body)
 	if ue != nil {
-		log.Printf("error: %s", ue.Error())
+		log.Error("while trying to unmarshal, got " + ue.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, "Cannot deserialize request body", nil, nil)
 	}
 
-	return pc.Patch(req.URL, body)
+	resp := pc.Patch(req.URL, body)
+	if !is2xx(int(resp.StatusCode)) {
+		f := h.getFabricFactory(nil)
+		r := f.updateFabricChassisResource(req.URL, body)
+		if is2xx(int(r.StatusCode)) || r.StatusCode == http.StatusBadRequest || r.StatusCode == http.StatusUnauthorized {
+			return r
+		}
+	}
+
+	return resp
 }
 
 type Update struct {
 	createPluginClient plugin.ClientFactory
+	getFabricFactory   func(collection *sresponse.Collection) *fabricFactory
 }
 
 func NewUpdateHandler(pluginClientFactory plugin.ClientFactory) *Update {
 	return &Update{
 		createPluginClient: pluginClientFactory,
+		getFabricFactory:   getFabricFactory,
 	}
 }

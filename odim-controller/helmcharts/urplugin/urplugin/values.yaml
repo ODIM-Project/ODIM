@@ -1,0 +1,14 @@
+odimra:
+  namespace:
+  groupID:
+  haDeploymentEnabled:
+urplugin:
+  imageTag: "1.0"
+  urPluginRootServiceUUID:
+  username:
+  password:
+  host: urplugin
+  odimUsername:
+  odimPassword:
+  sentinelMasterName: primaryset
+  logPath:

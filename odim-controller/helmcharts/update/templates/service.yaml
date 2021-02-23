@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: update
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: update
+spec:
+  ports:
+    - port: 45108
+  selector:
+    app: update

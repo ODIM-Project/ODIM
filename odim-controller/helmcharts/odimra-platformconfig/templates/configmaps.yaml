@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: odimra-platformconfig
+  namespace: {{ .Values.odimra.namespace }}
+data: 
+  platformconfig.toml: | 
+    [KAFKA]
+    # Kafka Server List.
+    #Defines the list of Kafka Server URI/Nodename:port. Example: ["localhost:9092"].
+    {{ if eq .Values.odimra.haDeploymentEnabled false }}
+    KServersInfo   = [ "kafka:9092" ]
+    {{ else }}
+    KServersInfo   = [
+    "kafka1.kafka.odim.svc.cluster.local:9092",
+    "kafka2.kafka.odim.svc.cluster.local:9092",
+    "kafka3.kafka.odim.svc.cluster.local:9092"
+    ]
+    {{ end }}
+    # Timeout of KAFKA Server connection drop / Keepalive.
+    KTimeout      = 10
+    # TLS Configuration Data
+    KAFKACertFile = "/etc/odimra_certs/odimra_kafka_client.crt"
+    KAFKAKeyFile  = "/etc/odimra_certs/odimra_kafka_client.key"
+    KAFKACAFile   = "/etc/odimra_certs/rootCA.crt"

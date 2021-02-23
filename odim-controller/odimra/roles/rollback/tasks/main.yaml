@@ -1,0 +1,3 @@
+---
+- name: Rollback {{ release }} deployment to revision {{ revision }}
+  command: "{{ helm_bin_path }} rollback {{ release }} {{ revision }} -n {{ helm_name_space }} --cleanup-on-fail --recreate-pods"

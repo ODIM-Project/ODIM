@@ -96,7 +96,7 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
-	log.Info("GetCurrentMasterHostPort masterIP: " + masterIP, "masterPort: " + masterPort)
+	log.Info("GetCurrentMasterHostPort masterIP : "+masterIP, " ,masterPort : "+masterPort)
 	return masterIP, masterPort
 }
 
@@ -108,7 +108,7 @@ func resetDBWriteConection(dbFlag DbType) {
 			config := getInMemoryDBConfig()
 			log.Debug("getInMemoryDBConfig: ", config)
 			currentMasterIP, currentMasterPort := GetCurrentMasterHostPort(config)
-			log.Info("InMemory currentMaster IP: "+currentMasterIP, "CurrentMaster Port: "+currentMasterPort, "inMemDBConnPool.MasterIP: "+inMemDBConnPool.MasterIP)
+			log.Info("InMemory currentMaster IP: "+currentMasterIP, ", CurrentMaster Port: "+currentMasterPort, " ,InMemDBConnPool.MasterIP: "+inMemDBConnPool.MasterIP)
 			if inMemDBConnPool.MasterIP != currentMasterIP && currentMasterIP != "" {
 				log.Info("Reintializing inmemory write pool")
 				writePool, _ := getPool(currentMasterIP, currentMasterPort)
@@ -177,8 +177,12 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 	case InMemory:
 		// In this case this function return in-memory db connection pool
 		if inMemDBConnPool == nil || inMemDBConnPool.ReadPool == nil {
+			log.Info("GetDBConnection : inMemDBConnPool OR inMemDBConnPool.ReadPool is nil")
 			config := getInMemoryDBConfig()
 			inMemDBConnPool, err = config.Connection()
+			if err != nil {
+				log.Error("error while trying to get Inmemory Readpool connection : " + err.Error())
+			}
 			inMemDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if inMemDBConnPool.WritePool == nil {
@@ -193,6 +197,9 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 		if onDiskDBConnPool == nil || onDiskDBConnPool.ReadPool == nil {
 			config := getOnDiskDBConfig()
 			onDiskDBConnPool, err = config.Connection()
+			if err != nil {
+				log.Error("error while trying to get Ondisk Readpool connection : " + err.Error())
+			}
 			onDiskDBConnPool.PoolUpdatedTime = time.Now()
 		}
 		if onDiskDBConnPool.WritePool == nil {
@@ -254,6 +261,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
+			log.Error("error while trying to get Readpool connection : " + errs.Error())
 			return nil, errs
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
@@ -262,6 +270,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 	//Check if any connection error occured
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
+			log.Error("error while trying to get Writepool connection : " + errs.Error())
 			return nil, errs
 		}
 		return nil, errors.PackError(errors.UndefinedErrorType, err)
@@ -280,7 +289,7 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		return errors.PackError(errors.UndefinedErrorType, "WritePool is nil ")
+		return errors.PackError(errors.UndefinedErrorType, "Create : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
@@ -326,9 +335,10 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 	if err != nil {
 		return "", errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
 	}
+
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		return "", errors.PackError(errors.UndefinedErrorType, "write DB pool is nil ")
+		return "", errors.PackError(errors.UndefinedErrorType, "Update : Writepool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
@@ -411,7 +421,9 @@ func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 //Delete data entry
 // Read takes "key" sting as input which acts as a unique ID to delete specific data from DB
 func (p *ConnPool) Delete(table, key string) *errors.Error {
+
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+
 	if writePool == nil {
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
 	}
@@ -419,12 +431,14 @@ func (p *ConnPool) Delete(table, key string) *errors.Error {
 	defer writeConn.Close()
 	_, readErr := p.Read(table, key)
 	if readErr != nil {
+		log.Error("Error while deleting data : " + readErr.Error())
 		return readErr
 	}
 
 	_, doErr := writeConn.Do("DEL", table+":"+key)
 	if doErr != nil {
 		if errs, aye := isDbConnectError(doErr); aye {
+			log.Error("Error while getting connection in Delete : " + errs.Error())
 			atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 			return errs
 		}
@@ -478,6 +492,7 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 	keys, err := readConn.Do("KEYS", key)
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
+			log.Error("Error while getting connection in Delete Server : " + errs.Error())
 			return errs
 		}
 		return errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
@@ -493,6 +508,7 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 		_, err := writeConn.Do("DEL", delkey)
 		if err != nil {
 			if errs, aye := isDbConnectError(err); aye {
+				log.Error("Error while Deleting Server : " + errs.Error())
 				atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
 				return errs
 			}

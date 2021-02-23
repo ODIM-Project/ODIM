@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: kafka
+spec:
+  selector:
+    app: odim-ra
+    unit: kafka
+    parentdeployment: odim-kafka
+  ports:
+    - name: kafka
+      port: 9092
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-ext
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: kafka
+spec:
+  selector:
+    app: odim-ra
+    unit: kafka
+    parentdeployment: odim-kafka
+  ports:
+    - name: kafka-ext
+      port: 30092
+      nodePort: {{ .Values.odimra.kafkaNodePort }}
+      protocol: TCP
+  type: NodePort
+---

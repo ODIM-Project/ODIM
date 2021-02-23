@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grfplugin-config
+  namespace: {{ .Values.odimra.namespace }}
+data: 
+  config.json: |
+    {
+    	"RootServiceUUID": {{ .Values.grfplugin.rootServiceUUID | quote }},
+    	"PluginConf": {
+    		"ID": "GRF",
+    		"Host": {{ .Values.grfplugin.host | quote }},
+    		"Port": "45001",
+    		"UserName": {{ .Values.grfplugin.username | quote }},
+    		"Password": {{ .Values.grfplugin.password | quote }}
+    	},
+    	"EventConf": {
+    		"DestinationURI": "/redfishEventListener",
+    		"ListenerHost": {{ .Values.grfplugin.eventHost | quote }},
+    		"ListenerPort": "45002"
+    	},
+    	"KeyCertConf": {
+    		"RootCACertificatePath": "/etc/grfplugin_certs/rootCA.crt",
+    		"PrivateKeyPath": "/etc/grfplugin_certs/odimra_server.key",
+    		"CertificatePath": "/etc/grfplugin_certs/odimra_server.crt"
+    	},
+    	"TLSConf" : {
+    		"MinVersion": "TLS_1.2",
+    		"MaxVersion": "TLS_1.2",
+    		"VerifyPeer": true,
+    		"PreferredCipherSuites": [
+                      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                      "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                      "TLS_RSA_WITH_AES_128_GCM_SHA256",
+                      "TLS_RSA_WITH_AES_256_GCM_SHA384"
+    		]
+    	},
+    	"FirmwareVersion": "v1.0.0",
+    	"SessionTimeoutInMinutes": 30,
+    	"LoadBalancerConf": {
+    		"LBHost": {{ .Values.grfplugin.lbHost | quote }},
+    		"LBPort": {{ .Values.grfplugin.lbPort | quote }}
+    	},
+    	"MessageBusConf": {
+    		"MessageQueueConfigFilePath": "/etc/grfplugin_config/platformconfig.toml",
+    		"MessageBusType": "Kafka",
+    		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+    	},
+    	"URLTranslation": {
+    		"NorthBoundURL": {
+    			"redfish": "ODIM"
+    		},
+    		"SouthBoundURL": {
+    			"ODIM": "redfish"
+    		}
+    	}
+    }

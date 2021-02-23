@@ -1,0 +1,28 @@
+---
+- name: Include user defined configurations
+  include_vars: "files/odimra_config_values.yaml"
+
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+ 
+- name: Check if ODIMRA image path exists
+  stat:
+    path: "{{ odimraImagePath }}"
+  register: odimra_file_details
+  delegate_to: localhost
+  when: odimraImagePath is defined
+
+- name: Delete ODIMRA Images
+  shell: "{{ docker_bin_path }} rmi $(docker images {{ item.value }} -q)"
+  loop: "{{ odim_docker_images | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isdir == true
+
+- name: Delete Dangling Images
+  shell: "{{ docker_bin_path }} rmi $(docker images -f 'dangling=true' -q) || /bin/true"

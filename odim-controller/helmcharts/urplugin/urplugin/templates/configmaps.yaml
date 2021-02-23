@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: urplugin-config
+  namespace: {{ .Values.odimra.namespace }}
+data: 
+  config.yaml: |
+    Host: {{ .Values.urplugin.host }}
+    Port: 45007
+    UserName: {{ .Values.urplugin.username }}
+    Password: {{ .Values.urplugin.password }}
+    RootServiceUUID: {{ .Values.urplugin.urPluginRootServiceUUID }}
+    OdimURL: https://api:45000
+    OdimUserName: {{ .Values.urplugin.odimUsername }}
+    OdimPassword: {{ .Values.urplugin.odimPassword }}
+    FirmwareVersion: v1.0.0
+    LogLevel: debug
+    PKIRootCACertificatePath: /etc/urplugin_certs/rootCA.crt
+    PKIPrivateKeyPath: /etc/urplugin_certs/odimra_server.key
+    PKICertificatePath: /etc/urplugin_certs/odimra_server.crt
+    RSAPrivateKeyPath: /etc/urplugin_certs/odimra_rsa.private
+    RSAPublicKeyPath: /etc/urplugin_certs/odimra_rsa.public
+    {{ if eq .Values.odimra.haDeploymentEnabled false }}
+    RedisAddress: redis-ondisk:6379
+    {{ else }}
+    # RedisAddress here is a SentinelAddress used when HA deployment is enabled
+    RedisAddress: redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local:26379
+    SentinelMasterName: {{ .Values.urplugin.sentinelMasterName }}
+    {{ end }}
+    TLSConf:
+      MinVersion: 0x0303
+      MaxVersion: 0x0303
+      PreferredCipherSuites:
+        - 0x009c #TLS_RSA_WITH_AES_128_GCM_SHA256
+        - 0x009d #TLS_RSA_WITH_AES_256_GCM_SHA384
+        - 0xc02f #TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - 0xc030 #TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - 0xc02b #TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - 0xc02c #TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384

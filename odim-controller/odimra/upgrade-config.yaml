@@ -1,0 +1,7 @@
+---
+- name: Perform upgrade operation required for ODIM-RA deployment
+  hosts: '{{ host }}'
+
+  roles:
+    - upgrade-config
+

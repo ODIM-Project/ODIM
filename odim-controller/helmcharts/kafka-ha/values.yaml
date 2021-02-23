@@ -1,0 +1,6 @@
+odimra:
+  namespace:
+  groupID:
+  kafkaDirPath:
+  kafkaImageTag: "1.0"
+  kafkaNodePort:

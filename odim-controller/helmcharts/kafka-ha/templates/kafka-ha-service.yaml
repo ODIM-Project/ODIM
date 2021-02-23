@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: kafka
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: odim-ra
+    unit: kafka
+    parentdeployment: odim-kafka
+  ports:
+    - name: kafka
+      port: 9092
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka1-ext
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: kafka
+    instance: kafka1
+spec:
+  selector:
+    app: odim-ra
+    unit: kafka
+    instance: kafka1
+    parentdeployment: odim-kafka
+  type: NodePort
+  ports:
+    - name: kafka1-ext
+      port: 9093
+      nodePort: {{ .Values.odimra.kafkaNodePort }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka2-ext
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: kafka
+    instance: kafka2
+spec:
+  selector:
+    app: odim-ra
+    unit: kafka
+    instance: kafka2
+    parentdeployment: odim-kafka
+  type: NodePort
+  ports:
+    - name: kafka2-ext
+      port: 9093
+      nodePort: {{ add .Values.odimra.kafkaNodePort 1 }}
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka3-ext
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: kafka
+    instance: kafka3
+spec:
+  selector:
+    app: odim-ra
+    unit: kafka
+    instance: kafka3
+    parentdeployment: odim-kafka
+  type: NodePort
+  ports:
+    - name: kafka3-ext
+      port: 9093
+      nodePort: {{ add .Values.odimra.kafkaNodePort 2 }}
+      protocol: TCP

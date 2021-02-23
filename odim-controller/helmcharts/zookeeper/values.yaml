@@ -1,0 +1,4 @@
+odimra:
+  namespace:
+  groupID:
+  zookeeperImageTag: "1.0"

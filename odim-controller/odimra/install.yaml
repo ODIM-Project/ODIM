@@ -1,0 +1,13 @@
+---
+- name: Perform pre-install steps required for ODIM-RA deployment
+  hosts: kube-node
+
+  roles:
+    - odimra-copy-image
+    - pre-install
+
+- name: Deploy ODIM-RA and Third Party services
+  hosts: '{{ host }}'
+
+  roles:
+    - install

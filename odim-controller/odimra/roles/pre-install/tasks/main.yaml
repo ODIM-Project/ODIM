@@ -1,0 +1,151 @@
+---
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Include user defined configurations
+  include_vars: "files/helmcharts/helm_config_values.yaml"
+
+- name: Create directories required by odim-controller
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0750
+    recurse: yes
+  loop:
+    - "{{ docker_images_path }}"
+    - "{{ helm_charts_path }}"
+
+- name: Create odim helm packages
+  script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts {{ odimControllerSrcPath }}/odimra/roles/pre-install/files/helmcharts"
+  delegate_to: localhost
+
+- name: Copy helmcharts required for odimra deployment
+  copy:
+    src: "{{ item }}"
+    dest: "{{ helm_charts_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  loop: "{{ files }}"
+  vars:
+    files:
+      - "files/helmcharts/"
+
+- name: Get getent bin path
+  local_action: command which getent
+  become: false
+  register: getent_path
+
+- name: Set getent_bin_path fact
+  set_fact:
+    getent_bin_path: "{{ getent_path.stdout }}"
+
+- name: Get useradd bin path
+  local_action: command which useradd
+  become: false
+  register: useradd_path
+
+- name: Set usradd_bin_path fact
+  set_fact:
+    usradd_bin_path: "{{ useradd_path.stdout }}"
+
+- name: Get userdel bin path
+  local_action: command which userdel
+  become: false
+  register: userdel_path
+
+- name: Set usrdel_bin_path fact
+  set_fact:
+    usrdel_bin_path: "{{ userdel_path.stdout }}"
+
+- name: Get groupadd bin path
+  local_action: command which groupadd
+  become: false
+  register: groupadd_path
+
+- name: Set grpadd_bin_path fact
+  set_fact:
+    grpadd_bin_path: "{{ groupadd_path.stdout }}"
+
+- name: Create odimra group
+  shell: | 
+    {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 && 
+    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) || 
+    {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }}
+
+- name: Create odimra user
+  shell: |
+    {{ getent_bin_path }} passwd {{ odim_owner_name }}  > /dev/null 2>&1 &&
+    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ usradd_bin_path }} -s /bin/bash -u {{ odimra.userID }} -m -d /home/{{ odim_owner_name }} -r -g {{ odim_owner_name }} {{ odim_owner_name  }} ) ||
+    {{ usradd_bin_path }} -s /bin/bash -u {{ odimra.userID }} -m -d /home/{{ odim_owner_name }} -r -g {{ odim_owner_name }} {{ odim_owner_name  }}
+
+- name: Create directories required for persisting data
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ odim_owner_name }}"
+    group: "{{ odim_owner_name }}"
+    mode: 0750
+    recurse: yes
+  loop:
+    - "{{ odimra.consulDataPath }}"
+    - "{{ odimra.consulConfPath }}"
+    - "{{ odimra.kafkaConfPath }}"
+    - "{{ odimra.kafkaDataPath }}"
+    - "{{ odimra.redisOndiskDataPath }}"
+    - "{{ odimra.redisInmemoryDataPath }}"
+    - "{{ odimra.zookeeperConfPath }}"
+    - "{{ odimra.zookeeperDataPath }}"
+
+- name: Create directories required for storing logs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ odim_owner_name }}"
+    group: "{{ odim_owner_name }}"
+    mode: 0755
+    recurse: yes
+  loop:
+    - "{{ odimra.appsLogPath }}"
+
+- name: Copy kafka certificates
+  copy:
+    src: "{{ item }}"
+    dest: "{{ odimra.kafkaConfPath }}"
+    owner: "{{ odim_owner_name }}"
+    group: "{{ odim_owner_name }}"
+    mode: 0444
+  loop: "{{ files }}"
+  vars:
+    files:
+      - "{{ odimCertsPath }}/kafka.truststore.jks"
+      - "{{ odimCertsPath }}/kafka.keystore.jks"
+
+- name: Copy zookeeper certificates
+  copy:
+    src: "{{ item }}"
+    dest: "{{ odimra.zookeeperConfPath }}"
+    owner: "{{ odim_owner_name }}"
+    group: "{{ odim_owner_name }}"
+    mode: 0444
+  loop: "{{ files }}"
+  vars:
+    files:
+      - "{{ odimCertsPath }}/zookeeper.keystore.jks"
+      - "{{ odimCertsPath }}/zookeeper.truststore.jks"
+
+- name: Copy consul config file
+  copy:
+    src: "templates/config.json.j2"
+    dest: "{{ odimra.consulConfPath }}/config.json"
+    owner: "{{ odim_owner_name }}"
+    group: "{{ odim_owner_name }}"
+    mode: 0444

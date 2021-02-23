@@ -1,0 +1,7 @@
+---
+- name: Installing docker and copying kubernetes images required for K8 deployment
+  hosts: '{{ host }}'
+
+  roles:
+    - k8-copy-image
+

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grfplugin
+  namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+spec:
+  replicas: {{ .Values.ReplicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: grfplugin
+  template:
+    metadata:
+      labels:
+        app: grfplugin
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      hostname: grfplugin
+      volumes:
+        - name: grfplugin-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: grfplugin-config
+            - configMap:
+                name: odimra-platformconfig
+        - name: configure-hosts
+          configMap:
+            name: configure-hosts
+            items:
+            - key: hosts
+              path: host.append
+              mode: 0644
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+        - name: grfplugin-log
+          persistentVolumeClaim:
+            claimName: grfplugin-log-claim
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+        - name: grfplugin
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+          image: grfplugin:{{ .Values.grfplugin.imageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 45001
+            - containerPort: 45002
+          volumeMounts:
+            - name: grfplugin-config-vol
+              mountPath: /etc/grfplugin_config
+            - name: configure-hosts
+              mountPath: /tmp
+            - name: grfplugin-log
+              mountPath: /var/log/grfplugin_logs
+            - name: odimra-secret
+              mountPath: /etc/grfplugin_certs

@@ -1,0 +1,40 @@
+---
+- name: Include user defined configurations
+  include_vars: "files/odim_controller_config.yaml"
+
+- name: Clean-up data in odim-controller directory
+  file:
+    path: "{{ odim_controller_path }}"
+    state: absent
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Delete directories created for persisting data
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ odimra.appsLogPath }}"
+    - "{{ odimra.consulDataPath }}"
+    - "{{ odimra.consulConfPath }}"
+    - "{{ odimra.kafkaConfPath }}"
+    - "{{ odimra.kafkaDataPath }}"
+    - "{{ odimra.redisOndiskDataPath }}"
+    - "{{ odimra.redisInmemoryDataPath }}"
+    - "{{ odimra.zookeeperConfPath }}"
+    - "{{ odimra.zookeeperDataPath }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Get userdel bin path
+  local_action: command which userdel
+  become: false
+  register: userdel_path
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Set usrdel_bin_path fact
+  set_fact:
+    usrdel_bin_path: "{{ userdel_path.stdout }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Delete odimra user and group
+  command: "{{ usrdel_bin_path }} {{ odim_owner_name }}"
+  ignore_errors: "{{ ignore_err }}"

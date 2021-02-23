@@ -37,8 +37,6 @@ unpack_kubespray_bundle()
 
 configure_kubespray()
 {
-	own_file_name=$(basename $BASH_SOURCE)
-
 	# Disable dashboard and enable helm deployment
 	k8s_add_ons_conf_file=${KUBESPRAY_SRC_PATH}/inventory/sample/group_vars/k8s-cluster/addons.yml
 	sed -i "s/dashboard_enabled: true/dashboard_enabled: false/; s/helm_enabled: false/helm_enabled: true/" ${k8s_add_ons_conf_file}
@@ -48,7 +46,8 @@ configure_kubespray()
 	fi
 
 	# Change default nginx path
-	find ${KUBESPRAY_SRC_PATH} -type f ! -name "${own_file_name}" | xargs grep -l "/etc/nginx" | xargs -r sed -i "s:/etc/nginx:/etc/k8s-nginx:"
+	kubespray_defaults_file=${KUBESPRAY_SRC_PATH}/roles/kubespray-defaults/defaults/main.yaml
+	sed -i "s:/etc/nginx:/etc/k8s-nginx:" ${kubespray_defaults_file}
 	if [[ $? -ne 0 ]]; then
 		echo "[$(date)] -- ERROR -- changing nginx path used by kubespray failed"
 		exit 1

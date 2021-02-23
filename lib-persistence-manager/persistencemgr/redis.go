@@ -96,7 +96,7 @@ func GetCurrentMasterHostPort(dbConfig *Config) (string, string) {
 		masterIP = stringSlice[0]
 		masterPort = stringSlice[1]
 	}
-	log.Info("GetCurrentMasterHostPort masterIP : "+masterIP, " ,masterPort : "+masterPort)
+	log.Info("GetCurrentMasterHostPort masterIP : "+masterIP, ", masterPort : "+masterPort)
 	return masterIP, masterPort
 }
 
@@ -288,7 +288,9 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 */
 func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	log.Info("Create : WritePool value : ", writePool)
 	if writePool == nil {
+		log.Info("Create : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "Create : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -333,11 +335,14 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 
 	jsondata, err := json.Marshal(data)
 	if err != nil {
+		log.Error("Update : error in masrshalling json data", err.Error())
 		return "", errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
 	}
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	log.Info("Update : WritePool value : ", writePool)
 	if writePool == nil {
+		log.Info("Update : WritePool nil")
 		return "", errors.PackError(errors.UndefinedErrorType, "Update : Writepool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -423,8 +428,9 @@ func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 func (p *ConnPool) Delete(table, key string) *errors.Error {
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-
+	log.Info("Delete : WritePool value : ", writePool)
 	if writePool == nil {
+		log.Info("Delete : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -498,7 +504,9 @@ func (p *ConnPool) DeleteServer(key string) *errors.Error {
 		return errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
 	}
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	log.Info("Delete Server : WritePool value : ", writePool)
 	if writePool == nil {
+		log.Info("Delete Server: WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
@@ -584,6 +592,7 @@ func (p *ConnPool) GetResourceDetails(key string) (string, *errors.Error) {
 	keys, err := readConn.Do("KEYS", "*"+key)
 	if err != nil {
 		if errs, aye := isDbConnectError(err); aye {
+			log.Error("Error while getting resource datails  : " + errs.Error())
 			return "", errs
 		}
 		return "", errors.PackError(errors.UndefinedErrorType, errorCollectingData, err)
@@ -638,13 +647,17 @@ func (p *ConnPool) Ping() error {
 		return fmt.Errorf("error while pinging DB with read connection")
 	}
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	log.Info("Ping : WritePool value : ", writePool)
 	if writePool == nil {
-		return fmt.Errorf("error while pinging DB with read connection")
+		log.Info("Ping : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "error while pinging DB with read connection: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 	if _, err := writeConn.Do("PING"); err != nil {
-		return fmt.Errorf("error while pinging DB with write connection")
+		log.Error("error while pinging DB with write connection : " + err.Error())
+		return errors.PackError(errors.UndefinedErrorType, "error while pinging DB with read connection: WritePool is nil "+err.Error())
+
 	}
 	return nil
 }
@@ -656,8 +669,11 @@ func (p *ConnPool) Ping() error {
 */
 func (p *ConnPool) CreateIndex(form map[string]interface{}, uuid string) error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	log.Info("CreateIndex : WritePool value : ", writePool)
 	if writePool == nil {
-		return fmt.Errorf("WritePool is nil")
+		log.Info("CreateIndex : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "error while Creating index: WritePool is nil ")
+
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()
@@ -711,8 +727,10 @@ func (p *ConnPool) CreateIndex(form map[string]interface{}, uuid string) error {
 */
 func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	log.Info("CreateTaskIndex : WritePool value : ", writePool)
 	if writePool == nil {
-		return fmt.Errorf("WritePool is nil")
+		log.Info("CreateTaskIndex : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "error while creating task index: WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()

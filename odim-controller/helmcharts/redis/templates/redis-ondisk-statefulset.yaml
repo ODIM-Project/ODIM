@@ -1,0 +1,54 @@
+apiVersion: apps/v1 
+kind: StatefulSet
+metadata:
+  name: redis-ondisk
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: redis-ondisk
+spec:
+  replicas: 1
+  serviceName: redis-ondisk
+  selector:
+    matchLabels:
+      app: redis-ondisk
+      role: node
+  template:
+    metadata:
+      labels:
+        app: redis-ondisk
+        role: node
+    spec:
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-ondisk-data-claim
+      restartPolicy: Always
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+      - name: redis
+        image: redis:{{ .Values.odimra.redisImageTag }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+          - mountPath: "/redis-data"
+            name: redis-data
+            readOnly: false
+        env:
+        - name: MASTER
+          value: "true"
+        - name: REDIS_ONDISK_DB 
+          value: "true"
+        - name: REDIS_HA_REDIS_SERVICE_HOST 
+          value: "redis-ondisk"
+        - name: REDIS_HA_REDIS_SERVICE_PORT
+          value: "6379"
+        - name: REDIS_DEFAULT_PASSWORD 
+          value: ""
+        - name: ALLOW_EMPTY_PASSWORD
+          value: "yes"
+        - name: REDIS_HA_SENTINEL_SERVICE_PORT
+          value: "26379"
+        - name: REDIS_HA_SENTINEL_SERVICE_HOST
+          value: "redis-ondisk"

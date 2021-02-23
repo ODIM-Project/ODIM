@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis-inmemory
+  name: redis-inmemory
+  namespace: {{ .Values.odimra.namespace }}
+spec:
+  ports:
+    - name: redis
+      port: 6379
+  selector:
+    app: redis-inmemory

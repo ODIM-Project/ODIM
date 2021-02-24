@@ -140,8 +140,8 @@ func resetDBWriteConection(dbFlag DbType) {
     }
 }
 
-func (pool *ConnPool) setWritePool(config *Config) error {
-    currentMasterIP, currentMasterPort := retryForMasterIP(pool, config)
+func (p *ConnPool) setWritePool(config *Config) error {
+    currentMasterIP, currentMasterPort := retryForMasterIP(p, config)
     if currentMasterIP == "" {
         return fmt.Errorf("unable to retrieve master ip from sentinel master election")
     }
@@ -151,9 +151,9 @@ func (pool *ConnPool) setWritePool(config *Config) error {
         return fmt.Errorf("write pool creation failed")
     }
 
-    atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&pool.WritePool)), unsafe.Pointer(writePool))
-    pool.MasterIP = currentMasterIP
-    pool.PoolUpdatedTime = time.Now()
+    atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), unsafe.Pointer(writePool))
+    p.MasterIP = currentMasterIP
+    p.PoolUpdatedTime = time.Now()
     return nil
 }
 
@@ -997,7 +997,7 @@ func (p *ConnPool) CreateEvtSubscriptionIndex(index string, key interface{}) err
     writeConn := writePool.Get()
     defer writeConn.Close()
     const value = 0
-   val, _ := p.GetEvtSubscriptions(index, key.(string))
+    val, _ := p.GetEvtSubscriptions(index, key.(string))
     if len(val) > 0 {
         return fmt.Errorf("Data Already Exist for the index: %v", index)
     }
@@ -1233,3 +1233,4 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
     }
     return nil
 }
+

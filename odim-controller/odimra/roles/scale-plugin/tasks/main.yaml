@@ -1,0 +1,36 @@
+---
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Copying helm config file
+  copy:
+    src: "{{ helm_config_file }}"
+    dest: "{{ values_file_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Get release name of {{ helm_chart_name }} plugin
+  shell: "{{ helm_bin_path }} list -q -n {{ helm_name_space }} | grep {{ helm_chart_name }}"
+  register: plugin_name
+
+- name: Set release_name fact
+  set_fact:
+    release_name: "{{ plugin_name.stdout }}"
+
+- name: Verify the count of releases in query result
+  fail:
+    msg: "{{ helm_chart_name }} plugin has multiple deployment [{{ release_name }}], not expected for plugin"
+  when: " '\n' in release_name "
+
+- name: Scaling {{ release_name }} plugin deployment
+  shell: "/usr/local/bin/kubectl scale -n {{ helm_name_space }} deployment {{ release_name }} --replicas={{ replicas }}"

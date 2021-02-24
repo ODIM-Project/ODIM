@@ -1,0 +1,7 @@
+odimra:
+  namespace:
+  rootServiceUUID:
+  fqdn:
+  apiGatewayHost: api
+  connectionMethodConf:
+  haDeploymentEnabled:

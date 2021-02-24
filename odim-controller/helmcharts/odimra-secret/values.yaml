@@ -1,0 +1,9 @@
+odimra:
+  namespace:
+  rootCACert:
+  odimraServerCert:
+  odimraServerKey:
+  odimraRSAPublicKey:
+  odimraRSAPrivateKey:
+  odimraKafkaClientCert:
+  odimraKafkaClientKey:

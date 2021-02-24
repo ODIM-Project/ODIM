@@ -1,0 +1,266 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper1
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: zookeeper
+  annotations:
+    secret.reloader.stakater.com/reload: "zookeeper-secret"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: odim-ra
+        unit: zookeeper
+        parentdeployment: odim-zookeeper
+    spec:
+      hostname: zookeeper1
+      subdomain: zookeeper
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "unit"
+                  operator: In
+                  values:
+                  - zookeeper
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: zookeeper1
+          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2181
+          env:
+            - name: IS_ZOOKEEPER_CLUSTER
+              value: 'true'
+            - name: ZOOKEEPER_SERVER_ID
+              value: '1'
+            - name: ZOOKEEPER_SSL_CLIENT_PORT
+              value: '2181'
+            - name: ZOOKEEPER_DATA_DIR
+              value: /opt/zookeeper/data
+            - name: ZOOKEEPER_DATA_LOG_DIR
+              value: /opt/zookeeper/data/log
+            - name: ZOOKEEPER_KEYSTORE_PATH
+              value: /opt/zookeeper/conf/zookeeper.keystore.jks
+            - name: ZOOKEEPER_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zookeeper-secret
+                  key: jkskey
+            - name: ZOOKEEPER_TRUSTSTORE_PATH
+              value: /opt/zookeeper/conf/zookeeper.truststore.jks
+            - name: ZOOKEEPER_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zookeeper-secret
+                  key: jkskey
+            - name: ZOOKEEPER_SERVER1_NAME
+              value: zookeeper1.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+            - name: ZOOKEEPER_SERVER2_NAME
+              value: zookeeper2.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+            - name: ZOOKEEPER_SERVER3_NAME
+              value: zookeeper3.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+          volumeMounts:
+            - mountPath: /opt/zookeeper/data
+              name: zookeeper-data-pv
+            - mountPath: /opt/zookeeper/conf
+              name: zookeeper-conf-pv
+      volumes:
+        - name: zookeeper-data-pv
+          persistentVolumeClaim:
+            claimName: zookeeper-data-pvc
+        - name: zookeeper-conf-pv
+          persistentVolumeClaim:
+            claimName: zookeeper-conf-pvc
+  selector:
+    matchLabels:
+      app: odim-ra
+      unit: zookeeper
+      parentdeployment: odim-zookeeper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper2
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: zookeeper
+  annotations:
+    secret.reloader.stakater.com/reload: "zookeeper-secret"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: odim-ra
+        unit: zookeeper
+        parentdeployment: odim-zookeeper
+    spec:
+      hostname: zookeeper2
+      subdomain: zookeeper
+      initContainers:
+        - name: init-zookeeper2
+          image: busybox:1.33
+          command: ['sh', '-c', 'sleep 1']
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "unit"
+                  operator: In
+                  values:
+                  - zookeeper
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: zookeeper2
+          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2181
+          env:
+            - name: IS_ZOOKEEPER_CLUSTER
+              value: 'true'
+            - name: ZOOKEEPER_SERVER_ID
+              value: '2'
+            - name: ZOOKEEPER_SSL_CLIENT_PORT
+              value: '2181'
+            - name: ZOOKEEPER_DATA_DIR
+              value: /opt/zookeeper/data
+            - name: ZOOKEEPER_DATA_LOG_DIR
+              value: /opt/zookeeper/data/log
+            - name: ZOOKEEPER_KEYSTORE_PATH
+              value: /opt/zookeeper/conf/zookeeper.keystore.jks
+            - name: ZOOKEEPER_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zookeeper-secret
+                  key: jkskey
+            - name: ZOOKEEPER_TRUSTSTORE_PATH
+              value: /opt/zookeeper/conf/zookeeper.truststore.jks
+            - name: ZOOKEEPER_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zookeeper-secret
+                  key: jkskey
+            - name: ZOOKEEPER_SERVER1_NAME
+              value: zookeeper1.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+            - name: ZOOKEEPER_SERVER2_NAME
+              value: zookeeper2.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+            - name: ZOOKEEPER_SERVER3_NAME
+              value: zookeeper3.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+          volumeMounts:
+            - mountPath: /opt/zookeeper/data
+              name: zookeeper-data-pv
+            - mountPath: /opt/zookeeper/conf
+              name: zookeeper-conf-pv
+      volumes:
+        - name: zookeeper-data-pv
+          persistentVolumeClaim:
+            claimName: zookeeper-data-pvc
+        - name: zookeeper-conf-pv
+          persistentVolumeClaim:
+            claimName: zookeeper-conf-pvc
+  selector:
+    matchLabels:
+      app: odim-ra
+      unit: zookeeper
+      parentdeployment: odim-zookeeper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper3
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: zookeeper
+  annotations:
+    secret.reloader.stakater.com/reload: "zookeeper-secret"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: odim-ra
+        unit: zookeeper
+        parentdeployment: odim-zookeeper
+    spec:
+      hostname: zookeeper3
+      subdomain: zookeeper
+      initContainers:
+        - name: init-zookeeper3
+          image: busybox:1.33
+          command: ['sh', '-c', 'sleep 3']
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "unit"
+                  operator: In
+                  values:
+                  - zookeeper
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: zookeeper3
+          image: zookeeper:{{ .Values.odimra.zookeeperImageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 2181
+          env:
+            - name: IS_ZOOKEEPER_CLUSTER
+              value: 'true'
+            - name: ZOOKEEPER_SERVER_ID
+              value: '3'
+            - name: ZOOKEEPER_SSL_CLIENT_PORT
+              value: '2181'
+            - name: ZOOKEEPER_DATA_DIR
+              value: /opt/zookeeper/data
+            - name: ZOOKEEPER_DATA_LOG_DIR
+              value: /opt/zookeeper/data/log
+            - name: ZOOKEEPER_KEYSTORE_PATH
+              value: /opt/zookeeper/conf/zookeeper.keystore.jks
+            - name: ZOOKEEPER_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zookeeper-secret
+                  key: jkskey
+            - name: ZOOKEEPER_TRUSTSTORE_PATH
+              value: /opt/zookeeper/conf/zookeeper.truststore.jks
+            - name: ZOOKEEPER_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zookeeper-secret
+                  key: jkskey
+            - name: ZOOKEEPER_SERVER1_NAME
+              value: zookeeper1.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+            - name: ZOOKEEPER_SERVER2_NAME
+              value: zookeeper2.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+            - name: ZOOKEEPER_SERVER3_NAME
+              value: zookeeper3.zookeeper.{{ .Values.odimra.namespace }}.svc.cluster.local
+          volumeMounts:
+            - mountPath: /opt/zookeeper/data
+              name: zookeeper-data-pv
+            - mountPath: /opt/zookeeper/conf
+              name: zookeeper-conf-pv
+      volumes:
+        - name: zookeeper-data-pv
+          persistentVolumeClaim:
+            claimName: zookeeper-data-pvc
+        - name: zookeeper-conf-pv
+          persistentVolumeClaim:
+            claimName: zookeeper-conf-pvc
+  selector:
+    matchLabels:
+      app: odim-ra
+      unit: zookeeper
+      parentdeployment: odim-zookeeper

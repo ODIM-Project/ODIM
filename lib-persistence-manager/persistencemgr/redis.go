@@ -116,7 +116,7 @@ func resetDBWriteConection(dbFlag DbType) {
 				log.Error("Reset of inMemory write pool failed: " + err.Error())
 				return
 			}
-			log.Info("New inMemory connection pool created: " + structToString(&inMemDBConnPool))
+			log.Info("New inMemory connection pool created")
 		}
 		return
 	case OnDisk:
@@ -132,7 +132,7 @@ func resetDBWriteConection(dbFlag DbType) {
 				log.Error("Reset of onDisk write pool failed: " + err.Error())
 				return
 			}
-			log.Info("New onDisk connection pool created: " + structToString(&onDiskDBConnPool))
+			log.Info("New onDisk connection pool created")
 		}
 		return
 	default:
@@ -168,11 +168,6 @@ func retryForMasterIP(pool *ConnPool, config *Config) (currentMasterIP, currentM
 	return
 }
 
-func structToString(s interface{}) string {
-	dataByte, _ := json.Marshal(s)
-	return string(dataByte)
-}
-
 func getInMemoryDBConfig() *Config {
 	return &Config{
 		Port:         config.Data.DBConf.InMemoryPort,
@@ -182,6 +177,7 @@ func getInMemoryDBConfig() *Config {
 		MasterSet:    config.Data.DBConf.InMemoryMasterSet,
 	}
 }
+
 func getOnDiskDBConfig() *Config {
 	return &Config{
 		Port:         config.Data.DBConf.OnDiskPort,
@@ -310,7 +306,6 @@ func (c *Config) Connection() (*ConnPool, *errors.Error) {
 */
 func (p *ConnPool) Create(table, key string, data interface{}) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	log.Info("Create : WritePool value : ", writePool)
 	if writePool == nil {
 		log.Info("Create : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "Create : WritePool is nil ")
@@ -362,7 +357,6 @@ func (p *ConnPool) Update(table, key string, data interface{}) (string, *errors.
 	}
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	log.Info("Update : WritePool value : ", writePool)
 	if writePool == nil {
 		log.Info("Update : WritePool nil")
 		return "", errors.PackError(errors.UndefinedErrorType, "Update : Writepool is nil ")
@@ -450,7 +444,6 @@ func (p *ConnPool) GetAllDetails(table string) ([]string, *errors.Error) {
 func (p *ConnPool) Delete(table, key string) *errors.Error {
 
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	log.Info("Delete : WritePool value : ", writePool)
 	if writePool == nil {
 		log.Info("Delete : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while trying to delete data: WritePool is nil ")

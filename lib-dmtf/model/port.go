@@ -45,7 +45,9 @@ type Port struct {
 	PortMedium              string               `json:"PortMedium,omitempty"`
 	PortProtocol            string               `json:"PortProtocol,omitempty"`
 	PortType                string               `json:"PortType,omitempty"`
+	PortID                  string               `json:"PortId,omitempty"`
 	SignalDetected          bool                 `json:"SignalDetected,omitempty"`
+	Width                   int                  `json:"Width,omitempty"`
 }
 
 //PortEthernet redfish model

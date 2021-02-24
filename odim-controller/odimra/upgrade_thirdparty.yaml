@@ -1,0 +1,7 @@
+---
+- name: Perform upgrade operation thrid party required for ODIM-RA deployment
+  hosts: '{{ host }}'
+
+  roles:
+    - upgrade-thirdparty
+

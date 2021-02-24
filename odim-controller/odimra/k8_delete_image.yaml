@@ -1,0 +1,7 @@
+---
+- name: Deleteing kubernetes images
+  hosts: '{{ host }}'
+
+  roles:
+    - k8-delete-image
+

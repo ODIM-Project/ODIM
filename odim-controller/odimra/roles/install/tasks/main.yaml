@@ -1,0 +1,52 @@
+---
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Copying helm config file
+  copy:
+    src: "{{ helm_config_file }}"
+    dest: "{{ values_file_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Install secrets reloader
+  command: "{{ helm_bin_path }} install {{ odim_secret_reloader_chart }} {{ helm_charts_path }}/{{ odim_secret_reloader_chart }}.tgz -n {{ helm_name_space }} --set fullnameOverride=reloader --set reloader.watchGlobally=false --set reloader.ignoreConfigMaps=true --create-namespace"
+
+- name: Create PV, PVC, Secrets required by ODIM-RA services
+  command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  loop: "{{ odim_pv_pvc_secrets_helmcharts | dict2items  }}"
+
+- name: Deploy consul, redis, kafka, zookeeper services
+  command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  loop: "{{ odim_third_party_helmcharts | dict2items  }}"
+  when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
+
+- name: Deploy consul, redis, kafka, zookeeper HA services
+  command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  loop: "{{ odim_third_party_ha_helmcharts | dict2items  }}"
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Deploy ODIM-RA services
+  command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  loop: "{{ odim_svc_helmcharts | dict2items  }}"
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+
+- name: Deploy all the plugins under the helm charts path
+  shell: "{{ helm_bin_path }} install {{ item.path.split('/')[-1] }} {{ helm_charts_path }}/{{ item.path.split('/')[-1] }}/*.tgz -n {{ helm_name_space }} -f {{ helm_charts_path }}/{{ item.path.split('/')[-1] }}/{{ item.path.split('/')[-1] }}-config.yaml -f {{ values_file_path }}"
+  loop: "{{ plugin_packages.files }}"

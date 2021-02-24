@@ -1,0 +1,71 @@
+---
+- name: Include user defined configurations
+  include_vars: "files/helm_config_values.yaml"
+
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Install Dependency
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg-agent
+    - software-properties-common  
+
+- name: Add GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  environment:
+    http_proxy: "{{ httpProxy }}"
+    https_proxy: "{{ httpsProxy }}"
+
+- name: Add docker repository to apt
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: Install Docker
+  command: apt-get install -y docker-ce=5:19.03.12~3-0~ubuntu-bionic docker-ce-cli=5:19.03.12~3-0~ubuntu-bionic containerd.io --allow-downgrades
+
+- name: Enable docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if K8 image path exists
+  stat:
+    path: "{{ kubernetesImagePath }}"
+  register: k8_file_details
+  delegate_to: localhost
+  when: kubernetesImagePath is defined
+
+- name: Copy Kubernetes Images
+  copy:
+    src: "{{ item }}"
+    dest: "{{ docker_images_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  loop: "{{ files }}"
+  vars:
+    files:
+      - "{{ kubernetesImagePath }}/"
+  when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true
+ 
+- name: Load Kubernetes Images
+  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ item.value }}.tar"
+  loop: "{{ kubernetes_images | dict2items }}"
+  when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true

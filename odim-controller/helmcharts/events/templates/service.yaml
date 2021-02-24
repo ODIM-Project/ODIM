@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: event
+  name: events
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: event
+    app: events
 spec:
   ports:
     - port: 45103
   selector:
-    app: event
+    app: events

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: event
+  name: events
   namespace: {{ .Values.odimra.namespace }}
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
@@ -9,15 +9,15 @@ spec:
   replicas: {{ .Values.ReplicaCount | default 1 }}
   selector:
     matchLabels:
-      app: event
+      app: events
   template:
     metadata:
       labels:
-        app: event
+        app: events
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      hostname: event
+      hostname: events
       volumes:
         - name: odimra-config-vol
           projected:
@@ -64,7 +64,7 @@ spec:
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
-        - name: event
+        - name: events
           env:
             - name: GET_HOSTS_FROM
               value: dns

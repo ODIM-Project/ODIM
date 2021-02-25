@@ -1405,6 +1405,11 @@ def scale_plugin(plugin_name, replica_count):
 		load_password_from_vault(cur_dir) 
 		scaling_flag = False
 
+		pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
+		if not(path.isdir(pluginPackagePath)):
+			logger.error("%s plugin info not present in configured odimPluginPath, scaling not supported", plugin_name)
+			sys.exit(1)
+
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
 			logger.info("Starting scaling of %s plugin on master node %s", plugin_name, master_node[0])
@@ -1448,11 +1453,11 @@ def scale_svc(svc_uservice_name,replica_count):
 		else:
 			scale_svc_helm_chart(data,replica_count,helmchartData)
 	
-def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):	
-	fullHelmChartName=helmchartData[svc_uservice_name]
-	if fullHelmChartName=='':
-		logger.critical("scaling svc %s is not supported!!!", svc_uservice_name)
+def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
+	if svc_uservice_name not in helmchartData:
+		logger.critical("scaling of svc %s is not supported!!!", svc_uservice_name)
 		sys.exit(1)
+	fullHelmChartName=helmchartData[svc_uservice_name]
 	logger.info('Full helm chart name %s',fullHelmChartName)
 	operationName="scale_svc"
 	cur_dir = os.getcwd()
@@ -1648,7 +1653,7 @@ def main():
 			args.rmnode == None and args.upgrade == None and args.scale == None and \
 			args.list == None and args.rollback == None and args.add == None and \
 			args.remove == None:
-		logger.critical("Atleast one action should be choosen")
+		logger.critical("Atleast one mandatory option must be provided")
 		parser.print_help()
 		sys.exit(1)
 
@@ -1667,7 +1672,7 @@ def main():
 		elif args.deploy == 'odimra':
 			install_odimra()
 		else:
-			logger.critical("Unsupported value for deploy")
+			logger.critical("Unsupported value %s for deploy option", args.deploy)
 			parser.print_help()
 			sys.exit(1)
 
@@ -1681,7 +1686,7 @@ def main():
 				IGNORE_ERRORS_SET = True
 			uninstall_odimra()
 		else:
-			logger.critical("Unsupported value for reset")
+			logger.critical("Unsupported value %s for reset option", args.reset)
 			parser.print_help()
 			sys.exit(1)
 
@@ -1689,7 +1694,7 @@ def main():
 		if args.addnode == 'kubernetes':
 			add_k8s_node()
 		else:
-			logger.critical("Unsupported value for add node")
+			logger.critical("Unsupported value %s for addnode option", args.addnode)
 			parser.print_help()
 			sys.exit(1)
 
@@ -1697,14 +1702,14 @@ def main():
 		if args.rmnode == 'kubernetes':
 			rm_k8s_node()
 		else:
-			logger.critical("Unsupported value for remove node")
+			logger.critical("Unsupported value %s for rmnode option", args.rmnode)
 			parser.print_help()
 			sys.exit(1)
 
 	if args.upgrade != None:
 		if args.upgrade == 'plugin':
 			if args.plugin == None:
-				logger.error("argument --upgrade=plugin: expects --plugin argument")
+				logger.error("option --upgrade=plugin: expects --plugin argument")
 				sys.exit(1)
 			upgrade_plugin(args.plugin)
 		else:
@@ -1713,34 +1718,34 @@ def main():
 	if args.add != None:
 		if args.add == 'plugin':
 			if args.plugin == None:
-				logger.error("argument --add=plugin: expects --plugin argument")
+				logger.error("option --add=plugin: expects --plugin argument")
 				sys.exit(1)
 			upgrade_plugin(args.plugin)
 		else:
-			logger.critical("Unsupported value for add")
+			logger.critical("Unsupported value %s for add option", args.add)
 			sys.exit(1)
 
 	if args.remove != None:
 		if args.remove == 'plugin':
 			if args.plugin == None:
-				logger.error("argument --remove=plugin: expects --plugin argument")
+				logger.error("option --remove=plugin: expects --plugin argument")
 				sys.exit(1)
 			remove_plugin(args.plugin)
 		else:
-			logger.critical("Unsupported value for remove node")
+			logger.critical("Unsupported value %s for remove option", args.remove)
 			parser.print_help()
 			sys.exit(1)
 
 	if args.scale:
 		if args.replicas == None or args.replicas <= MIN_REPLICA_COUNT or args.replicas > MAX_REPLICA_COUNT:
-			logger.critical("Unsupported value for replicas")
+			logger.critical("Unsupported value %d for replicas option", args.replicas)
 			sys.exit(1)
 		if args.svc != None:
 			scale_svc(args.svc, args.replicas)
 		elif args.plugin != None:
 			scale_plugin(args.plugin, args.replicas)
 		else:
-			logger.critical("Expected type of deployment for scaling")
+			logger.critical("option --scale: expects --svc or --plugin argument")
 			parser.print_help()
 			sys.exit(1)
 
@@ -1749,16 +1754,16 @@ def main():
 			list_deployments()
 		elif args.list == 'history':
 			if args.dep == None:
-				logger.error("argument --history: expects --dep argument")
+				logger.error("option --history: expects --dep argument")
 				sys.exit(1)
 			list_deployment_history(args.dep)
 		else:
-			logger.error("Unsupported value for list")
+			logger.error("Unsupported value %s for list option", args.list)
 			sys.exit(1)
 
 	if args.rollback:
 		if args.dep == None or args.revision == None:
-			logger.error("argument --rollback: expects both --dep and --revision arguments")
+			logger.error("option --rollback: expects both --dep and --revision arguments")
 			sys.exit(1)
 		rollback_deployment(args.dep, args.revision)
 

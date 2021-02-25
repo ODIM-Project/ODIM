@@ -19,50 +19,42 @@
 - name: Include user defined configurations
   include_vars: "{{ helm_config_file }}"
 
-
 - name: Create odim helm packages
-  script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts {{ odimControllerSrcPath }}/odimra/roles/upgrade-config/files/helmcharts"
+  script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts/{{ helm_chart_name }} {{ odimControllerSrcPath }}/odimra/roles/upgrade-config/files/helmcharts"
   delegate_to: localhost
 
 - name: Copy helmcharts required for odimra deployment
   copy:
-    src: "{{ item }}"
+    src: "files/helmcharts/{{ helm_chart_name_version }}.tgz"
     dest: "{{ helm_charts_path }}"
     owner: "{{ current_user }}"
     group: "{{ current_user }}"
     mode: 0640
-  loop: "{{ files }}"
-  vars:
-    files:
-      - "files/helmcharts/"
-
 
 - name: Copy updated kafka data
   copy:
-    src: "{{ item }}"
+    src: "{{ item[0] }}"
     dest: "{{ odimra.kafkaConfPath }}"
     owner: "{{ odim_owner_name }}"
     group: "{{ odim_owner_name }}"
     mode: 0444
-  loop: "{{ files }}"
-  vars:
-    files:
-      - "{{ odimCertsPath }}/kafka.truststore.jks"
-      - "{{ odimCertsPath }}/kafka.keystore.jks"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - ["{{ odimCertsPath }}/kafka.truststore.jks", "{{ odimCertsPath }}/kafka.keystore.jks"]
+    - "{{ groups['kube-node'] }}"
   when: " 'kafka-secret' in helm_chart_name "
 
 - name: Copy updated zookeeper data
   copy:
-    src: "{{ item }}"
+    src: "{{ item[0] }}"
     dest: "{{ odimra.zookeeperConfPath }}"
     owner: "{{ odim_owner_name }}"
     group: "{{ odim_owner_name }}"
     mode: 0444
-  loop: "{{ files }}"
-  vars:
-    files:
-      - "{{ odimCertsPath }}/zookeeper.keystore.jks"
-      - "{{ odimCertsPath }}/zookeeper.truststore.jks"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+    - ["{{ odimCertsPath }}/zookeeper.keystore.jks", "{{ odimCertsPath }}/zookeeper.truststore.jks"]
+    - "{{ groups['kube-node'] }}"
   when: " 'zookeeper-secret' in helm_chart_name "
 
 - name: Upgrading  configurations config map

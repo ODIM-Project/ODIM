@@ -1,6 +1,0 @@
----
-- name: Upgrade {{ release_name }} plugin deployment
-  hosts: '{{ host }}'
-
-  roles:
-    - upgrade-plugin

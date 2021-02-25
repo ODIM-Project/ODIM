@@ -21,20 +21,16 @@
 
 
 - name: Create odim helm packages
-  script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts {{ odimControllerSrcPath }}/odimra/roles/upgrade-thirdparty/files/helmcharts"
+  script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts/{{ helm_chart_name }} {{ odimControllerSrcPath }}/odimra/roles/upgrade-thirdparty/files/helmcharts"
   delegate_to: localhost
 
 - name: Copy helmcharts required for odimra deployment
   copy:
-    src: "{{ item }}"
+    src: "files/helmcharts/{{ helm_chart_name_version }}.tgz"
     dest: "{{ helm_charts_path }}"
     owner: "{{ current_user }}"
     group: "{{ current_user }}"
     mode: 0640
-  loop: "{{ files }}"
-  vars:
-    files:
-      - "files/helmcharts/"
 
 - name: Upgrading  thirdparty configmap
   command: "{{ helm_bin_path }} upgrade {{helm_chart_name}} {{ helm_charts_path }}/{{helm_chart_name_version}}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"

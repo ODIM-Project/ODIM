@@ -1,0 +1,6 @@
+---
+- name: Deploy {{ release_name }} plugin
+  hosts: '{{ host }}'
+
+  roles:
+    - deploy-plugin

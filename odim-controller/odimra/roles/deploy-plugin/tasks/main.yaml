@@ -26,9 +26,15 @@
     owner: "{{ current_user }}"
     group: "{{ current_user }}"
     mode: 0640
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"
 
-- name: Load latest docker image of {{ release_name }} plugin
+- name: Load docker image of {{ release_name }}
   command: "{{ docker_bin_path }} load -i {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.tar" 
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"
 
-- name: Upgrading {{ release_name }} plugin deployment
+- name: Deploy {{ release_name }}
   shell: "{{ helm_bin_path }} upgrade {{ release_name }} {{ helm_charts_path }}/{{ release_name }}/*.tgz -n {{ helm_name_space }} -f {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}-config.yaml -f {{ values_file_path }} --install --cleanup-on-fail"

@@ -867,40 +867,30 @@ def operation_odimra(operation):
 		shutil.copyfile(CONTROLLER_CONF_FILE, helm_config_file)
 		shutil.copyfile(CONTROLLER_CONF_FILE, odimra_config_file)
 
-		#flag to check if ODIMRA is deployed successfully on any master node
-		deploy_flag = False
+		# as rollback of failed operation is not handled yet
+		# will try on first master node and exit on failure
+		master_node = list(K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].keys())[0]
+		logger.info("Starting odimra %s on master node %s", operation, master_node)
+		odimra_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
+				    --extra-vars "host={master_node} helm_config_file={helm_config_file} ignore_err={ignore_err}" \
+{operation_conf_file}.yaml'.format(host_conf_file=host_file, master_node=master_node, helm_config_file=CONTROLLER_CONF_FILE, \
+		operation_conf_file=operation,ignore_err=IGNORE_ERRORS_SET)
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
-			logger.info("Starting odimra %s on master node %s", operation, master_node[0])
-			odimra_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-                                        --extra-vars "host={master_node} helm_config_file={helm_config_file} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
-                                        host_conf_file=host_file, master_node=master_node[0], \
-                                        helm_config_file=CONTROLLER_CONF_FILE, \
-                                        operation_conf_file=operation,ignore_err=IGNORE_ERRORS_SET)
-
-			ret = exec(odimra_deploy_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
-			if ret != 0:
-				logger.critical("ODIMRA %s failed when tried on master node %s", operation, master_node[0])
-			else:
-				logger.info("ODIMRA %s success on master node %s", operation, master_node[0])
-				deploy_flag = True
-				break
-
+		ret = exec(odimra_deploy_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 		# remove copy of controller config file created
 		os.remove(helm_config_file)
 		os.remove(odimra_config_file)
+
+		if ret != 0:
+			logger.critical("ODIMRA %s failed on master node %s", operation, master_node)
+			os.chdir(cur_dir)
+			sys.exit(1)
 
 		if operation == "uninstall" and os.path.exists(os.path.join(CONTROLLER_CONF_DATA['odimCertsPath'], '.gen_odimra_certs.ok')):
 			logger.info("Cleaning up certificates generated for the deployment")
 			shutil.rmtree(CONTROLLER_CONF_DATA['odimCertsPath'])
 
-		# check if action was successful or failed
-		if deploy_flag:
-			logger.info("Completed ODIMRA %s operation", operation)
-		else:
-			logger.info("Could not %s ODIMRA on any master nodes", operation)
-			os.chdir(cur_dir)
-			sys.exit(1)
+		logger.info("Completed ODIMRA %s operation", operation)
 
 	os.chdir(cur_dir)
 
@@ -1138,7 +1128,7 @@ def upgrade_config_map(config_map_name):
 			for helm_chart_name  in thirdPartyHelmCharts:
                                 update_helm_charts(helm_chart_name)
 
-			upgrade_plugin('all')
+			deploy_plugin('all')
 
 		elif data == "odimra":
 			odiraConfigHelmChartData= GROUP_VAR_DATA["odim_pv_pvc_secrets_helmcharts"]
@@ -1151,7 +1141,7 @@ def upgrade_config_map(config_map_name):
 			for helm_chart_name  in odimHelmChartData:
 				update_helm_charts(helm_chart_name)
 
-			upgrade_plugin('all')
+			deploy_plugin('all')
 
 		elif data == 'thirdparty':
 			thirdPartyHelmCharts=GROUP_VAR_DATA["odim_third_party_helmcharts"]
@@ -1497,8 +1487,8 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 
 	os.chdir(cur_dir)
 
-def upgrade_plugin(plugin_name):
-	logger.info("upgrade %s plugin deployment", plugin_name)
+def deploy_plugin(plugin_name):
+	logger.info("Deploy %s plugin", plugin_name)
 
 	# Parse the conf file passed
 	read_conf()
@@ -1513,7 +1503,7 @@ def upgrade_plugin(plugin_name):
 	if plugin_name != 'all':
 		pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
 		if not(path.isdir(pluginPackagePath)):
-			logger.error("%s was not deployed via odim controller", plugin_name)
+			logger.error("%s plugin content not present in configured odimPluginPath, cannot deploy", plugin_name)
 			sys.exit(1)
 		plugin_list.append(plugin_name)
 	else:
@@ -1532,35 +1522,35 @@ def upgrade_plugin(plugin_name):
 	if not DRY_RUN_SET:
 		os.chdir(ODIMRA_SRC_PATH)
 		load_password_from_vault(cur_dir) 
-		upgrade_count = 0
+		plugin_count = 0
 
 		for plugin in plugin_list:
 			for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
-				logger.info("Starting upgrade of %s plugin on master node %s", plugin, master_node[0])
-				upgrade_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-						     --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" upgrade_plugin.yaml'.format( \
-								     host_conf_file=host_file, master_node=master_node[0], \
-								     plugin_name=plugin, helm_chart_name=plugin, \
-								     helm_config_file=CONTROLLER_CONF_FILE)
-				ret = exec(upgrade_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
+				logger.info("Starting deployment of %s on master node %s", plugin, master_node[0])
+				deploy_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
+						    --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" deploy_plugin.yaml'.format( \
+								    host_conf_file=host_file, master_node=master_node[0], \
+								    plugin_name=plugin, helm_chart_name=plugin, \
+								    helm_config_file=CONTROLLER_CONF_FILE)
+				ret = exec(deploy_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 				if ret != 0:
-					logger.critical("upgrading %s plugin failed on master node %s", plugin, master_node[0])
+					logger.critical("deploying %s failed on master node %s", plugin, master_node)
 				else:
-					upgrade_count += 1
+					plugin_count += 1
 					break
 
-		upgrade_failed_count = len(plugin_list) - upgrade_count
+		upgrade_failed_count = len(plugin_list) - plugin_count
 		if upgrade_failed_count == 0:
-			logger.info("Successfully upgraded %s plugin(s)", plugin_list)
+			logger.info("Successfully deployed %s", plugin_list)
 		else:
-			logger.info("Upgrade of %d plugins in %s failed", upgrade_failed_count, plugin_list)
+			logger.info("Deployment of %d plugin(s) in %s failed", upgrade_failed_count, plugin_list)
 			os.chdir(cur_dir)
 			sys.exit(1)
 
 	os.chdir(cur_dir)
 
 def remove_plugin(plugin_name):
-	logger.info("removal of %s plugin", plugin_name)
+	logger.info("remove %s plugin", plugin_name)
 
 	# Parse the conf file passed
 	read_conf()
@@ -1587,12 +1577,12 @@ def remove_plugin(plugin_name):
 
 		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
 			logger.info("Starting removal of %s plugin on master node %s", plugin_name, master_node[0])
-			upgrade_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
+			remove_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" remove_plugin.yaml'.format( \
 							   host_conf_file=host_file, master_node=master_node[0], \
 							   plugin_name=plugin_name, helm_chart_name=plugin_name, \
 							   helm_config_file=CONTROLLER_CONF_FILE)
-			ret = exec(upgrade_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
+			ret = exec(remove_plugin_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
 			if ret != 0:
 				logger.critical("removal of %s plugin failed on master node %s", plugin_name, master_node[0])
 			else:
@@ -1711,7 +1701,7 @@ def main():
 			if args.plugin == None:
 				logger.error("option --upgrade=plugin: expects --plugin argument")
 				sys.exit(1)
-			upgrade_plugin(args.plugin)
+			deploy_plugin(args.plugin)
 		else:
 			upgrade_config_map(args.upgrade)
 
@@ -1720,7 +1710,7 @@ def main():
 			if args.plugin == None:
 				logger.error("option --add=plugin: expects --plugin argument")
 				sys.exit(1)
-			upgrade_plugin(args.plugin)
+			deploy_plugin(args.plugin)
 		else:
 			logger.critical("Unsupported value %s for add option", args.add)
 			sys.exit(1)

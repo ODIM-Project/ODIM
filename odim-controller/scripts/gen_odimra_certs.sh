@@ -346,7 +346,7 @@ generate_kafka_certs()
 	fi
 
 	# generate keystore
-	${KEYTOOL_BIN_PATH} -importkeystore -srckeystore ${KAFKA_JKS_PATH} -destkeystore ${KAFKA_JKS_PATH} -deststoretype pkcs12 -alias kafka -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -storetype pkcs12 -alias kafka -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
 ${KAFKA_JKS_PASSWORD}
 ${KAFKA_JKS_PASSWORD}
 kafka
@@ -361,7 +361,7 @@ HERE
 	eval_cmd_exec $? "${KAFKA_JKS_PATH} generation failed"
 
 	# add kafka rootCA to kafka server truststore
-	${KEYTOOL_BIN_PATH} -importkeystore -srckeystore ${KAFKA_JTS_PATH} -destkeystore ${KAFKA_JTS_PATH} -deststoretype pkcs12 -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JTS_PATH} -storetype pkcs12 -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
 ${KAFKA_JKS_PASSWORD}
 ${KAFKA_JKS_PASSWORD}
 yes
@@ -434,7 +434,7 @@ generate_zookeeper_certs()
 	fi
 
 	# generate keystore
-	${KEYTOOL_BIN_PATH} -importkeystore -srckeystore ${ZOOKEEPER_JKS_PATH} -destkeystore ${ZOOKEEPER_JKS_PATH} -deststoretype pkcs12 -alias zookeeper -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -storetype pkcs12 -alias zookeeper -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 ${ZOOKEEPER_JKS_PASSWORD}
 zookeeper
@@ -449,7 +449,7 @@ HERE
 	eval_cmd_exec $? "${ZOOKEEPER_JKS_PATH} generation failed"
 
 	# add zookeeper rootCA to zookeeper server truststore
-	${KEYTOOL_BIN_PATH} -importkeystore -srckeystore ${ZOOKEEPER_JTS_PATH} -destkeystore ${ZOOKEEPER_JTS_PATH} -deststoretype pkcs12 -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JTS_PATH} -storetype pkcs12 -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 ${ZOOKEEPER_JKS_PASSWORD}
 yes

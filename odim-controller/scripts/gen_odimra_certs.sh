@@ -94,8 +94,10 @@ generate_ca_certs()
 	${OPENSSL_BIN_PATH} genrsa -out ${ODIMRA_ROOTCA_KEY_PATH} ${KEY_LENGTH}
 	eval_cmd_exec $? "${ODIMRA_ROOTCA_KEY_PATH} generation failed"
 
+	# Have rootCA validity longer than the validity of the certs signed by it
+	rootCA_Validity_Period=$((${CERT_VALIDITY_PERIOD} * 2))
 	# generate rootCA certificate
-	${OPENSSL_BIN_PATH} req -new -key ${ODIMRA_ROOTCA_KEY_PATH} -days ${CERT_VALIDITY_PERIOD} -x509 -out ${ODIMRA_ROOTCA_CRT_PATH} -config <( cat <<EOF
+	${OPENSSL_BIN_PATH} req -new -key ${ODIMRA_ROOTCA_KEY_PATH} -days ${rootCA_Validity_Period} -x509 -out ${ODIMRA_ROOTCA_CRT_PATH} -config <( cat <<EOF
 [req]
 default_bits = ${KEY_LENGTH}
 encrypt_key  = no
@@ -344,7 +346,7 @@ generate_kafka_certs()
 	fi
 
 	# generate keystore
-	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias kafka -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -storetype pkcs12 -alias kafka -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
 ${KAFKA_JKS_PASSWORD}
 ${KAFKA_JKS_PASSWORD}
 kafka
@@ -359,7 +361,7 @@ HERE
 	eval_cmd_exec $? "${KAFKA_JKS_PATH} generation failed"
 
 	# add kafka rootCA to kafka server truststore
-	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JTS_PATH} -alias CARoot -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JTS_PATH} -storetype pkcs12 -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
 ${KAFKA_JKS_PASSWORD}
 ${KAFKA_JKS_PASSWORD}
 yes
@@ -367,10 +369,10 @@ HERE
 	eval_cmd_exec $? "${KAFKA_JTS_PATH} generation failed"
 
 	# generate keystore CSR
-	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias kafka -certreq -file ${ODIMRA_CERT_DIR}/cert-file <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias kafka -certreq -file ${ODIMRA_CERT_DIR}/kafka.csr <<HERE
 ${KAFKA_JKS_PASSWORD}
 HERE
-	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/cert-file generation failed"
+	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/kafka.csr generation failed"
 
 	#generate the keystore certificates
 	${OPENSSL_BIN_PATH} x509 -req -extensions server_crt -extfile <( cat <<EOF
@@ -392,25 +394,24 @@ DNS.6 = kafka1-ext
 DNS.7 = kafka2-ext
 DNS.8 = kafka3-ext
 EOF
-) -in ${ODIMRA_CERT_DIR}/cert-file -CA ${ODIMRA_ROOTCA_CRT_PATH} -CAkey ${ODIMRA_ROOTCA_KEY_PATH} -CAcreateserial -out ${ODIMRA_CERT_DIR}/cert-signed -days ${CERT_VALIDITY_PERIOD} -sha512
-	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/cert-signed generation failed"
+) -in ${ODIMRA_CERT_DIR}/kafka.csr -CA ${ODIMRA_ROOTCA_CRT_PATH} -CAkey ${ODIMRA_ROOTCA_KEY_PATH} -CAcreateserial -out ${ODIMRA_CERT_DIR}/kafka.crt -days ${CERT_VALIDITY_PERIOD} -sha512
+	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/kafka.crt generation failed"
 
 	# add kafka rootCA to kafka server keystore
-	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias CARoot -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
 ${KAFKA_JKS_PASSWORD}
 yes
 HERE
 	eval_cmd_exec $? "CA file import to keystore failed"
 
 	# adding server certificate to server key store
-	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias kafka -import -file ${ODIMRA_CERT_DIR}/cert-signed <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${KAFKA_JKS_PATH} -alias kafka -import -file ${ODIMRA_CERT_DIR}/kafka.crt <<HERE
 ${KAFKA_JKS_PASSWORD}
 HERE
 	eval_cmd_exec $? "Kafka certificate import to keystore failed"
 
 	# clean up temp files generated
-	rm -f ${ODIMRA_CERT_DIR}/cert-file ${ODIMRA_CERT_DIR}/cert-signed
-	rm -f ${ODIMRA_CERT_DIR}/kafka.p12 ${ODIMRA_CERT_DIR}/rootCA.srl
+	rm -f ${ODIMRA_CERT_DIR}/kafka.csr ${ODIMRA_CERT_DIR}/kafka.crt ${ODIMRA_CERT_DIR}/rootCA.srl
 
 	chmod 0600 ${KAFKA_JKS_PATH} ${KAFKA_JTS_PATH}
 }
@@ -433,7 +434,7 @@ generate_zookeeper_certs()
 	fi
 
 	# generate keystore
-	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias zookeeper -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -storetype pkcs12 -alias zookeeper -validity ${CERT_VALIDITY_PERIOD} -keyalg RSA -genkey <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 ${ZOOKEEPER_JKS_PASSWORD}
 zookeeper
@@ -448,7 +449,7 @@ HERE
 	eval_cmd_exec $? "${ZOOKEEPER_JKS_PATH} generation failed"
 
 	# add zookeeper rootCA to zookeeper server truststore
-	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JTS_PATH} -alias CARoot -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JTS_PATH} -storetype pkcs12 -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 ${ZOOKEEPER_JKS_PASSWORD}
 yes
@@ -456,10 +457,10 @@ HERE
 	eval_cmd_exec $? "${ZOOKEEPER_JTS_PATH} generation failed"
 
 	# generate keystore CSR
-	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias zookeeper -certreq -file ${ODIMRA_CERT_DIR}/cert-file <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias zookeeper -certreq -file ${ODIMRA_CERT_DIR}/zookeeper.csr <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 HERE
-	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/cert-file generation failed"
+	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/zookeeper.csr generation failed"
 
 	#generate the keystore certificates
 	${OPENSSL_BIN_PATH} x509 -req -extensions server_crt -extfile <( cat <<EOF
@@ -477,33 +478,24 @@ DNS.2 = zookeeper1.zookeeper.${ODIMRA_NAMESPACE}.svc.cluster.local
 DNS.3 = zookeeper2.zookeeper.${ODIMRA_NAMESPACE}.svc.cluster.local
 DNS.4 = zookeeper3.zookeeper.${ODIMRA_NAMESPACE}.svc.cluster.local
 EOF
-) -in ${ODIMRA_CERT_DIR}/cert-file -CA ${ODIMRA_ROOTCA_CRT_PATH} -CAkey ${ODIMRA_ROOTCA_KEY_PATH} -CAcreateserial -out ${ODIMRA_CERT_DIR}/cert-signed -days ${CERT_VALIDITY_PERIOD} -sha512
-	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/cert-signed generation failed"
+) -in ${ODIMRA_CERT_DIR}/zookeeper.csr -CA ${ODIMRA_ROOTCA_CRT_PATH} -CAkey ${ODIMRA_ROOTCA_KEY_PATH} -CAcreateserial -out ${ODIMRA_CERT_DIR}/zookeeper.crt -days ${CERT_VALIDITY_PERIOD} -sha512
+	eval_cmd_exec $? "${ODIMRA_CERT_DIR}/zookeeper.crt generation failed"
 
 	# add zookeeper rootCA to zookeeper server keystore
-	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias CARoot -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias rootCA -import -file ${ODIMRA_ROOTCA_CRT_PATH} <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 yes
 HERE
 	eval_cmd_exec $? "CA file import to keystore failed"
 
 	# adding server certificate to server key store
-	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias zookeeper -import -file ${ODIMRA_CERT_DIR}/cert-signed <<HERE
+	${KEYTOOL_BIN_PATH} -keystore ${ZOOKEEPER_JKS_PATH} -alias zookeeper -import -file ${ODIMRA_CERT_DIR}/zookeeper.crt <<HERE
 ${ZOOKEEPER_JKS_PASSWORD}
 HERE
 	eval_cmd_exec $? "Zookeeper certificate import to keystore failed"
 
-	# generating zookeeper certs
-	${KEYTOOL_BIN_PATH} -importkeystore -srckeystore ${ZOOKEEPER_JKS_PATH} -destkeystore ${ODIMRA_CERT_DIR}/zookeeper.p12 -srcstoretype JKS -deststoretype PKCS12 <<HERE
-${ZOOKEEPER_JKS_PASSWORD}
-${ZOOKEEPER_JKS_PASSWORD}
-${ZOOKEEPER_JKS_PASSWORD}
-HERE
-	eval_cmd_exec $? "Zookeeper keystore import failed"
-
 	# clean up temp files generated
-	rm -f ${ODIMRA_CERT_DIR}/cert-file ${ODIMRA_CERT_DIR}/cert-signed 
-	rm -f ${ODIMRA_CERT_DIR}/zookeeper.p12 ${ODIMRA_CERT_DIR}/rootCA.srl
+	rm -f ${ODIMRA_CERT_DIR}/zookeeper.csr ${ODIMRA_CERT_DIR}/zookeeper.crt ${ODIMRA_CERT_DIR}/rootCA.srl
 
 	chmod 0600 ${ZOOKEEPER_JKS_PATH} ${ZOOKEEPER_JTS_PATH}
 }

@@ -1,0 +1,28 @@
+---
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Copying helm config file
+  copy:
+    src: "{{ helm_config_file }}"
+    dest: "{{ values_file_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+
+- name: Get release name of {{ helm_chart_name }} svc
+  shell: "{{ helm_bin_path }} list -q -n {{ helm_name_space }} | grep {{ helm_chart_name }}"
+  register: svc_name
+
+- name: Set release_name fact
+  set_fact:
+    release_name: "{{ svc_name.stdout }}"
+
+- name: Scaling svc {{helm_chart_name}} deployment
+  shell: "/usr/local/bin/kubectl scale -n {{ helm_name_space }} deployment {{ release_name }} --replicas={{ replicas }}"

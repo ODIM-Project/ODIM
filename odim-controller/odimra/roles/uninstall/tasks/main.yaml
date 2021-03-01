@@ -1,0 +1,51 @@
+---
+  
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+  
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+
+- name: Remove all the plugins under the helm charts path
+  command: "{{ helm_bin_path }} uninstall {{ item.path.split('/')[-1] }} -n {{ helm_name_space }}"
+  loop: "{{ plugin_packages.files }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Remove ODIM-RA services
+  command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
+  loop: "{{ odim_svc_helmcharts | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Remove consul, redis, kafka, zookeeper services
+  command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
+  loop: "{{ odim_third_party_helmcharts | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+  when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
+
+- name: Remove consul, redis, kafka, zookeeper HA services
+  command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
+  loop: "{{ odim_third_party_helmcharts | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Delete PV, PVC, Secrets created for ODIM-RA services
+  command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
+  loop: "{{ odim_pv_pvc_secrets_helmcharts | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Remove secret reloader
+  shell: "{{ helm_bin_path }} uninstall {{ odim_secret_reloader_chart }} -n {{ helm_name_space }}; sleep 30"
+  ignore_errors: "{{ ignore_err }}"

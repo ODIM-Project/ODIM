@@ -1,0 +1,152 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kafka-conf-pv
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    name: kafka-conf-pvc
+    namespace: {{ .Values.odimra.namespace }}
+  hostPath:
+    path: {{ .Values.odimra.kafkaConfPath | quote }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: kafka-data-pv
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    name: kafka-data-pvc
+    namespace: {{ .Values.odimra.namespace }}
+  hostPath:
+    path: {{ .Values.odimra.kafkaDataPath | quote }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: zookeeper-data-pv
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    name: zookeeper-data-pvc
+    namespace: {{ .Values.odimra.namespace }}
+  hostPath:
+    path: {{ .Values.odimra.zookeeperDataPath | quote }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: zookeeper-conf-pv
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    name: zookeeper-conf-pvc
+    namespace: {{ .Values.odimra.namespace }}
+  hostPath:
+    path: {{ .Values.odimra.zookeeperConfPath | quote }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: consul-data-pv
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    name: consul-data-pvc
+    namespace: {{ .Values.odimra.namespace }}
+  hostPath:
+    path: {{ .Values.odimra.consulDataPath }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: odimra-log
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: {{ .Values.odimra.namespace }}
+    name: odimra-log-claim
+  hostPath:
+    path: {{ .Values.odimra.appsLogPath }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: redis-inmemory-data
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: {{ .Values.odimra.namespace }}
+    name: redis-inmemory-data-claim
+  hostPath:
+    path: {{ .Values.odimra.redisInmemoryDataPath }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: redis-ondisk-data
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: {{ .Values.odimra.namespace }}
+    name: redis-ondisk-data-claim
+  hostPath:
+    path: {{ .Values.odimra.redisOndiskDataPath }}

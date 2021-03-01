@@ -1,0 +1,16 @@
+odimra:
+  namespace:
+  groupID:
+  haDeploymentEnabled:
+grfplugin:
+  hostname:
+  eventListenerNodePort:
+  imageTag: "1.0"
+  logPath:
+  rootServiceUUID:
+  username:
+  password:
+  host: grfplugin
+  eventHost: grfplugin
+  lbHost:
+  lbPort:

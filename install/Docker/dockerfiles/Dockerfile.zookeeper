@@ -44,7 +44,7 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
 	&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
 	&& chown -R odimra:odimra /opt/zookeeper
 
-COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/*_zookeeper.sh /opt/zookeeper/scripts/
+COPY --chown=odimra:odimra install/Docker/dockerfiles/scripts/start_zookeeper.sh /opt/zookeeper/scripts/
 RUN chmod 0700 /opt/zookeeper/scripts/*
 
 USER odimra:odimra

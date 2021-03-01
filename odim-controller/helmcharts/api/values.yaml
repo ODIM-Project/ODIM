@@ -1,0 +1,6 @@
+odimra:
+  namespace:
+  groupID:
+  apiNodePort:
+  haDeploymentEnabled:
+  apiImageTag: "1.0"

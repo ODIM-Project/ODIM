@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: task
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: task
+spec:
+  ports:
+    - port: 45105
+  selector:
+    app: task
+

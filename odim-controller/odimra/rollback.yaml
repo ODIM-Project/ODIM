@@ -1,0 +1,6 @@
+---
+- name: Perform rollback of {{ release }} deployment to revision {{ revision }}
+  hosts: '{{ host }}'
+
+  roles:
+    - rollback

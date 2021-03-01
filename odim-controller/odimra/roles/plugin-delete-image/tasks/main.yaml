@@ -1,0 +1,25 @@
+---
+
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+
+- name: Removing plugin docker image under the helm charts path
+  shell: "{{ docker_bin_path }} rmi $(docker images {{ item.path.split('/')[-1] }} -q)"
+  loop: "{{ plugin_packages.files }}"
+  ignore_errors: "{{ ignore_err }}"

@@ -1,0 +1,7 @@
+---
+- name: copying the docker files required upgrade
+  hosts: '{{ host }}'
+ 
+  roles:
+    - pre-upgrade
+    

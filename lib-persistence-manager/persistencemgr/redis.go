@@ -990,7 +990,10 @@ func (p *ConnPool) CreateEvtSubscriptionIndex(index string, key interface{}) err
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 	const value = 0
-	val, _ := p.GetEvtSubscriptions(index, key.(string))
+
+	matchKey := strings.Replace(key.(string), "[", "\\[", -1)
+	matchKey = strings.Replace(matchKey, "]", "\\]", -1)
+	val, _ := p.GetEvtSubscriptions(index, matchKey)
 	if len(val) > 0 {
 		return fmt.Errorf("Data Already Exist for the index: %v", index)
 	}
@@ -1013,11 +1016,8 @@ func (p *ConnPool) GetEvtSubscriptions(index, searchKey string) ([]string, error
 	const cursor float64 = 0
 	currentCursor := cursor
 
-	matchKey := strings.Replace(searchKey, "[", "\\[", -1)
-	matchKey = strings.Replace(matchKey, "]", "\\]", -1)
-
 	for {
-		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", matchKey, "COUNT", count)
+		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", searchKey, "COUNT", count)
 		if getErr != nil {
 			return []string{}, fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
@@ -1174,6 +1174,7 @@ func (p *ConnPool) DeleteDeviceSubscription(index, hostIP string) error {
 	if err != nil {
 		return err
 	}
+
 	if len(value) < 1 {
 		return fmt.Errorf("No data found for the key: %v", hostIP)
 	}
@@ -1194,13 +1195,13 @@ func (p *ConnPool) DeleteDeviceSubscription(index, hostIP string) error {
 // 1. index is the name of the index to be created
 // 2. key and value are the key value pair for the index
 func (p *ConnPool) UpdateDeviceSubscription(index, hostIP, location string, originResources []string) error {
-	_, err := p.GetDeviceSubscription(index, hostIP+"*")
+	_, err := p.GetDeviceSubscription(index, hostIP+"[^0-9]*")
 	if err != nil {
 		return err
 	}
 	// host ip will be unique on each index in subscription of device
 	// so there will be only one data
-	err = p.DeleteDeviceSubscription(index, hostIP)
+	err = p.DeleteDeviceSubscription(index, hostIP+"[^0-9]")
 	if err != nil {
 		return err
 	}

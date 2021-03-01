@@ -39,7 +39,6 @@ func TrackConfigFileChanges(configFilePath string, eventChan chan<- interface{})
 				if !ok {
 					continue
 				}
-				log.Info("event:" + fileEvent.String())
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
 					log.Info("modified file:" + fileEvent.Name)
 					// update the odim config

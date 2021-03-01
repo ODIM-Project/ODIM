@@ -68,7 +68,7 @@ func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *j
 func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
 	body, _, statusCode, statusMessage, err := contactPlugin(pluginRequest)
 	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
-		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
+		body, _, statusCode, statusMessage, err = retryFabricsOperation(f, pluginRequest)
 	}
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)

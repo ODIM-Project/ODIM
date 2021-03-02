@@ -443,7 +443,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 	}
 	resp := pc.DeleteEventSubscriptions(req)
-	assert.Equal(t, http.StatusNoContent, int(resp.StatusCode), "Status Code should be StatusOK")
+	assert.Equal(t, http.StatusNoContent, int(resp.StatusCode), "Status Code should be StatusNoContent")
 
 	// Negative test cases
 	// if UUID is invalid
@@ -469,7 +469,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 	}
 	resp = pc.DeleteEventSubscriptions(req)
-	assert.Equal(t, http.StatusNoContent, int(resp.StatusCode), "Status Code should be StatusNoContent")
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
 
 }
 

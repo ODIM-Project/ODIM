@@ -48,8 +48,8 @@ type UpdateServiceStartUpdate struct {
 	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
 }
 
-// Action defines the links to the actions available under the service
-type Action struct {
+// Actions defines the links to the actions available under the service
+type Actions struct {
 	UpdateServiceSimpleUpdate UpdateServiceSimpleUpdate `json:"#UpdateService.SimpleUpdate"`
 	UpdateServiceStartUpdate  UpdateServiceStartUpdate  `json:"#UpdateService.StartUpdate"`
 }
@@ -62,7 +62,7 @@ type UpdateService struct {
 	HttpPushUri       string            `json:"HttpPushUri"`
 	FirmwareInventory FirmwareInventory `json:"FirmwareInventory"`
 	SoftwareInventory SoftwareInventory `json:"SoftwareInventory"`
-	Action            Action            `json:"Action"`
+	Actions           Actions           `json:"Actions"`
 	OEM               *OEM              `json:"Oem,omitempty"`
 }
 

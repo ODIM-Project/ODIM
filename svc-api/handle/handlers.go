@@ -56,7 +56,7 @@ func InitServiceRoot() ServiceRoot {
 //getService method takes list of string as parameter and returns Serviceroot struct with assigned values
 func getService(microServices []string, uuid string) models.ServiceRoot {
 	serviceRoot := models.ServiceRoot{
-		OdataType:      "#ServiceRoot.v1_5_0.ServiceRoot",
+		OdataType:      "#ServiceRoot.v1_9_0.ServiceRoot",
 		ID:             "RootService",
 		Name:           "Root Service",
 		RedfishVersion: "1.11.1",
@@ -614,6 +614,7 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "ServiceRoot"},
 					models.Include{Namespace: "ServiceRoot.v1_1_0"},
 					models.Include{Namespace: "ServiceRoot.v1_5_0"},
+					models.Include{Namespace: "ServiceRoot.v1_9_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Session_v1.xml",

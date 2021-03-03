@@ -1,7 +1,6 @@
 #!/bin/bash -x
 
-# Script is for generating certificate and private key
-# for CFM plugin
+# Script is for generating client certificate and private key
 
 CACertPath=$1
 CAKeyPath=$2

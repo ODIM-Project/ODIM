@@ -17,6 +17,7 @@ package chassis
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -59,13 +60,16 @@ func (f *fabricFactory) updateResource(plugin smodel.Plugin, url string, body *j
 		ch <- *errResp
 		return
 	}
-	ch <- patchResource(req)
+	ch <- patchResource(f, req)
 }
 
 // patchResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
-func patchResource(pluginRequest *pluginContactRequest) (r response.RPC) {
+func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
 	body, _, statusCode, statusMessage, err := contactPlugin(pluginRequest)
+	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
+		body, _, statusCode, statusMessage, err = retryFabricsOperation(f, pluginRequest)
+	}
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}

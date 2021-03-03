@@ -63,13 +63,16 @@ func (f *fabricFactory) getResource(plugin smodel.Plugin, rID string, ch chan re
 		ch <- *errResp
 		return
 	}
-	ch <- collectChassisResource(req)
+	ch <- collectChassisResource(f, req)
 }
 
 // collectChassisResource contacts the plugin with the details available in the
 // pluginContactRequest, and returns the RPC response
-func collectChassisResource(pluginRequest *pluginContactRequest) (r response.RPC) {
+func collectChassisResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r response.RPC) {
 	body, _, statusCode, _, err := contactPlugin(pluginRequest)
+	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
+		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
+	}
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}

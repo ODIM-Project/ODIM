@@ -96,7 +96,7 @@ func (f *fabricFactory) getFabricManagerChassis(plugin smodel.Plugin) {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
 	}
-	links, err := collectChassisCollection(req)
+	links, err := collectChassisCollection(f, req)
 	if err != nil {
 		log.Warn("while trying to create fabric plugin request for " + plugin.ID + ", got " + err.Error())
 		return
@@ -156,8 +156,11 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 }
 
 // collectChassisCollection contacts the plugin and collect the chassis response
-func collectChassisCollection(pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
+func collectChassisCollection(f *fabricFactory, pluginRequest *pluginContactRequest) ([]dmtf.Link, error) {
 	body, _, statusCode, _, err := contactPlugin(pluginRequest)
+	if statusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
+		body, _, statusCode, _, err = retryFabricsOperation(f, pluginRequest)
+	}
 	if err != nil {
 		return []dmtf.Link{}, fmt.Errorf("while trying contact plugin " + pluginRequest.Plugin.ID + ", got " + err.Error())
 	}
@@ -194,6 +197,22 @@ func contactPlugin(req *pluginContactRequest) ([]byte, string, int, string, erro
 		statusMessage = response.CouldNotEstablishConnection
 	}
 	return body, pluginResponse.Header.Get("X-Auth-Token"), pluginResponse.StatusCode, statusMessage, nil
+}
+
+// retryFabricsOperation will be called whenever  the unauthorized status code during the plugin call
+// This function will create a new session token reexcutes the plugin call
+func retryFabricsOperation(f *fabricFactory, req *pluginContactRequest) ([]byte, string, int, string, error) {
+	var resp response.RPC
+	var token = f.createToken(req.Plugin)
+	if token == "" {
+		resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error: Unable to create session with plugin "+req.Plugin.ID,
+			[]interface{}{}, nil)
+		data, _ := json.Marshal(resp.Body)
+		return data, "", int(resp.StatusCode), response.NoValidSession, fmt.Errorf("error: Unable to create session with plugin")
+	}
+	req.Token = token
+	return contactPlugin(req)
+
 }
 
 func callPlugin(req *pluginContactRequest) (*http.Response, error) {

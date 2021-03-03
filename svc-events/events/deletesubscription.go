@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -57,15 +58,16 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
 		return resp
 	}
-	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		log.Error(errorMessage)
 		return resp
 	}
-	deviceIPAddress := fmt.Sprintf("%v", addr[0])
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(deviceIPAddress)
+	searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.SubscriptionIndex)
+	log.Info("Getting event subscription details of device: ", deviceIPAddress)
+	subscriptionDetails, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Error("error while getting event subscription details : " + err.Error())
 		errorMessage := err.Error()
@@ -80,7 +82,7 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		log.Error(errorMessage)
 		return resp
 	}
-
+	log.Info("Number of subscription present :", strconv.Itoa(len(subscriptionDetails)))
 	decryptedPasswordByte, err := common.DecryptWithPrivateKey(target.Password)
 	if err != nil {
 		// Frame the RPC response body and response Header below
@@ -102,7 +104,8 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		return resp
 	}
 
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)
+	searchKey = evcommon.GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		errorMessage := "Error while get subscription details of device : " + err.Error()
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
@@ -111,6 +114,7 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		return resp
 	}
 	originResource = deviceSubscription.OriginResources[0]
+	log.Info("Device subcription information", deviceSubscription.EventHostIP)
 
 	for _, evtSubscription := range subscriptionDetails {
 
@@ -142,17 +146,13 @@ func (p *PluginContact) DeleteEventSubscriptions(req *eventsproto.EventRequest) 
 		}
 
 	}
-	// if subscription details having only one element then
-	// there is only one subscription for that host address so delete subscription of device
-	if len(subscriptionDetails) == 1 {
-		err = evmodel.DeleteDeviceSubscription(target.ManagerAddress)
-		if err != nil {
-			errorMessage := "Error while deleting device subscription : " + err.Error()
-			msgArgs := []interface{}{"Host", target.ManagerAddress}
-			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
-			log.Error(errorMessage)
-			return resp
-		}
+	err = evmodel.DeleteDeviceSubscription(searchKey)
+	if err != nil {
+		errorMessage := "Error while deleting device subscription : " + err.Error()
+		msgArgs := []interface{}{"Host", target.ManagerAddress}
+		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusBadRequest, msgArgs, &resp)
+		log.Error(errorMessage)
+		return resp
 	}
 
 	resp.StatusCode = http.StatusNoContent
@@ -428,14 +428,14 @@ func (p *PluginContact) subscribe(subscriptionPost evmodel.EvtSubPost, origin st
 	}
 	// Update Location to all destination of device if already subscribed to the device
 	var resp response.RPC
-	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
 		msgArgs := []interface{}{"Host", target.ManagerAddress}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		log.Error(errorMessage)
 	}
-	deviceIPAddress := fmt.Sprintf("%v", addr[0])
-	devSub, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)
+	searchKey := evcommon.GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
+	devSub, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		return err
 	}
@@ -451,19 +451,19 @@ func (p *PluginContact) subscribe(subscriptionPost evmodel.EvtSubPost, origin st
 // DeleteFabricsSubscription will delete fabric subscription
 func (p *PluginContact) DeleteFabricsSubscription(originResource string, plugin *evmodel.Plugin) (response.RPC, error) {
 	var resp response.RPC
-	addr, errorMessage := getIPFromHostName(plugin.IP)
+	addr, errorMessage := evcommon.GetIPFromHostName(plugin.IP)
 	if errorMessage != "" {
 		var msgArgs = []interface{}{"ManagerAddress", plugin.IP}
 		evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
-	deviceIPAddress := fmt.Sprintf("%v", addr[0])
-	devSub, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)
+	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
+	devSub, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		errorMessage := "Error while get device subscription details: " + err.Error()
 		if strings.Contains(err.Error(), "No data found for the key") {
-			var msgArgs = []interface{}{"CFM Plugin", deviceIPAddress}
+			var msgArgs = []interface{}{"CFM Plugin", addr}
 			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
 			log.Error(errorMessage)
 			return resp, err
@@ -590,13 +590,13 @@ func (p *PluginContact) resubscribeFabricsSubscription(subscriptionPost evmodel.
 		}
 		log.Info("Resubscribe response status code: " + string(response.StatusCode))
 		log.Info("Resubscribe response body: ", response.Body)
-		addr, errorMessage := getIPFromHostName(plugin.IP)
+		addr, errorMessage := evcommon.GetIPFromHostName(plugin.IP)
 		if errorMessage != "" {
 			return fmt.Errorf(errorMessage)
 		}
-		deviceIPAddress := fmt.Sprintf("%v", addr[0])
+		searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 		// Update Location to all destination of device if already subscribed to the device
-		devSub, err := evmodel.GetDeviceSubscriptions(deviceIPAddress)
+		devSub, err := evmodel.GetDeviceSubscriptions(searchKey)
 		if err != nil {
 			return err
 		}

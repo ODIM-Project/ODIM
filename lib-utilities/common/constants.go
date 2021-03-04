@@ -127,9 +127,11 @@ var SystemResource = map[string]string{
 // so it will be usefull to store the resource data into the particular database table
 // and also it will be usefull to retrives the chassis resource data
 var ChassisResource = map[string]string{
-	"Power":           "Power",
-	"Thermal":         "Thermal",
-	"NetworkAdapters": "NetworkAdaptersCollection",
+	"Power":                  "Power",
+	"Thermal":                "Thermal",
+	"NetworkAdapters":        "NetworkAdaptersCollection",
+	"NetworkPorts":           "NetworkPortsCollection",
+	"NetworkDeviceFunctions": "NetworkDeviceFunctionsCollection",
 }
 
 // ManagersResource contains the Resource name and table name

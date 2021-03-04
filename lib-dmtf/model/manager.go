@@ -54,17 +54,17 @@ type Manager struct {
 // ManagerLinks ...
 type ManagerLinks struct {
 	ActiveSoftwareImage     *Link       `json:"ActiveSoftwareImage,omitempty"`
-	ManagedBy               *[]Link     `json:"ManagedBy,omitempty"`
+	ManagedBy               []*Link     `json:"ManagedBy,omitempty"`
 	ManagerByCount          int         `json:"ManagedBy@odata.count,omitempty"`
-	ManagerForChassis       *[]Link     `json:"ManagerForChassis,omitempty"`
+	ManagerForChassis       []*Link     `json:"ManagerForChassis,omitempty"`
 	ManagerForChassisCount  int         `json:"ManagerForChassis@odata.count,omitempty"`
-	ManagerForManagers      *[]Link     `json:"ManagerForManagers,omitempty"`
+	ManagerForManagers      []*Link     `json:"ManagerForManagers,omitempty"`
 	ManagerForManagersCount int         `json:"ManagerForManagers@odata.count,omitempty"`
-	ManagerForServers       *[]Link     `json:"ManagerForServers,omitempty"`
+	ManagerForServers       []*Link     `json:"ManagerForServers,omitempty"`
 	ManagerForServersCount  int         `json:"ManagerForServers@odata.count,omitempty"`
-	ManagerForSwitches      *[]Link     `json:"ManagerForSwitches,omitempty"`
+	ManagerForSwitches      []*Link     `json:"ManagerForSwitches,omitempty"`
 	ManagerForSwitchesCount int         `json:"ManagerForSwitches@odata.count,omitempty"`
-	ManagerInChassis        *[]Link     `json:"ManagerInChassis,omitempty"`
+	ManagerInChassis        []*Link     `json:"ManagerInChassis,omitempty"`
 	ManagerInChassisCount   int         `json:"ManagerInChassis@odata.count,omitempty"`
 	Oem                     interface{} `json:"Oem,omitempty"`
 	SoftwareImages          *Link       `json:"SoftwareImages,omitempty"`

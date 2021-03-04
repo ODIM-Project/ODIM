@@ -115,6 +115,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"

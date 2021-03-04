@@ -29,7 +29,7 @@ type SubTask struct {
 	StartTime       time.Time    `json:"StartTime"`
 	EndTime         time.Time    `json:"EndTime"`
 	TaskStatus      string       `json:"TaskStatus"`
-	SubTasks        string       `json:"SubTasks"`
+	SubTasks        string       `json:"SubTasks,omitempty"`
 	TaskMonitor     string       `json:"TaskMonitor"`
 	PercentComplete int32        `json:"PercentComplete,omitempty"`
 	Payload         Payload      `json:"Payload,omitempty"`

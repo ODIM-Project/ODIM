@@ -32,7 +32,7 @@ type Port struct {
 	Ethernet                *PortEthernet        `json:"Ethernet,omitempty"`
 	FibreChannel            *FibreChannel        `json:"FibreChannel,omitempty"`
 	GenZ                    *GenZ                `json:"GenZ,omitempty"`
-	InterfaceEnabled        bool                 `json:"InterfaceEnabled,omitempty"`
+	InterfaceEnabled        bool                 `json:"InterfaceEnabled"`
 	LinkConfiguration       []*LinkConfiguration `json:"LinkConfiguration,omitempty"`
 	LinkNetworkTechnology   string               `json:"LinkNetworkTechnology,omitempty"`
 	LinkState               string               `json:"LinkState,omitempty"`

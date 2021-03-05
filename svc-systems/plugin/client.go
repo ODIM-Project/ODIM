@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020 Intel Corporation
+ * (C) Copyright [2020] Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,7 +149,7 @@ func (m *multiTargetClient) Get(uri string, opts ...CallOption) response.RPC {
 		resp := client.Get(uri)
 		err := m.call.collector.Collect(resp)
 		if err != nil {
-			log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + resp.Body.(string))
+			log.Warn("execution of GET " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	// Checking whether the struct passed as the interface has a ReqURI field.
@@ -177,6 +178,7 @@ func (m *multiTargetClient) Post(uri string, body *json.RawMessage) response.RPC
 func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RPC {
 	for _, target := range m.targets {
 		client := m.createClient(target)
+		log.Info("Request received to patch chassis to rack, URI: ", uri)
 		resp := client.Patch(uri, body)
 		switch {
 		case resp.StatusCode == http.StatusNotFound:
@@ -186,7 +188,7 @@ func (m *multiTargetClient) Patch(uri string, body *json.RawMessage) response.RP
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + resp.Body.(string))
+			log.Warn("execution of PATCH " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -204,7 +206,7 @@ func (m *multiTargetClient) Delete(uri string) response.RPC {
 		case is4xx(int(resp.StatusCode)):
 			return resp
 		default:
-			log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + resp.Body.(string))
+			log.Warn("execution of DELETE " + uri + " on " + target.ID + " plugin returned non 2xx status code; " + convertToString(resp.Body))
 		}
 	}
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
@@ -261,7 +263,6 @@ func (c *client) Get(uri string, _ ...CallOption) response.RPC {
 		"UserName": c.plugin.Username,
 		"Password": string(c.plugin.Password),
 	})
-
 	return c.extractResp(resp, err)
 }
 
@@ -366,4 +367,14 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 		res = append(res, plugin)
 	}
 	return
+}
+
+func convertToString(data interface{}) string {
+	byteData, err := json.Marshal(data)
+	if err != nil {
+		log.Error("converting interface to string type failed: " + err.Error())
+		return ""
+	}
+
+	return string(byteData)
 }

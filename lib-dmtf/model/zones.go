@@ -23,7 +23,7 @@ type Zone struct {
 	Actions               *OemActions  `json:"Actions,omitempty"`
 	Description           string       `json:"Description,omitempty"`
 	ID                    string       `json:"Id"`
-	Links                 *Links       `json:"Links,omitempty"`
+	Links                 *ZoneLinks   `json:"Links,omitempty"`
 	Name                  string       `json:"Name"`
 	Oem                   interface{}  `json:"Oem,omitempty"`
 	Status                *Status      `json:"Status,omitempty"`
@@ -37,4 +37,21 @@ type Zone struct {
 type Identifiers struct {
 	DurableName       string `json:"DurableName,omitempty"`
 	DurableNameFormat string `json:"DurableNameFormat,omitempty"`
+}
+
+// ZoneLinks is the struct to links under a zone
+type ZoneLinks struct {
+	AddressPools          []Link      `json:"AddressPools,omitempty"`
+	AddressPoolsCount     int         `json:"AddressPools@odata.count,omitempty"`
+	ContainedByZones      []Link      `json:"ContainedByZones,omitempty"`
+	ContainedByZonesCount int         `json:"ContainedByZones@odata.count,omitempty"`
+	ContainsZones         []Link      `jaon:"ContainsZones,omitempty""`
+	ContainsZonesCount    int         `json:"ContainsZones@odata.count,omitempty"`
+	Endpoints             []Link      `json:"Endpoints,omitempty"`
+	EndpointsCount        int         `json:"Endpoints@odata.count,omitempty"`
+	InvolvedSwitches      []Link      `json:"InvolvedSwitches,omitempty"`
+	InvolvedSwitchesCount int         `json:"InvolvedSwitches@odata.count,omitempty"`
+	Oem                   interface{} `json:"Oem,omitempty"`
+	ResourceBlocks        []Link      `json:"ResourceBlocks,omitempty"`
+	ResourceBlocksCount   int         `json:"ResourceBlocks@odata.count,omitempty"`
 }

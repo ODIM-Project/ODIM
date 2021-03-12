@@ -74,11 +74,13 @@ func (config *HTTPConfig) GetHTTPClientObj() (*http.Client, error) {
 	if err := config.LoadCertificates(tlsConfig); err != nil {
 		return nil, err
 	}
-	TLSConfMutex.Lock()
-	Client.SetTLSConfig(tlsConfig)
-	DefaultHTTPTransport.TLSClientConfig = tlsConfig
-	DefaultHTTPClient.Transport = DefaultHTTPTransport
-	TLSConfMutex.Unlock()
+	if DefaultHTTPClient == nil || DefaultHTTPClient.Transport == nil || DefaultHTTPTransport.TLSClientConfig == nil {
+		TLSConfMutex.Lock()
+		Client.SetTLSConfig(tlsConfig)
+		DefaultHTTPTransport.TLSClientConfig = tlsConfig
+		DefaultHTTPClient.Transport = DefaultHTTPTransport
+		TLSConfMutex.Unlock()
+	}
 	return DefaultHTTPClient, nil
 }
 

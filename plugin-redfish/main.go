@@ -187,6 +187,8 @@ func routers() *iris.Application {
 		managers.Get("/{id}/NetworkProtocol/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/HostInterfaces", rfphandler.GetResource)
 		managers.Get("/{id}/HostInterfaces/{rid}", rfphandler.GetResource)
+   managers.Get("/{id}/SerialInterface", rfphandler.GetResource)
+		managers.Get("/{id}/SerialInterface/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices", rfphandler.GetResource)

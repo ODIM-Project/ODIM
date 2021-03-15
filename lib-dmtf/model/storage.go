@@ -75,8 +75,8 @@ type Actions struct {
 
 //Identifier redfish structure
 type Identifier struct {
-	DurableName       string `json:"DurableName"`
-	DurableNameFormat string `json:"DurableNameFormat"`
+	DurableName       string `json:"DurableName,omitempty"`
+	DurableNameFormat string `json:"DurableNameFormat,omitempty"`
 }
 
 // StorageLinks struct is for storage Links schema
@@ -93,8 +93,8 @@ type StorageRedundancy struct {
 
 // StorageStatus struct is to define the status of the Storage
 type StorageStatus struct {
-	State  string `json:"State"`
-	Health string `json:"Health"`
+	State  string `json:"State,omitempty"`
+	Health string `json:"Health,omitempty"`
 }
 
 // CacheSummary struct is to define the CacheSummary of the Storage
@@ -159,10 +159,10 @@ type NVMeSMARTCriticalWarnings struct {
 
 // StorageControllerLocation holds the location information of the storage controller
 type StorageControllerLocation struct {
-	AltitudeMeters int            `json:"AltitudeMeters"`
-	Latitude       int            `json:"Latitude"`
-	Longitude      int            `json:"Longitude"`
-	Contacts       Contacts       `json:"Contacts"`
+	AltitudeMeters int            `json:"AltitudeMeters,omitempty"`
+	Latitude       int            `json:"Latitude,omitempty"`
+	Longitude      int            `json:"Longitude,omitempty"`
+	Contacts       Contacts       `json:"Contacts,omitempty"`
 	Oem            *Oem           `json:"Oem,omitempty"`
 	PartLocation   *PartLocation  `json:"PartLocation,omitempty"`
 	Placement      *Placement     `json:"Placement,omitempty"`
@@ -171,62 +171,62 @@ type StorageControllerLocation struct {
 
 // PartLocation holds the location information of the storage controller
 type PartLocation struct {
-	Orientation          string `json:"Orientation"`
-	Reference            string `json:"Reference"`
-	LocationOrdinalValue int    `json:"LocationOrdinalValue"`
+	Orientation          string `json:"Orientation,omitempty"`
+	Reference            string `json:"Reference,omitempty"`
+	LocationOrdinalValue int    `json:"LocationOrdinalValue,omitempty"`
 	LocationType         string `json:"LocationType,omitempty"`
 	ServiceLabel         string `json:"ServiceLabel,omitempty"`
 }
 
 // Contacts holds the Contacts information of the storage controller
 type Contacts struct {
-	ContactName  string `json:"ContactName"`
-	EmailAddress string `json:"EmailAddress"`
-	PhoneNumber  string `json:"PhoneNumber"`
+	ContactName  string `json:"ContactName,omitempty"`
+	EmailAddress string `json:"EmailAddress,omitempty"`
+	PhoneNumber  string `json:"PhoneNumber,omitempty"`
 }
 
 // Placement holds the Placement information of the storage controller
 type Placement struct {
-	AdditionalInfo  string `json:"AdditionalInfo"`
-	Rack            string `json:"Rack"`
-	RackOffset      int    `json:"RackOffset"`
+	AdditionalInfo  string `json:"AdditionalInfo,omitempty"`
+	Rack            string `json:"Rack,omitempty"`
+	RackOffset      int    `json:"RackOffset,omitempty"`
 	RackOffsetUnits string `json:"RackOffsetUnits,omitempty"`
 	Row             string `json:"Row,omitempty"`
 }
 
 // PostalAddress holds the PostalAddress information of the storage controller
 type PostalAddress struct {
-	AdditionalCode         string `json:"AdditionalCode"`
-	AdditionalInfo         string `json:"AdditionalInfo"`
-	Building               string `json:"Building"`
-	City                   string `json:"City"`
-	Community              string `json:"Community"`
-	Country                string `json:"Country"`
-	District               string `json:"District"`
-	Division               string `json:"Division"`
-	Floor                  string `json:"Floor"`
-	GPSCoords              string `json:"GPSCoords"`
-	HouseNumber            int    `json:"HouseNumber"`
-	HouseNumberSuffix      string `json:"HouseNumberSuffix"`
-	Landmark               string `json:"Landmark"`
-	LeadingStreetDirection string `json:"LeadingStreetDirection"`
-	Location               string `json:"Location"`
-	Name                   string `json:"Name"`
-	Neighborhood           string `json:"Neighborhood"`
-	PlaceType              string `json:"PlaceType"`
-	POBox                  string `json:"POBox"`
-	PostalCode             string `json:"PostalCode"`
-	Road                   string `json:"Road"`
-	RoadBranch             string `json:"RoadBranch"`
-	RoadPostModifier       string `json:"RoadPostModifier"`
-	RoadPreModifier        string `json:"RoadPreModifier"`
-	RoadSection            string `json:"RoadSection"`
-	RoadSubBranch          string `json:"RoadSubBranch"`
-	Room                   string `json:"Room"`
-	Seat                   string `json:"Seat"`
-	Street                 string `json:"Street"`
-	StreetSuffix           string `json:"StreetSuffix"`
-	Territory              string `json:"Territory"`
-	TrailingStreetSuffix   string `json:"TrailingStreetSuffix"`
-	Unit                   string `json:"Unit"`
+	AdditionalCode         string `json:"AdditionalCode,omitempty"`
+	AdditionalInfo         string `json:"AdditionalInfo,omitempty"`
+	Building               string `json:"Building,omitempty"`
+	City                   string `json:"City,omitempty"`
+	Community              string `json:"Community,omitempty"`
+	Country                string `json:"Country,omitempty"`
+	District               string `json:"District,omitempty"`
+	Division               string `json:"Division,omitempty"`
+	Floor                  string `json:"Floor,omitempty"`
+	GPSCoords              string `json:"GPSCoords,omitempty"`
+	HouseNumber            int    `json:"HouseNumber,omitempty"`
+	HouseNumberSuffix      string `json:"HouseNumberSuffix,omitempty"`
+	Landmark               string `json:"Landmark,omitempty"`
+	LeadingStreetDirection string `json:"LeadingStreetDirection,omitempty"`
+	Location               string `json:"Location,omitempty"`
+	Name                   string `json:"Name,omitempty"`
+	Neighborhood           string `json:"Neighborhood,omitempty"`
+	PlaceType              string `json:"PlaceType,omitempty"`
+	POBox                  string `json:"POBox,omitempty"`
+	PostalCode             string `json:"PostalCode,omitempty"`
+	Road                   string `json:"Road,omitempty"`
+	RoadBranch             string `json:"RoadBranch,omitempty"`
+	RoadPostModifier       string `json:"RoadPostModifier,omitempty"`
+	RoadPreModifier        string `json:"RoadPreModifier,omitempty"`
+	RoadSection            string `json:"RoadSection,omitempty"`
+	RoadSubBranch          string `json:"RoadSubBranch,omitempty"`
+	Room                   string `json:"Room,omitempty"`
+	Seat                   string `json:"Seat,omitempty"`
+	Street                 string `json:"Street,omitempty"`
+	StreetSuffix           string `json:"StreetSuffix,omitempty"`
+	Territory              string `json:"Territory,omitempty"`
+	TrailingStreetSuffix   string `json:"TrailingStreetSuffix,omitempty"`
+	Unit                   string `json:"Unit,omitempty"`
 }

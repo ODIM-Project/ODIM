@@ -171,7 +171,7 @@ func TestGetAllSystems(t *testing.T) {
 	}
 	systemsCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
-		OdataID:      "/redfish/v1/Systems/",
+		OdataID:      "/redfish/v1/Systems",
 		OdataType:    "#ComputerSystemCollection.ComputerSystemCollection",
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",
@@ -807,7 +807,7 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 	}
 	systemsCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
-		OdataID:      "/redfish/v1/Systems/",
+		OdataID:      "/redfish/v1/Systems",
 		OdataType:    "#ComputerSystemCollection.ComputerSystemCollection",
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",

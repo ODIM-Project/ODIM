@@ -519,7 +519,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 	}
 	systemCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
-		OdataID:      "/redfish/v1/Systems/",
+		OdataID:      "/redfish/v1/Systems",
 		OdataType:    "#ComputerSystemCollection.ComputerSystemCollection",
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",
@@ -674,7 +674,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	}
 	systemCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
-		OdataID:      "/redfish/v1/Systems/",
+		OdataID:      "/redfish/v1/Systems",
 		OdataType:    "#ComputerSystemCollection.ComputerSystemCollection",
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",

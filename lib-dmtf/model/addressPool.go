@@ -25,7 +25,7 @@ type AddressPool struct {
 	Ethernet     *AddressPoolEthernet `json:"Ethernet,omitempty"`
 	GenZ         *GenZ                `json:"GenZ,omitempty"`
 	ID           string               `json:"id"`
-	Links        *Links               `json:"Links,omitempty"`
+	Links        *AddressPoolLinks    `json:"Links,omitempty"`
 	Name         string               `json:"Name"`
 	Oem          interface{}          `json:"Oem,omitempty"`
 	Status       *Status              `json:"Status,omitempty"`
@@ -205,4 +205,13 @@ type DHCP struct {
 	DHCPInterfaceMTUBytes int    `json:"DHCPInterfaceMTUBytes,omitempty"`
 	DHCPRelayEnabled      bool   `json:"DHCPRelayEnabled,omitempty"`
 	DHCPServer            string `json:"DHCPServer,omitempty"`
+}
+
+// AddressPoolLinks is the struct to links under a AddressPool
+type AddressPoolLinks struct {
+	Endpoints      []Link      `json:"Endpoints,omitempty"`
+	EndpointsCount int         `json:"Endpoints@odata.count,omitempty"`
+	Zones          []Link      `json:"Zones,omitempty"`
+	ZonesCount     int         `json:"Zones@odata.count,omitempty"`
+	Oem            interface{} `json:"Oem,omitempty"`
 }

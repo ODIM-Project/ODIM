@@ -45,7 +45,7 @@ type ZoneLinks struct {
 	AddressPoolsCount     int         `json:"AddressPools@odata.count,omitempty"`
 	ContainedByZones      []Link      `json:"ContainedByZones,omitempty"`
 	ContainedByZonesCount int         `json:"ContainedByZones@odata.count,omitempty"`
-	ContainsZones         []Link      `jaon:"ContainsZones,omitempty""`
+	ContainsZones         []Link      `json:"ContainsZones,omitempty"`
 	ContainsZonesCount    int         `json:"ContainsZones@odata.count,omitempty"`
 	Endpoints             []Link      `json:"Endpoints,omitempty"`
 	EndpointsCount        int         `json:"Endpoints@odata.count,omitempty"`

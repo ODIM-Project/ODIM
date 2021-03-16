@@ -26,7 +26,7 @@ type Storage struct {
 	Oem                Oem                 `json:"Oem,omitempty"`
 	Drives             []Link              `json:"Drives,omitempty"`
 	Links              StorageLinks        `json:"Links,omitempty"`
-	Redundancy         []StorageRedundancy `json:"Redundancy,omitempty"` //TODO
+	Redundancy         []Redundancy        `json:"Redundancy,omitempty"` //TODO
 	Status             Status              `json:"Status,omitempty"`
 	StorageControllers []StorageController `json:"StorageControllers,omitempty"`
 	Volumes            Link                `json:"Volumes,omitempty"`
@@ -55,40 +55,30 @@ type StorageController struct {
 	SupportedControllerProtocols []string                  `json:"SupportedControllerProtocols,omitempty"` //enum
 	SupportedDeviceProtocols     []string                  `json:"SupportedDeviceProtocols,omitempty"`     //enum
 	SupportedRAIDTypes           []string                  `json:"SupportedRAIDTypes,omitempty"`           //enum
-	Actions                      Actions                   `json:"Actions,omitempty"`
-	Assembly                     Assembly                  `json:"Assembly,omitempty"`
-	CacheSummary                 CacheSummary              `json:"CacheSummary,omitempty"`
-	ControllerRates              ControllerRates           `json:"ControllerRates,omitempty"`
-	Identifiers                  []Identifier              `json:"Identifiers,omitempty"`
-	Links                        StorageControllersLinks   `json:"Links,omitempty"`
-	Location                     StorageControllerLocation `json:"Location,omitempty"`
-	NVMeControllerProperties     NVMeControllerProperties  `json:"NVMeControllerProperties,omitempty"`
-	Oem                          Oem                       `json:"Oem,omitempty"`
-	PCIeInterface                PCIeInterface             `json:"PCIeInterface,omitempty"`
-	Ports                        Link                      `json:"Ports,omitempty"`
-	Status                       StorageStatus             `json:"Status,omitempty"`
+	Actions                      *Actions                  `json:"Actions,omitempty"`
+	Assembly                     *Assembly                 `json:"Assembly,omitempty"`
+	CacheSummary                 *CacheSummary             `json:"CacheSummary,omitempty"`
+	ControllerRates              *ControllerRates          `json:"ControllerRates,omitempty"`
+	Identifiers                  []*Identifier             `json:"Identifiers,omitempty"`
+	Links                        *StorageControllersLinks  `json:"Links,omitempty"`
+	Location                     *Location                 `json:"Location,omitempty"`
+	NVMeControllerProperties     *NVMeControllerProperties `json:"NVMeControllerProperties,omitempty"`
+	Oem                          *Oem                      `json:"Oem,omitempty"`
+	PCIeInterface                *PCIeInterface            `json:"PCIeInterface,omitempty"`
+	Ports                        *Link                     `json:"Ports,omitempty"`
+	Status                       *StorageStatus            `json:"Status,omitempty"`
 }
 
 //Actions redfish structure
 type Actions struct {
 }
 
-//Identifier redfish structure
-type Identifier struct {
-	DurableName       string `json:"DurableName,omitempty"`
-	DurableNameFormat string `json:"DurableNameFormat,omitempty"`
-}
-
 // StorageLinks struct is for storage Links schema
 type StorageLinks struct {
-	Enclosures      []Link `json:"Enclosures,omitempty"`
-	SimpleStorage   Link   `json:"SimpleStorage,omitempty"`
-	StorageServices []Link `json:"StorageServices,omitempty"`
-	Oem             *Oem   `json:"Oem,omitempty"`
-}
-
-// StorageRedundancy struct is for Redundancy schema
-type StorageRedundancy struct {
+	Enclosures      []*Link `json:"Enclosures,omitempty"`
+	SimpleStorage   *Link   `json:"SimpleStorage,omitempty"`
+	StorageServices []*Link `json:"StorageServices,omitempty"`
+	Oem             *Oem    `json:"Oem,omitempty"`
 }
 
 // StorageStatus struct is to define the status of the Storage
@@ -113,10 +103,10 @@ type ControllerRates struct {
 
 // StorageControllersLinks struct is for smart storage Links schema
 type StorageControllersLinks struct {
-	Endpoints       []Link `json:"Enclosures,omitempty"`
-	PCIeFunctions   Link   `json:"PCIeFunctions,omitempty"`
-	StorageServices []Link `json:"StorageServices,omitempty"`
-	Oem             *Oem   `json:"Oem,omitempty"`
+	PCIeFunctions   *Link   `json:"PCIeFunctions,omitempty"`
+	Oem             *Oem    `json:"Oem,omitempty"`
+	Endpoints       []*Link `json:"Enclosures,omitempty"`
+	StorageServices []*Link `json:"StorageServices,omitempty"`
 }
 
 // NVMeControllerProperties struct is to define the NVMeControllerProperties of the Storage
@@ -132,7 +122,7 @@ type NVMeControllerProperties struct {
 // ANACharacteristics struct is to define the ANACharacteristics of the Storage
 type ANACharacteristics struct {
 	AccessState string `json:"AccessState,omitempty"`
-	Volume      Link   `json:"Volume,omitempty"`
+	Volume      *Link  `json:"Volume,omitempty"`
 }
 
 // NVMeControllerAttributes struct is to define the NVMeControllerAttributes of the Storage
@@ -155,78 +145,4 @@ type NVMeSMARTCriticalWarnings struct {
 	PMRUnreliable            bool `json:"PMRUnreliable,omitempty"`
 	PowerBackupFailed        bool `json:"PowerBackupFailed,omitempty"`
 	SpareCapacityWornOut     bool `json:"SpareCapacityWornOut,omitempty"`
-}
-
-// StorageControllerLocation holds the location information of the storage controller
-type StorageControllerLocation struct {
-	AltitudeMeters int            `json:"AltitudeMeters,omitempty"`
-	Latitude       int            `json:"Latitude,omitempty"`
-	Longitude      int            `json:"Longitude,omitempty"`
-	Contacts       Contacts       `json:"Contacts,omitempty"`
-	Oem            *Oem           `json:"Oem,omitempty"`
-	PartLocation   *PartLocation  `json:"PartLocation,omitempty"`
-	Placement      *Placement     `json:"Placement,omitempty"`
-	PostalAddress  *PostalAddress `json:"PostalAddress,omitempty"`
-}
-
-// PartLocation holds the location information of the storage controller
-type PartLocation struct {
-	Orientation          string `json:"Orientation,omitempty"`
-	Reference            string `json:"Reference,omitempty"`
-	LocationOrdinalValue int    `json:"LocationOrdinalValue,omitempty"`
-	LocationType         string `json:"LocationType,omitempty"`
-	ServiceLabel         string `json:"ServiceLabel,omitempty"`
-}
-
-// Contacts holds the Contacts information of the storage controller
-type Contacts struct {
-	ContactName  string `json:"ContactName,omitempty"`
-	EmailAddress string `json:"EmailAddress,omitempty"`
-	PhoneNumber  string `json:"PhoneNumber,omitempty"`
-}
-
-// Placement holds the Placement information of the storage controller
-type Placement struct {
-	AdditionalInfo  string `json:"AdditionalInfo,omitempty"`
-	Rack            string `json:"Rack,omitempty"`
-	RackOffset      int    `json:"RackOffset,omitempty"`
-	RackOffsetUnits string `json:"RackOffsetUnits,omitempty"`
-	Row             string `json:"Row,omitempty"`
-}
-
-// PostalAddress holds the PostalAddress information of the storage controller
-type PostalAddress struct {
-	AdditionalCode         string `json:"AdditionalCode,omitempty"`
-	AdditionalInfo         string `json:"AdditionalInfo,omitempty"`
-	Building               string `json:"Building,omitempty"`
-	City                   string `json:"City,omitempty"`
-	Community              string `json:"Community,omitempty"`
-	Country                string `json:"Country,omitempty"`
-	District               string `json:"District,omitempty"`
-	Division               string `json:"Division,omitempty"`
-	Floor                  string `json:"Floor,omitempty"`
-	GPSCoords              string `json:"GPSCoords,omitempty"`
-	HouseNumber            int    `json:"HouseNumber,omitempty"`
-	HouseNumberSuffix      string `json:"HouseNumberSuffix,omitempty"`
-	Landmark               string `json:"Landmark,omitempty"`
-	LeadingStreetDirection string `json:"LeadingStreetDirection,omitempty"`
-	Location               string `json:"Location,omitempty"`
-	Name                   string `json:"Name,omitempty"`
-	Neighborhood           string `json:"Neighborhood,omitempty"`
-	PlaceType              string `json:"PlaceType,omitempty"`
-	POBox                  string `json:"POBox,omitempty"`
-	PostalCode             string `json:"PostalCode,omitempty"`
-	Road                   string `json:"Road,omitempty"`
-	RoadBranch             string `json:"RoadBranch,omitempty"`
-	RoadPostModifier       string `json:"RoadPostModifier,omitempty"`
-	RoadPreModifier        string `json:"RoadPreModifier,omitempty"`
-	RoadSection            string `json:"RoadSection,omitempty"`
-	RoadSubBranch          string `json:"RoadSubBranch,omitempty"`
-	Room                   string `json:"Room,omitempty"`
-	Seat                   string `json:"Seat,omitempty"`
-	Street                 string `json:"Street,omitempty"`
-	StreetSuffix           string `json:"StreetSuffix,omitempty"`
-	Territory              string `json:"Territory,omitempty"`
-	TrailingStreetSuffix   string `json:"TrailingStreetSuffix,omitempty"`
-	Unit                   string `json:"Unit,omitempty"`
 }

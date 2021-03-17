@@ -408,6 +408,9 @@ func Router() *iris.Application {
 	managers.Get("/{id}/NetworkProtocol/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces/{rid}", manager.GetManagersResource)
+
+	managers.Get("/{id}/SerialInterface", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterface/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)

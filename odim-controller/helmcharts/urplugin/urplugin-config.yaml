@@ -1,0 +1,11 @@
+odimra:
+  namespace: odim
+  groupID:
+  haDeploymentEnabled:
+urplugin:
+  urPluginRootServiceUUID:
+  username: admin
+  password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
+  odimUsername: admin
+  odimPassword:
+  logPath: /var/log/urplugin_logs

@@ -1,0 +1,40 @@
+---
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Copying helm config file
+  copy:
+    src: "{{ helm_config_file }}"
+    dest: "{{ values_file_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Copy plugin package files to host nodes
+  copy:
+    src: "{{ odimPluginPath }}/{{ release_name }}"
+    dest: "{{ helm_charts_path }}/"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"
+
+- name: Load docker image of {{ release_name }}
+  command: "{{ docker_bin_path }} load -i {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.tar" 
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"
+
+- name: Deploy {{ release_name }}
+  shell: "{{ helm_bin_path }} upgrade {{ release_name }} {{ helm_charts_path }}/{{ release_name }}/*.tgz -n {{ helm_name_space }} -f {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}-config.yaml -f {{ values_file_path }} --install --cleanup-on-fail"

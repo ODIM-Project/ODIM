@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -74,7 +75,11 @@ func PublishEventsToDestination(data interface{}) bool {
 	}
 	// Extract the Hostname/IP of the event source and Event from input parameter
 	event := data.(common.Events)
-	host := event.IP
+	host, _, err := net.SplitHostPort(event.IP)
+	if err != nil {
+		host = event.IP
+	}
+	log.Info("After splitting host address, IP is: ", host)
 
 	var requestData = string(event.Request)
 	//replacing the resposne with north bound translation URL
@@ -87,8 +92,8 @@ func PublishEventsToDestination(data interface{}) bool {
 	var message common.MessageData
 
 	addFabric(requestData, host)
-
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
+	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		log.Error("Failed to get the event destinations: ", err.Error())
 		return false
@@ -101,7 +106,8 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
 
-	subscriptions, err := evmodel.GetEvtSubscriptions(host)
+	searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
+	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return false
 	}

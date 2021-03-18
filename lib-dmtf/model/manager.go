@@ -22,7 +22,7 @@ type Manager struct {
 	ODataType               string       `json:"@odata.type"`
 	Actions                 *OemActions  `json:"Actions,omitempty"`
 	Description             string       `json:"Description,omitempty"`
-	ID                      string       `json:"id"`
+	ID                      string       `json:"Id"`
 	Links                   *Links       `json:"Links,omitempty"`
 	Name                    string       `json:"Name"`
 	Oem                     *Oem         `json:"Oem,omitempty"`

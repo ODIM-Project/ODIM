@@ -300,7 +300,7 @@ curl -i POST \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
 "Password": "<password>",
-"Targets": [],
+"Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
 "TransferProtocol": "",
 "Username": "<username>"
 }' \
@@ -350,11 +350,11 @@ curl -i POST \
 |FTP|File Transfer Protocol.|
 |HTTP|Hypertext Transfer Protocol.|
 |HTTPS|Hypertext Transfer Protocol Secure.|
-| NFS \(v1.3+\)<br> |Network File System.|
-| NSF \(deprecated v1.3\)<br> | Network File System.<br> This value has been deprecated in favor of NFS.<br> |
+|NFS \(v1.3+\)<br> |Network File System.|
+|NSF \(deprecated v1.3\)<br> | Network File System.<br> This value has been deprecated in favor of NFS.<br> |
 |OEM|A manufacturer-defined protocol.|
 |SCP|Secure Copy Protocol.|
-| SFTP \(v1.1+\)<br> |Secure File Transfer Protocol.|
+|SFTP \(v1.1+\)<br> |Secure File Transfer Protocol.|
 |TFTP|Trivial File Transfer Protocol.|
 
 

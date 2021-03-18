@@ -91,7 +91,7 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 		SoftwareInventory: uresponse.SoftwareInventory{
 			OdataID: "/redfish/v1/UpdateService/SoftwareInventory",
 		},
-		Action: uresponse.Action{
+		Actions: uresponse.Actions{
 			UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
 				Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
 			},
@@ -124,8 +124,8 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 		Description:  "FirmwareInventory view",
 		Name:         "FirmwareInventory",
 	}
-	var members []dmtf.Link
 
+	members := []dmtf.Link{}
 	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
 		log.Warn("odimra doesnt have servers")
@@ -217,8 +217,8 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 		Description:  "SoftwareInventory view",
 		Name:         "SoftwareInventory",
 	}
-	var members []dmtf.Link
 
+	members := []dmtf.Link{}
 	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
 		log.Warn("odimra doesnt have servers")

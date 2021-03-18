@@ -1,0 +1,12 @@
+---
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Removing {{ release_name }} plugin deployment
+  command: "{{ helm_bin_path }} uninstall {{ release_name }}  -n {{ helm_name_space }}"
+
+- name: Removing {{ release_name }} docker image
+  shell: "sleep 30; {{ docker_bin_path }} rmi $(docker images {{ release_name }} -q)"
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"

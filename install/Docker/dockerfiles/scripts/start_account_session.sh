@@ -41,10 +41,6 @@ run_forever()
 start_account_session()
 {
 	registry_address="consul:8500"
-	if [[ ${HA_ENABLED,,} == true ]]; then
-		registry_address="[consul1:8500,consul2:8500,consul3:8500]"
-	fi
-
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
 	nohup /bin/svc-account-session --registry=consul --registry_address=${registry_address} --server_address=account-session:45101 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/account_session.log 2>&1 &
 	PID=$!
@@ -58,7 +54,7 @@ monitor_process()
         while true; do
                 pid=$(pgrep -fc svc-account-session 2> /dev/null)
                 if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
-                        echo "svc-account-session has exited"
+                        echo "[$(date)] -- ERROR -- svc-account-session not found running, exiting"
 			kill -15 ${OWN_PID}
 			exit 1
                 fi

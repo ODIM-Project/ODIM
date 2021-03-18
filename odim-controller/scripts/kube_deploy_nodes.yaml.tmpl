@@ -1,0 +1,79 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+# 
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+#under the License.
+
+deploymentID: <Unique identifier for the deployment>
+httpProxy: <HTTP Proxy to be set in the nodes>
+httpsProxy: <HTTPS Proxy to be set in the nodes>
+noProxy: <NO PROXY env to be set in the nodes>
+nodePasswordFilePath: <Absolute path of the file containing encrypted node password>
+nodes:
+  <Node1_Hostname>:
+    ip: <Node1_IPAddress>
+    username: <Node1_Username>
+  <Node2_Hostname>:
+    ip: <Node2_IPAddress>
+    username: <Node2_Username>
+  <Node3_Hostname>:
+    ip: <Node3_IPAddress>
+    username: <Node3_Username>
+odimControllerSrcPath: <Absolute_Path_odim-controller_Src>
+odimVaultKeyFilePath: <Absolute path of the file containing encoded odim vault password>
+odimCertsPath: <Absolute_path_of_odim_certificates>
+kubernetesImagePath: <Absolute_Path_of_kubernetes_Images>
+odimraImagePath: <Absolute_Path_of_odimra_Images>
+odimPluginPath: <Absolute_Path_plugin_helm_charts>
+odimra:
+  groupID: 2021
+  userID: 2021
+  namespace: odim
+  fqdn: ''
+  rootServiceUUID: ''
+  haDeploymentEnabled: True
+  connectionMethodConf:
+  - ConnectionMethodType: Redfish
+    ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+  - ConnectionMethodType: Redfish
+    ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
+  etcHostsEntries: ''
+
+  appsLogPath: /var/log/odimra
+  odimraServerCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA server certificate SAN>"
+  odimraServerCertIPSan: "<CSV of IPs to include in ODIM-RA server certificate SAN>"
+  odimraKafkaClientCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA kafka client certificate SAN>"
+  odimraKafkaClientCertIPSan: "<CSV of IPs to include in ODIM-RA kafka client certificate SAN>"
+
+  apiNodePort: 30080
+  kafkaNodePort: 30092
+  
+  consulDataPath: /etc/consul/data
+  consulConfPath: /etc/consul/conf
+  
+  kafkaConfPath: /etc/kafka/conf
+  kafkaDataPath: /etc/kafka/data
+  kafkaJKSPassword: "K@fk@_store1"
+
+  redisOndiskDataPath: /etc/redis/data/ondisk
+  redisInmemoryDataPath: /etc/redis/data/inmemory
+  
+  zookeeperConfPath: /etc/zookeeper/conf
+  zookeeperDataPath: /etc/zookeeper/data
+  zookeeperJKSPassword: "K@fk@_store1"
+  
+  rootCACert:
+  odimraServerCert:
+  odimraServerKey:
+  odimraRSAPublicKey:
+  odimraRSAPrivateKey:
+  odimraKafkaClientCert:
+  odimraKafkaClientKey:

@@ -53,7 +53,7 @@ monitor_process()
         while true; do
                 pid=$(pgrep -fc plugin-redfish 2> /dev/null)
                 if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
-                        echo "plugin-redfish has exited" >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
+                        echo "[$(date)] -- ERROR -- plugin-redfish not found running, exiting" >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
 			kill -15 ${OWN_PID}
                         exit 1
                 fi

@@ -122,7 +122,7 @@ type IPv4 struct {
 	NTPOffsetHoursMinutes         int           `json:"NTPOffsetHoursMinutes,omitempty"`
 	NTPServer                     string        `json:"NTPServer,omitempty"`
 	NTPTimezone                   string        `json:"NTPTimezone,omitempty"`
-	NativeVLAN                    string        `json:"NativeVLAN,omitempty"`
+	NativeVLAN                    int           `json:"NativeVLAN,omitempty"`
 	VLANIdentifierAddressRange    *NumberRange  `json:"VLANIdentifierAddressRange,omitempty"`
 }
 

@@ -240,6 +240,7 @@ func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
 	resp.Body().Contains(string(expectedRPCResponse.Body))
 
 }
+
 var redfishErrorSchema = `
 {
    "$schema": "http://json-schema.org/draft-04/schema#",

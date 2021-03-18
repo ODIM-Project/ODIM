@@ -25,9 +25,9 @@ WORKDIR /kafka/
 ARG ODIMRA_USER_ID
 ARG ODIMRA_GROUP_ID
 
-RUN apt-get update -q=3 && apt-get -q install -q=3 -y \
+RUN apt-get update -q=3 && apt-get install -q=3 -y \
         wget \
-        openjdk-8-jre-headless \
+        openjdk-11-jre-headless \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

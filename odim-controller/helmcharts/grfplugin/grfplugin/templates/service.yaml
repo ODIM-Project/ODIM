@@ -23,7 +23,7 @@ spec:
   type: NodePort
   ports:
   - port: 45002
-    nodePort: {{ .Values.odimra.eventListenerNodePort }}
+    nodePort: {{ .Values.grfplugin.eventListenerNodePort }}
     protocol: TCP
   {{ if eq .Values.odimra.haDeploymentEnabled false }}
   externalTrafficPolicy: Local

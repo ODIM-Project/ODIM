@@ -314,14 +314,24 @@ func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqUR
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 			if body, _, getResponse, err = f.retryFabricsOperation(pluginRequest, errorMessage); err != nil {
+				data := string(body)
+				//replacing the resposne with north bound translation URL
+				for key, value := range config.Data.URLTranslation.NorthBoundURL {
+					data = strings.Replace(data, key, value, -1)
+				}
 				resp.StatusCode = getResponse.StatusCode
-				json.Unmarshal(body, &resp.Body)
+				json.Unmarshal([]byte(data), &resp.Body)
 				resp.Header = header
 				return resp
 			}
 		} else {
+			data := string(body)
+			//replacing the resposne with north bound translation URL
+			for key, value := range config.Data.URLTranslation.NorthBoundURL {
+				data = strings.Replace(data, key, value, -1)
+			}
 			resp.StatusCode = getResponse.StatusCode
-			json.Unmarshal(body, &resp.Body)
+			json.Unmarshal([]byte(data), &resp.Body)
 			resp.Header = header
 			return resp
 		}

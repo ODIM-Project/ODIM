@@ -124,7 +124,7 @@ func (f *fabricFactory) createChassisRequest(plugin smodel.Plugin, url, method s
 			return nil, errResp, fmt.Errorf("unable to create session for plugin " + plugin.ID)
 		}
 	} else {
-		cred["Username"] = plugin.Username
+		cred["UserName"] = plugin.Username
 		cred["Password"] = string(plugin.Password)
 	}
 

@@ -79,9 +79,9 @@ type CapableLinkSpeedGbps struct {
 
 //PortLinks Port link redfish model
 type PortLinks struct {
-	AssociatedEndpoints  []Link     `json:"AssociatedEndpoints,omitempty"`
-	ConnectedPorts       []Link     `json:"ConnectedPorts,omitempty"`
-	ConnectedSwitches    []Link     `json:"ConnectedSwitches,omitempty"`
-	ConnectedSwitchPorts []Link     `json:"ConnectedSwitchPorts,omitempty"`
+	AssociatedEndpoints  []Link      `json:"AssociatedEndpoints,omitempty"`
+	ConnectedPorts       []Link      `json:"ConnectedPorts,omitempty"`
+	ConnectedSwitches    []Link      `json:"ConnectedSwitches,omitempty"`
+	ConnectedSwitchPorts []Link      `json:"ConnectedSwitchPorts,omitempty"`
 	Oem                  interface{} `json:"Oem,omitempty"`
 }

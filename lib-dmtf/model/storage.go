@@ -16,31 +16,31 @@ package model
 
 // Storage redfish structure
 type Storage struct {
-	Oid                string              `json:"@odata.id"`
-	Ocontext           string              `json:"@odata.context,omitempty"`
-	Oetag              string              `json:"@odata.etag,omitempty"`
-	Otype              string              `json:"@odata.type,omitempty"`
-	Description        string              `json:"description,omitempty"`
-	ID                 string              `json:"Id,omitempty"`
-	Name               string              `json:"Name,omitempty"`
-	Oem                Oem                 `json:"Oem,omitempty"`
-	Drives             []Link              `json:"Drives,omitempty"`
-	Links              StorageLinks        `json:"Links,omitempty"`
-	Redundancy         []Redundancy        `json:"Redundancy,omitempty"` //TODO
-	Status             Status              `json:"Status,omitempty"`
-	StorageControllers []StorageController `json:"StorageControllers,omitempty"`
-	Volumes            Link                `json:"Volumes,omitempty"`
-	ConsistencyGroups  Link                `json:"ConsistencyGroups,omitempty"`
-	Controllers        Link                `json:"Controllers,omitempty"`
-	EndpointGroups     Link                `json:"EndpointGroups,omitempty"`
-	FileSystems        Link                `json:"FileSystems,omitempty"`
-	Identifiers        *Identifier         `json:"Identifiers,omitempty"`
-	StorageGroups      Link                `json:"StorageGroups,omitempty"`
-	StoragePools       Link                `json:"StoragePools,omitempty"`
+	Oid                string               `json:"@odata.id"`
+	Ocontext           string               `json:"@odata.context,omitempty"`
+	Oetag              string               `json:"@odata.etag,omitempty"`
+	Otype              string               `json:"@odata.type,omitempty"`
+	Description        string               `json:"description,omitempty"`
+	ID                 string               `json:"Id,omitempty"`
+	Name               string               `json:"Name,omitempty"`
+	Oem                Oem                  `json:"Oem,omitempty"`
+	Drives             []Link               `json:"Drives,omitempty"`
+	Links              StorageLinks         `json:"Links,omitempty"`
+	Redundancy         []Redundancy         `json:"Redundancy,omitempty"` //TODO
+	Status             Status               `json:"Status,omitempty"`
+	StorageControllers []StorageControllers `json:"StorageControllers,omitempty"`
+	Volumes            Link                 `json:"Volumes,omitempty"`
+	ConsistencyGroups  Link                 `json:"ConsistencyGroups,omitempty"`
+	Controllers        Link                 `json:"Controllers,omitempty"`
+	EndpointGroups     Link                 `json:"EndpointGroups,omitempty"`
+	FileSystems        Link                 `json:"FileSystems,omitempty"`
+	Identifiers        *Identifier          `json:"Identifiers,omitempty"`
+	StorageGroups      Link                 `json:"StorageGroups,omitempty"`
+	StoragePools       Link                 `json:"StoragePools,omitempty"`
 }
 
-//StorageController in place(it has Oid it may be get, TODO)
-type StorageController struct {
+//StorageController redfish structure
+type StorageControllers struct {
 	Oid                          string                    `json:"@odata.id"`
 	AssetTag                     string                    `json:"AssetTag,omitempty"`
 	FirmwareVersion              string                    `json:"FirmwareVersion,omitempty"`

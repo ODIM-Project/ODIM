@@ -16,7 +16,7 @@ package model
 
 // Redundancy redfish Redundancy model according to the 2020.3 release
 type Redundancy struct {
-	Oid               string      `json:"@odata.id"`
+	Oid               string      `json:"@odata.id,omitempty"`
 	Actions           *OemActions `json:"Actions,omitempty"`
 	MaxNumSupported   int         `json:"MaxNumSupported,omitempty"`
 	MemberID          string      `json:"MemberId,omitempty"`

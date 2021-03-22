@@ -144,6 +144,7 @@ var ManagersResource = map[string]string{
 	"HostInterfaces":     "HostInterfacesCollection",
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
+	"SerialInterface":    "SerialInterfaceCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription

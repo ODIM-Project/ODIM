@@ -727,9 +727,20 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Zone.v1_4_0"},
 				},
 			},
+
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ZoneCollection_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ZoneCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SerialInterfaceCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "SerialInterfaceCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SerialInterface_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "SerialInterface.v1_1_7"},
 				},
 			},
 		},

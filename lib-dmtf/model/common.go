@@ -51,7 +51,7 @@ type Location struct {
 type PartLocation struct {
 	Orientation          string `json:"Orientation,omitempty"`
 	Reference            string `json:"Reference,omitempty"`
-	LocationOrdinalValue int    `json:"LocationOrdinalValue,omitempty"`
+	LocationOrdinalValue int    `json:"LocationOrdinalValue"`
 	LocationType         string `json:"LocationType,omitempty"`
 	ServiceLabel         string `json:"ServiceLabel,omitempty"`
 }

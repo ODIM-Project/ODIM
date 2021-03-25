@@ -64,7 +64,11 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 		}
 		deviceIPAddress := fmt.Sprintf("%v", addr[0])
 
-		if deviceIPAddress == address {
+		// plugins deployed in k8s will use servicename for connecting,
+		// and the same is used while adding plugin, hence will check
+		// for both resolved IP address as well service name, when
+		// comparing with the stored plugin address.
+		if deviceIPAddress == address || plugin.IP == address {
 			pluginID = plugin.ID
 			break
 		}

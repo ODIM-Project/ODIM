@@ -85,10 +85,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	for id, target := range targetList {
 		updateRequest.Targets = target
 		marshalBody, err := json.Marshal(updateRequest)
-		fmt.Print("*************************subTaskChannel: ")
-		fmt.Println(subTaskChannel)
-		fmt.Print("*******************err: ")
-		fmt.Println(err)
 		if err != nil {
 			errMsg := "Unable to parse the simple update request" + err.Error()
 			log.Warn(errMsg)
@@ -103,8 +99,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	for i := 0; i < len(targetList); i++ {
 		select {
 		case statusCode := <-subTaskChannel:
-			fmt.Print("***********************status code 1: ")
-			fmt.Println(statusCode)
 			if statusCode != http.StatusOK {
 				partialResultFlag = true
 				if resp.StatusCode < statusCode {
@@ -133,8 +127,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	if resp.StatusCode != http.StatusOK {
 		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
 		log.Warn(errMsg)
-		fmt.Println("*****************************status code: ")
-		fmt.Println(resp.StatusCode)
 		switch resp.StatusCode {
 		case http.StatusAccepted:
 			return common.GeneralError(http.StatusAccepted, response.TaskStarted, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo )
@@ -145,7 +137,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		case http.StatusBadRequest:
 			return common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errMsg, []interface{}{"UpdateService.SimpleUpdate"}, taskInfo)
 		default:
-			fmt.Println("********************************in default 500***********")
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 		}
 	}

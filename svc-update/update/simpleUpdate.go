@@ -128,6 +128,8 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		errMsg := "One or more of the SimpleUpdate requests failed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID
 		log.Warn(errMsg)
 		switch resp.StatusCode {
+		case http.StatusAccepted:
+			return common.GeneralError(http.StatusAccepted, response.TaskStarted, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo )
 		case http.StatusUnauthorized:
 			return common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{fmt.Sprintf("%v", targetList)}, taskInfo)
 		case http.StatusNotFound:

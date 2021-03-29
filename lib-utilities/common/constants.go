@@ -132,6 +132,11 @@ var ChassisResource = map[string]string{
 	"NetworkAdapters":        "NetworkAdaptersCollection",
 	"NetworkPorts":           "NetworkPortsCollection",
 	"NetworkDeviceFunctions": "NetworkDeviceFunctionsCollection",
+	"Assembly":               "Assembly",
+	"PCIeSlots":              "PCIeSlots",
+	"PCIeDevices":            "PCIeDevicesCollection",
+	"Sensors":                "SensorsCollection",
+	"LogServices":            "LogServicesCollection",
 }
 
 // ManagersResource contains the Resource name and table name

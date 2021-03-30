@@ -149,10 +149,10 @@ type NVMeSMARTCriticalWarnings struct {
 
 // Drive schema represents a single physical drive for a system
 type Drive struct {
-	OdataContext                  string             `json:"@odata.context,omitempty"`
-	Etag                          string             `json:"@odata.etag,omitempty"`
-	OdataID                       string             `json:"@odata.id"`
-	OdataType                     string             `json:"@odata.type"`
+	Oid                           string             `json:"@odata.id"`
+	ODataContext                  string             `json:"@odata.context,omitempty"`
+	ODataEtag                     string             `json:"@odata.etag,omitempty"`
+	ODataType                     string             `json:"@odata.type"`
 	Actions                       string             `json:"Actions,omitempty"`
 	Assembly                      *Link              `json:"Assembly,omitempty"`
 	AssetTag                      string             `json:"AssetTag,omitempty"`
@@ -230,10 +230,10 @@ type Current struct {
 
 // Volume contains the details volume properties
 type Volume struct {
-	OdataContext                     string                   `json:"@odata.context"`
-	OdataEtag                        string                   `json:"@odata.etag"`
-	OdataID                          string                   `json:"@odata.id"`
-	OdataType                        string                   `json:"@odata.type"`
+	Oid                              string                   `json:"@odata.id"`
+	ODataContext                     string                   `json:"@odata.context"`
+	ODataEtag                        string                   `json:"@odata.etag"`
+	ODataType                        string                   `json:"@odata.type"`
 	AccessCapabilities               []string                 `json:"AccessCapabilities,omitempty"`
 	Actions                          *Actions                 `json:"Actions,omitempty"`
 	AllocatedPools                   *Link                    `json:"AllocatedPools,omitempty"`

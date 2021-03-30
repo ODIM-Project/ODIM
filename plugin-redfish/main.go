@@ -163,6 +163,19 @@ func routers() *iris.Application {
 		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts", rfphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions/{rid}", rfphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/Assembly", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/Sensors", rfphandler.GetResource)
+		chassis.Get("/{id}/Sensors/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", rfphandler.GetResource)
+		// TODO:
+		// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.GetResource)
 
 		// Chassis Power URl routes
 		chassisPower := chassis.Party("/{id}/Power")

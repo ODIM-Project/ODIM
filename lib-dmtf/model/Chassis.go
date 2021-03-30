@@ -44,7 +44,7 @@ type Chassis struct {
 	WeightKg           int               `json:"WeightKg,omitempty"`
 	WidthMm            int               `json:"WidthMm,omitempty"`
 	Links              *Links            `json:"Links,omitempty"`
-	Location           *Location         `json:"Location,omitempty"`
+	Location           *Link             `json:"Location,omitempty"`
 	LogServices        *LogServices      `json:"LogServices,omitempty"`
 	Assembly           *Assembly         `json:"Assembly,omitempty"`
 	NetworkAdapters    *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
@@ -54,11 +54,6 @@ type Chassis struct {
 	Sensors            *Sensors          `json:"Sensors,omitempty"`
 	Status             *Status           `json:"Status,omitempty"`
 	Thermal            *Thermal          `json:"Thermal,omitempty"`
-}
-
-// Location redfish structure
-type Location struct {
-	Oid string `json:"@odata.id"`
 }
 
 // LogServices get

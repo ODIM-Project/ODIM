@@ -28,7 +28,7 @@ type Fabric struct {
 	Oem            *Oem        `json:"Oem,omitempty"`
 	Status         *Status     `json:"Status,omitempty"`
 	AddressPools   *Link       `json:"AddressPools"`
-	Connections    Link        `json:"Connections,omitempty"`
+	Connections    *Link       `json:"Connections,omitempty"`
 	EndpointGroups *Link       `json:"EndpointGroups,omitempty"`
 	Endpoints      *Link       `json:"Endpoints"`
 	Switches       *Link       `json:"Switches"`

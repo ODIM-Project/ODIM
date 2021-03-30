@@ -23,7 +23,7 @@ type Switch struct {
 	Actions                 *OemActions  `json:"Actions,omitempty"`
 	Description             string       `json:"Description,omitempty"`
 	ID                      string       `json:"Id"`
-	Links                   *Links       `json:"Links,omitempty"`
+	Links                   *SwitchLinks `json:"Links,omitempty"`
 	Name                    string       `json:"Name"`
 	Oem                     interface{}  `json:"Oem,omitempty"`
 	Status                  *Status      `json:"Status,omitempty"`
@@ -48,4 +48,12 @@ type Switch struct {
 	SwitchType              string       `json:"SwitchType"`
 	TotalSwitchWidth        int          `json:"TotalSwitchWidth,omitempty"`
 	UUID                    string       `json:"UUID,omitempty"`
+}
+
+// SwitchLinks defines the
+type SwitchLinks struct {
+	Chassis   *Link       `json:"Chassis,omitempty"`
+	Endpoints []*Link     `json:"Endpoints,omitempty"`
+	ManagedBy []*Link     `json:"ManagedBy,omitempty"`
+	Oem       interface{} `json:"Oem,omitempty"`
 }

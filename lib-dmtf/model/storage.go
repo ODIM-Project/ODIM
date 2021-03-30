@@ -268,9 +268,9 @@ type Volume struct {
 	ReadCachePolicy                  string                   `json:"ReadCachePolicy,omitempty"`
 	RecoverableCapacitySourceCount   int                      `json:"RecoverableCapacitySourceCount,omitempty"`
 	RemainingCapacityPercent         int                      `json:"RemainingCapacityPercent,omitempty"`
-	ReplicaInfo                      ReplicaInfo              `json:"ReplicaInfo,omitempty"`
-	ReplicaTargets                   []*Link                    `json:"ReplicaTargets,omitempty"`
-	Status                           *StorageStatus            `json:"Status,omitempty"`
+	ReplicaInfo                      *ReplicaInfo             `json:"ReplicaInfo,omitempty"`
+	ReplicaTargets                   []*Link                  `json:"ReplicaTargets,omitempty"`
+	Status                           *StorageStatus           `json:"Status,omitempty"`
 	StorageGroups                    *Link                    `json:"StorageGroups,omitempty"`
 	StripSizeBytes                   int                      `json:"StripSizeBytes,omitempty"`
 	VolumeType                       string                   `json:"VolumeType,omitempty"`
@@ -283,10 +283,10 @@ type Volume struct {
 // VolumeLinks represents volume links
 type VolumeLinks struct {
 	ClassOfService        *Link   `json:"ClassOfService,omitempty"`
-	ClientEndpoints       []*Link   `json:"ClientEndpoints,omitempty"`
-	ConsistencyGroups     []*Link   `json:"ConsistencyGroups,omitempty"`
-	DedicatedSpareDrives  []*Link   `json:"DedicatedSpareDrives,omitempty"`
-	Drives                []*Link   `json:"Drives,omitempty"`
+	ClientEndpoints       []*Link `json:"ClientEndpoints,omitempty"`
+	ConsistencyGroups     []*Link `json:"ConsistencyGroups,omitempty"`
+	DedicatedSpareDrives  []*Link `json:"DedicatedSpareDrives,omitempty"`
+	Drives                []*Link `json:"Drives,omitempty"`
 	JournalingMedia       string  `json:"JournalingMedia,omitempty"`
 	Oem                   *Oem    `json:"Oem,omitempty"`
 	OwningStorageResource *Link   `json:"OwningStorageResource,omitempty"`

@@ -108,3 +108,17 @@ type PostalAddress struct {
 	TrailingStreetSuffix   string `json:"TrailingStreetSuffix,omitempty"`
 	Unit                   string `json:"Unit,omitempty"`
 }
+
+// IOStatistics represent IO statistics.
+type IOStatistics struct {
+	NonIORequests      int    `json:"NonIORequests,omitempty"`
+	NonIORequestTime   string `json:"NonIORequestTime,omitempty"`
+	ReadHitIORequests  int    `json:"ReadHitIORequests,omitempty"`
+	ReadIOKiBytes      int    `json:"ReadIOKiBytes,omitempty"`
+	ReadIORequests     int    `json:"ReadIORequests,omitempty"`
+	ReadIORequestTime  string `json:"ReadIORequestTime,omitempty"`
+	WriteHitIORequests int    `json:"WriteHitIORequests,omitempty"`
+	WriteIOKiBytes     int    `json:"WriteIOKiBytes,omitempty"`
+	WriteIORequests    int    `json:"WriteIORequests,omitempty"`
+	WriteIORequestTime string `json:"WriteIORequestTime,omitempty"`
+}

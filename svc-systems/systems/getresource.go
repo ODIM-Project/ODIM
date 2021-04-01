@@ -334,7 +334,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 	var respMembers []dmtf.Link
 	var err error
 
-	if checkParentheses(strPara) && (strings.Contains(strPara, "(") || strings.Contains(strPara, ")")) {
+	if checkParentheses(strPara) {
 		if strings.Count(strPara, "(") != strings.Count(strPara, ")") {
 			errorMessage := " not a valid search/filter expression"
 			return common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
@@ -843,6 +843,9 @@ func parseRegexData(data []string, regex string) ([]string, error) {
 	return list, nil
 }
 
+// this function checks query has open bracket["("] as prefix to ignore the brackets inside the string
+// for e.g if query is ProcessorSummary/Model eq Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz
+// here Inter(R) has bracket inbetween the string, so ignore this string for the first if search criteria
 func checkParentheses(strPara string) bool {
 	for _, val := range strings.Split(strPara, " ") {
 		if strings.HasPrefix(val, "(") {

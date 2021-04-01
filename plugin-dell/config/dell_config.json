@@ -5,7 +5,7 @@
 		"Host": "",
 		"Port": "45007",
 		"UserName": "admin",
-		"Password": "sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ=="
+		"Password": "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw=="
 	},
 	"EventConf": {
 		"DestinationURI": "/redfishEventListener",

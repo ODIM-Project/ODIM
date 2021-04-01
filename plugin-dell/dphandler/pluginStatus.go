@@ -49,8 +49,8 @@ func GetPluginStatus(ctx iris.Context) {
 	}
 	var messageQueueInfo []dpresponse.EmbQueue
 	var resp = dpresponse.PluginStatusResponse{
-		Comment: "Plugin Status Response",
-		Name:    "Common Redfish Plugin Status",
+		Comment: "Dell Plugin Status Response",
+		Name:    "Dell Redfish Plugin Status",
 		Version: pluginConfig.Data.FirmwareVersion,
 	}
 	resp.Status = dputilities.Status

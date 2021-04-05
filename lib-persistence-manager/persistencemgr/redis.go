@@ -939,10 +939,11 @@ func (p *ConnPool) GetTaskList(index string, min, max int) ([]string, error) {
 1. index is the name of the index under which the key needs to be deleted
 2. key is the id of the resource to be deleted under an index
 */
-func (p *ConnPool) Del(index string, key string) error {
+func (p *ConnPool) Del(index string, k string) error {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
 	currentCursor := 0
+  key:="*"+k
 	for {
 		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", key, "COUNT", count)
 		if getErr != nil {

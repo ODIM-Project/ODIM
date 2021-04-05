@@ -939,10 +939,10 @@ func (p *ConnPool) GetTaskList(index string, min, max int) ([]string, error) {
 1. index is the name of the index under which the key needs to be deleted
 2. key is the id of the resource to be deleted under an index
 */
-func (p *ConnPool) Del(index string, cursor float64, key string) error {
+func (p *ConnPool) Del(index string, key string) error {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
-	currentCursor := cursor
+	currentCursor := 0
 	for {
 		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", key, "COUNT", count)
 		if getErr != nil {
@@ -980,7 +980,7 @@ func (p *ConnPool) Del(index string, cursor float64, key string) error {
 		if stringCursor == "0" {
 			break
 		}
-		currentCursor, getErr = strconv.ParseFloat(stringCursor, 64)
+		currentCursor, getErr = strconv.Atoi(stringCursor)
 		if getErr != nil {
 			return getErr
 		}
@@ -1228,7 +1228,7 @@ func (p *ConnPool) UpdateDeviceSubscription(index, hostIP, location string, orig
 // form contains index name and value:key for the index
 func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string) error {
 	for index := range form {
-		err := p.Del(index, 0, "*"+uuid+"*")
+		err := p.Del(index, "*"+uuid+"*")
 		if (err != nil) && (err.Error() != "no data with ID found") {
 			return fmt.Errorf("Error while updating index: %v", err)
 		}

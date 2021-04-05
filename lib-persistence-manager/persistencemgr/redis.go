@@ -954,9 +954,6 @@ func (p *ConnPool) Del(index string, key string) error {
 			if err != nil {
 				return fmt.Errorf("error while trying to get data: " + err.Error())
 			}
-      fmt.Println("key-----",key)
-      fmt.Println("data-----",key)
-      fmt.Println("index-----",index)
 			if len(data) < 1 {
 				return fmt.Errorf("no data with ID found")
 			}

@@ -595,7 +595,7 @@ func TestIndexCreate(t *testing.T) {
 	}
 
 	defer func() {
-		if derr := c.Del("table", "123::sample"); derr != nil {
+		if derr := c.Del("table", 0, "123::sample"); derr != nil {
 			t.Errorf("Error while deleting Data: %v\n", derr.Error())
 		}
 	}()
@@ -625,7 +625,7 @@ func TestCreateIndex_invalidData(t *testing.T) {
 	}
 
 	defer func() {
-		c.Del("table", "key::sample")
+		c.Del("table", 0, "key::sample")
 	}()
 
 	if cerr := c.CreateIndex(map[string]interface{}{"table": []string{"key"}}, "sample"); cerr != nil {
@@ -669,7 +669,7 @@ func TestGet(t *testing.T) {
 		t.Errorf("data not found")
 	}
 	defer func() {
-		if derr := c.Del("model", "intel::abc-123"); derr != nil {
+		if derr := c.Del("model", 0, "intel::abc-123"); derr != nil {
 			t.Errorf("Error while deleting Data: %v\n", derr.Error())
 		}
 	}()
@@ -693,7 +693,7 @@ func TestGetTaskList(t *testing.T) {
 		t.Errorf("data not found")
 	}
 	defer func() {
-		if derr := c.Del("count", "4::abc-123"); derr != nil {
+		if derr := c.Del("count", 0, "4::abc-123"); derr != nil {
 			t.Errorf("Error while deleting Data: %v\n", derr.Error())
 		}
 	}()
@@ -716,7 +716,7 @@ func TestGetRange(t *testing.T) {
 		t.Errorf("data not found")
 	}
 	defer func() {
-		if derr := c.Del("count", "4::abc-123"); derr != nil {
+		if derr := c.Del("count", 0, "4::abc-123"); derr != nil {
 			t.Errorf("Error while deleting Data: %v\n", derr.Error())
 		}
 	}()
@@ -767,7 +767,7 @@ func TestGetStorageList(t *testing.T) {
 	}
 
 	defer func() {
-		if derr := c.Del("storage", "*::abc-123"); derr != nil {
+		if derr := c.Del("storage", 0, "*::abc-123"); derr != nil {
 			t.Errorf("Error while deleting Data: %v\n", derr.Error())
 		}
 	}()

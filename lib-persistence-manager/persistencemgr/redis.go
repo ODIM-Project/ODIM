@@ -954,6 +954,9 @@ func (p *ConnPool) Del(index string, key string) error {
 			if err != nil {
 				return fmt.Errorf("error while trying to get data: " + err.Error())
 			}
+      fmt.Println("key-----",key)
+      fmt.Println("data-----",key)
+      fmt.Println("index-----",index)
 			if len(data) < 1 {
 				return fmt.Errorf("no data with ID found")
 			}
@@ -1228,7 +1231,7 @@ func (p *ConnPool) UpdateDeviceSubscription(index, hostIP, location string, orig
 // form contains index name and value:key for the index
 func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string) error {
 	for index := range form {
-		err := p.Del(index, "*"+uuid+"*")
+		err := p.Del(index, uuid)
 		if (err != nil) && (err.Error() != "no data with ID found") {
 			return fmt.Errorf("Error while updating index: %v", err)
 		}

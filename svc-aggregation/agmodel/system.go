@@ -324,6 +324,7 @@ func deletefilteredkeys(key string) error {
 			}
 		}
 	}
+
 	delErr := conn.Del("UUID", 0, key)
 	if delErr != nil {
 		if delErr.Error() != "no data with ID found" {

@@ -316,7 +316,7 @@ func deletefilteredkeys(key string) error {
 	}
 	for _, value := range sf.SearchKeys {
 		for k := range value {
-			delErr := conn.Del(k, 0, key)
+			delErr := conn.Del(k, key)
 			if delErr != nil {
 				if delErr.Error() != "no data with ID found" {
 					return fmt.Errorf("error while deleting data: " + delErr.Error())
@@ -325,13 +325,13 @@ func deletefilteredkeys(key string) error {
 		}
 	}
 
-	delErr := conn.Del("UUID", 0, key)
+	delErr := conn.Del("UUID", key)
 	if delErr != nil {
 		if delErr.Error() != "no data with ID found" {
 			return fmt.Errorf("error while deleting data: " + delErr.Error())
 		}
 	}
-	delErr = conn.Del("PowerState", 0, key)
+	delErr = conn.Del("PowerState", key)
 	if delErr != nil {
 		if delErr.Error() != "no data with ID found" {
 			return fmt.Errorf("error while deleting data: " + delErr.Error())

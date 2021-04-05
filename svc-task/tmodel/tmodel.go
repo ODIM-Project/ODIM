@@ -197,7 +197,7 @@ func DeleteTaskIndex(taskID string) error {
 		log.Error("DeleteTaskIndex : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
-	if delErr := connPool.Del(CompletedTaskIndex, 0, taskID); delErr != nil {
+	if delErr := connPool.Del(CompletedTaskIndex, taskID); delErr != nil {
 		log.Error("DeleteTaskIndex : Unable to delete task index: " + delErr.Error())
 		return fmt.Errorf("error while trying to delete the completed task index: %v", delErr.Error())
 	}

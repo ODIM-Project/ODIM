@@ -23,7 +23,7 @@ type Port struct {
 	Actions                 *OemActions          `json:"Actions,omitempty"`
 	Description             string               `json:"Description,omitempty"`
 	ID                      string               `json:"Id"`
-	Links                   *Links               `json:"Links,omitempty"`
+	Links                   *PortLinks           `json:"Links,omitempty"`
 	Name                    string               `json:"Name"`
 	Oem                     interface{}          `json:"Oem,omitempty"`
 	Status                  *Status              `json:"Status,omitempty"`
@@ -32,7 +32,7 @@ type Port struct {
 	Ethernet                *PortEthernet        `json:"Ethernet,omitempty"`
 	FibreChannel            *FibreChannel        `json:"FibreChannel,omitempty"`
 	GenZ                    *GenZ                `json:"GenZ,omitempty"`
-	InterfaceEnabled        bool                 `json:"InterfaceEnabled,omitempty"`
+	InterfaceEnabled        bool                 `json:"InterfaceEnabled"`
 	LinkConfiguration       []*LinkConfiguration `json:"LinkConfiguration,omitempty"`
 	LinkNetworkTechnology   string               `json:"LinkNetworkTechnology,omitempty"`
 	LinkState               string               `json:"LinkState,omitempty"`
@@ -75,4 +75,13 @@ type LinkConfiguration struct {
 type CapableLinkSpeedGbps struct {
 	ConfiguredLinkSpeedGbps []float64 `json:"ConfiguredLinkSpeedGbps,omitempty"`
 	ConfiguredWidth         int       `json:"ConfiguredWidth,omitempty"`
+}
+
+//PortLinks Port link redfish model
+type PortLinks struct {
+	AssociatedEndpoints  []Link      `json:"AssociatedEndpoints,omitempty"`
+	ConnectedPorts       []Link      `json:"ConnectedPorts,omitempty"`
+	ConnectedSwitches    []Link      `json:"ConnectedSwitches,omitempty"`
+	ConnectedSwitchPorts []Link      `json:"ConnectedSwitchPorts,omitempty"`
+	Oem                  interface{} `json:"Oem,omitempty"`
 }

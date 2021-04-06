@@ -943,7 +943,7 @@ func (p *ConnPool) Del(index string, k string) error {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
 	currentCursor := 0
-  key:="*"+k
+	key := "*" + k
 	for {
 		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", key, "COUNT", count)
 		if getErr != nil {

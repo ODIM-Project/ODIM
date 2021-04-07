@@ -283,7 +283,7 @@ func (client *RedfishClient) SetDefaultBootOrder(device *RedfishDevice, uri stri
 
 	endpoint := "https://" + device.Host + uri
 
-	req, err := http.NewRequest(http.MethodPatch, endpoint, nil)
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

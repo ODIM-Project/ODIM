@@ -229,6 +229,13 @@ func routers() *iris.Application {
 		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
 		update.Get("/SoftwareInventory", rfphandler.GetResource)
 		update.Get("/SoftwareInventory/{id}", rfphandler.GetResource)
+
+		//Adding routes related to telemetry service
+		telemetry := pluginRoutes.Party("/TelemetryService", rfpmiddleware.BasicAuth)
+		telemetry.Get("/MetricDefinitions", rfphandler.GetResource)
+		telemetry.Get("/MetricReportDefinitions", rfphandler.GetResource)
+		telemetry.Get("/MetricReports", rfphandler.GetResource)
+		telemetry.Get("/Triggers", rfphandler.GetResource)
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

@@ -1,0 +1,141 @@
+{
+  "binding": {
+    "ip": "127.0.0.1",
+    "port": 0,
+    "odimUrl": ""
+  },
+  "security": {
+    "server": {
+      "useTLS": false,
+      "basicCredentials": "admin:admin",
+      "externalKeyStoreLocation": "",
+      "externalKeyStorePassword": "",
+      "useServerMTLS": "false"
+    },
+    "trustStore": {
+      "externalTrustStoreLocation": "",
+      "externalTrustStorePassword": ""
+    },
+    "httpClient": {
+      "withBasic": true,
+      "basicCredentials": "admin:admin",
+      "useTLS": false,
+      "serverCertificateVerificationEnabled": true
+    }
+  },
+  "cache": {
+    "etags": false
+  },
+  "sessionTimeout": 100,
+  "responseDelay": 0,
+  "resourcesConfig": {
+    "Chassis": 1,
+    "Systems": 3,
+    "Systems/1": {
+      "UUID": "b9fc1219-563e-44c7-aa06-79ec6f719f6e",
+      "SerialNumber": "82645623",
+      "Manufacturer": "Ericsson",
+      "Model": "CRU",
+      "Boot": {
+        "BootSourceOverrideEnabled": "Disabled",
+        "BootSourceOverrideTarget@Redfish.AllowableValues": [
+          "None",
+          "Pxe",
+          "Hdd",
+          "RemoteDrive"
+        ]
+      },
+      "Oem": {
+        "Custom_Company": {
+          "PerformanceConfiguration": {
+            "CurrentConfigurationId": "0",
+            "Configurations": [
+              {
+                "ConfigurationId": "0",
+                "Type": "StaticSpeedSelect",
+                "TDPPerCpu": 120,
+                "MaxCpuJunctionTemp": 90
+              },
+              {
+                "ConfigurationId": "1",
+                "Type": "StaticSpeedSelect",
+                "TDPPerCpu": 110,
+                "MaxCpuJunctionTemp": 80
+              },
+              {
+                "ConfigurationId": "2",
+                "Type": "StaticSpeedSelect",
+                "TDPPerCpu": 100,
+                "MaxCpuJunctionTemp": 80
+              },
+              {
+                "ConfigurationId": "3",
+                "Type": "StaticSpeedSelect",
+                "TDPPerCpu": 100,
+                "MaxCpuJunctionTemp": 90
+              }
+            ]
+          }
+        }
+      }
+    },
+    "Systems/1/Actions/ComputerSystem.Reset": {
+      "ResetType@Redfish.AllowableValues": [
+        "On",
+        "ForceOff",
+        "GracefulShutdown",
+        "ForceRestart",
+        "Nmi",
+        "GracefulRestart",
+        "ForceOn",
+        "PushPowerButton"
+      ]
+    },
+    "Systems/1/Processors": 3,
+    "Systems/1/Processors/1": {
+      "Model": "Procesor Intel® Core™ i7-6820HK",
+      "TotalCores": 10,
+      "TotalThreads": 20
+    },
+    "Systems/1/Processors/2": {
+      "Model": "Procesor Intel® Core™ i7-6820HK",
+      "TotalCores": 10,
+      "TotalThreads": 20
+    },
+    "Systems/1/Memory": 4,
+    "Systems/1/Memory/1": {
+      "CapacityMiB": 16384
+    },
+    "Systems/1/Memory/2": {
+      "CapacityMiB": 32768
+    },
+    "Systems/1/EthernetInterfaces": 5,
+    "Systems/1/EthernetInterfaces/1": {
+      "PermanentMACAddress": "57:EE:0C:EE:B9:DB",
+      "MACAddress": "57:EE:0C:EE:B9:DB"
+    },
+    "Managers": 2,
+    "Managers/1": {
+      "ManagerType": "BMC",
+      "UUID": "d75d27c2-0e7b-4fad-9c6f-c27fb7747a65"
+    },
+    "Managers/1/EthernetInterfaces": 1,
+    "Managers/1/EthernetInterfaces/1": {
+      "PermanentMACAddress": "95:83:C3:20:55:1E",
+      "MACAddress": "95:83:C3:20:55:1E",
+      "IPv4Addresses": [
+        {
+          "Address": "192.168.0.10",
+          "SubnetMask": "255.255.252.0",
+          "AddressOrigin": "Static",
+          "Gateway": "192.168.0.1"
+        }
+      ]
+    },
+    "Managers/2/EthernetInterfaces": 1,
+    "Systems/1/Storage": 1,
+    "Systems/1/Storage/1": {
+      "Name": "Renamed storage name"
+    }
+  }
+}

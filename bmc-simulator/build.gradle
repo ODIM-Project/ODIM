@@ -1,0 +1,244 @@
+/*
+ * Copyright (c) Intel Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+wrapper {
+    gradleVersion = '6.5.1'
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+buildscript {
+    ext {
+        kotlin_version = '1.4.30'
+        kotlin_coroutines_core_version = '1.4.2'
+        javalin_version = '3.13.4'
+        jackson_version = '2.12.1'
+        testng_version = '7.4.0'
+        detekt_version = '1.15.0'
+        jacocoVersion = '0.8.5'
+        picocli_version = '4.6.1'
+        mockito_version = '3.8.0'
+        assertj_version = '3.19.0'
+        mockk_version = '1.10.6'
+        logback_version = '1.2.3'
+        spring_data_commons_version = '2.4.5'
+        spring_web_version = '5.3.4'
+        spring_context_version = '5.3.4'
+        mockito_kotlin_version = '2.2.0'
+        http_client_version = '4.5.13'
+        coverageOverallReportFile = file("${project.buildDir}/report/overall-coverage/jacocoOverallReport.xml")
+    }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+        classpath("com.github.jk1:gradle-license-report:1.9")
+    }
+}
+
+group "com.odim"
+version '1.0-SNAPSHOT'
+// BMC SIMULATOR versions, to override version please use -DimplementationVersion=XXX
+final def specificationVersion = getProperty("specificationVersion", "5.3")
+final def implementationVersion = getProperty("implementationVersion", "0")
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'jacoco'
+apply plugin: 'maven-publish'
+
+sourceCompatibility = VERSION_1_8
+
+sourceSets {
+    main.kotlin.srcDirs = ['src/main/kotlin', 'src/main/java']
+    main.java.srcDirs = []
+    test.kotlin.srcDirs = ['src/test/kotlin', 'src/test/java']
+}
+
+compileKotlin {
+    kotlinOptions.suppressWarnings = true
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.suppressWarnings = true
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+configurations {
+    detekt
+    generate
+    compile.extendsFrom generate
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}") {
+        force = true
+    }
+    compile("org.jetbrains.kotlin:kotlin-reflect:${kotlin_version}") {
+        force = true
+    }
+    compile("io.javalin:javalin:$javalin_version")
+    compile("ch.qos.logback:logback-classic:$logback_version")
+    compile("org.springframework.data:spring-data-commons:$spring_data_commons_version")
+    compile("org.springframework:spring-context:$spring_context_version") {
+        exclude group: 'org.springframework', module: 'spring-aop'
+    }
+    compile("org.springframework:spring-web:$spring_web_version")
+    compile("com.fasterxml.jackson.core:jackson-databind:$jackson_version")
+    compile("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version")
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version")
+    compile("org.apache.httpcomponents:httpclient:$http_client_version")
+    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_coroutines_core_version")
+    compile("info.picocli:picocli:$picocli_version")
+
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detekt_version")
+    testImplementation("org.testng:testng:$testng_version")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:$mockito_kotlin_version")
+    testImplementation("io.mockk:mockk:$mockk_version")
+    testImplementation("org.mockito:mockito-inline:$mockito_version")
+    testImplementation("org.assertj:assertj-core:$assertj_version")
+}
+
+configurations.create("projectFlatClasspath")
+configurations.projectFlatClasspath {
+    extendsFrom(configurations.runtimeClasspath)
+    transitive = false
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////// custom tasks
+task executableJar(type: Jar) {
+    dependsOn classes
+    baseName "simulator-runner"
+    manifest {
+        attributes 'Main-Class': 'com.odim.simulator.commandline.SimulatorsCmdKt'
+        attributes 'Specification-Version': specificationVersion
+        attributes 'Implementation-Version': implementationVersion
+    }
+    from { (configurations.runtime - configurations.generate).collect { it.isDirectory() ? it : zipTree(it) } }
+    from sourceSets.main.output
+    exclude("simulators")
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////// verification
+task detekt(type: JavaExec) {
+    main = "io.gitlab.arturbosch.detekt.cli.Main"
+    classpath = configurations.detekt
+    def input = "$projectDir"
+    def config = "$projectDir/src/main/resources/detekt-config.yml"
+    def exclude = ".*/build/.*," +
+            ".*/resources/.*," +
+            "**/test/**," +
+            "**/*Simulator.kt," +
+            "**/templates/**," +
+            "**/VersionedParser.kt," +
+            "**/Usage.kt," +
+            "**/*Test.kt," +
+            "**/*Spec.kt"
+    def report = "html:$projectDir/build/reports/detekt/detekt-scan-report.html"
+    def params = ['-i', input, '-c', config, '-ex', exclude, '-r', report]
+    args(params)
+}
+test.dependsOn detekt
+
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+import static java.lang.System.getProperty
+import static org.gradle.api.JavaVersion.VERSION_1_8
+
+tasks.withType(Test) {
+    testLogging {
+        // set options for log level LIFECYCLE
+        events TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_OUT
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+
+        // set options for log level DEBUG and INFO
+        debug {
+            events TestLogEvent.STARTED,
+                    TestLogEvent.FAILED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.STANDARD_ERROR,
+                    TestLogEvent.STANDARD_OUT
+            exceptionFormat TestExceptionFormat.FULL
+        }
+        info.events = debug.events
+        info.exceptionFormat = debug.exceptionFormat
+    }
+}
+
+test {
+    useTestNG()
+    jacoco {
+        destinationFile = file("${buildDir}/jacoco/test.exec")
+    }
+    finalizedBy(jacocoTestReport)
+}
+
+jacoco {
+    toolVersion = "${jacocoVersion}"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        xml.destination = coverageOverallReportFile
+        csv.enabled false
+    }
+}
+
+apply plugin: com.odim.tools.coverage.CoverageLevelPlugin
+
+coverageLevel {
+    coverageMinThreshold = 0.64
+    coverageExcessMax = 0.025
+    counter = "LINE"
+    xmlReport = coverageOverallReportFile
+}
+
+verifyCoverage.dependsOn test
+check.dependsOn detekt, verifyCoverage
+
+/////////////////////////////////////////////////////////////////////////////////////////////// license-report
+apply plugin: 'com.github.jk1.dependency-license-report'
+
+import com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.CsvReportRenderer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+licenseReport {
+    outputDir = "$projectDir/build/licenses"
+    projects = [project] + project.subprojects
+    configurations = ['projectFlatClasspath']
+    excludeOwnGroup = true
+    filters = [new ExcludeTransitiveDependenciesFilter(), new LicenseBundleNormalizer()]
+    renderers = [new CsvReportRenderer(), new InventoryHtmlReportRenderer()]
+}

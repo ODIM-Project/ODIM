@@ -1,0 +1,34 @@
+{
+  "binding": {
+    "ip": "0.0.0.0",
+    "port": 55555,
+    "odimUrl": ""
+  },
+  "security": {
+    "server": {
+      "useTLS": true,
+      "basicCredentials": "admin:admin",
+      "defaultKeyStorePassword": "useexternalkeystore",
+      "useExternalKeyStore": true,
+      "externalKeyStoreLocation": "bmc.keystore.jks",
+      "externalKeyStorePassword": "Bm@_store1",
+      "useServerMTLS": "false"
+    },
+    "trustStore": {
+      "defaultTrustStorePassword": "useexternaltruststore",
+      "useExternalTrustStore": false,
+      "externalTrustStoreLocation": "bmc.truststore.jks",
+      "externalTrustStorePassword": "Bm@_store1"
+    },
+    "httpClient": {
+      "withBasic": true,
+      "basicCredentials": "admin:Od!m12$4",
+      "useTLS": true,
+      "serverCertificateVerificationEnabled": true
+    }
+  },
+  "cache": {
+    "etags": false
+  },
+  "resourcesConfig": {}
+}

@@ -1,0 +1,223 @@
+=== How to run standalone simulator
+
+Prerequisites:
+
+BMC simulator compilation and deployment requires Java 11.
+Simulator has been developed using OpenJDK with JRE11 and it was tested in such configuration.
+
+1. Create executable jar
+
+ cd simulators
+ ./gradlew executableJar
+
+2. Run simulator
+
+ cd ./build/libs
+ java -jar simulator-runner-<version>.jar run <simulator name> --port <number>
+
+
+
+List available simulator *names* with `java -jar simulator-runner-<version>.jar list`
+
+=== Configuring TLS
+
+ 1. To configure TLS you need to provide BMC simulator with certificates. BMC Simulator keeps certificates in
+    KeyStores. There are 2 KeyStores:
+    * trustStore - contains certificates used to verify incoming certificates, required for server's MTLS and TLS in
+      http client
+    * keyStore - contains a certificate used by BMC Simulator to identify itself.
+
+ 2. Copy `rootCA.crt` and `rootCA.key` from `ODIM/build/cert_generator` or `/etc/odimracert/` to main BMC project directory (it should be the same file).
+    If you are using BMC simulator in the test environment at localhost then BMC_DNS can be `localhost`. In a different
+    situation you need to add `<bmc_ipv4_address> <bmc_dns>` in `/etc/hosts` in grf-plugin docker container.
+    Use the following command to generate BMC TLS certificate and as argument use your BMC DNS:
+
+    $ ./generate_bmc_certs.sh <BMC_DNS>
+
+ 3. To use generated KeyStores setup config according to section `Simulator configuration`.
+
+    Flag 'useTLS' has to be set `true`, `externalKeyStoreLocation` and `externalKeyStorePassword` has to be provided.
+
+    For server MTLS flag `useServerMTLS` has to be set `true` also `externalTrustStoreLocation`
+    and `externalTrustStorePassword` has to be provided.
+
+    HTTP client is using the same TrustStore as server. To use TLS in HTTP client `useTLS` flag has to be set `true`,
+    `externalTrustStoreLocation` and `externalTrustStorePassword` has to be provided.
+
+=== Simulator configuration
+
+Simulators can be configured through `src/main/resources/simulator-config.json`.
+When running executableJar, simulator application will look for this file in the same directory as jar.
+Or you can set configuration file with parameter `-c` for example `-c simulator-config.json`.
+Example config is presented below:
+
+```
+{
+  "binding": {
+    "ip": "127.0.0.1",
+    "port": 0
+  },
+  "security": {
+    "server": {
+      "useTLS": false,
+      "basicCredentials": "admin:admin",
+      "externalKeyStoreLocation": "",
+      "externalKeyStorePassword": "",
+      "useServerMTLS": "false"
+    },
+    "trustStore": {
+      "externalTrustStoreLocation": "",
+      "externalTrustStorePassword": ""
+    },
+    "httpClient": {
+      "withBasic": true,
+      "basicCredentials": "admin:admin",
+      "useTLS": false,
+      "serverCertificateVerificationEnabled": true
+    }
+  },
+  "cache": {
+    "etags": false
+  },
+  "resourcesConfig": {}
+}
+```
+
+Config contains 4 parts: binding, security, cache and resourcesConfig.
+
+==== `binding` - contains 3 fields related to simulator endpoint network parameters:
+
+```
+"binding": {
+    "ip": "127.0.0.1",
+    "port": 0
+  },
+```
+
+`ip` - accepts string with IP address of interface simulator should run on. +
+`port` - port used for running simulator in range +
+
+==== `security` - contains 3 sections related to security configuration of simulators +
+
+
+```
+"security": {
+    "server": {
+      ...
+    },
+    "trustStore": {
+      ...
+    },
+    "httpClient": {
+      ...
+    }
+}
+```
+
+===== `server` - this section is responsible for settings on server side of simulators
+
+```
+"server": {
+      "useTLS": false,
+      "basicCredentials": "admin:admin",
+      "externalKeyStoreLocation": "",
+      "externalKeyStorePassword": "",
+      "useServerMTLS": "false"
+}
+```
+
+`useTLS` - boolean flag responsible for switching On/Off Transport Layer Security defined in https://tools.ietf.org/html/rfc5246[rfc5246] +
+`basicCredentials` - pair of "username:password" used for basic authentication schema defined in https://tools.ietf.org/html/rfc7617[rfc7617] +
+
+`externalKeyStoreLocation` - path to external KeyStore file. File have to be created by user.
+`externalKeyStorePassword` - password for external KeyStore
+`useServerMTLS` - boolean flag responsible for verification of client communicating with BMC Simulator server.
+If set `true` client will need to send trusted certificate as defined in https://tools.ietf.org/html/rfc5246#section-7.4.6[rfc5246 section-7.4.6].
+Trusted certificates can be configured in `trustStore` section of this config.
+
+===== `trustStore` - this section is responsible for settings for a client TLS verification
+
+```
+"trustStore": {
+      "externalTrustStoreLocation": "",
+      "externalTrustStorePassword": ""
+}
+```
+
+`externalTrustStoreLocation` - path to external TrustStore file. File have to be created by user +
+`externalTrustStorePassword` - password for external KeyStore +
+
+===== `httpClient` - this section is responsible for settings used by http client of testing framework
+
+```
+"httpClient": {
+      "withBasic": true,
+      "basicCredentials": "admin:admin",
+      "useTLS": false,
+      "serverCertificateVerificationEnabled": true
+}
+```
+
+`withBasic` - boolean flag, if set true client will use basic authentication as defined in https://tools.ietf.org/html/rfc7617[rfc7617] +
+`basicCredentials` - pair of "username:password" used for basic authentication schema defined in https://tools.ietf.org/html/rfc7617[rfc7617] +
+`useTLS` - boolean flag responsible for switching On/Off Transport Layer Security defined in https://tools.ietf.org/html/rfc5246[rfc5246].
+Trusted certificates can be configured in `trustStore` section of this config. +
+`serverCertificateVerificationEnabled` - boolean flag responsible for verification of server certificates. In production environment it must be set true.
+If set `true` client will proceed with a server's certificate validation as in https://tools.ietf.org/html/rfc5280[rfc5280]. If turned off no certificate validation is done.
+
+===== `resources` - this section contains an optional configuration of simulator API in JSON format
+
+```
+  "resourcesConfig": {}
+```
+
+=== Registration BMC simulator
+
+To register BMC simulator to ODIM you need to first turn on GRF plugin.
+First find GRF plugin in the members ConnectionMethods collection with `GET` at endpoint:
+
+ /redfish/v1/AggregationService/ConnectionMethods
+
+GRF plugin should have property (version can be different)
+
+ ConnectionMethodVariant: "Compute:BasicAuth:GRF_v1.0.0"
+
+If you already have GRF endpoint you need to `POST` at endpoint `redfish/v1/AggregationService/AggregationSources`:
+
+```
+{
+   "HostName": "<FQND>:45001",
+   "UserName": "<USERNAME>",
+   "Password": "<GRF_PASSWORD>",
+   "Links": {
+       "ConnectionMethod": {
+       "@odata.id": "<GRF_ENDPOINT_URL>"
+       }
+   }
+}
+```
+
+As a default values are:
+
+ FQND: odim.local.com
+ USERNAME: admin
+ GRF_PASSWORD: GRFPlug!n12$4
+ Instruction to get GRF_ENDPOINT_URL you can find above.
+
+If GRF has been turn on then you can send `POST` with registration simulator.
+If you are using containers remember to check whether BMC simulator is visible
+from a container with DNS which you used in `Configuring TLS` step. All new properties
+you can find in simulator configuration json file (exclude GRF_ENDPOINT_URL).
+
+```
+{
+   "HostName": "<BMC_DNS>:<BMC_PORT>",
+   "UserName": "<BMC_USERNAME>",
+   "Password": "<BMC_PASSWORD>",
+   "Links": {
+       "ConnectionMethod": {
+       "@odata.id": "<GRF_ENDPOINT_URL>"
+       }
+   }
+}
+```

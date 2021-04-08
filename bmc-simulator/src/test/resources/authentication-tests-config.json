@@ -1,0 +1,21 @@
+{
+  "security": {
+    "server": {
+      "basicCredentials": "admin:admin",
+      "useTLS": false
+    },
+    "httpClient": {
+      "withBasic": false,
+      "basicCredentials": "admin:admin",
+      "useTLS": false,
+      "serverCertificateVerificationEnabled": true
+    }
+  },
+  "cache": {
+    "etags": true
+  },
+  "resourcesConfig": {
+    "Systems": 2,
+    "Chassis":2
+  }
+}

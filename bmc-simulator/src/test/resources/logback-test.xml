@@ -1,0 +1,68 @@
+<!--
+  ~ Copyright (c) Intel Corporation
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<configuration>
+    <!-- discard messages emitted by logback during configuration process; add debug="true" on <configuration> element to restore -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <property name="aux_appender_with_logstash_true" value="LOGSTASH" />
+    <property name="aux_appender_with_logstash_false" value="NUL" />
+    <property name="stdout_level_with_logstash_true" value="INFO" />
+    <property name="stdout_level_with_logstash_false" value="INFO" />
+    <variable name="aux_appender" value="${aux_appender_with_logstash_${LOGSTASH_ENABLED:-false}}" />
+    <variable name="logstash_address" value="${LOGSTASH_ADDRESS:-logstash.default.svc.cluster.local:5678}" />
+    <variable name="stdout_level" value="${stdout_level_with_logstash_${LOGSTASH_ENABLED:-false}}" />
+
+    <appender name="NUL" class="ch.qos.logback.core.helpers.NOPAppender"/>
+
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstash_address}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %5p --- [%t] %-40.40logger{39} : %m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${stdout_level}</level>
+        </filter>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <logger name="com.odim" level="INFO">
+        <appender-ref ref="${aux_appender}" />
+    </logger>
+
+    <logger name="restApiTest" level="INFO">
+        <appender-ref ref="${aux_appender}" />
+    </logger>
+
+    <logger name="integration" level="INFO">
+        <appender-ref ref="${aux_appender}" />
+    </logger>
+
+    <logger name="com.odim.simulator.events.EventsCatcher" level="WARN"/>
+
+    <logger name="io.javalin.Javalin" level="ERROR"/>
+    <logger name="org.eclipse.jetty" level="ERROR"/>
+</configuration>

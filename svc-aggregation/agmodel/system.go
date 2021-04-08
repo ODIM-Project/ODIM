@@ -286,6 +286,14 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
 			}
 		}
+		if inventoryData, err = connPool.GetAllMatchingDetails("SoftwareInventory", systemID); err != nil {
+			return errors.PackError(err.ErrNo(), "error while trying to get compute details: ", err.Error())
+		}
+		for _, value := range inventoryData {
+			if err = connPool.Delete("SoftwareInventory", value); err != nil {
+				return errors.PackError(err.ErrNo(), "error while trying to delete compute details: ", err.Error())
+			}
+		}
 	}
 
 	//Delete All resources

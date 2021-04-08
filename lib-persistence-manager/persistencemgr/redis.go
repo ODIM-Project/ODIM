@@ -742,7 +742,7 @@ func (p *ConnPool) CreateIndex(form map[string]interface{}, uuid string) error {
 */
 func (p *ConnPool) CreateTaskIndex(index string, value int64, key string) error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-	log.Info("CreateTaskIndex : WritePool value : ", writePool)
+
 	if writePool == nil {
 		log.Info("CreateTaskIndex : WritePool nil")
 		return errors.PackError(errors.UndefinedErrorType, "error while creating task index: WritePool is nil ")
@@ -939,41 +939,54 @@ func (p *ConnPool) GetTaskList(index string, min, max int) ([]string, error) {
 1. index is the name of the index under which the key needs to be deleted
 2. key is the id of the resource to be deleted under an index
 */
-func (p *ConnPool) Del(index, key string) error {
+func (p *ConnPool) Del(index string, k string) error {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
-	k := "*" + key
-	d, e := readConn.Do("ZSCAN", index, 0, "MATCH", k)
-	if e != nil {
-		return fmt.Errorf("error while trying to get data: " + e.Error())
-	}
-	if len(d.([]interface{})) > 1 {
-		data, err := redis.Strings(d.([]interface{})[1], e)
-		if err != nil {
-			return fmt.Errorf("error while trying to get value of ID: " + err.Error())
+	currentCursor := 0
+	key := "*" + k
+	for {
+		d, getErr := readConn.Do("ZSCAN", index, currentCursor, "MATCH", key, "COUNT", count)
+		if getErr != nil {
+			return fmt.Errorf("error while trying to get data: " + getErr.Error())
 		}
-		if len(data) < 1 {
-			return fmt.Errorf("no data with ID found")
-		}
-		writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
-		if writePool == nil {
-			return fmt.Errorf("WritePool is nil")
-		}
-		writeConn := writePool.Get()
-		defer writeConn.Close()
-		for _, resource := range data {
-			if resource != "0" {
-				_, delErr := writeConn.Do("ZREM", index, resource)
-				if delErr != nil {
-					if errs, aye := isDbConnectError(delErr); aye {
-						atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
-						return errs
+		if len(d.([]interface{})) > 1 {
+			data, err := redis.Strings(d.([]interface{})[1], getErr)
+
+			if err != nil {
+				return fmt.Errorf("error while trying to get data: " + err.Error())
+			}
+			if len(data) < 1 {
+				return fmt.Errorf("no data with ID found")
+			}
+			writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+			if writePool == nil {
+				return fmt.Errorf("WritePool is nil")
+			}
+			writeConn := writePool.Get()
+			defer writeConn.Close()
+			for _, resource := range data {
+				if resource != "0" {
+					_, delErr := writeConn.Do("ZREM", index, resource)
+					if delErr != nil {
+						if errs, aye := isDbConnectError(delErr); aye {
+							atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+							return errs
+						}
+						return fmt.Errorf("error while trying to delete data: " + delErr.Error())
 					}
-					return fmt.Errorf("error while trying to delete data: " + delErr.Error())
 				}
 			}
 		}
+		stringCursor := string(d.([]interface{})[0].([]uint8))
+		if stringCursor == "0" {
+			break
+		}
+		currentCursor, getErr = strconv.Atoi(stringCursor)
+		if getErr != nil {
+			return getErr
+		}
 	}
+
 	return nil
 }
 

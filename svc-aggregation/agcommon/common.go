@@ -169,8 +169,8 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 func TrackConfigFileChanges(dbInterface DBInterface) {
 	eventChan := make(chan interface{})
 	go common.TrackConfigFileChanges(ConfigFilePath, eventChan)
-	select {
-	case <-eventChan: // new data arrives through eventChan channel
+	for {
+		log.Info(<-eventChan) // new data arrives through eventChan channel
 		config.TLSConfMutex.RLock()
 		err := dbInterface.AddConnectionMethods(config.Data.ConnectionMethodConf)
 		if err != nil {

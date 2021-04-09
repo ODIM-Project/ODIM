@@ -842,6 +842,10 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	regFileID := ctx.Params().Get("id")
+	if strings.Contains(regFileID, ".json") {
+		r.GetMessageRegistryFile(ctx)
+		return
+	}
 	if strings.HasPrefix(regFileID, "#") {
 		reqURI := ctx.Request().RequestURI
 		// Fetch Registry file ID from request URI

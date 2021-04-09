@@ -155,9 +155,6 @@ func Router() *iris.Application {
 	v1.Get("/", serviceRoot.GetServiceRoot)
 	v1.Get("/odata", handle.GetOdata)
 	v1.Get("/$metadata", handle.GetMetadata)
-	v1.Get("/registries/{id}", registryFile.GetMessageRegistryFile)
-	v1.Any("/registries", handle.RegMethodNotAllowed)
-	v1.Any("/registries/{id}", handle.RegMethodNotAllowed)
 
 	registry := v1.Party("/Registries")
 	registry.SetRegisterRule(iris.RouteSkip)

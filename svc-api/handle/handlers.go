@@ -18,10 +18,11 @@ package handle
 import (
 	"encoding/json"
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -898,7 +899,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	regFileNames = append(regFileNames, regFileKeys...)
 	for _, regFile := range regFileNames {
 		if reqRegistryFileName == regFile {
-			locationURI = "/redfish/v1/registries/" + regFile
+			locationURI = "/redfish/v1/Registries/" + regFile
 			break
 		}
 	}

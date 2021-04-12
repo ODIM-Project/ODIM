@@ -44,7 +44,7 @@ func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetCh
 	return resp, nil
 }
 
-//GetChassis will do the rpc call to collect System Resource
+//GetChassis will do the rpc call to  System Resource
 func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	asService := chassisproto.NewChassisService(services.Systems, services.Service.Client())
 	resp, err := asService.GetChassisInfo(context.TODO(), &req)
@@ -54,6 +54,7 @@ func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisRes
 	return resp, nil
 }
 
+//CreateChassis will do the rpc call to create a Chassis
 func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
 	resp, err := service.CreateChassis(context.TODO(), &req)
@@ -63,6 +64,7 @@ func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChas
 	return resp, nil
 }
 
+//DeleteChassis will do the rpc call to delete a chassis
 func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
 	resp, err := service.DeleteChassis(context.TODO(), &req)
@@ -72,6 +74,7 @@ func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChas
 	return resp, nil
 }
 
+//UpdateChassis will do the rpc call to update a chassis
 func UpdateChassis(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
 	resp, err := service.UpdateChassis(context.TODO(), &req)

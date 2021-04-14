@@ -17,7 +17,6 @@ package rfpmessagebus
 
 import (
 	"encoding/json"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -37,7 +36,7 @@ func Publish(data interface{}) bool {
 
 	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
 	if err != nil {
-		fmt.Println("Unable communicate with kafka", err)
+		log.Error("Unable communicate with kafka, got:" + err.Error())
 		return false
 	}
 	defer K.Close()
@@ -76,12 +75,12 @@ func Publish(data interface{}) bool {
 	}
 	topic := config.Data.MessageBusConf.EmbQueue[0]
 	if err := K.Distribute(topic, event); err != nil {
-		fmt.Println("Unable Publish events to kafka", err)
+		log.Error("Unable Publish events to kafka, got:" + err.Error())
 		return false
 	}
 	log.Info("forwarded event" + string(event.Request))
 	for _, eventMessage := range message.Events {
-		fmt.Printf("Event %v Published\n", eventMessage.EventType)
+		log.Info(eventMessage.EventType + " Event published")
 	}
 	return true
 }

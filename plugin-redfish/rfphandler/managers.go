@@ -16,7 +16,6 @@
 package rfphandler
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -128,7 +127,7 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	}
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "Internal processing error: " + err.Error()
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
 		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
@@ -150,7 +149,11 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf(err.Error())
+		errMsg := "While trying to read the response body, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
 	}
 
 	if resp.StatusCode == 401 {

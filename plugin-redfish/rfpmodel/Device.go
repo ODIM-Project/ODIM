@@ -40,19 +40,6 @@ type HTTPHeaders struct {
 	ContentType string `json:"Content-Type"`
 }
 
-//EvtOem ...
-type EvtOem struct {
-	Hpe Hpe `json:"Hpe"`
-}
-
-//Hpe model
-type Hpe struct {
-	DeliveryRetryIntervalInSeconds int `json:"DeliveryRetryIntervalInSeconds"`
-	RequestedMaxEventsToQueue      int `json:"RequestedMaxEventsToQueue"`
-	DeliveryRetryAttempts          int `json:"DeliveryRetryAttempts"`
-	RetireOldEventInMinutes        int `json:"RetireOldEventInMinutes"`
-}
-
 // Startup struct recieve request on Startup call
 type Startup struct {
 	Location   string   `json:"Location"`

@@ -16,13 +16,12 @@
 package dphandler
 
 import (
-	"fmt"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -35,7 +34,7 @@ func SimpleUpdate(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -46,7 +45,7 @@ func SimpleUpdate(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -68,8 +67,8 @@ func SimpleUpdate(ctx iris.Context) {
 
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -77,20 +76,20 @@ func SimpleUpdate(ctx iris.Context) {
 	//Update BMC resource
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to update BMC resource: " + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to update BMC resource: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying to update BMC resource: " + errorMessage)
+		errorMessage := "While trying to read the response body, got: " + err.Error()
+		log.Error(errorMessage)
+		ctx.WriteString(errorMessage)
 	}
 
 	ctx.StatusCode(resp.StatusCode)
@@ -105,7 +104,7 @@ func StartUpdate(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -116,7 +115,7 @@ func StartUpdate(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -130,8 +129,8 @@ func StartUpdate(ctx iris.Context) {
 
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -139,20 +138,20 @@ func StartUpdate(ctx iris.Context) {
 	//Update BMC resource
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to update BMC resource: " + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to update BMC resource: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying to update BMC resource: " + errorMessage)
+		errorMessage := "While trying to read response body, got: " + err.Error()
+		log.Error(errorMessage)
+		ctx.WriteString(errorMessage)
 	}
 
 	ctx.StatusCode(resp.StatusCode)

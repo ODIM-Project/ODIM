@@ -17,8 +17,8 @@ package dphandler
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -45,24 +45,23 @@ func convertToSouthBoundURI(req string, storageInstance string) string {
 func queryDevice(uri string, device *dputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
 	}
 	resp, err := redfishClient.DeviceCall(device, uri, method)
 	if err != nil {
-		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(err.Error())
 		if resp == nil {
-			return http.StatusBadRequest, nil, nil, fmt.Errorf(errMsg)
+			return http.StatusBadRequest, nil, nil, err
 		}
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		errMsg := err.Error()
-		log.Println(err)
+		errMsg := "While trying to read the response body, got: " + err.Error()
+		log.Error(errMsg)
 		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
 	}
 	return resp.StatusCode, resp.Header, body, nil

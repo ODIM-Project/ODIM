@@ -18,8 +18,8 @@ package dphandler
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,6 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 //CreateVolume function is used for creating a volume under storage
@@ -46,7 +47,7 @@ func CreateVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -57,7 +58,7 @@ func CreateVolume(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -68,8 +69,8 @@ func CreateVolume(ctx iris.Context) {
 	var reqBody dpmodel.Volume
 	err = json.Unmarshal(deviceDetails.PostBody, &reqBody)
 	if err != nil {
-		errMsg := "error while unmarshalling the create volume request to the device: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While unmarshalling the create volume request to the device, got: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -101,8 +102,8 @@ func CreateVolume(ctx iris.Context) {
 	// calling device for creating a volume
 	statusCode, header, resp, err := queryDevice(uri, device, http.MethodPost)
 	if err != nil {
-		errMsg := "error while trying to create volume: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create volume, got: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(statusCode)
 		ctx.WriteString(errMsg)
 	}
@@ -116,14 +117,14 @@ func CreateVolume(ctx iris.Context) {
 			// calling device for creating a volume
 			statusCode, header, resp, err = queryDevice(taskURI, device, http.MethodGet)
 			if err != nil {
-				errorMessage := "Error while trying to get task id in create volume: " + err.Error()
-				log.Println(errorMessage)
+				errorMessage := "While trying to get task id in create volume, got: " + err.Error()
+				log.Error(errorMessage)
 				ctx.StatusCode(statusCode)
 				ctx.WriteString(errorMessage)
 				return
 			}
 			if statusCode != http.StatusAccepted {
-				log.Println("Final Status of task id while creating a volume : ", statusCode)
+				log.Info("Final Status of task id while creating a volume : " + strconv.Itoa(statusCode))
 				break
 			}
 		}
@@ -161,7 +162,6 @@ func CreateVolume(ctx iris.Context) {
 		manualEvents(event, deviceDetails.Host)
 		resp = createResponse()
 	}
-	log.Println("Response body: ", string(resp))
 	ctx.StatusCode(statusCode)
 	ctx.Write(resp)
 }
@@ -183,7 +183,7 @@ func DeleteVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -195,7 +195,7 @@ func DeleteVolume(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -209,19 +209,19 @@ func DeleteVolume(ctx iris.Context) {
 
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodDelete)
 	if err != nil {
-		errorMessage := err.Error()
-		log.Println(err)
+		errorMessage := "While trying to delete volume, got: " + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to delete volume: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
@@ -234,14 +234,14 @@ func DeleteVolume(ctx iris.Context) {
 			time.Sleep(10 * time.Second)
 			resp, err = redfishClient.DeviceCall(device, taskURI, http.MethodGet)
 			if err != nil {
-				errorMessage := "Error while trying to get task id in delete volume: " + err.Error()
-				log.Println(errorMessage)
+				errorMessage := "While trying to get task id in delete volume, got: " + err.Error()
+				log.Error(errorMessage)
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(errorMessage)
 				return
 			}
 			if resp.StatusCode != http.StatusAccepted {
-				log.Println("Final Status of task id while deleting a volume : ", resp.StatusCode)
+				log.Info("Final Status of task id while deleting a volume : " + strconv.Itoa(resp.StatusCode))
 				break
 			}
 		}
@@ -250,13 +250,12 @@ func DeleteVolume(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		log.Println(err)
+		errorMessage := "While trying to delete volume, got: " + err.Error()
+		log.Error(errorMessage)
 		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.WriteString("Error while trying to delete volume: " + errorMessage)
+		ctx.WriteString(errorMessage)
 		return
 	}
-	log.Println("Response body: ", string(body))
 
 	// If volume deletion is success then generating an event
 	if resp.StatusCode == http.StatusOK {
@@ -306,15 +305,15 @@ func getVolumeCollection(uri string, device *dputilities.RedfishDevice) (int, st
 	// Getting the list of volumes already exist in the server
 	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
 	if err != nil {
-		errMsg := "error while getting volume collection details during create volume: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While getting volume collection details during create volume, got: " + err.Error()
+		log.Error(errMsg)
 		return statusCode, errMsg, nil
 	}
 	var volumes dpmodel.VolumesCollection
 	err = json.Unmarshal(resp, &volumes)
 	if err != nil {
-		errMsg := "error while trying to unmarshal response data in create volume: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to unmarshal response data in create volume, got: " + err.Error()
+		log.Error(errMsg)
 		return http.StatusInternalServerError, errMsg, nil
 	}
 

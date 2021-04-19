@@ -100,6 +100,10 @@ type Oid struct {
 }
 
 type MetricReports struct {
+	ODataID                string        `json:"@odata.id"`
+	ODataType              string        `json:"@odata.type"`
+	ID                     string        `json:"Id"`
+	Name                   string        `json:"Name"`
 	Context                string        `json:"Context,omitempty"`
 	MetricReportDefinition Oem           `json:"MetricReportDefinition,omitempty"`
 	MetricValues           []MetricValue `json:"MetricValues,omitempty"`

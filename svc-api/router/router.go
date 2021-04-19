@@ -91,6 +91,7 @@ func Router() *iris.Application {
 		ChangeBootOrderSettingsRPC: rpc.ChangeBootOrderSettings,
 		CreateVolumeRPC:            rpc.CreateVolume,
 		DeleteVolumeRPC:            rpc.DeleteVolume,
+		ClearLogRPC:                rpc.ClearLog,
 	}
 
 	cha := handle.ChassisRPCs{

@@ -175,7 +175,7 @@ func routers() *iris.Application {
 		chassis.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
 		chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", rfphandler.GetResource)
 		// TODO:
-		// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.GetResource)
+		//chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.GetResource)
 
 		// Chassis Power URl routes
 		chassisPower := chassis.Party("/{id}/Power")

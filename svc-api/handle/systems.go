@@ -416,3 +416,49 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
 }
+
+// ClearLog is the handler to clear log under log service
+// from iris context will get the request and check sessiontoken
+// and do rpc call and send response back
+func (sys *SystemRPCs) ClearLog(ctx iris.Context) {
+	var req interface{}
+	ctx.ReadJSON(&req)
+	request, err := json.Marshal(req)
+	if err != nil {
+		errorMessage := "error while trying to create JSON request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	clearLogRequest := systemsproto.LogServiceRequest{
+		SessionToken: sessionToken,
+		SystemID:     ctx.Params().Get("id"),
+		LogServiceID: ctx.Params().Get("id2"),
+		RequestBody:  request,
+	}
+	resp, err := sys.ClearLogRPC(clearLogRequest)
+	if err != nil {
+		errorMessage := "RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}

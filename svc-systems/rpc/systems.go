@@ -231,6 +231,29 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	return nil
 }
 
+// ClearLog defines the operations which handles the RPC request response
+// for the ClearLog service of systems micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function also checks for the session time out of the token
+// which is present in the request.
+func (s *Systems) ClearLog(ctx context.Context, req *systemsproto.ClearLogRequest, resp *systemsproto.SystemsResponse) error {
+	sessionToken := req.SessionToken
+	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Error("error while trying to authenticate session")
+		fillSystemProtoResponse(resp, authResp)
+		return nil
+	}
+	var pc = systems.PluginContact{
+		ContactClient:  pmbhandle.ContactPlugin,
+		DevicePassword: common.DecryptWithPrivateKey,
+	}
+	data := pc.ChangeBootOrderSettings(req)
+	fillSystemProtoResponse(resp, data)
+	return nil
+}
+
 func fillSystemProtoResponse(resp *systemsproto.SystemsResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage

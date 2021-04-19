@@ -14,11 +14,6 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
-	"time"
-
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -29,9 +24,14 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	"github.com/sirupsen/logrus"
+	"net/http"
+	"os"
+	"time"
 )
 
 var subscriptionInfo []dpmodel.Device
+var log = logrus.New()
 
 // TokenObject will contains the generated token and public key of odimra
 type TokenObject struct {
@@ -42,15 +42,15 @@ type TokenObject struct {
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Plugin Service should not be run as the root user")
+		log.Fatal("Plugin Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalln("error while reading from config", err)
+		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
+		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
@@ -63,7 +63,7 @@ func main() {
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		log.Fatalln("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
+		log.Fatal("No value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the dell config changes using fsnotfiy
 	go dputilities.TrackConfigFileChanges(configFilePath)
@@ -86,7 +86,7 @@ func app() {
 	}
 	pluginServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing plugin server: %v", err)
+		log.Fatal("While initializing plugin server: " + err.Error())
 	}
 	app.Run(iris.Server(pluginServer))
 }

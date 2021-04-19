@@ -17,16 +17,14 @@ package dphandler
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"strings"
-
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 //GetResource : Fetches details of the given resource from the device
@@ -50,7 +48,7 @@ func GetResource(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -62,7 +60,7 @@ func GetResource(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -76,8 +74,8 @@ func GetResource(ctx iris.Context) {
 
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -86,8 +84,8 @@ func GetResource(ctx iris.Context) {
 	//Fetching generic resource details from the device
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
-		errMsg := "error: authentication failed: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Authentication failed: " + err.Error()
+		log.Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -98,7 +96,8 @@ func GetResource(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf(err.Error())
+		log.Error("While trying to read the response body, got: " + err.Error())
+		return
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
@@ -107,7 +106,7 @@ func GetResource(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-		fmt.Printf("Could not retreive generic resource for %s: \n%s\n\n", device.Host, body)
+		log.Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
 	}
 	respData := string(body)
 	//replacing the response with north bound translation URL
@@ -121,7 +120,8 @@ func GetResource(ctx iris.Context) {
 		var respMap map[string]interface{}
 		err := json.Unmarshal([]byte(respData), &respMap)
 		if err != nil {
-			errMsg := "error while trying to unmarshal Chassis data: " + err.Error()
+			errMsg := "While trying to unmarshal Chassis data, got: " + err.Error()
+			log.Error(errMsg)
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
 			return

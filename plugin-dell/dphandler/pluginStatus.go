@@ -17,14 +17,13 @@ package dphandler
 
 import (
 	"encoding/json"
+	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 	"sync"
 	"time"
-
-	iris "github.com/kataras/iris/v12"
 	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -41,7 +40,7 @@ func GetPluginStatus(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -80,7 +79,7 @@ func GetPluginStartup(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -90,7 +89,7 @@ func GetPluginStartup(ctx iris.Context) {
 	var startup []dpmodel.Startup
 	err := ctx.ReadJSON(&startup)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return

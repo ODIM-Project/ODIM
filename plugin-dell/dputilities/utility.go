@@ -35,12 +35,11 @@ import (
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/pem"
-	"log"
-
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/fsnotify/fsnotify"
+	log "github.com/sirupsen/logrus"
 )
 
 // GetPlainText ...
@@ -51,16 +50,15 @@ func GetPlainText(password []byte) ([]byte, error) {
 	b := block.Bytes
 	var err error
 	if enc {
-		log.Println("is encrypted pem block")
 		b, err = x509.DecryptPEMBlock(block, nil)
 		if err != nil {
-			log.Println("Error: " + err.Error())
+			log.Error(err.Error())
 			return []byte{}, err
 		}
 	}
 	key, err := x509.ParsePKCS1PrivateKey(b)
 	if err != nil {
-		log.Println("Error: " + err.Error())
+		log.Error(err.Error())
 		return []byte{}, err
 	}
 
@@ -82,11 +80,11 @@ var Status dpresponse.Status
 func TrackConfigFileChanges(configFilePath string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	err = watcher.Add(configFilePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	go func() {
 		for {
@@ -95,19 +93,18 @@ func TrackConfigFileChanges(configFilePath string) {
 				if !ok {
 					continue
 				}
-				log.Println("event:", fileEvent)
 				if fileEvent.Op&fsnotify.Write == fsnotify.Write || fileEvent.Op&fsnotify.Remove == fsnotify.Remove {
-					log.Println("modified file:", fileEvent.Name)
+					log.Debug("Modified file: " + fileEvent.Name)
 					// update the plugin config
 					if err := config.SetConfiguration(); err != nil {
-						log.Printf("error while trying to set configuration: %v", err)
+						log.Error("While trying to set configuration, got: " + err.Error())
 					}
 				}
 				//Reading file to continue the watch
 				watcher.Add(configFilePath)
 			case err, _ := <-watcher.Errors:
 				if err != nil {
-					log.Println(err)
+					log.Error(err.Error())
 					defer watcher.Close()
 				}
 			}

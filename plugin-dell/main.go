@@ -160,6 +160,17 @@ func routers() *iris.Application {
 		chassis.Get("/{id}/NetworkAdapters/{rid}/NetworkPorts", dphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{rid}/NetworkDeviceFunctions/{id2}", dphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{rid}/NetworkPorts/{id2}", dphandler.GetResource)
+		chassis.Get("/{id}/Assembly", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/Sensors", dphandler.GetResource)
+		chassis.Get("/{id}/Sensors/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", dphandler.GetResource)
 
 		// Chassis Power URl routes
 		chassisPower := chassis.Party("/{id}/Power")

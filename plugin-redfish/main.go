@@ -131,7 +131,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", rfphandler.GetResource)
-		systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.GetResource)
+		systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.ClearLog)
 		systems.Get("/{id}/Memory", rfphandler.GetResource)
 		systems.Get("/{id}/Memory/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/NetworkInterfaces", rfphandler.GetResource)
@@ -208,7 +208,7 @@ func routers() *iris.Application {
 		managers.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", rfphandler.GetResource)
-		managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.GetResource)
+		managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.ClearLog)
 
 		//Registries routers
 		registries := pluginRoutes.Party("/Registries", rfpmiddleware.BasicAuth)

@@ -37,6 +37,7 @@ type SystemRPCs struct {
 	ChangeBootOrderSettingsRPC func(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error)
 	CreateVolumeRPC            func(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
 	DeleteVolumeRPC            func(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error)
+	ClearLogRPC                func(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error)
 }
 
 //GetSystemsCollection fetches all systems

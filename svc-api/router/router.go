@@ -224,7 +224,7 @@ func Router() *iris.Application {
 	systems.Get("/{id}/LogServices/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices/{rid}/Entries", system.GetSystemResource)
 	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", system.GetSystemResource)
-	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
+	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.ClearLog)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Get("/{id}/PCIeDevices/{rid}", system.GetSystemResource)
 	systems.Any("/{id}/PCIeDevices/{rid}", handle.SystemsMethodNotAllowed)

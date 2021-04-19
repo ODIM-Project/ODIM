@@ -112,3 +112,13 @@ func DeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse
 	}
 	return resp, nil
 }
+
+// ClearLog will do the rpc call to DeleteVolume a volume under storage
+func ClearLog(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	asService := systemsproto.NewSystemsService(services.Systems, services.Service.Client())
+	resp, err := asService.ClearLog(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}

@@ -16,7 +16,7 @@
 # Script is for generating certificate and private key
 # for Client mode connection usage only
 
-t=/etc/plugin_certs
+t=/etc/dell_plugin_certs
 ip=`echo $HOSTIP`
 
 #########changes in dell_plugin.json ######

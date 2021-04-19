@@ -50,7 +50,7 @@ type Chassis struct {
 	NetworkAdapters    *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
 	PCIeSlots          *PCIeSlots        `json:"PCIeSlots,omitempty"`
 	PhysicalSecurity   *PhysicalSecurity `json:"PhysicalSecurity,omitempty"`
-	Power              *Power            `json:"Power,omitempty"`
+	Power              *Link             `json:"Power,omitempty"`
 	Sensors            *Sensors          `json:"Sensors,omitempty"`
 	Status             *Status           `json:"Status,omitempty"`
 	Thermal            *Thermal          `json:"Thermal,omitempty"`
@@ -104,11 +104,6 @@ type PhysicalSecurity struct {
 	IntrusionSensor       string
 	IntrusionSensorNumber int
 	IntrusionSensorReArm  string
-}
-
-// Power redfish structure
-type Power struct {
-	Oid string `json:"@odata.id"`
 }
 
 // Sensors redfish structure

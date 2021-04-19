@@ -112,7 +112,7 @@ jobs:
         sudo mkdir /var/log/odim-plugins
         docker-compose -f build/docker-compose.yml logs urp |sudo tee /var/log/odim-plugins/urp.log
         sudo cp /var/log/GRF_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
-        sudo cp /var/log/DELL_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
+        sudo cp /var/log/DELL_PLUGIN/dell_plugin.log /var/log/odim-plugins/dell.log
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
       if: always()
@@ -120,6 +120,7 @@ jobs:
        name: my-artifiact
        path: |
         /var/log/odimra
+        /var/log/DELL_PLUGIN
         /var/log/odim-plugins
         /var/log/odim-infra
   

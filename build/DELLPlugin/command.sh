@@ -16,4 +16,4 @@
 # Script is for generating certificate and private key
 # for Client mode connection usage only
 
-cp -r /var/dell_plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/dell_plugin_config/* && /bin/start_plugin.sh
+cp -r /var/dell_plugin_config/ /etc && /var/tmp/dell_plugin-edit_config.sh && rm -rf /var/dell_plugin_config/* && /bin/start_plugin.sh

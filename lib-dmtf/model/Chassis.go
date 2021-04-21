@@ -53,7 +53,7 @@ type Chassis struct {
 	Power              *Link             `json:"Power,omitempty"`
 	Sensors            *Sensors          `json:"Sensors,omitempty"`
 	Status             *Status           `json:"Status,omitempty"`
-	Thermal            *Thermal          `json:"Thermal,omitempty"`
+	Thermal            *Link             `json:"Thermal,omitempty"`
 }
 
 // LogServices get
@@ -124,11 +124,6 @@ type Status struct {
 	HealthRollup string `json:"HealthRollup,omitempty"`
 	State        string `json:"State,omitempty"`
 	Oem          *Oem   `json:"Oem,omitempty"`
-}
-
-// Thermal redfish structure
-type Thermal struct {
-	Oid string `json:"@odata.id"`
 }
 
 // SaveInMemory will create the Chassis in inmemory DB, with key as UUID

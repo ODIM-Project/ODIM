@@ -19,17 +19,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strings"
-
-	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	evtConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 //CreateEventSubscription : Subscribes for events
@@ -103,7 +101,7 @@ func deleteMatchingSubscriptions(device *rfputilities.RedfishDevice) {
 	device.Location = "https://" + device.Host + "/redfish/v1/EventService/Subscriptions"
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		log.Error("Internal processing error:" + err.Error())
+		log.Error("While trying to create the redfish client, got:" + err.Error())
 		return
 	}
 
@@ -192,7 +190,7 @@ func DeleteEventSubscription(ctx iris.Context) {
 	}
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "Internal processing error: " + err.Error()
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
 		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
@@ -284,7 +282,7 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 			// Subscribe to Events
 			redfishClient, err := rfputilities.GetRedfishClient()
 			if err != nil {
-				errMsg := "Internal processing error: " + err.Error()
+				errMsg := "While trying to create the redfish client, got:" + err.Error()
 				log.Error(errMsg)
 				ctx.StatusCode(http.StatusInternalServerError)
 				ctx.WriteString(errMsg)
@@ -323,7 +321,6 @@ func validateResponse(ctx iris.Context, device *rfputilities.RedfishDevice, resp
 	}
 	common.SetResponseHeader(ctx, header)
 	ctx.StatusCode(resp.StatusCode)
-	log.Info("Redfish plugin response body: " + string(body))
 	ctx.WriteString(string(body))
 	return nil
 }

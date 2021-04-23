@@ -90,9 +90,10 @@ func GetPluginStartup(ctx iris.Context) {
 	var startup []rfpmodel.Startup
 	err := ctx.ReadJSON(&startup)
 	if err != nil {
-		log.Error("Unable to collect data from request: " + err.Error())
+		errMsg := "Unable to collect data from request: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errMsg)
 		return
 	}
 	errorCh := make(chan error)

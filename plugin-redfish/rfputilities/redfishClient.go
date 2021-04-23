@@ -24,6 +24,7 @@ import (
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/gofrs/uuid"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 )
@@ -122,15 +123,13 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Error("While trying to read response body, got: ", err.Error())
 		return err
 	}
 	if resp.StatusCode >= 300 {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Printf("%s", err)
-		}
-		fmt.Printf("Could not retrieve ServiceRoot for %s: \n%s\n", device.Host, body)
-		return nil
+		errMessage := "Could not retrieve ServiceRoot for " + device.Host + ":" + string(body)
+		log.Error(errMessage)
+		return fmt.Errorf(errMessage)
 	}
 	serviceRoot := &dmtf.ServiceRoot{}
 	json.Unmarshal(body, serviceRoot)
@@ -141,7 +140,7 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 // AuthWithDevice : Performs authentication with the given device and saves the token
 func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 	if device.RootNode == nil {
-		return fmt.Errorf("no ServiceRoot found for device")
+		return fmt.Errorf("No ServiceRoot found for device")
 	}
 
 	// TODO auth (Issue #22)
@@ -164,7 +163,7 @@ func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 
 	defer resp.Body.Close()
 	device.Token = resp.Header["X-Auth-Token"][0]
-	fmt.Println(device.Token)
+	log.Debug("Token: " + device.Token)
 
 	return nil
 }

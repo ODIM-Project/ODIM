@@ -48,4 +48,4 @@ type Link struct {
 }
 
 // Oem holds the vendor specific details which is addtional to redfish contents
-type Oem interface {}
+type Oem interface{}

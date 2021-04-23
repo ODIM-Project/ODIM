@@ -20,13 +20,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
-	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/gofrs/uuid"
+	"io/ioutil"
+	"net/http"
 )
 
 //RedfishDeviceCollection struct definition
@@ -37,12 +36,12 @@ type RedfishDeviceCollection struct {
 
 //RedfishDevice struct definition
 type RedfishDevice struct {
-	Host            string                `json:"hostAddress"`
-	Username        string                `json:"username,omitempty"`
-	Password        string                `json:"password,omitempty"`
-	Token           string                `json:"token,omitempty"`
-	Tags            []string              `json:"Tags"`
-	RootNode        *rfpmodel.ServiceRoot `json:"rootNode,omitempty"`
+	Host            string            `json:"hostAddress"`
+	Username        string            `json:"username,omitempty"`
+	Password        string            `json:"password,omitempty"`
+	Token           string            `json:"token,omitempty"`
+	Tags            []string          `json:"Tags"`
+	RootNode        *dmtf.ServiceRoot `json:"rootNode,omitempty"`
 	ComputerSystems []*Identifier
 	PostBody        []byte `json:"PostBody,omitempty"`
 	Location        string `json:"Location"`
@@ -133,7 +132,7 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 		fmt.Printf("Could not retrieve ServiceRoot for %s: \n%s\n", device.Host, body)
 		return nil
 	}
-	serviceRoot := &rfpmodel.ServiceRoot{}
+	serviceRoot := &dmtf.ServiceRoot{}
 	json.Unmarshal(body, serviceRoot)
 	device.RootNode = serviceRoot
 	return nil

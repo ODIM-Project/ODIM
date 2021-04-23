@@ -50,10 +50,10 @@ type Chassis struct {
 	NetworkAdapters    *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
 	PCIeSlots          *PCIeSlots        `json:"PCIeSlots,omitempty"`
 	PhysicalSecurity   *PhysicalSecurity `json:"PhysicalSecurity,omitempty"`
-	Power              *Power            `json:"Power,omitempty"`
+	Power              *Link             `json:"Power,omitempty"`
 	Sensors            *Sensors          `json:"Sensors,omitempty"`
 	Status             *Status           `json:"Status,omitempty"`
-	Thermal            *Thermal          `json:"Thermal,omitempty"`
+	Thermal            *Link             `json:"Thermal,omitempty"`
 }
 
 // LogServices get
@@ -106,11 +106,6 @@ type PhysicalSecurity struct {
 	IntrusionSensorReArm  string
 }
 
-// Power redfish structure
-type Power struct {
-	Oid string `json:"@odata.id"`
-}
-
 // Sensors redfish structure
 type Sensors struct {
 	Oid string `json:"@odata.id"`
@@ -129,11 +124,6 @@ type Status struct {
 	HealthRollup string `json:"HealthRollup,omitempty"`
 	State        string `json:"State,omitempty"`
 	Oem          *Oem   `json:"Oem,omitempty"`
-}
-
-// Thermal redfish structure
-type Thermal struct {
-	Oid string `json:"@odata.id"`
 }
 
 // SaveInMemory will create the Chassis in inmemory DB, with key as UUID

@@ -48,11 +48,11 @@ func main() {
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("error while reading from config " + err.Error())
+		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
+		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
@@ -65,7 +65,7 @@ func main() {
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		log.Fatal("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
+		log.Fatal("No value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go rfputilities.TrackConfigFileChanges(configFilePath)
@@ -229,6 +229,13 @@ func routers() *iris.Application {
 		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
 		update.Get("/SoftwareInventory", rfphandler.GetResource)
 		update.Get("/SoftwareInventory/{id}", rfphandler.GetResource)
+
+		//Adding routes related to telemetry service
+		telemetry := pluginRoutes.Party("/TelemetryService", rfpmiddleware.BasicAuth)
+		telemetry.Get("/MetricDefinitions", rfphandler.GetResource)
+		telemetry.Get("/MetricReportDefinitions", rfphandler.GetResource)
+		telemetry.Get("/MetricReports", rfphandler.GetResource)
+		telemetry.Get("/Triggers", rfphandler.GetResource)
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

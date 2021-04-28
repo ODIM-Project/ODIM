@@ -152,17 +152,21 @@ type ConnectionMethodConf struct {
 
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
+	err := collectCLIData()
+	if err != nil {
+		return fmt.Errorf("Failed to collect command line arguments: %v", err)
+	}
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return fmt.Errorf("error: no value set to environment variable CONFIG_FILE_PATH")
+		return fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		return fmt.Errorf("error: failed to read the config file: %v", err)
+		return fmt.Errorf("Failed to read the config file: %v", err)
 	}
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
-		return fmt.Errorf("error: failed to unmarshal config data: %v", err)
+		return fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
 
 	return ValidateConfiguration()

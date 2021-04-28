@@ -152,7 +152,6 @@ type ConnectionMethodConf struct {
 
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
-	collectCLIData()
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
 		return fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")

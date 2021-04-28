@@ -153,7 +153,7 @@ func (s *odimService) Client(clientName string) (*grpc.ClientConn, error) {
 
 // Run will make the gRPC microservice up and running
 func (s *odimService) Run() error {
-	l, err := net.Listen("tcp", config.CLIData.ServerAddress)
+	l, err := net.Listen("tcp", s.serverAddress)
 	if err != nil {
 		return fmt.Errorf("While trying to get listen for the grpc, got: %v", err)
 	}
@@ -162,12 +162,13 @@ func (s *odimService) Run() error {
 }
 
 func (s *odimService) init(serviceName string) error {
+	collectCLIData()
 	s.serverName = serviceName
-	s.registryAddress = config.CLIData.RegistryAddress
+	s.registryAddress = cliData.RegistryAddress
 	if s.registryAddress == "" {
 		return fmt.Errorf("RegistryAddress not found")
 	}
-	s.serverAddress = config.CLIData.ServerAddress
+	s.serverAddress = cliData.ServerAddress
 	if s.serverAddress == "" && s.serverName != APIClient {
 		return fmt.Errorf("ServerAddress not found")
 	}

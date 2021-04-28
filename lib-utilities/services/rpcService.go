@@ -20,6 +20,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -30,7 +31,25 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// TODO: remove line 33 to 87 after the completion of go micro to gRPC migration.
+// frameworkType is for selecting framework for bringing up the microservices
+type frameworkType int
+
+const (
+	// GRPC allows the microservices to be brought up with gRPC protocol
+	GRPC frameworkType = iota
+	// GoMicro allows the microservices to be brought up with GoMicro framework
+	GoMicro
+)
+
+// odimService holds the components for bringing up and communicating with a micro service
+type odimService struct {
+	Server               *grpc.Server
+	clientTransportCreds credentials.TransportCredentials
+	name                 string
+}
+
+// ODIMService holds the initialized instance of odimService
+var ODIMService odimService
 
 // Service holds the microservice instance
 var Service micro.Service
@@ -38,52 +57,72 @@ var Service micro.Service
 // InitializeService will initialize a new micro.Service.
 // Service will be initialized here itself, so the Server() and Client()
 // called easily.
-func InitializeService(serviceName string) error {
+func InitializeService(framework frameworkType, serviceName string) error {
+	switch framework {
+	case GRPC:
+		ODIMService.name = serviceName
+		tlsServerCredentials, err := loadTLSCredentials(serverService)
+		if err != nil {
+			return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
+		}
+		err = registerService(serviceName)
+		if err != nil {
+			return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
+		}
 
-	cer, err := tls.X509KeyPair(
-		config.Data.KeyCertConf.RPCCertificate,
-		config.Data.KeyCertConf.RPCPrivateKey,
-	)
-	if err != nil {
-		return fmt.Errorf("error while trying to load x509 key pair: %v", err)
-	}
+		_, err = loadTLSCredentials(clientService)
+		if err != nil {
+			return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
+		}
+		ODIMService.Server = grpc.NewServer(
+			grpc.Creds(tlsServerCredentials),
+		)
+	case GoMicro:
+		cer, err := tls.X509KeyPair(
+			config.Data.KeyCertConf.RPCCertificate,
+			config.Data.KeyCertConf.RPCPrivateKey,
+		)
+		if err != nil {
+			return fmt.Errorf("error while trying to load x509 key pair: %v", err)
+		}
 
-	certPool := x509.NewCertPool()
+		certPool := x509.NewCertPool()
 
-	block, _ := pem.Decode(config.Data.KeyCertConf.RootCACertificate)
-	if block == nil {
-		return fmt.Errorf("error while decoding ca file")
-	}
-	if block.Type != "CERTIFICATE" || len(block.Headers) != 0 {
-		return fmt.Errorf("error while decoding ca file")
-	}
+		block, _ := pem.Decode(config.Data.KeyCertConf.RootCACertificate)
+		if block == nil {
+			return fmt.Errorf("error while decoding ca file")
+		}
+		if block.Type != "CERTIFICATE" || len(block.Headers) != 0 {
+			return fmt.Errorf("error while decoding ca file")
+		}
 
-	certificate, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return fmt.Errorf("error while ParseCertificate ca block file: %v", err)
-	}
+		certificate, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return fmt.Errorf("error while ParseCertificate ca block file: %v", err)
+		}
 
-	certPool.AddCert(certificate)
+		certPool.AddCert(certificate)
 
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cer},
-		RootCAs:      certPool,
-		ServerName:   config.Data.LocalhostFQDN,
-	}
-	config.Server.SetTLSConfig(tlsConfig)
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cer},
+			RootCAs:      certPool,
+			ServerName:   config.Data.LocalhostFQDN,
+		}
+		config.Server.SetTLSConfig(tlsConfig)
 
-	Service = micro.NewService(
-		micro.Name(serviceName),
-		micro.Transport(
-			transport.NewTransport(
-				transport.Secure(true),
-				transport.TLSConfig(tlsConfig),
+		Service = micro.NewService(
+			micro.Name(serviceName),
+			micro.Transport(
+				transport.NewTransport(
+					transport.Secure(true),
+					transport.TLSConfig(tlsConfig),
+				),
 			),
-		),
-	)
-	Service.Init()
-	return nil
+		)
+		Service.Init()
+	}
 
+	return nil
 }
 
 // gRPC implementation starts here. TODO: remove this comment after the removal of go micro implementation.
@@ -95,43 +134,15 @@ const (
 	clientService
 )
 
-var (
-	clientTransportCreds credentials.TransportCredentials
-	// Server is for bringing up gRPC micro services
-	Server *grpc.Server
-)
-
-// InitializeMicroService register the micro service and initializes the gRPC client transport
-// and server. Function returns error at the failure of server or client transport creation
-func InitializeMicroService(serviceName string) error {
-	tlsServerCredentials, err := loadTLSCredentials(serverService)
-	if err != nil {
-		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
-	}
-	err = registerService(serviceName)
-	if err != nil {
-		return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
-	}
-
-	_, err = loadTLSCredentials(clientService)
-	if err != nil {
-		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
-	}
-	Server = grpc.NewServer(
-		grpc.Creds(tlsServerCredentials),
-	)
-	return nil
-}
-
-// GetServiceClient will return the gRPC client connection for the requested service.
+// Client will return the gRPC client connection for the requested service.
 // Function will get the service address from the service registry
 // with the name privided for establishing connection.
 // IMPORTANT: the connection created with this function must be close by the user.
 // usage:
-// conn, err := GetServiceClient(AccountSession)
+// conn, err := ODIMService.Client()
 // defer conn.Close()
-func GetServiceClient(serviceName string) (*grpc.ClientConn, error) {
-	serviceAddress, err := getServiceAddress(serviceName)
+func (s *odimService) Client() (*grpc.ClientConn, error) {
+	serviceAddress, err := getServiceAddress(s.name)
 	if err != nil {
 		return nil, fmt.Errorf("While trying to get the service address from registry, got: %v", err)
 	}
@@ -145,6 +156,16 @@ func GetServiceClient(serviceName string) (*grpc.ClientConn, error) {
 		serviceAddress,
 		grpc.WithTransportCredentials(tlsCredentials),
 	)
+}
+
+// Run will make the gRPC microservice up and running
+func (s *odimService) Run() error {
+	l, err := net.Listen("tcp", config.CLIData.ServerAddress)
+	if err != nil {
+		return fmt.Errorf("While trying to get listen for the grpc, got: %v", err)
+	}
+	s.Server.Serve(l)
+	return nil
 }
 
 func getServiceAddress(serviceName string) (string, error) {
@@ -193,14 +214,14 @@ func loadTLSCredentials(st serviceType) (credentials.TransportCredentials, error
 		}
 		return credentials.NewTLS(tlsConfig), nil
 	case clientService:
-		if clientTransportCreds == nil {
+		if ODIMService.clientTransportCreds == nil {
 			tlsConfig, err := loadClientTLSConfig()
 			if err != nil {
 				return nil, fmt.Errorf("While trying to load client TLS config, got: %v", err)
 			}
-			clientTransportCreds = credentials.NewTLS(tlsConfig)
+			ODIMService.clientTransportCreds = credentials.NewTLS(tlsConfig)
 		}
-		return clientTransportCreds, nil
+		return ODIMService.clientTransportCreds, nil
 	}
 	return nil, nil
 }

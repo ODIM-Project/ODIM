@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-package config
+package services
 
 import (
 	"flag"
@@ -21,21 +21,25 @@ import (
 
 // cliModel holds the data passed as the command line argument
 type cliModel struct {
-	RegistryAddress string
-	ServerAddress   string
+	ClientRequestTimeout string
+	Registry             string
+	RegistryAddress      string
+	ServerAddress        string
 }
 
 // CLIData is for accessing the data passed as the command line argument
-var CLIData cliModel
+var cliData cliModel
 
 func collectCLIData() {
-	flag.StringVar(&CLIData.RegistryAddress, "registry_address", "", "address of the registry")
-	flag.StringVar(&CLIData.ServerAddress, "server_address", "", "address for the micro service")
+	flag.StringVar(&cliData.ClientRequestTimeout, "client_request_timeout", "", "maximum request time which client waits")
+	flag.StringVar(&cliData.Registry, "registry", "", "service registry")
+	flag.StringVar(&cliData.RegistryAddress, "registry_address", "", "address of the registry")
+	flag.StringVar(&cliData.ServerAddress, "server_address", "", "address for the micro service")
 	flag.Parse()
-	if CLIData.RegistryAddress == "" {
+	if cliData.RegistryAddress == "" {
 		log.Warn("No CLI argument found for registry_address")
 	}
-	if CLIData.ServerAddress == "" {
+	if cliData.ServerAddress == "" {
 		log.Warn("No CLI argument found for server_address")
 	}
 }

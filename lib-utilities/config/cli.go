@@ -16,7 +16,7 @@ package config
 
 import (
 	"flag"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // cliModel holds the data passed as the command line argument
@@ -28,14 +28,14 @@ type cliModel struct {
 // CLIData is for accessing the data passed as the command line argument
 var CLIData cliModel
 
-func collectCLIData() error {
+func collectCLIData() {
 	flag.StringVar(&CLIData.RegistryAddress, "registry_address", "", "address of the registry")
-	if CLIData.RegistryAddress == "" {
-		return fmt.Errorf("No CLI argument found for registry_address")
-	}
 	flag.StringVar(&CLIData.ServerAddress, "server_address", "", "address for the micro service")
-	if CLIData.ServerAddress == "" {
-		return fmt.Errorf("No CLI argument found for server_address")
+	flag.Parse()
+	if CLIData.RegistryAddress == "" {
+		log.Warn("No CLI argument found for registry_address")
 	}
-	return nil
+	if CLIData.ServerAddress == "" {
+		log.Warn("No CLI argument found for server_address")
+	}
 }

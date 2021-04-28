@@ -64,9 +64,7 @@ var ODIMService odimService
 // Service holds the microservice instance
 var Service micro.Service
 
-// InitializeService will initialize a new micro.Service.
-// Service will be initialized here itself, so the Server() and Client()
-// called easily.
+// InitializeService will initialize a new micro service with the selected framework.
 func InitializeService(framework frameworkType, serverName string) error {
 	switch framework {
 	case GRPC:
@@ -80,35 +78,9 @@ func InitializeService(framework frameworkType, serverName string) error {
 		}
 
 	case GoMicro:
-		cer, err := tls.X509KeyPair(
-			config.Data.KeyCertConf.RPCCertificate,
-			config.Data.KeyCertConf.RPCPrivateKey,
-		)
+		tlsConfig, err := getGoMicroTLSConfig()
 		if err != nil {
-			return fmt.Errorf("error while trying to load x509 key pair: %v", err)
-		}
-
-		certPool := x509.NewCertPool()
-
-		block, _ := pem.Decode(config.Data.KeyCertConf.RootCACertificate)
-		if block == nil {
-			return fmt.Errorf("error while decoding ca file")
-		}
-		if block.Type != "CERTIFICATE" || len(block.Headers) != 0 {
-			return fmt.Errorf("error while decoding ca file")
-		}
-
-		certificate, err := x509.ParseCertificate(block.Bytes)
-		if err != nil {
-			return fmt.Errorf("error while ParseCertificate ca block file: %v", err)
-		}
-
-		certPool.AddCert(certificate)
-
-		tlsConfig := &tls.Config{
-			Certificates: []tls.Certificate{cer},
-			RootCAs:      certPool,
-			ServerName:   config.Data.LocalhostFQDN,
+			return fmt.Errorf("Failed to load TLS config for go micro: %v", err)
 		}
 		config.Server.SetTLSConfig(tlsConfig)
 
@@ -123,7 +95,6 @@ func InitializeService(framework frameworkType, serverName string) error {
 		)
 		Service.Init()
 	}
-
 	return nil
 }
 
@@ -275,5 +246,21 @@ func loadClientTLSConfig() (*tls.Config, error) {
 	return &tls.Config{
 		RootCAs:    certPool,
 		ServerName: config.Data.LocalhostFQDN,
+	}, nil
+}
+
+func getGoMicroTLSConfig() (*tls.Config, error) {
+	serverTLS, err := loadServerTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load server tls: %v", err)
+	}
+	clientTLS, err := loadClientTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load client tls: %v", err)
+	}
+	return &tls.Config{
+		RootCAs:      clientTLS.RootCAs,
+		Certificates: serverTLS.Certificates,
+		ServerName:   config.Data.LocalhostFQDN,
 	}, nil
 }

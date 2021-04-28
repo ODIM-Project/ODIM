@@ -41,11 +41,21 @@ const (
 	GoMicro
 )
 
+type serviceType int
+
+const (
+	serverService serviceType = iota
+	clientService
+)
+
 // odimService holds the components for bringing up and communicating with a micro service
 type odimService struct {
-	Server               *grpc.Server
 	clientTransportCreds credentials.TransportCredentials
-	name                 string
+	registryAddress      string
+	Server               *grpc.Server
+	serverAddress        string
+	serverName           string
+	serverTransportCreds credentials.TransportCredentials
 }
 
 // ODIMService holds the initialized instance of odimService
@@ -57,26 +67,18 @@ var Service micro.Service
 // InitializeService will initialize a new micro.Service.
 // Service will be initialized here itself, so the Server() and Client()
 // called easily.
-func InitializeService(framework frameworkType, serviceName string) error {
+func InitializeService(framework frameworkType, serverName string) error {
 	switch framework {
 	case GRPC:
-		ODIMService.name = serviceName
-		tlsServerCredentials, err := loadTLSCredentials(serverService)
+		err := ODIMService.init(serverName)
 		if err != nil {
-			return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
+			return fmt.Errorf("While trying to initiate ODIMService model, got: %v", err)
 		}
-		err = registerService(serviceName)
+		err = ODIMService.registerService()
 		if err != nil {
 			return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
 		}
 
-		_, err = loadTLSCredentials(clientService)
-		if err != nil {
-			return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
-		}
-		ODIMService.Server = grpc.NewServer(
-			grpc.Creds(tlsServerCredentials),
-		)
 	case GoMicro:
 		cer, err := tls.X509KeyPair(
 			config.Data.KeyCertConf.RPCCertificate,
@@ -111,7 +113,7 @@ func InitializeService(framework frameworkType, serviceName string) error {
 		config.Server.SetTLSConfig(tlsConfig)
 
 		Service = micro.NewService(
-			micro.Name(serviceName),
+			micro.Name(serverName),
 			micro.Transport(
 				transport.NewTransport(
 					transport.Secure(true),
@@ -125,36 +127,27 @@ func InitializeService(framework frameworkType, serviceName string) error {
 	return nil
 }
 
-// gRPC implementation starts here. TODO: remove this comment after the removal of go micro implementation.
-
-type serviceType int
-
-const (
-	serverService serviceType = iota
-	clientService
-)
-
 // Client will return the gRPC client connection for the requested service.
 // Function will get the service address from the service registry
 // with the name privided for establishing connection.
 // IMPORTANT: the connection created with this function must be close by the user.
 // usage:
-// conn, err := ODIMService.Client()
+// conn, err := ODIMService.Client(AccountSession)
 // defer conn.Close()
-func (s *odimService) Client() (*grpc.ClientConn, error) {
-	serviceAddress, err := getServiceAddress(s.name)
+func (s *odimService) Client(clientName string) (*grpc.ClientConn, error) {
+	clientAddress, err := s.getServiceAddress(clientName)
 	if err != nil {
 		return nil, fmt.Errorf("While trying to get the service address from registry, got: %v", err)
 	}
 
-	tlsCredentials, err := loadTLSCredentials(clientService)
+	err = s.loadTLSCredentials(clientService)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load TLS credentials: %v", err)
 	}
 
 	return grpc.Dial(
-		serviceAddress,
-		grpc.WithTransportCredentials(tlsCredentials),
+		clientAddress,
+		grpc.WithTransportCredentials(s.clientTransportCreds),
 	)
 }
 
@@ -168,9 +161,33 @@ func (s *odimService) Run() error {
 	return nil
 }
 
-func getServiceAddress(serviceName string) (string, error) {
+func (s *odimService) init(serviceName string) error {
+	s.serverName = serviceName
+	s.registryAddress = config.CLIData.RegistryAddress
+	if s.registryAddress == "" {
+		return fmt.Errorf("RegistryAddress not found")
+	}
+	s.serverAddress = config.CLIData.ServerAddress
+	if s.serverAddress == "" && s.serverName != APIClient {
+		return fmt.Errorf("ServerAddress not found")
+	}
+	err := s.loadTLSCredentials(serverService)
+	if err != nil {
+		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
+	}
+	err = s.loadTLSCredentials(clientService)
+	if err != nil {
+		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
+	}
+	ODIMService.Server = grpc.NewServer(
+		grpc.Creds(s.serverTransportCreds),
+	)
+	return nil
+}
+
+func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{config.CLIData.RegistryAddress},
+		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
@@ -188,9 +205,9 @@ func getServiceAddress(serviceName string) (string, error) {
 	return string(resp.Kvs[0].Value), nil
 }
 
-func registerService(serviceName string) error {
+func (s *odimService) registerService() error {
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{config.CLIData.RegistryAddress},
+		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
 	})
 	if err != nil {
@@ -198,32 +215,31 @@ func registerService(serviceName string) error {
 	}
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
-	_, err = kv.Put(context.TODO(), serviceName, config.CLIData.ServerAddress)
+	_, err = kv.Put(context.TODO(), s.serverName, s.serverAddress)
 	if err != nil {
 		return fmt.Errorf("While trying to register the service, got: %v", err)
 	}
 	return nil
 }
 
-func loadTLSCredentials(st serviceType) (credentials.TransportCredentials, error) {
+func (s *odimService) loadTLSCredentials(st serviceType) error {
 	switch st {
 	case serverService:
 		tlsConfig, err := loadServerTLSConfig()
 		if err != nil {
-			return nil, fmt.Errorf("While trying to load server TLS config, got: %v", err)
+			return fmt.Errorf("While trying to load server TLS config, got: %v", err)
 		}
-		return credentials.NewTLS(tlsConfig), nil
+		s.serverTransportCreds = credentials.NewTLS(tlsConfig)
 	case clientService:
-		if ODIMService.clientTransportCreds == nil {
+		if s.clientTransportCreds == nil {
 			tlsConfig, err := loadClientTLSConfig()
 			if err != nil {
-				return nil, fmt.Errorf("While trying to load client TLS config, got: %v", err)
+				return fmt.Errorf("While trying to load client TLS config, got: %v", err)
 			}
-			ODIMService.clientTransportCreds = credentials.NewTLS(tlsConfig)
+			s.clientTransportCreds = credentials.NewTLS(tlsConfig)
 		}
-		return ODIMService.clientTransportCreds, nil
 	}
-	return nil, nil
+	return nil
 }
 
 func loadServerTLSConfig() (*tls.Config, error) {

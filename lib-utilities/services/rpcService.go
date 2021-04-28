@@ -96,48 +96,44 @@ const (
 )
 
 var (
-	// GRPCClientTransportCreds is for establishing the tls secured gRPC client communication
-	GRPCClientTransportCreds credentials.TransportCredentials
-	// GRPCServer is for bringing up gRPC micro services
-	GRPCServer *grpc.Server
+	clientTransportCreds credentials.TransportCredentials
+	// Server is for bringing up gRPC micro services
+	Server *grpc.Server
 )
 
-// InitializeGRPC initializes the gRPC client transport and server
-// Function returns error at the failure of server or client transport creation
-func InitializeGRPC() error {
-	var err error
-
-	GRPCClientTransportCreds, err = loadTLSCredentials(clientService)
-	if err != nil {
-		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
-	}
-
+// InitializeMicroService register the micro service and initializes the gRPC client transport
+// and server. Function returns error at the failure of server or client transport creation
+func InitializeMicroService(serviceName string) error {
 	tlsServerCredentials, err := loadTLSCredentials(serverService)
 	if err != nil {
 		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
 	}
-	GRPCServer = grpc.NewServer(
+	err = registerService(serviceName)
+	if err != nil {
+		return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
+	}
+
+	_, err = loadTLSCredentials(clientService)
+	if err != nil {
+		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
+	}
+	Server = grpc.NewServer(
 		grpc.Creds(tlsServerCredentials),
 	)
 	return nil
 }
 
-// GetGRPCClient will return the gRPC client connection for the requested service.
+// GetServiceClient will return the gRPC client connection for the requested service.
 // Function will get the service address from the service registry
 // with the name privided for establishing connection.
 // IMPORTANT: the connection created with this function must be close by the user.
 // usage:
-// conn, err := GetGRPCClient(AccountSession)
+// conn, err := GetServiceClient(AccountSession)
 // defer conn.Close()
-func GetGRPCClient(serviceName string) (*grpc.ClientConn, error) {
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"etcd:2379"},
-		DialTimeout: 5 * time.Second,
-	})
-	kv := clientv3.NewKV(cli)
-	resp, err := kv.Get(context.TODO(), serviceName, clientv3.WithPrefix())
+func GetServiceClient(serviceName string) (*grpc.ClientConn, error) {
+	serviceAddress, err := getServiceAddress(serviceName)
 	if err != nil {
-		return nil, fmt.Errorf("While trying to get the service from registry, got: %v", err)
+		return nil, fmt.Errorf("While trying to get the service address from registry, got: %v", err)
 	}
 
 	tlsCredentials, err := loadTLSCredentials(clientService)
@@ -146,9 +142,46 @@ func GetGRPCClient(serviceName string) (*grpc.ClientConn, error) {
 	}
 
 	return grpc.Dial(
-		string(resp.Kvs[0].Value),
+		serviceAddress,
 		grpc.WithTransportCredentials(tlsCredentials),
 	)
+}
+
+func getServiceAddress(serviceName string) (string, error) {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{config.CLIData.RegistryAddress},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return "", fmt.Errorf("While trying to create registry client, got: %v", err)
+	}
+	defer cli.Close()
+	kv := clientv3.NewKV(cli)
+	resp, err := kv.Get(context.TODO(), serviceName, clientv3.WithPrefix())
+	if err != nil {
+		return "", fmt.Errorf("While trying to get the service from registry, got: %v", err)
+	}
+	if len(resp.Kvs) == 0 {
+		return "", fmt.Errorf("No service with %s found in the service registry", serviceName)
+	}
+	return string(resp.Kvs[0].Value), nil
+}
+
+func registerService(serviceName string) error {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{config.CLIData.RegistryAddress},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return fmt.Errorf("While trying to create registry client, got: %v", err)
+	}
+	defer cli.Close()
+	kv := clientv3.NewKV(cli)
+	_, err = kv.Put(context.TODO(), serviceName, config.CLIData.ServerAddress)
+	if err != nil {
+		return fmt.Errorf("While trying to register the service, got: %v", err)
+	}
+	return nil
 }
 
 func loadTLSCredentials(st serviceType) (credentials.TransportCredentials, error) {
@@ -160,14 +193,14 @@ func loadTLSCredentials(st serviceType) (credentials.TransportCredentials, error
 		}
 		return credentials.NewTLS(tlsConfig), nil
 	case clientService:
-		if GRPCClientTransportCreds == nil {
+		if clientTransportCreds == nil {
 			tlsConfig, err := loadClientTLSConfig()
 			if err != nil {
 				return nil, fmt.Errorf("While trying to load client TLS config, got: %v", err)
 			}
-			return credentials.NewTLS(tlsConfig), nil
+			clientTransportCreds = credentials.NewTLS(tlsConfig)
 		}
-		return GRPCClientTransportCreds, nil
+		return clientTransportCreds, nil
 	}
 	return nil, nil
 }

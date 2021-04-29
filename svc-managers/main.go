@@ -41,6 +41,8 @@ func main() {
 		log.Fatal("fatal: error while trying set up configuration: %v" + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal(err.Error())
 	}

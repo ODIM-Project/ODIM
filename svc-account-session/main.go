@@ -39,6 +39,8 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("Error while trying to check DB connection health: " + err.Error())
 	}

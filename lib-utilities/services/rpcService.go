@@ -68,7 +68,7 @@ var Service micro.Service
 func InitializeService(framework frameworkType, serverName string) error {
 	switch framework {
 	case GRPC:
-		err := ODIMService.init(serverName)
+		err := ODIMService.Init(serverName)
 		if err != nil {
 			return fmt.Errorf("While trying to initiate ODIMService model, got: %v", err)
 		}
@@ -132,7 +132,9 @@ func (s *odimService) Run() error {
 	return nil
 }
 
-func (s *odimService) init(serviceName string) error {
+// Init initializes the ODIMService with server and client TLS, server and registry details etc.
+// It also initialize ODIMService.Server which will help in bring up a microservice
+func (s *odimService) Init(serviceName string) error {
 	collectCLIData()
 	s.serverName = serviceName
 	s.registryAddress = cliData.RegistryAddress

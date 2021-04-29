@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: odim-ra
+    unit: etcd
+spec:
+  type: ClusterIP
+  selector:
+    app: odim-ra
+    unit: etcd
+    parentdeployment: odim-etcd
+  ports:
+    - name: etcd-server
+      port: 2379
+    - name: etcd-quorum
+      port: 2380

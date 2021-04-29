@@ -152,6 +152,8 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	err = services.InitializeService(services.GoMicro, services.APIClient)
 	if err != nil {
 		log.Fatal("service initialisation failed: " + err.Error())

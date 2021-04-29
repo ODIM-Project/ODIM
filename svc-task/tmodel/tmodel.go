@@ -18,8 +18,9 @@ package tmodel
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 )
@@ -159,7 +160,7 @@ func UpdateTaskStatus(t *Task, db common.DbType) error {
 		return fmt.Errorf("error while trying to update task: %v", err.Error())
 	}
 	// Build Redis Index here if we dont do it in thandle
-	if t.TaskState == "Completed" && t.ParentID == "" {
+	if (t.TaskState == "Completed" || t.TaskState == "Exception") && t.ParentID == "" {
 		taskIndexErr := BuildCompletedTaskIndex(t, CompletedTaskTable)
 		if taskIndexErr != nil {
 			log.Error("UpdateTaskStatus : error in creating index for task : " + taskIndexErr.Error())

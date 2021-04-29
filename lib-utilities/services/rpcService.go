@@ -135,13 +135,12 @@ func (s *odimService) Run() error {
 // Init initializes the ODIMService with server and client TLS, server and registry details etc.
 // It also initialize ODIMService.Server which will help in bring up a microservice
 func (s *odimService) Init(serviceName string) error {
-	collectCLIData()
 	s.serverName = serviceName
-	s.registryAddress = cliData.RegistryAddress
+	s.registryAddress = config.CLArgs.RegistryAddress
 	if s.registryAddress == "" {
 		return fmt.Errorf("RegistryAddress not found")
 	}
-	s.serverAddress = cliData.ServerAddress
+	s.serverAddress = config.CLArgs.ServerAddress
 	if s.serverAddress == "" && s.serverName != APIClient {
 		return fmt.Errorf("ServerAddress not found")
 	}

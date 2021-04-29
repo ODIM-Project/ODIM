@@ -41,6 +41,8 @@ func main() {
 		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}

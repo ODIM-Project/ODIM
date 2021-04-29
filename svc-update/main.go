@@ -37,6 +37,8 @@ func main() {
 		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
 	}

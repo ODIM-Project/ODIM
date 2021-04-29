@@ -12,7 +12,7 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-package services
+package config
 
 import (
 	"flag"
@@ -20,26 +20,27 @@ import (
 )
 
 // cliModel holds the data passed as the command line argument
-type cliModel struct {
+type clModel struct {
 	ClientRequestTimeout string
 	Registry             string
 	RegistryAddress      string
 	ServerAddress        string
 }
 
-// CLIData is for accessing the data passed as the command line argument
-var cliData cliModel
+// CLArgs is for accessing the data passed as the command line argument
+var CLArgs clModel
 
-func collectCLIData() {
-	flag.StringVar(&cliData.ClientRequestTimeout, "client_request_timeout", "", "maximum request time which client waits")
-	flag.StringVar(&cliData.Registry, "registry", "", "service registry")
-	flag.StringVar(&cliData.RegistryAddress, "registry_address", "", "address of the registry")
-	flag.StringVar(&cliData.ServerAddress, "server_address", "", "address for the micro service")
+// CollectCLArgs will collect the command line arguments and fill CLArgs variable of type clModel
+func CollectCLArgs() {
+	flag.StringVar(&CLArgs.ClientRequestTimeout, "client_request_timeout", "", "maximum request time which client waits")
+	flag.StringVar(&CLArgs.Registry, "registry", "", "service registry")
+	flag.StringVar(&CLArgs.RegistryAddress, "registry_address", "", "address of the registry")
+	flag.StringVar(&CLArgs.ServerAddress, "server_address", "", "address for the micro service")
 	flag.Parse()
-	if cliData.RegistryAddress == "" {
+	if CLArgs.RegistryAddress == "" {
 		log.Warn("No CLI argument found for registry_address")
 	}
-	if cliData.ServerAddress == "" {
+	if CLArgs.ServerAddress == "" {
 		log.Warn("No CLI argument found for server_address")
 	}
 }

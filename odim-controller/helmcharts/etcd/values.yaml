@@ -1,0 +1,6 @@
+odimra:
+  namespace:
+  groupID:
+  etcdImageTag: "1.16"
+  etcdConfPath:
+  etcdDataPath:

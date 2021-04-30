@@ -29,7 +29,7 @@ odim_third_party_ha_helmcharts:
    redis: redis-ha-5.0.8-0.1.0
    kafka: kafka-ha-2.5.0-0.1.0
    consul: consul-ha-1.6.0-0.1.0
-   etcd: etcd-1.16.0-0.1.0
+   etcd: etcd-ha-1.16.0-0.1.0
 odim_svc_helmcharts:
    account-session: account-session-0.1.0
    aggregation: aggregation-0.1.0

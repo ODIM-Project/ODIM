@@ -461,17 +461,24 @@ func (p *PluginContact) DeleteFabricsSubscription(originResource string, plugin 
 	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
 	devSub, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
+
 		errorMessage := "Error while get device subscription details: " + err.Error()
 		if strings.Contains(err.Error(), "No data found for the key") {
-			var msgArgs = []interface{}{"CFM Plugin", addr}
-			evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+			// retry the GetDeviceSubscription with plugin IP
+			devSub, err = evmodel.GetDeviceSubscriptions(plugin.IP)
+			if err != nil {
+
+				var msgArgs = []interface{}{plugin.ID + " Plugin", addr}
+				evcommon.GenErrorResponse(errorMessage, response.ResourceNotFound, http.StatusNotFound, msgArgs, &resp)
+				log.Error(errorMessage)
+				return resp, err
+			}
+		} else {
+			evcommon.GenErrorResponse(errorMessage, response.InternalError, http.StatusInternalServerError,
+				[]interface{}{}, &resp)
 			log.Error(errorMessage)
 			return resp, err
 		}
-		evcommon.GenErrorResponse(errorMessage, response.InternalError, http.StatusInternalServerError,
-			[]interface{}{}, &resp)
-		log.Error(errorMessage)
-		return resp, err
 	}
 
 	var contactRequest evcommon.PluginContactRequest
@@ -533,8 +540,11 @@ func (p *PluginContact) resubscribeFabricsSubscription(subscriptionPost evmodel.
 			return fmt.Errorf(errorMessage)
 		}
 		// Deleting the fabric subscription
-		_, err := p.DeleteFabricsSubscription(origin, plugin)
+		resp, err := p.DeleteFabricsSubscription(origin, plugin)
 		if err != nil {
+			if resp.StatusCode == http.StatusNotFound {
+				return nil
+			}
 			return err
 		}
 

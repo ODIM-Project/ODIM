@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -40,6 +41,8 @@ func main() {
 		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
@@ -55,7 +58,7 @@ func main() {
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
-	if err := services.InitializeService(services.Tasks); err != nil {
+	if err := services.InitializeService(services.GoMicro, services.Tasks); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 

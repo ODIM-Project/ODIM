@@ -37,6 +37,8 @@ func main() {
 		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
@@ -48,7 +50,7 @@ func main() {
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
-	err := services.InitializeService(services.Update)
+	err := services.InitializeService(services.GoMicro, services.Update)
 	if err != nil {
 		log.Error("fatal: error while trying to initialize the service: " + err.Error())
 	}
@@ -61,7 +63,7 @@ func main() {
 }
 
 func registerHandlers() {
-	err := services.InitializeService(services.Update)
+	err := services.InitializeService(services.GoMicro, services.Update)
 	if err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}

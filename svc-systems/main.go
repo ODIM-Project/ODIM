@@ -46,6 +46,8 @@ func main() {
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
@@ -67,7 +69,7 @@ func main() {
 	}
 	go scommon.TrackConfigFileChanges(configFilePath)
 
-	err = services.InitializeService(services.Systems)
+	err = services.InitializeService(services.GoMicro, services.Systems)
 	if err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}

@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -40,6 +41,8 @@ func main() {
 		log.Fatal("fatal: error while trying set up configuration: %v" + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal(err.Error())
 	}
@@ -57,7 +60,7 @@ func main() {
 	}
 	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 
-	err = services.InitializeService(services.Managers)
+	err = services.InitializeService(services.GoMicro, services.Managers)
 	if err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}

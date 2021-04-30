@@ -17,8 +17,11 @@ FROM ubuntu:18.04 as etcd-build
 
 LABEL version="1.0"
 LABEL ubuntuVersion="18.04"
-LABEL etcdVersion="3.4.0"
+LABEL etcdVersion="3.4.15"
 LABEL description="etcd docker image built on top of ubuntu:18.04"
+
+# This is the release of etcd to pull in.
+ENV ETDC_VERSION=3.4.15
 
 WORKDIR /etcd/
 
@@ -34,8 +37,8 @@ RUN apt-get update -q=3 && apt-get -q install -q=3 -y \
 
 RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
 	&& mkdir -p /opt/etcd/bin /opt/etcd/data /opt/etcd/conf /opt/etcd/scripts /etcd/tmp \
-        && export ETCD_IMAGE_URL=https://storage.googleapis.com/etcd/v3.4.0/etcd-v3.4.0-linux-amd64.tar.gz \
-        && export ETCD_IMAGE_BUNDLE=etcd-v3.4.0-linux-amd64.tar.gz \
+        && export ETCD_IMAGE_URL=https://storage.googleapis.com/etcd/v${ETDC_VERSION}/etcd-v${ETDC_VERSION}-linux-amd64.tar.gz \
+        && export ETCD_IMAGE_BUNDLE=etcd-v${ETDC_VERSION}-linux-amd64.tar.gz \
         && wget -q $ETCD_IMAGE_URL -P /etcd/ \
         && tar -xzf /etcd/${ETCD_IMAGE_BUNDLE} --strip-components 1 -C /etcd/tmp \
         && mv -f /etcd/tmp/etcd* /opt/etcd/bin \

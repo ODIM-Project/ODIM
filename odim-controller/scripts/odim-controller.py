@@ -767,6 +767,8 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
+	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 
 	# updating key pair once after deployment is not supported.
 	if not isUpgrade:

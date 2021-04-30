@@ -3,6 +3,5 @@ odimra:
   groupID:
   etcdDirPath:
   etcdImageTag: "1.16"
-  etcdNodePort:
   etcdConfPath:
   etcdDataPath:

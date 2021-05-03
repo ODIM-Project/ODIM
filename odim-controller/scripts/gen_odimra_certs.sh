@@ -648,7 +648,7 @@ generate_etcd_certs()
 	eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_KEY_PATH} generation failed"
 
 	#generate etcd csr
-	${OPENSSL_BIN_PATH} req -new -sha512 -key ${ODIMRA_ETCD_SERVER_KEY_PATH} -subj "/C=IN/ST=KA/O=HPE/CN=${CommonName}" -config <(cat <<EOF
+	${OPENSSL_BIN_PATH} req -new -sha512 -key ${ODIMRA_ETCD_SERVER_KEY_PATH} -subj "/C=${CERT_COUNTRY_NAME}/ST=${CERT_STATE_NAME}/O=${CERT_ORGANIZATION_NAME}/CN=${CommonName}" -config <(cat <<EOF
 [ req ]
 prompt=no
 distinguished_name=subject

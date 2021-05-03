@@ -60,13 +60,13 @@ func main() {
 	}
 	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 
-	err = services.InitializeService(services.GoMicro, services.Managers)
+	err = services.InitializeService(services.GRPC, services.Managers)
 	if err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	mgrcommon.Token.Tokens = make(map[string]string)
 	registerHandlers()
-	if err = services.Service.Run(); err != nil {
+	if err = services.ODIMService.Run(); err != nil {
 		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
@@ -77,7 +77,7 @@ func registerHandlers() {
 	manager.IsAuthorizedRPC = services.IsAuthorized
 	manager.EI = managers.GetExternalInterface()
 
-	managersproto.RegisterManagersHandler(services.Service.Server(), manager)
+	managersproto.RegisterManagersServer(services.ODIMService.Server(), manager)
 }
 
 func addManagertoDB(managerInterface mgrcommon.DBInterface) error {

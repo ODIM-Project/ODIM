@@ -22,6 +22,8 @@
     - "{{ odimra.redisInmemoryDataPath }}"
     - "{{ odimra.zookeeperConfPath }}"
     - "{{ odimra.zookeeperDataPath }}"
+    - "{{ odimra.etcdConfPath }}"
+    - "{{ odimra.etcdDataPath }}"
   ignore_errors: "{{ ignore_err }}"
 
 - name: Get userdel bin path

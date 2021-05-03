@@ -153,8 +153,13 @@ func main() {
 	}
 
 	config.CollectCLArgs()
-
+	// TODO: remove the InitializeService for GoMicro after the migration
 	err = services.InitializeService(services.GoMicro, services.APIClient)
+	if err != nil {
+		log.Fatal("service initialisation failed: " + err.Error())
+	}
+
+	err = services.InitializeService(services.GRPC, services.APIClient)
 	if err != nil {
 		log.Fatal("service initialisation failed: " + err.Error())
 	}

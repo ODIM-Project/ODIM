@@ -16,10 +16,11 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -139,7 +140,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	err = services.InitializeService(services.APIClient)
+	config.CollectCLArgs()
+
+	err = services.InitializeService(services.GoMicro, services.APIClient)
 	if err != nil {
 		log.Fatal("service initialisation failed: " + err.Error())
 	}

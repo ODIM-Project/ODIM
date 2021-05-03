@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -41,6 +42,8 @@ func main() {
 		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
@@ -49,7 +52,7 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.Events); err != nil {
+	if err := services.InitializeService(services.GoMicro, services.Events); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 

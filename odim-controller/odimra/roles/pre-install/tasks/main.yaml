@@ -104,6 +104,8 @@
     - "{{ odimra.redisInmemoryDataPath }}"
     - "{{ odimra.zookeeperConfPath }}"
     - "{{ odimra.zookeeperDataPath }}"
+    - "{{ odimra.etcdConfPath }}"
+    - "{{ odimra.etcdDataPath }}"
 
 - name: Create directories required for storing logs
   file:

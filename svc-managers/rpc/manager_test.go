@@ -165,7 +165,7 @@ func TestGetManagerCollection(t *testing.T) {
 		name       string
 		mgr        *Managers
 		args       args
-		StatusCode int
+		StatusCode int32
 	}{
 		{
 			name: "Request with valid token",

@@ -194,7 +194,7 @@ func TestGetManagerCollection(t *testing.T) {
 			if err != nil {
 				t.Errorf("Manager.GetManagersCollection() got = %v, want %v", err, nil)
 			}
-			if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode != tt.StatusCode {
 				t.Errorf("Manager.GetManagersCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})

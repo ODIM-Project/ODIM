@@ -52,7 +52,7 @@ const (
 type odimService struct {
 	clientTransportCreds credentials.TransportCredentials
 	registryAddress      string
-	Server               *grpc.Server
+	server               *grpc.Server
 	serverAddress        string
 	serverName           string
 	serverTransportCreds credentials.TransportCredentials
@@ -98,6 +98,11 @@ func InitializeService(framework frameworkType, serverName string) error {
 	return nil
 }
 
+// Server returns the gRPC server, which helps in bringing up the gRPC microservices
+func (s *odimService) Server() *grpc.Server {
+	return s.server
+}
+
 // Client will return the gRPC client connection for the requested service.
 // Function will get the service address from the service registry
 // with the name privided for establishing connection.
@@ -128,12 +133,12 @@ func (s *odimService) Run() error {
 	if err != nil {
 		return fmt.Errorf("While trying to get listen for the grpc, got: %v", err)
 	}
-	s.Server.Serve(l)
+	s.server.Serve(l)
 	return nil
 }
 
 // Init initializes the ODIMService with server and client TLS, server and registry details etc.
-// It also initialize ODIMService.Server which will help in bring up a microservice
+// It also initialize ODIMService.server which will help in bring up a microservice
 func (s *odimService) Init(serviceName string) error {
 	s.serverName = serviceName
 	s.registryAddress = config.CLArgs.RegistryAddress
@@ -152,7 +157,7 @@ func (s *odimService) Init(serviceName string) error {
 	if err != nil {
 		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
 	}
-	ODIMService.Server = grpc.NewServer(
+	ODIMService.server = grpc.NewServer(
 		grpc.Creds(s.serverTransportCreds),
 	)
 	return nil

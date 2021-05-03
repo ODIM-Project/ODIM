@@ -84,16 +84,11 @@ spec:
               value: /opt/etcd/conf/odimra_etcd_server.key
           volumeMounts:
             - mountPath: "/opt/etcd/conf"
-              name: etcd-conf-pv
+              name: odimra-secret
             - mountPath: "/opt/etcd/data"
               name: etcd-data-pv
-            - name: odimra-secret
-              mountPath: /etc/odimra_certs
           workingDir: /home/etcd
       volumes:
-        - name: etcd-conf-pv
-          persistentVolumeClaim:
-            claimName: etcd-conf-pvc
         - name: etcd-data-pv
           persistentVolumeClaim:
             claimName: etcd-data-pvc
@@ -196,16 +191,11 @@ spec:
               value: /opt/etcd/conf/odimra_etcd_server.key
           volumeMounts:
             - mountPath: "/opt/etcd/conf"
-              name: etcd-conf-pv
+              name: odimra-secret
             - mountPath: "/opt/etcd/data"
               name: etcd-data-pv
-            - name: odimra-secret
-              mountPath: /etc/odimra_certs
           workingDir: /home/etcd
       volumes:
-        - name: etcd-conf-pv
-          persistentVolumeClaim:
-            claimName: etcd-conf-pvc
         - name: etcd-data-pv
           persistentVolumeClaim:
             claimName: etcd-data-pvc
@@ -308,16 +298,11 @@ spec:
               value: /opt/etcd/conf/odimra_etcd_server.key
           volumeMounts:
             - mountPath: "/opt/etcd/conf"
-              name: etcd-conf-pv
+              name: odimra-secret
             - mountPath: "/opt/etcd/data"
               name: etcd-data-pv
-            - name: odimra-secret
-              mountPath: /etc/odimra_certs
           workingDir: /home/etcd
       volumes:
-        - name: etcd-conf-pv
-          persistentVolumeClaim:
-            claimName: etcd-conf-pvc
         - name: etcd-data-pv
           persistentVolumeClaim:
             claimName: etcd-data-pvc

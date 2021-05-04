@@ -20,6 +20,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"net"
 	"time"
 
@@ -122,6 +123,7 @@ func (s *odimService) Client(clientName string) (*grpc.ClientConn, error) {
 	if err != nil {
 		return nil, fmt.Errorf("While trying to get the service address from registry, got: %v", err)
 	}
+	log.Println("CLIENT ADDRESS: ", clientAddress)
 
 	err = s.loadTLSCredentials(clientService)
 	if err != nil {

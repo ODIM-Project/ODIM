@@ -140,7 +140,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	config.CollectCLArgs()
+	// TODO: uncomment the following line after the migration
+	// config.CollectCLArgs()
+
 	// TODO: remove the InitializeService for GoMicro after the migration
 	err = services.InitializeService(services.GoMicro, services.APIClient)
 	if err != nil {

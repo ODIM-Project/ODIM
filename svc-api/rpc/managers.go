@@ -18,6 +18,7 @@ package rpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
@@ -25,12 +26,15 @@ import (
 
 //GetManagersCollection will do the rpc call to collect Managers
 func GetManagersCollection(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	log.Println("HEEERRRRRREEEEEEEEEEEEEEEEEEE")
 	conn, err := services.ODIMService.Client(services.Managers)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
+	log.Println("Got connectionnnnnnnnnnnnnnnn")
 	asService := managersproto.NewManagersClient(conn)
+	log.Println("HEEERRRREEEE REACHEDDDDDDDDDD")
 	resp, err := asService.GetManagersCollection(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)

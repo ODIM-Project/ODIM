@@ -39,6 +39,8 @@ const (
 	GRPC frameworkType = iota
 	// GoMicro allows the microservices to be brought up with GoMicro framework
 	GoMicro
+	// ClientService is for hosting client services eg: APIService
+	ClientService
 )
 
 type serviceType int
@@ -94,6 +96,11 @@ func InitializeService(framework frameworkType, serverName string) error {
 			),
 		)
 		Service.Init()
+	case ClientService:
+		err := ODIMService.Init(serverName)
+		if err != nil {
+			return fmt.Errorf("While trying to initiate ODIMService model, got: %v", err)
+		}
 	}
 	return nil
 }

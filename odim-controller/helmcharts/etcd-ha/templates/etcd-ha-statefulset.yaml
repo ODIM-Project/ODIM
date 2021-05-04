@@ -4,6 +4,8 @@ kind: StatefulSet
 metadata:
   name: etcd1
   namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
     app: odim-ra
     unit: etcd1
@@ -71,34 +73,46 @@ spec:
             - name: ADV_CLIENT_ADDR
               value: https://etcd1:2379
             - name: CLIENT_CERT_FILE
-              value: /opt/etcd/conf/etcd.crt
+              value: /opt/etcd/conf/odimra_etcd_server.crt
             - name: CLIENT_KEY_FILE
-              value: /opt/etcd/conf/etcd.key
+              value: /opt/etcd/conf/odimra_etcd_server.key
             - name: CA_FILE
               value: /opt/etcd/conf/rootCA.crt
             - name: SERVER_CERT_FILE
-              value: /opt/etcd/conf/etcd.crt
+              value: /opt/etcd/conf/odimra_etcd_server.crt
             - name: SERVER_KEY_FILE
-              value: /opt/etcd/conf/etcd.key
+              value: /opt/etcd/conf/odimra_etcd_server.key
           volumeMounts:
             - mountPath: "/opt/etcd/conf"
-              name: etcd-conf-pv
+              name: odimra-secret
             - mountPath: "/opt/etcd/data"
               name: etcd-data-pv
           workingDir: /home/etcd
       volumes:
-        - name: etcd-conf-pv
-          persistentVolumeClaim:
-            claimName: etcd-conf-pvc
         - name: etcd-data-pv
           persistentVolumeClaim:
             claimName: etcd-data-pvc
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_etcd_servercrt
+              path: odimra_etcd_server.crt
+              mode: 0444
+            - key: odimra_etcd_serverkey
+              path: odimra_etcd_server.key
+              mode: 0444
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: etcd2
   namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
     app: odim-ra
     unit: etcd2
@@ -166,34 +180,46 @@ spec:
             - name: ADV_CLIENT_ADDR
               value: https://etcd2:2379
             - name: CLIENT_CERT_FILE
-              value: /opt/etcd/conf/etcd.crt
+              value: /opt/etcd/conf/odimra_etcd_server.crt
             - name: CLIENT_KEY_FILE
-              value: /opt/etcd/conf/etcd.key
+              value: /opt/etcd/conf/odimra_etcd_server.key
             - name: CA_FILE
               value: /opt/etcd/conf/rootCA.crt
             - name: SERVER_CERT_FILE
-              value: /opt/etcd/conf/etcd.crt
+              value: /opt/etcd/conf/odimra_etcd_server.crt
             - name: SERVER_KEY_FILE
-              value: /opt/etcd/conf/etcd.key
+              value: /opt/etcd/conf/odimra_etcd_server.key
           volumeMounts:
             - mountPath: "/opt/etcd/conf"
-              name: etcd-conf-pv
+              name: odimra-secret
             - mountPath: "/opt/etcd/data"
               name: etcd-data-pv
           workingDir: /home/etcd
       volumes:
-        - name: etcd-conf-pv
-          persistentVolumeClaim:
-            claimName: etcd-conf-pvc
         - name: etcd-data-pv
           persistentVolumeClaim:
             claimName: etcd-data-pvc
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_etcd_servercrt
+              path: odimra_etcd_server.crt
+              mode: 0444
+            - key: odimra_etcd_serverkey
+              path: odimra_etcd_server.key
+              mode: 0444
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: etcd3
   namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
     app: odim-ra
     unit: etcd3
@@ -261,26 +287,36 @@ spec:
             - name: ADV_CLIENT_ADDR
               value: https://etcd3:2379
             - name: CLIENT_CERT_FILE
-              value: /opt/etcd/conf/etcd.crt
+              value: /opt/etcd/conf/odimra_etcd_server.crt
             - name: CLIENT_KEY_FILE
-              value: /opt/etcd/conf/etcd.key
+              value: /opt/etcd/conf/odimra_etcd_server.key
             - name: CA_FILE
               value: /opt/etcd/conf/rootCA.crt
             - name: SERVER_CERT_FILE
-              value: /opt/etcd/conf/etcd.crt
+              value: /opt/etcd/conf/odimra_etcd_server.crt
             - name: SERVER_KEY_FILE
-              value: /opt/etcd/conf/etcd.key
+              value: /opt/etcd/conf/odimra_etcd_server.key
           volumeMounts:
             - mountPath: "/opt/etcd/conf"
-              name: etcd-conf-pv
+              name: odimra-secret
             - mountPath: "/opt/etcd/data"
               name: etcd-data-pv
           workingDir: /home/etcd
       volumes:
-        - name: etcd-conf-pv
-          persistentVolumeClaim:
-            claimName: etcd-conf-pvc
         - name: etcd-data-pv
           persistentVolumeClaim:
             claimName: etcd-data-pvc
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_etcd_servercrt
+              path: odimra_etcd_server.crt
+              mode: 0444
+            - key: odimra_etcd_serverkey
+              path: odimra_etcd_server.key
+              mode: 0444
 ---

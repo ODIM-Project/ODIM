@@ -193,6 +193,7 @@ func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 }
 
 func (s *odimService) registerService() error {
+	log.Println("RISTERY: ", s.registryAddress)
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
@@ -202,10 +203,11 @@ func (s *odimService) registerService() error {
 	}
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
-	_, err = kv.Put(context.TODO(), s.serverName, s.serverAddress)
+	ttttt, err := kv.Put(context.TODO(), s.serverName, s.serverAddress)
 	if err != nil {
 		return fmt.Errorf("While trying to register the service, got: %v", err)
 	}
+	log.Println("tttttttttttttttttttttttt: ", ttttt)
 	return nil
 }
 

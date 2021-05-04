@@ -177,6 +177,7 @@ func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
 	})
+	log.Println("CLient: ", cli)
 	if err != nil {
 		return "", fmt.Errorf("While trying to create registry client, got: %v", err)
 	}

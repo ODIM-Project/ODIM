@@ -54,6 +54,7 @@ const (
 // odimService holds the components for bringing up and communicating with a micro service
 type odimService struct {
 	clientTransportCreds credentials.TransportCredentials
+	etcdTLSConfig        *tls.Config
 	registryAddress      string
 	server               *grpc.Server
 	serverAddress        string
@@ -166,6 +167,10 @@ func (s *odimService) Init(serviceName string) error {
 	if err != nil {
 		return fmt.Errorf("While trying to setup TLS transport layer for gRPC client, got: %v", err)
 	}
+	s.etcdTLSConfig, err = getTLSConfig()
+	if err != nil {
+		return fmt.Errorf("While trying to get tls for etcd, got: %v", err)
+	}
 	ODIMService.server = grpc.NewServer(
 		grpc.Creds(s.serverTransportCreds),
 	)
@@ -176,6 +181,7 @@ func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
+		TLS:         s.etcdTLSConfig,
 	})
 	log.Println("CLient: ", cli)
 	if err != nil {
@@ -198,6 +204,7 @@ func (s *odimService) registerService() error {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
+		TLS:         s.etcdTLSConfig,
 	})
 	if err != nil {
 		return fmt.Errorf("While trying to create registry client, got: %v", err)
@@ -268,6 +275,15 @@ func loadClientTLSConfig() (*tls.Config, error) {
 }
 
 func getGoMicroTLSConfig() (*tls.Config, error) {
+	goMicroTLS, err := getTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load certificates for GoMicro: %v", err)
+	}
+	goMicroTLS.ServerName = config.Data.LocalhostFQDN
+	return goMicroTLS, nil
+}
+
+func getTLSConfig() (*tls.Config, error) {
 	serverTLS, err := loadServerTLSConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load server tls: %v", err)
@@ -279,6 +295,5 @@ func getGoMicroTLSConfig() (*tls.Config, error) {
 	return &tls.Config{
 		RootCAs:      clientTLS.RootCAs,
 		Certificates: serverTLS.Certificates,
-		ServerName:   config.Data.LocalhostFQDN,
 	}, nil
 }

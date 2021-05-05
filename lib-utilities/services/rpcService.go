@@ -20,7 +20,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"net"
 	"time"
 
@@ -124,7 +123,6 @@ func (s *odimService) Client(clientName string) (*grpc.ClientConn, error) {
 	if err != nil {
 		return nil, fmt.Errorf("While trying to get the service address from registry, got: %v", err)
 	}
-	log.Println("CLIENT ADDRESS: ", clientAddress)
 
 	err = s.loadTLSCredentials(clientService)
 	if err != nil {
@@ -183,7 +181,6 @@ func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 		DialTimeout: 5 * time.Second,
 		TLS:         s.etcdTLSConfig,
 	})
-	log.Println("CLient: ", cli)
 	if err != nil {
 		return "", fmt.Errorf("While trying to create registry client, got: %v", err)
 	}
@@ -200,7 +197,6 @@ func (s *odimService) getServiceAddress(serviceName string) (string, error) {
 }
 
 func (s *odimService) registerService() error {
-	log.Println("RISTERY: ", s.registryAddress)
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{s.registryAddress},
 		DialTimeout: 5 * time.Second,
@@ -211,11 +207,10 @@ func (s *odimService) registerService() error {
 	}
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
-	ttttt, err := kv.Put(context.TODO(), s.serverName, s.serverAddress)
+	_, err = kv.Put(context.TODO(), s.serverName, s.serverAddress)
 	if err != nil {
 		return fmt.Errorf("While trying to register the service, got: %v", err)
 	}
-	log.Println("tttttttttttttttttttttttt: ", ttttt)
 	return nil
 }
 

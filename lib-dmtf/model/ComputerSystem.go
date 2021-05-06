@@ -28,6 +28,7 @@ type ComputerSystem struct {
 	ID                 string             `json:"Id"`
 	Description        string             `json:"Description"`
 	Name               string             `json:"Name"`
+	Actions            *OemActions        `json:"Actions,omitempty"`
 	AssetTag           string             `json:"AssetTag"`
 	BiosVersion        string             `json:"BiosVersion"`
 	HostName           string             `json:"HostName"`
@@ -64,6 +65,8 @@ type ComputerSystem struct {
 	Status             Status             `json:"Status"`
 	Storage            Storage            `json:"Storage"`
 	TrustedModules     []TrustedModule    `json:"TrustedModules"`
+	Oem                Oem                `json:"Oem,omitempty"`
+	PCIeDevicesCount   int                `json:"PCIeDevices@odata.count,omitempty"`
 }
 
 // Bios redfish structure

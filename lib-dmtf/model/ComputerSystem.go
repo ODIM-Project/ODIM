@@ -82,7 +82,7 @@ type Bios struct {
 	AttributeRegistry string `json:"AttributeRegistry,omitempty"` // read-only (null)
 	/* Attributes is an object but we are handling as string
 	 */
-	Attributes string `json:"Attributes,omitempty"` // object
+	Attributes map[string]interface{} `json:"Attributes,omitempty"` // object
 }
 
 // Boot redfish structure

@@ -140,9 +140,20 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	config.CollectCLArgs()
+	// TODO: uncomment the following line after the migration
+	// config.CollectCLArgs()
 
+	// TODO: remove the InitializeService for GoMicro after the migration
 	err = services.InitializeService(services.GoMicro, services.APIClient)
+	if err != nil {
+		log.Fatal("service initialisation failed: " + err.Error())
+	}
+
+	// TODO: remove hardcoding of config.CLArgs.RegistryAddress value after the migration
+	// We cannot change the CL arguments for svc-api until migration is complete
+	config.CLArgs.RegistryAddress = "etcd:2379"
+
+	err = services.InitializeService(services.ClientService, services.APIClient)
 	if err != nil {
 		log.Fatal("service initialisation failed: " + err.Error())
 	}

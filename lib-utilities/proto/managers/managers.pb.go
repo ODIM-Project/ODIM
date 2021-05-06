@@ -4,8 +4,12 @@
 package managers
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -176,4 +180,156 @@ var fileDescriptor_49f5910ae72958ed = []byte{
 	0x5c, 0xd1, 0x3f, 0xbc, 0x02, 0xd8, 0xa9, 0x8f, 0x93, 0xf4, 0xe0, 0x34, 0x63, 0x28, 0xfc, 0xd5,
 	0x8f, 0xd2, 0x8e, 0x4b, 0xee, 0x37, 0xb9, 0xfe, 0x0d, 0x00, 0x00, 0xff, 0xff, 0xf1, 0xe1, 0x96,
 	0xea, 0x38, 0x02, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// ManagersClient is the client API for Managers service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ManagersClient interface {
+	GetManagersCollection(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+	GetManager(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+	GetManagersResource(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+}
+
+type managersClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewManagersClient(cc *grpc.ClientConn) ManagersClient {
+	return &managersClient{cc}
+}
+
+func (c *managersClient) GetManagersCollection(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/GetManagersCollection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managersClient) GetManager(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/GetManager", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managersClient) GetManagersResource(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/GetManagersResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ManagersServer is the server API for Managers service.
+type ManagersServer interface {
+	GetManagersCollection(context.Context, *ManagerRequest) (*ManagerResponse, error)
+	GetManager(context.Context, *ManagerRequest) (*ManagerResponse, error)
+	GetManagersResource(context.Context, *ManagerRequest) (*ManagerResponse, error)
+}
+
+// UnimplementedManagersServer can be embedded to have forward compatible implementations.
+type UnimplementedManagersServer struct {
+}
+
+func (*UnimplementedManagersServer) GetManagersCollection(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManagersCollection not implemented")
+}
+func (*UnimplementedManagersServer) GetManager(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManager not implemented")
+}
+func (*UnimplementedManagersServer) GetManagersResource(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManagersResource not implemented")
+}
+
+func RegisterManagersServer(s *grpc.Server, srv ManagersServer) {
+	s.RegisterService(&_Managers_serviceDesc, srv)
+}
+
+func _Managers_GetManagersCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).GetManagersCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/GetManagersCollection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).GetManagersCollection(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Managers_GetManager_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).GetManager(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/GetManager",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).GetManager(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Managers_GetManagersResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).GetManagersResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/GetManagersResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).GetManagersResource(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Managers_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "Managers",
+	HandlerType: (*ManagersServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetManagersCollection",
+			Handler:    _Managers_GetManagersCollection_Handler,
+		},
+		{
+			MethodName: "GetManager",
+			Handler:    _Managers_GetManager_Handler,
+		},
+		{
+			MethodName: "GetManagersResource",
+			Handler:    _Managers_GetManagersResource_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "managers.proto",
 }

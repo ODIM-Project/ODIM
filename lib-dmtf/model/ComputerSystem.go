@@ -82,10 +82,8 @@ type Bios struct {
 	/*The reference to the Attribute Registry that lists the metadata describing the
 	BIOS attribute settings in this resource.
 	*/
-	AttributeRegistry string `json:"AttributeRegistry,omitempty"` // read-only (null)
-	/* Attributes is an object but we are handling as string
-	 */
-	Attributes map[string]interface{} `json:"Attributes,omitempty"` // object
+	AttributeRegistry string                 `json:"AttributeRegistry,omitempty"` // read-only (null)
+	Attributes        map[string]interface{} `json:"Attributes,omitempty"`        // object
 }
 
 // Boot redfish structure

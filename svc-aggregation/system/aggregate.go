@@ -152,7 +152,7 @@ func (e *ExternalInterface) GetAllAggregates(req *aggregatorproto.AggregatorRequ
 		StatusMessage: response.Success,
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregateCollection.v1_0_0.AggregateCollection",
+		OdataType:    "#AggregateCollection.AggregateCollection",
 		OdataID:      "/redfish/v1/AggregationService/Aggregates",
 		OdataContext: "/redfish/v1/$metadata#AggregateCollection.AggregateCollection",
 		ID:           "Aggregate",

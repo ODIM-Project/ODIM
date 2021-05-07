@@ -20,13 +20,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
-	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/gofrs/uuid"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
 )
 
 //RedfishDeviceCollection struct definition
@@ -37,12 +37,12 @@ type RedfishDeviceCollection struct {
 
 //RedfishDevice struct definition
 type RedfishDevice struct {
-	Host            string                `json:"hostAddress"`
-	Username        string                `json:"username,omitempty"`
-	Password        string                `json:"password,omitempty"`
-	Token           string                `json:"token,omitempty"`
-	Tags            []string              `json:"Tags"`
-	RootNode        *rfpmodel.ServiceRoot `json:"rootNode,omitempty"`
+	Host            string            `json:"hostAddress"`
+	Username        string            `json:"username,omitempty"`
+	Password        string            `json:"password,omitempty"`
+	Token           string            `json:"token,omitempty"`
+	Tags            []string          `json:"Tags"`
+	RootNode        *dmtf.ServiceRoot `json:"rootNode,omitempty"`
 	ComputerSystems []*Identifier
 	PostBody        []byte `json:"PostBody,omitempty"`
 	Location        string `json:"Location"`
@@ -123,17 +123,15 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Error("While trying to read response body, got: ", err.Error())
 		return err
 	}
 	if resp.StatusCode >= 300 {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Printf("%s", err)
-		}
-		fmt.Printf("Could not retrieve ServiceRoot for %s: \n%s\n", device.Host, body)
-		return nil
+		errMessage := "Could not retrieve ServiceRoot for " + device.Host + ":" + string(body)
+		log.Error(errMessage)
+		return fmt.Errorf(errMessage)
 	}
-	serviceRoot := &rfpmodel.ServiceRoot{}
+	serviceRoot := &dmtf.ServiceRoot{}
 	json.Unmarshal(body, serviceRoot)
 	device.RootNode = serviceRoot
 	return nil
@@ -142,7 +140,7 @@ func (client *RedfishClient) GetRootService(device *RedfishDevice) error {
 // AuthWithDevice : Performs authentication with the given device and saves the token
 func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 	if device.RootNode == nil {
-		return fmt.Errorf("no ServiceRoot found for device")
+		return fmt.Errorf("No ServiceRoot found for device")
 	}
 
 	// TODO auth (Issue #22)
@@ -165,7 +163,7 @@ func (client *RedfishClient) AuthWithDevice(device *RedfishDevice) error {
 
 	defer resp.Body.Close()
 	device.Token = resp.Header["X-Auth-Token"][0]
-	fmt.Println(device.Token)
+	log.Debug("Token: " + device.Token)
 
 	return nil
 }
@@ -283,7 +281,7 @@ func (client *RedfishClient) SetDefaultBootOrder(device *RedfishDevice, uri stri
 
 	endpoint := "https://" + device.Host + uri
 
-	req, err := http.NewRequest(http.MethodPatch, endpoint, nil)
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}

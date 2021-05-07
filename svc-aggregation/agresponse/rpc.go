@@ -58,8 +58,7 @@ type Status struct {
 
 //Action struct definition
 type Action struct {
-	Target     string `json:"target"`
-	ActionInfo string `json:"@Redfish.ActionInfo"`
+	Target string `json:"target"`
 }
 
 //OdataID struct definition for @odata.id

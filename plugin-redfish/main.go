@@ -48,11 +48,11 @@ func main() {
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatal("error while reading from config " + err.Error())
+		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
+		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
@@ -65,7 +65,7 @@ func main() {
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		log.Fatal("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
+		log.Fatal("No value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go rfputilities.TrackConfigFileChanges(configFilePath)
@@ -126,6 +126,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}/BootOptions", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/Processors", rfphandler.GetResource)
+		systems.Get("/{id}/Processors/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/LogServices", rfphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
@@ -162,6 +163,19 @@ func routers() *iris.Application {
 		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts", rfphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions/{rid}", rfphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkPorts/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/Assembly", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices", rfphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/Sensors", rfphandler.GetResource)
+		chassis.Get("/{id}/Sensors/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", rfphandler.GetResource)
+		// TODO:
+		// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", rfphandler.GetResource)
 
 		// Chassis Power URl routes
 		chassisPower := chassis.Party("/{id}/Power")
@@ -186,6 +200,8 @@ func routers() *iris.Application {
 		managers.Get("/{id}/NetworkProtocol/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/HostInterfaces", rfphandler.GetResource)
 		managers.Get("/{id}/HostInterfaces/{rid}", rfphandler.GetResource)
+		managers.Get("/{id}/SerialInterface", rfphandler.GetResource)
+		managers.Get("/{id}/SerialInterface/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices", rfphandler.GetResource)
@@ -213,6 +229,13 @@ func routers() *iris.Application {
 		update.Get("/FirmwareInventory/{id}", rfphandler.GetResource)
 		update.Get("/SoftwareInventory", rfphandler.GetResource)
 		update.Get("/SoftwareInventory/{id}", rfphandler.GetResource)
+
+		//Adding routes related to telemetry service
+		telemetry := pluginRoutes.Party("/TelemetryService", rfpmiddleware.BasicAuth)
+		telemetry.Get("/MetricDefinitions", rfphandler.GetResource)
+		telemetry.Get("/MetricReportDefinitions", rfphandler.GetResource)
+		telemetry.Get("/MetricReports", rfphandler.GetResource)
+		telemetry.Get("/Triggers", rfphandler.GetResource)
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

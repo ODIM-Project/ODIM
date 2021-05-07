@@ -7,3 +7,6 @@
 
 - name: Removing {{ release_name }} docker image
   shell: "sleep 30; {{ docker_bin_path }} rmi $(docker images {{ release_name }} -q)"
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"

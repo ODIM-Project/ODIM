@@ -40,8 +40,8 @@ data:
                 {{ end }}
                 "InMemoryPort": "6379",
                 "OnDiskPort": "6379",
-                "MaxIdleConns": 10,
-                "MaxActiveConns": 120,
+                "MaxIdleConns": 200,
+                "MaxActiveConns": 200,
                 "RedisHAEnabled": {{ .Values.odimra.haDeploymentEnabled }},
                 "InMemorySentinelPort": "26379",
                 "OnDiskSentinelPort": "26379"

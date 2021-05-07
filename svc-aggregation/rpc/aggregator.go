@@ -80,12 +80,10 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 		OdataID:      "/redfish/v1/AggregationService",
 		Actions: agresponse.Actions{
 			Reset: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
-				ActionInfo: "/redfish/v1/AggregationService/ResetActionInfo",
+				Target: "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
 			},
 			SetDefaultBootOrder: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
-				ActionInfo: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
+				Target: "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
 			},
 		},
 		Aggregates: agresponse.OdataID{

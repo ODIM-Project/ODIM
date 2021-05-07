@@ -41,15 +41,6 @@ run_forever()
 start_fabrics()
 {
         registry_address="consul:8500"
-        if [[ ${HA_ENABLED,,} == true ]]; then
-                if [[ -z "${ODIM_NAMESPACE}" ]]; then
-                        echo "[$(date)] -- ERROR -- ODIM_NAMESPACE variable not set, exiting"
-                        exit 1
-                fi
-                consul_addr_suffix="consul.${ODIM_NAMESPACE}.svc.cluster.local:8500"
-                registry_address="consul1.${consul_addr_suffix},consul2.${consul_addr_suffix},consul3.${consul_addr_suffix}"
-        fi
-
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
 	nohup /bin/svc-fabrics --registry=consul --registry_address=${registry_address} --server_address=fabrics:45106 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/fabrics.log 2>&1 &
 	PID=$!

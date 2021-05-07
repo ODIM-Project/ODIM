@@ -92,8 +92,8 @@ func PublishEventsToDestination(data interface{}) bool {
 	var message common.MessageData
 
 	addFabric(requestData, host)
-
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(host)
+	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		log.Error("Failed to get the event destinations: ", err.Error())
 		return false
@@ -106,7 +106,8 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
 
-	subscriptions, err := evmodel.GetEvtSubscriptions(host)
+	searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
+	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return false
 	}

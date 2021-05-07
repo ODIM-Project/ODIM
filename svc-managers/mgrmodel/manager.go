@@ -37,6 +37,7 @@ type Manager struct {
 	FirmwareVersion    string            `json:"FirmwareVersion"`
 	Status             *Status           `json:"Status,omitempty"`
 	HostInterfaces     *OdataID          `json:"HostInterfaces,omitempty"`
+	SerialInterface    *OdataID          `json:"SerialInterface,omitempty"`
 	EthernetInterfaces *OdataID          `json:"EthernetInterfaces,omitempty"`
 	LogServices        *OdataID          `json:"LogServices,omitempty"`
 	NetworkProtocol    *OdataID          `json:"NetworkProtocol,omitempty"`

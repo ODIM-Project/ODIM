@@ -38,6 +38,7 @@ type ChassisRPCs struct {
 	UpdateChassisRPC        func(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error)
 }
 
+//CreateChassis creates a new chassis
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
@@ -115,6 +116,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
@@ -171,6 +173,7 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 	ctx.Write(resp.Body)
 }
 
+//UpdateChassis updates an existing chassis
 func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
@@ -200,6 +203,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 
 }
 
+//DeleteChassis deletes a chassis
 func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
 	rpcResp, rpcErr := chassis.DeleteChassisRPC(chassisproto.DeleteChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),

@@ -177,6 +177,40 @@ func TestGetCompletedTasksIndex(t *testing.T) {
 		t.Fatalf("error while getting the task details in the db: %v", err)
 		return
 	}
+	task2 := Task{
+		UserName:     "admin",
+		ParentID:     "",
+		ChildTaskIDs: nil,
+		ID:           "task" + uuid.NewV4().String(),
+		TaskState:    "Exception",
+		TaskStatus:   "OK",
+		StartTime:    time.Now(),
+		EndTime:      time.Time{},
+	}
+	task2.Name = "Task " + task.ID
+	// Persist in the in-memory DB
+	err = PersistTask(&task2, common.InMemory)
+	if err != nil {
+		t.Fatalf("error while trying to insert the task details: %v", err)
+		return
+	}
+
+	task3 := new(Task)
+	task3, err = GetTaskStatus(task.ID, common.InMemory)
+	if err != nil {
+		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		return
+	}
+	err = UpdateTaskStatus(task3, common.InMemory)
+	if err != nil {
+		t.Fatalf("error while retreving the Task details with Get: %v", err)
+		return
+	}
+	_, err = GetCompletedTasksIndex("task3")
+	if err != nil {
+		t.Fatalf("error while getting the task details in the db: %v", err)
+		return
+	}
 }
 
 func TestDeleteTaskFromDB(t *testing.T) {

@@ -29,7 +29,7 @@ sigterm_handler()
 # create a signal trap
 create_signal_trap()
 {
-        trap 'echo "[$(date)] -- INFO  -- SIGTERM received for event, initiating shut down"; sigterm_handler' SIGTERM
+        trap 'echo "[$(date)] -- INFO  -- SIGTERM received for events, initiating shut down"; sigterm_handler' SIGTERM
 }
 
 # keep the script running till SIGTERM is received
@@ -41,21 +41,12 @@ run_forever()
 start_event()
 {
         registry_address="consul:8500"
-        if [[ ${HA_ENABLED,,} == true ]]; then
-                if [[ -z "${ODIM_NAMESPACE}" ]]; then
-                        echo "[$(date)] -- ERROR -- ODIM_NAMESPACE variable not set, exiting"
-                        exit 1
-                fi
-                consul_addr_suffix="consul.${ODIM_NAMESPACE}.svc.cluster.local:8500"
-                registry_address="consul1.${consul_addr_suffix},consul2.${consul_addr_suffix},consul3.${consul_addr_suffix}"
-        fi
-
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup /bin/svc-events --registry=consul --registry_address=${registry_address} --server_address=event:45103 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/event.log 2>&1 &
+	nohup /bin/svc-events --registry=consul --registry_address=${registry_address} --server_address=events:45103 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/events.log 2>&1 &
 	PID=$!
 	sleep 3
 
-	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/event-add-hosts.log 2>&1 &
+	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/events-add-hosts.log 2>&1 &
 }
 
 monitor_process()

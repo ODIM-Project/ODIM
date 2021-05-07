@@ -127,9 +127,16 @@ var SystemResource = map[string]string{
 // so it will be usefull to store the resource data into the particular database table
 // and also it will be usefull to retrives the chassis resource data
 var ChassisResource = map[string]string{
-	"Power":           "Power",
-	"Thermal":         "Thermal",
-	"NetworkAdapters": "NetworkAdaptersCollection",
+	"Power":                  "Power",
+	"Thermal":                "Thermal",
+	"NetworkAdapters":        "NetworkAdaptersCollection",
+	"NetworkPorts":           "NetworkPortsCollection",
+	"NetworkDeviceFunctions": "NetworkDeviceFunctionsCollection",
+	"Assembly":               "Assembly",
+	"PCIeSlots":              "PCIeSlots",
+	"PCIeDevices":            "PCIeDevicesCollection",
+	"Sensors":                "SensorsCollection",
+	"LogServices":            "LogServicesCollection",
 }
 
 // ManagersResource contains the Resource name and table name
@@ -142,6 +149,7 @@ var ManagersResource = map[string]string{
 	"HostInterfaces":     "HostInterfacesCollection",
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
+	"SerialInterface":    "SerialInterfaceCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription

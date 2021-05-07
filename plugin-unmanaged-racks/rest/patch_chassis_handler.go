@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020 Intel Corporation
+ * (C) Copyright [2020] Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +60,9 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		return
 	}
 
-	requestedChassis, err := c.dao.FindChassis(ctx.Request().RequestURI)
+	chassisURI := ctx.Request().RequestURI
+	logging.Debug("finding requested chassis with uri:", chassisURI)
+	requestedChassis, err := c.dao.FindChassis(chassisURI)
 	if err != nil {
 		createInternalError(ctx, err)
 		return
@@ -69,6 +72,7 @@ func (c *chassisUpdateHandler) handle(ctx context.Context) {
 		ctx.JSON(redfish.NewError().AddExtendedInfo(redfish.NewResourceNotFoundMsg("Chassis", ctx.Request().RequestURI, "")))
 		return
 	}
+	logging.Debug("found requested chassis with uri:", chassisURI)
 
 	if violation, errCode := c.createValidator(requestedChassis, rur).Validate(); violation != nil {
 		ctx.StatusCode(*errCode)

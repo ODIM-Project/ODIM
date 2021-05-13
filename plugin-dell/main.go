@@ -14,6 +14,10 @@
 package main
 
 import (
+	"net/http"
+	"os"
+	"time"
+
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -25,9 +29,6 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"os"
-	"time"
 )
 
 var subscriptionInfo []dpmodel.Device
@@ -124,6 +125,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}/BootOptions", dphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", dphandler.GetResource)
 		systems.Get("/{id}/Processors", dphandler.GetResource)
+		systems.Get("/{id}/Processors/{rid}", dphandler.GetResource)
 		systems.Get("/{id}/LogServices", dphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}", dphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}/Entries", dphandler.GetResource)

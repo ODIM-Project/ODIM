@@ -45,7 +45,7 @@ func BasicAuth(ctx iris.Context) {
 			if len(userCred) < 2 {
 				log.Error("Not a valid basic auth")
 				ctx.StatusCode(http.StatusUnauthorized)
-				ctx.WriteString("error: not a valid basic auth")
+				ctx.WriteString("Not a valid basic auth")
 				return
 			}
 			username = userCred[0]
@@ -53,7 +53,7 @@ func BasicAuth(ctx iris.Context) {
 		} else {
 			log.Error("Not a valid basic auth")
 			ctx.StatusCode(http.StatusUnauthorized)
-			ctx.WriteString("error: not a valid basic auth")
+			ctx.WriteString("Not a valid basic auth")
 			return
 		}
 		userName := config.Data.PluginConf.UserName

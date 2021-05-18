@@ -18,10 +18,11 @@ package handle
 import (
 	"encoding/json"
 	"encoding/xml"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -149,6 +150,13 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 			if err == nil {
 				if len(serviceNodes) != 0 {
 					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
+				}
+			}
+		case "TelemetryService":
+			serviceNodes, err := reg.GetService(srv.Telemetry)
+			if err == nil {
+				if len(serviceNodes) != 0 {
+					serviceRoot.TelemetryService = &models.Service{OdataID: servicePath}
 				}
 			}
 		}
@@ -743,6 +751,11 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "SerialInterface.v1_1_7"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TelemetryService_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "TelemetryService.v1_1_7"},
+				},
+			},
 		},
 	}
 	ctx.Gzip(true)
@@ -841,6 +854,10 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	regFileID := ctx.Params().Get("id")
+	if strings.Contains(regFileID, ".json") {
+		r.GetMessageRegistryFile(ctx)
+		return
+	}
 	if strings.HasPrefix(regFileID, "#") {
 		reqURI := ctx.Request().RequestURI
 		// Fetch Registry file ID from request URI
@@ -898,7 +915,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	regFileNames = append(regFileNames, regFileKeys...)
 	for _, regFile := range regFileNames {
 		if reqRegistryFileName == regFile {
-			locationURI = "/redfish/v1/registries/" + regFile
+			locationURI = "/redfish/v1/Registries/" + regFile
 			break
 		}
 	}

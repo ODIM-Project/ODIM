@@ -99,15 +99,15 @@ type TLSConf struct {
 func SetConfiguration() error {
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return fmt.Errorf("error: no value set to environment variable PLUGIN_CONFIG_FILE_PATH")
+		return fmt.Errorf("No value set to environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		return fmt.Errorf("error: failed to read the config file: %v", err)
+		return fmt.Errorf("Failed to read the config file: %v", err)
 	}
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
-		return fmt.Errorf("error: failed to unmarshal config data: %v", err)
+		return fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
 
 	return ValidateConfiguration()
@@ -123,7 +123,7 @@ func ValidateConfiguration() error {
 		Data.FirmwareVersion = "1.0"
 	}
 	if Data.RootServiceUUID == "" {
-		return fmt.Errorf("error: no value set for rootServiceUUID")
+		return fmt.Errorf("No value set for rootServiceUUID")
 	}
 	if Data.SessionTimeoutInMinutes == 0 {
 		log.Warn("No value set for SessionTimeoutInMinutes, setting default value")
@@ -151,23 +151,23 @@ func ValidateConfiguration() error {
 
 func checkPluginConf() error {
 	if Data.PluginConf == nil {
-		return fmt.Errorf("error: no value found for PluginConf")
+		return fmt.Errorf("No value found for PluginConf")
 	}
 	if Data.PluginConf.ID == "" {
 		log.Warn("No value set for Plugin ID, setting default value")
 		Data.PluginConf.ID = "GRF"
 	}
 	if Data.PluginConf.Host == "" {
-		return fmt.Errorf("error: no value set for Plugin Host")
+		return fmt.Errorf("No value set for plugin Host")
 	}
 	if Data.PluginConf.Port == "" {
-		return fmt.Errorf("error: no value set for Plugin Port")
+		return fmt.Errorf("No value set for plugin Port")
 	}
 	if Data.PluginConf.UserName == "" {
-		return fmt.Errorf("error: no value set for Plugin Username")
+		return fmt.Errorf("No value set for plugin Username")
 	}
 	if Data.PluginConf.Password == "" {
-		return fmt.Errorf("error: no value set for Plugin Password")
+		return fmt.Errorf("No value set for plugin Password")
 	}
 	return nil
 }
@@ -191,16 +191,16 @@ func checkLBConf() {
 
 func checkEventConf() error {
 	if Data.EventConf == nil {
-		return fmt.Errorf("error: no value found for EventConf")
+		return fmt.Errorf("No value found for EventConf")
 	}
 	if Data.EventConf.DestURI == "" {
-		return fmt.Errorf("error: no value set for EventURI")
+		return fmt.Errorf("No value set for EventURI")
 	}
 	if Data.EventConf.ListenerHost == "" {
-		return fmt.Errorf("error: no value set for ListenerHost")
+		return fmt.Errorf("No value set for ListenerHost")
 	}
 	if Data.EventConf.ListenerPort == "" {
-		return fmt.Errorf("error: no value set for ListenerPort")
+		return fmt.Errorf("No value set for ListenerPort")
 	}
 	return nil
 }
@@ -208,10 +208,10 @@ func checkEventConf() error {
 //Check or apply default values for message bus to be used by this plugin
 func checkMessageBusConf() error {
 	if Data.MessageBusConf == nil {
-		return fmt.Errorf("error: no value found for MessageBusConf")
+		return fmt.Errorf("No value found for MessageBusConf")
 	}
 	if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		return fmt.Errorf("error: value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
+		return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
 	}
 	if Data.MessageBusConf.EmbType == "" {
 		log.Warn("No value set for MessageBusType, setting default value")
@@ -228,16 +228,16 @@ func checkMessageBusConf() error {
 func checkCertsAndKeysConf() error {
 	var err error
 	if Data.KeyCertConf == nil {
-		return fmt.Errorf("error: no value found for KeyCertConf")
+		return fmt.Errorf("No value found for KeyCertConf")
 	}
 	if Data.KeyCertConf.Certificate, err = ioutil.ReadFile(Data.KeyCertConf.CertificatePath); err != nil {
-		return fmt.Errorf("error: value check failed for CertificatePath:%s with %v", Data.KeyCertConf.CertificatePath, err)
+		return fmt.Errorf("Value check failed for CertificatePath:%s with %v", Data.KeyCertConf.CertificatePath, err)
 	}
 	if Data.KeyCertConf.PrivateKey, err = ioutil.ReadFile(Data.KeyCertConf.PrivateKeyPath); err != nil {
-		return fmt.Errorf("error: value check failed for PrivateKeyPath:%s with %v", Data.KeyCertConf.PrivateKeyPath, err)
+		return fmt.Errorf("Value check failed for PrivateKeyPath:%s with %v", Data.KeyCertConf.PrivateKeyPath, err)
 	}
 	if Data.KeyCertConf.RootCACertificate, err = ioutil.ReadFile(Data.KeyCertConf.RootCACertificatePath); err != nil {
-		return fmt.Errorf("error: value check failed for RootCACertificatePath:%s with %v", Data.KeyCertConf.RootCACertificatePath, err)
+		return fmt.Errorf("Value check failed for RootCACertificatePath:%s with %v", Data.KeyCertConf.RootCACertificatePath, err)
 	}
 	return nil
 }

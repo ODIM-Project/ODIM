@@ -44,7 +44,7 @@ func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetCh
 	return resp, nil
 }
 
-//GetChassis will do the rpc call to collect System Resource
+//GetChassis will do the rpc call to  System Resource
 func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
 	asService := chassisproto.NewChassisService(services.Systems, services.Service.Client())
 	resp, err := asService.GetChassisInfo(context.TODO(), &req)

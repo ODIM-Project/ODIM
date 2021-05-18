@@ -28,6 +28,7 @@ type ComputerSystem struct {
 	ID                 string             `json:"Id"`
 	Description        string             `json:"Description"`
 	Name               string             `json:"Name"`
+	Actions            *OemActions        `json:"Actions,omitempty"`
 	AssetTag           string             `json:"AssetTag"`
 	BiosVersion        string             `json:"BiosVersion"`
 	HostName           string             `json:"HostName"`
@@ -64,6 +65,8 @@ type ComputerSystem struct {
 	Status             Status             `json:"Status"`
 	Storage            Storage            `json:"Storage"`
 	TrustedModules     []TrustedModule    `json:"TrustedModules"`
+	Oem                Oem                `json:"Oem,omitempty"`
+	PCIeDevicesCount   int                `json:"PCIeDevices@odata.count,omitempty"`
 }
 
 // Bios redfish structure
@@ -79,10 +82,8 @@ type Bios struct {
 	/*The reference to the Attribute Registry that lists the metadata describing the
 	BIOS attribute settings in this resource.
 	*/
-	AttributeRegistry string `json:"AttributeRegistry,omitempty"` // read-only (null)
-	/* Attributes is an object but we are handling as string
-	 */
-	Attributes string `json:"Attributes,omitempty"` // object
+	AttributeRegistry string                 `json:"AttributeRegistry,omitempty"` // read-only (null)
+	Attributes        map[string]interface{} `json:"Attributes,omitempty"`        // object
 }
 
 // Boot redfish structure

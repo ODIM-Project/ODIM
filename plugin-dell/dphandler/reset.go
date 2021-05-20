@@ -17,14 +17,16 @@ package dphandler
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 //ResetComputerSystem : reset computer system
@@ -128,7 +130,27 @@ func ResetComputerSystem(ctx iris.Context) {
 		log.Error(errorMessage)
 		ctx.WriteString(errorMessage)
 	}
-
+	if resp.StatusCode == http.StatusNoContent {
+		resp.StatusCode = http.StatusOK
+		body = updateResetResponse()
+	}
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
+}
+
+func updateResetResponse() []byte {
+	resp := response.Args{
+		Code:    response.GeneralError,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.Success,
+				ErrorMessage:  "",
+				MessageArgs:   []interface{}{},
+			},
+		},
+	}
+	resp.CreateGenericErrorResponse()
+	body, _ := json.Marshal(resp)
+	return body
 }

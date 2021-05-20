@@ -66,20 +66,32 @@ func main() {
 				yes := strings.Contains(basicAuth, "Basic")
 				if yes {
 					spl := strings.Split(basicAuth, " ")
+					if len(spl) != 2 {
+						errorMessage := "Invalid basic auth provided"
+						log.Error(errorMessage)
+						invalidAuthResp(errorMessage, w)
+						return
+					}
 					data, err := base64.StdEncoding.DecodeString(spl[1])
 					if err != nil {
+						errorMessage := "Decoding the authorization failed: " + err.Error()
 						log.Error(err.Error())
+						invalidAuthResp(errorMessage, w)
 						return
 					}
 					userCred := strings.SplitN(string(data), ":", 2)
 					if len(userCred) < 2 {
-						log.Error("Invalid basic auth provided for " + username)
+						errorMessage := "Invalid basic auth provided"
+						log.Error(errorMessage)
+						invalidAuthResp(errorMessage, w)
 						return
 					}
 					username = userCred[0]
 					password = userCred[1]
 				} else {
-					log.Error("Invalid basic auth provided for " + username)
+					errorMessage := "Invalid basic auth provided"
+					log.Error(errorMessage)
+					invalidAuthResp(errorMessage, w)
 					return
 				}
 
@@ -165,4 +177,12 @@ func main() {
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	router.Run(iris.Server(apiServer))
+}
+
+// invalidAuthResp function is used to generate an invalid credentials response
+func invalidAuthResp(errMsg string, w http.ResponseWriter) {
+	w.Header().Set("Content-type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusUnauthorized)
+	body, _ := json.Marshal(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil).Body)
+	w.Write([]byte(body))
 }

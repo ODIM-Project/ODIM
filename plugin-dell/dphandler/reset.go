@@ -140,8 +140,9 @@ func ResetComputerSystem(ctx iris.Context) {
 
 func updateResetResponse() []byte {
 	resp := response.Args{
-		Code:    response.Success,
-		Message: "Request completed successfully",
+		Code:      response.Success,
+		Message:   "Request completed successfully",
+		ErrorArgs: []response.ErrArgs{},
 	}
 	resp.CreateGenericErrorResponse()
 	body, _ := json.Marshal(resp)

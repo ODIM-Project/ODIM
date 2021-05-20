@@ -707,7 +707,6 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
 
 It is mandatory to update the following parameters in this file:
 
-```
 - deploymentID
 - nodePasswordFilePath
 - nodes
@@ -719,7 +718,6 @@ It is mandatory to update the following parameters in this file:
 - rootServiceUUID
 - connectionMethodConf
 - etcHostsEntries
-```
 
 Other parameters can either be empty or have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Odim-controller configuration parameters](#odim-controller-configuration-parameters).
 
@@ -785,7 +783,7 @@ Other parameters can either be empty or have default values. Optionally, you can
           zookeeperJKSPassword: K@fk@_store1
         odimraImagePath: /home/user/ODIM/odimra_images
 
-2. Set up a Kubernetes cluster by doing the following steps: 
+2. Set up a Kubernetes cluster: 
     1. Navigate to `odim-controller/scripts` on the deployment node: 
 
         ```
@@ -800,54 +798,36 @@ Other parameters can either be empty or have default values. Optionally, you can
         scripts/kube_deploy_nodes.yaml
         ```
 
-    3. Enable the non-root user to access the Kubernetes command-line tool \(kubectl\) on the cluster nodes. Run the following commands on each cluster node:
+    3. Enable the non-root user to access the Kubernetes command-line tool \(kubectl\) on the cluster nodes: 
+
+        Run the following commands on each cluster node:
 
         ```
-$ mkdir -p $HOME/.kube
+        $ mkdir -p $HOME/.kube
         ```
-        
-        ```
-$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-        ```
-        
-        ```
-$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
-        ```
-        
-    4. Verify that the Kubernetes pods are up and running in the cluster nodes. Run the following command on each cluster node:
 
         ```
-$ kubectl get pods -n kube-system -o wide
+        $ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        ```
+
+        ```
+        $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        ```
+
+    4. Verify that the Kubernetes pods are up and running in the cluster nodes: 
+
+        Run the following command on each cluster node:
+
+        ```
+        $ kubectl get pods -n kube-system -o wide
         ```
     
-    
-    | NAME                                       | READY | STATUS  | RESTARTS | AGE  | IP            | NODE               | NOMINATED  NODE | READINESS  GATES |
-    | ------------------------------------------ | ----- | ------- | -------- | ---- | ------------- | ------------------ | --------------- | ---------------- |
-    | calico-kube-controllers-85fcf8f97b-2djsc   | 1/1   | Running | 0        | 10d  | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | calico-node-nb5zf                          | 1/1   | Running | 0        | 7d   | <Node2_IP>    | k8s-kafka-worker01 | <none>          | <none>           |
-    | calico-node-wb7p8                          | 1/1   | Running | 0        | 7d   | <Node1_IP>    | k8s-kafka-master   | <none>          | <none>           |
-    | calico-node-x6fgt                          | 1/1   | Running | 0        | 7d   | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | coredns-dff8fc7d-cqdbm                     | 1/1   | Running | 0        | 10d  | 10.233.103.15 | k8s-kafka-master   | <none>          | <none>           |
-    | coredns-dff8fc7d-fgk7g                     | 1/1   | Running | 0        | 10d  | 10.233.89.1   | k8s-kafka-worker02 | <none>          | <none>           |
-    | dns-autoscaler-66498f5c5f-2b9j9            | 1/1   | Running | 0        | 10d  | 10.233.103.1  | k8s-kafka-master   | <none>          | <none>           |
-    | kube-apiserver-k8s-kafka-master            | 1/1   | Running | 7        | 10d  | <Node1_IP>    | k8s-kafka-master   | <none>          | <none>           |
-    | kube-apiserver-k8s-kafka-worker01          | 1/1   | Running | 10       | 10d  | <Node2_IP>    | k8s-kafka-worker01 | <none>          | <none>           |
-    | kube-apiserver-k8s-kafka-worker02          | 1/1   | Running | 6        | 10d  | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | kube-controller-manager-k8s-kafka-master   | 1/1   | Running | 5        | 10d  | <Node1_IP>    | k8s-kafka-master   | <none>          | <none>           |
-    | kube-controller-manager-k8s-kafka-worker01 | 1/1   | Running | 14       | 10d  | <Node2_IP>    | k8s-kafka-worker01 | <none>          | <none>           |
-    | kube-controller-manager-k8s-kafka-worker02 | 1/1   | Running | 9        | 10d  | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | kube-proxy-759z6                           | 1/1   | Running | 0        | 4d1h | <Node2_IP>    | k8s-kafka-worker01 | <none>          | <none>           |
-    | kube-proxy-dp5m2                           | 1/1   | Running | 0        | 4d1h | <Node1_IP>    | k8s-kafka-master   | <none>          | <none>           |
-    | kube-proxy-v8xlg                           | 1/1   | Running | 0        | 4d1h | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | kube-scheduler-k8s-kafka-master            | 1/1   | Running | 6        | 10d  | <Node1_IP>    | k8s-kafka-master   | <none>          | <none>           |
-    | kube-scheduler-k8s-kafka-worker01          | 1/1   | Running | 15       | 10d  | <Node2_IP>    | k8s-kafka-worker01 | <none>          | <none>           |
-    | kube-scheduler-k8s-kafka-worker02          | 1/1   | Running | 6        | 10d  | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | nodelocaldns-2grv6                         | 1/1   | Running | 0        | 10d  | <Node1_IP>    | k8s-kafka-master   | <none>          | <none>           |
-    | nodelocaldns-t5866                         | 1/1   | Running | 0        | 10d  | <Node3_IP>    | k8s-kafka-worker02 | <none>          | <none>           |
-    | nodelocaldns-tfbz9                         | 1/1   | Running | 4        | 10d  | <Node2_IP>    | k8s-kafka-worker01 | <none>          | <none>           |
+
+![screenshot](docs/images/kuberenetes_pods_verification.png)
 
 
 3. Deploy the resource aggregator services: 
+
     1. Log in to the deployment node and run the following command: 
 
         ```
@@ -861,39 +841,13 @@ $ kubectl get pods -n kube-system -o wide
     2. Log in to each cluster node, run the following command on each cluster node to verify all deployed services are running successfully. 
 
         ```
-$ kubectl get pods -n odim -o wide
+    $ kubectl get pods -n odim -o wide
         ```
         
         Example output:
 
-        | NAME                            | READY | STATUS  | RESTARTS | AGE   | IP            | NODE   | NOMINATED  NODE | READINESS  GATES |
-| ------------------------------- | ----- | ------- | -------- | ----- | ------------- | ------ | --------------- | ---------------- |
-        | account-session-b85ccd9cc-rszvr | 1/1   | Running | 3        | 3d4h  | 10.233.66.56  | knode3 | <none>          | <none>           |
-        | aggregation-7c85dbcc58-m56rm    | 0/1   | Running | 0        | 3d4h  | 10.233.66.58  | knode3 | <none>          | <none>           |
-        | api-6d4d94b678-5z6gn            | 1/1   | Running | 0        | 3d4h  | 10.233.66.57  | knode3 | <none>          | <none>           |
-        | consul1-7694f5dcf7-w6s2k        | 1/1   | Running | 0        | 3d4h  | 10.233.87.168 | knode2 | <none>          | <none>           |
-        | consul2-9578f9569-dxnw9         | 1/1   | Running | 0        | 3d4h  | 10.233.66.52  | knode3 | <none>          | <none>           |
-        | consul3-69d6c596dc-vk96k        | 1/1   | Running | 0        | 31m   | 10.233.125.30 | knode1 | <none>          | <none>           |
-        | event-9858d7d97-crqbz           | 1/1   | Running | 2        | 3d4h  | 10.233.66.59  | knode3 | <none>          | <none>           |
-        | fabrics-7b88777b78-zs8fs        | 1/1   | Running | 0        | 2d18h | 10.233.66.42  | knode3 | <none>          | <none>           |
-        | kafka1-59594b5dc5-qlktd         | 1/1   | Running | 10       | 3d4h  | 10.233.66.51  | knode3 | <none>          | <none>           |
-        | kafka2-7dfd58bbc4-nmjzm         | 1/1   | Running | 10       | 3d4h  | 10.233.87.167 | knode2 | <none>          | <none>           |
-        | kafka3-6d7dcb8758-vpvt9         | 1/1   | Running | 0        | 31m   | 10.233.125.33 | knode1 | <none>          | <none>           |
-        | managers-75cfddf484-mg4hz       | 1/1   | Running | 3        | 3d4h  | 10.233.66.61  | knode3 | <none>          | <none>           |
-        | redis-ha-inmemory-primary-0     | 2/2   | Running | 0        | 16m   | 10.233.125.35 | knode1 | <none>          | <none>           |
-        | redis-ha-inmemory-secondary-0   | 2/2   | Running | 0        | 3d4h  | 10.233.87.170 | knode2 | <none>          | <none>           |
-        | redis-ha-inmemory-secondary-1   | 2/2   | Running | 0        | 3d4h  | 10.233.66.64  | knode3 | <none>          | <none>           |
-        | redis-ha-ondisk-primary-0       | 2/2   | Running | 0        | 16m   | 10.233.125.34 | knode1 | <none>          | <none>           |
-        | redis-ha-ondisk-secondary-0     | 2/2   | Running | 0        | 3d4h  | 10.233.66.53  | knode3 | <none>          | <none>           |
-        | redis-ha-ondisk-secondary-1     | 2/2   | Running | 0        | 3d4h  | 10.233.87.169 | knode2 | <none>          | <none>           |
-        | reloader-6d8c69d696-k2jz4       | 1/1   | Running | 0        | 3d4h  | 10.233.66.55  | knode3 | <none>          | <none>           |
-        | systems-55855c4cf4-spx7p        | 1/1   | Running | 0        | 2d18h | 10.233.87.171 | knode2 | <none>          | <none>           |
-        | task-79b5ccbfd6-xmnxf           | 1/1   | Running | 0        | 3d4h  | 10.233.66.60  | knode3 | <none>          | <none>           |
-        | update-9466b5f6c-vxzv8          | 1/1   | Running | 3        | 3d4h  | 10.233.66.63  | knode3 | <none>          | <none>           |
-        | zookeeper1-758d5c8dbc-df92f     | 1/1   | Running | 0        | 3d4h  | 10.233.66.54  | knode3 | <none>          | <none>           |
-        | zookeeper2-7dfb7f74d-4s4w8      | 1/1   | Running | 0        | 3d4h  | 10.233.87.166 | knode2 | <none>          | <none>           |
-        | zookeeper3-584b9cd46f-mvcps     | 1/1   | Running | 0        | 31m   | 10.233.125.32 | knode1 | <none>          | <none>           |
-        
+        ![screenshot](docs/images/all_services_verification.png)
+
         If the services are not successfully deployed, reset the deployment and try deploying again. 
         To reset, run the following command:
         

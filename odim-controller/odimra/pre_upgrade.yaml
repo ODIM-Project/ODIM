@@ -1,7 +1,6 @@
 ---
 - name: copying the docker files required upgrade
-  hosts: '{{ host }}'
+  hosts: kube-node
  
   roles:
     - pre-upgrade
-    

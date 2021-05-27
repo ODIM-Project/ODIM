@@ -17,47 +17,56 @@ package dphandler
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"log"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
-	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 //CreateVolume function is used for creating a volume under storage
 func CreateVolume(ctx iris.Context) {
-	//Get token from Request
+	// Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
-	//replacing the request url with south bound translation URL
+
+	// Replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
 		uri = strings.Replace(uri, key, value, -1)
 	}
 
-	//Validating the token
+	// Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
 		}
 	}
 
-	var deviceDetails dpmodel.Device
-	//Get device details from request
-	err := ctx.ReadJSON(&deviceDetails)
+	// Create new task
+	taskURI, err := dputilities.CreateTask()
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Errorf("Unable to create the task: %s", err.Error())
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString("Unable to create the task")
+		return
+	}
+
+	var deviceDetails dpmodel.Device
+	// Get device details from request
+	err = ctx.ReadJSON(&deviceDetails)
+	if err != nil {
+		log.Infof("Error while trying to collect data from request: ", err)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -69,7 +78,7 @@ func CreateVolume(ctx iris.Context) {
 	err = json.Unmarshal(deviceDetails.PostBody, &reqBody)
 	if err != nil {
 		errMsg := "error while unmarshalling the create volume request to the device: " + err.Error()
-		log.Println(errMsg)
+		log.Infof(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -77,6 +86,13 @@ func CreateVolume(ctx iris.Context) {
 
 	systemID := ctx.Params().Get("id")
 	storageInstance := ctx.Params().Get("id2")
+
+	isInvalid, res := validateRequest(reqBody)
+	if isInvalid {
+		ctx.StatusCode(int(res.StatusCode))
+		_, _ = ctx.JSON(res.Body)
+		return
+	}
 
 	driveURI := reqBody.Drives[0].OdataID
 	s := strings.Split(driveURI, "/")
@@ -90,88 +106,107 @@ func CreateVolume(ctx iris.Context) {
 		PostBody: []byte(reqPostBody),
 	}
 
+	taskID := retrieveTaskID(taskURI)
+	go createVolume(device, taskID, uri, reqPostBody)
+
+	ctx.Header("Location", "/taskmon/"+taskID)
+	ctx.StatusCode(http.StatusAccepted)
+}
+
+func createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody string) {
+	updateTask(taskID, device.Host, uri, requestBody, dputilities.Running, dputilities.Ok, 0, http.MethodPost)
+
 	// Getting the list of volumes before creating a new volume
-	volStatusCode, volErrMsg, list1 := getVolumeCollection(uri, device)
-	if volStatusCode != http.StatusOK {
-		ctx.StatusCode(volStatusCode)
-		ctx.WriteString(volErrMsg)
+	volumeListBeforeCreate, err := getVolumeCollection(uri, device)
+	if err != nil {
+		updateTaskWithException(taskID, device.Host, uri, requestBody, http.MethodPost)
 		return
 	}
 
-	// calling device for creating a volume
-	statusCode, header, resp, err := queryDevice(uri, device, http.MethodPost)
+	// Send create Volume request to BMC
+	statusCode, header, _, err := queryDevice(uri, device, http.MethodPost)
 	if err != nil {
-		errMsg := "error while trying to create volume: " + err.Error()
-		log.Println(errMsg)
-		ctx.StatusCode(statusCode)
-		ctx.WriteString(errMsg)
+		log.Errorf("Error while creating volume. StatusCode: %d, msg: %s", statusCode, err.Error())
+		updateTaskWithException(taskID, device.Host, uri, requestBody, http.MethodPost)
+		return
 	}
 
-	// If a create volume response contains any Location header then looping it to get final response
-	if header.Get("Location") != "" {
-		taskURI := header.Get("Location")
-		//tracking the task id until reaches final state
-		for {
-			time.Sleep(10 * time.Second)
-			// calling device for creating a volume
-			statusCode, header, resp, err = queryDevice(taskURI, device, http.MethodGet)
-			if err != nil {
-				errorMessage := "Error while trying to get task id in create volume: " + err.Error()
-				log.Println(errorMessage)
-				ctx.StatusCode(statusCode)
-				ctx.WriteString(errorMessage)
-				return
-			}
-			if statusCode != http.StatusAccepted {
-				log.Println("Final Status of task id while creating a volume : ", statusCode)
-				break
-			}
+	taskURI := header.Get("Location")
+	if taskURI == "" {
+		log.Errorf("missing location in volume create response header. Unable to track task - create volume might or might not finish successfully")
+		updateTask(taskID, device.Host, uri, requestBody, dputilities.Completed, dputilities.Warning, 100, http.MethodPost)
+		return
+	}
+	// Wait for create Volume task to change its state
+	err = waitForTaskToFinish(taskURI, device, taskID, uri, requestBody, http.MethodPost)
+	if err != nil {
+		return
+	}
+
+	// Getting the list of volumes after creating a new volume
+	volumeListAfterCreate, err := getVolumeCollection(uri, device)
+	if err != nil {
+		updateTaskWithException(taskID, device.Host, uri, requestBody, http.MethodPost)
+		return
+	}
+
+	log.Info("volume was created successfully.")
+	updateTask(taskID, device.Host, uri, requestBody, dputilities.Completed, dputilities.Ok, 100, http.MethodPost)
+
+	// Getting the origin of condition for event
+	oriOfCondition := compareCollection(volumeListBeforeCreate, volumeListAfterCreate)
+	event := createEvent("Volume created Event", "ResourceAdded",
+		"Volume is created successfully", "ResourceEvent.1.0.3.ResourceCreated", oriOfCondition)
+	dputilities.ManualEvents(event, device.Host)
+}
+
+func waitForTaskToFinish(taskURI string, device *dputilities.RedfishDevice, taskID string, uri string, requestBody string,
+	httpMethod string) error {
+	for {
+		time.Sleep(5 * time.Second)
+		statusCode, _, body, err := queryDevice(taskURI, device, http.MethodGet)
+		if err != nil {
+			log.Errorf("Error while retrieving volume task. StatusCode: %d, msg: %s", statusCode, err.Error())
+			updateTaskWithException(taskID, device.Host, uri, requestBody, httpMethod)
+			return err
+		}
+
+		volumeTask := new(dpmodel.Task)
+		err = json.Unmarshal(body, &volumeTask)
+		if err != nil {
+			log.Errorf("error while trying to unmarshal response data: " + err.Error())
+			updateTaskWithException(taskID, device.Host, uri, requestBody, httpMethod)
+			return err
+		}
+
+		state, err := dputilities.GetTaskState(volumeTask.TaskState)
+		if err != nil {
+			log.Errorf("error while trying to get task state from task: " + err.Error())
+			updateTaskWithException(taskID, device.Host, uri, requestBody, httpMethod)
+			return err
+		}
+
+		switch state {
+		case dputilities.New, dputilities.Starting, dputilities.Running:
+			continue
+		case dputilities.Completed:
+			log.Infof("volume task is completed!")
+			return nil
+		default:
+			errorMsg := fmt.Sprintf("volume task finished with state %s, status code: %d", state.String(), statusCode)
+			log.Errorf(errorMsg)
+			updateTaskWithException(taskID, device.Host, uri, requestBody, http.MethodPost)
+			return fmt.Errorf(errorMsg)
 		}
 	}
-	// If volume addition is success then generating an event
-	if statusCode == http.StatusOK {
-		// Getting the list of volumes after creating a new volume
-		volStatusCode, volErrMsg, list2 := getVolumeCollection(uri, device)
-		if volStatusCode != http.StatusOK {
-			ctx.StatusCode(volStatusCode)
-			ctx.WriteString(volErrMsg)
-			return
-		}
-		// Getting the origin of condition for event
-		oriOfCondition := compareCollection(list1, list2)
-		// creating a event payload
-		event := common.MessageData{
-			OdataType: "#Event.v1_2_1.Event",
-			Name:      "Volume created Event",
-			Context:   "/redfish/v1/$metadata#Event.Event",
-			Events: []common.Event{
-				common.Event{
-					EventType:      "ResourceAdded",
-					EventID:        "123",
-					Severity:       "Critical",
-					EventTimestamp: time.Now().String(),
-					Message:        "Volume is created successfully",
-					MessageID:      "ResourceEvent.1.0.3.ResourceCreated",
-					OriginOfCondition: &common.Link{
-						Oid: oriOfCondition,
-					},
-				},
-			},
-		}
-		manualEvents(event, deviceDetails.Host)
-		resp = createResponse()
-	}
-	log.Println("Response body: ", string(resp))
-	ctx.StatusCode(statusCode)
-	ctx.Write(resp)
 }
 
 // DeleteVolume function is used for deleting a volume under storage
 func DeleteVolume(ctx iris.Context) {
-	//Get token from Request
+	// Get token from Request
 	token := ctx.GetHeader("X-Auth-Token")
 	uri := ctx.Request().RequestURI
-	//replacing the request url with south bound translation URL
+	// Replacing the request url with south bound translation URL
 	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
 		uri = strings.Replace(uri, key, value, -1)
 	}
@@ -179,11 +214,11 @@ func DeleteVolume(ctx iris.Context) {
 	storageInstance := ctx.Params().Get("id2")
 	uri = convertToSouthBoundURI(uri, storageInstance)
 
-	//Validating the token
+	// Validating the token
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Infof("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -192,10 +227,10 @@ func DeleteVolume(ctx iris.Context) {
 
 	var deviceDetails dpmodel.Device
 
-	//Get device details from request
+	// Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Infof("Error while trying to collect data from request: ", err)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -207,122 +242,74 @@ func DeleteVolume(ctx iris.Context) {
 		PostBody: deviceDetails.PostBody,
 	}
 
-	redfishClient, err := dputilities.GetRedfishClient()
+	taskURI, err := dputilities.CreateTask()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		log.Errorf("Unable to create the task: %s", err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.WriteString(errMsg)
+		ctx.WriteString("Unable to create the task")
 		return
 	}
-	resp, err := redfishClient.DeviceCall(device, uri, http.MethodDelete)
-	if err != nil {
-		errorMessage := err.Error()
-		log.Println(err)
-		if resp == nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to delete volume: " + errorMessage)
-			return
-		}
-	}
 
-	// If a delete volume response contains any Location header then looping it to get final response
-	if resp.Header.Get("Location") != "" {
-		taskURI := resp.Header.Get("Location")
-		//tracking the task id until reaches final state
-		for {
-			time.Sleep(10 * time.Second)
-			resp, err = redfishClient.DeviceCall(device, taskURI, http.MethodGet)
-			if err != nil {
-				errorMessage := "Error while trying to get task id in delete volume: " + err.Error()
-				log.Println(errorMessage)
-				ctx.StatusCode(http.StatusInternalServerError)
-				ctx.WriteString(errorMessage)
-				return
-			}
-			if resp.StatusCode != http.StatusAccepted {
-				log.Println("Final Status of task id while deleting a volume : ", resp.StatusCode)
-				break
-			}
-		}
-	}
+	taskID := retrieveTaskID(taskURI)
+	go deleteVolume(device, taskID, uri)
 
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		errorMessage := err.Error()
-		log.Println(err)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.WriteString("Error while trying to delete volume: " + errorMessage)
-		return
-	}
-	log.Println("Response body: ", string(body))
-
-	// If volume deletion is success then generating an event
-	if resp.StatusCode == http.StatusOK {
-		event := common.MessageData{
-			OdataType: "#Event.v1_2_1.Event",
-			Name:      "Volume removed event",
-			Context:   "/redfish/v1/$metadata#Event.Event",
-			Events: []common.Event{
-				common.Event{
-					EventType:      "ResourceRemoved",
-					EventID:        "123",
-					Severity:       "Critical",
-					EventTimestamp: time.Now().String(),
-					Message:        "Volume is deleted successfully",
-					MessageID:      "ResourceEvent.1.0.3.ResourceRemoved",
-					OriginOfCondition: &common.Link{
-						Oid: uri,
-					},
-				},
-			},
-		}
-		manualEvents(event, deviceDetails.Host)
-	}
-	ctx.StatusCode(resp.StatusCode)
-	ctx.Write(body)
+	ctx.StatusCode(http.StatusAccepted)
+	ctx.Header("Location", "/taskmon/"+taskID)
 }
 
-// manualEvents is used to generate an event based on the inputs provided
-// It will send the received data and ip to publish method
-func manualEvents(req common.MessageData, hostAddress string) {
-	request, _ := json.Marshal(req)
-	reqData := string(request)
-	//replacing the response with north bound translation URL
-	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {
-		reqData = strings.Replace(reqData, key, value, -1)
+func deleteVolume(device *dputilities.RedfishDevice, taskID, uri string) {
+	updateTask(taskID, device.Host, uri, "", dputilities.Running, dputilities.Ok, 0, http.MethodDelete)
+
+	// Send delete Volume request to BMC
+	statusCode, header, _, err := queryDevice(uri, device, http.MethodDelete)
+	if err != nil {
+		log.Errorf("Error while deleting volume. StatusCode: %d, msg: %s", statusCode, err.Error())
+		updateTaskWithException(taskID, device.Host, uri, "", http.MethodPost)
+		return
 	}
-	event := common.Events{
-		IP:      hostAddress,
-		Request: []byte(reqData),
+
+	taskURI := header.Get("Location")
+	if taskURI == "" {
+		log.Errorf("missing location in volume delete response header. Unable to track task - delete volume might or might not finish successfully")
+		updateTask(taskID, device.Host, uri, "", dputilities.Completed, dputilities.Warning, 100, http.MethodPost)
+		return
 	}
-	// Call writeEventToJobQueue to write events to worker pool
-	writeEventToJobQueue(event)
+
+	// Wait for delete volume task to complete.
+	err = waitForTaskToFinish(taskURI, device, taskID, uri, "", http.MethodDelete)
+	if err != nil {
+		return
+	}
+
+	log.Infof("volume was deleted successfully.")
+	updateTask(taskID, device.Host, uri, "", dputilities.Completed, dputilities.Ok, 100, http.MethodDelete)
+
+	event := createEvent("Volume removed event", "ResourceRemoved", "Volume is deleted successfully",
+		"ResourceEvent.1.0.3.ResourceRemoved", uri)
+	dputilities.ManualEvents(event, device.Host)
 }
 
 // getVolumeCollection lists all the available volumes in the device
-func getVolumeCollection(uri string, device *dputilities.RedfishDevice) (int, string, []string) {
+func getVolumeCollection(uri string, device *dputilities.RedfishDevice) ([]string, error) {
 	// Getting the list of volumes already exist in the server
 	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
 	if err != nil {
-		errMsg := "error while getting volume collection details during create volume: " + err.Error()
-		log.Println(errMsg)
-		return statusCode, errMsg, nil
+		log.Errorf("Error while fetching volume collection. StatusCode: %d, msg: %s", statusCode, err.Error())
+		return nil, err
 	}
+
 	var volumes dpmodel.VolumesCollection
 	err = json.Unmarshal(resp, &volumes)
 	if err != nil {
-		errMsg := "error while trying to unmarshal response data in create volume: " + err.Error()
-		log.Println(errMsg)
-		return http.StatusInternalServerError, errMsg, nil
+		log.Errorf("error while trying to unmarshal response data in create volume: " + err.Error())
+		return nil, err
 	}
 
 	var list []string
 	for _, member := range volumes.Members {
 		list = append(list, member.OdataID)
 	}
-	return http.StatusOK, "", list
+	return list, nil
 }
 
 // compareCollection will compare 2 slices and return the unique item from list2
@@ -347,21 +334,65 @@ func compareCollection(list1, list2 []string) string {
 	return result
 }
 
-// createResponse is used for creating a final response for create volume
-func createResponse() []byte {
-	resp := dpresponse.ErrorResopnse{
-		Error: dpresponse.Error{
-			Code:    response.Success,
-			Message: "See @Message.ExtendedInfo for more information.",
-			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
-				dpresponse.MsgExtendedInfo{
-					MessageID:   response.Created,
-					Message:     "The resource has been created successfully",
-					MessageArgs: []string{},
+func updateTask(taskID, host, targetURI, request string, taskState dputilities.TaskState, taskStatus dputilities.TaskStatus,
+	percentComplete int32, httpMethod string) {
+	payLoad := &taskproto.Payload{
+		HTTPOperation: httpMethod,
+		JSONBody:      request,
+		TargetURI:     targetURI,
+	}
+
+	err := dputilities.UpdateTask(taskID, host, taskState, taskStatus, percentComplete, payLoad, time.Now())
+	if err != nil {
+		log.Errorf("Unable to update task with ID: %s", taskID)
+	}
+}
+
+func retrieveTaskID(taskURI string) string {
+	strArray := strings.Split(taskURI, "/")
+	if strings.HasSuffix(taskURI, "/") {
+		return strArray[len(strArray)-2]
+	} else {
+		return strArray[len(strArray)-1]
+	}
+}
+
+func updateTaskWithException(taskID, host, uri, requestBody, method string) {
+	updateTask(taskID, host, uri, requestBody, dputilities.Exception, dputilities.Critical, 100, method)
+}
+
+func validateRequest(requestBody dpmodel.Volume) (bool, response.RPC) {
+	if requestBody.VolumeType == "" {
+		return true, common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"VolumeType"}, nil)
+	}
+
+	if requestBody.Drives == nil || len(requestBody.Drives) == 0 {
+		return true, common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"Drives"}, nil)
+	}
+
+	if requestBody.Drives[0].OdataID == "" {
+		return true, common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"@odata.id"}, nil)
+	}
+
+	return false, response.RPC{}
+}
+
+func createEvent(name string, eventType string, message string, messageID string, origin string) common.MessageData {
+	return common.MessageData{
+		OdataType: "#Event.v1_2_1.Event",
+		Name:      name,
+		Context:   "/redfish/v1/$metadata#Event.Event",
+		Events: []common.Event{
+			{
+				EventType:      eventType,
+				Severity:       "Critical",
+				EventTimestamp: time.Now().String(),
+				Message:        message,
+				MessageID:      messageID,
+				OriginOfCondition: &common.Link{
+					Oid: origin,
 				},
 			},
 		},
 	}
-	body, _ := json.Marshal(resp)
-	return body
 }

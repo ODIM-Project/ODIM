@@ -88,17 +88,17 @@ type EthernetInterfaces struct {
 
 // HostedServices ..
 type HostedServices struct {
-	Oem             Oem             `json:"Oem"`
+	Oem             OemSystem       `json:"Oem"`
 	StorageServices StorageServices `json:"StorageServices"`
 }
 
 // HostWatchdogTimer ..
 type HostWatchdogTimer struct {
-	FunctionEnabled bool   `json:"FunctionEnabled"`
-	Oem             Oem    `json:"Oem"`
-	Status          Status `json:"Status"`
-	TimeoutAction   string `json:"TimeoutAction"`
-	WarningAction   string `json:"WarningAction"`
+	FunctionEnabled bool      `json:"FunctionEnabled"`
+	Oem             OemSystem `json:"Oem"`
+	Status          Status    `json:"Status"`
+	TimeoutAction   string    `json:"TimeoutAction"`
+	WarningAction   string    `json:"WarningAction"`
 }
 
 /*
@@ -185,12 +185,12 @@ type Storage struct {
 
 // TrustedModules get
 type TrustedModules struct {
-	FirmwareVersion        string `json:"FirmwareVersion"`
-	FirmwareVersion2       string `json:"FirmwareVersion2"`
-	InterfaceType          string `json:"InterfaceType"`
-	InterfaceTypeSelection string `json:"InterfaceTypeSelection"`
-	Oem                    Oem    `json:"Oem"`
-	Status                 Status `json:"Status"`
+	FirmwareVersion        string    `json:"FirmwareVersion"`
+	FirmwareVersion2       string    `json:"FirmwareVersion2"`
+	InterfaceType          string    `json:"InterfaceType"`
+	InterfaceTypeSelection string    `json:"InterfaceTypeSelection"`
+	Oem                    OemSystem `json:"Oem"`
+	Status                 Status    `json:"Status"`
 }
 
 // BootOptions get
@@ -242,16 +242,16 @@ type Metrics struct {
 
 // BiosSettings get
 type BiosSettings struct {
-	Oem OemDell `json:"Oem"`
+	Oem OemSystem `json:"Oem"`
 }
 
 //OemDell for bios settings
-type OemDell struct {
-	Dell Dell `json:"Dell"`
+type OemSystem struct {
+	Dell DellSystem `json:"Dell"`
 }
 
 //Dell for bios setting's OEM
-type Dell struct {
+type DellSystem struct {
 	Jobs OdataID `json:"Jobs"`
 }
 

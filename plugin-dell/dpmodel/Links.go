@@ -17,23 +17,23 @@ package dpmodel
 
 // Links .. this is Common in all resources
 type Links struct {
-	Chassis                  []Link `json:",omitempty"`
-	ComputerSystems          []Link `json:",omitempty"`
-	ConsumingComputerSystems []Link `json:",omitempty"`
-	ContainedBy              []Link `json:",omitempty"`
-	CooledBy                 []Link `json:",omitempty"`
-	Endpoints                []Link `json:",omitempty"`
-	Drives                   []Link `json:",omitempty"`
-	ManagedBy                []Link `json:",omitempty"`
-	Oem                      *Oem   `json:",omitempty"`
-	ManagersInChassis        []Link `json:",omitempty"`
-	PCIeDevices              []Link `json:",omitempty"`
-	PoweredBy                []Link `json:",omitempty"`
-	Processors               []Link `json:",omitempty"`
-	ResourceBlocks           []Link `json:",omitempty"`
-	Storage                  []Link `json:",omitempty"`
-	SupplyingComputerSystems []Link `json:",omitempty"`
-	Switches                 []Link `json:",omitempty"`
+	Chassis                  []Link    `json:",omitempty"`
+	ComputerSystems          []Link    `json:",omitempty"`
+	ConsumingComputerSystems []Link    `json:",omitempty"`
+	ContainedBy              []Link    `json:",omitempty"`
+	CooledBy                 []Link    `json:",omitempty"`
+	Endpoints                []Link    `json:",omitempty"`
+	Drives                   []Link    `json:",omitempty"`
+	ManagedBy                []Link    `json:",omitempty"`
+	Oem                      *OemLinks `json:",omitempty"`
+	ManagersInChassis        []Link    `json:",omitempty"`
+	PCIeDevices              []Link    `json:",omitempty"`
+	PoweredBy                []Link    `json:",omitempty"`
+	Processors               []Link    `json:",omitempty"`
+	ResourceBlocks           []Link    `json:",omitempty"`
+	Storage                  []Link    `json:",omitempty"`
+	SupplyingComputerSystems []Link    `json:",omitempty"`
+	Switches                 []Link    `json:",omitempty"`
 }
 
 // Link get
@@ -42,5 +42,5 @@ type Link struct {
 }
 
 // Oem get
-type Oem struct {
+type OemLinks struct {
 }

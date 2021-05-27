@@ -169,7 +169,7 @@ func createBiosResponse() []byte {
 			Code:    response.Success,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
-				dpresponse.MsgExtendedInfo{
+				{
 					MessageID:   response.Success,
 					Message:     "A system reset is required for BIOS settings changes to get affected",
 					MessageArgs: []string{},

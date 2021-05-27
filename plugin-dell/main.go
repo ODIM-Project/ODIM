@@ -14,7 +14,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -29,6 +28,7 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 var subscriptionInfo []dpmodel.Device
@@ -53,13 +53,20 @@ func main() {
 		log.Fatalf("error while trying to set messagebus configuration: %v", err)
 	}
 
+	// TODO check db configuration / move preparedbConfig
+	log.SetLevel(log.InfoLevel)
+	dputilities.PrepareDbConfig()
+	if err := common.CheckDBConnection(); err != nil {
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
+	}
+
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	dphandler.In, dphandler.Out = common.CreateJobQueue()
+	dputilities.In, dputilities.Out = common.CreateJobQueue()
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(dphandler.Out, dpmessagebus.Publish, 1)
+	go common.RunReadWorkers(dputilities.Out, dpmessagebus.Publish, 1)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {

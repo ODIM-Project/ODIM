@@ -259,5 +259,17 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 	log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)
+
+	pluginStartUpData := make(map[string]agmodel.PluginStartUpData, 1)
+	pluginStartUpData[addResourceRequest.ManagerAddress] = agmodel.PluginStartUpData{
+		UserName:    addResourceRequest.UserName,
+		Password:    []byte(addResourceRequest.Password),
+		DeviceUUID:  saveSystem.DeviceUUID,
+		Operation:   "add",
+		RequestType: "delta",
+	}
+	if err = PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
+		log.Error(err.Error())
+	}
 	return resp, aggregationSourceID, ciphertext
 }

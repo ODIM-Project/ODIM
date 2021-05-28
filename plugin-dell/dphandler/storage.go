@@ -91,77 +91,95 @@ func CreateVolume(ctx iris.Context) {
 		PostBody: []byte(reqPostBody),
 	}
 
-	// Getting the list of volumes before creating a new volume
-	volStatusCode, volErrMsg, list1 := getVolumeCollection(uri, device)
-	if volStatusCode != http.StatusOK {
-		ctx.StatusCode(volStatusCode)
-		ctx.WriteString(volErrMsg)
-		return
-	}
-
-	// calling device for creating a volume
-	statusCode, header, resp, err := queryDevice(uri, device, http.MethodPost)
-	if err != nil {
-		errMsg := "While trying to create volume, got: " + err.Error()
-		log.Error(errMsg)
-		ctx.StatusCode(statusCode)
-		ctx.WriteString(errMsg)
-	}
-
-	// If a create volume response contains any Location header then looping it to get final response
-	if header.Get("Location") != "" {
-		taskURI := header.Get("Location")
-		//tracking the task id until reaches final state
-		for {
-			time.Sleep(10 * time.Second)
-			// calling device for creating a volume
-			statusCode, header, resp, err = queryDevice(taskURI, device, http.MethodGet)
-			if err != nil {
-				errorMessage := "While trying to get task id in create volume, got: " + err.Error()
-				log.Error(errorMessage)
-				ctx.StatusCode(statusCode)
-				ctx.WriteString(errorMessage)
-				return
-			}
-			if statusCode != http.StatusAccepted {
-				log.Info("Final Status of task id while creating a volume : " + strconv.Itoa(statusCode))
-				break
-			}
-		}
-	}
-	// If volume addition is success then generating an event
-	if statusCode == http.StatusOK {
-		// Getting the list of volumes after creating a new volume
-		volStatusCode, volErrMsg, list2 := getVolumeCollection(uri, device)
+	// Getting the firmware version of server before creating a new volume
+	var resp []byte
+	managersURI := "/redfish/v1/Managers/" + systemID
+	managersURI = strings.Replace(managersURI, "System", "iDRAC", -1)
+	statusCode, verErrMsg := getFirmwareVersion(managersURI, device)
+	if statusCode != http.StatusOK {
+		log.Error(verErrMsg)
+		resp = createResponse(response.GeneralError, verErrMsg, response.GeneralError)
+	} else {
+		// Getting the list of volumes before creating a new volume
+		volStatusCode, volErrMsg, list1 := getVolumeCollection(uri, device)
 		if volStatusCode != http.StatusOK {
+			log.Error(volErrMsg)
 			ctx.StatusCode(volStatusCode)
 			ctx.WriteString(volErrMsg)
 			return
 		}
-		// Getting the origin of condition for event
-		oriOfCondition := compareCollection(list1, list2)
-		// creating a event payload
-		event := common.MessageData{
-			OdataType: "#Event.v1_2_1.Event",
-			Name:      "Volume created Event",
-			Context:   "/redfish/v1/$metadata#Event.Event",
-			Events: []common.Event{
-				common.Event{
-					EventType:      "ResourceAdded",
-					EventID:        "123",
-					Severity:       "Critical",
-					EventTimestamp: time.Now().String(),
-					Message:        "Volume is created successfully",
-					MessageID:      "ResourceEvent.1.0.3.ResourceCreated",
-					OriginOfCondition: &common.Link{
-						Oid: oriOfCondition,
+
+		// calling device for creating a volume
+		var header http.Header
+		statusCode, header, resp, err = queryDevice(uri, device, http.MethodPost)
+		if err != nil {
+			errMsg := "While trying to create volume, got: " + err.Error()
+			log.Error(errMsg)
+			ctx.StatusCode(statusCode)
+			ctx.WriteString(errMsg)
+		}
+
+		// If a OperationApplyTime is Immediate and create volume response contains any Location header then looping it to get final response
+		if (reqBody.OperationApplyTime == "" || reqBody.OperationApplyTime == "Immediate") && header.Get("Location") != "" {
+			taskURI := header.Get("Location")
+			//tracking the task id until reaches final state
+			for {
+				time.Sleep(10 * time.Second)
+				// calling device for creating a volume
+				statusCode, header, resp, err = queryDevice(taskURI, device, http.MethodGet)
+				if err != nil {
+					errorMessage := "While trying to get task id in create volume, got: " + err.Error()
+					log.Error(errorMessage)
+					ctx.StatusCode(statusCode)
+					ctx.WriteString(errorMessage)
+					return
+				}
+				if statusCode != http.StatusAccepted {
+					log.Info("Final Status of task id while creating a volume : " + strconv.Itoa(statusCode))
+					break
+				}
+			}
+		}
+		// If volume addition is success then generating an event
+		if statusCode == http.StatusOK {
+			// Getting the list of volumes after creating a new volume
+			volStatusCode, volErrMsg, list2 := getVolumeCollection(uri, device)
+			if volStatusCode != http.StatusOK {
+				ctx.StatusCode(volStatusCode)
+				ctx.WriteString(volErrMsg)
+				return
+			}
+			// Getting the origin of condition for event
+			oriOfCondition := compareCollection(list1, list2)
+			// creating a event payload
+			event := common.MessageData{
+				OdataType: "#Event.v1_2_1.Event",
+				Name:      "Volume created Event",
+				Context:   "/redfish/v1/$metadata#Event.Event",
+				Events: []common.Event{
+					common.Event{
+						EventType:      "ResourceAdded",
+						EventID:        "123",
+						Severity:       "Critical",
+						EventTimestamp: time.Now().String(),
+						Message:        "Volume is created successfully",
+						MessageID:      "ResourceEvent.1.0.3.ResourceCreated",
+						OriginOfCondition: &common.Link{
+							Oid: oriOfCondition,
+						},
 					},
 				},
-			},
+			}
+			manualEvents(event, deviceDetails.Host)
+			resp = createResponse(response.Success, "The resource has been created successfully", response.Created)
 		}
-		manualEvents(event, deviceDetails.Host)
-		resp = createResponse()
+
+		if reqBody.OperationApplyTime == "OnReset" && statusCode == http.StatusAccepted {
+			resp = createResponse(response.Success, "System reset is required", response.Success)
+			statusCode = http.StatusOK
+		}
 	}
+
 	ctx.StatusCode(statusCode)
 	ctx.Write(resp)
 }
@@ -347,15 +365,15 @@ func compareCollection(list1, list2 []string) string {
 }
 
 // createResponse is used for creating a final response for create volume
-func createResponse() []byte {
+func createResponse(code, msg, msgID string) []byte {
 	resp := dpresponse.ErrorResopnse{
 		Error: dpresponse.Error{
-			Code:    response.Success,
+			Code:    code,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
 				dpresponse.MsgExtendedInfo{
-					MessageID:   response.Created,
-					Message:     "The resource has been created successfully",
+					MessageID:   msgID,
+					Message:     msg,
 					MessageArgs: []string{},
 				},
 			},
@@ -363,4 +381,31 @@ func createResponse() []byte {
 	}
 	body, _ := json.Marshal(resp)
 	return body
+}
+
+// getFirmwareVersion of the device
+func getFirmwareVersion(uri string, device *dputilities.RedfishDevice) (int, string) {
+	// Getting the firmware version of a server
+	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
+	if err != nil {
+		errMsg := "While getting firmware version details during create volume, got: " + err.Error()
+		log.Error(errMsg)
+		return statusCode, errMsg
+	}
+	var firmware dpmodel.FirmwareVersion
+	err = json.Unmarshal(resp, &firmware)
+	if err != nil {
+		errMsg := "While trying to unmarshal response data in create volume, got: " + err.Error()
+		log.Error(errMsg)
+		return http.StatusInternalServerError, errMsg
+	}
+
+	verSplit := strings.SplitN(firmware.FirmwareVersion, ".", 3)
+	version := strings.Join(verSplit[:2], "")
+	res, _ := strconv.Atoi(version)
+
+	if res < 440 {
+		return http.StatusBadRequest, "Unsupported Firmware version, Firmware version should be >= 4.40"
+	}
+	return http.StatusOK, ""
 }

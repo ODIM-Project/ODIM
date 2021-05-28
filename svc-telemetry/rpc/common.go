@@ -42,7 +42,7 @@ func generateResponse(input interface{}) []byte {
 	return bytes
 }
 
-func fillProtoResponse(resp *teleproto.TelemetryResponse , data response.RPC) {
+func fillProtoResponse(resp *teleproto.TelemetryResponse, data response.RPC) {
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
@@ -50,9 +50,9 @@ func fillProtoResponse(resp *teleproto.TelemetryResponse , data response.RPC) {
 
 }
 
-func generateRPCResponse(rpcResp response.RPC, teleResp *teleproto.TelemetryResponse ) {
+func generateRPCResponse(rpcResp response.RPC, teleResp *teleproto.TelemetryResponse) {
 	bytes, _ := json.Marshal(rpcResp.Body)
-	*teleResp = teleproto.TelemetryResponse {
+	*teleResp = teleproto.TelemetryResponse{
 		StatusCode:    rpcResp.StatusCode,
 		StatusMessage: rpcResp.StatusMessage,
 		Header:        rpcResp.Header,

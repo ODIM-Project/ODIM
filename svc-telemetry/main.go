@@ -18,7 +18,7 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	teleproto  "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
+	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-telemetry/rpc"
 	"github.com/sirupsen/logrus"

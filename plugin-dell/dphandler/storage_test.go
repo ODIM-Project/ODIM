@@ -43,6 +43,28 @@ func mockDevice(username, password, url string, w http.ResponseWriter) {
 		Name:         "Volume Collection",
 	}
 
+	firmware := dpmodel.FirmwareVersion{
+		FirmwareVersion: "4.40.10.00",
+	}
+
+	firmwareOld := dpmodel.FirmwareVersion{
+		FirmwareVersion: "4.39.10.00",
+	}
+
+	if url == "/redfish/v1/Managers/1" {
+		e, _ := json.Marshal(firmware)
+		w.WriteHeader(http.StatusOK)
+		w.Write(e)
+		return
+	}
+
+	if url == "/redfish/v1/Managers/2" {
+		e, _ := json.Marshal(firmwareOld)
+		w.WriteHeader(http.StatusOK)
+		w.Write(e)
+		return
+	}
+
 	if url == "/ODIM/v1/Systems/1/Storage/1/Volumes" && username == "admin" {
 		e, _ := json.Marshal(volume)
 		w.WriteHeader(http.StatusOK)
@@ -104,6 +126,22 @@ func TestCreateVolume(t *testing.T) {
 	//unittest for bad request scenario
 	invalidRequestBody := "invalid"
 	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(invalidRequestBody).Expect().Status(http.StatusBadRequest)
+
+	// Unit test for firmware version less than 4.40
+	reqPostBody = map[string]interface{}{
+		"Name":     "Volume_Test2",
+		"RAIDType": "RAID0",
+		"Drives":   []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:2/Storage/ArrayControllers-0/Drives/0"}},
+	}
+	reqBodyBytes, _ = json.Marshal(reqPostBody)
+	requestBody = map[string]interface{}{
+		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
+		"UserName":       "admin",
+		"Password":       []byte("P@$$w0rd"),
+		"PostBody":       reqBodyBytes,
+	}
+	//Unit Test for firmware version less than 4.40 scenario
+	e.POST("/redfish/v1/Systems/2/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusBadRequest)
 }
 
 func TesDeleteVolume(t *testing.T) {

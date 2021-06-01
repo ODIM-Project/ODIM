@@ -104,7 +104,8 @@
 		"EventService",
 		"Fabrics",
 		"Managers",
-		"UpdateService"
+		"UpdateService",
+		"TelemetryService"
 	],
 	"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
   "ConnectionMethodConf": [

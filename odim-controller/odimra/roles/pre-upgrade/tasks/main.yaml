@@ -11,29 +11,22 @@
   set_fact:
     current_user: "{{ get_user.stdout }}"
 
-- name: Check if ODIMRA image path exists
+- name: Check if {{ docker_image_name }} image exists
   stat:
-    path: "{{ odimraImagePath }}"
+    path: "{{ odimraImagePath }}/{{ docker_image_name }}.tar"
   register: odimra_file_details
   delegate_to: localhost
   when: odimraImagePath is defined
 
-- name: Copy ODIMRA Images
+- name: Copy {{ docker_image_name }} image
   copy:
-    src: "{{ item }}"
+    src: "{{ odimraImagePath }}/{{ docker_image_name }}.tar"
     dest: "{{ docker_images_path }}"
     owner: "{{ current_user }}"
     group: "{{ current_user }}"
     mode: 0640
-  loop: "{{ files }}"
-  vars:
-    files:
-      - "{{ odimraImagePath }}/"
-  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isdir == true and docker_image_name in item
+  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isreg == true
 
-- name: Load ODIMRA Images
-  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ docker_image_name}}.tar"
-  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isdir == true
-
--
-
+- name: Load {{ docker_image_name }} image
+  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ docker_image_name }}.tar"
+  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isreg == true

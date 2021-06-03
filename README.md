@@ -86,19 +86,16 @@ Resource Aggregator for ODIM comprises the following two key components:
 
      -   Listen to similar events from multiple southbound resources
 
- -    One or more plugins:
+ - One or more plugins:
 
-      The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. Resource Aggregator for ODIM supports:
+   The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. Resource Aggregator for ODIM supports:
 
-       -  Generic Redfish plugin for ODIM (The GRF plugin): This plugin can be used for any Redfish-compliant device
-	   
-	   -  Dell plugin for ODIM: Plugin for managing Dell servers
+    -  Generic Redfish plugin for ODIM (The GRF plugin): This plugin can be used for any Redfish-compliant device
+    -  Dell plugin for ODIM: Plugin for managing Dell servers
+   -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks.
+   -  Integration of additional third-party plugins
 
-      -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks.
-
-      -  Integration of additional third-party plugins
-
-      Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
+   Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 ## Resource Aggregator for ODIM deployment overview
 
@@ -139,16 +136,15 @@ The following diagram illustrates how Resource Aggregator for ODIM is deployed a
 
 To deploy Resource Aggregator for ODIM, you will require:
 
+-   A deployment node
 -   One virtual machine \(VM\) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility. It provides commands to:
-
-    -   Set up the Docker environment
-
-    -   Set up a Kubernetes cluster
-
-    -   Deploy the containerized Resource Aggregator for ODIM microservices and third-party services on the Kubernetes cluster nodes
-
-    -   Manage the Resource Aggregator for ODIM deployment
-
+-   Set up the Docker environment
+    
+-   Set up a Kubernetes cluster
+    
+-   Deploy the containerized Resource Aggregator for ODIM microservices and third-party services on the Kubernetes cluster nodes
+    
+-   Manage the Resource Aggregator for ODIM deployment
 -   One or more physical or virtual machines called cluster nodes where the containerized Resource Aggregator for ODIM microservices and third-party services are deployed as pods.
 
 
@@ -180,6 +176,8 @@ Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx togeth
 ## Deployment considerations
 
 The following is a list of considerations to be made while deploying Resource Aggregator for ODIM.
+
+-   A deployment node.
 
 -   The following two deployment configurations are supported:
 
@@ -470,10 +468,13 @@ The following table lists the software components and their versions that are co
 	   | systems         | 1.0     | 9d3ad9845b16 | 22 hours ago | 129MB    |
 	   | redis           | 1.0     | 81bf552d3a52 | 2 days ago   | 99.2MB   |
 	   | managers        | 1.0     | 2f7955586c54 | 4 days ago   | 128MB    |
+	   | dellplugin      | 1.0     | 1601188cbd8f | 7 days ago   | 103MB    |
 	   | odim_kafka      | 1.0     | f03a52363483 | 8 days ago   | 278MB    |
 	   | grf-plugin      | 1.0     | c7a086d02b16 | 11 days ago  | 100MB    |
 	   | fabrics         | 1.0     | 9b9ea8bafc30 | 11 days ago  | 128MB    |
 	   | events          | 1.0     | 860a9202a483 | 11 days ago  | 130MB    |
+	   | aciplugin       | 1.0     | 0c42ba5d4223 | 6 weeks ago  | 114MB    |
+	   | urplugin        | 1.0     | fb3c1cf141d5 | 6 weeks ago  | 101MB    |
 	   | api             | 1.0     | effab530ede5 | 2 months ago | 130MB    |
 	   | aggregation     | 1.0     | 354f67a857b6 | 3 months ago | 130MB    |
 	   | account-session | 1.0     | a7eb07e69395 | 3 months ago | 129MB    |
@@ -635,7 +636,7 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
 
       The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.
 
-      When you open the `kube_deploy_nodes.yaml` file for the first time, it looks like the following:
+      When you open the `kube_deploy_nodes.yaml` file for the first time, it looks like the following (for a three node cluster):
 
  ```
     deploymentID: <Unique identifier for the deployment>
@@ -709,7 +710,7 @@ It is mandatory to update the following parameters in this file:
 
 - deploymentID
 - nodePasswordFilePath
-- nodes
+- nodes (details of the single deployment node or the cluster nodes based on the type of your deployment)
 - odimControllerSrcPath
 - odimVaultKeyFilePath
 - odimraImagePath
@@ -821,9 +822,8 @@ Other parameters can either be empty or have default values. Optionally, you can
         ```
         $ kubectl get pods -n kube-system -o wide
         ```
-    
-
-![screenshot](docs/images/kuberenetes_pods_verification.png)
+        
+        ![screenshot](docs/images/kuberenetes_pods_verification.png)
 
 
 3. Deploy the resource aggregator services: 
@@ -841,7 +841,7 @@ Other parameters can either be empty or have default values. Optionally, you can
     2. Log in to each cluster node, run the following command on each cluster node to verify all deployed services are running successfully. 
 
         ```
-    $ kubectl get pods -n odim -o wide
+    	$ kubectl get pods -n odim -o wide
         ```
         
         Example output:

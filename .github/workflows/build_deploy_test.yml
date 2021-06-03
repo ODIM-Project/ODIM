@@ -45,14 +45,14 @@ jobs:
         export HOSTIP=${HOSTIP}
         make all
         sleep 15s
-        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish|urp'`
+        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish|urp|plugin-dell'`
         echo "Detected number of ODIM related processes: " $b
-        if [ $b -eq 21 ];
+        if [ $b -eq 23 ];
         then
-            echo "ODIMRA processes & GRF plugin are up & running"
+            echo "ODIMRA processes & GRF,Dell and urp plugin are up & running"
             echo "Deployment sucessful" 
         else
-            echo "ODIMRA processes or GRF plugin failed to come up. Check ODIMRA or PLUGIN logs"
+            echo "ODIMRA processes or GRF,Dell and urp plugin failed to come up. Check ODIMRA or PLUGIN logs"
             echo "Deployemnt Failed" 
             exit -1
         fi
@@ -112,6 +112,7 @@ jobs:
         sudo mkdir /var/log/odim-plugins
         docker-compose -f build/docker-compose.yml logs urp |sudo tee /var/log/odim-plugins/urp.log
         sudo cp /var/log/GRF_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
+        sudo cp /var/log/DELL_PLUGIN/dell_plugin.log /var/log/odim-plugins/dell.log
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
       if: always()
@@ -119,6 +120,7 @@ jobs:
        name: my-artifiact
        path: |
         /var/log/odimra
+        /var/log/DELL_PLUGIN
         /var/log/odim-plugins
         /var/log/odim-infra
   

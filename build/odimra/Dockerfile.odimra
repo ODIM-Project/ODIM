@@ -46,6 +46,7 @@ COPY --from=build-stage /odimra/svc-task/svc-task /bin/
 COPY --from=build-stage /odimra/svc-managers/svc-managers /bin/
 COPY --from=build-stage /odimra/svc-update/svc-update /bin/
 COPY --from=build-stage /odimra/plugin-redfish/plugin-redfish /bin/
+COPY --from=build-stage /odimra/plugin-dell/plugin-dell /bin/
 
 COPY odimra/odimra_config/odimra_config.json /var/odimra_config/
 COPY odimra/odimra_config/platformconfig.toml /var/odimra_config/

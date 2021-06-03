@@ -247,3 +247,35 @@ services:
       - '/etc/plugincert/odimra_server.crt:/certs/odimra_server.crt:ro'
       - '/etc/plugincert/odimra_server.key:/certs/odimra_server.key:ro'
       - '/etc/plugincert/rootCA.crt:/certs/rootCA.crt:ro'
+  dell_plugin:
+    build:
+      context: ./.
+      dockerfile: DELLPlugin/Dockerfile.dell_plugin
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    hostname: dell_plugin
+    restart: always
+    privileged: true
+    environment:
+      - HOSTIP=$HOSTIP
+    image: dell-plugin:1.0
+    depends_on:
+      - "odimra"
+    ports:
+      - '45007:45007'
+      - '45008:45008'
+    expose:
+      - '45007'
+      - '45008'
+    volumes:
+      - '/var/log/DELL_PLUGIN:/var/log/dell_plugin_logs'
+      - '/etc/dell_plugin_config:/etc/dell_plugin_config:rw'
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '/etc/plugincert/rootCA.crt:/etc/dell_plugin_certs/rootCA.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/etc/dell_plugin_certs/odimra_server.key:ro'
+      - '/etc/plugincert/odimra_server.crt:/etc/dell_plugin_certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_kafka_client.key:/etc/dell_plugin_certs/odimra_kafka_client.key:ro'
+      - '/etc/plugincert/odimra_kafka_client.crt:/etc/dell_plugin_certs/odimra_kafka_client.crt:ro'
+      - '../build/DELLPlugin/dell_plugin.service:/etc/systemd/system/dell_plugin.service:rw' 
+    command: bash -c "cp -r /var/dell_plugin_config/ /etc && /var/tmp/dell_plugin-edit_config.sh && rm -rf /var/dell_plugin_config/* && /bin/start_plugin.sh"

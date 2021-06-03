@@ -119,11 +119,11 @@ def update_ansible_conf():
 	https_proxy = ""
 	no_proxy = ""
 
-	if 'httpProxy' in CONTROLLER_CONF_DATA and CONTROLLER_CONF_DATA['httpProxy'] != "" or CONTROLLER_CONF_DATA['httpProxy'] != None:
+	if 'httpProxy' in CONTROLLER_CONF_DATA and (CONTROLLER_CONF_DATA['httpProxy'] != "" or CONTROLLER_CONF_DATA['httpProxy'] != None):
 		http_proxy = CONTROLLER_CONF_DATA['httpProxy']
-	if 'httpsProxy' in CONTROLLER_CONF_DATA and CONTROLLER_CONF_DATA['httpsProxy'] != "" or CONTROLLER_CONF_DATA['httpsProxy'] != None:
+	if 'httpsProxy' in CONTROLLER_CONF_DATA and (CONTROLLER_CONF_DATA['httpsProxy'] != "" or CONTROLLER_CONF_DATA['httpsProxy'] != None):
 		https_proxy = CONTROLLER_CONF_DATA['httpsProxy']
-	if 'noProxy' in CONTROLLER_CONF_DATA and CONTROLLER_CONF_DATA['noProxy'] != "" or CONTROLLER_CONF_DATA['noProxy'] != None:
+	if 'noProxy' in CONTROLLER_CONF_DATA and (CONTROLLER_CONF_DATA['noProxy'] != "" or CONTROLLER_CONF_DATA['noProxy'] != None):
 		no_proxy = CONTROLLER_CONF_DATA['noProxy']
 
 	env_conf_filepath = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'group_vars/all/all.yml')
@@ -1235,7 +1235,7 @@ def update_helm_charts(config_map_name):
 				logger.warning("odimra image source path not configured, expecting user to copy & load all the required odimra docker images on cluster nodes !!!")
 			else:
 				nodes_list = ""
-				for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+				for node, attrs in K8S_INVENTORY_DATA['all']['hosts'].items():
 					nodes_list += '{hostname},'.format(hostname=node)
 				nodes_list = nodes_list.rstrip(',')
 				dockerImageName=GROUP_VAR_DATA['odim_docker_images'][config_map_name]

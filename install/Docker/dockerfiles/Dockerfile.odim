@@ -26,6 +26,7 @@ COPY svc-systems /ODIM/svc-systems
 COPY svc-task /ODIM/svc-task
 COPY svc-update /ODIM/svc-update
 COPY plugin-redfish /ODIM/plugin-redfish
+COPY plugin-dell /ODIM/plugin-dell
 COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks
 COPY lib-dmtf /ODIM/lib-dmtf/
 COPY lib-messagebus /ODIM/lib-messagebus/

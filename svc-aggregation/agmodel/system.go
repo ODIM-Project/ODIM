@@ -18,14 +18,15 @@ package agmodel
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	dmtfmodel "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 //Schema model is used to iterate throgh the schema json for search/filter
@@ -99,6 +100,49 @@ type Links struct {
 //OdataID struct definition for @odata.id
 type OdataID struct {
 	OdataID string `json:"@odata.id"`
+}
+
+//ServerInfo holds the details of the server
+type ServerInfo SaveSystem
+
+//StartUpMap holds required data for plugin startup
+type StartUpMap struct {
+	Location          string
+	EventTypes        []string
+	Device            ServerInfo
+	PluginStartUpData map[string]PluginStartUpData
+}
+
+// PluginStartUpData holds the required data for plugin startup
+type PluginStartUpData struct {
+	UserName               string
+	Password               []byte
+	DeviceUUID             string
+	Operation              string
+	RequestType            string
+	DeviceSubscriptionInfo *DeviceSubscriptionInfo
+	TriggerInfo            *TriggerInfo
+}
+
+// DeviceSubscriptionInfo holds the event subscription details of a device
+type DeviceSubscriptionInfo struct {
+	EventTypes []string
+	Location   string
+}
+
+// TriggerInfo holds the metric trigger info of a device
+type TriggerInfo struct {
+}
+
+//PluginContactRequest holds the details required to contact the plugin
+type PluginContactRequest struct {
+	URL             string
+	HTTPMethodType  string
+	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	PostBody        interface{}
+	LoginCredential map[string]string
+	Token           string
+	Plugin          Plugin
 }
 
 //GetResource fetches a resource from database using table and key

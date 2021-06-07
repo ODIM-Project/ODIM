@@ -1,0 +1,30 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+[Unit]
+Description=Lenovo Plugin
+Requires=network-online.target
+After=network-online.target
+[Service]
+Type=forking
+Restart=always
+ExecStart=/bin/sh -c 'cd bin ; export PLUGIN_CONFIG_FILE_PATH=/etc/lenovo_plugin_config/config_lenovo_plugin.json ; sudo -E -u plugin nohup ./plugin-lenovo >> /var/log/lenovo_plugin_logs/lenovo_plugin.log 2>&1 &'
+KillMode=process
+KillSignal=SIGTERM
+User=root
+StartLimitBurst=3
+RestartSec=3
+StartLimitInterval=300
+[Install]
+WantedBy=multi-user.target
+

@@ -155,7 +155,7 @@ func checkPluginConf() error {
 	}
 	if Data.PluginConf.ID == "" {
 		log.Warn("No value set for Plugin ID, setting default value")
-		Data.PluginConf.ID = "GRF"
+		Data.PluginConf.ID = "LENOVO"
 	}
 	if Data.PluginConf.Host == "" {
 		return fmt.Errorf("No value set for plugin Host")

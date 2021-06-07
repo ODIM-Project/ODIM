@@ -160,20 +160,20 @@ func SetUpMockConfig(t *testing.T) error {
 	Data.FirmwareVersion = "1.0"
 	Data.SessionTimeoutInMinutes = 30
 	Data.PluginConf = &PluginConf{
-		ID:       "GRF",
+		ID:       "LENOVO",
 		Host:     localhost,
-		Port:     "45001",
+		Port:     "45009",
 		UserName: "admin",
 		Password: "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==",
 	}
 	Data.LoadBalancerConf = &LoadBalancerConf{
 		Host: localhost,
-		Port: "45002",
+		Port: "45010",
 	}
 	Data.EventConf = &EventConf{
 		DestURI:      "/redfishEventListener",
 		ListenerHost: localhost,
-		ListenerPort: "45002",
+		ListenerPort: "45010",
 	}
 	Data.MessageBusConf = &MessageBusConf{
 		EmbType:  "Kafka",

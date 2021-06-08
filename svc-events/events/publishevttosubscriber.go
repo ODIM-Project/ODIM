@@ -413,7 +413,7 @@ func callPluginStartUp(managerAddr, originURI string) {
 	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
 	_, err := aggregator.SendStartUpData(context.TODO(), &aggregatorproto.SendStartUpDataRequest{
 		PluginAddr: managerAddr,
-		OriginURI: originURI,
+		OriginURI:  originURI,
 	})
 	if err != nil {
 		log.Error("failed to send plugin startup data to " + managerAddr + ": " + err.Error())

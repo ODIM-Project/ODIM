@@ -99,6 +99,12 @@ const (
 	ManagerTypeRackManager = "RackManager"
 	// ManagerTypeService - A software-based service that provides management functions.
 	ManagerTypeService = "Service"
+
+	// SubscriptionIndex is a index name which required for indexing of event subscriptions
+	SubscriptionIndex = "Subscription"
+	// DeviceSubscriptionIndex is a index name which required for indexing
+	// subscription of device
+	DeviceSubscriptionIndex = "DeviceSubscription"
 )
 
 // SystemResource contains the Resource name and table name
@@ -250,4 +256,11 @@ type Event struct {
 // Link  property shall contain a link to the resource or object that originated the condition that caused the event to be generated
 type Link struct {
 	Oid string `json:"@odata.id"`
+}
+
+//DeviceSubscription is a model to store the subscription details of a device
+type DeviceSubscription struct {
+	EventHostIP     string   `json:"EventHostIP,omitempty"`
+	OriginResources []string `json:"OriginResources"`
+	Location        string   `json:"location,omitempty"`
 }

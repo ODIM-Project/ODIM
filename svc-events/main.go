@@ -62,6 +62,16 @@ func main() {
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
 	consumer.In, consumer.Out = common.CreateJobQueue()
+	// RunReadWorkers will create a worker pool for doing a specific task
+	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
+	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 5)
+
+	// CreateJobQueue defines the queue which will act as an infinite buffer
+	// In channel is an entry or input channel and the Out channel is an exit or output channel
+	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue()
+	// RunReadWorkers will create a worker pool for doing a specific task
+	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
+	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 5)
 
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
@@ -71,14 +81,16 @@ func main() {
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
-	// RunReadWorkers will create a worker pool for doing a specific task
-	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 5)
+	// Subscribe to ODIM-CONTROL-MESSAGES topic
+	go consumer.SubscribeCtrlMsgQueue("ODIM-CONTROL-MESSAGES")
+
+	// Subscribe to EMBs of all the available plugins
 	startUPInterface := evcommon.StartUpInteraface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,
 	}
-	go startUPInterface.GetAllPluginStatus()
+	go startUPInterface.SubscribePluginEMB()
+
 	// Run server
 	if err := services.Service.Run(); err != nil {
 		log.Fatal(err.Error())

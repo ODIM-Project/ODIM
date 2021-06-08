@@ -31,6 +31,12 @@ var (
 	In chan<- interface{}
 	// Out Channel
 	Out <-chan interface{}
+	// CtrlMsgRecvQueue is the channel for receiving
+	// internal messages read from ODIM-CONTROL-MESSAGES topic
+	CtrlMsgRecvQueue chan<- interface{}
+	// CtrlMsgProcQueue is the channel for processing
+	// internal messages received from ODIM-CONTROL-MESSAGES topic
+	CtrlMsgProcQueue <-chan interface{}
 )
 
 var done = make(chan bool)
@@ -75,4 +81,35 @@ func Consume(topicName string) {
 		return
 	}
 	return
+}
+
+// SubscribeCtrlMsgQueue creates a consumer for the kafka topic
+func SubscribeCtrlMsgQueue(topicName string) {
+	config.TLSConfMutex.RLock()
+	messageQueueConfigFilePath := config.Data.MessageQueueConfigFilePath
+	config.TLSConfMutex.RUnlock()
+	// connecting to kafka
+	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath)
+	if err != nil {
+		log.Error("Unable to connect to kafka" + err.Error())
+		return
+	}
+	// subscribe from message bus
+	if err := k.Accept(topicName, consumeCtrlMsg); err != nil {
+		log.Error(err.Error())
+		return
+	}
+	return
+}
+
+// consumeCtrlMsg consume control messages
+func consumeCtrlMsg(event interface{}) {
+	var ctrlMessage common.ControlMessageData
+	data, _ := json.Marshal(&event)
+	if err := json.Unmarshal(data, &ctrlMessage); err != nil {
+		log.Error("error while unmarshaling the event" + err.Error())
+		return
+	}
+	msg := []interface{}{ctrlMessage}
+	go common.RunWriteWorkers(CtrlMsgRecvQueue, msg, 5, done)
 }

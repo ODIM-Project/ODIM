@@ -17,8 +17,10 @@
 package system
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -49,82 +51,116 @@ func PerformPluginHealthCheck() {
 	phc := agcommon.PluginHealthCheckInterface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 	}
+	phc.StatusRecord.InactiveTime = make(map[string]int)
 	for {
 		phc.DupPluginConf()
-		if pluginList, err := phc.GetAllPlugins(); err != nil {
+		if pluginList, err := agcommon.GetAllPlugins(); err != nil {
 			log.Error("failed to get list of all plugins:", err.Error())
 		} else {
-			for i := 0; i < len(pluginList); i++ {
-				go phc.GetPluginStatus(pluginList[i])
+			for _, plugin := range pluginList {
+				go checkPluginStatus(&phc, plugin)
 			}
 		}
 		time.Sleep(time.Minute * time.Duration(phc.PluginConfig.PollingFrequencyInMins))
 	}
 }
 
+func checkPluginStatus(phc *agcommon.PluginHealthCheckInterface, plugin agmodel.Plugin) {
+	active, topics := phc.GetPluginStatus(plugin)
+	if count, exist := phc.GetPluginStatusRecord(plugin.ID); !exist {
+		phc.SetPluginStatusRecord(plugin.ID, 0)
+	} else {
+		switch {
+		case count != 0 && active:
+			phc.SetPluginStatusRecord(plugin.ID, 0)
+			if err := sharePluginInventory(plugin, true); err != nil {
+				log.Error("failed to update server inventory of plugin " +
+					plugin.ID + ": " + err.Error())
+				phc.SetPluginStatusRecord(plugin.ID, count+1)
+			}
+			PublishPluginStatusOKEvent(plugin.ID, topics)
+		case !active:
+			phc.SetPluginStatusRecord(plugin.ID, count+1)
+		}
+	}
+}
+
 // PushPluginStartUpData is for sending the plugin startup data
 // when the plugin starts or when a server is added or deleted
-func PushPluginStartUpData(plugin agmodel.Plugin, startUpData map[string]agmodel.PluginStartUpData) error {
-	var serversData []agmodel.StartUpMap
-	if startUpData == nil {
-		phc := agcommon.PluginHealthCheckInterface{
-			DecryptPassword: common.DecryptWithPrivateKey,
+func PushPluginStartUpData(plugin agmodel.Plugin, startUpData *agmodel.PluginStartUpData) error {
+	if startUpData != nil {
+		_, err := sendPluginStartupRequest(plugin, *startUpData)
+		return err
+	}
+	return sharePluginInventory(plugin, false)
+}
+
+func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret error) {
+	phc := agcommon.PluginHealthCheckInterface{
+		DecryptPassword: common.DecryptWithPrivateKey,
+	}
+	phc.DupPluginConf()
+	managedServers := phc.GetPluginManagedServers(plugin)
+	managedServersCount := len(managedServers)
+	pluginStartUpData := agmodel.PluginStartUpData{
+		RequestType:           "full",
+		ResyncEvtSubscription: resyncSubscription,
+	}
+	batchedServersData := make([]agmodel.Target, 0)
+	startIndex := 0
+	for startIndex < managedServersCount {
+		endIndex := startIndex + phc.PluginConfig.StartUpResouceBatchSize
+		if endIndex > managedServersCount {
+			endIndex = managedServersCount
 		}
-		phc.DupPluginConf()
-		managedServers := phc.GetPluginManagedServers(plugin)
-		startUpMap := agmodel.StartUpMap{}
-		startUpMap.PluginStartUpData = make(map[string]agmodel.PluginStartUpData, len(managedServers))
-		for _, server := range managedServers {
-			startUpMap.PluginStartUpData[server.ManagerAddress] = agmodel.PluginStartUpData{
-				UserName:    server.UserName,
-				Password:    server.Password,
-				DeviceUUID:  server.DeviceUUID,
-				Operation:   "add",
-				RequestType: "full",
+		batchedServersData = append(batchedServersData, managedServers[startIndex:endIndex]...)
+		startIndex += phc.PluginConfig.StartUpResouceBatchSize
+		pluginStartUpData.Devices = make(map[string]agmodel.DeviceData, phc.PluginConfig.StartUpResouceBatchSize)
+		for _, server := range batchedServersData {
+			evtSubsInfo := &agmodel.EventSubscriptionInfo{}
+			subsID, evtTypes, err := agcommon.GetDeviceSubscriptionDetails(server.ManagerAddress)
+			if err != nil {
+				log.Error("failed to get event subscription details for " + server.ManagerAddress + ": " + err.Error())
+			} else {
+				evtSubsInfo.Location = subsID
+				evtSubsInfo.EventTypes = append(evtSubsInfo.EventTypes, evtTypes...)
+			}
+			pluginStartUpData.Devices[server.DeviceUUID] = agmodel.DeviceData{
+				Address:               server.ManagerAddress,
+				UserName:              server.UserName,
+				Password:              server.Password,
+				Operation:             "add",
+				EventSubscriptionInfo: evtSubsInfo,
 			}
 		}
-		serversData = append(serversData, startUpMap)
-	} else {
-		startUpMap := agmodel.StartUpMap{}
-		startUpMap.PluginStartUpData = make(map[string]agmodel.PluginStartUpData, len(startUpData))
-		for k, v := range startUpData {
-			startUpMap.PluginStartUpData[k] = v
+		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData)
+		if err != nil {
+			ret = fmt.Errorf("%w: %w", ret, err)
 		}
-		serversData = append(serversData, startUpMap)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			ret = fmt.Errorf("%w: %w", ret, err)
+		}
+		var subsData map[string]string
+		if err := json.Unmarshal(body, &subsData); err != nil {
+			ret = fmt.Errorf("%w: %w", ret, err)
+		}
+		agcommon.UpdateDeviceSubscriptionDetails(subsData)
 	}
+	return
+}
 
-	var contactRequest agmodel.PluginContactRequest
+func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}) (*http.Response, error) {
+	contactRequest := agmodel.PluginContactRequest{}
 	contactRequest.Plugin = plugin
 	contactRequest.URL = "/ODIM/v1/Startup"
 	contactRequest.HTTPMethodType = http.MethodPost
-	contactRequest.PostBody = serversData
-
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		contactRequest.HTTPMethodType = http.MethodPost
-		contactRequest.PostBody = map[string]interface{}{
-			"Username": plugin.Username,
-			"Password": string(plugin.Password),
-		}
-		contactRequest.URL = "/ODIM/v1/Sessions"
-		response, err := agcommon.ContactPlugin(contactRequest)
-		if err != nil {
-			log.Error("failed to get session token from " + plugin.ID + ": " + err.Error())
-			return err
-		}
-		contactRequest.Token = response.Header.Get("X-Auth-Token")
-		contactRequest.LoginCredential = nil
-	} else {
-		contactRequest.LoginCredential = map[string]string{
-			"UserName": plugin.Username,
-			"Password": string(plugin.Password),
-		}
-	}
-
+	contactRequest.PostBody = startupData
 	response, err := agcommon.ContactPlugin(contactRequest)
 	if err != nil {
-		log.Error("failed to send startup data to "+plugin.ID+": "+err.Error()+": ", response)
-		return err
+		log.Error("failed to send startup data to " + plugin.ID + ": " + err.Error())
+		return nil, err
 	}
 	log.Info("Successfully sent startup data to " + plugin.ID)
-	return nil
+	return response, nil
 }

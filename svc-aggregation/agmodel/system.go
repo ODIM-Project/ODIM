@@ -105,27 +105,25 @@ type OdataID struct {
 //ServerInfo holds the details of the server
 type ServerInfo SaveSystem
 
-//StartUpMap holds required data for plugin startup
-type StartUpMap struct {
-	Location          string
-	EventTypes        []string
-	Device            ServerInfo
-	PluginStartUpData map[string]PluginStartUpData
-}
-
 // PluginStartUpData holds the required data for plugin startup
 type PluginStartUpData struct {
-	UserName               string
-	Password               []byte
-	DeviceUUID             string
-	Operation              string
-	RequestType            string
-	DeviceSubscriptionInfo *DeviceSubscriptionInfo
-	TriggerInfo            *TriggerInfo
+	RequestType           string
+	ResyncEvtSubscription bool
+	Devices               map[string]DeviceData
 }
 
-// DeviceSubscriptionInfo holds the event subscription details of a device
-type DeviceSubscriptionInfo struct {
+// DeviceData holds device credentials, event subcription and trigger details
+type DeviceData struct {
+	UserName              string
+	Password              []byte
+	Address               string
+	Operation             string
+	EventSubscriptionInfo *EventSubscriptionInfo
+	TriggerInfo           *TriggerInfo
+}
+
+// EventSubscriptionInfo holds the event subscription details of a device
+type EventSubscriptionInfo struct {
 	EventTypes []string
 	Location   string
 }
@@ -785,8 +783,8 @@ func DeleteAggregationSource(aggregtionSourceURI string) *errors.Error {
 	return nil
 }
 
-//GetSystem fetches computer system details by UUID from database
-func GetSystem(systemid string) (string, *errors.Error) {
+//GetComputerSystem fetches computer system details by UUID from database
+func GetComputerSystem(systemid string) (string, *errors.Error) {
 	var system string
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -1021,5 +1019,60 @@ func SavePluginManagerInfo(body []byte, table string, key string) error {
 		return errors.PackError(err.ErrNo(), "Unable to save the plugin data with SavePluginManagerInfo:  duplicate UUID: ", err.Error())
 	}
 
+	return nil
+}
+
+// GetDeviceSubscriptions is to get subscription details of device
+func GetDeviceSubscriptions(hostIP string) (*common.DeviceSubscription, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	devSubscription, gerr := conn.GetDeviceSubscription(common.DeviceSubscriptionIndex, hostIP+"*")
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get device subscription details: %v", gerr.Error())
+	}
+	devSub := strings.Split(devSubscription[0], "::")
+	var deviceSubscription = &common.DeviceSubscription{
+		EventHostIP:     devSub[0],
+		Location:        devSub[1],
+		OriginResources: getSliceFromString(devSub[2]),
+	}
+	return deviceSubscription, nil
+}
+
+// getSliceFromString is to convert the string to array
+func getSliceFromString(sliceString string) []string {
+	// redis will store array as string enclosed in "[]"(ex "[alert statuschange]")
+	// to convert to an array remove "[" ,"]" and create a slice
+	sliceString = strings.TrimSuffix(strings.TrimPrefix(sliceString, "["), "]")
+	if len(sliceString) < 1 {
+		return []string{}
+	}
+	return strings.Fields(sliceString)
+}
+
+// GetEventSubscriptions is for getting the event subscription details
+func GetEventSubscriptions(key string) ([]string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return nil, err
+	}
+	subscriptions, gerr := conn.GetEvtSubscriptions(common.SubscriptionIndex, "*"+key+"*")
+	if gerr != nil {
+		return nil, fmt.Errorf("error while trying to get event subsciption details: %v", gerr.Error())
+	}
+	return subscriptions, nil
+}
+
+// UpdateDeviceSubscription is to update subscription details of device
+func UpdateDeviceSubscription(devSubscription common.DeviceSubscription) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return err
+	}
+	if err := conn.UpdateDeviceSubscription(common.DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources); err != nil {
+		return fmt.Errorf("error while trying to update subscription of device %v", err.Error())
+	}
 	return nil
 }

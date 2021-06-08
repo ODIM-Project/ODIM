@@ -143,6 +143,7 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 	}
 
 }
+
 func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	PluginsMap := make(map[string]bool)
 	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
@@ -498,4 +499,71 @@ func GetSearchKey(key, index string) string {
 		searchKey = key + `[^0-9]`
 	}
 	return searchKey
+}
+
+// ProcessCtrlMsg is for processing the ODIM control message
+// and to perform required action
+func ProcessCtrlMsg(data interface{}) bool {
+	if data == nil {
+		log.Warn("received control message event with empty data")
+		return false
+	}
+	event := data.(common.ControlMessageData)
+	msg, _ := json.Marshal(event.Data)
+	log.Info("received control message event of type:", event.MessageType)
+	if event.MessageType == common.SubscribeEMB {
+		var message common.SubscribeEMBData
+		if err := json.Unmarshal([]byte(msg), &message); err != nil {
+			return false
+		}
+		for _, topic := range message.EMBQueues {
+			EMBTopics.ConsumeTopic(topic)
+		}
+	}
+	return true
+}
+
+// SubscribePluginEMB is for subscribing to plugin EMB
+func (st *StartUpInteraface) SubscribePluginEMB() {
+	time.Sleep(time.Second * 2)
+	pluginList, err := evmodel.GetAllPlugins()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	for i := 0; i < len(pluginList); i++ {
+		go st.getPluginEMB(pluginList[i])
+	}
+}
+
+func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
+	config.TLSConfMutex.RLock()
+	var pluginStatus = common.PluginStatus{
+		Method: http.MethodGet,
+		RequestBody: common.StatusRequest{
+			Comment: "",
+		},
+		ResponseWaitTime:        config.Data.PluginStatusPolling.ResponseTimeoutInSecs,
+		Count:                   config.Data.PluginStatusPolling.MaxRetryAttempt,
+		RetryInterval:           config.Data.PluginStatusPolling.RetryIntervalInMins,
+		PluginIP:                plugin.IP,
+		PluginPort:              plugin.Port,
+		PluginUsername:          plugin.Username,
+		PluginUserPassword:      string(plugin.Password),
+		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
+	}
+	config.TLSConfMutex.RUnlock()
+	status, _, topicsList, err := pluginStatus.CheckStatus()
+	if err != nil && !status {
+		log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
+		return
+	}
+	EMBTopics.lock.Lock()
+	EMBTopics.EMBConsume = st.EMBConsume
+	EMBTopics.lock.Unlock()
+	for j := 0; j < len(topicsList); j++ {
+		EMBTopics.ConsumeTopic(topicsList[j])
+	}
+	return
 }

@@ -16,12 +16,13 @@ package agmessagebus
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 //Publish will takes the system id,Event type and publishes the data to message bus
@@ -60,4 +61,26 @@ func Publish(systemID, eventType, collectionType string) {
 	}
 	log.Info("Event Published")
 
+}
+
+// PublishCtrlMsg publishes ODIM control messages to the message bus
+func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
+	kConn, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
+	}
+
+	defer kConn.Close()
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %s", err.Error())
+	}
+	ctrlMsg := common.ControlMessageData{
+		MessageType: msgType,
+		Data:        data,
+	}
+	if err := kConn.Distribute("ODIM-CONTROL-MESSAGES", ctrlMsg); err != nil {
+		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
+	}
+	return nil
 }

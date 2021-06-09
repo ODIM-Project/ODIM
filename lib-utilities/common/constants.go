@@ -218,8 +218,9 @@ var ResourceTypes = map[string]string{
 
 // Events contains the data with IP sent fro mplugin to PMB
 type Events struct {
-	IP      string `json:"ip"`
-	Request []byte `json:"request"`
+	IP        string `json:"ip"`
+	Request   []byte `json:"request"`
+	EventType string `json:"eventType"`
 }
 
 // MessageData contains information of Events and message details including arguments

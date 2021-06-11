@@ -43,7 +43,7 @@ type PluginContact struct {
 // Url will be parsed from that search key will created
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
-func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) (response.RPC,error) {
+func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) (response.RPC, error) {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -87,11 +87,11 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, true); err != nil {
 				log.Error("error while getting resource: " + err.Error())
 				errorMsg := err.Error()
-				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil),nil
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMsg, []interface{}{tableName, req.URL}, nil), nil
 			}
 		} else {
 			log.Error("error while getting resource: " + errorMessage)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil),nil
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil), nil
 		}
 	}
 	var resource map[string]interface{}
@@ -99,6 +99,6 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	return resp,nil
+	return resp, nil
 
 }

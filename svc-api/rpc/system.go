@@ -20,18 +20,15 @@ import (
 	"fmt"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"log"
 )
 
 //GetSystemsCollection will do the rpc call to collect Systems from odimra
 func GetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
-	log.Println("IN SVC API SYSTEMS CONNECTION: ")
 	conn, err := services.ODIMService.Client(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
 	defer conn.Close()
-	log.Println("IN SVC API SYSTEMS CONNECTION AFTER CONNECTION CLOSED: ")
 	asService := systemsproto.NewSystemsClient(conn)
 	resp, err := asService.GetSystemsCollection(context.TODO(), &req)
 	if err != nil {

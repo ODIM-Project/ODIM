@@ -60,7 +60,7 @@ func main() {
 	}
 	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 
-	err = services.InitializeService(services.GRPC, services.Managers)
+	err = services.InitializeService(services.Managers)
 	if err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}

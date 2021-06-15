@@ -31,18 +31,6 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// frameworkType is for selecting framework for bringing up the microservices
-type frameworkType int
-
-const (
-	// GRPC allows the microservices to be brought up with gRPC protocol
-	GRPC frameworkType = iota
-	// GoMicro allows the microservices to be brought up with GoMicro framework
-	GoMicro
-	// ClientService is for hosting client services eg: APIService
-	ClientService
-)
-
 type serviceType int
 
 const (
@@ -68,10 +56,10 @@ var ODIMService odimService
 var Service micro.Service
 
 // InitializeService will initialize a new micro service with the selected framework.
-func InitializeService(framework frameworkType, serverName string) error {
-	switch framework {
-	case GRPC:
-		err := ODIMService.Init(serverName)
+func InitializeService(serviceName string) error {
+	switch config.CLArgs.FrameWork {
+	case "GRPC":
+		err := ODIMService.Init(serviceName)
 		if err != nil {
 			return fmt.Errorf("While trying to initiate ODIMService model, got: %v", err)
 		}
@@ -80,7 +68,7 @@ func InitializeService(framework frameworkType, serverName string) error {
 			return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
 		}
 
-	case GoMicro:
+	case "GOMICRO":
 		tlsConfig, err := getGoMicroTLSConfig()
 		if err != nil {
 			return fmt.Errorf("Failed to load TLS config for go micro: %v", err)
@@ -88,7 +76,7 @@ func InitializeService(framework frameworkType, serverName string) error {
 		config.Server.SetTLSConfig(tlsConfig)
 
 		Service = micro.NewService(
-			micro.Name(serverName),
+			micro.Name(serviceName),
 			micro.Transport(
 				transport.NewTransport(
 					transport.Secure(true),
@@ -97,11 +85,15 @@ func InitializeService(framework frameworkType, serverName string) error {
 			),
 		)
 		Service.Init()
-	case ClientService:
-		err := ODIMService.Init(serverName)
-		if err != nil {
-			return fmt.Errorf("While trying to initiate ODIMService model, got: %v", err)
-		}
+	}
+	return nil
+}
+
+// InitializeClient will initialize a client for micro service communication.
+func InitializeClient(serviceName string) error {
+	err := ODIMService.Init(serviceName)
+	if err != nil {
+		return fmt.Errorf("While trying to initiate ODIMService model, got: %v", err)
 	}
 	return nil
 }

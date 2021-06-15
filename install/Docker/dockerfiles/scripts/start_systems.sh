@@ -42,7 +42,7 @@ start_systems()
 {
         registry_address="consul:8500"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup /bin/svc-systems --registry=consul --registry_address=${registry_address} --server_address=systems:45104 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/systems.log 2>&1 &
+	nohup /bin/svc-systems --registry=consul --registry_address=${registry_address} --server_address=systems:45104 --framework=GOMICRO --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/systems.log 2>&1 &
 	PID=$!
 	sleep 3
 

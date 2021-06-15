@@ -153,7 +153,7 @@ func main() {
 	}
 
 	// TODO: uncomment the following line after the migration
-	// config.CollectCLArgs()
+	config.CollectCLArgs()
 
 	// TODO: remove the InitializeService for GoMicro after the migration
 	err = services.InitializeService(services.APIClient)

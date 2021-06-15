@@ -69,7 +69,7 @@ func main() {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
-	err := services.InitializeService(services.GoMicro, services.Aggregator)
+	err := services.InitializeService(services.Aggregator)
 	if err != nil {
 		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}

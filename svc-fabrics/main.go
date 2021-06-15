@@ -46,7 +46,7 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.GoMicro, services.Fabrics); err != nil {
+	if err := services.InitializeService(services.Fabrics); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	fabrics.Token.Tokens = make(map[string]string)

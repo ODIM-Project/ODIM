@@ -53,7 +53,7 @@ func main() {
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
-	if err := services.InitializeService(services.GoMicro, services.AccountSession); err != nil {
+	if err := services.InitializeService(services.AccountSession); err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}
 

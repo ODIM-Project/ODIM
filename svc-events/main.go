@@ -52,7 +52,7 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	if err := services.InitializeService(services.GoMicro, services.Events); err != nil {
+	if err := services.InitializeService(services.Events); err != nil {
 		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 

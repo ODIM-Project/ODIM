@@ -25,6 +25,7 @@ type clModel struct {
 	Registry             string
 	RegistryAddress      string
 	ServerAddress        string
+	FrameWork            string
 }
 
 // CLArgs is for accessing the data passed as the command line argument
@@ -36,6 +37,7 @@ func CollectCLArgs() {
 	flag.StringVar(&CLArgs.Registry, "registry", "", "service registry")
 	flag.StringVar(&CLArgs.RegistryAddress, "registry_address", "", "address of the registry")
 	flag.StringVar(&CLArgs.ServerAddress, "server_address", "", "address for the micro service")
+	flag.StringVar(&CLArgs.FrameWork, "framework", "GOMICRO", "framework used for micro service communication")
 	flag.Parse()
 	if CLArgs.RegistryAddress == "" {
 		log.Warn("No CLI argument found for registry_address")

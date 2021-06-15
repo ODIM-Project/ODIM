@@ -63,7 +63,7 @@ func main() {
 }
 
 func registerHandlers() {
-	err := services.InitializeService(services.GoMicro, services.Update)
+	err := services.InitializeService(services.Update)
 	if err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}

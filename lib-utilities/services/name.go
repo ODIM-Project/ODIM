@@ -34,6 +34,4 @@ const (
 	Managers = "svc.managers"
 	// Update holds the name for the Update Micro Service
 	Update = "svc.update"
-	// Telemetry holds the name for the Telemetry Micro Service
-	Telemetry = "svc.telemetry"
 )

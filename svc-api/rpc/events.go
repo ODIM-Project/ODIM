@@ -26,7 +26,7 @@ import (
 // DoGetEventService defines the RPC call function for
 // the GetEventService from events micro service
 func DoGetEventService(req eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
-    conn, err := services.ODIMService.Client(services.Events)
+	conn, err := services.ODIMService.Client(services.Events)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}

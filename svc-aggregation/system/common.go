@@ -1106,7 +1106,8 @@ func CreateDefaultEventSubscription(systemID []string) {
 
         conn, err := services.ODIMService.Client(services.Events)
         if err != nil {
-                return nil, fmt.Errorf("Failed to create client connection: %v", err)
+                log.Error("error while connecting: " + err.Error())
+                return
         }
         defer conn.Close()
         events := eventsproto.NewEventsClient(conn)

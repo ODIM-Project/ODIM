@@ -194,7 +194,7 @@ func TestSystems_GetSystemResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.GetSystemResource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.s.GetSystemResource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Systems.GetSystemResource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -257,7 +257,8 @@ func TestSystems_GetAllSystems(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.GetSystemsCollection(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.GetSystemsCollection(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.GetSystemsCollection() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -320,7 +321,8 @@ func TestSystems_GetSystems(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.GetSystems(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.GetSystems(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.GetSystems() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -370,7 +372,8 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.ComputerSystemReset(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.ComputerSystemReset(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.ComputerSystemReset() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -428,7 +431,8 @@ func TestSystems_SetDefaultBootOrder(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.SetDefaultBootOrder(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.SetDefaultBootOrder(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.SetDefaultBootOrder() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -486,7 +490,8 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.ChangeBiosSettings(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.ChangeBiosSettings(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.ChangeBiosSettings() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -544,7 +549,8 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.ChangeBootOrderSettings(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.ChangeBootOrderSettings(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.ChangeBootOrderSettings() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -602,7 +608,8 @@ func TestSystems_CreateVolume(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.s.CreateVolume(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.s.CreateVolume(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Systems.CreateVolume() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -682,8 +689,9 @@ func TestSystems_DeleteVolume(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.s.DeleteVolume(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Systems.DeleteVolume() = %v, want %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			resp, _ := tt.s.DeleteVolume(tt.args.ctx, tt.args.req)
+			if resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Systems.DeleteVolume() = %v, want %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

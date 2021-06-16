@@ -469,6 +469,5 @@ func Router() *iris.Application {
 	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
 	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)
 	updateService.Get("/SoftwareInventory/{softwareInventory_id}", update.GetSoftwareInventory)
-
 	return router
 }

@@ -76,7 +76,7 @@ func main() {
 
 	registerHandler()
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -85,7 +85,7 @@ func registerHandler() {
 	systemRPC := new(rpc.Systems)
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
 	systemRPC.EI = systems.GetExternalInterface()
-	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
+	systemsproto.RegisterSystemsServer(services.ODIMService.Server(), systemRPC)
 
 	pcf := plugin.NewClientFactory(config.Data.URLTranslation)
 	chassisRPC := rpc.NewChassisRPC(
@@ -97,5 +97,5 @@ func registerHandler() {
 		chassis.NewUpdateHandler(pcf),
 	)
 
-	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)
+	chassisproto.RegisterChassisServer(services.ODIMService.Server(), chassisRPC)
 }

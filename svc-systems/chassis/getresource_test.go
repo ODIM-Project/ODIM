@@ -238,7 +238,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.p.GetChassisResource(tt.args.req)
+			got, _ := tt.p.GetChassisResource(tt.args.req)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("PluginContact.GetChassisResource() = %v, want %v", got, tt.want)
 			}

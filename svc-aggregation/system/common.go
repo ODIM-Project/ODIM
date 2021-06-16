@@ -1103,7 +1103,14 @@ func getFirmwareVersion(oid string) string {
 // CreateDefaultEventSubscription will create default events subscriptions
 func CreateDefaultEventSubscription(systemID []string) {
 	log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
-	events := eventsproto.NewEventsService(services.Events, services.Service.Client())
+
+        conn, err := services.ODIMService.Client(services.Events)
+        if err != nil {
+                return nil, fmt.Errorf("Failed to create client connection: %v", err)
+        }
+        defer conn.Close()
+        events := eventsproto.NewEventsClient(conn)
+
 	_, err := events.CreateDefaultEventSubscription(context.TODO(), &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,
 		EventTypes:    []string{"Alert"},

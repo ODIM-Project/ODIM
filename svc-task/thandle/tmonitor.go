@@ -35,8 +35,8 @@ import (
 // If the task is still not completed or cancelled or killed then it return with 202
 // with empty response body, else it return with "200 OK" with full task info in the
 // response body.
-func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest)(*taskproto.TaskResponse, error) {
-    var rsp taskproto.TaskResponse
+func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
 	rsp.Header = map[string]string{
 		"Allow":             `"GET"`,
 		"Cache-Control":     "no-cache",
@@ -51,20 +51,20 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	if authResp.StatusCode != http.StatusOK {
 		log.Printf(authErrorMessage)
 		fillProtoResponse(&rsp, authResp)
-		return &rsp,nil
+		return &rsp, nil
 	}
 	_, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		log.Printf(authErrorMessage)
 		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
-		return &rsp,nil
+		return &rsp, nil
 	}
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
 	if err != nil {
 		log.Printf("error getting task status : %v", err)
 		fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
-		return &rsp,nil
+		return &rsp, nil
 	}
 
 	// Check the state of the task
@@ -83,7 +83,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 				log.Printf("error while deleting the task from db: %v", err)
 			}
 		*/
-		return &rsp,nil
+		return &rsp, nil
 	}
 	// Construct the Task object to return as long as 202 code is being returned.
 
@@ -138,5 +138,5 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	rsp.Body = generateResponse(taskResponse)
 
 	rsp.Header["location"] = task.TaskMonitor
-	return &rsp,nil
+	return &rsp, nil
 }

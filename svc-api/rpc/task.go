@@ -29,7 +29,7 @@ import (
 
 // DeleteTaskRequest will do the rpc calls for the svc-task DeleteTask
 func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-    conn, connErr := services.ODIMService.Client(services.Tasks)
+	conn, connErr := services.ODIMService.Client(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
 	}
@@ -52,7 +52,7 @@ func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, 
 
 // GetTaskRequest will do the rpc calls for the svc-task GetTaskStatus
 func GetTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	 conn, connErr := services.ODIMService.Client(services.Tasks)
+	conn, connErr := services.ODIMService.Client(services.Tasks)
 	if connErr != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
 	}

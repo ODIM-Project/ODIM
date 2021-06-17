@@ -71,7 +71,7 @@ func main() {
 	task.OverWriteCompletedTaskUtilHelper = task.OverWriteCompletedTaskUtil
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.GetCompletedTasksIndexModel = tmodel.GetCompletedTasksIndex
-	
+
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
 	task.UpdateTaskStatusModel = tmodel.UpdateTaskStatus

@@ -31,6 +31,12 @@ func mockGetSystemRequest(req systemsproto.GetSystemsRequest) (*systemsproto.Sys
 			StatusMessage: "Success",
 			Body:          []byte(`{"Response":"Success"}`),
 		}
+	} else if req.URL == "/redfish/v1/Systems%2f1A" && req.SessionToken == "ValidToken" {
+		response = &systemsproto.SystemsResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
 	} else if req.URL == "/redfish/v1/Systems/1A" && req.SessionToken == "InvalidToken" {
 		response = &systemsproto.SystemsResponse{
 			StatusCode:    401,

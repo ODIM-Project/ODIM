@@ -328,8 +328,16 @@ func postEvent(destination string, event []byte) {
 // and rediscover all of them
 func rediscoverSystemInventory(systemID, systemURL string) {
 	systemURL = strings.TrimSuffix(systemURL, "/")
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-	_, err := aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
+
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	_, err = aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})
@@ -382,8 +390,16 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 	} else {
 		state = "Off"
 	}
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-	_, err := aggregator.UpdateSystemState(context.TODO(), &aggregatorproto.UpdateSystemStateRequest{
+
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	_, err = aggregator.UpdateSystemState(context.TODO(), &aggregatorproto.UpdateSystemStateRequest{
 		SystemUUID: systemUUID,
 		SystemID:   id,
 		SystemURI:  uri,

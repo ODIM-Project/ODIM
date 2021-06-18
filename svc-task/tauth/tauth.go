@@ -18,9 +18,10 @@ package auth
 import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
+var log = logrus.New()
 func init() {
 	err := srv.InitializeService(srv.Tasks)
 	if err != nil {

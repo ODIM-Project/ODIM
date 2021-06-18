@@ -25,8 +25,12 @@ import (
 // DoGetAccountServiceRequest defines the RPC call function for
 // the GetAccountService from account-session micro service
 func DoGetAccountServiceRequest(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
-
-	account := accountproto.NewAccountService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	account := accountproto.NewAccountClient(conn)
 
 	resp, err := account.GetAccountServices(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -39,8 +43,12 @@ func DoGetAccountServiceRequest(req accountproto.AccountRequest) (*accountproto.
 // DoAccountCreationRequest defines the RPC call function for
 // the AccountCreation from account-session micro service
 func DoAccountCreationRequest(req accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
-
-	account := accountproto.NewAccountService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	account := accountproto.NewAccountClient(conn)
 
 	resp, err := account.Create(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -53,8 +61,12 @@ func DoAccountCreationRequest(req accountproto.CreateAccountRequest) (*accountpr
 // DoGetAllAccountRequest defines the RPC call function for
 // the GetAllAccount from account-session micro service
 func DoGetAllAccountRequest(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
-
-	account := accountproto.NewAccountService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	account := accountproto.NewAccountClient(conn)
 
 	resp, err := account.GetAllAccounts(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -67,8 +79,12 @@ func DoGetAllAccountRequest(req accountproto.AccountRequest) (*accountproto.Acco
 // DoGetAccountRequest defines the RPC call function for
 // the GetAccount from account-session micro service
 func DoGetAccountRequest(req accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
-
-	account := accountproto.NewAccountService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	account := accountproto.NewAccountClient(conn)
 
 	resp, err := account.GetAccount(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -81,8 +97,12 @@ func DoGetAccountRequest(req accountproto.GetAccountRequest) (*accountproto.Acco
 // DoUpdateAccountRequest defines the RPC call function for
 // the UpdateAccount from account-session micro service
 func DoUpdateAccountRequest(req accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
-
-	account := accountproto.NewAccountService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	account := accountproto.NewAccountClient(conn)
 
 	resp, err := account.Update(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -96,7 +116,12 @@ func DoUpdateAccountRequest(req accountproto.UpdateAccountRequest) (*accountprot
 // the AccountDelete from account-session micro service
 func DoAccountDeleteRequest(req accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
 
-	account := accountproto.NewAccountService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	account := accountproto.NewAccountClient(conn)
 
 	resp, err := account.Delete(context.TODO(), &req)
 	if err != nil && resp == nil {

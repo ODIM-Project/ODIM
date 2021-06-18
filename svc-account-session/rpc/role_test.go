@@ -124,7 +124,8 @@ func TestRole_CreateRole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.CreateRole(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.r.CreateRole(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Role.CreateRole() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -178,7 +179,8 @@ func TestRole_GetRole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.GetRole(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.r.GetRole(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Role.GetRole() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -231,7 +233,8 @@ func TestRole_GetAllRoles(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.GetAllRoles(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.r.GetAllRoles(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Role.GetAllRoles() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -292,7 +295,8 @@ func TestRole_UpdateRole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.r.UpdateRole(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.r.UpdateRole(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Role.UpdateRole() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -355,15 +359,15 @@ func TestRole_DeleteRole(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.r.DeleteRole(tt.args.ctx, tt.args.req, tt.args.resp)
+			resp, err := tt.r.DeleteRole(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Role.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if tt.args.resp.StatusCode != tt.want.StatusCode {
-				t.Errorf("Role.Delete() StatusCode = %v, want = %v", tt.args.resp.StatusCode, tt.want.StatusCode)
+			if resp.StatusCode != tt.want.StatusCode {
+				t.Errorf("Role.Delete() StatusCode = %v, want = %v", resp.StatusCode, tt.want.StatusCode)
 			}
-			if tt.args.resp.StatusMessage != tt.want.StatusMessage {
-				t.Errorf("Role.Delete() StatusMessage = %v, want = %v", tt.args.resp.StatusMessage, tt.want.StatusMessage)
+			if resp.StatusMessage != tt.want.StatusMessage {
+				t.Errorf("Role.Delete() StatusMessage = %v, want = %v", resp.StatusMessage, tt.want.StatusMessage)
 			}
 		})
 	}

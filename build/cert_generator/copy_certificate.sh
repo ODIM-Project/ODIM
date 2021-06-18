@@ -84,10 +84,20 @@ fi
 plugin_owner_output=$(sudo chown -R plugin:plugin /etc/plugincert* && sudo chmod 0755 /etc/plugincert* 2>&1)
 eval_cmd_exec $? "failed to modify plugin directories permission" "$plugin_owner_output"
 
+#create etcd required directories
+if [[ ! -d /etc/etcd/data ]] || [[ ! -d /etc/etcd/conf ]]; then
+        etcd_output=$(sudo mkdir -p /etc/etcd/data /etc/etcd/conf 2>&1)
+        eval_cmd_exec $? "failed to create etcd directories" "$etcd_output"
+fi
+etcd_owner_output=$(sudo chown -R odimra:odimra /etc/etcd* && sudo chmod 0755 /etc/etcd* 2>&1)
+eval_cmd_exec $?  "failed to modify etcd directories permission" "$etcd_owner_output"
+
+# copy certificates and keys
 sudo cp rootCA.crt odimra_server.crt odimra_server.key odimra_rsa.public odimra_rsa.private odimra_kafka_client.crt odimra_kafka_client.key /etc/odimracert/
 sudo cp kafka.keystore.jks kafka.truststore.jks /etc/kafka/conf/
 sudo cp zookeeper.keystore.jks zookeeper.truststore.jks /etc/zookeeper/conf/
 sudo cp rootCA.crt odimra_server.crt odimra_server.key odimra_kafka_client.crt odimra_kafka_client.key odimra_rsa.public odimra_rsa.private /etc/plugincert/
+sudo cp rootCA.crt odimra_etcd_server.crt odimra_etcd_server.key /etc/etcd/conf/
 
 cd /etc/odimracert/
 
@@ -157,8 +167,24 @@ else
 	exit -1
 fi
 
+cd /etc/etcd/conf
+if [ $? -eq 0 ];
+then
+	a=`echo \`ls | wc -l\` `
+	if [ $a -eq 3 ];
+	then
+		echo "etcd Certificates copied successfully"
+	else
+		echo "Copying of etcd Certificates failed"
+		exit -1
+	fi
+else
+	echo "Copying of etcd Certificates failed"
+	exit -1
+fi
+
 sudo chown -R odimra:odimra /etc/odimracert/
 sudo chown -R plugin:plugin /etc/plugincert/
 sudo chown -R odimra:odimra /etc/kafka/conf/
 sudo chown -R odimra:odimra /etc/zookeeper/conf/
-
+sudo chown -R odimra:odimra /etc/etcd/conf/*

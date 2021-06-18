@@ -1,0 +1,61 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+
+# This is Dockerfile to build etcd image
+FROM ubuntu:18.04 as etcd-build
+
+LABEL version="1.0"
+LABEL ubuntuVersion="18.04"
+LABEL etcdVersion="3.4.15"
+LABEL description="etcd docker image built on top of ubuntu:18.04"
+
+# This is the release of etcd to pull in.
+ENV ETDC_VERSION=3.4.15
+
+WORKDIR /etcd/
+
+# userid and groupid of odimra user and odimra group respectively
+# which will present be on the host machine.
+ARG ODIMRA_USER_ID
+ARG ODIMRA_GROUP_ID
+
+RUN apt-get update -q=3 && apt-get -q install -q=3 -y \
+        wget \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
+	&& mkdir -p /opt/etcd/bin /opt/etcd/data /opt/etcd/conf /opt/etcd/scripts /etcd/tmp \
+        && export ETCD_IMAGE_URL=https://storage.googleapis.com/etcd/v${ETDC_VERSION}/etcd-v${ETDC_VERSION}-linux-amd64.tar.gz \
+        && export ETCD_IMAGE_BUNDLE=etcd-v${ETDC_VERSION}-linux-amd64.tar.gz \
+        && wget -q $ETCD_IMAGE_URL -P /etcd/ \
+        && tar -xzf /etcd/${ETCD_IMAGE_BUNDLE} --strip-components 1 -C /etcd/tmp \
+        && mv -f /etcd/tmp/etcd* /opt/etcd/bin \
+        && rm -rf /etcd \
+        && groupadd -r -g $ODIMRA_GROUP_ID odimra \
+	&& useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
+	&& chown -R odimra:odimra /opt/etcd \
+	&& chmod 0700 /opt/etcd/data
+
+COPY --chown=odimra:odimra ./etcd/start_etcd.sh /opt/etcd/scripts/
+COPY --chown=odimra:odimra ./etcd/etcd.conf /opt/etcd/bin/
+RUN chmod 0700 /opt/etcd/scripts/* \
+        && chmod 0600 /opt/etcd/bin/etcd.conf
+
+USER odimra:odimra
+STOPSIGNAL SIGTERM
+
+ENTRYPOINT ["/bin/bash", "/opt/etcd/scripts/start_etcd.sh"]
+
+VOLUME ["/sys/fs/cgroup"]

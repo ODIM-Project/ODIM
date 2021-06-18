@@ -252,3 +252,11 @@ type Event struct {
 type Link struct {
 	Oid string `json:"@odata.id"`
 }
+
+// PluginStatusEvent contains details of the plugin status
+type PluginStatusEvent struct {
+	Name         string `json:"Name"`
+	Type         string `json:"Type"`
+	Timestamp    string `json:"Timestamp"`
+	OriginatorID string `json:"OriginatorID"`
+}

@@ -58,14 +58,14 @@ func main() {
 	}
 
 	registerHandlers()
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal("Failed to run a service: " + err.Error())
 	}
 }
 
 func registerHandlers() {
-	authproto.RegisterAuthorizationHandler(services.Service.Server(), new(rpc.Auth))
-	sessionproto.RegisterSessionHandler(services.Service.Server(), new(rpc.Session))
-	accountproto.RegisterAccountHandler(services.Service.Server(), new(rpc.Account))
-	roleproto.RegisterRolesHandler(services.Service.Server(), new(rpc.Role))
+	authproto.RegisterAuthorizationServer(services.ODIMService.Server(), new(rpc.Auth))
+	sessionproto.RegisterSessionServer(services.ODIMService.Server(), new(rpc.Session))
+	accountproto.RegisterAccountServer(services.ODIMService.Server(), new(rpc.Account))
+	roleproto.RegisterRolesServer(services.ODIMService.Server(), new(rpc.Role))
 }

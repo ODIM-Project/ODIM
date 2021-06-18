@@ -25,8 +25,12 @@ import (
 
 // DoSessionCreationRequest will do the rpc calls for the auth
 func DoSessionCreationRequest(req sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
-
-	asService := sessionproto.NewSessionService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
 
 	// Call the CreateSession
 	rsp, err := asService.CreateSession(context.TODO(), &req)
@@ -38,8 +42,12 @@ func DoSessionCreationRequest(req sessionproto.SessionCreateRequest) (*sessionpr
 
 // DeleteSessionRequest will do the rpc call to delete session
 func DeleteSessionRequest(sessionID, sessionToken string) (*sessionproto.SessionResponse, error) {
-
-	asService := sessionproto.NewSessionService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
 
 	// Call the DeleteSession
 	rsp, err := asService.DeleteSession(context.TODO(), &sessionproto.SessionRequest{
@@ -55,8 +63,12 @@ func DeleteSessionRequest(sessionID, sessionToken string) (*sessionproto.Session
 
 // GetSessionRequest will do the rpc call to get session
 func GetSessionRequest(sessionID, sessionToken string) (*sessionproto.SessionResponse, error) {
-
-	asService := sessionproto.NewSessionService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
 
 	// Call the GetSession
 	rsp, err := asService.GetSession(context.TODO(), &sessionproto.SessionRequest{
@@ -72,8 +84,12 @@ func GetSessionRequest(sessionID, sessionToken string) (*sessionproto.SessionRes
 
 // GetAllActiveSessionRequest will do the rpc call to get session
 func GetAllActiveSessionRequest(sessionID, sessionToken string) (*sessionproto.SessionResponse, error) {
-
-	asService := sessionproto.NewSessionService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
 
 	// Call the GetAllActiveSessions
 	rsp, err := asService.GetAllActiveSessions(context.TODO(), &sessionproto.SessionRequest{
@@ -89,7 +105,12 @@ func GetAllActiveSessionRequest(sessionID, sessionToken string) (*sessionproto.S
 
 //GetSessionServiceRequest will do the rpc call to check session
 func GetSessionServiceRequest() (*sessionproto.SessionResponse, error) {
-	asService := sessionproto.NewSessionService(services.AccountSession, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.AccountSession)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
 
 	// Call the GetSessionService
 	rsp, err := asService.GetSessionService(context.TODO(), &sessionproto.SessionRequest{})

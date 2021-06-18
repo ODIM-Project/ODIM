@@ -83,7 +83,7 @@ func main() {
 	}
 	go startUPInterface.GetAllPluginStatus()
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -96,5 +96,5 @@ func registerHandler() {
 	events.CreateTaskRPC = services.CreateTask
 	events.UpdateTaskRPC = evt.UpdateTaskData
 	events.CreateChildTaskRPC = services.CreateChildTask
-	eventsproto.RegisterEventsHandler(services.Service.Server(), events)
+	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 }

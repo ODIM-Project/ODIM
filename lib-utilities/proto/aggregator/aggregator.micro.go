@@ -54,6 +54,7 @@ type AggregatorService interface {
 	SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
 	GetConnectionMethod(ctx context.Context, in *AggregatorRequest, opts ...client.CallOption) (*AggregatorResponse, error)
+	SendStartUpData(ctx context.Context, in *SendStartUpDataRequest, opts ...client.CallOption) (*SendStartUpDataResponse, error)
 }
 
 type aggregatorService struct {
@@ -274,6 +275,16 @@ func (c *aggregatorService) GetConnectionMethod(ctx context.Context, in *Aggrega
 	return out, nil
 }
 
+func (c *aggregatorService) SendStartUpData(ctx context.Context, in *SendStartUpDataRequest, opts ...client.CallOption) (*SendStartUpDataResponse, error) {
+	req := c.c.NewRequest(c.name, "Aggregator.SendStartUpData", in)
+	out := new(SendStartUpDataResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Aggregator service
 
 type AggregatorHandler interface {
@@ -297,6 +308,7 @@ type AggregatorHandler interface {
 	SetDefaultBootOrderElementsOfAggregate(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	GetAllConnectionMethods(context.Context, *AggregatorRequest, *AggregatorResponse) error
 	GetConnectionMethod(context.Context, *AggregatorRequest, *AggregatorResponse) error
+	SendStartUpData(context.Context, *SendStartUpDataRequest, *SendStartUpDataResponse) error
 }
 
 func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...server.HandlerOption) error {
@@ -321,6 +333,7 @@ func RegisterAggregatorHandler(s server.Server, hdlr AggregatorHandler, opts ...
 		SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
 		GetConnectionMethod(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error
+		SendStartUpData(ctx context.Context, in *SendStartUpDataRequest, out *SendStartUpDataResponse) error
 	}
 	type Aggregator struct {
 		aggregator
@@ -411,4 +424,8 @@ func (h *aggregatorHandler) GetAllConnectionMethods(ctx context.Context, in *Agg
 
 func (h *aggregatorHandler) GetConnectionMethod(ctx context.Context, in *AggregatorRequest, out *AggregatorResponse) error {
 	return h.AggregatorHandler.GetConnectionMethod(ctx, in, out)
+}
+
+func (h *aggregatorHandler) SendStartUpData(ctx context.Context, in *SendStartUpDataRequest, out *SendStartUpDataResponse) error {
+	return h.AggregatorHandler.SendStartUpData(ctx, in, out)
 }

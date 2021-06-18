@@ -128,6 +128,21 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		}
 	}()
 
+	mockPluginData(t, "GRF_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	reqManagerGRF := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
 	reqSuccess := agmodel.AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
@@ -148,7 +163,11 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device)
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
 
-	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
+	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -337,6 +356,21 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	mockPluginData(t, "GRF_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	reqManagerGRF := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
 	reqSuccess := agmodel.AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
@@ -377,7 +411,11 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
 	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1")
 
-	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
+	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}

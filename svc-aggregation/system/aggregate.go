@@ -111,7 +111,7 @@ func validateElements(elements []string) (int32, error) {
 		return http.StatusBadRequest, errors.PackError(errors.UndefinedErrorType, fmt.Errorf("Duplicate elements present"))
 	}
 	for _, element := range elements {
-		if _, err := agmodel.GetSystem(element); err != nil {
+		if _, err := agmodel.GetComputerSystem(element); err != nil {
 			return http.StatusNotFound, err
 		}
 	}

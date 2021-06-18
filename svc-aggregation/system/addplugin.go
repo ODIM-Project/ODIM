@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
@@ -215,5 +216,13 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	e.PublishEvent(managersList, "ManagerCollection")
 	resp.StatusCode = http.StatusCreated
 	log.Error("sucessfully added  plugin with the id ", cmVariants.PluginID)
+
+	phc := agcommon.PluginHealthCheckInterface{
+		DecryptPassword: common.DecryptWithPrivateKey,
+	}
+	phc.DupPluginConf()
+	_, topics := phc.GetPluginStatus(plugin)
+	PublishPluginStatusOKEvent(plugin.ID, topics)
+
 	return resp, managerUUID, ciphertext
 }

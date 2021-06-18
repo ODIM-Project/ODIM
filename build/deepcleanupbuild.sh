@@ -27,7 +27,7 @@ if [ -a build/docker-compose.yml ]; then
 	rm -rf odimra/odimra_config/schema.json
 	rm -rf odimra/odimra_config/registrystore/*
         rm -rf RFPlugin/plugin_config/*
-		rm -rf DELLPlugin/dellplugin_config/*
+	rm -rf DELLPlugin/dellplugin_config/*
 	sudo rm -rf /var/log/odimra
 	sudo rm -rf /var/log/GRF_PLUGIN
 	sudo rm -rf /var/log/DELL_PLUGIN
@@ -39,6 +39,7 @@ if [ -a build/docker-compose.yml ]; then
 	sudo rm -rf /etc/zookeeper/data/*
 	sudo rm -rf /etc/odimracert /etc/plugincert
 	sudo rm -rf cert_generator/kafka* cert_generator/zookeeper* cert_generator/root* cert_generator/odimra*
+	sudo rm -rf /etc/etcd
 	host=`whoami`
 	sudo chown -R ${host}:${host} Consul/*
 	echo "Cleanup done"

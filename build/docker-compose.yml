@@ -28,6 +28,49 @@ services:
     volumes:
       - './Consul/data:/consul/data:rw'
       - './Consul/config:/consul/config:rw'
+  etcd:
+    build:
+      context: ./.
+      dockerfile: ./etcd/Dockerfile.etcd
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    container_name: odim_etcd
+    image: odim_etcd:1.0
+    hostname: etcd
+    domainname: etcd
+    restart: on-failure
+    ports:
+      - '2379:2379'
+      - '2380:2380'
+    expose:
+      - '2379'
+      - '2380'
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    user: odimra
+    environment:
+      - MEMBER_NAME=etcd
+      - ENABLE_TLS=true
+      - DATA_DIR_PATH=/opt/etcd/data
+      - LISTEN_PEER_ADDR=https://0.0.0.0:2380
+      - LISTEN_CLIENT_ADDR=https://0.0.0.0:2379
+      - INITIAL_ADV_ADDR=https://etcd:2380
+      - INITIAL_CLUSTER="etcd=https://etcd:2380"
+      - INITIAL_CLUSTER_STATE=new
+      - INITIAL_CLUSTER_TOKEN=odim-etcd-cluster
+      - ADV_CLIENT_ADDR=https://etcd:2379
+      - CLIENT_CERT_FILE=/opt/etcd/conf/odimra_etcd_server.crt
+      - CLIENT_KEY_FILE=/opt/etcd/conf/odimra_etcd_server.key
+      - CA_FILE=/opt/etcd/conf/rootCA.crt
+      - SERVER_CERT_FILE=/opt/etcd/conf/odimra_etcd_server.crt
+      - SERVER_KEY_FILE=/opt/etcd/conf/odimra_etcd_server.key
+    volumes:
+      - '/etc/etcd/data:/opt/etcd/data:rw'
+      - '/etc/etcd/conf/rootCA.crt:/opt/etcd/conf/rootCA.crt:ro'
+      - '/etc/etcd/conf/odimra_etcd_server.key:/opt/etcd/conf/odimra_etcd_server.key:ro'
+      - '/etc/etcd/conf/odimra_etcd_server.crt:/opt/etcd/conf/odimra_etcd_server.crt:ro'
+    command: bash -c "/opt/etcd/scripts/start_etcd.sh"
   redis:
     build:
       context: ./.
@@ -84,7 +127,6 @@ services:
       - '/etc/zookeeper/conf:/opt/zookeeper/conf:ro'
       - '/etc/zookeeper/data:/opt/zookeeper/data:rw'
     command: bash -c "/opt/zookeeper/scripts/start_zookeeper.sh"
-
   kafka:
     build:
       context: ./.
@@ -123,7 +165,6 @@ services:
       - '/etc/kafka/conf:/opt/kafka/conf:ro'
       - '/etc/kafka/data:/opt/kafka/data:rw'
     command: bash -c "/opt/kafka/scripts/start_kafka.sh"
-
   odimra:
     build:
       context: ./.
@@ -144,6 +185,7 @@ services:
       - "kafka"
       - "redis"
       - "consul"
+      - "etcd"
     ports:
       - '45000:45000'
     expose:
@@ -169,7 +211,6 @@ services:
       - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
       - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
     command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh" 
-
   grf_plugin:
     build:
       context: ./.
@@ -202,8 +243,6 @@ services:
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
       - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw' 
     command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh" 
-
-
   urp:
     build:
       context: plugin-unmanaged-racks/.

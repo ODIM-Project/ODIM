@@ -11,6 +11,7 @@ require (
 	github.com/kataras/iris/v12 v12.1.8
 	github.com/micro/go-micro v1.13.2
 	github.com/sirupsen/logrus v1.4.2
+	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	google.golang.org/grpc v1.24.0
 )
 

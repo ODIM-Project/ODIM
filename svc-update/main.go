@@ -50,23 +50,18 @@ func main() {
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
-	err := services.InitializeService(services.Update)
-	if err != nil {
-		log.Error("fatal: error while trying to initialize the service: " + err.Error())
-	}
 	registerHandlers()
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Error(err)
 	}
 
 }
 
 func registerHandlers() {
-	err := services.InitializeService(services.Update)
-	if err != nil {
+	if err := services.InitializeService(services.Update); err != nil {
 		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}
 	updater := rpc.GetUpdater()
-	updateproto.RegisterUpdateHandler(services.Service.Server(), updater)
+	updateproto.RegisterUpdateServer(services.ODIMService.Server(), updater)
 }

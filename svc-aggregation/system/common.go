@@ -1104,13 +1104,13 @@ func getFirmwareVersion(oid string) string {
 func CreateDefaultEventSubscription(systemID []string) {
 	log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
 
-        conn, connErr := services.ODIMService.Client(services.Events)
-        if connErr != nil {
-                log.Error("error while connecting: " + connErr.Error())
-                return
-        }
-        defer conn.Close()
-        events := eventsproto.NewEventsClient(conn)
+	conn, connErr := services.ODIMService.Client(services.Events)
+	if connErr != nil {
+		log.Error("error while connecting: " + connErr.Error())
+		return
+	}
+	defer conn.Close()
+	events := eventsproto.NewEventsClient(conn)
 
 	_, err := events.CreateDefaultEventSubscription(context.TODO(), &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,

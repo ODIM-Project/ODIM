@@ -42,13 +42,13 @@ func SubscribeToEMB(pluginID string, queueList []string) {
 
 // DeleteSubscription  calls the event service and delete all subscription realated to that server
 func DeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
-    var resp eventsproto.EventSubResponse
+	var resp eventsproto.EventSubResponse
 	req := eventsproto.EventRequest{
 		UUID: uuid,
 	}
 	conn, err_conn := ODIMService.Client(Events)
 	if err_conn != nil {
-		return &resp,fmt.Errorf("Failed to create client connection: %v", err_conn)
+		return &resp, fmt.Errorf("Failed to create client connection: %v", err_conn)
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)

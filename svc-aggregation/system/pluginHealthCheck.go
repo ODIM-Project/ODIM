@@ -136,14 +136,17 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret e
 		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData)
 		if err != nil {
 			ret = fmt.Errorf("%w: %w", ret, err)
+			continue
 		}
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			ret = fmt.Errorf("%w: %w", ret, err)
+			continue
 		}
 		var subsData map[string]string
 		if err := json.Unmarshal(body, &subsData); err != nil {
 			ret = fmt.Errorf("%w: %w", ret, err)
+			continue
 		}
 		agcommon.UpdateDeviceSubscriptionDetails(subsData)
 	}

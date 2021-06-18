@@ -32,10 +32,10 @@ var (
 	// Out Channel
 	Out <-chan interface{}
 	// CtrlMsgRecvQueue is the channel for receiving
-	// internal messages read from ODIM-CONTROL-MESSAGES topic
+	// internal messages read from intercomm message bus queue
 	CtrlMsgRecvQueue chan<- interface{}
 	// CtrlMsgProcQueue is the channel for processing
-	// internal messages received from ODIM-CONTROL-MESSAGES topic
+	// internal messages received from intercomm messae bus queue
 	CtrlMsgProcQueue <-chan interface{}
 )
 

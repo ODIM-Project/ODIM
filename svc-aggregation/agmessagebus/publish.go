@@ -79,7 +79,7 @@ func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
 		MessageType: msgType,
 		Data:        data,
 	}
-	if err := kConn.Distribute("ODIM-CONTROL-MESSAGES", ctrlMsg); err != nil {
+	if err := kConn.Distribute(common.InterCommMsgQueueName, ctrlMsg); err != nil {
 		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
 	}
 	return nil

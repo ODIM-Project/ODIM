@@ -71,17 +71,17 @@ func main() {
 	task.OverWriteCompletedTaskUtilHelper = task.OverWriteCompletedTaskUtil
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.GetCompletedTasksIndexModel = tmodel.GetCompletedTasksIndex
+
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
 	task.UpdateTaskStatusModel = tmodel.UpdateTaskStatus
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
 	task.PublishToMessageBus = tmessagebus.Publish
-
-	taskproto.RegisterGetTaskServiceHandler(services.Service.Server(), task)
+	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

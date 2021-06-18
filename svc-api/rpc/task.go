@@ -29,7 +29,12 @@ import (
 
 // DeleteTaskRequest will do the rpc calls for the svc-task DeleteTask
 func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	asService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	asService := taskproto.NewGetTaskServiceClient(conn)
 	// Call the DeleteTask
 	rsp, err := asService.DeleteTask(context.TODO(), req)
 	if err != nil {
@@ -47,7 +52,12 @@ func DeleteTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, 
 
 // GetTaskRequest will do the rpc calls for the svc-task GetTaskStatus
 func GetTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	asService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	asService := taskproto.NewGetTaskServiceClient(conn)
 	// Call the GetTasks
 	rsp, err := asService.GetTasks(context.TODO(), req)
 	if err != nil {
@@ -65,7 +75,12 @@ func GetTaskRequest(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 // GetSubTasks will do the rpc calls for the svc-task GetSubTasks
 func GetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	tService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	tService := taskproto.NewGetTaskServiceClient(conn)
 	// Call the GetSubTasks
 	rsp, err := tService.GetSubTasks(context.TODO(), req)
 	if err != nil {
@@ -83,7 +98,12 @@ func GetSubTasks(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error)
 
 // GetSubTask will do the rpc calls for the svc-task GetSubTask
 func GetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	tService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	tService := taskproto.NewGetTaskServiceClient(conn)
 	// Call the GetSubTask
 	rsp, err := tService.GetSubTask(context.TODO(), req)
 	if err != nil {
@@ -101,7 +121,12 @@ func GetSubTask(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) 
 
 // GetTaskMonitor will do the rpc calls for the svc-task GetTaskMonitor
 func GetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	tService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	tService := taskproto.NewGetTaskServiceClient(conn)
 	// perform rpc call to svc-task to get TaskMonitor resource
 	rsp, err := tService.GetTaskMonitor(context.TODO(), req)
 	if err != nil {
@@ -119,7 +144,12 @@ func GetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 //TaskCollection will perform the rpc call to svc-task TaskCollection
 func TaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	tService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	tService := taskproto.NewGetTaskServiceClient(conn)
 	// perform rpc call to svc-task to get TaskCollection resource
 	rsp, err := tService.TaskCollection(context.TODO(), req)
 	if err != nil {
@@ -137,7 +167,12 @@ func TaskCollection(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, err
 
 //GetTaskService will perform the rpc call to svc-task GetTaskService
 func GetTaskService(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
-	tService := taskproto.NewGetTaskService(services.Tasks, services.Service.Client())
+	conn, connErr := services.ODIMService.Client(services.Tasks)
+	if connErr != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", connErr)
+	}
+	defer conn.Close()
+	tService := taskproto.NewGetTaskServiceClient(conn)
 	// perform rpc call to svc-task to get TaskService resource
 	rsp, err := tService.GetTaskService(context.TODO(), req)
 	if err != nil {

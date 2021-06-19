@@ -102,6 +102,10 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret e
 	phc.DupPluginConf()
 	managedServers := phc.GetPluginManagedServers(plugin)
 	managedServersCount := len(managedServers)
+	if managedServersCount == 0 {
+		log.Info("plugin " + plugin.ID + " is not managing any server")
+		return
+	}
 	pluginStartUpData := agmodel.PluginStartUpData{
 		RequestType:           "full",
 		ResyncEvtSubscription: resyncSubscription,

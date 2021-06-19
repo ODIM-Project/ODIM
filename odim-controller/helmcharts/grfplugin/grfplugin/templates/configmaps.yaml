@@ -20,9 +20,9 @@ data:
     		"ListenerPort": "45002"
     	},
     	"KeyCertConf": {
-    		"RootCACertificatePath": "/etc/grfplugin_certs/rootCA.crt",
-    		"PrivateKeyPath": "/etc/grfplugin_certs/odimra_server.key",
-    		"CertificatePath": "/etc/grfplugin_certs/odimra_server.crt"
+    		"RootCACertificatePath": "/etc/odimra_certs/rootCA.crt",
+    		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
+    		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
     	},
     	"TLSConf" : {
     		"MinVersion": "TLS_1.2",

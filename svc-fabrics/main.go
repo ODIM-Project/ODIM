@@ -70,5 +70,5 @@ func registerHandlers() {
 
 	fabrics.IsAuthorizedRPC = services.IsAuthorized
 	fabrics.ContactClientRPC = pmbhandle.ContactPlugin
-	fabricsproto.RegisterFabricsHandler(services.Service.Server(), fabrics)
+	fabricsproto.RegisterFabricsServer(services.ODIMService.Server(), fabrics)
 }

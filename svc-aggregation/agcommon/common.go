@@ -16,15 +16,20 @@ package agcommon
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
+	"fmt"
+	"net"
 	"net/http"
+	"strconv"
+	"strings"
+	"sync"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	uuid "github.com/satori/go.uuid"
-	"strconv"
+	log "github.com/sirupsen/logrus"
 )
 
 // DBInterface hold interface for db functions
@@ -33,6 +38,21 @@ type DBInterface struct {
 	GetConnectionMethodInterface func(string) (agmodel.ConnectionMethod, *errors.Error)
 	AddConnectionMethodInterface func(agmodel.ConnectionMethod, string) *errors.Error
 	DeleteInterface              func(string, string, common.DbType) *errors.Error
+}
+
+// PluginHealthCheckInterface holds the methods required for plugin healthcheck
+type PluginHealthCheckInterface struct {
+	DecryptPassword func([]byte) ([]byte, error)
+	PluginConfig    config.PluginStatusPolling
+	RootCA          []byte
+	StatusRecord    PluginStatusRecord
+}
+
+// PluginStatusRecord holds the record of plugins and the
+// number of times is has been inactive during periodic health check
+type PluginStatusRecord struct {
+	InactiveTime map[string]int
+	Lock         sync.Mutex
 }
 
 // SupportedConnectionMethodTypes is for validating the connection method type
@@ -47,32 +67,6 @@ var SupportedConnectionMethodTypes = map[string]bool{
 
 // ConfigFilePath holds the value of odim config file path
 var ConfigFilePath string
-
-// GetPluginStatus checks the status of given plugin in configured interval
-func GetPluginStatus(plugin agmodel.Plugin) bool {
-	var pluginStatus = common.PluginStatus{
-		Method: http.MethodGet,
-		RequestBody: common.StatusRequest{
-			Comment: "",
-		},
-		ResponseWaitTime:        config.Data.PluginStatusPolling.ResponseTimeoutInSecs,
-		Count:                   config.Data.PluginStatusPolling.MaxRetryAttempt,
-		RetryInterval:           config.Data.PluginStatusPolling.RetryIntervalInMins,
-		PluginIP:                plugin.IP,
-		PluginPort:              plugin.Port,
-		PluginUsername:          plugin.Username,
-		PluginUserPassword:      string(plugin.Password),
-		PluginPrefferedAuthType: plugin.PreferredAuthType,
-		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
-	}
-	status, _, _, err := pluginStatus.CheckStatus()
-	if err != nil && !status {
-		log.Error("Unable to get the plugin status for " + plugin.ID + " error : " + err.Error())
-		return status
-	}
-	log.Info("Status of plugin " + plugin.ID + ": " + strconv.FormatBool(status))
-	return status
-}
 
 // GetStorageResources will get the resource details from the database for teh given odata id
 func GetStorageResources(oid string) map[string]interface{} {
@@ -178,4 +172,278 @@ func TrackConfigFileChanges(dbInterface DBInterface) {
 		}
 		config.TLSConfMutex.RUnlock()
 	}
+}
+
+// DupPluginConf is for duplicating the plugin status polling config using a lock
+// at one place instead of acquiring a lock and reading the config params multiple times
+func (phc *PluginHealthCheckInterface) DupPluginConf() {
+	config.TLSConfMutex.RLock()
+	defer config.TLSConfMutex.RUnlock()
+	phc.PluginConfig.PollingFrequencyInMins = config.Data.PluginStatusPolling.PollingFrequencyInMins
+	phc.PluginConfig.MaxRetryAttempt = config.Data.PluginStatusPolling.MaxRetryAttempt
+	phc.PluginConfig.RetryIntervalInMins = config.Data.PluginStatusPolling.RetryIntervalInMins
+	phc.PluginConfig.ResponseTimeoutInSecs = config.Data.PluginStatusPolling.ResponseTimeoutInSecs
+	phc.PluginConfig.StartUpResouceBatchSize = config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	phc.RootCA = make([]byte, len(config.Data.KeyCertConf.RootCACertificate))
+	copy(phc.RootCA, config.Data.KeyCertConf.RootCACertificate)
+	return
+}
+
+// GetPluginStatus checks the status of given plugin
+func GetPluginStatus(plugin agmodel.Plugin) bool {
+	phc := &PluginHealthCheckInterface{}
+	phc.DupPluginConf()
+	status, _ := phc.GetPluginStatus(plugin)
+	return status
+}
+
+// LookupHost - look up the ip from the host address
+func LookupHost(addr string) (ip, host, port string, err error) {
+	host, port, err = net.SplitHostPort(addr)
+	if err != nil {
+		log.Warn("splitting host address failed with " + err.Error())
+		host = addr
+	}
+
+	ips, errs := net.LookupIP(host)
+	switch {
+	case errs != nil:
+		err = errs
+	case len(ips) < 1:
+		err = fmt.Errorf("host lookup gave empty list")
+	default:
+		err = nil
+		ip = ips[0].String()
+	}
+	return
+}
+
+// LookupPlugin is for fetching the plugin data
+// using the plugin address for lookup
+func LookupPlugin(addr string) (agmodel.Plugin, error) {
+	phc := &PluginHealthCheckInterface{}
+	phc.DupPluginConf()
+	plugins, errs := GetAllPlugins()
+	if errs != nil {
+		return agmodel.Plugin{}, errs
+	}
+
+	resolvedAddr, host, port, err := LookupHost(addr)
+	if err != nil {
+		log.Warn("plugin address lookup failed with " + err.Error())
+	}
+
+	for _, plugin := range plugins {
+		if (plugin.IP == host || plugin.IP == resolvedAddr) && (plugin.Port == port) {
+			return plugin, nil
+		}
+	}
+	return agmodel.Plugin{}, fmt.Errorf(addr + " address does not belong to any of the plugin")
+}
+
+// GetAllPlugins is for fetching all the plugins added andn stored in db.
+func GetAllPlugins() ([]agmodel.Plugin, error) {
+	keys, err := agmodel.GetAllKeysFromTable("Plugin")
+	if err != nil {
+		return nil, err
+	}
+	var plugins []agmodel.Plugin
+	for _, key := range keys {
+		plugin, err := agmodel.GetPluginData(key)
+		if err != nil {
+			log.Error("failed to get details of " + key + " plugin: " + err.Error())
+			continue
+		}
+		plugins = append(plugins, plugin)
+	}
+	return plugins, nil
+}
+
+// GetPluginStatus is for checking the status of a plugin
+func (phc *PluginHealthCheckInterface) GetPluginStatus(plugin agmodel.Plugin) (bool, []string) {
+	var pluginStatus = common.PluginStatus{
+		Method: http.MethodGet,
+		RequestBody: common.StatusRequest{
+			Comment: "",
+		},
+		ResponseWaitTime:        phc.PluginConfig.ResponseTimeoutInSecs,
+		Count:                   phc.PluginConfig.MaxRetryAttempt,
+		RetryInterval:           phc.PluginConfig.RetryIntervalInMins,
+		PluginIP:                plugin.IP,
+		PluginPort:              plugin.Port,
+		PluginUsername:          plugin.Username,
+		PluginUserPassword:      string(plugin.Password),
+		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		CACertificate:           &phc.RootCA,
+	}
+	status, _, topics, err := pluginStatus.CheckStatus()
+	if err != nil {
+		log.Error("failed to get the status of plugin " + plugin.ID + err.Error())
+		return false, nil
+	}
+	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
+	return status, topics
+}
+
+// GetPluginManagedServers is for fetching the list of servers managed by a plugin
+func (phc *PluginHealthCheckInterface) GetPluginManagedServers(plugin agmodel.Plugin) []agmodel.Target {
+	serversList, err := phc.getAllServers(plugin.ID)
+	if err != nil {
+		log.Error("failed to get list of servers managed by " + plugin.ID + err.Error())
+	}
+	return serversList
+}
+
+// getAllServers is for fetching the list of all servers added.
+func (phc *PluginHealthCheckInterface) getAllServers(pluginID string) ([]agmodel.Target, error) {
+	var matchedServers []agmodel.Target
+	allServers, err := agmodel.GetAllSystems()
+	if err != nil {
+		log.Error("failed to get the list of all managed servers " + err.Error())
+		return matchedServers, err
+	}
+	for _, server := range allServers {
+		if server.PluginID == pluginID {
+			decryptedPasswordByte, err := phc.DecryptPassword(server.Password)
+			if err != nil {
+				log.Error("failed to decrypt device password of the host: " + server.ManagerAddress + ":" + err.Error())
+				continue
+			}
+			server.Password = decryptedPasswordByte
+			matchedServers = append(matchedServers, server)
+		}
+	}
+	return matchedServers, nil
+}
+
+// ContactPlugin is for sending requests to a plugin.
+func ContactPlugin(req agmodel.PluginContactRequest) (*http.Response, error) {
+	if strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
+		payload := map[string]interface{}{
+			"Username": req.Plugin.Username,
+			"Password": string(req.Plugin.Password),
+		}
+		reqURL := fmt.Sprintf("https://%s/ODIM/v1/Sessions", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port))
+		response, err := pmbhandle.ContactPlugin(reqURL, http.MethodPost, "", "", payload, nil)
+		if err != nil {
+			log.Error("failed to get session token from " + req.Plugin.ID + ": " + err.Error())
+			return nil, err
+		}
+		req.Token = response.Header.Get("X-Auth-Token")
+	} else {
+		req.LoginCredential = map[string]string{
+			"UserName": req.Plugin.Username,
+			"Password": string(req.Plugin.Password),
+		}
+	}
+	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
+	return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)
+}
+
+// GetDeviceSubscriptionDetails is for getting device event susbcription details
+func GetDeviceSubscriptionDetails(serverAddress string) (string, []string, error) {
+	deviceIPAddress, _, _, err := LookupHost(serverAddress)
+	if err != nil {
+		return "", nil, err
+	}
+
+	searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
+	deviceSubscription, err := agmodel.GetDeviceSubscriptions(searchKey)
+	if err != nil {
+		return "", nil, err
+	}
+
+	searchKey = GetSearchKey(deviceIPAddress, common.SubscriptionIndex)
+	eventTypes, err := GetSubscribedEvtTypes(searchKey)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return deviceSubscription.Location, eventTypes, nil
+}
+
+func removeDuplicates(elements []string) []string {
+	existing := map[string]bool{}
+	result := []string{}
+
+	for v := range elements {
+		if !existing[elements[v]] {
+			existing[elements[v]] = true
+			result = append(result, elements[v])
+		}
+	}
+	return result
+}
+
+// GetSearchKey will return search key with regular expression for filtering
+func GetSearchKey(key, index string) string {
+	searchKey := key
+	if index == common.SubscriptionIndex {
+		searchKey = `[^0-9]` + key + `[^0-9]`
+	} else if index == common.DeviceSubscriptionIndex {
+		searchKey = key + `[^0-9]`
+	}
+	return searchKey
+}
+
+// GetSubscribedEvtTypes is to get event subscription details
+func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
+	subscriptions, err := agmodel.GetEventSubscriptions("*" + searchKey + "*")
+	if err != nil {
+		return nil, err
+	}
+	eventTypes := make([]string, 0)
+	for _, sub := range subscriptions {
+		var subscription map[string]interface{}
+		if err := json.Unmarshal([]byte(sub), &subscription); err != nil {
+			return nil, fmt.Errorf("error while unmarshalling event subscription: %v", err.Error())
+		}
+		for _, evtTyps := range subscription["EventTypes"].([]interface{}) {
+			eventTypes = append(eventTypes, evtTyps.(string))
+		}
+	}
+	eventTypes = removeDuplicates(eventTypes)
+	return eventTypes, nil
+}
+
+// UpdateDeviceSubscriptionDetails is for updating the event subscription details fo a device
+func UpdateDeviceSubscriptionDetails(subsData map[string]string) {
+	for serverAddress, location := range subsData {
+		if location != "" {
+			deviceIPAddress, _, _, err := LookupHost(serverAddress)
+			if err != nil {
+				continue
+			}
+			searchKey := GetSearchKey(deviceIPAddress, common.DeviceSubscriptionIndex)
+			deviceSubscription, err := agmodel.GetDeviceSubscriptions(searchKey)
+			if err != nil {
+				log.Error("Error getting the device event subscription from DB " +
+					" for server address : " + serverAddress + err.Error())
+				continue
+			}
+			deviceSubscription.Location = location
+			if err = agmodel.UpdateDeviceSubscription(*deviceSubscription); err != nil {
+				log.Error("Error updating the subscription location in to DB for " +
+					"server address : " + serverAddress + err.Error())
+				continue
+			}
+		}
+	}
+	return
+}
+
+// GetPluginStatusRecord is for getting the status record of a plugin
+func (phc *PluginHealthCheckInterface) GetPluginStatusRecord(plugin string) (int, bool) {
+	phc.StatusRecord.Lock.Lock()
+	count, exist := phc.StatusRecord.InactiveTime[plugin]
+	phc.StatusRecord.Lock.Unlock()
+	return count, exist
+}
+
+// SetPluginStatusRecord is for setting the status record of a plugin
+func (phc *PluginHealthCheckInterface) SetPluginStatusRecord(plugin string, count int) {
+	phc.StatusRecord.Lock.Lock()
+	phc.StatusRecord.InactiveTime[plugin] = count
+	phc.StatusRecord.Lock.Unlock()
+	return
 }

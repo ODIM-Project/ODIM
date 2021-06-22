@@ -26,11 +26,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -353,9 +354,14 @@ func addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
-	fab := fabricproto.NewFabricsService(services.Fabrics, services.Service.Client())
-
-	_, err := fab.AddFabric(context.TODO(), &fabricproto.AddFabricRequest{
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		log.Error("Error while AddFabric ", err.Error())
+		return
+	}
+	defer conn.Close()
+	fab := fabricproto.NewFabricsClient(conn)
+	_, err = fab.AddFabric(context.TODO(), &fabricproto.AddFabricRequest{
 		OriginResource: origin,
 		Address:        address,
 	})

@@ -60,7 +60,7 @@ func main() {
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	registerHandlers()
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
@@ -70,5 +70,5 @@ func registerHandlers() {
 
 	fabrics.IsAuthorizedRPC = services.IsAuthorized
 	fabrics.ContactClientRPC = pmbhandle.ContactPlugin
-	fabricsproto.RegisterFabricsHandler(services.Service.Server(), fabrics)
+	fabricsproto.RegisterFabricsServer(services.ODIMService.Server(), fabrics)
 }

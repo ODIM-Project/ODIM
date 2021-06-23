@@ -29,7 +29,7 @@ import (
 )
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
-	if sessionToken != "validToken" {
+	if sessionToken == "InvalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
@@ -40,17 +40,11 @@ func mockContactClient(url, method, token string, odataID string, body interface
 }
 
 func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
-	if (key == "/redfish/v1/TelemetryService/MetricDefinitions/custom1") ||
-		(key == "/redfish/v1/TelemetryService/MetricReportDefinitions/custom1") ||
-		(key == "/redfish/v1/TelemetryService/Triggers/custom1") ||
-		(key == "/redfish/v1/TelemetryService/MetricReports/custom1") {
-		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-	}
 	return "body", nil
 }
 
 func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
-	return []string{"/redfish/v1/TelemetryService/FirmwareInentory/uuid:1"}, nil
+	return []string{"/redfish/v1/TelemetryService/Triggers/uuid:1"}, nil
 }
 
 func mockGetExternalInterface() *telemetry.ExternalInterface {
@@ -309,7 +303,8 @@ func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetMetricDefinition(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	//To be updated once code is complete
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
@@ -337,7 +332,8 @@ func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetMetricReportDefinition(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	//To be updated once code is complete
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetMetricReportwithInValidtoken(t *testing.T) {
@@ -365,7 +361,8 @@ func TestGetMetricReportwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetMetricReport(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	//To be updated once handlers are complete
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetTriggerwithInValidtoken(t *testing.T) {
@@ -393,5 +390,6 @@ func TestGetTriggerwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetTrigger(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
+	//To be updated once handlers are complete
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
 }

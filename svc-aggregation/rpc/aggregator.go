@@ -857,3 +857,18 @@ func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorpro
 	generateResponse(rpcResponce, resp)
 	return nil
 }
+
+// SendStartUpData defines the operations which handles the RPC request response
+// for the SendStartUpData call to aggregator micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function is used for sending plugin start up data to the plugin
+// which has restarted.
+func (a *Aggregator) SendStartUpData(ctx context.Context, req *aggregatorproto.SendStartUpDataRequest, resp *aggregatorproto.SendStartUpDataResponse) error {
+	rpcResponce := a.connector.SendStartUpData(req)
+	bytes, _ := json.Marshal(rpcResponce.Body)
+	*resp = aggregatorproto.SendStartUpDataResponse{
+		ResponseBody: bytes,
+	}
+	return nil
+}

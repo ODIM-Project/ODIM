@@ -38,11 +38,11 @@ const (
 	SubscriptionName = "Event Subscription"
 
 	// SubscriptionIndex is a index name which required for indexing of event subscriptions
-	SubscriptionIndex = "Subscription"
+	SubscriptionIndex = common.SubscriptionIndex
 
 	// DeviceSubscriptionIndex is a index name which required for indexing
 	// subscription of device
-	DeviceSubscriptionIndex = "DeviceSubscription"
+	DeviceSubscriptionIndex = common.DeviceSubscriptionIndex
 )
 
 // OdataIDLink containes link to a resource
@@ -91,12 +91,7 @@ type Subscription struct {
 }
 
 //DeviceSubscription is a model to store the subscription details of a device
-type DeviceSubscription struct {
-	EventHostIP string `json:"EventHostIP,omitempty"`
-	// To store multiple origin resource
-	OriginResources []string `json:"OriginResources"`
-	Location        string   `json:"location,omitempty"`
-}
+type DeviceSubscription common.DeviceSubscription
 
 //EvtSubPost is required to frame the post payload for the target device (South Bound)
 type EvtSubPost struct {

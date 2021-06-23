@@ -22,13 +22,11 @@ odim_third_party_helmcharts:
    zookeeper: zookeeper-2.5.0-0.1.0
    redis: redis-5.0.8-0.1.0
    kafka: kafka-2.5.0-0.1.0
-   consul: consul-1.6.0-0.1.0
    etcd: etcd-0.1.0
 odim_third_party_ha_helmcharts:
    zookeeper: zookeeper-ha-2.5.0-0.1.0
    redis: redis-ha-5.0.8-0.1.0
    kafka: kafka-ha-2.5.0-0.1.0
-   consul: consul-ha-1.6.0-0.1.0
    etcd: etcd-ha-0.1.0
 odim_svc_helmcharts:
    account-session: account-session-0.1.0
@@ -52,7 +50,6 @@ odim_docker_images:
    update: update
    kafka: kafka
    zookeeper: zookeeper
-   consul: consul
    etcd: etcd
    redis: redis
    stakater_reloader: stakater/reloader

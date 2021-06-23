@@ -96,8 +96,6 @@
     mode: 0750
     recurse: yes
   loop:
-    - "{{ odimra.consulDataPath }}"
-    - "{{ odimra.consulConfPath }}"
     - "{{ odimra.kafkaConfPath }}"
     - "{{ odimra.kafkaDataPath }}"
     - "{{ odimra.redisOndiskDataPath }}"
@@ -143,11 +141,3 @@
     files:
       - "{{ odimCertsPath }}/zookeeper.keystore.jks"
       - "{{ odimCertsPath }}/zookeeper.truststore.jks"
-
-- name: Copy consul config file
-  copy:
-    src: "templates/config.json.j2"
-    dest: "{{ odimra.consulConfPath }}/config.json"
-    owner: "{{ odim_owner_name }}"
-    group: "{{ odim_owner_name }}"
-    mode: 0444

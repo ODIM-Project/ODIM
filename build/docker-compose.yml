@@ -15,19 +15,6 @@
 version: '2.4'
 
 services:
-  consul:
-    image: 'consul:1.6'
-    hostname: consul
-    restart: always
-    ports:
-      - '8600:8600'
-      - '8500:8500'
-      - '8301:8301'
-      - '8302:8302'
-      - '8300:8300'
-    volumes:
-      - './Consul/data:/consul/data:rw'
-      - './Consul/config:/consul/config:rw'
   etcd:
     build:
       context: ./.
@@ -184,7 +171,6 @@ services:
     depends_on:
       - "kafka"
       - "redis"
-      - "consul"
       - "etcd"
     ports:
       - '45000:45000'

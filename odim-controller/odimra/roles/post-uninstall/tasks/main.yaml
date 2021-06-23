@@ -14,8 +14,6 @@
     state: absent
   loop:
     - "{{ odimra.appsLogPath }}"
-    - "{{ odimra.consulDataPath }}"
-    - "{{ odimra.consulConfPath }}"
     - "{{ odimra.kafkaConfPath }}"
     - "{{ odimra.kafkaDataPath }}"
     - "{{ odimra.redisOndiskDataPath }}"

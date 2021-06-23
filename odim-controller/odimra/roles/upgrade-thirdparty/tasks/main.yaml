@@ -19,7 +19,6 @@
 - name: Include user defined configurations
   include_vars: "{{ helm_config_file }}"
 
-
 - name: Create odim helm packages
   script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts/{{ helm_chart_name }} {{ odimControllerSrcPath }}/odimra/roles/upgrade-thirdparty/files/helmcharts"
   delegate_to: localhost
@@ -33,4 +32,4 @@
     mode: 0640
 
 - name: Upgrading  thirdparty configmap
-  command: "{{ helm_bin_path }} upgrade {{helm_chart_name}} {{ helm_charts_path }}/{{helm_chart_name_version}}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  command: "{{ helm_bin_path }} upgrade {{helm_chart_name}} {{ helm_charts_path }}/{{ helm_chart_name_version }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"

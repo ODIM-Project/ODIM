@@ -16,7 +16,7 @@
 if [ -a build/docker-compose.yml ]; then
 	cd build
 	docker-compose down
-	LIST=`docker image ls | grep -v REPOSITORY | grep -vwE 'consul|golang|ubuntu|redis' | awk '{print $3}'`
+	LIST=`docker image ls | grep -v REPOSITORY | grep -vwE 'golang|ubuntu|redis' | awk '{print $3}'`
 	docker rmi $LIST
 	rm -rf odimra/odimra
 	rm -rf odimra/odimra_config/odimra_config.json
@@ -25,13 +25,11 @@ if [ -a build/docker-compose.yml ]; then
         rm -rf odimra/odimra_config/registrystore/*
         rm -rf RFPlugin/plugin_config/*
 	rm -rf DellPlugin/dell_plugin_config/*
-	sudo rm -rf Consul/data/*
 	sudo rm -rf Redis/redis-persistence/*
 	sudo rm -rf /etc/kafka/data/*
 	sudo rm -rf /etc/zookeeper/data/*
 	sudo rm -rf /etc/etcd/data/*
 	host=`whoami`
-	sudo chown -R ${host}:${host} Consul/*
 	echo "Cleanup done"
 	cd ../
 	exit 0

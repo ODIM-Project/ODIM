@@ -78,25 +78,6 @@ spec:
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: consul-data-pv
-  namespace: {{ .Values.odimra.namespace }}
-  labels:
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 100Mi
-  accessModes:
-    - ReadWriteOnce
-  claimRef:
-    name: consul-data-pvc
-    namespace: {{ .Values.odimra.namespace }}
-  hostPath:
-    path: {{ .Values.odimra.consulDataPath }}
----
-kind: PersistentVolume
-apiVersion: v1
-metadata:
   name: odimra-log
   namespace: {{ .Values.odimra.namespace }}
   labels:

@@ -1,6 +1,6 @@
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: etcd1
   namespace: {{ .Values.odimra.namespace }}
@@ -8,22 +8,20 @@ metadata:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
     app: odim-ra
-    unit: etcd1
+    unit: etcd
 spec:
-  podManagementPolicy: OrderedReady
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: odim-ra
-      unit: etcd1
+      unit: etcd
       parentdeployment: odim-etcd
-  serviceName: etcd1
   template:
     metadata:
       labels:
         app: odim-ra
-        unit: etcd1
+        unit: etcd
         parentdeployment: odim-etcd
     spec:
       hostname: etcd1
@@ -38,7 +36,7 @@ spec:
                 - key: "unit"
                   operator: In
                   values:
-                  - consul
+                  - etcd
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd1
@@ -61,11 +59,11 @@ spec:
             - name: LISTEN_CLIENT_ADDR
               value: https://0.0.0.0:2379
             - name: INITIAL_ADV_ADDR
-              value: https://etcd1:2380
+              value: https://etcd1.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380
             - name: INITIAL_CLUSTER
-              value: "etcd1=https://etcd1:2380,\
-		      etcd2=https://etcd2:2380,\
-		      etcd3=https://etcd3:2380"
+              value: "etcd1=https://etcd1.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380,\
+		      etcd2=https://etcd2.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380,\
+		      etcd3=https://etcd3.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380"
             - name: INITIAL_CLUSTER_STATE
               value: new
             - name: INITIAL_CLUSTER_TOKEN
@@ -107,7 +105,7 @@ spec:
               mode: 0444
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: etcd2
   namespace: {{ .Values.odimra.namespace }}
@@ -115,22 +113,20 @@ metadata:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
     app: odim-ra
-    unit: etcd2
+    unit: etcd
 spec:
-  podManagementPolicy: OrderedReady
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: odim-ra
-      unit: etcd2
+      unit: etcd
       parentdeployment: odim-etcd
-  serviceName: etcd2
   template:
     metadata:
       labels:
         app: odim-ra
-        unit: etcd2
+        unit: etcd
         parentdeployment: odim-etcd
     spec:
       hostname: etcd2
@@ -145,11 +141,11 @@ spec:
                 - key: "unit"
                   operator: In
                   values:
-                  - consul
+                  - etcd
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd2
-          image: odim_etcd:1.0
+          image: etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server
@@ -168,11 +164,11 @@ spec:
             - name: LISTEN_CLIENT_ADDR
               value: https://0.0.0.0:2379
             - name: INITIAL_ADV_ADDR
-              value: https://etcd2:2380
+              value: https://etcd2.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380
             - name: INITIAL_CLUSTER
-              value: "etcd1=https://etcd1:2380,\
-		      etcd2=https://etcd2:2380,\
-		      etcd3=https://etcd3:2380"
+              value: "etcd1=https://etcd1.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380,\
+		      etcd2=https://etcd2.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380,\
+		      etcd3=https://etcd3.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380"
             - name: INITIAL_CLUSTER_STATE
               value: new
             - name: INITIAL_CLUSTER_TOKEN
@@ -214,7 +210,7 @@ spec:
               mode: 0444
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: etcd3
   namespace: {{ .Values.odimra.namespace }}
@@ -222,22 +218,20 @@ metadata:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
     app: odim-ra
-    unit: etcd3
+    unit: etcd
 spec:
-  podManagementPolicy: OrderedReady
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: odim-ra
-      unit: etcd3
+      unit: etcd
       parentdeployment: odim-etcd
-  serviceName: etcd3
   template:
     metadata:
       labels:
         app: odim-ra
-        unit: etcd3
+        unit: etcd
         parentdeployment: odim-etcd
     spec:
       hostname: etcd3
@@ -252,11 +246,11 @@ spec:
                 - key: "unit"
                   operator: In
                   values:
-                  - consul
+                  - etcd
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd3
-          image: odim_etcd:1.0
+          image: etcd:{{ .Values.odimra.etcdImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: etcd-server
@@ -275,11 +269,11 @@ spec:
             - name: LISTEN_CLIENT_ADDR
               value: https://0.0.0.0:2379
             - name: INITIAL_ADV_ADDR
-              value: https://etcd3:2380
+              value: https://etcd3.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380
             - name: INITIAL_CLUSTER
-              value: "etcd1=https://etcd1:2380,\
-		      etcd2=https://etcd2:2380,\
-		      etcd3=https://etcd3:2380"
+              value: "etcd1=https://etcd1.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380,\
+		      etcd2=https://etcd2.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380,\
+		      etcd3=https://etcd3.etcd.{{ .Values.odimra.namespace }}.svc.cluster.local:2380"
             - name: INITIAL_CLUSTER_STATE
               value: new
             - name: INITIAL_CLUSTER_TOKEN

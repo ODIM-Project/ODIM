@@ -152,13 +152,6 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
 				}
 			}
-		case "TelemetryService":
-			serviceNodes, err := reg.GetService(srv.Telemetry)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.TelemetryService = &models.Service{OdataID: servicePath}
-				}
-			}
 		}
 	}
 
@@ -749,11 +742,6 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SerialInterface_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "SerialInterface.v1_1_7"},
-				},
-			},
-			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TelemetryService_v1.xml",
-				TopInclude: []models.Include{
-					models.Include{Namespace: "TelemetryService.v1_1_7"},
 				},
 			},
 		},

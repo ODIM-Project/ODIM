@@ -75,4 +75,4 @@ spec:
             - name: grfplugin-log
               mountPath: /var/log/grfplugin_logs
             - name: odimra-secret
-              mountPath: /etc/grfplugin_certs
+              mountPath: /etc/odimra_certs

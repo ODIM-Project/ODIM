@@ -1087,9 +1087,9 @@ func TestGetSystemByUUID(t *testing.T) {
 	table := "ComputerSystem"
 	key := "/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1"
 	GenericSave([]byte(body), table, key)
-	data, _ := GetSystem("/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1")
+	data, _ := GetComputerSystem("/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1")
 	assert.Equal(t, data, body, "should be same")
-	_, err := GetSystem("/redfish/v1/Systems/12345")
+	_, err := GetComputerSystem("/redfish/v1/Systems/12345")
 	assert.NotNil(t, err, "There should be an error")
 }
 

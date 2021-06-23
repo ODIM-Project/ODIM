@@ -22,8 +22,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
-	"github.com/ODIM-Project/ODIM/svc-update/umodel"
+	"github.com/ODIM-Project/ODIM/svc-telemetry/tcommon"
+	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
 // ExternalInterface struct holds the structs to which hold function pointers to outboud calls
@@ -37,11 +37,12 @@ type External struct {
 	ContactClient      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	Auth               func(string, []string, []string) response.RPC
 	DevicePassword     func([]byte) ([]byte, error)
-	GetPluginData      func(string) (umodel.Plugin, *errors.Error)
-	ContactPlugin      func(ucommon.PluginContactRequest, string) ([]byte, string, ucommon.ResponseStatus, error)
-	GetTarget          func(string) (*umodel.Target, *errors.Error)
+	GetPluginData      func(string) (tmodel.Plugin, *errors.Error)
+	ContactPlugin      func(tcommon.PluginContactRequest, string) ([]byte, string, tcommon.ResponseStatus, error)
+	GetTarget          func(string) (*tmodel.Target, *errors.Error)
 	GetSessionUserName func(string) (string, error)
 	GenericSave        func([]byte, string, string) error
+	GetPluginStatus    func(tmodel.Plugin) bool
 }
 
 type responseStatus struct {
@@ -63,15 +64,16 @@ func GetExternalInterface() *ExternalInterface {
 			ContactClient:      pmbhandle.ContactPlugin,
 			Auth:               services.IsAuthorized,
 			DevicePassword:     common.DecryptWithPrivateKey,
-			GetPluginData:      umodel.GetPluginData,
-			ContactPlugin:      ucommon.ContactPlugin,
-			GetTarget:          umodel.GetTarget,
+			GetPluginData:      tmodel.GetPluginData,
+			ContactPlugin:      tcommon.ContactPlugin,
+			GetTarget:          tmodel.GetTarget,
 			GetSessionUserName: services.GetSessionUserName,
-			GenericSave:        umodel.GenericSave,
+			GenericSave:        tmodel.GenericSave,
+			GetPluginStatus:    tcommon.GetPluginStatus,
 		},
 		DB: DB{
-			GetAllKeysFromTable: umodel.GetAllKeysFromTable,
-			GetResource:         umodel.GetResource,
+			GetAllKeysFromTable: tmodel.GetAllKeysFromTable,
+			GetResource:         tmodel.GetResource,
 		},
 	}
 }

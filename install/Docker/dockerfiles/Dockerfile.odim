@@ -21,6 +21,7 @@ COPY svc-aggregation /ODIM/svc-aggregation
 COPY svc-api /ODIM/svc-api
 COPY svc-events /ODIM/svc-events
 COPY svc-fabrics /ODIM/svc-fabrics
+COPY svc-telemetry /ODIM/svc-telemetry
 COPY svc-managers /ODIM/svc-managers
 COPY svc-systems /ODIM/svc-systems
 COPY svc-task /ODIM/svc-task

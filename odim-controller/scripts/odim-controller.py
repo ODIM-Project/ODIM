@@ -1174,7 +1174,7 @@ def update_helm_charts(config_map_name):
 		"kafka":"odim_third_party_helmcharts",
 		"zookeeper":"odim_third_party_helmcharts",
 		"redis":"odim_third_party_helmcharts",
-		"consul":"odim_third_party_helmcharts"
+		"etcd":"odim_third_party_helmcharts"
 	}
 	operationHelmChartInfo={
 		"odimra-config":"upgrade-config",
@@ -1195,7 +1195,7 @@ def update_helm_charts(config_map_name):
 		"kafka":"upgrade_thirdparty",
 		"zookeeper":"upgrade_thirdparty",
 		"redis":"upgrade_thirdparty",
-		"consul":"upgrade_thirdparty"
+		"etcd":"upgrade_thirdparty"
 	}
 
 	if config_map_name not in optionHelmChartInfo:
@@ -1626,7 +1626,7 @@ def main():
 	parser.add_argument('--dryrun', action='store_true', help='only check for configurations without deploying k8s')
 	parser.add_argument('--noprompt', action='store_true', help='do not prompt for confirmation')
 	parser.add_argument('--ignore-errors', action='store_true', help='ignore errors during odimra reset')
-	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,managers,systems,task,update,kafka,zookeeper,redis,consul,plugin,all,odimra,thirdparty')
+	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,managers,systems,task,update,kafka,zookeeper,redis,etcd,plugin,all,odimra,thirdparty')
 	parser.add_argument("--scale", action='store_true', help='scale odimra services and plugins')
 	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,managers,systems,task,update,all')
 	parser.add_argument("--plugin", help='release name of the plugin deployment to add,remove,upgrade or scale')

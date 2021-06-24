@@ -634,10 +634,6 @@ validate_config_params()
 
 generate_etcd_certs()
 {
-	CommonName=etcd
-	SAN_DNS_LIST="\
-	DNS.1 = etcd"
-
 	if [[ ! -e ${ODIMRA_ROOTCA_CRT_PATH} ]] || [[ ! -e ${ODIMRA_ROOTCA_KEY_PATH} ]]; then
 		echo "[$(date)] -- ERROR -- root CA files not present in ${ODIMRA_ROOTCA_CRT_PATH}"
 		exit 1
@@ -648,13 +644,13 @@ generate_etcd_certs()
 	eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_KEY_PATH} generation failed"
 
 	#generate etcd csr
-	${OPENSSL_BIN_PATH} req -new -sha512 -key ${ODIMRA_ETCD_SERVER_KEY_PATH} -subj "/C=${CERT_COUNTRY_NAME}/ST=${CERT_STATE_NAME}/L=${CERT_LOCALITY_NAME}/O=${CERT_ORGANIZATION_NAME}/OU=${CERT_ORGANIZATION_UNIT_NAME}/CN=${CommonName}" -config <(cat <<EOF
+	${OPENSSL_BIN_PATH} req -new -sha512 -key ${ODIMRA_ETCD_SERVER_KEY_PATH} -subj "/C=${CERT_COUNTRY_NAME}/ST=${CERT_STATE_NAME}/L=${CERT_LOCALITY_NAME}/O=${CERT_ORGANIZATION_NAME}/OU=${CERT_ORGANIZATION_UNIT_NAME}/CN=etcd" -config <(cat <<EOF
 [ req ]
 prompt=no
 distinguished_name=subject
 req_extensions=req_ext
 [ subject ]
-commonName=${CommonName}
+commonName=etcd
 [ req_ext ]
 extendedKeyUsage=serverAuth, clientAuth
 basicConstraints=critical,CA:false
@@ -673,14 +669,16 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid,issuer
 subjectAltName=@alternate_names
 [ alternate_names ]
-${SAN_DNS_LIST}
+DNS.0 = etcd
+DNS.1 = etcd1.etcd.${ODIMRA_NAMESPACE}.svc.cluster.local
+DNS.2 = etcd2.etcd.${ODIMRA_NAMESPACE}.svc.cluster.local
+DNS.3 = etcd3.etcd.${ODIMRA_NAMESPACE}.svc.cluster.local
 EOF
 ) -in  ${ODIMRA_ETCD_SERVER_CSR_PATH} -CA  ${ODIMRA_ROOTCA_CRT_PATH} -CAkey  ${ODIMRA_ROOTCA_KEY_PATH}  -CAcreateserial -out ${ODIMRA_ETCD_SERVER_CRT_PATH} -days ${CERT_VALIDITY_PERIOD} -sha512
 	eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_CRT_PATH} generation failed"
 
 	# clean up temp files generated
 	rm -f ${ODIMRA_ETCD_SERVER_CSR_PATH} ${ODIMRA_CERT_DIR}/rootCA.srl
-
 }
 
 # generate_certs is for generating the

@@ -33,7 +33,7 @@ import (
 )
 
 func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
-	if sessionToken != "validToken" {
+	if sessionToken == "InvalidToken" {
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "error while trying to authenticate session", nil, nil)
 	}
 	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
@@ -85,17 +85,11 @@ func mockContactClient(url, method, token string, odataID string, body interface
 }
 
 func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
-	if (key == "/redfish/v1/TelemetryService/MetricDefinitions/custom1") ||
-		(key == "/redfish/v1/TelemetryService/MetricReportDefinitions/custom1") ||
-		(key == "/redfish/v1/TelemetryService/Triggers/custom1") ||
-		(key == "/redfish/v1/TelemetryService/MetricReports/custom1") {
-		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-	}
 	return "body", nil
 }
 
 func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
-	return []string{"/redfish/v1/TelemetryService/FirmwareInentory/uuid:1"}, nil
+	return []string{"/redfish/v1/TelemetryService/Triggers/uuid:1"}, nil
 }
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {

@@ -371,8 +371,7 @@ func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetMetricDefinition(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	//To be updated once code is complete
-	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
@@ -400,8 +399,7 @@ func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetMetricReportDefinition(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	//To be updated once code is complete
-	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetMetricReportwithInValidtoken(t *testing.T) {
@@ -429,8 +427,7 @@ func TestGetMetricReportwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetMetricReport(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	//To be updated once handlers are complete
-	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
 func TestGetTriggerwithInValidtoken(t *testing.T) {
@@ -458,6 +455,5 @@ func TestGetTriggerwithValidtoken(t *testing.T) {
 	var resp = &teleproto.TelemetryResponse{}
 	err := telemetry.GetTrigger(ctx, req, resp)
 	assert.Nil(t, err, "There should be no error")
-	//To be updated once handlers are complete
-	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }

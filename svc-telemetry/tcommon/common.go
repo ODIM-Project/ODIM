@@ -21,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -76,7 +77,9 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 		metricReportData.MetricValues = append(metricReportData.MetricValues, metricReportData.MetricValues...)
 	}
 	wg.Wait()
-
+	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
+		return []byte{}, fmt.Errorf("Metric report not found")
+	}
 	data, err := json.Marshal(metricReportData)
 	if err != nil {
 		return []byte{}, err

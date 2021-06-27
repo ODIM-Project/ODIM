@@ -752,10 +752,10 @@ func GetMetadata(ctx iris.Context) {
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TelemetryService_v1.xml",
-			    TopInclude: []models.Include{
-				    models.Include{Namespace: "TelemetryService.v1_1_7"},
+				TopInclude: []models.Include{
+					models.Include{Namespace: "TelemetryService.v1_1_7"},
 				},
-		    },	
+			},
 		},
 	}
 	ctx.Gzip(true)

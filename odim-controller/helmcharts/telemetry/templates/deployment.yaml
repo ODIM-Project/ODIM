@@ -75,7 +75,7 @@ spec:
           image: telemetry:{{ .Values.odimra.telemetryImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 45106
+            - containerPort: 45111
           volumeMounts:
             - name: odimra-config-vol
               mountPath: /etc/odimra_config

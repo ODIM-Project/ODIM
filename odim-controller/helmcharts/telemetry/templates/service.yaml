@@ -7,6 +7,6 @@ metadata:
     app: telemetry
 spec:
   ports:
-    - port: 45106
+    - port: 45111
   selector:
     app: telemetry

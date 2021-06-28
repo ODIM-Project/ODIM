@@ -113,6 +113,18 @@ func mockContactClient(url, method, token string, odataID string, body interface
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
+	} else if url == "https://localhost:9091/ODIM/v1/Managers/1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091/ODIM/v1/Managers/1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
 	}
 	return nil, fmt.Errorf("InvalidRequest")
 }
@@ -259,4 +271,56 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 	}
 	_, err = GetResourceInfoFromDevice(req)
 	assert.NotNil(t, err, "There should be an error")
+}
+
+func TestDeviceCommunication(t *testing.T) {
+	Token.Tokens = make(map[string]string)
+
+	config.SetUpMockConfig(t)
+	defer func() {
+		err := common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	err := mockPluginData(t, "GRF", "XAuthToken", "9091")
+	if err != nil {
+		t.Fatalf("Error in creating mock PluginData :%v", err)
+	}
+
+	err = mockPluginData(t, "ILO", "BasicAuth", "9093")
+	if err != nil {
+		t.Fatalf("Error in creating mock PluginData :%v", err)
+	}
+	err = mockTarget()
+	if err != nil {
+		t.Fatalf("Error in creating mock DeviceData :%v", err)
+	}
+	var req = ResourceInfoRequest{
+		URL:                   "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		UUID:                  "uuid",
+		SystemID:              "1",
+		ContactClient:         mockContactClient,
+		DecryptDevicePassword: stubDevicePassword,
+		HTTPMethod:            http.MethodPost,
+		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
+	}
+	response := DeviceCommunication(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = ResourceInfoRequest{
+		URL:                   "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+		UUID:                  "uuid",
+		SystemID:              "1",
+		ContactClient:         mockContactClient,
+		DecryptDevicePassword: stubDevicePassword,
+		HTTPMethod:            http.MethodPost,
+		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
+	}
+	response = DeviceCommunication(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 }

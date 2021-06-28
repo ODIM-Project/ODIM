@@ -125,11 +125,10 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 		return
 	}
 	lock.Lock()
+	defer lock.Unlock()
 	if err := json.Unmarshal(body, metricReportData); err != nil {
 		return
 	}
-	lock.Unlock()
-
 	return
 }
 

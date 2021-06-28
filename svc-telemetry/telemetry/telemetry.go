@@ -298,7 +298,7 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 	}
 	data, err := tcommon.GetResourceInfoFromDevice(getDeviceInfoRequest)
 	if err != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"MetricReport", req.URL}, nil)
 	}
 	var resource map[string]interface{}
 	json.Unmarshal(data, &resource)

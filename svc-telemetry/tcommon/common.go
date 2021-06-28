@@ -88,6 +88,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 }
 
 func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req ResourceInfoRequest, lock *sync.Mutex, wg *sync.WaitGroup) {
+	defer wg.Done()
 	// Get the Plugin info
 	plugin, gerr := req.GetPluginData(pluginID)
 	if gerr != nil {
@@ -128,7 +129,7 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 		return
 	}
 	lock.Unlock()
-	wg.Done()
+
 	return
 }
 

@@ -21,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -62,28 +63,32 @@ type ResourceInfoRequest struct {
 }
 
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
-func GetResourceInfoFromDevice(req ResourceInfoRequest) (dmtf.MetricReports, error) {
+func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 	var metricReportData dmtf.MetricReports
 	plugins, err := req.GetAllKeysFromTable("Plugin", common.OnDisk)
 	if err != nil {
-		return metricReportData, err
+		return []byte{}, err
 	}
-	var respMetricValue []dmtf.MetricValue
 	var wg sync.WaitGroup
 	var lock sync.Mutex
 	for _, value := range plugins {
 		wg.Add(1)
-		go getResourceInfo(value, &metricReportData, req, &lock)
-		respMetricValue = append(respMetricValue, metricReportData.MetricValues...)
+		go getResourceInfo(value, &metricReportData, req, &lock, &wg)
+		metricReportData.MetricValues = append(metricReportData.MetricValues, metricReportData.MetricValues...)
 	}
-	wg.Done()
-	metricReportData.MetricValues = respMetricValue
-	return metricReportData, nil
+	wg.Wait()
+	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
+		return []byte{}, fmt.Errorf("Metric report not found")
+	}
+	data, err := json.Marshal(metricReportData)
+	if err != nil {
+		return []byte{}, err
+	}
+	return data, nil
 }
 
-func getResourceInfo(value string, metricReportData *dmtf.MetricReports, req ResourceInfoRequest, lock *sync.Mutex) {
-	pluginKey := strings.Split(value, ":")
-	pluginID := pluginKey[1]
+func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req ResourceInfoRequest, lock *sync.Mutex, wg *sync.WaitGroup) {
+	defer wg.Done()
 	// Get the Plugin info
 	plugin, gerr := req.GetPluginData(pluginID)
 	if gerr != nil {
@@ -124,6 +129,8 @@ func getResourceInfo(value string, metricReportData *dmtf.MetricReports, req Res
 		return
 	}
 	lock.Unlock()
+
+	return
 }
 
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage

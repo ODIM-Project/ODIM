@@ -156,7 +156,7 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 			serviceNodes, err := reg.GetService(srv.Telemetry)
 			if err == nil {
 				if len(serviceNodes) != 0 {
-					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
+					serviceRoot.TelemetryService = &models.Service{OdataID: servicePath}
 				}
 			}
 		}

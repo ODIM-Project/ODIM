@@ -20,7 +20,6 @@ package telemetry
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 
@@ -299,10 +298,10 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 	}
 	data, err := tcommon.GetResourceInfoFromDevice(getDeviceInfoRequest)
 	if err != nil {
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"MetricReport", req.URL}, nil)
 	}
 	var resource map[string]interface{}
-	json.Unmarshal([]byte(fmt.Sprintf("%v", data)), &resource)
+	json.Unmarshal(data, &resource)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

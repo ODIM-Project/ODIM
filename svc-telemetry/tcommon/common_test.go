@@ -32,6 +32,7 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{
@@ -49,13 +50,13 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1" && token == "12345" {
-		body := `{"data": "/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1"}`
+		body := `{"@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1","@odata.type":"#MetricReport.v1_0_0.MetricReport","Id":"CPUUtilCustom1","Name":"Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.","MetricReportDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"},"MetricValues":[{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T07:59:43Z"},{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T08:00:04Z"}]}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:9093/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1" {
-		body := `{"data": "/ODIM/v1/TelemetryService/MetricReports/CPUUtilCustom1"}`
+		body := `{"@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1","@odata.type":"#MetricReport.v1_0_0.MetricReport","Id":"CPUUtilCustom1","Name":"Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.","MetricReportDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"},"MetricValues":[{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T07:59:43Z"},{"MetricDefinition":{"@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"},"MetricId":"CPUUtil","MetricValue":"0","Timestamp":"2021-06-16T08:00:04Z"}]}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -89,7 +90,7 @@ func mockPluginStatus(plugin tmodel.Plugin) bool {
 }
 
 func mockGetAllKeysFromTable(table string, dbtype common.DbType) ([]string, error) {
-	return []string{"Plugin:ILO", "Plugin:GRF"}, nil
+	return []string{"ILO", "GRF"}, nil
 }
 
 func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
@@ -101,23 +102,13 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 		Username:          "admin",
 		Password:          password,
 		ID:                pluginID,
-		PreferredAuthType: "XAuthToken",
+		PreferredAuthType: "BasisAuth",
 	}
 	return plugin, nil
 }
 
 func TestGetResourceInfoFromDevice(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 
 	var req = ResourceInfoRequest{
 		URL:                 "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1",
@@ -135,16 +126,6 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 
 func TestContactPlugin(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	plugin := tmodel.Plugin{}
 	var contactRequest PluginContactRequest
 

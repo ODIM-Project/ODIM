@@ -1,0 +1,126 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: odimra-config
+  namespace: {{ .Values.odimra.namespace }}
+data:
+  odimra_config.json: |
+    {
+    	"RootServiceUUID": {{ .Values.odimra.rootServiceUUID | quote }},
+    	"LocalhostFQDN": {{ .Values.odimra.fqdn | quote }},
+    	"MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
+    	"SearchAndFilterSchemaPath": "/etc/odimra_schema/schema.json",
+    	"RegistryStorePath": "/etc/registrystore",
+    	"KeyCertConf": {
+    		"RootCACertificatePath": "/etc/odimra_certs/rootCA.crt",
+    		"RPCPrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
+    		"RPCCertificatePath": "/etc/odimra_certs/odimra_server.crt",
+    		"RSAPublicKeyPath": "/etc/odimra_certs/odimra_rsa.public",
+    		"RSAPrivateKeyPath": "/etc/odimra_certs/odimra_rsa.private"
+    	},
+    	"APIGatewayConf": {
+    		"Host": {{ .Values.odimra.apiGatewayHost | quote }},
+    		"Port": "45000",
+    		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
+    		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
+    	},
+    	"DBConf": {
+                "Protocol": "tcp",
+                {{ if eq .Values.odimra.haDeploymentEnabled false }}
+                "InMemoryHost": "redis-inmemory",
+                "OnDiskHost": "redis-ondisk",
+                "InMemoryMasterSet": "mymaster",
+                "OnDiskMasterSet": "mymaster",
+                {{ else }}
+                "InMemoryHost": "redis-ha-inmemory",
+                "OnDiskHost": "redis-ha-ondisk",
+                "InMemoryMasterSet": "primaryset",
+                "OnDiskMasterSet": "primaryset",
+                {{ end }}
+                "InMemoryPort": "6379",
+                "OnDiskPort": "6379",
+                "MaxIdleConns": 200,
+                "MaxActiveConns": 200,
+                "RedisHAEnabled": {{ .Values.odimra.haDeploymentEnabled }},
+                "InMemorySentinelPort": "26379",
+                "OnDiskSentinelPort": "26379"
+    	},
+    	"TLSConf" : {
+    		"MinVersion": "TLS_1.2",
+    		"MaxVersion": "TLS_1.2",
+    		"VerifyPeer": true,
+    		"PreferredCipherSuites": [
+    			"TLS_RSA_WITH_AES_128_GCM_SHA256",
+    			"TLS_RSA_WITH_AES_256_GCM_SHA384",
+    			"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+    			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+    			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+    		]
+    	},
+    	"FirmwareVersion": "1.0",
+    	"SouthBoundRequestTimeoutInSecs": 300,
+    	"ServerRediscoveryBatchSize": 30,
+    	"AuthConf": {
+    		"SessionTimeOutInMins": 30,
+    		"ExpiredSessionCleanUpTimeInMins": 15,
+    		"PasswordRules":{
+    			"MinPasswordLength": 12,
+    			"MaxPasswordLength": 16,
+    			"AllowedSpecialCharcters": "~!@#$%^&*-+_|(){}:;<>,.?/"
+    		}
+    	},
+    	"AddComputeSkipResources": {
+    		"SystemCollection": [
+    			"Chassis",
+    			"LogServices",
+    			"WorkloadPerformanceAdvisor"
+    		],
+    		"ChassisCollection": [
+    			"Managers",
+    			"Systems",
+    			"Devices"
+    		],
+    		"OtherCollection": [
+    			"Power",
+    			"Thermal",
+    			"SmartStorage",
+    			"LogServices"
+    		]
+    	},
+    	"URLTranslation": {
+    		"NorthBoundURL": {
+    			"ODIM": "redfish"
+    		},
+    		"SouthBoundURL": {
+    			"redfish": "ODIM"
+    		}
+    	},
+    	"PluginStatusPolling": {
+    		"PollingFrequencyInMins": 30,
+    		"MaxRetryAttempt": 3,
+    		"RetryIntervalInMins": 2,
+    		"ResponseTimeoutInSecs": 30,
+    		"StartUpResouceBatchSize": 10
+    	},
+    	"ExecPriorityDelayConf": {
+    		"MinResetPriority": 1,
+    		"MaxResetPriority": 10,
+    		"MaxResetDelayInSecs": 36000
+    	},
+    	"EnabledServices": [
+    		"SessionService",
+    		"AccountService",
+    		"AggregationService",
+    		"Systems",
+    		"Chassis",
+    		"TaskService",
+    		"EventService",
+    		"Fabrics",
+    		"Managers",
+    		"UpdateService"
+    	],
+        "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
+    	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"]
+    }

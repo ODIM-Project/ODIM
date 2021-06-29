@@ -17,25 +17,23 @@ package dpmessagebus
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
-
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
+	log "github.com/sirupsen/logrus"
 )
 
 // Publish ...
 func Publish(data interface{}) bool {
 	if data == nil {
-		log.Printf("Error: Invalid data on publishing events")
+		log.Error("Invalid data on publishing events")
 		return false
 	}
 	event := data.(common.Events)
 
 	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
 	if err != nil {
-		fmt.Println("Unable communicate with kafka", err)
+		log.Error("Unable communicate with kafka: " + err.Error())
 		return false
 	}
 	defer K.Close()
@@ -44,16 +42,16 @@ func Publish(data interface{}) bool {
 	var message common.MessageData
 	err = json.Unmarshal(event.Request, &message)
 	if err != nil {
-		log.Printf("error: Failed to unmarshal the event: %v", err)
+		log.Error("Failed to unmarshal the event, got: " + err.Error())
 		return false
 	}
 	topic := config.Data.MessageBusConf.EmbQueue[0]
 	if err := K.Distribute(topic, event); err != nil {
-		fmt.Println("Unable Publish events to kafka", err)
+		log.Error("Unable Publish events to kafka: " + err.Error())
 		return false
 	}
 	for _, eventMessage := range message.Events {
-		fmt.Printf("Event %v Published\n", eventMessage.EventType)
+		log.Info(eventMessage.EventType + " Event Published")
 	}
 	return true
 }

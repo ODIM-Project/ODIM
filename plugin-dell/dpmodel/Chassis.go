@@ -115,10 +115,10 @@ type Sensors struct {
 
 // Status get
 type Status struct {
-	Health       string     `json:"Health"`
-	HealthRollup *string    `json:",omitempty"`
-	State        string     `json:"State"`
-	Oem          OemChassis `json:"Oem"`
+	Health       string  `json:"Health"`
+	HealthRollup *string `json:",omitempty"`
+	State        string  `json:"State"`
+	Oem          Oem     `json:"Oem"`
 }
 
 // Thermal get
@@ -126,5 +126,46 @@ type Thermal struct {
 	Oid string `json:"@odata.id"`
 }
 
-type OemChassis struct {
+/*
+type ComputerSystems struct {
+        Oid string `json:"@odata.id"`
 }
+type ContainedBy struct {
+        Oid string `json:"@odata.id"`
+}
+type Contains struct {
+        Oid string `json:"@odata.id"`
+}
+type CooledBy struct {
+        Oid string `json:"@odata.id"`
+}
+type Drives struct {
+        Oid string `json:"@odata.id"`
+}
+type ManagedBy struct {
+        Oid string `json:"@odata.id"`
+}
+type ManagersInChassis struct {
+        Oid string `json:"@odata.id"`
+}
+type Oem struct {
+}
+type PCIeDevices struct {
+        Oid string `json:"@odata.id"`
+}
+type PoweredBy struct {
+        Oid string `json:"@odata.id"`
+}
+type Processors struct {
+        Oid string `json:"@odata.id"`
+}
+type ResourceBlocks struct {
+        Oid string `json:"@odata.id"`
+}
+type Storage struct {
+        Oid string `json:"@odata.id"`
+}
+type Switches struct {
+        Oid string `json:"@odata.id"`
+}
+*/

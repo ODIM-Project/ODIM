@@ -17,29 +17,45 @@ package dphandler
 
 import (
 	"encoding/json"
-	"log"
-	"net/http"
-	"strings"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
-	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
-	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+	"net"
+	"net/http"
+	"strings"
 )
 
 // RedfishEvents receives the subscribed events from the south bound system
 // Then it will send the received data and ip to publish method
-func RedfishEvents(ctx iris.Context) {
+// RedfishEvents receives the subscribed events from the south bound system
+// Then it will send the received data and ip to publish method
+func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	var req interface{}
-	err := ctx.ReadJSON(&req)
+	// Try to decode the request body into the struct. If there is an error,
+	// respond to the client with the error message and a 400 status code.
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		log.Println(err)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("error: bad request")
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println("Event Request", req)
-	remoteAddr := ctx.RemoteAddr()
+
+	remoteAddr := r.RemoteAddr
+	// if southbound entities are behind a proxy, then
+	// originator address is expected to be in X-Forwarded-For header
+	forwardedFor := r.Header.Get("X-Forwarded-For")
+	if forwardedFor != "" {
+		log.Info("Request contains X-Forwarded-For: " + forwardedFor + "; RemoteAddr: " + remoteAddr)
+		addrList := strings.Split(forwardedFor, ",")
+		// if multiple proxies are present, then the first address
+		// in the X-Forwarded-For header is considered as originator address
+		remoteAddr = addrList[0]
+	}
+	ip, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		ip = remoteAddr
+	}
+	log.Debug("After splitting remote address, IP is: " + ip)
+
 	request, _ := json.Marshal(req)
 
 	reqData := string(request)
@@ -48,12 +64,11 @@ func RedfishEvents(ctx iris.Context) {
 		reqData = strings.Replace(reqData, key, value, -1)
 	}
 	event := common.Events{
-		IP:      remoteAddr,
+		IP:      ip,
 		Request: []byte(reqData),
 	}
 
 	// Call writeEventToJobQueue to write events to worker pool
 	dputilities.WriteEventToJobQueue(event)
-	ctx.StatusCode(http.StatusOK)
-
+	w.WriteHeader(http.StatusOK)
 }

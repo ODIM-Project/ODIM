@@ -21,6 +21,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"io/ioutil"
@@ -50,6 +51,7 @@ func mockGetExternalInterface() *ExternalInterface {
 		Device: Device{
 			GetDeviceInfo: mockGetDeviceInfo,
 			ContactClient: mockContactClient,
+			DeviceRequest: mockDeviceRequest,
 		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
@@ -154,6 +156,29 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	return string(dataByte), err
 }
 
+func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Virtual" {
+		resp.StatusCode = http.StatusNotFound
+		resp.StatusMessage = response.ResourceNotFound
+		return resp
+	}
+	manager := mgrmodel.Manager{
+		Status: &mgrmodel.Status{
+			State: "Enabled",
+		},
+	}
+	dataByte, err := json.Marshal(manager)
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	err = json.Unmarshal(dataByte, &resp.Body)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	return resp
+}
+
 func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
 
 	if url == "https://localhost:9091/ODIM/v1/Sessions" {
@@ -188,6 +213,12 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091/ODIM/v1/Managers/uuid/VirtualMedia/1/Actions/VirtualMedia.InsertMedia" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}

@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grfplugin
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: grfplugin
+spec:
+  ports:
+    - port: 45001
+  selector:
+    app: grfplugin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grfplugin-events
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: grfplugin
+spec:
+  type: NodePort
+  ports:
+  - port: 45002
+    nodePort: {{ .Values.grfplugin.eventListenerNodePort }}
+    protocol: TCP
+  {{ if eq .Values.odimra.haDeploymentEnabled false }}
+  externalTrafficPolicy: Local
+  {{ end }}
+  selector:
+    app: grfplugin

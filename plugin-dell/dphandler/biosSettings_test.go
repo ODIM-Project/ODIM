@@ -22,19 +22,18 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net"
-	"net/http"
-	testhttp "net/http/httptest"
-	"strings"
-	"testing"
-
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net"
+	"net/http"
+	testhttp "net/http/httptest"
+	"strings"
+	"testing"
 )
 
 var (
@@ -158,7 +157,7 @@ func startTestServer(handler mockHandlerFunc) *testhttp.Server {
 	// create a listener with the desired port.
 	l, err := net.Listen("tcp", "localhost:1234")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	ts := testhttp.NewUnstartedServer(
@@ -180,14 +179,14 @@ func startTestServer(handler mockHandlerFunc) *testhttp.Server {
 
 	cert, err := tls.X509KeyPair(hostCert, hostPrivKey)
 	if err != nil {
-		log.Fatalf("error: failed to load key pair: %v", err)
+		log.Fatal("Failed to load key pair: " + err.Error())
 	}
 	tlsConfig.Certificates = []tls.Certificate{cert}
 	tlsConfig.BuildNameToCertificate()
 
 	capool := x509.NewCertPool()
 	if !capool.AppendCertsFromPEM(hostCA) {
-		log.Fatalf("error: failed to load CA certificate")
+		log.Fatal("Failed to load CA certificate")
 	}
 	tlsConfig.RootCAs = capool
 	tlsConfig.ClientCAs = capool
@@ -208,7 +207,7 @@ func mockDeviceHandler(username, password, url string, w http.ResponseWriter) {
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 	}
 	w.Write(respBody)
 	return

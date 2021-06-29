@@ -17,8 +17,10 @@ package evcommon
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -51,7 +53,7 @@ type StartUpInteraface struct {
 // EmbTopic hold the list all consuming topics after
 type EmbTopic struct {
 	TopicsList map[string]bool
-	lock       sync.Mutex
+	lock       sync.RWMutex
 	EMBConsume func(string)
 }
 
@@ -107,8 +109,8 @@ func (p *PluginToken) GetToken(pluginID string) string {
 
 // ConsumeTopic check the existing topic list if it is not present then it will add topic name to list and consume that topic
 func (e *EmbTopic) ConsumeTopic(topicName string) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
+	e.lock.RLock()
+	defer e.lock.RUnlock()
 	if ok := e.TopicsList[topicName]; !ok {
 		go consumer.Consume(topicName)
 		e.TopicsList[topicName] = true
@@ -123,7 +125,7 @@ var EMBTopics EmbTopic
 var PluginStartUp = false
 
 // GetAllPluginStatus ...
-func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
+func (st *StartUpInteraface) GetAllPluginStatus() {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
@@ -134,16 +136,18 @@ func (st *StartUpInteraface) GetAllPluginStatus(lock *sync.Mutex) {
 			go st.getPluginStatus(pluginList[i])
 		}
 		var pollingTime int
-		lock.Lock()
+		config.TLSConfMutex.RLock()
 		pollingTime = config.Data.PluginStatusPolling.PollingFrequencyInMins
-		lock.Unlock()
+		config.TLSConfMutex.RUnlock()
 		time.Sleep(time.Minute * time.Duration(pollingTime))
 	}
 
 }
+
 func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	PluginsMap := make(map[string]bool)
 	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -159,13 +163,14 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		PluginPrefferedAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
+	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
 		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
+	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
@@ -196,7 +201,9 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		}
 	}
 	// Adding the topics to the list
+	EMBTopics.lock.Lock()
 	EMBTopics.EMBConsume = st.EMBConsume
+	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
 		EMBTopics.ConsumeTopic(topicsList[j])
 	}
@@ -334,12 +341,20 @@ func getSubscribedEventsDetails(serverAddress string) (string, []string, error) 
 	var location string
 	var eventTypes []string
 	var emptyListFlag bool
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(serverAddress)
+
+	deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
+	if errorMessage != "" {
+		return "", nil, fmt.Errorf(errorMessage)
+	}
+	searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		return "", nil, err
 	}
 	location = deviceSubscription.Location
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(serverAddress)
+
+	searchKey = GetSearchKey(deviceIPAddress, evmodel.SubscriptionIndex)
+	subscriptionDetails, err := evmodel.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return "", nil, err
 	}
@@ -387,7 +402,12 @@ func getTypes(subscription string) []string {
 func updateDeviceSubscriptionLocation(r map[string]string) error {
 	for serverAddress, location := range r {
 		if location != "" {
-			deviceSubscription, err := evmodel.GetDeviceSubscriptions(serverAddress)
+			deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
+			if errorMessage != "" {
+				continue
+			}
+			searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
+			deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 			if err != nil {
 				log.Error("Error getting the device event subscription from DB " +
 					" for server address : " + serverAddress + err.Error())
@@ -451,4 +471,99 @@ func GenEventErrorResponse(errorMessage string, StatusMessage string, httpStatus
 	}
 	respPtr.Response = args.CreateGenericErrorResponse()
 
+}
+
+// GetIPFromHostName - look up the ip from the fqdn
+func GetIPFromHostName(fqdn string) (string, string) {
+	host, _, err := net.SplitHostPort(fqdn)
+	if err != nil {
+		host = fqdn
+	}
+	addr, err := net.LookupIP(host)
+	var errorMessage string
+	if err != nil || len(addr) < 1 {
+		errorMessage = "Can't lookup the ip from host name"
+		if err != nil {
+			errorMessage = "Can't lookup the ip from host name" + err.Error()
+		}
+	}
+	return fmt.Sprintf("%v", addr[0]), errorMessage
+}
+
+// GetSearchKey will return search key with regular expression for filtering
+func GetSearchKey(key, index string) string {
+	searchKey := key
+	if index == evmodel.SubscriptionIndex {
+		searchKey = `[^0-9]` + key + `[^0-9]`
+	} else if index == evmodel.DeviceSubscriptionIndex {
+		searchKey = key + `[^0-9]`
+	}
+	return searchKey
+}
+
+// ProcessCtrlMsg is for processing the ODIM control message
+// and to perform required action
+func ProcessCtrlMsg(data interface{}) bool {
+	if data == nil {
+		log.Warn("received control message event with empty data")
+		return false
+	}
+	event := data.(common.ControlMessageData)
+	msg, _ := json.Marshal(event.Data)
+	log.Info("received control message event of type:", event.MessageType)
+	if event.MessageType == common.SubscribeEMB {
+		var message common.SubscribeEMBData
+		if err := json.Unmarshal([]byte(msg), &message); err != nil {
+			return false
+		}
+		for _, topic := range message.EMBQueues {
+			EMBTopics.ConsumeTopic(topic)
+		}
+	}
+	return true
+}
+
+// SubscribePluginEMB is for subscribing to plugin EMB
+func (st *StartUpInteraface) SubscribePluginEMB() {
+	time.Sleep(time.Second * 2)
+	pluginList, err := evmodel.GetAllPlugins()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	for i := 0; i < len(pluginList); i++ {
+		go st.getPluginEMB(pluginList[i])
+	}
+}
+
+func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
+	config.TLSConfMutex.RLock()
+	var pluginStatus = common.PluginStatus{
+		Method: http.MethodGet,
+		RequestBody: common.StatusRequest{
+			Comment: "",
+		},
+		ResponseWaitTime:        config.Data.PluginStatusPolling.ResponseTimeoutInSecs,
+		Count:                   config.Data.PluginStatusPolling.MaxRetryAttempt,
+		RetryInterval:           config.Data.PluginStatusPolling.RetryIntervalInMins,
+		PluginIP:                plugin.IP,
+		PluginPort:              plugin.Port,
+		PluginUsername:          plugin.Username,
+		PluginUserPassword:      string(plugin.Password),
+		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
+	}
+	config.TLSConfMutex.RUnlock()
+	status, _, topicsList, err := pluginStatus.CheckStatus()
+	if err != nil && !status {
+		log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
+		return
+	}
+	EMBTopics.lock.Lock()
+	EMBTopics.EMBConsume = st.EMBConsume
+	EMBTopics.lock.Unlock()
+	for j := 0; j < len(topicsList); j++ {
+		EMBTopics.ConsumeTopic(topicsList[j])
+	}
+	return
 }

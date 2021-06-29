@@ -19,10 +19,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -125,13 +126,10 @@ func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 		log.Error("error while deleting the main task: " + err.Error())
 		return err
 	}
-	//CompletedTaskIndex has only completed task which has subtasks associated with them. So delete index only when condition is met.
-	if task.TaskState == "Completed" && len(task.ChildTaskIDs) != 0 {
-		err = ts.DeleteTaskIndex(taskID)
-		if err != nil {
-			log.Error("error while deleting the main task: " + err.Error())
-			return err
-		}
+	err = ts.DeleteTaskIndex(taskID)
+	if err != nil {
+		log.Error("error while deleting the main task: " + err.Error())
+		return err
 	}
 	return nil
 }

@@ -111,7 +111,7 @@ func validateElements(elements []string) (int32, error) {
 		return http.StatusBadRequest, errors.PackError(errors.UndefinedErrorType, fmt.Errorf("Duplicate elements present"))
 	}
 	for _, element := range elements {
-		if _, err := agmodel.GetSystem(element); err != nil {
+		if _, err := agmodel.GetComputerSystem(element); err != nil {
 			return http.StatusNotFound, err
 		}
 	}
@@ -152,7 +152,7 @@ func (e *ExternalInterface) GetAllAggregates(req *aggregatorproto.AggregatorRequ
 		StatusMessage: response.Success,
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregateCollection.v1_0_0.AggregateCollection",
+		OdataType:    "#AggregateCollection.AggregateCollection",
 		OdataID:      "/redfish/v1/AggregationService/Aggregates",
 		OdataContext: "/redfish/v1/$metadata#AggregateCollection.AggregateCollection",
 		ID:           "Aggregate",

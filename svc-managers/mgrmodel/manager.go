@@ -37,6 +37,7 @@ type Manager struct {
 	FirmwareVersion    string            `json:"FirmwareVersion"`
 	Status             *Status           `json:"Status,omitempty"`
 	HostInterfaces     *OdataID          `json:"HostInterfaces,omitempty"`
+	SerialInterface    *OdataID          `json:"SerialInterface,omitempty"`
 	EthernetInterfaces *OdataID          `json:"EthernetInterfaces,omitempty"`
 	LogServices        *OdataID          `json:"LogServices,omitempty"`
 	NetworkProtocol    *OdataID          `json:"NetworkProtocol,omitempty"`
@@ -98,6 +99,17 @@ type RAManager struct {
 	FirmwareVersion string `json:"FirmwareVersion"`
 	UUID            string `json:"UUID"`
 	State           string `json:"State"`
+}
+
+// VirtualMediaInsert struct is to store the insert virtual media request payload
+type VirtualMediaInsert struct {
+	Image                string `json:"Image" validate:"required"`
+	Inserted             bool   `json:"Inserted"`
+	WriteProtected       bool   `json:"WriteProtected"`
+	Password             string `json:"Password,omitempty"`
+	TransferMethod       string `json:"TransferMethod,omitempty"`
+	TransferProtocolType string `json:"TransferProtocolType,omitempty"`
+	UserName             string `json:"UserName,omitempty"`
 }
 
 //GetResource fetches a resource from database using table and key

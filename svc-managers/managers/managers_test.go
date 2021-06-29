@@ -214,3 +214,28 @@ func TestGetPluginManagerResourceInvalidPluginSessions(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, int(response.StatusCode), "Status code should be StatusUnauthorized.")
 
 }
+
+func TestVirtualMediaActionsResource(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+
+	config.SetUpMockConfig(t)
+	req := &managersproto.ManagerRequest{
+		ManagerID:  "uuid:1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		RequestBody: []byte(`{"Image":"http://10.1.1.1/ISO",
+							"WriteProtected":true,
+							"Inserted":true}`),
+	}
+	e := mockGetExternalInterface()
+	response := e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1:1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+	}
+	response = e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+}

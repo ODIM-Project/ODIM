@@ -16,25 +16,17 @@
 package dphandler
 
 import (
-	/*
-		"crypto/rand"
-		"crypto/rsa"
-		"crypto/sha512"
-		"crypto/x509"
-		"encoding/pem"
-	*/
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-
-	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
+	log "github.com/sirupsen/logrus"
 )
 
 //ResetComputerSystem : reset computer system
@@ -46,7 +38,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -61,7 +53,7 @@ func ResetComputerSystem(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -71,40 +63,7 @@ func ResetComputerSystem(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-	/*
-		priv := []byte(dpmodel.PluginPrivateKey)
-		block, _ := pem.Decode(priv)
-		enc := x509.IsEncryptedPEMBlock(block)
-		b := block.Bytes
-		if enc {
-			log.Println("is encrypted pem block")
-			b, err = x509.DecryptPEMBlock(block, nil)
-			if err != nil {
-				log.Println("Error: " + err.Error())
-			}
-		}
-		key, err := x509.ParsePKCS1PrivateKey(b)
-		if err != nil {
-			log.Println("Error: " + err.Error())
-		}
 
-		hash := sha512.New()
-
-		plainText, err := rsa.DecryptOAEP(
-			hash,
-			rand.Reader,
-			key,
-			device.Password,
-			nil,
-		)
-		if err != nil {
-			log.Println("Error while trying decrypt data: ", err)
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("Error while trying to decypt data")
-			return
-		}
-		device.Password = plainText
-	*/
 	var request map[string]interface{}
 	err = json.Unmarshal(deviceDetails.PostBody, &request)
 	resetType := request["ResetType"].(string)
@@ -113,8 +72,8 @@ func ResetComputerSystem(ctx iris.Context) {
 	})
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -123,10 +82,10 @@ func ResetComputerSystem(ctx iris.Context) {
 	//Subscribe to Events
 	resp, err := redfishClient.ResetComputerSystem(device, uri)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to reset the computer system, got: " + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
-			ctx.WriteString("Error while trying reset " + errorMessage)
+			ctx.WriteString(errorMessage)
 			ctx.StatusCode(http.StatusInternalServerError)
 			return
 		}
@@ -134,11 +93,25 @@ func ResetComputerSystem(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying reset " + errorMessage)
+		errorMessage := "While trying to read the response body, got: " + err.Error()
+		log.Error(errorMessage)
+		ctx.WriteString(errorMessage)
 	}
-
+	if resp.StatusCode == http.StatusNoContent {
+		resp.StatusCode = http.StatusOK
+		body = updateResetResponse()
+	}
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
+}
+
+func updateResetResponse() []byte {
+	resp := response.Args{
+		Code:      response.Success,
+		Message:   "Request completed successfully",
+		ErrorArgs: []response.ErrArgs{},
+	}
+	resp.CreateGenericErrorResponse()
+	body, _ := json.Marshal(resp)
+	return body
 }

@@ -39,7 +39,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	err := e.UpdateTask(task)
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
-		log.Error("error while starting the task: " + errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
@@ -85,14 +85,14 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 
 	exist, dErr := e.CheckActiveRequest(ipAddr)
 	if dErr != nil {
-		errMsg := fmt.Sprintf("error: while trying to collect the active request details from DB: %v", dErr.Error())
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	if exist {
 		var errMsg string
 		mIP, _ := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
-		errMsg = fmt.Sprintf("error: An active request already exists for adding aggregation source IP %v", mIP)
+		errMsg = fmt.Sprintf("An active request already exists for adding aggregation source IP %v", mIP)
 		log.Error(errMsg)
 		args := response.Args{
 			Code:    response.GeneralError,
@@ -107,7 +107,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	}
 	err := e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
 	if err != nil {
-		errMsg := fmt.Sprintf("error: while trying to save the active request details from DB: %v", dErr.Error())
+		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
 		log.Println(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
@@ -115,13 +115,13 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	defer func() {
 		err := e.DeleteActiveRequest(ipAddr)
 		if err != nil {
-			log.Printf("error: while trying to collect the active request details from DB: %v", dErr.Error())
+			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
 		}
 	}()
 
 	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)
 	if err1 != nil {
-		errMsg := "error while getting connection method id: " + err1.Error()
+		errMsg := "Unable to get connection method id: " + err1.Error()
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
 	}
@@ -131,6 +131,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.TargetURI = targetURI
 	pluginContactRequest.UpdateTask = e.UpdateTask
+	pluginContactRequest.TaskRequest = reqBody
 	var aggregationSourceUUID string
 	var cipherText []byte
 

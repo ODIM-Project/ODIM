@@ -17,17 +17,15 @@ package dphandler
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
@@ -52,7 +50,7 @@ func ChangeSettings(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -64,7 +62,7 @@ func ChangeSettings(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -78,19 +76,19 @@ func ChangeSettings(ctx iris.Context) {
 
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
 	respBody, err := redfishClient.DeviceCall(device, uri, http.MethodPatch)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errMsg := "While trying to change bios settings, got: " + err.Error()
+		log.Error(errMsg)
 		if respBody == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to change bios settings: " + errorMessage)
+			ctx.WriteString(errMsg)
 			return
 		}
 	}
@@ -108,13 +106,11 @@ func ChangeSettings(ctx iris.Context) {
 		defer respBody.Body.Close()
 		resp, err = ioutil.ReadAll(respBody.Body)
 		if err != nil {
-			errorMessage := err.Error()
-			log.Println(err)
-			ctx.WriteString("Error while trying to change bios settings: " + errorMessage)
+			errMsg := "While reading the response body, got" + err.Error()
+			log.Error(errMsg)
+			ctx.WriteString(errMsg)
 		}
 	}
-
-	log.Println("Response body: ", string(resp))
 	ctx.StatusCode(statusCode)
 	ctx.Write(resp)
 }
@@ -124,15 +120,15 @@ func changeBiosSettings(uri string, device *dputilities.RedfishDevice) (int, []b
 	var errorMessage string
 	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
 	if err != nil {
-		errorMessage := "Error while trying to retrieve bios settings details: " + err.Error()
-		log.Println(errorMessage)
+		errorMessage = "While trying to retrieve bios settings details, got: " + err.Error()
+		log.Error(errorMessage)
 		return statusCode, nil, errorMessage
 	}
 	var biosSetting dpmodel.BiosSettings
 	err = json.Unmarshal(resp, &biosSetting)
 	if err != nil {
-		errorMessage := "error while trying to unmarshal bios settings data: " + err.Error()
-		log.Println(errorMessage)
+		errorMessage = "While trying to unmarshal bios settings data, got: " + err.Error()
+		log.Error(errorMessage)
 		return http.StatusInternalServerError, nil, errorMessage
 	}
 
@@ -143,20 +139,20 @@ func changeBiosSettings(uri string, device *dputilities.RedfishDevice) (int, []b
 		device.PostBody = req
 		statusCode, _, resp, err = queryDevice(jobsURI, device, http.MethodPost)
 		if err != nil {
-			errorMessage := "Error while trying to create a job for updating the Bios settings: " + err.Error()
-			log.Println(errorMessage)
+			errorMessage = "While trying to create a job for updating the Bios settings, got: " + err.Error()
+			log.Error(errorMessage)
 			return statusCode, nil, errorMessage
 		}
 		if statusCode == http.StatusOK {
-			log.Println("Creation of job for bios settings is successful", string(resp))
+			log.Info("Creation of job for bios settings is successful with body: " + string(resp))
 			resp = createBiosResponse()
 		} else {
-			errorMessage = "error : Unable to create a job for applying bios settings"
-			log.Println(errorMessage)
+			errorMessage = "Unable to create a job for applying bios settings"
+			log.Error(errorMessage)
 		}
 	} else {
-		errorMessage := "error : Unable to get the job URI from bios settings details"
-		log.Println(errorMessage)
+		errorMessage := "Unable to get the job URI from bios settings details"
+		log.Error(errorMessage)
 		return http.StatusInternalServerError, nil, errorMessage
 	}
 	return statusCode, resp, errorMessage

@@ -69,7 +69,7 @@ func Validate(ctx iris.Context) {
 	if err != nil {
 		log.Error("Unable to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString("Unable to collect data from request: " + err.Error())
 		return
 	}
 	device := &rfputilities.RedfishDevice{

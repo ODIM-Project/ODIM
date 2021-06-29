@@ -17,10 +17,11 @@ package dpmodel
 
 // Volume holds the northbound request body
 type Volume struct {
-	Name       string        `json:"Name" validate:"required"`
-	RAIDType   string        `json:"RAIDType"`
-	Drives     []OdataIDLink `json:"Drives"`
-	VolumeType string        `json:"VolumeType"`
+	Name               string        `json:"Name" validate:"required"`
+	RAIDType           string        `json:"RAIDType"`
+	Drives             []OdataIDLink `json:"Drives"`
+	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+	VolumeType			string        `json:"VolumeType"`
 }
 
 // OdataIDLink contains link to a resource
@@ -37,4 +38,9 @@ type VolumesCollection struct {
 	Name         string        `json:"Name"`
 	Members      []OdataIDLink `json:"Members"`
 	MembersCount int           `json:"Members@odata.count"`
+}
+
+//FirmwareVersion contains the firmware version of server
+type FirmwareVersion struct {
+	FirmwareVersion string `json:"FirmwareVersion"`
 }

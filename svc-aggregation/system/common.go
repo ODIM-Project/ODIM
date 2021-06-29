@@ -182,21 +182,8 @@ func getIPAndPortFromAddress(address string) (string, string) {
 	return ip, port
 }
 
-func getIPFromHostName(fqdn string) (string, error) {
-	addr, err := net.LookupIP(fqdn)
-	if err != nil || len(addr) < 1 {
-		errMsg := "Can't lookup the ip from host name"
-		if err != nil {
-			errMsg = "Can't lookup the ip from host name" + err.Error()
-		}
-		return "", fmt.Errorf("%v", errMsg)
-	}
-	return fmt.Sprintf("%v", addr[0]), nil
-}
-
 func getKeyFromManagerAddress(managerAddress string) string {
-	host, port := getIPAndPortFromAddress(managerAddress)
-	ipAddr, err := getIPFromHostName(host)
+	ipAddr, host, port, err := agcommon.LookupHost(managerAddress)
 	if err != nil {
 		ipAddr = host
 	}
@@ -1124,6 +1111,20 @@ func PublishEvent(systemIDs []string, collectionName string) {
 	}
 }
 
+// PublishPluginStatusOKEvent is for notifying active status of a plugin
+// and indicating to resubscribe the EMB of the plugin
+func PublishPluginStatusOKEvent(plugin string, msgQueues []string) {
+	data := common.SubscribeEMBData{
+		PluginID:  plugin,
+		EMBQueues: msgQueues,
+	}
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+		log.Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
+		return
+	}
+	log.Info("Published event to resubscribe to " + plugin + " EMB")
+}
+
 func getIDsFromURI(uri string) (string, string, error) {
 	lastChar := uri[len(uri)-1:]
 	if lastChar == "/" {
@@ -1226,6 +1227,9 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	if err != nil {
 		errMsg := err.Error()
 		log.Error(errMsg)
+		if getResponse.StatusCode == http.StatusNotFound {
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil), getResponse.StatusCode, queueList
+		}
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 	}
 	// extracting the EMB Type and EMB Queue name

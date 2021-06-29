@@ -14,6 +14,8 @@
 package main
 
 import (
+	"encoding/json"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -28,10 +30,11 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var subscriptionInfo []dpmodel.Device
+var log = logrus.New()
 
 // TokenObject will contains the generated token and public key of odimra
 type TokenObject struct {
@@ -42,15 +45,15 @@ type TokenObject struct {
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Plugin Service should not be run as the root user")
+		log.Fatal("Plugin Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalln("error while reading from config", err)
+		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
 	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
+		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
 	// TODO check db configuration / move preparedbConfig
@@ -66,11 +69,11 @@ func main() {
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(dputilities.Out, dpmessagebus.Publish, 1)
+	go common.RunReadWorkers(dputilities.Out, dpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		log.Fatalln("error: no value get the environment variable PLUGIN_CONFIG_FILE_PATH")
+		log.Fatal("No value get the environment variable PLUGIN_CONFIG_FILE_PATH")
 	}
 	// TrackConfigFileChanges monitors the dell config changes using fsnotfiy
 	go dputilities.TrackConfigFileChanges(configFilePath)
@@ -80,10 +83,10 @@ func main() {
 }
 
 func app() {
+	go sendStartupEvent()
+	go eventsrouters()
+
 	app := routers()
-	go func() {
-		eventsrouters()
-	}()
 	conf := &lutilconf.HTTPConfig{
 		Certificate:   &config.Data.KeyCertConf.Certificate,
 		PrivateKey:    &config.Data.KeyCertConf.PrivateKey,
@@ -93,7 +96,7 @@ func app() {
 	}
 	pluginServer, err := conf.GetHTTPServerObj()
 	if err != nil {
-		log.Fatalf("fatal: error while initializing plugin server: %v", err)
+		log.Fatal("While initializing plugin server: " + err.Error())
 	}
 	app.Run(iris.Server(pluginServer))
 }
@@ -131,6 +134,7 @@ func routers() *iris.Application {
 		systems.Get("/{id}/BootOptions", dphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", dphandler.GetResource)
 		systems.Get("/{id}/Processors", dphandler.GetResource)
+		systems.Get("/{id}/Processors/{rid}", dphandler.GetResource)
 		systems.Get("/{id}/LogServices", dphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}", dphandler.GetResource)
 		systems.Get("/{id}/LogServices/{rid}/Entries", dphandler.GetResource)
@@ -167,6 +171,17 @@ func routers() *iris.Application {
 		chassis.Get("/{id}/NetworkAdapters/{rid}/NetworkPorts", dphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{rid}/NetworkDeviceFunctions/{id2}", dphandler.GetResource)
 		chassis.Get("/{id}/NetworkAdapters/{rid}/NetworkPorts/{id2}", dphandler.GetResource)
+		chassis.Get("/{id}/Assembly", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeSlots/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices", dphandler.GetResource)
+		chassis.Get("/{id}/PCIeDevices/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/Sensors", dphandler.GetResource)
+		chassis.Get("/{id}/Sensors/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries", dphandler.GetResource)
+		chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", dphandler.GetResource)
 
 		// Chassis Power URl routes
 		chassisPower := chassis.Party("/{id}/Power")
@@ -225,8 +240,6 @@ func routers() *iris.Application {
 }
 
 func eventsrouters() {
-	app := iris.New()
-	app.Post(config.Data.EventConf.DestURI, dphandler.RedfishEvents)
 	conf := &lutilconf.HTTPConfig{
 		Certificate:   &config.Data.KeyCertConf.Certificate,
 		PrivateKey:    &config.Data.KeyCertConf.PrivateKey,
@@ -238,11 +251,39 @@ func eventsrouters() {
 	if err != nil {
 		log.Fatalf("fatal: error while initializing event server: %v", err)
 	}
-	app.Run(iris.Server(evtServer))
+	mux := http.NewServeMux()
+	mux.HandleFunc(config.Data.EventConf.DestURI, dphandler.RedfishEvents)
+	evtServer.Handler = mux
+	log.Fatal(evtServer.ListenAndServeTLS("", ""))
 }
 
 // intializePluginStatus sets plugin status
 func intializePluginStatus() {
 	dputilities.Status.Available = "yes"
 	dputilities.Status.Uptime = time.Now().Format(time.RFC3339)
+}
+
+// sendStartupEvent is for sending startup event
+func sendStartupEvent() {
+	// grace wait time for plugin to be functional
+	time.Sleep(3 * time.Second)
+
+	startupEvt := common.PluginStatusEvent{
+		Name:         "Plugin startup event",
+		Type:         "PluginStarted",
+		Timestamp:    time.Now().String(),
+		OriginatorID: config.Data.PluginConf.Host,
+	}
+
+	request, _ := json.Marshal(startupEvt)
+	event := common.Events{
+		IP:        net.JoinHostPort(config.Data.PluginConf.Host, config.Data.PluginConf.Port),
+		Request:   request,
+		EventType: "PluginStartUp",
+	}
+
+	done := make(chan bool)
+	events := []interface{}{event}
+	go common.RunWriteWorkers(dputilities.In, events, 1, done)
+	log.Info("successfully sent startup event")
 }

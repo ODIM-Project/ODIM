@@ -18,12 +18,13 @@ package dphandler
 import (
 	"encoding/json"
 	"fmt"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -47,6 +48,7 @@ func CreateVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -66,7 +68,7 @@ func CreateVolume(ctx iris.Context) {
 	// Get device details from request
 	err = ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Infof("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -77,8 +79,8 @@ func CreateVolume(ctx iris.Context) {
 	var reqBody dpmodel.Volume
 	err = json.Unmarshal(deviceDetails.PostBody, &reqBody)
 	if err != nil {
-		errMsg := "error while unmarshalling the create volume request to the device: " + err.Error()
-		log.Infof(errMsg)
+		errMsg := "While unmarshalling the create volume request to the device, got: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -104,6 +106,17 @@ func CreateVolume(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 		PostBody: []byte(reqPostBody),
+	}
+
+	// Getting the firmware version of server before creating a new volume
+	managersURI := "/redfish/v1/Managers/" + systemID
+	managersURI = strings.Replace(managersURI, "System", "iDRAC", -1)
+	statusCode, verErrMsg := getFirmwareVersion(managersURI, device)
+	if statusCode != http.StatusOK {
+		log.Error(verErrMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(verErrMsg)
+		return
 	}
 
 	taskID := retrieveTaskID(taskURI)
@@ -218,7 +231,7 @@ func DeleteVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Infof("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -230,7 +243,7 @@ func DeleteVolume(ctx iris.Context) {
 	// Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Infof("Error while trying to collect data from request: ", err)
+		log.Error("While trying to collect data from request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString("Error: bad request.")
 		return
@@ -395,4 +408,31 @@ func createEvent(name string, eventType string, message string, messageID string
 			},
 		},
 	}
+}
+
+// getFirmwareVersion of the device
+func getFirmwareVersion(uri string, device *dputilities.RedfishDevice) (int, string) {
+	// Getting the firmware version of a server
+	statusCode, _, resp, err := queryDevice(uri, device, http.MethodGet)
+	if err != nil {
+		errMsg := "While getting firmware version details during create volume, got: " + err.Error()
+		log.Error(errMsg)
+		return statusCode, errMsg
+	}
+	var firmware dpmodel.FirmwareVersion
+	err = json.Unmarshal(resp, &firmware)
+	if err != nil {
+		errMsg := "While trying to unmarshal response data in create volume, got: " + err.Error()
+		log.Error(errMsg)
+		return http.StatusInternalServerError, errMsg
+	}
+
+	verSplit := strings.SplitN(firmware.FirmwareVersion, ".", 3)
+	version := strings.Join(verSplit[:2], "")
+	res, _ := strconv.Atoi(version)
+
+	if res < 440 {
+		return http.StatusBadRequest, "Unsupported Firmware version, Firmware version should be >= 4.40"
+	}
+	return http.StatusOK, ""
 }

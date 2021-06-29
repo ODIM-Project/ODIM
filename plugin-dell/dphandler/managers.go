@@ -16,17 +16,15 @@
 package dphandler
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"strings"
-
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 //GetManagersCollection  Fetches details of the given resource from the device
@@ -38,7 +36,7 @@ func GetManagersCollection(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -83,7 +81,7 @@ func GetManagersInfo(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -128,8 +126,8 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	}
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -138,8 +136,8 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	//Fetching generic resource details from the device
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
-		errMsg := "error: authentication failed: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Authentication failed: " + err.Error()
+		log.Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -150,7 +148,8 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf(err.Error())
+		log.Error("While trying to read the response body, got: " + err.Error())
+		return
 	}
 
 	if resp.StatusCode == 401 {
@@ -159,7 +158,7 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 		return
 	}
 	if resp.StatusCode >= 300 {
-		fmt.Printf("Could not retreive generic resource for %s: \n%s\n\n", device.Host, body)
+		log.Warn("Could not retreive generic resource for " + device.Host + ": " + string(body))
 	}
 	respData := string(body)
 	//replacing the resposne with north bound translation URL

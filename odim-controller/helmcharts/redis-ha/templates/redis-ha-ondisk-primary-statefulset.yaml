@@ -1,0 +1,99 @@
+apiVersion: apps/v1 
+kind: StatefulSet
+metadata:
+  name: redis-ha-ondisk-primary
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: redis-ha-ondisk
+spec:
+  replicas: 1
+  serviceName: redis-ha-ondisk-headless
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  selector:
+    matchLabels:
+      app: redis-ha-ondisk
+      role: node
+  template:
+    metadata:
+      labels:
+        app: redis-ha-ondisk
+        role: node
+    spec:
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-ha-ondisk-data-claim
+
+      restartPolicy: Always
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: "app"
+                  operator: In
+                  values:
+                  - redis-ha-ondisk
+            topologyKey: "kubernetes.io/hostname"
+
+      containers:
+      - name: redis
+        image: redis:{{ .Values.odimra.redisImageTag }}
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 6379
+
+        volumeMounts:
+          - mountPath: "/redis-data"
+            name: redis-data
+            readOnly: false
+
+        env:
+        - name: MASTER
+          value: "true"
+        - name: REDIS_ONDISK_DB 
+          value: "true"
+        - name: REDIS_HA_REDIS_SERVICE_HOST 
+          value: "redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local"
+        - name: REDIS_HA_REDIS_SERVICE_PORT
+          value: "6379"
+        - name: REDIS_DEFAULT_PASSWORD 
+          value: ""
+        - name: REDIS_HA_SENTINEL_SERVICE_PORT
+          value: "26379"
+        - name: REDIS_HA_SENTINEL_SERVICE_HOST
+          value: "redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local"
+        - name: REDIS_MASTER_SET
+          value: {{ .Values.odimra.redisMasterSet | quote }} 
+      - name: sentinel
+        image: redis:{{ .Values.odimra.redisImageTag }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 26379 
+
+        env:
+        - name: SENTINEL
+          value: "true"
+        - name: REDIS_HA_REDIS_SERVICE_HOST 
+          value: "redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local"
+        - name: REDIS_HA_REDIS_SERVICE_PORT
+          value: "6379"
+        - name: REDIS_DEFAULT_PASSWORD 
+          value: ""
+        - name: REDIS_HA_SENTINEL_SERVICE_PORT
+          value: "26379"
+        - name: REDIS_HA_SENTINEL_SERVICE_HOST
+          value: "redis-ha-ondisk.{{ .Values.odimra.namespace }}.svc.cluster.local"
+        - name: REDIS_MASTER_SET
+          value: {{ .Values.odimra.redisMasterSet | quote }} 
+        - name: DOWN_AFTER_MILLISECONDS
+          value: {{ .Values.odimra.redisDownAfterMilliseconds | quote }} 
+        - name: FAILOVER_TIMEOUT
+          value: {{ .Values.odimra.redisFailoverTimeout | quote }} 
+        - name: PARALLEL_SYNCS
+          value: {{ .Values.odimra.redisParallelSyncs | quote }}
+        - name: SENTINEL_QUORUM 
+          value: {{ .Values.odimra.redisQuorum | quote }}

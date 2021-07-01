@@ -72,6 +72,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -101,6 +102,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -130,6 +132,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -159,6 +162,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"

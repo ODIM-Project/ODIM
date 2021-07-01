@@ -156,7 +156,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	firmwareEstimatedWork := int32(15)
+	firmwareEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -169,11 +169,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	softwareEstimatedWork := int32(15)
+	softwareEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
+
+	// Discover telemetry service
+	percentComplete = e.getTelemetryService(taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
 
 	// Lets Discover/gather registry files of this server and store them in DB
 
@@ -183,7 +186,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	registriesEstimatedWork := int32(15)
+	registriesEstimatedWork := int32(6)
 	progress = h.getAllRegistries(taskID, progress, registriesEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)

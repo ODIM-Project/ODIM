@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -1268,4 +1269,117 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 		PluginID:          cm[2],
 		FirmwareVersion:   firmwareVersion[1],
 	}
+}
+
+func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percentComplete int32, pluginContactRequest getResourceRequest, resp response.RPC, saveSystem agmodel.SaveSystem) int32 {
+	deviceInfo := map[string]interface{}{
+		"ManagerAddress": saveSystem.ManagerAddress,
+		"UserName":       saveSystem.UserName,
+		"Password":       saveSystem.Password,
+	}
+	// Populate the resource MetricDefinitions for telemetry service
+
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricDefinitions"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	// total estimated work for metric is 4 percent
+	var metricEstimatedWork int32
+	err := storeTelemetryInfo("MetricDefinitionCollection", pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = percentComplete + metricEstimatedWork
+	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	err = storeTelemetryInfo("MetricReportDefinitionCollection", pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = percentComplete + metricEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	err = storeTelemetryInfo("MetricReportCollection", pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = percentComplete + metricEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	err = storeTelemetryInfo("TriggerCollection", pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = percentComplete + metricEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+	return percentComplete
+}
+
+func storeTelemetryInfo(resourceName string, req getResourceRequest) error {
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
+	if err != nil {
+		return err
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return fmt.Errorf(getResponse.StatusMessage)
+	}
+	var resourceData dmtf.Collection
+	err = json.Unmarshal(body, &resourceData)
+	if err != nil {
+		return err
+	}
+	data, err := agmodel.GetResource(resourceName, req.OID)
+	if err != nil {
+		// if no resource found then save the metric data into db.
+		return agmodel.GenericSave(body, resourceName, req.OID)
+	}
+	var telemetryInfo dmtf.Collection
+	if errs := json.Unmarshal([]byte(data), &telemetryInfo); errs != nil {
+		return err
+	}
+	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
+	telemetryInfo.Members = result
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return err
+	}
+	err = agmodel.GenericSave(telemetryData, resourceName, req.OID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getSuperSet(telemetryInfo, resourceData []*dmtf.Link) []*dmtf.Link {
+	telemetryInfo = append(telemetryInfo, resourceData...)
+	existing := map[string]bool{}
+	result := []*dmtf.Link{}
+
+	for v := range telemetryInfo {
+		if !existing[telemetryInfo[v].Oid] {
+			existing[telemetryInfo[v].Oid] = true
+			result = append(result, telemetryInfo[v])
+		}
+	}
+	return result
 }

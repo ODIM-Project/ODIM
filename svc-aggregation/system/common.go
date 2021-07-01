@@ -1278,7 +1278,6 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 		"Password":       saveSystem.Password,
 	}
 	// Populate the resource MetricDefinitions for telemetry service
-
 	pluginContactRequest.DeviceInfo = deviceInfo
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricDefinitions"
 	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
@@ -1294,11 +1293,8 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 
-	pluginContactRequest.DeviceInfo = deviceInfo
+	// Populate the MetricReportDefinitions for telemetry service
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
-	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
-	pluginContactRequest.HTTPMethodType = http.MethodGet
-
 	err = storeTelemetryInfo("MetricReportDefinitionCollection", pluginContactRequest)
 	if err != nil {
 		log.Error(err)
@@ -1307,11 +1303,8 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 
-	pluginContactRequest.DeviceInfo = deviceInfo
+	// Populate the MetricReports for telemetry service
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
-	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
-	pluginContactRequest.HTTPMethodType = http.MethodGet
-
 	err = storeTelemetryInfo("MetricReportCollection", pluginContactRequest)
 	if err != nil {
 		log.Error(err)
@@ -1320,11 +1313,8 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
 
-	pluginContactRequest.DeviceInfo = deviceInfo
+	// Populate the Triggers for telemetry service
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
-	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
-	pluginContactRequest.HTTPMethodType = http.MethodGet
-
 	err = storeTelemetryInfo("TriggerCollection", pluginContactRequest)
 	if err != nil {
 		log.Error(err)

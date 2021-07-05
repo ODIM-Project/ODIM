@@ -286,8 +286,8 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, systemKey string) bool {
 	strArray := strings.Split(systemKey, "/")
 	sysID := strArray[len(strArray)-1]
-	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+":"+sysID, -1)
-	key := systemKey
+	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+":", -1)
+	key := systemKey + sysID
 	_, err := agmodel.GetResource("ComputerSystem", key)
 	if err != nil {
 		log.Error(err.Error())
@@ -296,28 +296,30 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 
 	}
 
-    keys, err := agmodel.GetAllMatchingDetails("Chassis", deviceUUID, common.InMemory)
-	if err != nil {
+    key = strings.Replace(systemKey, "Systems", "Chassis", -1)
+    keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
+	if err != nil || len(keys) == 0 {
 		log.Error(err.Error())
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
-	for _, key := range keys {
-        if _, err = agmodel.GetResource("Chassis",key); err != nil {
+	for _, chassiskey := range keys {
+        if _, err = agmodel.GetResource("Chassis",chassiskey); err != nil {
             log.Error(err.Error())
 		    log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		    return true
         }
 	}
 
-    keys, err = agmodel.GetAllMatchingDetails("Managers", deviceUUID, common.InMemory)
-	if err != nil {
+    key = strings.Replace(systemKey, "Systems", "Managers", -1)
+    keys, err = agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	if err != nil || len(keys) == 0 {
 		log.Error(err.Error())
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
-	for _, key := range keys {
-        if _, err = agmodel.GetResource("Managers",key); err != nil {
+	for _, managerKey := range keys {
+        if _, err = agmodel.GetResource("Managers",managerKey); err != nil {
             log.Error(err.Error())
 		    log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		    return true

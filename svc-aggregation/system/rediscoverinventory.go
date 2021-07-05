@@ -299,7 +299,6 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
     key = strings.Replace(systemKey, "Systems", "Chassis", -1)
     keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
-		log.Error(err.Error())
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
@@ -314,7 +313,6 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
     key = strings.Replace(systemKey, "Systems", "Managers", -1)
     keys, err = agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
-		log.Error(err.Error())
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}

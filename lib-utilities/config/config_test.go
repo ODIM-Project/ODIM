@@ -86,6 +86,12 @@ func TestSetConfiguration(t *testing.T) {
         "AddComputeSkipResources": {
                 "SystemCollection": [
                         "Chassis",
+                        "LogServices",
+						"Managers"
+                ],
+				"ManagerCollection": [
+                        "Chassis",
+                        "Systems",
                         "LogServices"
                 ],
                 "ChassisCollection": [
@@ -415,6 +421,10 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			name:    "Invalid value for URLTranslation",
 			wantErr: false,
 		},
+		{
+			name:    "Invalid value for AddComputeSkipResources.ManagerCollection",
+			wantErr: false,
+		},
 	}
 	for num, tt := range tests {
 		switch num {
@@ -449,7 +459,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.APIGatewayConf.CertificatePath = sampleFileForTest
 		case 8:
 			Data.AddComputeSkipResources = &AddComputeSkipResources{
-				SystemCollection: []string{"Chassis", "LogServices"},
+				SystemCollection: []string{"Chassis", "LogServices", "Manager"},
 			}
 		case 9:
 			Data.AddComputeSkipResources.ChassisCollection = []string{"Managers", "Systems", "Devices"}
@@ -461,6 +471,8 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 				SouthBoundURL: map[string]string{},
 			}
 			Data.PluginStatusPolling = &PluginStatusPolling{}
+		case 12:
+			Data.AddComputeSkipResources.ManagerCollection = []string{"Chassis", "Systems", "LogServices"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {

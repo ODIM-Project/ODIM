@@ -532,7 +532,7 @@ func isFileExist(existingFiles []string, substr string) bool {
 	return fileExist
 }
 
-func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := req.OID
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the"+resourceName+"collection details: ")
 	if err != nil {
@@ -565,7 +565,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req)
+		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
 	}
 	return progress
 }
@@ -636,7 +636,18 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
-	getLinks(computeSystem, retrievalLinks, false)
+
+	var updatedData map[string]interface{}
+	err = json.Unmarshal([]byte(updatedResourceData), &updatedData)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying unmarshal response body: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		h.lock.Unlock()
+		return computeSystemID, oidKey, progress, err
+	}
+	getLinks(updatedData, retrievalLinks, false)
 
 	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
 
@@ -728,7 +739,18 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
-	getLinks(computeSystem, retrievalLinks, false)
+
+	var updatedData map[string]interface{}
+	err = json.Unmarshal([]byte(updatedResourceData), &updatedData)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying unmarshal response body of system storage: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		h.lock.Unlock()
+		return "", progress, err
+	}
+	getLinks(updatedData, retrievalLinks, false)
 
 	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
 
@@ -831,7 +853,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -871,10 +893,20 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	}
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
-	getLinks(resource, retrievalLinks, false)
 
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.ChassisCollection, h.TraversedLinks)
+	var updatedData map[string]interface{}
+	err = json.Unmarshal([]byte(updatedResourceData), &updatedData)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying unmarshal response body: " + err.Error()
+		h.StatusMessage = response.InternalError
+		h.StatusCode = http.StatusInternalServerError
+		h.lock.Unlock()
+		return progress
+	}
+	getLinks(updatedData, retrievalLinks, false)
 
+    removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
 	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -933,7 +965,20 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		return progress
 	}
 	var retrievalLinks = make(map[string]bool)
-	getLinks(resourceData, retrievalLinks, req.OemFlag)
+
+	var updatedData map[string]interface{}
+	err = json.Unmarshal([]byte(updatedResourceData), &updatedData)
+	if err != nil {
+		h.lock.Lock()
+		h.ErrorMessage = "error while trying unmarshal : " + err.Error()
+		h.StatusCode = http.StatusInternalServerError
+		h.StatusMessage = response.InternalError
+		log.Error(h.ErrorMessage)
+		h.lock.Unlock()
+		return progress
+	}
+
+	getLinks(updatedData, retrievalLinks, req.OemFlag)
 	/* Loop through  Collection members and discover all of them*/
 	for oid, oemFlag := range retrievalLinks {
 		// skipping the Retrieval if oid mathches the parent oid

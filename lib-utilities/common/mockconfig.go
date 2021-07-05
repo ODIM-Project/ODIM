@@ -66,7 +66,13 @@ func SetUpMockConfig() error {
 	config.Data.AddComputeSkipResources = &config.AddComputeSkipResources{
 		SystemCollection: []string{
 			"Chassis",
-			"LogServices",
+			"Managers",
+			"LogServices",			
+		},
+		ManagerCollection: []string{
+			"Systems",
+			"Chassis",
+			"LogServices",			
 		},
 		ChassisCollection: []string{
 			"Managers",

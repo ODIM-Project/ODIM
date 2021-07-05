@@ -110,6 +110,7 @@ type APIGatewayConf struct {
 // AddComputeSkipResources stores all resource which need to igonered while adding Computer System
 type AddComputeSkipResources struct {
 	SystemCollection  []string `json:"SystemCollection"`  // holds the value of  system resource which need to be ignored
+	ManagerCollection []string `json:"ManagerCollection"` // holds the value of  manager resource which need to be ignored
 	ChassisCollection []string `json:"ChassisCollection"` // holds the value of  chassis resource which need to be ignored
 	OtherCollection   []string `json:"OtherCollection"`   // holds the value resource name  for which next level retrieval to be ignored
 }
@@ -382,6 +383,7 @@ func checkAddComputeSkipResources() {
 		log.Warn("No value found for AddComputeRetrival, setting default value")
 		Data.AddComputeSkipResources = &AddComputeSkipResources{
 			SystemCollection:  DefaultSystemCollection,
+			ManagerCollection: DefaultManagerCollection,
 			ChassisCollection: DefaultChassisCollection,
 			OtherCollection:   DefaultOtherCollection,
 		}
@@ -390,6 +392,10 @@ func checkAddComputeSkipResources() {
 	if len(Data.AddComputeSkipResources.SystemCollection) == 0 {
 		log.Warn("No value found for SystemCollection, setting default value")
 		Data.AddComputeSkipResources.SystemCollection = DefaultSystemCollection
+	}
+	if len(Data.AddComputeSkipResources.ManagerCollection) == 0 {
+		log.Warn("No value found for ManagerCollection, setting default value")
+		Data.AddComputeSkipResources.ManagerCollection = DefaultManagerCollection
 	}
 	if len(Data.AddComputeSkipResources.ChassisCollection) == 0 {
 		log.Warn("No value found for ChassisCollection, setting default value")

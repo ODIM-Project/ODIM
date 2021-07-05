@@ -206,6 +206,12 @@ func SetUpMockConfig(t *testing.T) error {
 		SystemCollection: []string{
 			"Chassis",
 			"LogServices",
+			"Managers",
+		},
+		ManagerCollection: []string{
+			"Systems",
+			"Chassis",
+			"LogServices",
 		},
 		ChassisCollection: []string{
 			"Managers",

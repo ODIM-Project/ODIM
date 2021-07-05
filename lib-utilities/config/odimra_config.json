@@ -59,6 +59,13 @@
 	"AddComputeSkipResources": { 
 		"SystemCollection": [ 
 			"Chassis",
+			"Managers",
+			"LogServices",
+			"WorkloadPerformanceAdvisor"
+		],
+		"ManagerCollection": [
+			"Systems",
+			"Chassis",
 			"LogServices",
 			"WorkloadPerformanceAdvisor"
 		],

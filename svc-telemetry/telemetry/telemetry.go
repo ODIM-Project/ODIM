@@ -221,7 +221,7 @@ func (e *ExternalInterface) GetTriggerCollection(req *teleproto.TelemetryRequest
 func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = header
-	data, gerr := e.DB.GetResource("MetricReportDefinition", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource("MetricReportDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
 		log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -270,7 +270,7 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = header
-	data, gerr := e.DB.GetResource("MetricDefinition", req.URL, common.InMemory)
+	data, gerr := e.DB.GetResource("MetricDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
 		log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
 		errorMessage := gerr.Error()
@@ -295,7 +295,7 @@ func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response
 	resp.Header = header
 	data, gerr := e.DB.GetResource("Triggers", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Warn("Unable to get Triggers details : " + gerr.Error())
+		log.Warn("Unable to get Triggers details `: " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Triggers", req.URL}, nil)

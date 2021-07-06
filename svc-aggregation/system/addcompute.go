@@ -123,7 +123,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
 	progress := percentComplete
-	systemsEstimatedWork := int32(65)
+	systemsEstimatedWork := int32(60)
 	var computeSystemID, resourceURI string
 	if computeSystemID, resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
 		errMsg := "error while trying to add compute: " + err.Error()
@@ -186,7 +186,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	registriesEstimatedWork := int32(6)
+	registriesEstimatedWork := int32(5)
 	progress = h.getAllRegistries(taskID, progress, registriesEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)

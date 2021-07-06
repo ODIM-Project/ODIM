@@ -296,32 +296,32 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 
 	}
 
-    key = strings.Replace(systemKey, "Systems", "Chassis", -1)
-    keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
+	key = strings.Replace(systemKey, "Systems", "Chassis", -1)
+	keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
 	for _, chassiskey := range keys {
-        if _, err = agmodel.GetResource("Chassis",chassiskey); err != nil {
-            log.Error(err.Error())
-		    log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
-		    return true
-        }
+		if _, err = agmodel.GetResource("Chassis", chassiskey); err != nil {
+			log.Error(err.Error())
+			log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+			return true
+		}
 	}
 
-    key = strings.Replace(systemKey, "Systems", "Managers", -1)
-    keys, err = agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	key = strings.Replace(systemKey, "Systems", "Managers", -1)
+	keys, err = agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if err != nil || len(keys) == 0 {
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
 	for _, managerKey := range keys {
-        if _, err = agmodel.GetResource("Managers",managerKey); err != nil {
-            log.Error(err.Error())
-		    log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
-		    return true
-        }
+		if _, err = agmodel.GetResource("Managers", managerKey); err != nil {
+			log.Error(err.Error())
+			log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+			return true
+		}
 	}
 	log.Info("Rediscovery not required for the server with UUID: " + deviceUUID)
 	return false

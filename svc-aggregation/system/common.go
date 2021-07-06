@@ -906,7 +906,7 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	}
 	getLinks(updatedData, retrievalLinks, false)
 
-    removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
+	removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
 	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {

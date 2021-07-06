@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
@@ -212,7 +212,6 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	chassisEstimatedWork := int32(15)
 	progress = h.getAllRootInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.ChassisCollection)
 
-
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
@@ -237,7 +236,6 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	progress = percentComplete
 	managerEstimatedWork := int32(15)
 	progress = h.getAllRootInfo(taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.ManagerCollection)
-
 
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)

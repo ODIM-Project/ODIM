@@ -94,9 +94,9 @@ const (
 
 var (
 	// DefaultSystemCollection - default SystemCollection value
-	DefaultSystemCollection = []string{"Chassis", "LogServices","Managers"}
+	DefaultSystemCollection = []string{"Chassis", "LogServices", "Managers"}
 	// DefaultManagerCollection - default ManagerCollection value
-	DefaultManagerCollection = []string{"Chassis", "LogServices","Systems"} 
+	DefaultManagerCollection = []string{"Chassis", "LogServices", "Systems"}
 	// DefaultChassisCollection - default ChassisCollection value
 	DefaultChassisCollection = []string{"Managers", "Systems", "Devices"}
 	// DefaultOtherCollection - default OtherCollection value

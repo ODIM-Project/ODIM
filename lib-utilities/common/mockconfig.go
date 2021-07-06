@@ -67,12 +67,12 @@ func SetUpMockConfig() error {
 		SystemCollection: []string{
 			"Chassis",
 			"Managers",
-			"LogServices",			
+			"LogServices",
 		},
 		ManagerCollection: []string{
 			"Systems",
 			"Chassis",
-			"LogServices",			
+			"LogServices",
 		},
 		ChassisCollection: []string{
 			"Managers",

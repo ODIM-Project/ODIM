@@ -779,7 +779,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		if firmwareVersion := getFirmwareVersion(oidKey,deviceUUID); firmwareVersion != "" {
+		if firmwareVersion := getFirmwareVersion(oidKey, deviceUUID); firmwareVersion != "" {
 			searchForm["FirmwareVersion"] = firmwareVersion
 		}
 	}
@@ -907,12 +907,12 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		return progress
 	}
 
-    oidKey := req.OID
-	if strings.Contains(oidKey,"/redfish/v1/Managers/") || strings.Contains(oidKey,"/redfish/v1/Chassis/") {
-	    oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
-	    oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
-	} else{
-	    oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+	oidKey := req.OID
+	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
+	} else {
+		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
 	}
 	var memberFlag bool
 	if _, ok := resourceData["Members"]; ok {
@@ -1069,18 +1069,18 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid,deviceUUID string) string {
-    strArray := strings.Split(oid, "/")
+func getFirmwareVersion(oid, deviceUUID string) string {
+	strArray := strings.Split(oid, "/")
 	id := strArray[len(strArray)-1]
 	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+":", -1)
-    key = strings.Replace(key, "Systems", "Managers", -1)
+	key = strings.Replace(key, "Systems", "Managers", -1)
 	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if dberr != nil {
 		log.Error("while getting the managers data" + dberr.Error())
 		return ""
 	} else if len(keys) == 0 {
-	    log.Error("Manager data is not available")
-	    return ""
+		log.Error("Manager data is not available")
+		return ""
 	}
 	data, dberr := agmodel.GetResource("Managers", keys[0])
 	if dberr != nil {
@@ -1089,16 +1089,16 @@ func getFirmwareVersion(oid,deviceUUID string) string {
 	}
 	// unmarshall the managers data
 	var managersData map[string]interface{}
-    err := json.Unmarshal([]byte(data), &managersData)
-    if err != nil {
-        log.Error("Error while unmarshaling  the data" + err.Error())
-        return ""
-    }
-    var firmwareVersion string
-    var ok bool
-    if firmwareVersion, ok = managersData["FirmwareVersion"].(string); !ok {
-        return ""
-    }
+	err := json.Unmarshal([]byte(data), &managersData)
+	if err != nil {
+		log.Error("Error while unmarshaling  the data" + err.Error())
+		return ""
+	}
+	var firmwareVersion string
+	var ok bool
+	if firmwareVersion, ok = managersData["FirmwareVersion"].(string); !ok {
+		return ""
+	}
 	return firmwareVersion
 }
 

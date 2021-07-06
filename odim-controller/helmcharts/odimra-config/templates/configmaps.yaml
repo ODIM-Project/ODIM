@@ -75,14 +75,14 @@ data:
     		"SystemCollection": [
     			"Chassis",
     			"LogServices",
-                "Managers",
+                        "Managers",
     			"WorkloadPerformanceAdvisor"                
     		],
             "ManagerCollection": [
     			"Systems",
-                "Chassis",
+                        "Chassis",
     			"LogServices",
-                "WorkloadPerformanceAdvisor"
+                        "WorkloadPerformanceAdvisor"
     		],
     		"ChassisCollection": [
     			"Managers",

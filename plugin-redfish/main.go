@@ -242,6 +242,10 @@ func routers() *iris.Application {
 		telemetry.Get("/MetricReports", rfphandler.GetResource)
 		telemetry.Get("/Triggers", rfphandler.GetResource)
 		telemetry.Get("/MetricReports/{id}", e.GetMetricReport)
+		telemetry.Get("/MetricDefinitions/{id}", rfphandler.GetResource)
+		telemetry.Get("/MetricReportDefinitions/{id}", rfphandler.GetResource)
+		telemetry.Get("/Triggers/{id}", rfphandler.GetResource)
+
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

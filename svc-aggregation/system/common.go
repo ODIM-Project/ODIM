@@ -1344,8 +1344,8 @@ func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alotted
 		return progress, err
 	}
 
-	data, err := agmodel.GetResource(resourceName, req.OID)
-	if err != nil {
+	data, dbErr := agmodel.GetResource(resourceName, req.OID)
+	if dbErr != nil {
 		// if no resource found then save the metric data into db.
 		if err = agmodel.GenericSave(body, resourceName, req.OID); err != nil {
 			return progress, err
@@ -1357,7 +1357,7 @@ func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alotted
 		return progress, nil
 	}
 	var telemetryInfo dmtf.Collection
-	if errs := json.Unmarshal([]byte(data), &telemetryInfo); errs != nil {
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
 		return progress, err
 	}
 	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
@@ -1401,7 +1401,6 @@ func getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req 
 
 func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
 	resourceName := getResourceName(req.OID, false)
-	log.Info("--resource name--", resourceName)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
 		return progress
@@ -1416,6 +1415,6 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 	}
 	progress = progress + alottedWork
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
-	err = req.UpdateTask(task)
+	req.UpdateTask(task)
 	return progress
 }

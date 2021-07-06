@@ -292,6 +292,7 @@ func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest)
 // GetTrigger ...
 func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
+	header["Allow"] = `GET, PATCH`
 	resp.Header = header
 	data, gerr := e.DB.GetResource("Triggers", req.URL, common.InMemory)
 	if gerr != nil {
@@ -315,6 +316,7 @@ func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response
 // UpdateTrigger ...
 func (e *ExternalInterface) UpdateTrigger(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
+	header["Allow"] = `GET, PATCH`
 	resp.Header = header
 	// Todo: code for update operation
 	return resp

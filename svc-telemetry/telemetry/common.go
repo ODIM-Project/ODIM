@@ -27,7 +27,7 @@ import (
 )
 
 var header = map[string]string{
-	"Allow":             `"GET"`,
+	"Allow":             `GET`,
 	"Cache-Control":     "no-cache",
 	"Connection":        "keep-alive",
 	"Content-type":      "application/json; charset=utf-8",

@@ -124,7 +124,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
 	progress := percentComplete
-	systemsEstimatedWork := int32(65)
+	systemsEstimatedWork := int32(60)
 	var computeSystemID, resourceURI string
 	if computeSystemID, resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
 		errMsg := "error while trying to add compute: " + err.Error()
@@ -157,7 +157,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	firmwareEstimatedWork := int32(15)
+	firmwareEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -170,11 +170,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	softwareEstimatedWork := int32(15)
+	softwareEstimatedWork := int32(5)
 	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
+
+	// Discover telemetry service
+	percentComplete = e.getTelemetryService(taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
 
 	// Lets Discover/gather registry files of this server and store them in DB
 
@@ -184,7 +187,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	registriesEstimatedWork := int32(15)
+	registriesEstimatedWork := int32(5)
 	progress = h.getAllRegistries(taskID, progress, registriesEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)

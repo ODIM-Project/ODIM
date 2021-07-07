@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -1283,4 +1284,152 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 		PluginID:          cm[2],
 		FirmwareVersion:   firmwareVersion[1],
 	}
+}
+
+func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percentComplete int32, pluginContactRequest getResourceRequest, resp response.RPC, saveSystem agmodel.SaveSystem) int32 {
+	deviceInfo := map[string]interface{}{
+		"ManagerAddress": saveSystem.ManagerAddress,
+		"UserName":       saveSystem.UserName,
+		"Password":       saveSystem.Password,
+	}
+	// Populate the resource MetricDefinitions for telemetry service
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricDefinitions"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	// total estimated work for metric is 10 percent
+	var metricEstimatedWork = int32(3)
+	progress := percentComplete
+	progress, err := storeTelemetryCollectionInfo("MetricDefinitionCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReportDefinitions for telemetry service
+	progress = percentComplete
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
+	progress, err = storeTelemetryCollectionInfo("MetricReportDefinitionCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReports for telemetry service
+	var metricReportEstimatedWork int32
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
+	progress = percentComplete
+	progress, err = storeTelemetryCollectionInfo("MetricReportCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress + metricReportEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the Triggers for telemetry service
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
+	progress = percentComplete
+	progress, err = storeTelemetryCollectionInfo("TriggerCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+	return percentComplete
+}
+
+func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
+	if err != nil {
+		return progress, err
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress, fmt.Errorf(getResponse.StatusMessage)
+	}
+	var resourceData dmtf.Collection
+	err = json.Unmarshal(body, &resourceData)
+	if err != nil {
+		return progress, err
+	}
+
+	data, dbErr := agmodel.GetResource(resourceName, req.OID)
+	if dbErr != nil {
+		// if no resource found then save the metric data into db.
+		if err = agmodel.GenericSave(body, resourceName, req.OID); err != nil {
+			return progress, err
+		}
+		if resourceName != "MetricReportCollection" {
+			// get and store of individual telemetry info
+			progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+		}
+		return progress, nil
+	}
+	var telemetryInfo dmtf.Collection
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
+		return progress, err
+	}
+	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
+	telemetryInfo.Members = result
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return progress, err
+	}
+	err = agmodel.GenericSave(telemetryData, resourceName, req.OID)
+	if err != nil {
+		return progress, err
+	}
+	// get and store of individual telemetry info
+	progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+	return progress, nil
+}
+
+func getSuperSet(telemetryInfo, resourceData []*dmtf.Link) []*dmtf.Link {
+	telemetryInfo = append(telemetryInfo, resourceData...)
+	existing := map[string]bool{}
+	result := []*dmtf.Link{}
+
+	for v := range telemetryInfo {
+		if !existing[telemetryInfo[v].Oid] {
+			existing[telemetryInfo[v].Oid] = true
+			result = append(result, telemetryInfo[v])
+		}
+	}
+	return result
+}
+
+func getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req getResourceRequest, resourceData dmtf.Collection) int32 {
+	// Loop through all the resource members collection and discover all of them
+	for _, member := range resourceData.Members {
+		estimatedWork := alottedWork / int32(len(resourceData.Members))
+		req.OID = member.Oid
+		progress = getTeleInfo(taskID, progress, estimatedWork, req)
+	}
+	return progress
+}
+
+func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
+	resourceName := getResourceName(req.OID, false)
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
+	if err != nil {
+		return progress
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress
+	}
+	// persist the response with table resource and key as system UUID + Oid Needs relook TODO
+	err = agmodel.GenericSave(body, resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+	progress = progress + alottedWork
+	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
+	req.UpdateTask(task)
+	return progress
 }

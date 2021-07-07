@@ -244,7 +244,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 
 func checkRetrievalInfo(oid string) bool {
 	//skiping the Retrieval if parent oid contains links in other resource of config
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(oid, resourceName) {
 			return false
 		}

@@ -532,7 +532,7 @@ func isFileExist(existingFiles []string, substr string) bool {
 	return fileExist
 }
 
-func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := req.OID
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the"+resourceName+"collection details: ")
 	if err != nil {
@@ -565,7 +565,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req)
+		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
 	}
 	return progress
 }
@@ -636,10 +636,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -728,10 +727,9 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -781,7 +779,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		if firmwareVersion := getFirmwareVersion(oidKey); firmwareVersion != "" {
+		if firmwareVersion := getFirmwareVersion(oidKey, deviceUUID); firmwareVersion != "" {
 			searchForm["FirmwareVersion"] = firmwareVersion
 		}
 	}
@@ -831,7 +829,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -871,10 +869,9 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	}
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resource, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.ChassisCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
 	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -909,7 +906,14 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.lock.Unlock()
 		return progress
 	}
-	oidKey := keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+
+	oidKey := req.OID
+	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
+	} else {
+		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+	}
 	var memberFlag bool
 	if _, ok := resourceData["Members"]; ok {
 		memberFlag = true
@@ -933,6 +937,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		return progress
 	}
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resourceData, retrievalLinks, req.OemFlag)
 	/* Loop through  Collection members and discover all of them*/
 	for oid, oemFlag := range retrievalLinks {
@@ -1013,7 +1018,7 @@ func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool 
 	}
 	//skiping the Retrieval if parent oid contains links in other resource of config
 	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(parentoid, resourceName) {
 			return false
 		}
@@ -1064,12 +1069,22 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid string) string {
-	// replace the system with the manager
-	managerID := strings.Replace(oid, "Systems", "Managers", -1)
-	data, dbErr := agmodel.GetResource("Managers", managerID)
-	if dbErr != nil {
-		log.Error("error while getting the managers data" + dbErr.Error())
+func getFirmwareVersion(oid, deviceUUID string) string {
+	strArray := strings.Split(oid, "/")
+	id := strArray[len(strArray)-1]
+	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+":", -1)
+	key = strings.Replace(key, "Systems", "Managers", -1)
+	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	if dberr != nil {
+		log.Error("while getting the managers data" + dberr.Error())
+		return ""
+	} else if len(keys) == 0 {
+		log.Error("Manager data is not available")
+		return ""
+	}
+	data, dberr := agmodel.GetResource("Managers", keys[0])
+	if dberr != nil {
+		log.Error("while getting the managers data: ", dberr.Error())
 		return ""
 	}
 	// unmarshall the managers data

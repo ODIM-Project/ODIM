@@ -296,7 +296,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
-	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key[index+1:], common.InMemory)
+	keys := strings.Split(key[index+1:], ":")
+	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", keys[0], common.InMemory)
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}

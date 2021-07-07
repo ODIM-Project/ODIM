@@ -109,10 +109,10 @@ type APIGatewayConf struct {
 
 // AddComputeSkipResources stores list of resources which need to ignored while inserting the contents to DB while adding Computer System
 type AddComputeSkipResources struct {
-	SkipResourceListUnderSystem []string `json:"SkipResourceListUnderSystem"`  // holds the list of resources which needs to be ignored for storing in DB under system resource
+	SkipResourceListUnderSystem  []string `json:"SkipResourceListUnderSystem"`  // holds the list of resources which needs to be ignored for storing in DB under system resource
 	SkipResourceListUnderManager []string `json:"SkipResourceListUnderManager"` // holds the list of resources which needs to be ignored for storing in DB under manager resource
 	SkipResourceListUnderChassis []string `json:"SkipResourceListUnderChassis"` // holds the list of resources which needs to be ignored for storing in DB under chassis resource
-	SkipResourceListUnderOthers []string `json:"SkipResourceListUnderOthers"` // holds the list of resources which needs to be ignored for storing in DB under a generic resource apart from system,manager and chassis
+	SkipResourceListUnderOthers  []string `json:"SkipResourceListUnderOthers"`  // holds the list of resources which needs to be ignored for storing in DB under a generic resource apart from system,manager and chassis
 }
 
 // URLTranslation ...
@@ -385,7 +385,7 @@ func checkAddComputeSkipResources() {
 			SkipResourceListUnderSystem:  DefaultSkipListUnderSystem,
 			SkipResourceListUnderManager: DefaultSkipListUnderManager,
 			SkipResourceListUnderChassis: DefaultSkipListUnderChassis,
-			SkipResourceListUnderOthers:   DefaultSkipListUnderOthers,
+			SkipResourceListUnderOthers:  DefaultSkipListUnderOthers,
 		}
 		return
 	}

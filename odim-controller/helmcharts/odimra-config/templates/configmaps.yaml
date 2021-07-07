@@ -78,7 +78,7 @@ data:
                         "Managers",
     			"WorkloadPerformanceAdvisor"                
     		],
-            "SkipResourceListUnderManager": [
+                "SkipResourceListUnderManager": [
     			"Systems",
                         "Chassis",
     			"LogServices",

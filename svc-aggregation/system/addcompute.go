@@ -158,7 +158,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	progress = percentComplete
 	firmwareEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.OtherCollection)
+	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
@@ -171,7 +171,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	progress = percentComplete
 	softwareEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.OtherCollection)
+	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
@@ -210,7 +210,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	progress = percentComplete
 	chassisEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.ChassisCollection)
+	progress = h.getAllRootInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
 
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -235,7 +235,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	progress = percentComplete
 	managerEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.ManagerCollection)
+	progress = h.getAllRootInfo(taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)

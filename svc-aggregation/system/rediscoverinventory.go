@@ -147,12 +147,12 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		//rediscovering the Chassis Information
 		req.OID = "/redfish/v1/Chassis"
 		chassisEstimatedWork := int32(15)
-		progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req, config.Data.AddComputeSkipResources.ChassisCollection)
+		progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
 
 		//rediscovering the Manager Information
 		req.OID = "/redfish/v1/Managers"
 		managerEstimatedWork := int32(15)
-		progress = h.getAllRootInfo("", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.ManagerCollection)
+		progress = h.getAllRootInfo("", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 	}
 
 	var responseBody = map[string]string{

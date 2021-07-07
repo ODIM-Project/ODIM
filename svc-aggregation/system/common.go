@@ -638,7 +638,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	var retrievalLinks = make(map[string]bool)
 
 	getLinks(computeSystem, retrievalLinks, false)
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -729,7 +729,7 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	var retrievalLinks = make(map[string]bool)
 
 	getLinks(computeSystem, retrievalLinks, false)
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -1018,7 +1018,7 @@ func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool 
 	}
 	//skiping the Retrieval if parent oid contains links in other resource of config
 	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(parentoid, resourceName) {
 			return false
 		}

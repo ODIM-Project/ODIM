@@ -84,22 +84,22 @@ func TestSetConfiguration(t *testing.T) {
                 }
         },
         "AddComputeSkipResources": {
-                "SystemCollection": [
+                "SkipResourceListUnderSystem": [
                         "Chassis",
                         "LogServices",
 						"Managers"
                 ],
-				"ManagerCollection": [
+				"SkipResourceListUnderManager": [
                         "Chassis",
                         "Systems",
                         "LogServices"
                 ],
-                "ChassisCollection": [
+                "SkipResourceListUnderChassis": [
                         "Managers",
                         "Systems",
                         "Devices"
                 ],
-                "OtherCollection": [
+                "SkipResourceListUnderOthers": [
                         "Power",
                         "Thermal",
                         "SmartStorage",
@@ -410,11 +410,11 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Invalid value for AddComputeSkipResources.ChassisCollection",
+			name:    "Invalid value for AddComputeSkipResources.SkipResourceListUnderChassis",
 			wantErr: false,
 		},
 		{
-			name:    "Invalid value for AddComputeSkipResources.OtherCollection",
+			name:    "Invalid value for AddComputeSkipResources.SkipResourceListUnderOthers",
 			wantErr: false,
 		},
 		{
@@ -422,7 +422,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Invalid value for AddComputeSkipResources.ManagerCollection",
+			name:    "Invalid value for AddComputeSkipResources.SkipResourceListUnderManager",
 			wantErr: false,
 		},
 	}
@@ -459,12 +459,12 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.APIGatewayConf.CertificatePath = sampleFileForTest
 		case 8:
 			Data.AddComputeSkipResources = &AddComputeSkipResources{
-				SystemCollection: []string{"Chassis", "LogServices", "Manager"},
+				SkipResourceListUnderSystem: []string{"Chassis", "LogServices", "Manager"},
 			}
 		case 9:
-			Data.AddComputeSkipResources.ChassisCollection = []string{"Managers", "Systems", "Devices"}
+			Data.AddComputeSkipResources.SkipResourceListUnderChassis = []string{"Managers", "Systems", "Devices"}
 		case 10:
-			Data.AddComputeSkipResources.OtherCollection = []string{"Power", "Thermal", "SmartStorage"}
+			Data.AddComputeSkipResources.SkipResourceListUnderOthers = []string{"Power", "Thermal", "SmartStorage"}
 		case 11:
 			Data.URLTranslation = &URLTranslation{
 				NorthBoundURL: map[string]string{},
@@ -472,7 +472,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			}
 			Data.PluginStatusPolling = &PluginStatusPolling{}
 		case 12:
-			Data.AddComputeSkipResources.ManagerCollection = []string{"Chassis", "Systems", "LogServices"}
+			Data.AddComputeSkipResources.SkipResourceListUnderManager = []string{"Chassis", "Systems", "LogServices"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {

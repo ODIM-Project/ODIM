@@ -351,7 +351,7 @@ func TestAggregator_ValidateManagerAddress(t *testing.T) {
 func TestAggregator_AddAggreagationSource(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	mockPluginData(t, "ILO_v1.0.0")
 

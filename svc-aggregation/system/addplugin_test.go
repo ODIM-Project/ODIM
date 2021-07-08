@@ -82,7 +82,7 @@ func mockDupMgrAddrPluginData(t *testing.T, pluginID string) error {
 func TestExternalInterface_Plugin(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
@@ -284,7 +284,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 func TestExternalInterface_PluginXAuth(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {

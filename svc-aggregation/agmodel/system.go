@@ -339,7 +339,7 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 	}
 
 	//Delete All resources
-	deleteKey := "*" + key[index+1:] + "*"
+	deleteKey := "*" + systemID + "*"
 	if err = connPool.DeleteServer(deleteKey); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to delete compute system: ", err.Error())
 	}

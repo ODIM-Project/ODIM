@@ -147,7 +147,12 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		//rediscovering the Chassis Information
 		req.OID = "/redfish/v1/Chassis"
 		chassisEstimatedWork := int32(15)
-		progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req)
+		progress = h.getAllRootInfo("", progress, chassisEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
+
+		//rediscovering the Manager Information
+		req.OID = "/redfish/v1/Managers"
+		managerEstimatedWork := int32(15)
+		progress = h.getAllRootInfo("", progress, managerEstimatedWork, req, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
 	}
 
 	var responseBody = map[string]string{
@@ -281,8 +286,8 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, systemKey string) bool {
 	strArray := strings.Split(systemKey, "/")
 	sysID := strArray[len(strArray)-1]
-	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+":"+sysID, -1)
-	key := systemKey
+	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+":", -1)
+	key := systemKey + sysID
 	_, err := agmodel.GetResource("ComputerSystem", key)
 	if err != nil {
 		log.Error(err.Error())
@@ -290,19 +295,33 @@ func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, syste
 		return true
 
 	}
+
 	key = strings.Replace(systemKey, "Systems", "Chassis", -1)
-	_, err = agmodel.GetResource("Chassis", key)
-	if err != nil {
-		log.Error(err.Error())
+	keys, err := agmodel.GetAllMatchingDetails("Chassis", key, common.InMemory)
+	if err != nil || len(keys) == 0 {
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
 	}
+	for _, chassiskey := range keys {
+		if _, err = agmodel.GetResource("Chassis", chassiskey); err != nil {
+			log.Error(err.Error())
+			log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+			return true
+		}
+	}
+
 	key = strings.Replace(systemKey, "Systems", "Managers", -1)
-	_, err = agmodel.GetResource("Managers", key)
-	if err != nil {
-		log.Error(err.Error())
+	keys, err = agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	if err != nil || len(keys) == 0 {
 		log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
 		return true
+	}
+	for _, managerKey := range keys {
+		if _, err = agmodel.GetResource("Managers", managerKey); err != nil {
+			log.Error(err.Error())
+			log.Info("Rediscovery required for the server with UUID: " + deviceUUID)
+			return true
+		}
 	}
 	log.Info("Rediscovery not required for the server with UUID: " + deviceUUID)
 	return false

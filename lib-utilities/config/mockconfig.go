@@ -203,16 +203,22 @@ func SetUpMockConfig(t *testing.T) error {
 		Certificate: hostCert,
 	}
 	Data.AddComputeSkipResources = &AddComputeSkipResources{
-		SystemCollection: []string{
+		SkipResourceListUnderSystem: []string{
+			"Chassis",
+			"LogServices",
+			"Managers",
+		},
+		SkipResourceListUnderManager: []string{
+			"Systems",
 			"Chassis",
 			"LogServices",
 		},
-		ChassisCollection: []string{
+		SkipResourceListUnderChassis: []string{
 			"Managers",
 			"Systems",
 			"Devices",
 		},
-		OtherCollection: []string{
+		SkipResourceListUnderOthers: []string{
 			"Power",
 			"Thermal",
 			"SmartStorage",

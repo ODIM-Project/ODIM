@@ -93,12 +93,14 @@ const (
 )
 
 var (
-	// DefaultSystemCollection - default SystemCollection value
-	DefaultSystemCollection = []string{"Chassis", "LogServices"}
-	// DefaultChassisCollection - default ChassisCollection value
-	DefaultChassisCollection = []string{"Managers", "Systems", "Devices"}
-	// DefaultOtherCollection - default OtherCollection value
-	DefaultOtherCollection = []string{"Power", "Thermal", "SmartStorage"}
+	// DefaultSkipListUnderSystem - holds the default list of resources which needs to be ignored for storing in DB under system resource
+	DefaultSkipListUnderSystem = []string{"Chassis", "LogServices", "Managers"}
+	// DefaultSkipListUnderManager - holds the default list of resources which needs to be ignored for storing in DB under manager resource
+	DefaultSkipListUnderManager = []string{"Chassis", "LogServices", "Systems"}
+	// DefaultSkipListUnderChassis - holds the default list of resources which needs to be ignored for storing in DB under chassis resource
+	DefaultSkipListUnderChassis = []string{"Managers", "Systems", "Devices"}
+	// DefaultSkipListUnderOthers - holds the default list of resources which needs to be ignored for storing in DB under any other resource
+	DefaultSkipListUnderOthers = []string{"Power", "Thermal", "SmartStorage"}
 	// DefaultCipherSuiteList - default cipher suite list
 	DefaultCipherSuiteList = []uint16{
 		tls.TLS_RSA_WITH_AES_128_GCM_SHA256,

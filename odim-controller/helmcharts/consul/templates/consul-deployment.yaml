@@ -5,20 +5,18 @@ metadata:
   name: consul
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: consul
+    app: consul
+    deployment: odim-ra
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: odim-ra
-      unit: consul
+      app: consul
       parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: consul
+        app: consul
         parentdeployment: odim-ra
     spec:
       hostname: consul

@@ -1377,6 +1377,7 @@ func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alotted
 	}
 	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
 	telemetryInfo.Members = result
+	telemetryInfo.MembersCount = len(result)
 	telemetryData, err := json.Marshal(telemetryInfo)
 	if err != nil {
 		return progress, err
@@ -1385,8 +1386,10 @@ func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alotted
 	if err != nil {
 		return progress, err
 	}
-	// get and store of individual telemetry info
-	progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+	if resourceName != "MetricReportCollection" {
+		// get and store of individual telemetry info
+		progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+	}
 	return progress, nil
 }
 
@@ -1423,7 +1426,7 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 	if getResponse.StatusCode != http.StatusOK {
 		return progress
 	}
-	// persist the response with table resource and key as system UUID + Oid Needs relook TODO
+	// persist the response with table resource
 	err = agmodel.GenericSave(body, resourceName, req.OID)
 	if err != nil {
 		return progress

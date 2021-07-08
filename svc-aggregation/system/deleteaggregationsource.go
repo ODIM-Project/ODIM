@@ -281,7 +281,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	defer func() {
-		agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/"))
+		if err := agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/")); err != nil {
+			log.Errorf("failed to delete SystemOperation info of %s:%s", key, err.Error())
+		}
 	}()
 	// Delete Subscription on odimra and also on device
 	subResponse, err := e.DeleteEventSubscription(key)

@@ -72,17 +72,24 @@ data:
     		}
     	},
     	"AddComputeSkipResources": {
-    		"SystemCollection": [
+    		"SkipResourceListUnderSystem": [
     			"Chassis",
     			"LogServices",
-    			"WorkloadPerformanceAdvisor"
+                        "Managers",
+    			"WorkloadPerformanceAdvisor"                
     		],
-    		"ChassisCollection": [
+                "SkipResourceListUnderManager": [
+    			"Systems",
+                        "Chassis",
+    			"LogServices",
+                        "WorkloadPerformanceAdvisor"
+    		],
+    		"SkipResourceListUnderChassis": [
     			"Managers",
     			"Systems",
     			"Devices"
     		],
-    		"OtherCollection": [
+    		"SkipResourceListUnderOthers": [
     			"Power",
     			"Thermal",
     			"SmartStorage",
@@ -119,8 +126,7 @@ data:
     		"EventService",
     		"Fabrics",
     		"Managers",
-    		"UpdateService",
-    		"TelemetryService"
+    		"UpdateService"
     	],
         "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"]

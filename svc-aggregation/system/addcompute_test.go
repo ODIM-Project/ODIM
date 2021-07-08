@@ -226,7 +226,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {

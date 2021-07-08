@@ -112,10 +112,12 @@ type Oid struct {
 type MetricReports struct {
 	ODataID                string        `json:"@odata.id"`
 	ODataType              string        `json:"@odata.type"`
+	ODataContext           string        `json:"@odata.context"`
 	ID                     string        `json:"Id"`
 	Name                   string        `json:"Name"`
+	Description            string        `json:"Description,omitempty"`
 	Context                string        `json:"Context,omitempty"`
-	MetricReportDefinition Oem           `json:"MetricReportDefinition,omitempty"`
+	MetricReportDefinition Oid           `json:"MetricReportDefinition,omitempty"`
 	MetricValues           []MetricValue `json:"MetricValues,omitempty"`
 	ReportSequence         string        `json:"ReportSequence,omitempty"`
 	Timestamp              string        `json:"Timestamp,omitempty"`
@@ -123,7 +125,7 @@ type MetricReports struct {
 
 //MetricValue defines an array of metric values for the metered items of this metric report.
 type MetricValue struct {
-	MetricDefinition Oem    `json:"MetricDefinition,omitempty"`
+	MetricDefinition Oid    `json:"MetricDefinition,omitempty"`
 	MetricID         string `json:"MetricId,omitempty"`
 	MetricProperty   string `json:"MetricProperty,omitempty"`
 	MetricValue      string `json:"MetricValue,omitempty"`

@@ -5,13 +5,12 @@ metadata:
   name: kafka
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
+    deployment: odim-ra
 spec:
   selector:
-    app: odim-ra
-    unit: kafka
-    parentdeployment: odim-kafka
+    app: kafka
+    parentdeployment: odim-ra
   ports:
     - name: kafka
       port: 9092
@@ -24,13 +23,12 @@ metadata:
   name: kafka-ext
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
+    deployment: odim-ra
 spec:
   selector:
-    app: odim-ra
-    unit: kafka
-    parentdeployment: odim-kafka
+    app: kafka
+    parentdeployment: odim-ra
   ports:
     - name: kafka-ext
       port: 30092

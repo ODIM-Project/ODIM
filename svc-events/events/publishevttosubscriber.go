@@ -74,8 +74,15 @@ func PublishEventsToDestination(data interface{}) bool {
 		log.Info("error: invalid input params")
 		return false
 	}
-	// Extract the Hostname/IP of the event source and Event from input parameter
+
 	event := data.(common.Events)
+	if event.EventType == "PluginStartUp" {
+		log.Info("received plugin started event from ", event.IP)
+		go callPluginStartUp(event)
+		return true
+	}
+
+	// Extract the Hostname/IP of the event source and Event from input parameter
 	host, _, err := net.SplitHostPort(event.IP)
 	if err != nil {
 		host = event.IP
@@ -91,6 +98,11 @@ func PublishEventsToDestination(data interface{}) bool {
 	var flag bool
 	var uuid string
 	var message common.MessageData
+
+	if err = json.Unmarshal([]byte(requestData), &message); err != nil {
+		log.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
+		return false
+	}
 
 	addFabric(requestData, host)
 	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
@@ -417,5 +429,31 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 		return
 	}
 	log.Info("info: system power state update initiated")
+	return
+}
+
+func callPluginStartUp(event common.Events) {
+	var message common.PluginStatusEvent
+	if err := json.Unmarshal([]byte(event.Request), &message); err != nil {
+		log.Error("failed to unmarshal the plugin startup event from "+event.IP+
+			" with the error: ", err.Error())
+		return
+	}
+
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+	if _, err = aggregator.SendStartUpData(context.TODO(), &aggregatorproto.SendStartUpDataRequest{
+		PluginAddr: event.IP,
+		OriginURI:  message.OriginatorID,
+	}); err != nil {
+		log.Error("failed to send plugin startup data to " + event.IP + ": " + err.Error())
+		return
+	}
+	log.Info("successfully sent plugin startup data to " + event.IP)
 	return
 }

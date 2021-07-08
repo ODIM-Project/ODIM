@@ -21,9 +21,9 @@ service Aggregator {
     rpc RediscoverSystemInventory(RediscoverSystemInventoryRequest) returns (RediscoverSystemInventoryResponse) {}
     rpc UpdateSystemState(UpdateSystemStateRequest) returns (UpdateSystemStateResponse) {}
     rpc AddAggregationSource(AggregatorRequest) returns (AggregatorResponse){}
-    rpc GetAllAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
-    rpc GetAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
-    rpc UpdateAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}	
+    rpc GetAllAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc UpdateAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
     rpc DeleteAggregationSource(AggregatorRequest) returns (AggregatorResponse) {}
     rpc CreateAggregate(AggregatorRequest) returns (AggregatorResponse) {}
     rpc GetAllAggregates(AggregatorRequest) returns (AggregatorResponse) {}
@@ -35,6 +35,7 @@ service Aggregator {
     rpc SetDefaultBootOrderElementsOfAggregate(AggregatorRequest) returns (AggregatorResponse) {}
     rpc GetAllConnectionMethods(AggregatorRequest) returns (AggregatorResponse) {}
     rpc GetConnectionMethod(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc SendStartUpData(SendStartUpDataRequest) returns (SendStartUpDataResponse) {}
   }
 
 message AggregatorRequest {
@@ -42,7 +43,6 @@ message AggregatorRequest {
     bytes RequestBody = 2;
     string URL=3;
 }
-
 
 message AggregatorResponse {
     int32 statusCode = 1;
@@ -60,13 +60,22 @@ message RediscoverSystemInventoryResponse{
 }
 
 message UpdateSystemStateRequest{
-	string SystemUUID=1;
-	string SystemID=2;
-	string SystemURI=3;
-	string UpdateKey=4;
-	string UpdateVal=5;
+        string SystemUUID=1;
+        string SystemID=2;
+        string SystemURI=3;
+        string UpdateKey=4;
+        string UpdateVal=5;
 }
 
 message UpdateSystemStateResponse{
-	string TaskURL=1;
+        string TaskURL=1;
+}
+
+message SendStartUpDataRequest{
+        string PluginAddr=1;
+        string OriginURI=2;
+}
+
+message SendStartUpDataResponse{
+        bytes ResponseBody = 1;
 }

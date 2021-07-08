@@ -18,6 +18,8 @@ service Managers {
     rpc GetManagersCollection(ManagerRequest) returns (ManagerResponse) {}
     rpc GetManager(ManagerRequest) returns (ManagerResponse) {}
     rpc GetManagersResource(ManagerRequest) returns (ManagerResponse) {}
+    rpc VirtualMediaInsert(ManagerRequest) returns (ManagerResponse) {}
+    rpc VirtualMediaEject(ManagerRequest) returns (ManagerResponse) {}
 }
 
 message ManagerRequest {
@@ -25,6 +27,7 @@ message ManagerRequest {
     string managerID=2;
     string URL=3;
     string resourceID=4;
+    bytes RequestBody=5;
 }
 
 message ManagerResponse {

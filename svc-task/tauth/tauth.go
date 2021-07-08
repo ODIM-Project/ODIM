@@ -22,6 +22,7 @@ import (
 )
 
 var log = logrus.New()
+
 func init() {
 	err := srv.InitializeService(srv.Tasks)
 	if err != nil {

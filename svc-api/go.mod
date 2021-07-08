@@ -3,9 +3,8 @@ module github.com/ODIM-Project/ODIM/svc-api
 go 1.13
 
 require (
-	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20210506103851-66c53837fd0f
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20210622112605-b6361e8ba368
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
-	//	github.com/kataras/iris v11.1.1+incompatible
 	github.com/kataras/iris/v12 v12.1.9-0.20200616210209-a85c83b70ad0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/sirupsen/logrus v1.4.2

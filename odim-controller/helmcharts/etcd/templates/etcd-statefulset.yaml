@@ -6,24 +6,22 @@ metadata:
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
-    app: odim-ra
-    unit: etcd
+    app: etcd
+    deployment: odim-ra
 spec:
   podManagementPolicy: OrderedReady
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: odim-ra
-      unit: etcd
-      parentdeployment: odim-etcd
+      app: etcd
+      parentdeployment: odim-ra
   serviceName: etcd
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: etcd
-        parentdeployment: odim-etcd
+        app: etcd
+        parentdeployment: odim-ra
     spec:
       hostname: etcd
       subdomain: etcd

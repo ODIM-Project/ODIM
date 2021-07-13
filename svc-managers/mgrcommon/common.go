@@ -361,3 +361,11 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 		}
 	}
 }
+
+// TranslateToSouthBoundURL translates the url to southbound URL
+func TranslateToSouthBoundURL(url string) string {
+	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		url = strings.Replace(url, key, value, -1)
+	}
+	return url
+}

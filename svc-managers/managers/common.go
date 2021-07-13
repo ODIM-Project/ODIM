@@ -43,7 +43,7 @@ type DB struct {
 	GetAllKeysFromTable func(string) ([]string, error)
 	GetManagerByURL     func(string) (string, *errors.Error)
 	GetPluginData       func(string) (mgrmodel.Plugin, *errors.Error)
-	UpdateManagersData  func(string, map[string]interface{}) error
+	UpdateData          func(string, map[string]interface{}, string) error
 	GetResource         func(string, string) (string, *errors.Error)
 }
 
@@ -60,7 +60,7 @@ func GetExternalInterface() *ExternalInterface {
 			GetAllKeysFromTable: mgrmodel.GetAllKeysFromTable,
 			GetManagerByURL:     mgrmodel.GetManagerByURL,
 			GetPluginData:       mgrmodel.GetPluginData,
-			UpdateManagersData:  mgrmodel.UpdateManagersData,
+			UpdateData:          mgrmodel.UpdateData,
 			GetResource:         mgrmodel.GetResource,
 		},
 	}

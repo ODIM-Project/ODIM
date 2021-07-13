@@ -108,12 +108,21 @@ func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
 	}, nil
 }
 
-func mockUpdateManagersData(key string, managerData map[string]interface{}) error {
+func mockUpdateData(key string, updateData map[string]interface{}, table string) error {
+	if key == "/redfish/v1/Managers/uuid:1/VirtualMedia/1" {
+		return nil
+	} else if key == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
+		return errors.PackError(errors.DBKeyNotFound, "not found")
+	}
 	return nil
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
 	if key == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1:1/Virtual" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
@@ -121,6 +130,10 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1:1/Virtual" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
 		return "", fmt.Errorf("error")
 	}
 	manager := mgrmodel.Manager{
@@ -166,7 +179,7 @@ func mockGetExternalInterface() *managers.ExternalInterface {
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
-			UpdateManagersData:  mockUpdateManagersData,
+			UpdateData:          mockUpdateData,
 			GetResource:         mockGetResource,
 		},
 	}

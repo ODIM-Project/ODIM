@@ -78,8 +78,10 @@ func stubDevicePassword(password []byte) ([]byte, error) {
 }
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+	baseURI := "/redfish/v1"
+	baseURI = TranslateToSouthBoundURL(baseURI)
 
-	if url == "https://localhost:9091/ODIM/v1/Sessions" {
+	if url == "https://localhost:9091"+baseURI+"/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{
 			StatusCode: http.StatusCreated,
@@ -88,38 +90,44 @@ func mockContactClient(url, method, token string, odataID string, body interface
 				"X-Auth-Token": []string{"12345"},
 			},
 		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Sessions" {
+	} else if url == "https://localhost:9092"+baseURI+"/Sessions" {
 		body := `{"Token": ""}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
-	if url == "https://localhost:9091/ODIM/v1/Managers/1/EthernetInterfaces" && token == "12345" {
+	if url == "https://localhost:9091"+baseURI+"/Managers/1/EthernetInterfaces" && token == "12345" {
 		body := `{"data": "/ODIM/v1/Managers/1/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://localhost:9093/ODIM/v1/Managers/1/EthernetInterfaces" {
+	} else if url == "https://localhost:9093"+baseURI+"/Managers/1/EthernetInterfaces" {
 		body := `{"data": "/ODIM/v1/Managers/1/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Managers/1/EthernetInterfaces" && token == "23456" {
+	} else if url == "https://localhost:9092"+baseURI+"/Managers/1/EthernetInterfaces" && token == "23456" {
 		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://localhost:9091/ODIM/v1/Managers/1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia" {
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia" {
 		body := `{"data": "Success"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://localhost:9091/ODIM/v1/Managers/1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia" {
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/1/VirtualMedia/1" {
 		body := `{"data": "Success"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -187,6 +195,11 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	assert.Nil(t, err, "There should be no error getting data")
 	req.UUID = "uuid1"
 	req.URL = "/redfish/v1/Managers/uuid1:1/EthernetInterfaces"
+	_, err = GetResourceInfoFromDevice(req)
+	assert.Nil(t, err, "There should be no error getting data")
+
+	req.UUID = "uuid"
+	req.URL = "/redfish/v1/Managers/uuid:1/VirtualMedia/1"
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
 }

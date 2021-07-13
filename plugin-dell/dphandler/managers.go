@@ -16,6 +16,8 @@
 package dphandler
 
 import (
+	"encoding/json"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
@@ -167,4 +169,84 @@ func getInfoFromDevice(uri string, deviceDetails dpmodel.Device, ctx iris.Contex
 	}
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write([]byte(respData))
+}
+
+//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+func VirtualMediaActions(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+	uri = replaceURI(uri)
+	var deviceDetails dpmodel.Device
+	//Get device details from request
+	err := ctx.ReadJSON(&deviceDetails)
+	if err != nil {
+		log.Error("While trying to collect data from request, got: " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
+	device := &dputilities.RedfishDevice{
+		Host:     deviceDetails.Host,
+		Username: deviceDetails.Username,
+		Password: string(deviceDetails.Password),
+		PostBody: deviceDetails.PostBody,
+	}
+
+	// creating a eject virtual media payload for dell plugin
+	if strings.Contains(uri, "VirtualMedia.EjectMedia") {
+		payload := map[string]interface{}{}
+		device.PostBody, err = json.Marshal(payload)
+		if err != nil {
+			log.Error(err.Error())
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(err.Error())
+			return
+		}
+	}
+
+	statusCode, _, body, err := queryDevice(uri, device, http.MethodPost)
+	if err != nil {
+		errMsg := "while performing actions on virtual media, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(statusCode)
+		ctx.WriteString(errMsg)
+		return
+	}
+
+	if statusCode == http.StatusNoContent {
+		log.Info("VirtualMediaActions is successful for URI : " + uri)
+		statusCode = http.StatusOK
+		body, err = createVirtMediaActionResponse()
+		if err != nil {
+			errMsg := "while creating a response for virtual media actions" + err.Error()
+			log.Error(errMsg)
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(errMsg)
+			return
+		}
+	} else {
+		errResponse := string(body)
+		log.Errorf("VirtualMediaActions is failed for the URI %s, getting response %v ", uri, errResponse)
+	}
+
+	ctx.StatusCode(statusCode)
+	ctx.Write(body)
+}
+
+// createVirtMediaActionResponse is used for creating a final response for virtual media actions success scenario
+func createVirtMediaActionResponse() ([]byte, error) {
+	resp := dpresponse.ErrorResopnse{
+		Error: dpresponse.Error{
+			Code:    response.Success,
+			Message: "See @Message.ExtendedInfo for more information.",
+			MessageExtendedInfo: []dpresponse.MsgExtendedInfo{
+				dpresponse.MsgExtendedInfo{
+					MessageID:   response.Success,
+					Message:     "Successfully performed virtual media actions",
+					MessageArgs: []string{},
+				},
+			},
+		},
+	}
+	body, err := json.Marshal(resp)
+	return body, err
 }

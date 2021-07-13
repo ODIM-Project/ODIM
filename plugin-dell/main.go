@@ -201,6 +201,8 @@ func routers() *iris.Application {
 		managers.Get("/{id}/HostInterfaces/{rid}", dphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia", dphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia/{rid}", dphandler.GetResource)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", dphandler.VirtualMediaActions)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", dphandler.VirtualMediaActions)
 		managers.Get("/{id}/LogServices", dphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}", dphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}/Entries", dphandler.GetResource)

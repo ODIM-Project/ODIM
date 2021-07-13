@@ -5,8 +5,8 @@ metadata:
   name: zookeeper
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: zookeeper
+    app: zookeeper
+    deployment: odim-ra
   annotations:
     secret.reloader.stakater.com/reload: "zookeeper-secret"
 spec:
@@ -14,9 +14,8 @@ spec:
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: zookeeper
-        parentdeployment: odim-zookeeper
+        app: zookeeper
+        parentdeployment: odim-ra
     spec:
       hostname: zookeeper
       subdomain: zookeeper
@@ -65,7 +64,6 @@ spec:
             claimName: zookeeper-conf-pvc
   selector:
     matchLabels:
-      app: odim-ra
-      unit: zookeeper
-      parentdeployment: odim-zookeeper
+      app: zookeeper
+      parentdeployment: odim-ra
 ---

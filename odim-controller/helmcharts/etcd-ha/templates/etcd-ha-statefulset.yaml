@@ -7,36 +7,42 @@ metadata:
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
-    app: odim-ra
-    unit: etcd
+    app: etcd
+    instance: etcd1
+    deployment: odim-ra
 spec:
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: odim-ra
-      unit: etcd
-      parentdeployment: odim-etcd
+      app: etcd
+      instance: etcd1
+      parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: etcd
-        parentdeployment: odim-etcd
+        app: etcd
+        instance: etcd1
+        parentdeployment: odim-ra
     spec:
       hostname: etcd1
       subdomain: etcd
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - etcd
+                  values: ["etcd2", "etcd3"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd1
@@ -112,36 +118,42 @@ metadata:
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
-    app: odim-ra
-    unit: etcd
+    app: etcd
+    instance: etcd2
+    deployment: odim-ra
 spec:
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: odim-ra
-      unit: etcd
-      parentdeployment: odim-etcd
+      app: etcd
+      instance: etcd2
+      parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: etcd
-        parentdeployment: odim-etcd
+        app: etcd
+        instance: etcd2
+        parentdeployment: odim-ra
     spec:
       hostname: etcd2
       subdomain: etcd
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - etcd
+                  values: ["etcd1", "etcd3"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd2
@@ -217,36 +229,42 @@ metadata:
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
   labels:
-    app: odim-ra
-    unit: etcd
+    app: etcd
+    instance: etcd3
+    deployment: odim-ra
 spec:
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: odim-ra
-      unit: etcd
-      parentdeployment: odim-etcd
+      app: etcd
+      instance: etcd3
+      parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: etcd
-        parentdeployment: odim-etcd
+        app: etcd
+        instance: etcd3
+        parentdeployment: odim-ra
     spec:
       hostname: etcd3
       subdomain: etcd
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - etcd
+                  values: ["etcd1", "etcd2"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd3

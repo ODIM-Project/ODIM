@@ -104,23 +104,19 @@ jobs:
 
     - name: Prepare Build Artifacts
       run: |
-        sudo mkdir /var/log/odim-infra
-        docker-compose -f build/docker-compose.yml logs kafka | sudo tee /var/log/odim-infra/kafka.log
-        docker-compose -f build/docker-compose.yml logs zookeeper| sudo tee /var/log/odim-infra/zookeeper.log
-        docker-compose -f build/docker-compose.yml logs consul | sudo tee /var/log/odim-infra/consul.log
-        docker-compose -f build/docker-compose.yml logs redis | sudo tee /var/log/odim-infra/redis.log
-        sudo mkdir /var/log/odim-plugins
-        docker-compose -f build/docker-compose.yml logs urp |sudo tee /var/log/odim-plugins/urp.log
-        sudo cp /var/log/GRF_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
-        sudo cp /var/log/DELL_PLUGIN/dell_plugin.log /var/log/odim-plugins/dell.log
+        sudo mkdir /artifacts
+        docker logs odim_kafka | sudo tee /artifacts/kafka.log  > /dev/null
+        docker logs odim_zookeeper| sudo tee /artifacts/zookeeper.log
+        docker logs odim_etcd | sudo tee /artifacts/etcd.log
+        docker logs build_redis_1 | sudo tee /artifacts/redis.log
+        docker logs build_urp_1 |sudo tee /artifacts/ur_plugin.log
+        sudo cp /var/log/GRF_PLUGIN/plugin.log /artifacts/grf_plugin.log
+        sudo cp /var/log/DELL_PLUGIN/dell_plugin.log /artifacts/dell_plugin.log
+        sudo cp /var/log/odimra/* /artifacts/
+
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
       if: always()
       with:
-       name: my-artifiact
-       path: |
-        /var/log/odimra
-        /var/log/DELL_PLUGIN
-        /var/log/odim-plugins
-        /var/log/odim-infra
-  
+       name: my-artifact
+       path: /artifacts

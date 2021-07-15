@@ -87,7 +87,7 @@ FirmwareVersion: v1.0.0                                         # exposed on plu
 ####################################################################################################
 # ODIM's NB interface                                                                              #
 ####################################################################################################
-OdimURL: https://odimra.local.com:45000
+OdimURL: https://odimra.local:45000
 # OdimUserName is a username being known for ODIM's NB API
 OdimUserName: admin
 ###
@@ -107,7 +107,7 @@ OdimPassword: #password#
 #
 # SentinelMasterName: mymaster
 #
-RedisAddress: odimra.local.com:6380
+RedisAddress: odimra.local:6380
 
 ####################################################################################################
 # Logging                                                                                          #

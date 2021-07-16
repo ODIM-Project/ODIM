@@ -45,14 +45,13 @@ type PluginHealthCheckInterface struct {
 	DecryptPassword func([]byte) ([]byte, error)
 	PluginConfig    config.PluginStatusPolling
 	RootCA          []byte
-	StatusRecord    PluginStatusRecord
 }
 
 // PluginStatusRecord holds the record of plugins and the
 // number of times is has been inactive during periodic health check
 type PluginStatusRecord struct {
-	InactiveTime map[string]int
-	Lock         sync.Mutex
+	InactiveCount map[string]int
+	Lock          sync.Mutex
 }
 
 // SupportedConnectionMethodTypes is for validating the connection method type
@@ -65,8 +64,20 @@ var SupportedConnectionMethodTypes = map[string]bool{
 	"IPMI20":  false,
 }
 
-// ConfigFilePath holds the value of odim config file path
-var ConfigFilePath string
+var (
+	// ConfigFilePath holds the value of odim config file path
+	ConfigFilePath string
+	// PSRecord holds the record of each plugin health check status
+	PSRecord PluginStatusRecord
+)
+
+// init is for intializing global variables defined in this package
+func init() {
+	PSRecord = PluginStatusRecord{
+		Lock:          sync.Mutex{},
+		InactiveCount: make(map[string]int),
+	}
+}
 
 // GetStorageResources will get the resource details from the database for teh given odata id
 func GetStorageResources(oid string) map[string]interface{} {
@@ -325,9 +336,9 @@ func ContactPlugin(req agmodel.PluginContactRequest) (*http.Response, error) {
 		}
 		reqURL := fmt.Sprintf("https://%s/ODIM/v1/Sessions", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port))
 		response, err := pmbhandle.ContactPlugin(reqURL, http.MethodPost, "", "", payload, nil)
-		if err != nil {
-			log.Error("failed to get session token from " + req.Plugin.ID + ": " + err.Error())
-			return nil, err
+		if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
+			return nil,
+				fmt.Errorf("failed to get session token from %s: %s: %+v", req.Plugin.ID, err.Error(), response)
 		}
 		req.Token = response.Header.Get("X-Auth-Token")
 	} else {
@@ -433,17 +444,17 @@ func UpdateDeviceSubscriptionDetails(subsData map[string]string) {
 }
 
 // GetPluginStatusRecord is for getting the status record of a plugin
-func (phc *PluginHealthCheckInterface) GetPluginStatusRecord(plugin string) (int, bool) {
-	phc.StatusRecord.Lock.Lock()
-	count, exist := phc.StatusRecord.InactiveTime[plugin]
-	phc.StatusRecord.Lock.Unlock()
+func GetPluginStatusRecord(plugin string) (int, bool) {
+	PSRecord.Lock.Lock()
+	count, exist := PSRecord.InactiveCount[plugin]
+	PSRecord.Lock.Unlock()
 	return count, exist
 }
 
 // SetPluginStatusRecord is for setting the status record of a plugin
-func (phc *PluginHealthCheckInterface) SetPluginStatusRecord(plugin string, count int) {
-	phc.StatusRecord.Lock.Lock()
-	phc.StatusRecord.InactiveTime[plugin] = count
-	phc.StatusRecord.Lock.Unlock()
+func SetPluginStatusRecord(plugin string, count int) {
+	PSRecord.Lock.Lock()
+	PSRecord.InactiveCount[plugin] = count
+	PSRecord.Lock.Unlock()
 	return
 }

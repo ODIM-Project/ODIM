@@ -63,6 +63,7 @@ spec:
             claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
+      serviceAccountName: odimra
       containers:
         - name: aggregation
           securityContext:

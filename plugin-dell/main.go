@@ -261,11 +261,16 @@ func sendStartupEvent() {
 	// grace wait time for plugin to be functional
 	time.Sleep(3 * time.Second)
 
+	var pluginIP string
+	if pluginIP = os.Getenv("ASSIGNED_POD_IP"); pluginIP == "" {
+		pluginIP = config.Data.PluginConf.Host
+	}
+
 	startupEvt := common.PluginStatusEvent{
 		Name:         "Plugin startup event",
 		Type:         "PluginStarted",
 		Timestamp:    time.Now().String(),
-		OriginatorID: config.Data.PluginConf.Host,
+		OriginatorID: pluginIP,
 	}
 
 	request, _ := json.Marshal(startupEvt)

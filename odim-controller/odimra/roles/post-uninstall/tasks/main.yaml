@@ -24,6 +24,19 @@
     - "{{ odimra.zookeeperDataPath }}"
   ignore_errors: "{{ ignore_err }}"
 
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+  when: odimPluginPath is defined
+
+- name: Call plugin post-uninstall scripts
+  include_tasks: roles/post-uninstall/tasks/plugins.yaml
+  loop: "{{ plugin_packages.files }}"
+  ignore_errors: "{{ ignore_err }}"
+
 - name: Get userdel bin path
   local_action: command which userdel
   become: false

@@ -1,0 +1,567 @@
+name: odimra_deploy
+
+#on:
+#  pull_request:
+#    branches:
+#      - '**'
+
+
+on:
+  [push]
+  
+  
+jobs:
+  build:
+    name: Deploy
+    runs-on: ubuntu-18.04
+    continue-on-error: false
+    steps:
+    - uses: actions/checkout@v2
+    - name: configure pre-req for odimra deployment
+      run: |
+        echo "[$(date)] -- INFO  -- Start pre req conguration"
+        echo
+        
+        
+        echo "[$(date)] -- INFO  -- running actions as ${USER}"
+        echo
+        
+        export PASSWD=password
+        echo "runner:${PASSWD}" > pass
+        sudo chpasswd < pass
+        
+        echo "[$(date)] -- INFO  -- configure ssh key auth"
+        sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+        echo
+        
+        echo "[$(date)] -- INFO  -- restart sshd service"
+        sudo systemctl restart sshd
+        echo
+        
+        echo "[$(date)] -- INFO  -- create ssh key"
+        ssh-keygen -t rsa -b 2048 -N "" -f $HOME/.ssh/id_rsa > /dev/null
+        cat $HOME/.ssh/id_rsa.pub > $HOME/.ssh/authorized_keys
+        sudo chown runner:runner /home/runner/.ssh/authorized_keys
+        chmod go-w ~/
+        chmod 700 ~/.ssh
+        chmod 600 ~/.ssh/authorized_keys
+        echo
+        
+        echo "[$(date)] -- INFO  -- set cur_path, VM_IP, host_name, FQDN, SSHPASS env variables"
+        export cur_path=$(pwd)
+        export VM_IP=$(hostname -I | awk '{print $1}')
+        export host_name=$(hostname)
+        export FQDN="odim.controller.com"
+        export SSHPASS=${PASSWD}
+        export ODIMRA_USER_ID=2021
+        export ODIMRA_GROUP_ID=2021
+        echo
+        
+        echo "[$(date)] -- INFO  -- add FQDN to /etc/hosts"
+        cat << EOF | sudo tee -a /etc/hosts
+        $VM_IP $FQDN $host_name
+        EOF
+        echo
+
+        echo "[$(date)] -- INFO  -- configure golang"   
+        sudo rm -rf /usr/bin/go
+        wget -q https://dl.google.com/go/go1.13.7.linux-amd64.tar.gz -P /var/tmp
+        sudo tar -C /usr/local -xzf /var/tmp/go1.13.7.linux-amd64.tar.gz
+        export PATH=$PATH:/usr/local/go/bin
+        export GO111MODULE=on
+        export GOROOT=/usr/local/go
+        export PATH=$PATH:${GOROOT}/bin
+        echo
+
+        echo "[$(date)] -- INFO  -- configured golang version"
+        go version
+        echo
+
+        echo "[$(date)] -- INFO  -- install required linux packages"
+        sudo apt-get -qq update
+        sudo apt-get -qq install sshpass -y
+        sudo apt-get -qq install python3.8 -y
+        sudo apt-get -qq install python3-pip -y
+        sudo apt-get -qq install python3-setuptools -y
+        sudo apt-get -qq install software-properties-common -y
+        sudo apt-get -qq install openjdk-11-jre-headless -y
+        sudo -E apt-add-repository ppa:ansible/ansible -y
+        echo
+        
+        echo "[$(date)] -- INFO  -- install required python packages"
+        python3 -m pip install --upgrade pip
+        pip3 install pycrypto==2.6.1
+        pip3 install pycryptodome==3.9.8
+        pip3 install ansible==2.9.6
+        pip3 install jinja2==2.11.1
+        pip3 install netaddr==0.7.19
+        pip3 install pbr==5.4.4
+        pip3 install hvac==0.10.0
+        pip3 install jmespath==0.9.5
+        pip3 install ruamel.yaml==0.16.10
+        pip3 install pyyaml==5.3.1
+        echo
+        
+        echo "[$(date)] -- INFO  -- installed python version"
+        python3 --version
+        echo
+
+        echo "[$(date)] -- INFO  -- clone ODIM respository development branch"
+        git clone https://github.com/ODIM-Project/ODIM.git -b development
+        echo
+        
+        export ODIM_SOURCE_PATH=${cur_path}/ODIM
+        export ODIM_CONTROLLER_PATH=${ODIM_SOURCE_PATH}/odim-controller
+        cd ${ODIM_CONTROLLER_PATH}/scripts/
+        cp kube_deploy_nodes.yaml.tmpl kube_deploy_nodes.yaml
+        echo ${PASSWD} > node_pass
+        echo ${PASSWD} > vault_pass
+        ls -ltra
+        echo
+        
+        echo "[$(date)] -- INFO  -- build odim-vault binary"
+        go build -ldflags "-s -w" -o odim-vault odim-vault.go
+        echo
+        
+        echo "[$(date)] -- INFO  -- encrypt passwords"
+        ./odim-vault -encode ${ODIM_CONTROLLER_PATH}/scripts/vault_pass
+        ./odim-vault -key ${ODIM_CONTROLLER_PATH}/scripts/vault_pass -encrypt ${ODIM_CONTROLLER_PATH}/scripts/node_pass
+        echo
+        
+        mkdir -p ${cur_path}/k8s_images ${cur_path}/odim_images ${cur_path}/odim_plugins
+
+        export rootServiceUUID=$(uuidgen)
+        export NODE_PASS_FILEPATH=${ODIM_CONTROLLER_PATH}/scripts/node_pass
+        export VAULTKEY_FILEPATH=${ODIM_CONTROLLER_PATH}/scripts/vault_pass
+        export K8S_IMAGE_PATH=${cur_path}/k8s_images
+        export ODIM_IMAGE_PATH=${cur_path}/odim_images
+        export ODIM_PLUGIN_PATH=${cur_path}/odim_plugins
+
+        sed -i "/Node[23]_/d; /kubernetesImagePath:/d; /odimraImagePath:/d; s#.*deploymentID.*#deploymentID: OneNodeDeployment#; \
+        s#.*httpProxy.*#httpProxy: \"\"#; s#.*httpsProxy.*#httpsProxy: \"\"#; s#.*noProxy.*#noProxy: \"\"#; \
+        s#.*nodePasswordFilePath.*#nodePasswordFilePath: ${NODE_PASS_FILEPATH}#; \
+        s#.*odimControllerSrcPath.*#odimControllerSrcPath: ${ODIM_CONTROLLER_PATH}#; \
+        s#.*odimVaultKeyFilePath.*#odimVaultKeyFilePath: ${VAULTKEY_FILEPATH}#; \
+        s#.*odimCertsPath.*#odimCertsPath: \"\"#; s#.*odimPluginPath.*#odimPluginPath: ${ODIM_PLUGIN_PATH}#; \
+        s#.*<Node1_Hostname>.*#  ${host_name}:#; s/ip:\s*<Node1_IPAddress>/ip: ${VM_IP}/; \
+        s#username:\s*<Node1_Username>#username: ${USER}#; s#.*fqdn.*#  fqdn: \"${FQDN}\"#; \
+        s#.*groupID.*#  groupID: ${ODIMRA_GROUP_ID}#; s#.*userID.*#  userID: ${ODIMRA_USER_ID}#; \
+        s#.*rootServiceUUID.*#  rootServiceUUID: ${rootServiceUUID}#; s#.*haDeploymentEnabled.*#  haDeploymentEnabled: false#; \
+        s#.*odimraServerCertFQDNSan.*#  odimraServerCertFQDNSan: \"\"#; s#.*odimraServerCertIPSan.*#  odimraServerCertIPSan: \"\"#; \
+        s#.*odimraKafkaClientCertFQDNSan.*#  odimraKafkaClientCertFQDNSan: \"\"#; \
+        s#.*odimraKafkaClientCertIPSan.*#  odimraKafkaClientCertIPSan: \"\"#; \
+        s#.*etcHostsEntries.*#  etcHostsEntries: \"\"#" kube_deploy_nodes.yaml
+
+        echo "[$(date)] -- INFO  -- configured values in kube_deploy_nodes.yaml"
+        cat kube_deploy_nodes.yaml
+        echo
+
+        cd ${ODIM_CONTROLLER_PATH}/scripts/
+        echo "[$(date)] -- INFO  -- install kubernetes using odim-controller"
+        python3 odim-controller.py --deploy kubernetes --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
+        echo
+        
+        echo "[$(date)] -- INFO  -- configure docker and kubectl commands"
+        sudo usermod -aG docker $USER
+        mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        echo
+        
+        echo "[$(date)] -- INFO  -- list pods in kube-system namespace"
+        kubectl get pods -n kube-system -o wide
+        echo
+        cd ${ODIM_SOURCE_PATH}/
+        time ./build_images.sh
+        
+        cd ${ODIM_CONTROLLER_PATH}/scripts/
+        python3 odim-controller.py --deploy odimra --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml
+        echo 
+        echo "[$(date)] -- INFO  -- list pods in odim namespace"
+        count=0
+        while [[ $(kubectl get pods -n odim -o wide | grep "Running" | wc -l) -ne 15 ]]; do
+                if [[ $count -eq 6 ]]; then
+                        break
+                fi
+                sleep 10
+                count=$((count+1))
+        done
+        kubectl get pods -n odim -o wide
+        echo
+           
+           
+        echo "$VM_IP"
+               
+        echo " ====================== Adding URP Plugin ==================================="
+        
+        sudo mkdir -p /var/log/urplugin_logs/
+        sudo chown odimra:odimra /var/log/urplugin_logs/
+                       
+        odimPassword=`echo -n 'Od!m12$4' |openssl pkeyutl -encrypt -inkey ${ODIM_CONTROLLER_PATH}/scripts/certs/OneNodeDeployment/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A`
+        
+        cd ${ODIM_CONTROLLER_PATH}/helmcharts/urplugin/
+        
+        sed -i "s#.*groupID.*#  groupID: ${ODIMRA_GROUP_ID}#" urplugin-config.yaml
+        sed -i "s#.*odimPassword.*#  odimPassword: ${odimPassword}#" urplugin-config.yaml
+        sed -i "s#.*urPluginRootServiceUUID.*#  urPluginRootServiceUUID: ${rootServiceUUID}#" urplugin-config.yaml
+        sed -i "s#.*odimUsername.*#  odimUsername: admin#" urplugin-config.yaml
+        
+        mkdir -p ${ODIM_PLUGIN_PATH}/urplugin
+        
+        helm package ${ODIM_CONTROLLER_PATH}/helmcharts/urplugin/urplugin -d ${ODIM_PLUGIN_PATH}/urplugin
+        cp urplugin-config.yaml ${ODIM_PLUGIN_PATH}/urplugin
+        
+        docker save urplugin -o ${ODIM_PLUGIN_PATH}/urplugin/urplugin.tar
+        cat urplugin-config.yaml
+        
+        cd ${ODIM_CONTROLLER_PATH}/scripts
+        
+        odimraKafkaClientCertFQDNSan=odim-controller.odim.com,grfplugin,grfplugin-events,urplugin,api
+        odimraServerCertFQDNSan=odim-controller.odim.com,grfplugin,grfplugin-events,urplugin,api
+        ConnectionMethodType=Redfish
+        ConnectionMethodVariant=Compute:BasicAuth:URP_v1.0.0
+        
+        sed -i "s#.*odimraKafkaClientCertFQDNSan.*#  odimraKafkaClientCertFQDNSan: ${odimraKafkaClientCertFQDNSan}#" kube_deploy_nodes.yaml
+        sed -i "s#.*odimraKafkaClientCertIPSan.*#  odimraKafkaClientCertIPSan: ${odimraServerCertFQDNSan}#" kube_deploy_nodes.yaml
+        sed -i "s#.*ConnectionMethodType.*#  \ \- \ConnectionMethodType: ${ConnectionMethodType}#" kube_deploy_nodes.yaml
+        sed -i "s#.*ConnectionMethodVariant.*#  \ \ \ \ConnectionMethodVariant: ${ConnectionMethodVariant}#" kube_deploy_nodes.yaml
+        
+        
+        cat kube_deploy_nodes.yaml
+        
+        python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --add plugin --plugin urplugin        
+        
+        python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+        echo 
+        echo "[$(date)] -- INFO  -- list pods in odim namespace"
+        count=0
+        while [[ $(kubectl get pods -n odim -o wide | grep "Running" | wc -l) -ne 15 ]]; do
+                if [[ $count -eq 6 ]]; then
+                        break
+                fi
+                sleep 10
+                count=$((count+1))
+        done
+        kubectl get pods -n odim -o wide | grep urplugin*
+        
+        sleep 30s
+        
+        urplugin=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/' | awk 'BEGIN{FS=":"; OFS=":"} {print $8}' | cut -d '"' -f 2`
+        
+        echo $urplugin
+        
+        urplugin_taskid=`curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"HostName":"urplugin:45007", "UserName":"admin", "Password":"Plug!n12$4", "Links":{ "ConnectionMethod": {"@odata.id": "${urplugin}" }}}'  'https://'$FQDN':30080/redfish/v1/AggregationService/AggregationSources/' | grep Location | awk '{print $2}' | cut -d '/' -f2-`
+         
+        echo $?
+        echo $urplugin_taskid
+        
+        task=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/${urplugin_taskid}' | grep -oe 202`
+        
+        echo $task
+        while [[ $(task) -eq 202 ]]; do
+                if [[ $task -eq 201 ]]; then
+                       
+                        break
+                fi
+                sleep 5
+                
+        done
+        
+        echo " ====================== Adding Dell Plugin ==================================="
+        
+        sudo mkdir -p /var/log/dellplugin_logs/
+        sudo chown odimra:odimra /var/log/dellplugin_logs
+        
+        cd ${ODIM_CONTROLLER_PATH}/helmcharts/dellplugin/
+        
+        lbPort=45005
+        
+        sed -i "s#.*groupID.*#  groupID: ${ODIMRA_GROUP_ID}#" dellplugin-config.yaml
+        sed -i "s#.*hostname.*#  ${host_name}:#" dellplugin-config.yaml
+        sed -i "s#.*dellPluginRootServiceUUID.*#  dellPluginRootServiceUUID: ${rootServiceUUID}#" dellplugin-config.yaml
+        sed -i "s#.*lbHost.*#  lbHost: ${VM_IP}#" dellplugin-config.yaml
+        sed -i "s#.*lbPort.*#  lbPort: ${lbPort}#" dellplugin-config.yaml
+        
+        mkdir -p ${ODIM_PLUGIN_PATH}/dellplugin
+
+        helm package ${ODIM_CONTROLLER_PATH}/helmcharts/dellplugin/dellplugin -d ${ODIM_PLUGIN_PATH}/dellplugin
+        cp dellplugin-config.yaml ${ODIM_PLUGIN_PATH}/dellplugin
+        
+        docker save dellplugin -o ${ODIM_PLUGIN_PATH}/dellplugin/dellplugin.tar
+        cat dellplugin-config.yaml
+        
+        cd ${ODIM_CONTROLLER_PATH}/scripts
+        
+        ConnectionMethodType=Redfish
+        ConnectionMethodVariant_GRF=Compute:BasicAuth:DELL_v1.0.0
+        
+        python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --add plugin --plugin dellplugin
+        
+        python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+        
+        echo 
+        echo "[$(date)] -- INFO  -- dellplugin pods in odim namespace"
+        count=0
+        while [[ $(kubectl get pods -n odim -o wide | grep "Running" | wc -l) -ne 15 ]]; do
+                if [[ $count -eq 6 ]]; then
+                        break
+                fi
+                sleep 10
+                count=$((count+1))
+        done
+        
+        kubectl get pods -n odim -o wide | grep dellplugin*
+        
+        sleep 30s
+        
+        dellplugin=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/' | awk 'BEGIN{FS=":"; OFS=":"} {print $9}' | cut -d '"' -f 2`
+        echo $dellplugin
+        dellplugin_taskid=`curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"HostName":"dellplugin:45005", "UserName":"admin", "Password":"Plug!n12$4", "Links":{ "ConnectionMethod": {"@odata.id": "${dellplugin}" }}}'  'https://'$FQDN':30080/redfish/v1/AggregationService/AggregationSources/' | grep Location | awk '{print $2}' | cut -d '/' -f2-`
+        echo $?
+        echo $dellplugin_taskid
+        
+        task_dell=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/${dellplugin_taskid}' | grep -oe 202`
+        
+        echo $task_dell
+        while [[ $(task_dell) -eq 202 ]]; do
+                if [[ $task_dell -eq 201 ]]; then
+                       
+                        break
+                fi
+                sleep 5
+                
+        done
+        
+        echo " ====================== Adding GRF Plugin ==================================="
+        
+        sudo mkdir -p /var/log/grfplugin_logs/
+        sudo chown odimra:odimra /var/log/grfplugin_logs
+        
+        cd ${ODIM_CONTROLLER_PATH}/helmcharts/grfplugin/
+
+        sed -i "s#.*groupID.*#  groupID: ${ODIMRA_GROUP_ID}#" grfplugin-config.yaml
+        sed -i "s#.*rootServiceUUID.*#  rootServiceUUID: ${rootServiceUUID}#" grfplugin-config.yaml
+        sed -i "s#.*haDeploymentEnabled.*#  haDeploymentEnabled: true#" grfplugin-config.yaml
+        sed -i "s#.*lbHost.*#  lbHost: ${VM_IP}#" grfplugin-config.yaml
+        sed -i "s#.*lbPort.*#  lbPort: 45001#" grfplugin-config.yaml
+        
+        mkdir -p ${ODIM_PLUGIN_PATH}/grfplugin
+        helm package ${ODIM_CONTROLLER_PATH}/helmcharts/grfplugin/grfplugin -d ${ODIM_PLUGIN_PATH}/grfplugin
+        cp grfplugin-config.yaml ${ODIM_PLUGIN_PATH}/grfplugin
+        
+        docker save dellplugin -o ${ODIM_PLUGIN_PATH}/grfplugin/grfplugin.tar
+        cat grfplugin-config.yaml
+        
+        cd ${ODIM_CONTROLLER_PATH}/scripts
+        
+        ConnectionMethodType=Redfish
+        ConnectionMethodVariant_GRF=Compute:BasicAuth:GRF_v1.0.0
+        
+        sed -i "s#.*ConnectionMethodType.*#  \ \- \ConnectionMethodType: ${ConnectionMethodType}#" kube_deploy_nodes.yaml
+        sed -i "s#.*ConnectionMethodVariant.*#  \ \ \ \ConnectionMethodVariant: ${ConnectionMethodVariant_GRF}#" kube_deploy_nodes.yaml
+        
+        python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --add plugin --plugin grfplugin
+        
+        python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+        
+        echo 
+        echo "[$(date)] -- INFO  -- grfplugin pods in odim namespace"
+        count=0
+        while [[ $(kubectl get pods -n odim -o wide | grep "Running" | wc -l) -ne 15 ]]; do
+                if [[ $count -eq 6 ]]; then
+                        break
+                fi
+                sleep 10
+                count=$((count+1))
+        done
+            
+        
+        kubectl get pods -n odim -o wide | grep grfplugin*
+                
+        
+        
+        #curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/'
+        
+        grfplugin=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/' | awk 'BEGIN{FS=":"; OFS=":"} {print $10}' | cut -d '"' -f 2`
+        
+        echo $grfplugin
+        
+        
+        grfplugin_taskid=`curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"HostName":"grfplugin:45001", "UserName":"admin", "Password":"GRFPlug!n12$4", "Links":{ "ConnectionMethod": {"@odata.id": "${grfplugin}" }}}'  'https://'$FQDN':30080/redfish/v1/AggregationService/AggregationSources/' | grep Location | awk '{print $2}' | cut -d '/' -f2-`
+        
+         
+        echo $?
+        echo $grfplugin_taskid
+        
+        task_grf=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/${grfplugin_taskid}' | grep -oe 202`
+        
+        echo $task_grf
+        while [[ $(task_grf) -eq 202 ]]; do
+                if [[ $task_grf -eq 201 ]]; then
+                       
+                        break
+                fi
+                sleep 5
+                
+        done
+        
+        sleep 50s
+        
+        curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/'
+          
+      
+        echo "====================Sanity test==========================="
+        
+        
+    - name: Test
+      run: |
+        flag=0
+        echo "Create Session using the URI /redfish/v1/Sessionservice/Sessions"
+        
+        cat /etc/hosts
+        
+        echo "==========================================================="
+        
+        export FQDN="odim.controller.com"
+       
+             
+             
+        run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
+        
+ 
+        
+        echo $run
+        
+        
+        
+        if [[ $run -eq 201 ]];
+        then 
+            echo "Session Created Sucessfully"
+            echo "---------------------------"
+        else
+            echo "Session Creation Failed with status code $run"
+            echo "---------------------------------------------"
+            flag=1
+        fi
+       
+        echo "========================= Session Checked=================================="
+        
+        echo "User with ConfigureUser privilege creates a role having ConfigureSelf and Login privilege"
+        
+            
+        run1=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"RoleId":"RoleSanity", "OemPrivileges":[], "AssignedPrivileges":["Login","ConfigureSelf"]}' 'https://'$FQDN':30080/redfish/v1/AccountService/Roles' | head -1 | awk '{print $2}')
+        
+
+        if [[ $run1 -eq 201 ]];
+        then 
+            echo "Role Created Sucessfully"
+            echo "---------------------------"
+        else
+            echo "Role Creation Failed with status code $run1"
+            echo "-------------------------------------------"
+            flag=1
+        fi
+        
+        echo "========================Role Checked==================================="
+        
+        echo "POST Admin creating account - (args - username, password, roleID)"
+        
+        
+        
+        run2=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://'$FQDN':30080/redfish/v1/AccountService/Accounts' | head -1 | awk '{print $2}')
+        
+        
+        
+        if [[ $run2 -eq 201 ]];
+        then 
+            echo "Account Created Sucessfully"
+            echo "---------------------------"
+        else
+            echo "Account Creation Failed with status code $run2"
+            echo "----------------------------------------------"
+            flag=1
+        fi
+        
+        echo "========================Account Checked==================================="
+        
+        if [ $flag -eq 1 ];
+        then 
+          echo "Sanity Tests Failed"
+          exit 1
+        else
+          echo "ALL Sanity Tests Passed Sucessfully"
+        fi
+        
+    - name: Prepare Build Artifacts
+      run: |
+        sudo mkdir /artifacts
+        sudo chmod 777 /artifacts
+        output=$(kubectl get pods -n odim | grep -v NAME | awk '{print $1}')
+        if [[ $? -ne 0 ]]; then
+                echo "[$(date)] -- ERROR -- failed to get list pods in odim namespace"
+                echo "${output}"
+        fi
+        pods_list=(${output})
+
+        for pod in "${pods_list[@]}"; do
+                echo "[$(date)] -- INFO  -- Collecting logs of ${pod} pod"
+                output=$(kubectl -n odim get pods ${pod} -o jsonpath='{.spec.containers[*].name}')
+                if [[ $? -ne 0 ]]; then
+                        echo "[$(date)] -- ERROR -- failed to get the list containers in $(pod) pod"
+                        echo "${output}"
+                fi
+                containers_list=(${output})
+                for container in "${containers_list[@]}"; do
+                        echo "[$(date)] -- INFO  -- Collecting logs of ${container} container in ${pod} pod"
+                        kubectl logs -n odim ${pod} -c ${container} > /artifacts/${pod}-${container}.log
+                        if [[ $? -ne 0 ]]; then
+                                echo "[$(date)] -- ERROR - failed to collect log of ${container} container in ${pod} pod"
+                        fi
+                done
+        done
+        sudo cp /var/log/grfplugin_logs/grfplugin.log /artifacts/grfplugin.log
+        sudo cp /var/log/dellplugin_logs/dellplugin.log /artifacts/dellplugin.log
+        sudo cp /var/log/odimra/* /artifacts/
+        
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+       name: my-artifact
+       path: /artifacts 
+        
+        
+        
+        
+        #echo "====================Installing BMC Simulator==========================="
+        
+        #cd 
+        #git clone https://github.com/ODIM-Project/BMCSimulator.git
+        
+        #cd BMCSimulator
+        
+        #touch executableJar
+        
+        #sudo chmod 777 executableJar
+        
+        #cat /etc/java-11-openjdk/net.properties
+        #./gradlew executableJar
+        #cd src/main/resources
+        
+        #pwd
+        
+        #sed -i '/ip/c\   \"ip\" : "'${VM_IP}'"\,' simulator-config.json
+        #sed -i '/port/c\   \"port\" : \"1234\",' simulator-config.json
+     
+        
+        #cat /home/runner/BMCSimulator/src/main/resources/simulator-config.json
+        
+        #cd /home/runner/BMCSimulator/build/libs
+        
+        #nohup java -jar simulator-runner-1.0-SNAPSHOT.jar run BMC -c /home/runner/BMCSimulator/src/main/resources/simulator-config.json >> /dev/null 2>&1 &
+        
+        #curl -I -s -k http://${VM_IP}:1234/redfish/v1/
+        
+        
+        
+

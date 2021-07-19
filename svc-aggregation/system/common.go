@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -532,7 +533,7 @@ func isFileExist(existingFiles []string, substr string) bool {
 	return fileExist
 }
 
-func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := req.OID
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the"+resourceName+"collection details: ")
 	if err != nil {
@@ -565,7 +566,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req)
+		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
 	}
 	return progress
 }
@@ -636,10 +637,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -728,10 +728,9 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -781,7 +780,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		if firmwareVersion := getFirmwareVersion(oidKey); firmwareVersion != "" {
+		if firmwareVersion := getFirmwareVersion(oidKey, deviceUUID); firmwareVersion != "" {
 			searchForm["FirmwareVersion"] = firmwareVersion
 		}
 	}
@@ -831,7 +830,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -871,10 +870,9 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	}
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resource, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.ChassisCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
 	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -909,7 +907,14 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.lock.Unlock()
 		return progress
 	}
-	oidKey := keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+
+	oidKey := req.OID
+	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
+	} else {
+		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+	}
 	var memberFlag bool
 	if _, ok := resourceData["Members"]; ok {
 		memberFlag = true
@@ -933,6 +938,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		return progress
 	}
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resourceData, retrievalLinks, req.OemFlag)
 	/* Loop through  Collection members and discover all of them*/
 	for oid, oemFlag := range retrievalLinks {
@@ -1013,7 +1019,7 @@ func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool 
 	}
 	//skiping the Retrieval if parent oid contains links in other resource of config
 	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(parentoid, resourceName) {
 			return false
 		}
@@ -1064,12 +1070,22 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid string) string {
-	// replace the system with the manager
-	managerID := strings.Replace(oid, "Systems", "Managers", -1)
-	data, dbErr := agmodel.GetResource("Managers", managerID)
-	if dbErr != nil {
-		log.Error("error while getting the managers data" + dbErr.Error())
+func getFirmwareVersion(oid, deviceUUID string) string {
+	strArray := strings.Split(oid, "/")
+	id := strArray[len(strArray)-1]
+	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+":", -1)
+	key = strings.Replace(key, "Systems", "Managers", -1)
+	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	if dberr != nil {
+		log.Error("while getting the managers data" + dberr.Error())
+		return ""
+	} else if len(keys) == 0 {
+		log.Error("Manager data is not available")
+		return ""
+	}
+	data, dberr := agmodel.GetResource("Managers", keys[0])
+	if dberr != nil {
+		log.Error("while getting the managers data: ", dberr.Error())
 		return ""
 	}
 	// unmarshall the managers data
@@ -1268,4 +1284,155 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 		PluginID:          cm[2],
 		FirmwareVersion:   firmwareVersion[1],
 	}
+}
+
+func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percentComplete int32, pluginContactRequest getResourceRequest, resp response.RPC, saveSystem agmodel.SaveSystem) int32 {
+	deviceInfo := map[string]interface{}{
+		"ManagerAddress": saveSystem.ManagerAddress,
+		"UserName":       saveSystem.UserName,
+		"Password":       saveSystem.Password,
+	}
+	// Populate the resource MetricDefinitions for telemetry service
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricDefinitions"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	// total estimated work for metric is 10 percent
+	var metricEstimatedWork = int32(3)
+	progress := percentComplete
+	progress, err := storeTelemetryCollectionInfo("MetricDefinitionCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReportDefinitions for telemetry service
+	progress = percentComplete
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
+	progress, err = storeTelemetryCollectionInfo("MetricReportDefinitionCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReports for telemetry service
+	var metricReportEstimatedWork int32
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
+	progress = percentComplete
+	progress, err = storeTelemetryCollectionInfo("MetricReportCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress + metricReportEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the Triggers for telemetry service
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
+	progress = percentComplete
+	progress, err = storeTelemetryCollectionInfo("TriggerCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+	return percentComplete
+}
+
+func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
+	if err != nil {
+		return progress, err
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress, fmt.Errorf(getResponse.StatusMessage)
+	}
+	var resourceData dmtf.Collection
+	err = json.Unmarshal(body, &resourceData)
+	if err != nil {
+		return progress, err
+	}
+
+	data, dbErr := agmodel.GetResource(resourceName, req.OID)
+	if dbErr != nil {
+		// if no resource found then save the metric data into db.
+		if err = agmodel.GenericSave(body, resourceName, req.OID); err != nil {
+			return progress, err
+		}
+		if resourceName != "MetricReportCollection" {
+			// get and store of individual telemetry info
+			progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+		}
+		return progress, nil
+	}
+	var telemetryInfo dmtf.Collection
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
+		return progress, err
+	}
+	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
+	telemetryInfo.Members = result
+	telemetryInfo.MembersCount = len(result)
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return progress, err
+	}
+	err = agmodel.GenericSave(telemetryData, resourceName, req.OID)
+	if err != nil {
+		return progress, err
+	}
+	if resourceName != "MetricReportCollection" {
+		// get and store of individual telemetry info
+		progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+	}
+	return progress, nil
+}
+
+func getSuperSet(telemetryInfo, resourceData []*dmtf.Link) []*dmtf.Link {
+	telemetryInfo = append(telemetryInfo, resourceData...)
+	existing := map[string]bool{}
+	result := []*dmtf.Link{}
+
+	for v := range telemetryInfo {
+		if !existing[telemetryInfo[v].Oid] {
+			existing[telemetryInfo[v].Oid] = true
+			result = append(result, telemetryInfo[v])
+		}
+	}
+	return result
+}
+
+func getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req getResourceRequest, resourceData dmtf.Collection) int32 {
+	// Loop through all the resource members collection and discover all of them
+	for _, member := range resourceData.Members {
+		estimatedWork := alottedWork / int32(len(resourceData.Members))
+		req.OID = member.Oid
+		progress = getTeleInfo(taskID, progress, estimatedWork, req)
+	}
+	return progress
+}
+
+func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
+	resourceName := getResourceName(req.OID, false)
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
+	if err != nil {
+		return progress
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress
+	}
+	// persist the response with table resource
+	err = agmodel.GenericSave(body, resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+	progress = progress + alottedWork
+	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
+	req.UpdateTask(task)
+	return progress
 }

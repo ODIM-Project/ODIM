@@ -66,20 +66,8 @@ func (e *ExternalInterface) GetMetricReport(ctx iris.Context) {
 
 	metricReportData := e.getMetricData(reqURI, devices)
 	var respMetricValue []dmtfmodel.MetricValue
-	var systemID string
-	for systemID, metricData = range metricReportData {
-		for _, metricVal := range metricData.MetricValues {
-			metricProperty := strings.Replace(metricVal.MetricProperty, "/Systems/", "/Systems/"+systemID+":", -1)
-			metricProperty = strings.Replace(metricVal.MetricProperty, "/Chassis/", "/Chassis/"+systemID+":", -1)
-			metricValue := dmtfmodel.MetricValue{
-				MetricProperty:   metricProperty,
-				MetricValue:      metricVal.MetricValue,
-				Timestamp:        metricVal.Timestamp,
-				MetricID:         metricVal.MetricID,
-				MetricDefinition: metricVal.MetricDefinition,
-			}
-			respMetricValue = append(respMetricValue, metricValue)
-		}
+	for _, metricData = range metricReportData {
+		respMetricValue = append(respMetricValue, metricData.MetricValues...)
 	}
 	metricData.MetricValues = respMetricValue
 	ctx.StatusCode(http.StatusOK)
@@ -103,22 +91,54 @@ func (e *ExternalInterface) getMetricData(uri string, devices []rfpmodel.Device)
 }
 
 func (e *ExternalInterface) getMetricReportInfo(uri string, device rfpmodel.Device, wg *sync.WaitGroup, data map[string]dmtfmodel.MetricReports, lock *sync.Mutex) {
+	defer wg.Done()
 	statusCode, body, _, _ := e.GetDeviceData(uri, &rfputilities.RedfishDevice{
 		Host:     device.Host,
 		Username: device.Username,
 		Password: string(device.Password),
 		PostBody: nil,
 	})
-
 	if statusCode == http.StatusOK {
 		var metricReportData dmtfmodel.MetricReports
 		json.Unmarshal(body, &metricReportData)
-
 		lock.Lock()
+		defer lock.Unlock()
+		var respMetricValue []dmtfmodel.MetricValue
+		for _, metricVal := range metricReportData.MetricValues {
+			uri = metricVal.MetricDefinition.ODataID
+			metricID := metricVal.MetricID
+			if _, ok := rfpmodel.MetricPropertyData[metricID]; !ok {
+				statusCode, body, _, _ := e.GetDeviceData(uri, &rfputilities.RedfishDevice{
+					Host:     device.Host,
+					Username: device.Username,
+					Password: string(device.Password),
+					PostBody: nil,
+				})
+				if statusCode == http.StatusOK {
+					var metricDefinitionData dmtfmodel.MetricDefinitions
+					json.Unmarshal(body, &metricDefinitionData)
+					metricProperty := metricDefinitionData.MetricProperties[0]
+					metricPropertyURL := strings.TrimSuffix(metricProperty, "/")
+					data := strings.Split(metricPropertyURL, "/")
+					metricPropertyID := data[len(data)-1]
+					if metricPropertyID == metricID {
+						rfpmodel.MetricPropertyData[metricID] = metricProperty
+					}
+				} else if statusCode != http.StatusNotFound {
+					log.Info("Get on individual metric definition failed on device "+device.Host+" with status code: ", statusCode)
+				}
+			}
+			metricProperty := rfpmodel.MetricPropertyData[metricID]
+			metricProperty = strings.Replace(metricProperty, "/Systems/", "/Systems/"+device.SystemID+":", -1)
+			metricProperty = strings.Replace(metricProperty, "/Chassis/", "/Chassis/"+device.SystemID+":", -1)
+			metricVal.MetricProperty = metricProperty
+			respMetricValue = append(respMetricValue, metricVal)
+		}
+		metricReportData.MetricValues = respMetricValue
 		data[device.SystemID] = metricReportData
-		lock.Unlock()
+	} else if statusCode != http.StatusNotFound {
+		log.Info("Get on individual metric report failed  on device "+device.Host+" with status code: ", statusCode)
 	}
-	wg.Done()
 	return
 }
 

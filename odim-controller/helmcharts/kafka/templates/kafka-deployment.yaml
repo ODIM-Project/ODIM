@@ -5,8 +5,8 @@ metadata:
   name: kafka
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
+    deployment: odim-ra
   annotations:	
     secret.reloader.stakater.com/reload: "kafka-secret"
 spec:
@@ -14,9 +14,8 @@ spec:
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: kafka
-        parentdeployment: odim-kafka
+        app: kafka
+        parentdeployment: odim-ra
     spec:
       hostname: kafka
       subdomain: kafka
@@ -69,7 +68,6 @@ spec:
             claimName: kafka-data-pvc
   selector:
     matchLabels:
-      app: odim-ra
-      unit: kafka
-      parentdeployment: odim-kafka
+      app: kafka
+      parentdeployment: odim-ra
 ---

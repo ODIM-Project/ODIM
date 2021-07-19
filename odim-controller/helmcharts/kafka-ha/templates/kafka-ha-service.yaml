@@ -5,15 +5,14 @@ metadata:
   name: kafka
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
+    deployment: odim-ra
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
-    app: odim-ra
-    unit: kafka
-    parentdeployment: odim-kafka
+    app: kafka
+    parentdeployment: odim-ra
   ports:
     - name: kafka
       port: 9092
@@ -24,15 +23,14 @@ metadata:
   name: kafka1-ext
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka1
+    deployment: odim-ra
 spec:
   selector:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka1
-    parentdeployment: odim-kafka
+    parentdeployment: odim-ra
   type: NodePort
   ports:
     - name: kafka1-ext
@@ -46,15 +44,14 @@ metadata:
   name: kafka2-ext
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka2
+    deployment: odim-ra
 spec:
   selector:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka2
-    parentdeployment: odim-kafka
+    parentdeployment: odim-ra
   type: NodePort
   ports:
     - name: kafka2-ext
@@ -68,15 +65,14 @@ metadata:
   name: kafka3-ext
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka3
+    deployment: odim-ra
 spec:
   selector:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka3
-    parentdeployment: odim-kafka
+    parentdeployment: odim-ra
   type: NodePort
   ports:
     - name: kafka3-ext

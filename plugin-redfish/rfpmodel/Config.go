@@ -18,3 +18,6 @@ package rfpmodel
 // PluginPrivateKey will contains base64encoded private key of plugin
 // this key will be used to decrypt the data.
 var PluginPrivateKey []byte
+
+// MetricPropertyData is map to store metric property
+var MetricPropertyData = make(map[string]string)

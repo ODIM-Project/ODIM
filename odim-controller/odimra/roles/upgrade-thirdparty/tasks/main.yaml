@@ -19,10 +19,15 @@
 - name: Include user defined configurations
   include_vars: "{{ helm_config_file }}"
 
+- name: Create {{ helm_chart_name }}-ha helm package
+  script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts/{{ helm_chart_name }}-ha {{ odimControllerSrcPath }}/odimra/roles/upgrade-thirdparty/files/helmcharts"
+  delegate_to: localhost
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
 
-- name: Create odim helm packages
+- name: Create {{ helm_chart_name }} helm package
   script: "{{ odimControllerSrcPath }}/helmcharts/create_helm_packages.sh {{ odimControllerSrcPath }}/helmcharts/{{ helm_chart_name }} {{ odimControllerSrcPath }}/odimra/roles/upgrade-thirdparty/files/helmcharts"
   delegate_to: localhost
+  when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
 
 - name: Copy helmcharts required for odimra deployment
   copy:

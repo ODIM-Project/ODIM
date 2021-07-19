@@ -62,6 +62,10 @@ spec:
           env:
             - name: GET_HOSTS_FROM
               value: dns
+            - name: ASSIGNED_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           image: grfplugin:{{ .Values.grfplugin.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:

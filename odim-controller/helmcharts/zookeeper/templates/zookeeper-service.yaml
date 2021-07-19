@@ -5,14 +5,13 @@ metadata:
   name: zookeeper
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: zookeeper
+    app: zookeeper
+    deployment: odim-ra
 spec:
   type: ClusterIP
   selector:
-    app: odim-ra
-    unit: zookeeper
-    parentdeployment: odim-zookeeper
+    app: zookeeper
+    parentdeployment: odim-ra
   ports:
     - name: zookeeper
       port: 2281

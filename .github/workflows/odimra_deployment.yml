@@ -4,10 +4,7 @@ on:
   pull_request:
     branches:
       - '**'
-
-
-
-  
+ 
 jobs:
   build:
     name: Deploy
@@ -375,10 +372,7 @@ jobs:
             
         
         kubectl get pods -n odim -o wide | grep grfplugin*
-                
-        
-        
-        #curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/'
+      
         
         grfplugin=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/' | awk 'BEGIN{FS=":"; OFS=":"} {print $10}' | cut -d '"' -f 2`
         
@@ -421,16 +415,10 @@ jobs:
         echo "==========================================================="
         
         export FQDN="odim.controller.com"
-       
-             
-             
+            
         run=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName": "admin","Password": "Od!m12$4"}' 'https://'$FQDN':30080/redfish/v1/SessionService/Sessions' | head -1 | awk '{print $2}')
-        
- 
-        
-        echo $run
-        
-        
+      
+        echo $run  
         
         if [[ $run -eq 201 ]];
         then 
@@ -527,38 +515,7 @@ jobs:
       with:
        name: my-artifact
        path: /artifacts 
-        
-        
-        
-        
-        #echo "====================Installing BMC Simulator==========================="
-        
-        #cd 
-        #git clone https://github.com/ODIM-Project/BMCSimulator.git
-        
-        #cd BMCSimulator
-        
-        #touch executableJar
-        
-        #sudo chmod 777 executableJar
-        
-        #cat /etc/java-11-openjdk/net.properties
-        #./gradlew executableJar
-        #cd src/main/resources
-        
-        #pwd
-        
-        #sed -i '/ip/c\   \"ip\" : "'${VM_IP}'"\,' simulator-config.json
-        #sed -i '/port/c\   \"port\" : \"1234\",' simulator-config.json
-     
-        
-        #cat /home/runner/BMCSimulator/src/main/resources/simulator-config.json
-        
-        #cd /home/runner/BMCSimulator/build/libs
-        
-        #nohup java -jar simulator-runner-1.0-SNAPSHOT.jar run BMC -c /home/runner/BMCSimulator/src/main/resources/simulator-config.json >> /dev/null 2>&1 &
-        
-        #curl -I -s -k http://${VM_IP}:1234/redfish/v1/
+      
         
         
         

@@ -195,7 +195,7 @@ func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}) (*
 		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err.Error(), response)
 		return nil, err
 	}
-	log.Info("Successfully sent startup data to " + plugin.ID)
+	log.Infof("Successfully sent startup data to %s(%s)", plugin.ID, plugin.IP)
 	return response, nil
 }
 

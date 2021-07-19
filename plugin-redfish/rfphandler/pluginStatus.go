@@ -102,6 +102,7 @@ func GetPluginStartup(ctx iris.Context) {
 		ctx.StatusCode(http.StatusOK)
 		return
 	}
+	log.Infof("inventory update request received for %d devices", len(startup.Devices))
 
 	errorCh := make(chan error)
 	startUpResponse := make(chan map[string]string)
@@ -137,12 +138,15 @@ func GetPluginStartup(ctx iris.Context) {
 	for uuid, device := range startup.Devices {
 		if device.Operation == "add" {
 			rfpmodel.AddDeviceToInventory(uuid, device)
+			log.Info("device " + uuid + " added to the inventory")
 		}
 		if device.Operation == "del" {
 			rfpmodel.DeleteDeviceInInventory(uuid)
+			log.Info("device " + uuid + " removed from the inventory")
 		}
 		if startup.ResyncEvtSubscription && startup.RequestType == "full" {
 			writeWG.Add(1)
+			log.Info("performing event subscription check for all the devices in the inventory")
 			go checkCreateSub(device, startUpResponse, errorCh, &writeWG)
 		}
 	}

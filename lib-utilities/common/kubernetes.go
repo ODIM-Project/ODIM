@@ -81,7 +81,7 @@ func GetServiceEndpointAddresses(srvName string) ([]string, error) {
 		return nil, fmt.Errorf("failed to fetch %s service endpoint info: %s", srvName, err.Error())
 	}
 
-	addrList := make([]string, len(endpoints.Subsets))
+	addrList := make([]string, 0)
 	for _, subset := range endpoints.Subsets {
 		for _, address := range subset.Addresses {
 			addrList = append(addrList, address.IP)

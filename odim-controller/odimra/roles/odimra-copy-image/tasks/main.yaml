@@ -50,7 +50,7 @@
     dest: "{{ helm_charts_path }}/"
     owner: "{{ current_user }}"
     group: "{{ current_user }}"
-    mode: 0640
+    mode: 0750
   loop: "{{ plugin_packages.files }}"
  
 - name: Load Plugin Image

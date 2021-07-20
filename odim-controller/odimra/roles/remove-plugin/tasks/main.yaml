@@ -10,3 +10,8 @@
   delegate_to: "{{ item }}"
   loop:
     "{{ groups['kube-node'] }}"
+
+- name: Invoke hook script of {{ release_name }} for uninstall operation
+  include_tasks: roles/remove-plugin/tasks/plugins.yaml
+  loop:
+    "{{ groups['kube-node'] }}"

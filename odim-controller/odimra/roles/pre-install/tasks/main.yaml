@@ -149,3 +149,15 @@
     owner: "{{ odim_owner_name }}"
     group: "{{ odim_owner_name }}"
     mode: 0444
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+  when: odimPluginPath is defined
+
+- name: Call plugin pre-install scripts
+  include_tasks: roles/pre-install/tasks/plugins.yaml
+  loop: "{{ plugin_packages.files }}"

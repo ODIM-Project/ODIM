@@ -53,9 +53,8 @@ type PluginConfig struct {
 
 // TLSConf holds details related with URP's NB interface TLS configuration
 type TLSConf struct {
-	MinVersion            uint16   `yaml:"MinVersion"`
-	MaxVersion            uint16   `yaml:"MaxVersion"`
-	PreferredCipherSuites []uint16 `yaml:"PreferredCipherSuites"`
+	MinVersion uint16 `yaml:"MinVersion"`
+	MaxVersion uint16 `yaml:"MaxVersion"`
 }
 
 // ReadPluginConfiguration loads URP's configuration from path defined behind PLUGIN_CONFIG_FILE_PATH env variable
@@ -130,11 +129,11 @@ func validate(pc *PluginConfig) error {
 	if pc.TLSConf == nil {
 		return fmt.Errorf("TLSConf not provided, setting default value")
 	}
-	if pc.TLSConf.MinVersion == 0 || pc.TLSConf.MaxVersion == 0 {
-		return fmt.Errorf("configured TLSConf.{MinVersion|MaxVersion} is wrong")
+	if pc.TLSConf.MinVersion == 0 || pc.TLSConf.MinVersion == 0x0301 || pc.TLSConf.MinVersion == 0x0302 {
+		return fmt.Errorf("configured TLSConf.{MinVersion} is wrong")
 	}
-	if len(pc.TLSConf.PreferredCipherSuites) == 0 {
-		return fmt.Errorf("configured TLSConf.PreferredCipherSuites cannot be empty")
+	if pc.TLSConf.MaxVersion == 0 || pc.TLSConf.MaxVersion == 0x0301 || pc.TLSConf.MaxVersion == 0x0302 {
+		return fmt.Errorf("configured TLSConf.{MaxVersion} is wrong")
 	}
 	return nil
 }

@@ -55,6 +55,8 @@ type ResourceInfoRequest struct {
 	SystemID              string
 	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
+	HTTPMethod            string
+	RequestBody           []byte
 }
 
 // PluginToken interface to hold the token
@@ -83,6 +85,66 @@ func (p *PluginToken) GetToken(pluginID string) string {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	return p.Tokens[pluginID]
+}
+
+// DeviceCommunication to connect with device with all the params
+func DeviceCommunication(req ResourceInfoRequest) response.RPC {
+	var resp response.RPC
+	target, gerr := mgrmodel.GetTarget(req.UUID)
+	if gerr != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
+	}
+	// Get the Plugin info
+	plugin, gerr := mgrmodel.GetPluginData(target.PluginID)
+	if gerr != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
+	}
+	var contactRequest PluginContactRequest
+	contactRequest.ContactClient = req.ContactClient
+	contactRequest.Plugin = plugin
+	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		token := GetPluginToken(contactRequest)
+		if token == "" {
+			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
+		}
+		contactRequest.Token = token
+	} else {
+		contactRequest.BasicAuth = map[string]string{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+	}
+	decryptedPasswordByte, err := req.DecryptDevicePassword(target.Password)
+	if err != nil {
+		errorMessage := "error while trying to decrypt device password: " + err.Error()
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
+	}
+	contactRequest.DeviceInfo = map[string]interface{}{
+		"ManagerAddress": target.ManagerAddress,
+		"UserName":       target.UserName,
+		"Password":       decryptedPasswordByte,
+		"PostBody":       req.RequestBody,
+	}
+	//replace the uuid:id with the manager id
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
+	contactRequest.HTTPMethodType = req.HTTPMethod
+	//target.PostBody = req.RequestBody
+	body, _, getResp, err := ContactPlugin(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
+	if err != nil {
+		resp.StatusCode = getResp.StatusCode
+		json.Unmarshal(body, &resp.Body)
+		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+		return resp
+	}
+	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	err = json.Unmarshal(body, &resp.Body)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	return resp
 }
 
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
@@ -298,4 +360,12 @@ func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
 			log.Error(err)
 		}
 	}
+}
+
+// TranslateToSouthBoundURL translates the url to southbound URL
+func TranslateToSouthBoundURL(url string) string {
+	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		url = strings.Replace(url, key, value, -1)
+	}
+	return url
 }

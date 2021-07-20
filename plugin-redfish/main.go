@@ -14,7 +14,8 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
+	"encoding/json"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -29,6 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
+	"github.com/sirupsen/logrus"
 )
 
 var subscriptionInfo []rfpmodel.Device
@@ -75,10 +77,10 @@ func main() {
 }
 
 func app() {
+	go sendStartupEvent()
+	go eventsrouters()
+
 	app := routers()
-	go func() {
-		eventsrouters()
-	}()
 	conf := &lutilconf.HTTPConfig{
 		Certificate:   &config.Data.KeyCertConf.Certificate,
 		PrivateKey:    &config.Data.KeyCertConf.PrivateKey,
@@ -264,5 +266,34 @@ func eventsrouters() {
 func intializePluginStatus() {
 	rfputilities.Status.Available = "yes"
 	rfputilities.Status.Uptime = time.Now().Format(time.RFC3339)
+}
 
+// sendStartupEvent is for sending startup event
+func sendStartupEvent() {
+	// grace wait time for plugin to be functional
+	time.Sleep(3 * time.Second)
+
+	var pluginIP string
+	if pluginIP = os.Getenv("ASSIGNED_POD_IP"); pluginIP == "" {
+		pluginIP = config.Data.PluginConf.Host
+	}
+
+	startupEvt := common.PluginStatusEvent{
+		Name:         "Plugin startup event",
+		Type:         "PluginStarted",
+		Timestamp:    time.Now().String(),
+		OriginatorID: pluginIP,
+	}
+
+	request, _ := json.Marshal(startupEvt)
+	event := common.Events{
+		IP:        net.JoinHostPort(config.Data.PluginConf.Host, config.Data.PluginConf.Port),
+		Request:   request,
+		EventType: "PluginStartUp",
+	}
+
+	done := make(chan bool)
+	events := []interface{}{event}
+	go common.RunWriteWorkers(rfphandler.In, events, 1, done)
+	log.Info("successfully sent startup event")
 }

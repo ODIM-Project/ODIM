@@ -86,7 +86,7 @@ func GetPluginStartup(ctx iris.Context) {
 		}
 	}
 
-	var startup []dpmodel.Startup
+	var startup dpmodel.StartUpData
 	err := ctx.ReadJSON(&startup)
 	if err != nil {
 		log.Error("While trying to collect data from request, got: " + err.Error())
@@ -94,6 +94,14 @@ func GetPluginStartup(ctx iris.Context) {
 		ctx.WriteString("Error: bad request.")
 		return
 	}
+
+	if len(startup.Devices) <= 0 {
+		log.Info("startup devices list is empty")
+		ctx.StatusCode(http.StatusOK)
+		return
+	}
+	log.Infof("inventory update request received for %d devices", len(startup.Devices))
+
 	errorCh := make(chan error)
 	startUpResponse := make(chan map[string]string)
 	respBody := make(map[string]string)
@@ -124,11 +132,23 @@ func GetPluginStartup(ctx iris.Context) {
 			}
 		}
 	}()
-	for _, server := range startup {
-		writeWG.Add(1)
-		go checkCreateSub(server, startUpResponse, errorCh, &writeWG)
-		//go checkCreateSub(server, startUpResponse, respHeader, errorCh)
+
+	for uuid, device := range startup.Devices {
+		if device.Operation == "add" {
+			dpmodel.AddDeviceToInventory(uuid, device)
+			log.Info("device " + uuid + " added to the inventory")
+		}
+		if device.Operation == "del" {
+			dpmodel.DeleteDeviceInInventory(uuid)
+			log.Info("device " + uuid + " removed from the inventory")
+		}
+		if startup.ResyncEvtSubscription && startup.RequestType == "full" {
+			writeWG.Add(1)
+			log.Info("performing event subscription check for all the devices in the inventory")
+			go checkCreateSub(device, startUpResponse, errorCh, &writeWG)
+		}
 	}
+
 	writeWG.Wait()
 	quit <- true
 	ctx.StatusCode(http.StatusOK)
@@ -136,14 +156,14 @@ func GetPluginStartup(ctx iris.Context) {
 	return
 }
 
-func checkCreateSub(startup dpmodel.Startup, startUpResponse chan map[string]string, errorCh chan error, writeWG *sync.WaitGroup) {
+func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]string, errorCh chan error, writeWG *sync.WaitGroup) {
 	var respBody = make(map[string]string)
 
 	device := &dputilities.RedfishDevice{
-		Host:     startup.Device.Host,
-		Username: startup.Device.Username,
-		Password: string(startup.Device.Password),
-		Location: startup.Location,
+		Host:     server.Address,
+		Username: server.UserName,
+		Password: string(server.Password),
+		Location: server.EventSubscriptionInfo.Location,
 	}
 	redfishClient, err := dputilities.GetRedfishClient()
 	if err != nil {
@@ -170,7 +190,7 @@ func checkCreateSub(startup dpmodel.Startup, startUpResponse chan map[string]str
 			return
 		}
 
-		res := reflect.DeepEqual(obj.EventTypes, startup.EventTypes)
+		res := reflect.DeepEqual(obj.EventTypes, server.EventSubscriptionInfo.EventTypes)
 		if !res {
 			//Delete Subscription details
 			resp, err := redfishClient.DeleteSubscriptionDetail(device)
@@ -183,7 +203,7 @@ func checkCreateSub(startup dpmodel.Startup, startUpResponse chan map[string]str
 			//Create new Subscription with details in odimra
 			req := dpmodel.EvtSubPost{
 				Destination: "https://" + pluginConfig.Data.LoadBalancerConf.Host + ":" + pluginConfig.Data.LoadBalancerConf.Port + pluginConfig.Data.EventConf.DestURI,
-				EventTypes:  startup.EventTypes,
+				EventTypes:  server.EventSubscriptionInfo.EventTypes,
 				Context:     "Event Subscription",
 				//      HTTPHeaders: reqPostBody.HTTPHeaders,
 				Protocol: "Redfish",
@@ -227,7 +247,7 @@ func checkCreateSub(startup dpmodel.Startup, startUpResponse chan map[string]str
 		defer resp.Body.Close()
 	}
 
-	respBody[startup.Device.Host] = resp.Header.Get("location")
+	respBody[device.Host] = resp.Header.Get("location")
 	startUpResponse <- respBody
 	return
 }

@@ -6,13 +6,12 @@ metadata:
   name: consul
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: consul
+    app: consul
+    deployment: odim-ra
 spec:
   type: ClusterIP
   selector:
-    app: odim-ra
-    unit: consul
+    app: consul
     parentdeployment: odim-ra
   ports:
     - name: consul-rpc-svc

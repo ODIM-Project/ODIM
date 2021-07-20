@@ -62,6 +62,10 @@ spec:
           env:
             - name: GET_HOSTS_FROM
               value: dns
+            - name: ASSIGNED_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           image: grfplugin:{{ .Values.grfplugin.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
@@ -75,4 +79,4 @@ spec:
             - name: grfplugin-log
               mountPath: /var/log/grfplugin_logs
             - name: odimra-secret
-              mountPath: /etc/grfplugin_certs
+              mountPath: /etc/odimra_certs

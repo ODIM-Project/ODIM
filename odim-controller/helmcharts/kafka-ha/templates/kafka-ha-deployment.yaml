@@ -5,9 +5,9 @@ metadata:
   name: kafka1
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka1
+    deployment: odim-ra
   annotations:
     secret.reloader.stakater.com/reload: "kafka-secret"
 spec:
@@ -15,10 +15,9 @@ spec:
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: kafka
+        app: kafka
         instance: kafka1
-        parentdeployment: odim-kafka
+        parentdeployment: odim-ra
     spec:
       hostname: kafka1
       subdomain: kafka
@@ -27,14 +26,19 @@ spec:
           image: busybox:1.33
           command: ['sh', '-c', 'sleep 3']
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values: 
-                  - kafka
+                  values: ["kafka2", "kafka3"] 
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka1
@@ -87,10 +91,9 @@ spec:
             claimName: kafka-data-pvc
   selector:
     matchLabels:
-      app: odim-ra
-      unit: kafka
+      app: kafka
       instance: kafka1
-      parentdeployment: odim-kafka
+      parentdeployment: odim-ra
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -98,9 +101,9 @@ metadata:
   name: kafka2
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka2
+    deployment: odim-ra
   annotations:
     secret.reloader.stakater.com/reload: "kafka-secret"
 spec:
@@ -108,10 +111,9 @@ spec:
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: kafka
+        app: kafka
         instance: kafka2
-        parentdeployment: odim-kafka
+        parentdeployment: odim-ra
     spec:
       hostname: kafka2
       subdomain: kafka
@@ -120,14 +122,19 @@ spec:
           image: busybox:1.33
           command: ['sh', '-c', 'sleep 5']
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - kafka
+                  values: ["kafka1", "kafka3"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka2
@@ -180,10 +187,9 @@ spec:
             claimName: kafka-data-pvc
   selector:
     matchLabels:
-      app: odim-ra
-      unit: kafka
+      app: kafka
       instance: kafka2
-      parentdeployment: odim-kafka
+      parentdeployment: odim-ra
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -191,9 +197,9 @@ metadata:
   name: kafka3
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: kafka
+    app: kafka
     instance: kafka3
+    deployment: odim-ra
   annotations:
     secret.reloader.stakater.com/reload: "kafka-secret"
 spec:
@@ -201,10 +207,9 @@ spec:
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: kafka
+        app: kafka
         instance: kafka3
-        parentdeployment: odim-kafka
+        parentdeployment: odim-ra
     spec:
       hostname: kafka3
       subdomain: kafka
@@ -213,14 +218,19 @@ spec:
           image: busybox:1.33
           command: ['sh', '-c', 'sleep 7']
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - kafka
+                  values: ["kafka1", "kafka2"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: kafka3
@@ -274,7 +284,6 @@ spec:
             claimName: kafka-data-pvc
   selector:
     matchLabels:
-      app: odim-ra
-      unit: kafka
+      app: kafka
       instance: kafka3
-      parentdeployment: odim-kafka
+      parentdeployment: odim-ra

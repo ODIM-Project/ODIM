@@ -72,17 +72,24 @@ data:
     		}
     	},
     	"AddComputeSkipResources": {
-    		"SystemCollection": [
+    		"SkipResourceListUnderSystem": [
     			"Chassis",
     			"LogServices",
-    			"WorkloadPerformanceAdvisor"
+                        "Managers",
+    			"WorkloadPerformanceAdvisor"                
     		],
-    		"ChassisCollection": [
+                "SkipResourceListUnderManager": [
+    			"Systems",
+                        "Chassis",
+    			"LogServices",
+                        "WorkloadPerformanceAdvisor"
+    		],
+    		"SkipResourceListUnderChassis": [
     			"Managers",
     			"Systems",
     			"Devices"
     		],
-    		"OtherCollection": [
+    		"SkipResourceListUnderOthers": [
     			"Power",
     			"Thermal",
     			"SmartStorage",

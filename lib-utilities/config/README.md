@@ -32,9 +32,9 @@
 |PasswordRules||MaxPasswordLength|integer|This holds the value of max password length
 |PasswordRules||AllowedSpecialCharcters|string|This holds all value of all sppecial charcters
 |AddComputeSkipResources|collection|||This stores all resource which need to igonered while adding Computer System
-|AddComputeSkipResources||SystemCollection|list of strings|This holds the value of system resource which need to be ignored
-|AddComputeSkipResources||ChassisCollection|list of strings|This holds the value of chassis resource which need to be ignored
-|AddComputeSkipResources||OtherCollection|list of strings|This holds the value resource name for which next level retrieval to be ignored
+|AddComputeSkipResources||SkipResourceListUnderSystem|list of strings|This holds the value of system resource which need to be ignored
+|AddComputeSkipResources||SkipResourceListUnderChassis|list of strings|This holds the value of chassis resource which need to be ignored
+|AddComputeSkipResources||SkipResourceListUnderOthers|list of strings|This holds the value resource name for which next level retrieval to be ignored
 |URLTranslation|collection|||This holds the north bound and south bound urls
 |URLTranslation||NorthBoundURL.ODIM|collection of strings| This the north bound urls
 |URLTranslation||SouthBoundURL.redfish|collection of strings| This holds the south bound urls

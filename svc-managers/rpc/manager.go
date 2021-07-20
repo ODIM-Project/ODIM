@@ -105,6 +105,50 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	return nil
 }
 
+//VirtualMediaInsert defines the operations which handles the RPC request response
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
+func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Error("while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return nil
+	}
+	data := m.EI.VirtualMediaActions(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
+//VirtualMediaEject defines the operations which handles the RPC request response
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
+func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Error("while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return nil
+	}
+	data := m.EI.VirtualMediaActions(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return nil
+}
+
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {

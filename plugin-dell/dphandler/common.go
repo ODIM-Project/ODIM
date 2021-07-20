@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"strings"
 
+	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 )
 
@@ -65,4 +66,12 @@ func queryDevice(uri string, device *dputilities.RedfishDevice, method string) (
 		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
 	}
 	return resp.StatusCode, resp.Header, body, nil
+}
+
+//replacing the request url with south bound translation URL
+func replaceURI(uri string) string {
+	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
+		uri = strings.Replace(uri, key, value, -1)
+	}
+	return uri
 }

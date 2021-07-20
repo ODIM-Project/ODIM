@@ -56,13 +56,13 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	var connectionMethoodInterface = agcommon.DBInterface{
+	var connectionMethodInterface = agcommon.DBInterface{
 		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
 		GetConnectionMethodInterface: agmodel.GetConnectionMethod,
 		AddConnectionMethodInterface: agmodel.AddConnectionMethod,
 		DeleteInterface:              agmodel.Delete,
 	}
-	if err := connectionMethoodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
+	if err := connectionMethodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
@@ -90,9 +90,11 @@ func main() {
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethoodInterface)
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface)
+
+	go system.PerformPluginHealthCheck()
+
 	if err = services.Service.Run(); err != nil {
 		log.Fatal("failed to run a service: " + err.Error())
 	}
-
 }

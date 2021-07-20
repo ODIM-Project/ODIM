@@ -14,6 +14,8 @@
 package main
 
 import (
+	"encoding/json"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -74,10 +76,10 @@ func main() {
 }
 
 func app() {
+	go sendStartupEvent()
+	go eventsrouters()
+
 	app := routers()
-	go func() {
-		eventsrouters()
-	}()
 	conf := &lutilconf.HTTPConfig{
 		Certificate:   &config.Data.KeyCertConf.Certificate,
 		PrivateKey:    &config.Data.KeyCertConf.PrivateKey,
@@ -199,6 +201,8 @@ func routers() *iris.Application {
 		managers.Get("/{id}/HostInterfaces/{rid}", dphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia", dphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia/{rid}", dphandler.GetResource)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", dphandler.VirtualMediaActions)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", dphandler.VirtualMediaActions)
 		managers.Get("/{id}/LogServices", dphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}", dphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}/Entries", dphandler.GetResource)
@@ -252,4 +256,34 @@ func eventsrouters() {
 func intializePluginStatus() {
 	dputilities.Status.Available = "yes"
 	dputilities.Status.Uptime = time.Now().Format(time.RFC3339)
+}
+
+// sendStartupEvent is for sending startup event
+func sendStartupEvent() {
+	// grace wait time for plugin to be functional
+	time.Sleep(3 * time.Second)
+
+	var pluginIP string
+	if pluginIP = os.Getenv("ASSIGNED_POD_IP"); pluginIP == "" {
+		pluginIP = config.Data.PluginConf.Host
+	}
+
+	startupEvt := common.PluginStatusEvent{
+		Name:         "Plugin startup event",
+		Type:         "PluginStarted",
+		Timestamp:    time.Now().String(),
+		OriginatorID: pluginIP,
+	}
+
+	request, _ := json.Marshal(startupEvt)
+	event := common.Events{
+		IP:        net.JoinHostPort(config.Data.PluginConf.Host, config.Data.PluginConf.Port),
+		Request:   request,
+		EventType: "PluginStartUp",
+	}
+
+	done := make(chan bool)
+	events := []interface{}{event}
+	go common.RunWriteWorkers(dphandler.In, events, 1, done)
+	log.Info("successfully sent startup event")
 }

@@ -111,7 +111,7 @@ func validateElements(elements []string) (int32, error) {
 		return http.StatusBadRequest, errors.PackError(errors.UndefinedErrorType, fmt.Errorf("Duplicate elements present"))
 	}
 	for _, element := range elements {
-		if _, err := agmodel.GetSystem(element); err != nil {
+		if _, err := agmodel.GetComputerSystem(element); err != nil {
 			return http.StatusNotFound, err
 		}
 	}
@@ -155,8 +155,8 @@ func (e *ExternalInterface) GetAllAggregates(req *aggregatorproto.AggregatorRequ
 		OdataType:    "#AggregateCollection.AggregateCollection",
 		OdataID:      "/redfish/v1/AggregationService/Aggregates",
 		OdataContext: "/redfish/v1/$metadata#AggregateCollection.AggregateCollection",
-		ID:           "Aggregate",
 		Name:         "Aggregate",
+		Description:  "Aggregate collection view",
 	}
 	resp.Header = map[string]string{
 		"Cache-Control":     "no-cache",
@@ -165,7 +165,7 @@ func (e *ExternalInterface) GetAllAggregates(req *aggregatorproto.AggregatorRequ
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-	commonResponse.CreateGenericResponse(response.Success)
+
 	resp.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: len(members),

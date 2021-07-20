@@ -17,7 +17,7 @@
 #--------------------------------------------------------------------------------------------------#
 # Following section configures server where URP's REST API is exposed                              #
 ####################################################################################################
-Host: odimra.local.com
+Host: odimra.local
 Port: 45003
 
 RSAPrivateKeyPath: "/etc/plugincert/odimra_rsa.private"

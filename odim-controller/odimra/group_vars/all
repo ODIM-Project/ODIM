@@ -18,6 +18,7 @@ odim_pv_pvc_secrets_helmcharts:
    kafka-secret: kafka-secret-0.1.0
    zookeeper-secret: zookeeper-secret-0.1.0
    configure-hosts: configure-hosts-0.1.0
+   odimra-k8s-access-config: odimra-k8s-access-config-0.1.0
 odim_third_party_helmcharts:
    zookeeper: zookeeper-2.5.0-0.1.0
    redis: redis-5.0.8-0.1.0

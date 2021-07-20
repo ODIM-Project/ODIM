@@ -1,5 +1,5 @@
 # Redfish-plugin  
-  
+
 Redfish-plugin communicates with redfish compliant BMC.  
 This is an independent module which provides two primary communication channels:  
 1.  An API mechanism that is used to exchange control data  
@@ -9,6 +9,12 @@ This is an independent module which provides two primary communication channels:
 This guide provides a set of guidelines for developing API and EMB functions to work within the Resource Aggregator for ODIM™ environment. It ensures consistency around API semantics for all plugins.
 
 To ensure continued adoption of open technologies, the APIs for the plugins are based on the [OpenAPI specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md). Messaging is based on the now-evolving [OpenMessaging specifications](https://github.com/openmessaging/specification/blob/master/domain_architecture.md) under Linux Foundation.
+
+
+
+## GRF plugin deployment instructions
+
+For deploying the GRF plugin and adding the plugin to the Resource Aggregator for ODIM framework, refer to the "Deploying the GRF plugin" section in the "Appendix" chapter in the [Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/main/README.md).
 
 
 
@@ -583,7 +589,7 @@ NOTE:
 -   When any request comes to plugin, do the following:
 
          -  Check if header has auth token or basic auth. If the header does not have auth token or basic auth, return an unauthorized error.
-
+        
          -  Check if auth token is valid or basic auth has valid user name and password. If auth token is not valid or basic auth does not have valid user name and password, return an unauthorized error.
 
 

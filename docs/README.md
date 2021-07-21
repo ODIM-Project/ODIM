@@ -6325,20 +6325,21 @@ curl -i GET \
 
 ```
 {
-"@odata.context": "/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
-"@odata.id": "/redfish/v1/Managers/1/VirtualMedia/",
-"@odata.type": "#VirtualMediaCollection.VirtualMediaCollection",
-"Description": "Virtual Media Services Settings",
-"Name": "Virtual Media Services",
-"Members": [
-{
-"@odata.id": "/redfish/v1/Managers/1/VirtualMedia/1/"
-},
-{
-"@odata.id": "/redfish/v1/Managers/1/VirtualMedia/2/"
-}
-],
-"Members@odata.count": 2
+   "@odata.context":"/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
+   "@odata.etag":"W/\"570254F2\"",
+   "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia",
+   "@odata.type":"#VirtualMediaCollection.VirtualMediaCollection",
+   "Description":"iLO Virtual Media Services Settings",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/2"
+      }
+   ],
+   "Members@odata.count":2,
+   "Name":"Virtual Media Services"
 }
 ```
 
@@ -6365,15 +6366,44 @@ curl -i GET \
 
 ```
 {
-    "error": {
-        "@Message.ExtendedInfo": [
-            {
-                "MessageId": "Base.1.4.Success"
+   "@odata.context":"/redfish/v1/$metadata#VirtualMedia.VirtualMedia",
+   "@odata.etag":"W/\"7647E98E\"",
+   "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1",
+   "@odata.type":"#VirtualMedia.v1_2_0.VirtualMedia",
+   "Actions":{
+      "#VirtualMedia.EjectMedia":{
+         "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia"
+      },
+      "#VirtualMedia.InsertMedia":{
+         "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia"
+      }
+   },
+   "ConnectedVia":"URI",
+   "Description":"Virtual Removable Media",
+   "Id":"1",
+   "Image":"http://10.24.1.24/ISO/ubuntu-18.04.4-server-amd64.iso",
+   "ImageName":"ubuntu-18.04.4-server-amd64.iso",
+   "Inserted":true,
+   "MediaTypes":[
+      "Floppy",
+      "USBStick"
+   ],
+   "Name":"VirtualMedia",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeiLOVirtualMedia.HpeiLOVirtualMedia",
+         "@odata.type":"#HpeiLOVirtualMedia.v2_2_0.HpeiLOVirtualMedia",
+         "Actions":{
+            "#HpeiLOVirtualMedia.EjectVirtualMedia":{
+               "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/Oem/Hpe/HpeiLOVirtualMedia.EjectVirtualMedia""…"
+            },
+            "#HpeiLOVirtualMedia.InsertVirtualMedia":{
+               "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/Oem/Hpe/HpeiLOVirtualMedia.InsertVirtualMedia""…"
             }
-        ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
-    }
+         }
+      }
+   },
+   "WriteProtected":true
 }
 ```
 
@@ -6407,14 +6437,17 @@ curl -i POST \
 
 ```
 {
-    "error": {
+    "Error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "Message": "Successfully performed virtual media actions",
+                "MessageArgs": [
+                ],
+                "MessageId": "Base.1.6.1.Success"
             }
         ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
+        "Code": "Base.1.6.1.Success",
+        "Message": "See @Message.ExtendedInfo for more information."
     }
 }
  
@@ -6447,14 +6480,17 @@ curl -i POST \
 
 ```
 {
-    "error": {
+    "Error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "Message": "Successfully performed virtual media actions",
+                "MessageArgs": [
+                ],
+                "MessageId": "Base.1.6.1.Success"
             }
         ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
+        "Code": "Base.1.6.1.Success",
+        "Message": "See @Message.ExtendedInfo for more information."
     }
 }
  

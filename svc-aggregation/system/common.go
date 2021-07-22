@@ -42,6 +42,19 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
+const (
+	// SystemUUID is used to replace with system id in wildcard property
+	SystemUUID = "SystemID"
+	// ChassisUUID is used to replace with chassis id in wildcard property
+	ChassisUUID = "ChassisID"
+)
+
+// WildCard is used to reduce the size the of list of metric properties
+type WildCard struct {
+	Name   string
+	Values []string
+}
+
 //Device struct to define the response from plugin for UUID
 type Device struct {
 	ServerIP   string `json:"ServerIP"`
@@ -1168,11 +1181,13 @@ func updateResourceDataWithUUID(resourceData, uuid string) string {
 	//replacing the uuid while saving the data
 	//to replace the id of system
 	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+":", -1)
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/systems/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+":", -1)
 	// to replace the id in managers
 	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+":", -1)
 	// to replace id in chassis
-	return strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+
+	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
 
 }
 
@@ -1426,8 +1441,16 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 	if getResponse.StatusCode != http.StatusOK {
 		return progress
 	}
+	//replacing the uuid while saving the data
+	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+
+	updatedResourceData, err = createWildCard(updatedResourceData, resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+
 	// persist the response with table resource
-	err = agmodel.GenericSave(body, resourceName, req.OID)
+	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, req.OID)
 	if err != nil {
 		return progress
 	}
@@ -1435,4 +1458,139 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
 	req.UpdateTask(task)
 	return progress
+}
+
+func createWildCard(resourceData, resourceName, oid string) (string, error) {
+	var resourceDataMap map[string]interface{}
+	err := json.Unmarshal([]byte(resourceData), &resourceDataMap)
+	if err != nil {
+		log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+		return "", err
+	}
+	data, _ := agmodel.GetResource(resourceName, oid)
+	return formWildCard(data, resourceDataMap)
+}
+
+func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string, error) {
+	var systemID, chassisID string
+	var wildCards []WildCard
+	var dbMetricProperities []interface{}
+
+	if len(dbData) < 1 {
+		wildCards = getEmptyWildCard()
+	} else {
+		var dbDataMap map[string]interface{}
+		err := json.Unmarshal([]byte(dbData), &dbDataMap)
+		if err != nil {
+			log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+			return "", err
+		}
+		if dbDataMap["Wildcards"] == nil {
+			return "", fmt.Errorf("wild card map is empty")
+		}
+		wildCards = getWildCard(dbDataMap["Wildcards"].([]interface{}))
+		dbMetricProperities = dbDataMap["MetricProperties"].([]interface{})
+	}
+	metricProperties := resourceDataMap["MetricProperties"].([]interface{})
+	for _, mProperty := range metricProperties {
+		property := mProperty.(string)
+		for i, wCard := range wildCards {
+			if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
+				property, systemID = getUpdatedProperty(property, SystemUUID)
+				if !checkWildCardPresent(systemID, wildCards[i].Values) {
+					wildCards[i].Values = append(wildCards[i].Values, systemID)
+				}
+				break
+			}
+			if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
+				property, chassisID = getUpdatedProperty(property, ChassisUUID)
+				if !checkWildCardPresent(chassisID, wCard.Values) {
+					wildCards[i].Values = append(wildCards[i].Values, chassisID)
+				}
+				break
+			}
+		}
+		if !checkMetricPropertyPresent(property, dbMetricProperities) {
+			dbMetricProperities = append(dbMetricProperities, property)
+		}
+	}
+	var wCards []WildCard
+	for _, wCard := range wildCards {
+		if len(wCard.Values) > 0 {
+			wCards = append(wCards, wCard)
+		}
+	}
+	resourceDataMap["Wildcards"] = wCards
+	resourceDataMap["MetricProperties"] = dbMetricProperities
+	resourceDataByte, err := json.Marshal(resourceDataMap)
+	if err != nil {
+		return "", err
+	}
+	return string(resourceDataByte), nil
+}
+
+func checkWildCardPresent(val string, values []string) bool {
+	if len(values) < 1 {
+		return false
+	}
+	front := 0
+	rear := len(values) - 1
+	for front <= rear {
+		if values[front] == val || values[rear] == val {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
+}
+
+func getUpdatedProperty(property, wildCardName string) (string, string) {
+	prop := strings.Split(property, "/")[4]
+	uuid := strings.Split(prop, "#")[0]
+	property = strings.Replace(property, uuid, wildCardName, -1)
+	return property, uuid
+}
+
+func getWildCard(wCard []interface{}) []WildCard {
+	var wildCard []WildCard
+	for _, val := range wCard {
+		card := val.(map[string]interface{})
+		b, err := json.Marshal(card)
+		if err != nil {
+			continue
+		}
+		var wc WildCard
+		json.Unmarshal(b, &wc)
+		wildCard = append(wildCard, wc)
+	}
+	return wildCard
+}
+
+func checkMetricPropertyPresent(val string, values []interface{}) bool {
+	if len(values) < 1 {
+		return false
+	}
+	front := 0
+	rear := len(values) - 1
+	for front <= rear {
+		if values[front].(string) == val || values[rear].(string) == val {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
+}
+
+func getEmptyWildCard() []WildCard {
+	var wildCards []WildCard
+	var w WildCard
+	w.Name = SystemUUID
+	w.Values = []string{}
+	wildCards = append(wildCards, w)
+	w.Name = ChassisUUID
+	w.Values = []string{}
+	wildCards = append(wildCards, w)
+	return wildCards
 }

@@ -1,0 +1,14 @@
+---
+- name: Remove ODIM-RA and Third Party services
+  hosts: '{{ host }}'
+
+  roles:
+    - uninstall
+
+- name: Perform post-uninstall steps to clean up ODIM-RA data
+  hosts: kube-node
+
+  roles:
+    - plugin-delete-image
+    - odimra-delete-image
+    - post-uninstall

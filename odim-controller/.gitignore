@@ -1,0 +1,4 @@
+!kubespray/configure-kubespray.sh
+!kubespray/kubespray-2.14.0.tar.gz
+kubespray/*
+scripts/certs

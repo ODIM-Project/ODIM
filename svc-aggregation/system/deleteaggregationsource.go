@@ -94,6 +94,26 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	if resp.StatusCode != http.StatusOK {
 		return resp
 	}
+
+	if target != nil {
+		plugin, errs := agmodel.GetPluginData(target.PluginID)
+		if errs != nil {
+			log.Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(), []interface{}{"plugin", target.PluginID}, nil)
+		}
+		pluginStartUpData := &agmodel.PluginStartUpData{
+			RequestType: "delta",
+			Devices: map[string]agmodel.DeviceData{
+				target.DeviceUUID: agmodel.DeviceData{
+					Operation: "del",
+				},
+			},
+		}
+		if err := PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
+			log.Error("failed to notify device removal to " + target.PluginID + " plugin: " + err.Error())
+		}
+	}
+
 	// Delete the Aggregation Source
 	dbErr = agmodel.DeleteAggregationSource(req.URL)
 	if dbErr != nil {
@@ -261,7 +281,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	defer func() {
-		agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/"))
+		if err := agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/")); err != nil {
+			log.Errorf("failed to delete SystemOperation info of %s:%s", key, err.Error())
+		}
 	}()
 	// Delete Subscription on odimra and also on device
 	subResponse, err := e.DeleteEventSubscription(key)
@@ -276,7 +298,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
-	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key[index+1:], common.InMemory)
+	keys := strings.Split(key[index+1:], ":")
+	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", keys[0], common.InMemory)
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}

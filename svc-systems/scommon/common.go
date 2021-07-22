@@ -23,7 +23,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -245,7 +244,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 
 func checkRetrievalInfo(oid string) bool {
 	//skiping the Retrieval if parent oid contains links in other resource of config
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(oid, resourceName) {
 			return false
 		}
@@ -294,16 +293,15 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 func TrackConfigFileChanges(configFilePath string) {
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 	select {
 	case <-eventChan: // new data arrives through eventChan channel
-		lock.Lock()
+		config.TLSConfMutex.RLock()
 		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 		if err != nil {
 			log.Error("error while trying to read search/filter schema json" + err.Error())
 		}
-		lock.Unlock()
+		config.TLSConfMutex.RUnlock()
 		err = json.Unmarshal(schemaFile, &SF)
 		if err != nil {
 			log.Error("error while trying to fetch search/filter schema json" + err.Error())

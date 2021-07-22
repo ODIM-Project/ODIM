@@ -108,12 +108,21 @@ func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
 	}, nil
 }
 
-func mockUpdateManagersData(key string, managerData map[string]interface{}) error {
+func mockUpdateData(key string, updateData map[string]interface{}, table string) error {
+	if key == "/redfish/v1/Managers/uuid:1/VirtualMedia/1" {
+		return nil
+	} else if key == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
+		return errors.PackError(errors.DBKeyNotFound, "not found")
+	}
 	return nil
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
 	if key == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1:1/Virtual" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
@@ -121,6 +130,10 @@ func mockGetResource(table, key string) (string, *errors.Error) {
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1:1/Virtual" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
 		return "", fmt.Errorf("error")
 	}
 	manager := mgrmodel.Manager{
@@ -132,17 +145,41 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	return string(dataByte), err
 }
 
+func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Virtual" {
+		resp.StatusCode = http.StatusNotFound
+		resp.StatusMessage = response.ResourceNotFound
+		return resp
+	}
+	manager := mgrmodel.Manager{
+		Status: &mgrmodel.Status{
+			State: "Enabled",
+		},
+	}
+	dataByte, err := json.Marshal(manager)
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	err = json.Unmarshal(dataByte, &resp.Body)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	return resp
+}
+
 func mockGetExternalInterface() *managers.ExternalInterface {
 	return &managers.ExternalInterface{
 		Device: managers.Device{
 			GetDeviceInfo: mockGetDeviceInfo,
 			ContactClient: mockContactClient,
+			DeviceRequest: mockDeviceRequest,
 		},
 		DB: managers.DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
-			UpdateManagersData:  mockUpdateManagersData,
+			UpdateData:          mockUpdateData,
 			GetResource:         mockGetResource,
 		},
 	}
@@ -266,4 +303,68 @@ func TestGetManagerResourcewithValidtoken(t *testing.T) {
 	err := mgr.GetManagersResource(ctx, req, resp)
 	assert.Nil(t, err, "The two words should be the same.")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+}
+func TestVirtualMediaEject(t *testing.T) {
+	common.SetUpMockConfig()
+	var ctx context.Context
+	mgr := new(Managers)
+	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.EI = mockGetExternalInterface()
+	req := &managersproto.ManagerRequest{
+		ManagerID:    "uuid:1",
+		SessionToken: "validToken",
+		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+		ResourceID:   "1",
+	}
+	var resp = &managersproto.ManagerResponse{}
+	err := mgr.VirtualMediaEject(ctx, req, resp)
+	fmt.Println(resp)
+	assert.Nil(t, err, "The two words should be the same.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+
+	// Invalid
+	req = &managersproto.ManagerRequest{
+		ManagerID:    "uuid:1",
+		SessionToken: "InvalidToken",
+		ResourceID:   "1",
+		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+	}
+	resp = &managersproto.ManagerResponse{}
+	mgr.VirtualMediaEject(ctx, req, resp)
+	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+
+}
+func TestVirtualMediaInsert(t *testing.T) {
+	common.SetUpMockConfig()
+	var ctx context.Context
+	mgr := new(Managers)
+	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.EI = mockGetExternalInterface()
+
+	req := &managersproto.ManagerRequest{
+		ManagerID:    "uuid:1",
+		SessionToken: "validToken",
+		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		ResourceID:   "1",
+		RequestBody: []byte(`{"Image":"http://10.1.0.1/ISO/ubuntu-18.04.4-server-amd64.iso",
+										"Inserted":true,
+										"WriteProtected":true
+										}`),
+	}
+	var resp = &managersproto.ManagerResponse{}
+	err := mgr.VirtualMediaInsert(ctx, req, resp)
+	assert.Nil(t, err, "The two words should be the same.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+
+	// Invalid
+	req = &managersproto.ManagerRequest{
+		ManagerID:    "uuid:1",
+		SessionToken: "InvalidToken",
+		ResourceID:   "1",
+		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		RequestBody:  []byte(`{"Image":"http://10.1.0.1/ISO/ubuntu-18.04.4-server-amd64.iso"}`),
+	}
+	resp = &managersproto.ManagerResponse{}
+	mgr.VirtualMediaInsert(ctx, req, resp)
+	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 }

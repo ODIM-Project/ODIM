@@ -17,28 +17,28 @@
 build/odimra/odimra:
 	mkdir build/odimra/odimra
 
-COPY = svc-account-session svc-aggregation svc-api svc-events svc-fabrics svc-managers svc-systems svc-task svc-update lib-dmtf lib-messagebus lib-persistence-manager lib-utilities plugin-redfish lib-rest-client
+COPY =plugin-unmanaged-racks build/cert_generator  svc-account-session svc-aggregation svc-api svc-events svc-fabrics svc-managers svc-systems svc-task svc-update lib-dmtf lib-messagebus lib-persistence-manager lib-utilities plugin-redfish lib-rest-client plugin-dell
 
 copy: build/odimra/odimra
 	$(foreach var,$(COPY),cp -a $(var) build/odimra/odimra/;)
 	cp -f lib-utilities/config/odimra_config.json build/odimra/odimra_config/odimra_config.json
 	cp -f plugin-redfish/config/config.json build/RFPlugin/plugin_config/config_redfish_plugin.json
+	cp -f plugin-dell/config/dell_config.json build/DELLPlugin/dell_plugin_config/config_dell_plugin.json
 	cp -f lib-messagebus/platforms/platformconfig.toml build/odimra/odimra_config/
 	cp -f lib-messagebus/platforms/platformconfig.toml build/RFPlugin/plugin_config/platformconfig.toml
+	cp -f lib-messagebus/platforms/platformconfig.toml build/DELLPlugin/dell_plugin_config/platformconfig.toml
 	cp -f lib-utilities/config/schema.json build/odimra/odimra_config/
 	cp -f lib-utilities/etc/* build/odimra/odimra_config/registrystore
 
 dep: copy
 	build/odimra/makedep.sh
 
-urp:
-	cd plugin-unmanaged-racks && $(MAKE) build
 
-build-containers: dep urp
+build-containers: dep 
 	cd build && ./run_pre_reqs.sh && docker-compose build --force-rm --build-arg ODIMRA_USER_ID=${ODIMRA_USER_ID} --build-arg ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}
 
 standup-containers: build-containers
-	cd build && docker-compose up -d  && docker exec -d build_odimra_1 /bin/command.sh && docker restart build_odimra_1 && docker exec -d build_grf_plugin_1 /bin/command.sh && docker restart build_grf_plugin_1
+	cd build && docker-compose up -d  && docker exec -d build_odimra_1 /bin/command.sh && docker restart build_odimra_1 && docker exec -d build_grf_plugin_1 /bin/command.sh && docker restart build_grf_plugin_1 && docker exec -d build_dell_plugin_1 /bin/command.sh && docker restart build_dell_plugin_1 
 
 down-containers:
 	cd build && docker-compose down
@@ -47,7 +47,6 @@ all: standup-containers
 
 clean: 
 	build/cleanupbuild.sh
-	cd plugin-unmanaged-racks && $(MAKE) clean
 
 deepclean:
 	build/deepcleanupbuild.sh

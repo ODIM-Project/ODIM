@@ -14,21 +14,12 @@
 # under the License.
 
 declare PID=0
-
-add_host()
-{
-        /bin/add-hosts -file /tmp/host.append
-        if [ $? -ne 0 ]; then
-                echo "Appending host entry to /etc/hosts file Failed"
-                exit 0
-        fi
-}
+declare OWN_PID=$$
 
 sigterm_handler()
 {
         if [[ $PID -ne 0 ]]; then
-                # will wait for other instances to gracefully announce quorum exit
-                sleep 5
+                sleep 1
                 kill -9 $PID
                 wait "$PID" 2>/dev/null
         fi
@@ -49,19 +40,21 @@ run_forever()
 
 start_grfplugin()
 {
-	cd /bin
 	export PLUGIN_CONFIG_FILE_PATH=/etc/grfplugin_config/config.json
-	nohup ./plugin-redfish >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
+	nohup /bin/plugin-redfish >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
 	PID=$!
-	sleep 2s
+	sleep 3
+
+	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/grfplugin_logs/add-hosts.log 2>&1 &
 }
 
 monitor_process()
 {
         while true; do
-                pid=$(pgrep plugin-redfish 2> /dev/null)
-                if [[ $pid -eq 0 ]]; then
-                        echo "plugin-redfish has exited" >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
+                pid=$(pgrep -fc plugin-redfish 2> /dev/null)
+                if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
+                        echo "[$(date)] -- ERROR -- plugin-redfish not found running, exiting" >> /var/log/grfplugin_logs/grfplugin.log 2>&1 &
+			kill -15 ${OWN_PID}
                         exit 1
                 fi
                 sleep 5
@@ -71,8 +64,6 @@ monitor_process()
 ##############################################
 ###############  MAIN  #######################
 ##############################################
-
-add_host
 
 start_grfplugin
 

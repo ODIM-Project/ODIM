@@ -65,7 +65,7 @@ jobs:
     
     - name: Build
       run: |
-          LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-'`
+          LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|^odimra'`
           for i in $LIST; do
             echo "Compiling $i"
             cd $i
@@ -92,7 +92,7 @@ jobs:
           echo `redis-cli -p 6380 << HERE
           keys *
           HERE`
-          LIST="plugin-redfish svc-aggregation svc-events svc-fabrics svc-managers svc-task svc-systems svc-api svc-account-session svc-update lib-utilities lib-messagebus"
+          LIST="plugin-redfish plugin-dell svc-aggregation svc-events svc-fabrics svc-managers svc-task svc-systems svc-api svc-account-session svc-update lib-utilities lib-messagebus"
           echo $LIST
           for i in $LIST; do
             echo "Testing $i"

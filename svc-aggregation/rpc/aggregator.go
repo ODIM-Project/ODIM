@@ -80,12 +80,10 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 		OdataID:      "/redfish/v1/AggregationService",
 		Actions: agresponse.Actions{
 			Reset: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
-				ActionInfo: "/redfish/v1/AggregationService/ResetActionInfo",
+				Target: "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
 			},
 			SetDefaultBootOrder: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
-				ActionInfo: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
+				Target: "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
 			},
 		},
 		Aggregates: agresponse.OdataID{
@@ -857,5 +855,20 @@ func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorpro
 	}
 	rpcResponce := a.connector.GetConnectionMethodInfo(req)
 	generateResponse(rpcResponce, resp)
+	return nil
+}
+
+// SendStartUpData defines the operations which handles the RPC request response
+// for the SendStartUpData call to aggregator micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function is used for sending plugin start up data to the plugin
+// which has restarted.
+func (a *Aggregator) SendStartUpData(ctx context.Context, req *aggregatorproto.SendStartUpDataRequest, resp *aggregatorproto.SendStartUpDataResponse) error {
+	rpcResponce := a.connector.SendStartUpData(req)
+	bytes, _ := json.Marshal(rpcResponce.Body)
+	*resp = aggregatorproto.SendStartUpDataResponse{
+		ResponseBody: bytes,
+	}
 	return nil
 }

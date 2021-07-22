@@ -14,21 +14,12 @@
 # under the License.
 
 declare PID=0
-
-add_host()
-{
-        /bin/add-hosts -file /tmp/host.append
-        if [ $? -ne 0 ]; then
-                echo "Appending host entry to /etc/hosts file Failed"
-                exit 0
-        fi
-}
+declare OWN_PID=$$
 
 sigterm_handler()
 {
         if [[ $PID -ne 0 ]]; then
-                # will wait for other instances to gracefully announce quorum exit
-                sleep 5
+                sleep 1
                 kill -9 $PID
                 wait "$PID" 2>/dev/null
         fi
@@ -38,7 +29,7 @@ sigterm_handler()
 # create a signal trap
 create_signal_trap()
 {
-        trap 'echo "[$(date)] -- INFO  -- SIGTERM received for event, initiating shut down"; sigterm_handler' SIGTERM
+        trap 'echo "[$(date)] -- INFO  -- SIGTERM received for events, initiating shut down"; sigterm_handler' SIGTERM
 }
 
 # keep the script running till SIGTERM is received
@@ -49,19 +40,22 @@ run_forever()
 
 start_event()
 {
-	cd /bin
+        registry_address="consul:8500"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup ./svc-events --registry=consul --registry_address=consul:8500 --server_address=event:45103 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/event.log 2>&1 &
+	nohup /bin/svc-events --registry=consul --registry_address=${registry_address} --server_address=events:45103 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/events.log 2>&1 &
 	PID=$!
-	sleep 2s
+	sleep 3
+
+	nohup /bin/add-hosts -file /tmp/host.append >> /var/log/odimra_logs/events-add-hosts.log 2>&1 &
 }
 
 monitor_process()
 {
 	while true; do
-		pid=$(pgrep svc-events 2> /dev/null)
-		if [[ $pid -eq 0 ]]; then
-			echo "svc-events has exited"
+		pid=$(pgrep -fc svc-events 2> /dev/null)
+		if [[ $? -ne 0 ]] || [[ $pid -gt 1 ]]; then
+			echo "[$(date)] -- ERROR -- svc-events not found running, exiting"
+			kill -15 ${OWN_PID}
 			exit 1
 		fi
 		sleep 5
@@ -71,8 +65,6 @@ monitor_process()
 ##############################################
 ###############  MAIN  #######################
 ##############################################
-
-add_host
 
 start_event
 

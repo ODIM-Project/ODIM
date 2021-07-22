@@ -18,8 +18,9 @@ package tmodel
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 )
@@ -90,11 +91,13 @@ type Message struct {
 func BuildCompletedTaskIndex(completedTask *Task, table string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
+		log.Error("BuildCompletedTaskIndex : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	key := completedTask.UserName + "::" + completedTask.EndTime.String() + "::" + completedTask.ID
 	createError := conn.CreateTaskIndex(CompletedTaskIndex, completedTask.EndTime.UnixNano(), key)
 	if createError != nil {
+		log.Error("BuildCompletedTaskIndex : error while trying to CreateTaskIndex : " + createError.Error())
 		return fmt.Errorf("error while trying to create task index: %v", err)
 	}
 	return nil
@@ -105,11 +108,12 @@ func GetCompletedTasksIndex(searchKey string) ([]string, error) {
 	var taskData []string
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
+		log.Error("GetCompletedTasksIndex : error while trying to get DB Connection : " + err.Error())
 		return taskData, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	list, getErr := conn.GetTaskList(CompletedTaskIndex, 0, -1)
 	if getErr != nil && getErr.Error() != "no data with ID found" {
-		fmt.Println("error while getting the data", getErr)
+		log.Error("GetCompletedTasksIndex : error while trying to get task list : " + getErr.Error())
 		return taskData, nil
 	}
 	taskData = list
@@ -127,9 +131,11 @@ type Oem struct {
 func PersistTask(t *Task, db common.DbType) error {
 	connPool, err := common.GetDBConnection(db)
 	if err != nil {
+		log.Error("PersistTask : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.Create("task", t.ID, t); err != nil {
+		log.Error("PersistTask : error while trying to create task : " + err.Error())
 		return fmt.Errorf("error while trying to create new task: %v", err.Error())
 	}
 	return nil
@@ -146,15 +152,18 @@ func PersistTask(t *Task, db common.DbType) error {
 func UpdateTaskStatus(t *Task, db common.DbType) error {
 	connPool, err := common.GetDBConnection(db)
 	if err != nil {
+		log.Error("UpdateTaskStatus : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if _, err = connPool.Update("task", t.ID, t); err != nil {
+		log.Error("UpdateTaskStatus : error while trying to updating task status : " + err.Error())
 		return fmt.Errorf("error while trying to update task: %v", err.Error())
 	}
 	// Build Redis Index here if we dont do it in thandle
-	if t.TaskState == "Completed" && t.ParentID == "" {
+	if (t.TaskState == "Completed" || t.TaskState == "Exception") && t.ParentID == "" {
 		taskIndexErr := BuildCompletedTaskIndex(t, CompletedTaskTable)
-		if err != nil {
+		if taskIndexErr != nil {
+			log.Error("UpdateTaskStatus : error in creating index for task : " + taskIndexErr.Error())
 			return taskIndexErr
 		}
 	}
@@ -171,9 +180,11 @@ func UpdateTaskStatus(t *Task, db common.DbType) error {
 func DeleteTaskFromDB(t *Task) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
+		log.Error("DeleteTaskFromDB : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.Delete("task", t.ID); err != nil {
+		log.Error("DeleteTaskFromDB : Unable to delete task : " + err.Error())
 		return fmt.Errorf("error while trying to delete the task: %v", err.Error())
 	}
 	return nil
@@ -184,9 +195,11 @@ func DeleteTaskFromDB(t *Task) error {
 func DeleteTaskIndex(taskID string) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
+		log.Error("DeleteTaskIndex : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if delErr := connPool.Del(CompletedTaskIndex, taskID); delErr != nil {
+		log.Error("DeleteTaskIndex : Unable to delete task index: " + delErr.Error())
 		return fmt.Errorf("error while trying to delete the completed task index: %v", delErr.Error())
 	}
 	return nil
@@ -206,11 +219,12 @@ func GetTaskStatus(taskID string, db common.DbType) (*Task, error) {
 	var taskData string
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
-		log.Error("error while trying to get the db connection")
+		log.Error("GetTaskStatus : error while trying to get DB Connection : " + err.Error())
 		return task, fmt.Errorf("error while trying to connnect to DB: %v", err.Error())
 	}
 	taskData, err = connPool.Read("task", taskID)
 	if err != nil {
+		log.Error("GetTaskStatus : Unable to read taskdata from DB: " + err.Error())
 		return task, fmt.Errorf("error while trying to read from DB: %v", err.Error())
 	}
 	if errs := json.Unmarshal([]byte(taskData), task); errs != nil {
@@ -230,10 +244,12 @@ func GetTaskStatus(taskID string, db common.DbType) (*Task, error) {
 func GetAllTaskKeys() ([]string, error) {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
+		log.Error("GetAllTaskKeys : error while trying to get DB Connection : " + err.Error())
 		return nil, fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	taskKeys, err := connPool.GetAllDetails("task")
 	if err != nil {
+		log.Error("GetAllTaskKeys : error while trying to get task key details from DB  : " + err.Error())
 		return nil, fmt.Errorf("error while fetching data: %v", err.Error())
 	}
 	return taskKeys, nil
@@ -243,9 +259,11 @@ func GetAllTaskKeys() ([]string, error) {
 func Transaction(key string, cb func(string) error) error {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
+		log.Error("Transaction : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
 	}
 	if err = connPool.Transaction(key, cb); err != nil {
+		log.Error("Transaction : Unable to perform transaction   : " + err.Error())
 		return fmt.Errorf("error while performing transaction: %v", err.Error())
 	}
 	return nil
@@ -257,12 +275,12 @@ func Transaction(key string, cb func(string) error) error {
 func ValidateTaskUserName(userName string) error {
 	connPool, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		log.Error("error while trying to get the db connection")
+		log.Error("ValidateTaskUserName : error while trying to get DB Connection : " + err.Error())
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
 	// If the user not found in the db, below call sets err to non nil value
 	if _, err = connPool.Read("User", userName); err != nil {
-		log.Error("error while trying to read from the db : " + err.Error())
+		log.Error("ValidateTaskUserName : error while trying to read from the db : " + err.Error())
 		return fmt.Errorf("error while trying to read from DB: %v", err.Error())
 	}
 	return nil

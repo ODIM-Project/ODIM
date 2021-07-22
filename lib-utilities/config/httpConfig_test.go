@@ -66,9 +66,7 @@ func TestGetHTTPClientObj(t *testing.T) {
 		{
 			name: "Ciphers not configured",
 			exec: func(tlsConfig *tls.Config) {
-				SetPreferredCipherSuites([]string{})
 				Client.SetTLSConfig(tlsConfig)
-				tlsConfig.CipherSuites = DefaultCipherSuiteList
 			},
 			want:    tlsConfig,
 			wanterr: false,

@@ -1,0 +1,10 @@
+- name: Check if "{{ release_name }}.sh" exists
+  stat:
+    path: "{{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.sh"
+  register: stat_result
+  delegate_to: "{{ item }}"
+
+- name: Invoking {{ release_name }}.sh for uninstall operation
+  command: "/bin/bash {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.sh uninstall"
+  when: stat_result.stat.exists and stat_result.stat.isreg
+  delegate_to: "{{ item }}"

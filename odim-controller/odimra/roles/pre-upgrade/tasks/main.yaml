@@ -1,0 +1,32 @@
+---
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Check if {{ docker_image_name }} image exists
+  stat:
+    path: "{{ odimraImagePath }}/{{ docker_image_name }}.tar"
+  register: odimra_file_details
+  delegate_to: localhost
+  when: odimraImagePath is defined
+
+- name: Copy {{ docker_image_name }} image
+  copy:
+    src: "{{ odimraImagePath }}/{{ docker_image_name }}.tar"
+    dest: "{{ docker_images_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isreg == true
+
+- name: Load {{ docker_image_name }} image
+  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ docker_image_name }}.tar"
+  when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isreg == true

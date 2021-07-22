@@ -151,7 +151,7 @@ func TestGetUpdateService(t *testing.T) {
 					FirmwareInventory: uresponse.FirmwareInventory{
 						OdataID: "/redfish/v1/UpdateService/FirmwareInventory",
 					},
-					Action: uresponse.Action{
+					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
 							Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
 						},
@@ -190,7 +190,7 @@ func TestGetUpdateService(t *testing.T) {
 					FirmwareInventory: uresponse.FirmwareInventory{
 						OdataID: "/redfish/v1/UpdateService/FirmwareInventory",
 					},
-					Action: uresponse.Action{
+					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
 							Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
 						},

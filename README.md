@@ -1,74 +1,74 @@
-
-
 [![build_deploy_test Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_deploy_test/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
 [![build_unittest Actions Status](https://github.com/ODIM-Project/ODIM/workflows/build_unittest/badge.svg)](https://github.com/ODIM-Project/ODIM/actions)
 
 # Table of contents
 
-- [Introduction](#introduction)
-  * [Resource Aggregator for ODIM Deployment overview](#resource-aggregator-for-odim-deployment-overview)
-  * [Deployment considerations](#deployment-considerations)
-- [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
-- [Predeployment procedures](#predeployment-procedures)
-  * [Setting up the environment](#setting-up-the-environment)
-  * [Pulling the Docker images of all the Kubernetes microservices](#pulling-the-docker-images-of-all-the-kubernetes-microservices)
-  * [Building Docker images of all the services](#building-docker-images-of-all-the-services)
-  * [Generating an encrypted node password](#generating-an-encrypted-node-password)
-- [Deploying Resource Aggregator for ODIM](#deploying-resource-aggregator-for-odim)
-  * [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
-  * [Deploying the Unmanaged Rack Plugin \(URP\)](#deploying-the-unmanaged-rack-plugin)
-  * [Deploying the Dell plugin](#deploying-the-dell-plugin)
-  * [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
-- [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
-  * [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
-  * [Viewing the resource inventory](#viewing-the-resource-inventory)
-  * [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
-  * [Resetting a server](#resetting-a-server)
-  * [Setting one time boot path for a server](#setting-one-time-boot-path-for-a-server)
-  * [Searching the inventory for specific servers](#searching-the-inventory-for-specific-servers)
-  * [Updating software and firmware](#updating-software-and-firmware)
-  * [Subscribing to southbound events](#subscribing-to-southbound-events)
-  * [Viewing network fabrics](#viewing-network-fabrics)
-  * [Creating and deleting volumes](#creating-and-deleting-volumes)
-  * [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
-- [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
-- [Postdeployment operations](#postdeployment-operations)
-  * [Scaling up the resources and services of Resource Aggregator for ODIM](#scaling-up-the-resources-and-services-of-resource-aggregator-for-odim)
-  * [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
-  * [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
-  * [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
-- [Appendix](#appendix)
-  * [Setting proxy configuration](#setting-proxy-configuration)
-  * [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
-  * [Installing and configuring Keepalived](#installing-and-configuring-keepalived)
-  * [Installing and configuring Nginx](#installing-and-configuring-nginx)
-  * [Odim-controller configuration parameters](#odim-controller-configuration-parameters)
-  * [Running curl commands on a different server](#Running-curl-commands-on-a-different-server)
-  * [Configuring Nginx for the resource aggregator](#configuring-nginx-for-the-resource-aggregator)
-  * [Plugin configuration parameters](#plugin-configuration-parameters)
-  * [Configuring proxy server for a plugin version](#configuring-proxy-server-for-a-plugin-version)
-  * [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names)
-  * [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys)
-  * [Regenerating certificates](#regenerating-certificates)
-    + [Updating Kafka password and certificate](#updating-kafka-password-and-certificate)
-    + [Updating Zookeeper password and certificate](#updating-zookeeper-password-and-certificate)
-    + [Updating certificates with SAN entries](#updating-certificates-with-san-entries)
-  * [Updating `/etc/hosts` in the containers](#updating---etc-hosts--in-the-containers)
-  * [Appending CA certificates to the existing Root CA certificate](#appending-ca-certificates-to-the-existing-root-ca-certificate)
-  * [Resource Aggregator for ODIM default ports](#resource-aggregator-for-odim-default-ports)
-  * [Deploying the GRF plugin](#deploying-the-grf-plugin)
-  * [Replacing an unreachable controller node with a new one](#replacing-an-unreachable-controller-node-with-a-new-one)
-  * [Replacing an unreachable controller node with an existing worker node](#replacing-an-unreachable-controller-node-with-an-existing-worker-node)
-  * [Removing an existing plugin](#removing-an-existing-plugin)
-  * [Uninstalling the resource aggregator services](#uninstalling-the-resource-aggregator-services)
+1. [Introduction](#introduction)
+   - [Resource Aggregator for ODIM Deployment overview](#resource-aggregator-for-odim-deployment-overview)
+   - [Deployment considerations](#deployment-considerations)
 
-* [CI process](#ci-process)
-  * [GitHub action workflow details](#GitHub-action-workflow-details)
-  * [Screenshots of the checks after execution](#Screenshots-of-the-checks-after-execution)
+2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
+3. [Predeployment procedures](#predeployment-procedures)
+   - [Setting up the environment](#setting-up-the-environment)
+   - [Pulling the Docker images of all the Kubernetes microservices](#pulling-the-docker-images-of-all-the-kubernetes-microservices)
+   - [Building Docker images of all the services](#building-docker-images-of-all-the-services)
+   - [Generating an encrypted node password](#generating-an-encrypted-node-password)
+4. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
+   - [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
+   - [Deploying the Unmanaged Rack Plugin \(URP\)](#deploying-the-unmanaged-rack-plugin)
+   - [Deploying the Dell plugin](#deploying-the-dell-plugin)
+   - [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
+   - [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
+5. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
+   - [Adding a server into the resource inventory](#adding-a-server-into-the-resource-inventory)
+   - [Viewing the resource inventory](#viewing-the-resource-inventory)
+   - [Configuring BIOS settings for a server](#configuring-bios-settings-for-a-server)
+   - [Resetting a server](#resetting-a-server)
+   - [Setting one time boot path for a server](#setting-one-time-boot-path-for-a-server)
+   - [Searching the inventory for specific servers](#searching-the-inventory-for-specific-servers)
+   - [Updating software and firmware](#updating-software-and-firmware)
+   - [Subscribing to southbound events](#subscribing-to-southbound-events)
+   - [Viewing network fabrics](#viewing-network-fabrics)
+   - [Creating and deleting volumes](#creating-and-deleting-volumes)
+   - [Removing a server from the resource inventory](#removing-a-server-from-the-resource-inventory)
+6.  [Using odim-controller command-line interface](#using-odim-controller-command-line-interface)
+7. [Postdeployment operations](#postdeployment-operations)
+   - [Scaling up the resources and services of Resource Aggregator for ODIM](#scaling-up-the-resources-and-services-of-resource-aggregator-for-odim)
+   - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
+   - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
+   - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
+8. [Appendix](#appendix)
+   - [Setting proxy configuration](#setting-proxy-configuration)
+   - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
+   - [Downloading and installing go](#downloading-and-installing-go)
+   - [Configuring Docker proxy](#configuring-docker-proxy)
+   - [Installing Docker](#installing-docker)
+   - [Installing and configuring Keepalived](#installing-and-configuring-keepalived)
+   - [Installing and configuring Nginx](#installing-and-configuring-nginx)
+   - [Odim-controller configuration parameters](#odim-controller-configuration-parameters)
+   - [Running curl commands on a different server](#Running-curl-commands-on-a-different-server)
+   - [Configuring Nginx for the resource aggregator](#configuring-nginx-for-the-resource-aggregator)
+   - [Plugin configuration parameters](#plugin-configuration-parameters)
+   - [Configuring proxy server for a plugin version](#configuring-proxy-server-for-a-plugin-version)
+   - [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names)
+   - [Using your own CA certificates and keys](#using-your-own-ca-certificates-and-keys)
+   - [Regenerating certificates](#regenerating-certificates)
+     + [Updating Kafka password and certificate](#updating-kafka-password-and-certificate)
+     + [Updating Zookeeper password and certificate](#updating-zookeeper-password-and-certificate)
+     + [Updating certificates with SAN entries](#updating-certificates-with-san-entries)
+   - [Updating `/etc/hosts` in the containers](#updating---etc-hosts--in-the-containers)
+   - [Appending CA certificates to the existing Root CA certificate](#appending-ca-certificates-to-the-existing-root-ca-certificate)
+   - [Resource Aggregator for ODIM default ports](#resource-aggregator-for-odim-default-ports)
+   - [Deploying the GRF plugin](#deploying-the-grf-plugin)
+   - [Replacing an unreachable controller node with a new one](#replacing-an-unreachable-controller-node-with-a-new-one)
+   - [Replacing an unreachable controller node with an existing worker node](#replacing-an-unreachable-controller-node-with-an-existing-worker-node)
+   - [Removing an existing plugin](#removing-an-existing-plugin)
+   - [Uninstalling the resource aggregator services](#uninstalling-the-resource-aggregator-services)
+   - [CI process](#ci-process)
+      + [GitHub action workflow details](#GitHub-action-workflow-details)
+      + [Screenshots of the checks after execution](#Screenshots-of-the-checks-after-execution)
 
 # Introduction
-
-What is Resource Aggregator for Open Distributed Infrastructure Management™?
 
 Resource Aggregator for Open Distributed Infrastructure Management \(ODIM™\) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure.
 
@@ -93,8 +93,9 @@ Resource Aggregator for ODIM comprises the following two key components:
     -  Generic Redfish plugin for ODIM (The GRF plugin): This plugin can be used for any Redfish-compliant device
     -  Dell plugin for ODIM: Plugin for managing Dell servers
    -  Plugin for unmanaged racks \(URP): This plugin acts as a resource manager for unmanaged racks.
-   -  Integration of additional third-party plugins
-
+   -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
+-  Integration of additional third-party plugins
+   
    Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 ## Resource Aggregator for ODIM deployment overview
@@ -136,21 +137,19 @@ The following diagram illustrates how Resource Aggregator for ODIM is deployed a
 
 To deploy Resource Aggregator for ODIM, you will require:
 
--   A deployment node
--   One virtual machine \(VM\) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility. It provides commands to:
--   Set up the Docker environment
-    
--   Set up a Kubernetes cluster
-    
--   Deploy the containerized Resource Aggregator for ODIM microservices and third-party services on the Kubernetes cluster nodes
-    
--   Manage the Resource Aggregator for ODIM deployment
--   One or more physical or virtual machines called cluster nodes where the containerized Resource Aggregator for ODIM microservices and third-party services are deployed as pods.
+-   One virtual machine \(VM\) or a physical machine called the deployment node to deploy Kubernetes and Resource Aggregator for ODIM microservices. You can deploy the Resource Aggregator for ODIM microservices using the odim-controller command-line utility and use commands to:
+    -   Set up the Docker environment
+        
+    -   Set up a Kubernetes cluster
+        
+    -   Deploy the containerized Resource Aggregator for ODIM microservices and third-party services on the Kubernetes cluster nodes
+        
+    -   Manage the Resource Aggregator for ODIM deployment
+- One or more physical or virtual machines called cluster nodes where the containerized Resource Aggregator for ODIM microservices and third-party services are deployed as pods.
 
+  The cluster nodes include controller and additional worker nodes to share the extra load. The controller node in a cluster also functions as a worker node. A cluster can have either one or three controller nodes. A cluster with three controller nodes provides a High Availability \(HA\) environment. In addition, you can add worker nodes into the cluster to scale up the resources and the services.
 
-The cluster nodes include controller and additional worker nodes to share the extra load. The controller node in a cluster also functions as a worker node. A cluster can have either one or three controller nodes. A cluster with three controller nodes provides a High Availability \(HA\) environment. In addition, you can add worker nodes into the cluster to scale up the resources and the services.
-
-Each controller node has the following components:
+  Each controller node has the following components:
 
 -   An underlying Ubuntu OS platform
 
@@ -169,15 +168,15 @@ The following diagram is a logical representation of each controller node in a K
 
 ![Cluster node](docs/images/odim_cluster.png)
 
-The northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. The communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
+The northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
 
-Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx together help to implement high availability of the Resource Aggregator for ODIM services on the cluster nodes for both northbound management applications and southbound infrastructure to access.
+Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx together help in implementing high availability of the Resource Aggregator for ODIM services on the cluster nodes for both northbound management applications and southbound infrastructure to access.
 
 ## Deployment considerations
 
 The following is a list of considerations to be made while deploying Resource Aggregator for ODIM.
 
--   A deployment node.
+-   A deployment node is required to deploy Kubernetes and Resource Aggregator for ODIM microservices.
 
 -   The following two deployment configurations are supported:
 
@@ -190,15 +189,14 @@ The following is a list of considerations to be made while deploying Resource Ag
         It has three controller nodes that also function as worker nodes for sharing the extra load. It provides HA environment by allowing the scaling of the Resource Aggregator for ODIM resources and services—you can add worker nodes and increase the number of service instances running in this cluster.
     
     To convert an existing one-node cluster into a three-node cluster, you must reset the one-node deployment first and then modify the required parameters in the odim-controller configuration file.
+    
+    <blockquote> NOTE:  Resetting the existing deployment clears all data related to it. </blockquote>
 
- <blockquote>
-     NOTE: Resetting the existing deployment clears all data related to it.
-	 </blockquote>
 -   Controller nodes of a Kubernetes cluster must not be removed.
 
 -   The GRF plugin is not meant to be used in a production environment. Use it as reference while developing third-party plugins.
 
--   Scaling of the third-party services is not supported.
+-   Scaling of the third-party services—Kafka and Redis clusters is not supported.
 
 -   There must be at least one instance of a resource aggregator service and a plugin service running in the cluster. The maximum number of instances of a resource aggregator service and a plugin service that are allowed to run in a cluster is 10.
 
@@ -228,21 +226,20 @@ The following table lists the software components and their versions that are co
 # Predeployment procedures
 
 1. [Set up the environment](#setting-up-the-environment)
-2. [Pull the Docker images of all the Kubernetes microservices](#Pulling the Docker images of all the Kubernetes microservices)
+2. [Pull the Docker images of all the Kubernetes microservices](#Pulling-the-Docker-images-of-all-the-Kubernetes-microservices)
 3. [Build the Docker images of all the services](#building-docker-images-of-all-the-services)
 4. [Generate an encrypted node password using the odim-vault tool](#generating-an-encrypted-node-password)
 
 ## Setting up the environment
 
-**Prerequisites**
+**Hardware Prerequisites**
 
--   **Hardware:** 
-    - Single deployment node having a minimum RAM of 8 GB \(8192MB\), three CPUs, and 100 GB of Hard Disk Drive (HDD)
+- Single deployment node with a minimum RAM of 8 GB \(8192MB\), three CPUs, and 100 GB of Hard Disk Drive (HDD)
 
-    - Cluster nodes:
-        - To add 1,000 servers or less, you require nodes having 12 GB RAM, 8 CPU cores and 16 threads, and 200 GB HDD each
+- Cluster nodes:
+    - To add 1,000 servers or less, you require nodes having 12 GB (12288 MB) RAM, 8 CPU cores and 16 threads, and 200 GB HDD each
 
-        - To add 5,000 servers or less, you require nodes having 32 GB RAM, 16 CPU cores and 32 threads, and 200GB HDD each
+    - To add 5,000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200GB HDD each
 
 
 1. Download and install Ubuntu 18.04 LTS on the deployment node and all the cluster nodes. 
@@ -251,24 +248,30 @@ The following table lists the software components and their versions that are co
    <blockquote>
     IMPORTANT: Ensure you create the same non-root username and password on all the cluster nodes during the installation of OS.
     </blockquote>
+   
 2. Verify that the time across all the nodes are synchronized. To know how to set up time sync, see [Setting up time sync across nodes](#setting-up-time-sync-across-nodes). 
-3. Run the following commands to install packages such as Python, Java, Ansible, and others on the deployment node: 
 
-   Before running the following commands, ensure you are able to download the external packages through `apt-get`. If the nodes are behind a corporate proxy or firewall, set your proxy configuration. To know how to set proxy, see [Setting proxy configuration](#setting-proxy-configuration).
+3. Run the following commands to install packages such as Python, Java, Ansible, and others on the deployment node.
+
+   <blockquote>NOTE: If the current version of a package is outdated, run the following commands to know the latest available version(s) of that package and install the first version listed in the output. </blockquote>
+
+   ​	`sudo apt-cache madison <package name>`
+
+   Before running the following commands, ensure you are able to download the external packages through `apt-get`. If the nodes are behind a corporate proxy or firewall, set your proxy configuration on the deployment node and all the cluster nodes. To know how to set proxy, see [Setting proxy configuration](#setting-proxy-configuration).
 
    1. ```
       $ sudo apt update
       ```
 
    2. ```
-      $ sudo apt-get install sshpass=1.406-1 -y
+      $ sudo apt-get install sshpass=1.06-1 -y
       ```
 
    3. ```
       $ sudo apt-get install python3.8=3.8.0-3~18.04.1 -y
       ```
    4. ```
-       $ sudo apt-get install python3-pip=9.0.1-2.3~ubuntu1.18.04.4 -y
+       $ sudo apt-get install python3-pip=9.0.1-2.3~ubuntu1.18.04.5 -y
        ```
    5.  ```
        $ sudo apt-get install software-properties-common=0.96.24.32.14 -y
@@ -277,7 +280,7 @@ The following table lists the software components and their versions that are co
         $ sudo -E apt-add-repository ppa:ansible/ansible -y
        ```
    7.  ```
-       $ sudo apt-get install openjdk-11-jre-headless=11.0.10+9-0ubuntu1~18.04 -y
+       $ sudo apt-get install openjdk-11-jre-headless=11.0.11+9-0ubuntu2~18.04 -y
        ```
    8.  ```
        $ python3 -m pip install --upgrade pip
@@ -316,11 +319,13 @@ The following table lists the software components and their versions that are co
        ```
 
 4. [Download and install go](#downloading-and-installing-go) on the deployment node.
+
 5. [Configure Docker proxy](#configuring-docker-proxy) on the deployment node.
+
 6. [Install Docker](#installing-docker) on the deployment node.
-   
-4. Install Helm package on the deployment node: 
-    1. Create a directory called helm to store the Helm tool installation script and navigate to it: 
+
+7. Perform the following steps to install Helm package on the deployment node:
+    1. Create a directory called helm to store the Helm tool installation script and navigate to it.
 
         ```
         $ mkdir ~/helm
@@ -330,19 +335,19 @@ The following table lists the software components and their versions that are co
         $ cd ~/helm
         ```
 
-    2. Fetch the latest Helm installation script: 
+    2. Fetch the latest Helm installation script.
 
         ```
         $ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | /bin/bash
         ```
 
-    3. Change permissions of the Helm installation script file: 
+    3. Change permissions of the Helm installation script file.
 
         ```
         $ chmod 0700 get_helm.sh
         ```
 
-    4. Execute the Helm installation script: 
+    4. Run the Helm installation script.
 
         ```
         /bin/bash get_helm.sh
@@ -352,11 +357,11 @@ The following table lists the software components and their versions that are co
 
 9. For a three-node cluster configuration, [install and configure Nginx on all the cluster nodes](#installing-and-configuring-nginx). 
 
-   Skip step 8 and step 9 if you have chosen a one-node cluster configuration.
+   <blockquote> NOTE: Skip step 8 and step 9 if you have chosen a one-node cluster configuration. </blockquote>
 
 ## Pulling the Docker images of all the Kubernetes microservices
 
-1. Run the following command to pull each Docker image on the deployment node:
+1. Run the following command on the deployment node to pull each Docker image in the following table:
 
    ```
    $ docker pull <imagename>:<version>
@@ -364,7 +369,7 @@ The following table lists the software components and their versions that are co
    
    Example: `$ docker pull calico/cni:v3.15.1`
    
-   The following table lists details of all the Docker images of Kubernetes microservices:
+   The following table lists the details of all Docker images of the Kubernetes microservices to be pulled:
    
    |Docker image name|Version|Docker image file name|
    |-----|----|-----|
@@ -383,53 +388,33 @@ The following table lists the software components and their versions that are co
    |nginx|1.19 |nginx.tar |
    |quay.io/coreos/etcd|v3.4.3 |quay.io_coreos_etcd.tar |
    
-2. Verify that the images are successfully pulled using the following command:
+2. Verify the images are successfully pulled using the following command.
    ```
    $ docker images
    ```
    
+   You get an output similar to the following sample:
+   
+   ![Cluster node](docs/images/kubernetes_images.png)
+   
 3. Save each Docker image to a tar archive using the following command:
-    ```
-    $ sudo docker save -o <image_name.tar> <image_name:tag>
-    ```
-	Example: `$ sudo docker save -o calico_node.tar calico/node` 
-	
-4. Install the Kubernetes images on the all the cluster nodes:
-   Do any one of the following:
 
-   1. Copy all the tar archives manually to all the cluster nodes:
-      1. Copy each tar archive to all the cluster nodes using the following command:
-         ```
-         $ scp <image_name.tar> <cluster_node_username>@<cluster_node_IP_address>:/<path_on_cluster_node>
-         ```
-      2. Log in to each cluster node and create a file called `load_images.sh` in the same path where the tar archives are copied.
-         ```
-         $ sudo vim load_images.sh
-         ```
-      3. Copy the following lines into `load_images.sh` and save.
-         ```
-         #!/bin/bash
+    ```
+    $ docker save -o <Docker image file name> <Docker image name>
+    ```
+    Example: `$ docker save -o calico_node.tar calico/node` 
 
-         images_list=( task managers grf-plugin events update systems fabrics api aggregation account-session redis consul odim_zookeeper odim_kafka)
-         for image in "${images_list[@]}"; do
-         docker load -i ${image}.tar
-         done
-         ```
-      4. Run the following commands on each cluster node:
-         ```
-         $ chmod +x load_images.sh
-         ```
-         ```
-         $ ./load_images.sh
-         ```
-      
-   2. Copy each tar archive to a directory called `kubernetes_images` on the deployment node. Update `kubernetesImagePath` to the path of the `kubernetes_images` directory in `kube_deploy_nodes.yaml`. The images are automatically installed on all the cluster nodes during deployment.   
-      
-      <blockquote>
-          NOTE: The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services. </blockquote>
-      
-      <blockquote>
-       Check the permissions of the archived tar files of the Docker images; the privilage of all the files must be `user:user`.
+4. Copy each saved tar archive to a directory called `kubernetes_images` on the deployment node. 
+
+   For example:`cp /home/bruce/*.tar /home/bruce/kubernetes_images`
+
+   <blockquote> IMPORTANT: When deploying ODIMRA, update the 'kubernetesImagePath' parameter in 'kube_deploy_nodes.yaml' file with the path of the 'kubernetes_images' directory you choose in this step. The images are automatically installed on all cluster nodes after deployment. </blockquote>
+
+   <blockquote>
+       The 'kube_deploy_nodes.yaml' file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services. </blockquote>
+   <blockquote>
+       NOTE: Verify the permissions of the archived tar files of the Docker images; the privilege of all files must be 'user:docker'.</blockquote>
+
 
 ## Building Docker images of all the services
 
@@ -442,7 +427,7 @@ The following table lists the software components and their versions that are co
       $ cd ODIM
       ```
       
-	3. ```
+   3. ```
       $ export ODIMRA_USER_ID=2021
       ```
 	   
@@ -457,111 +442,79 @@ The following table lists the software components and their versions that are co
 	6. ```
 	   $ sudo docker images
 	   ```
-	   If the images are built successfully, you get an output which is similar to the following sample:
+	   If the images are built successfully, you get an output similar to the following sample:
 	   
-	   | **REPOSITORY**  | **TAG** | **IMAGE ID** | **CREATED**  | **SIZE** |
-	   | --------------- | ------- | ------------ | ------------ | -------- |
-	   | consul          | 1.6     | 33ff2311df24 | 4 hours ago  | 185MB    |
-	   | odim_zookeeper  | 1.0     | 981d43f6c8b4 | 22 hours ago | 278MB    |
-	   | update          | 1.0     | 2cfb65430181 | 22 hours ago | 128MB    |
-	   | task            | 1.0     | c4dd52b9ade0 | 22 hours ago | 129MB    |
-	   | systems         | 1.0     | 9d3ad9845b16 | 22 hours ago | 129MB    |
-	   | redis           | 1.0     | 81bf552d3a52 | 2 days ago   | 99.2MB   |
-	   | managers        | 1.0     | 2f7955586c54 | 4 days ago   | 128MB    |
-	   | dellplugin      | 1.0     | 1601188cbd8f | 7 days ago   | 103MB    |
-	   | odim_kafka      | 1.0     | f03a52363483 | 8 days ago   | 278MB    |
-	   | grf-plugin      | 1.0     | c7a086d02b16 | 11 days ago  | 100MB    |
-	   | fabrics         | 1.0     | 9b9ea8bafc30 | 11 days ago  | 128MB    |
-	   | events          | 1.0     | 860a9202a483 | 11 days ago  | 130MB    |
-	   | aciplugin       | 1.0     | 0c42ba5d4223 | 6 weeks ago  | 114MB    |
-	   | urplugin        | 1.0     | fb3c1cf141d5 | 6 weeks ago  | 101MB    |
-	   | api             | 1.0     | effab530ede5 | 2 months ago | 130MB    |
-	   | aggregation     | 1.0     | 354f67a857b6 | 3 months ago | 130MB    |
-	   | account-session | 1.0     | a7eb07e69395 | 3 months ago | 129MB    |
+	   ![Cluster node](docs/images/odimra_images.png)
+	   
+	7. Pull the reloader and busybox images using the following commands:
+	   
+	   ```
+	   $ docker pull stakater/reloader:v0.0.76
+	   
+	   $ docker pull busybox:1.33
+	   ```
 	
-2. Save each Docker image to a tar archive using the following command:
-    ```
-    $ sudo docker save -o <image_name.tar> <image_name:tag>
-    ```
-	Example: `sudo docker save -o consul.tar consul:1.0`
-	
-	The following table lists details of the Docker images of all services:
-	
-	| **Docker image name** | **Version** | **Docker image bundle name** |
-	| :-------------------- | ----------- | ---------------------------- |
-	| account-session       | 1.0         | account-session.tar          |
-	| aggregation           | 1.0         | aggregation.tar              |
-	| api                   | 1.0         | api.tar                      |
-	| events                | 1.0         | events.tar                   |
-	| fabrics               | 1.0         | fabrics.tar                  |
-	| managers              | 1.0         | managers.tar                 |
-	| systems               | 1.0         | systems.tar                  |
-	| task                  | 1.0         | task.tar                     |
-	| update                | 1.0         | update.tar                   |
-	| kafka                 | 1.0         | kafka.tar                    |
-	| zookeeper             | 1.0         | zookeeper.tar                |
-	| consul                | 1.6         | consul.tar                   |
-	| redis                 | 1.0         | redis.tar                    |
-	| stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
-	| busybox               | 1.33        | busybox.tar                  |
-	
-3. Install the Docker images on the all the cluster nodes:
-   Do any one of the following:
-   1. Copy all the tar archives manually to all the cluster nodes:
-      1. Copy each tar archive to all the cluster nodes using the following command:
-         ```
-         $ scp <image_name.tar> <cluster_node_username>@<cluster_node_IP_address>:/<path_on_cluster_node>
-         ```
-      2. Log in to each cluster node and create a file called `load_images.sh` in the same path where the tar archives are copied.
-         ```
-         $ sudo vim load_images.sh
-         ```
-      3. Copy the following lines into `load_images.sh` and save.
-         ```
-         #!/bin/bash
+2. Save all Docker images in the following table to a tar archive using the following command:
 
-         images_list=( task managers grf-plugin events update systems fabrics api aggregation account-session redis consul odim_zookeeper odim_kafka)
-         for image in "${images_list[@]}"; do
-         docker load -i ${image}.tar
-         done
-         ```
-      4. Run the following commands on each cluster node:
-         ```
-         $ chmod +x load_images.sh
-         ```
-         ```
-         $ ./load_images.sh
-         ```
-   
-2. Copy each tar archive to a directory called `odimra_images` on the deployment node. Update `odimraImagePath` to the path of the `odimra_images` directory in `kube_deploy_nodes.yaml`. The images are automatically installed on all the cluster nodes during deployment.
-   
-      <blockquote>
-          NOTE: The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services. </blockquote>
-   
-7. Verify that Docker images are available on each cluster node using the following command:
+    ```
+    $ docker save -o <image_name.tar> <image_name>:<version>
+    ```
+    Example: `docker save -o api.tar api:1.0`
+
+    | **Docker image name** | **Version** | **Docker image bundle name** |
+    | :-------------------- | ----------- | ---------------------------- |
+    | account-session       | 1.0         | account-session.tar          |
+    | aggregation           | 1.0         | aggregation.tar              |
+    | api                   | 1.0         | api.tar                      |
+    | events                | 1.0         | events.tar                   |
+    | fabrics               | 1.0         | fabrics.tar                  |
+    | managers              | 1.0         | managers.tar                 |
+    | systems               | 1.0         | systems.tar                  |
+    | task                  | 1.0         | task.tar                     |
+    | update                | 1.0         | update.tar                   |
+    | kafka                 | 1.0         | kafka.tar                    |
+    | zookeeper             | 1.0         | zookeeper.tar                |
+    | consul                | 1.6         | consul.tar                   |
+    | redis                 | 1.0         | redis.tar                    |
+    | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
+    | busybox               | 1.33        | busybox.tar                  |
+    | dellplugin            | 1.0         | dellplugin.tar               |
+    | urplugin              | 1.0         | urplugin.tar                 |
+    | grfplugin             | 1.0         | grfplugin.tar                |
+    | aciplugin             | 1.0         | aciplugin.tar                |
+    
+3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
+    For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`
+
+    <blockquote> IMPORTANT: while deploying ODIMRA, update the 'odimraImagePath' parameter in 'kube_deploy_nodes.yaml' file with the path of the 'odimra_images' directory you choose in this step. The images are automatically installed on all cluster nodes after deployment. </blockquote>
+    
+    <blockquote>
+        NOTE: The 'kube_deploy_nodes.yaml' file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services. </blockquote>
+    
+5. Verify the Docker images are available on each cluster node using the following command:
    ```
    $ sudo docker images
    ```
 
 ## Generating an encrypted node password
 
-Encrypting the password of the local non-root user on the Kubernetes cluster nodes makes the deployment process non-interactive. If the encrypted password is not available during deployment, you will be prompted to enter the password for the first time.
+Encrypting the password of the local non-root user on the Kubernetes cluster nodes makes the deployment process non-interactive. If the encrypted password is not available during deployment, you are prompted to enter the password for the first time.
 
 Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt passwords.
 
 
-1. Navigate to ~/ODIM/odim-controller/scripts: 
+1. On the deployment node, navigate to ~/ODIM/odim-controller/scripts.
 
     ```
     $ cd ~/ODIM/odim-controller/scripts
     ```
 
-1. Build the odim-vault tool:
+1. Build the odim-vault tool.
    ```
    $ go build -ldflags "-s -w" -o odim-vault odim-vault.go
    ```
 
-2. Enter a random string in a file called odimVaultKeyFile and save: 
+2. Enter a random string in a file called odimVaultKeyFile and save it.
 
     ```
     $ vi odimVaultKeyFile
@@ -578,14 +531,14 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
 
     **Result**: odimVaultKeyFile contains the encoded odim-vault master key.
 
-4. Change the file permissions of odimVaultKeyFile: 
+4. Change the file permissions of odimVaultKeyFile.
 
     ```
     $ chmod 0400 /home/${USER}/ODIM/odim-controller/\
     scripts/odimVaultKeyFile
     ```
 
-5. Enter the password of the default non-root user \(must be same across all the cluster nodes\) in plain text in a file called nodePasswordFile. Save the file. 
+5. Enter the password of the default non-root user \(that was set across all cluster nodes initially\) in plain text in a file called nodePasswordFile. Save the file. 
 
     ```
     $ vi nodePasswordFile
@@ -601,19 +554,20 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
 
     **Result**: nodePasswordFile contains the encrypted node password.
 
-7. Change the file permissions of nodePasswordFile: 
+7. Change the file permissions of nodePasswordFile.
 
     ```
     $ chmod 0400 /home/${USER}/ODIM/odim-controller/\
     scripts/nodePasswordFile
     ```
 
-# Deploying Resource Aggregator for ODIM
+# Deploying Resource Aggregator for ODIM and the Plugins
 
 1. [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
 2. [Deploying the Unmanaged Rack Plugin \(URP\)](#deploying-the-unmanaged-rack-plugin)
 3. [Deploying the Dell plugin](#deploying-the-dell-plugin)
-4. [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
+4. [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
+6. [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
 
 ## Deploying the resource aggregator services
 
@@ -621,170 +575,220 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
 
 Ensure all the [Predeployment procedures](#predeployment-procedures) are complete.
 
-1. Update the odim-controller configuration file: 
-   1. Navigate to `~/ODIM/odim-controller/scripts` on the deployment node: 
+1. Perform the following steps to update the odim-controller configuration file: 
+   1. Navigate to `~/ODIM/odim-controller/scripts` on the deployment node.
 
       ```
       $ cd ~/ODIM/odim-controller/scripts
       ```
 
-   2. Open the `kube_deploy_nodes.yaml` file to edit: 
-
+   2. Copy content from the kube_deploy_nodes.yaml.tmpl file to the kube_deploy_nodes.yaml file by running the following command:
+   
+      ```
+      $ cp kube_deploy_nodes.yaml.tmpl kube_deploy_nodes.yaml
+      ```
+   3. Edit the `kube_deploy_nodes.yaml` file. 
+   
       ```
       $ vi kube_deploy_nodes.yaml
       ```
-
+   
       The `kube_deploy_nodes.yaml` file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.
-
+   
+      <blockquote> NOTE: Do not change the format of the content in this file. Doing so might interrupt the Resource Aggregator for ODIM deployment process. </blockquote>
+   
       When you open the `kube_deploy_nodes.yaml` file for the first time, it looks like the following (for a three node cluster):
-
- ```
-    deploymentID: <Unique identifier for the deployment>
-    httpProxy: <HTTP Proxy to be set in the nodes>
-    httpsProxy: <HTTPS Proxy to be set in the nodes>
-    noProxy: <NO PROXY env to be set in the nodes>
-    nodePasswordFilePath: <Absolute path of the file containing the encrypted node password>
-    nodes:
-      <Node1\_Hostname\>:
-        ip: <Node1\_IPAddress\>
-        username: <Node\_Username\>
-      <Node2\_Hostname\>:
-        ip: <Node2\_IPAddress\>
-        username: <Node\_Username\>
-      <Node3\_Hostname\>:
-        ip: <Node3\_IPAddress\>
-        username: <Node\_Username\>
-    odimControllerSrcPath: <Absolute path of the odim-controller source code>
-    odimVaultKeyFilePath: <Absolute path of the file containing the encoded odim-vault password>
-    odimCertsPath: <Absolute path of odim_certificates>
-    kubernetesImagePath: <Absolute path of Kubernetes images>
-    odimraImagePath: <Absolute path of odimra images>
-    odimPluginPath: <Absolute path of plugin Helm charts>
-    odimra:
-      groupID: 2021
-      userID: 2021
-      namespace: odim
-      fqdn: ''
-      rootServiceUUID: ''
-      haDeploymentEnabled: True
-      connectionMethodConf:
-      - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
-      - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
-      kafkaNodePort: 30092
-      etcHostsEntries: ''
-    
-      appsLogPath: /var/log/odimra
-      odimraServerCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA server certificate SAN>"
-      odimraServerCertIPSan: "<CSV of IPs to include in ODIM-RA server certificate SAN>"
-      odimraKafkaClientCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA kafka client certificate SAN>"
-      odimraKafkaClientCertIPSan: "<CSV of IPs to include in ODIM-RA kafka client certificate SAN>"
-    
-      apiNodePort: 30080
+   
+      ```
+      #(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+      # 
+      #Licensed under the Apache License, Version 2.0 (the "License"); you may
+      #not use this file except in compliance with the License. You may obtain
+      #a copy of the License at
+      # 
+      #    http://www.apache.org/licenses/LICENSE-2.0
+      # 
+      #Unless required by applicable law or agreed to in writing, software
+      #distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+      #WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+      #License for the specific language governing permissions and limitations
+      #under the License.
       
-      consulDataPath: /etc/consul/data
-      consulConfPath: /etc/consul/conf
+      deploymentID: <Unique identifier for the deployment>
+      httpProxy: <HTTP Proxy to be set in the nodes>
+      httpsProxy: <HTTPS Proxy to be set in the nodes>
+      noProxy: <NO PROXY env to be set in the nodes>
+      nodePasswordFilePath: <Absolute path of the file containing encrypted node password>
+      nodes:
+        <Node1_Hostname>:
+          ip: <Node1_IPAddress>
+          username: <Node1_Username>
+        <Node2_Hostname>:
+          ip: <Node2_IPAddress>
+          username: <Node2_Username>
+        <Node3_Hostname>:
+          ip: <Node3_IPAddress>
+          username: <Node3_Username>
+      odimControllerSrcPath: <Absolute_Path_odim-controller_Src>
+      odimVaultKeyFilePath: <Absolute path of the file containing encoded odim vault password>
+      odimCertsPath: <Absolute_path_of_odim_certificates>
+      kubernetesImagePath: <Absolute_Path_of_kubernetes_Images>
+      odimraImagePath: <Absolute_Path_of_odimra_Images>
+      odimPluginPath: <Absolute_Path_plugin_helm_charts>
+      odimra:
+        groupID: 2021
+        userID: 2021
+        namespace: odim
+        fqdn: ''
+        rootServiceUUID: ''
+        haDeploymentEnabled: True
+        connectionMethodConf:
+        - ConnectionMethodType: Redfish
+          ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+        - ConnectionMethodType: Redfish
+          ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
+        etcHostsEntries: ''
       
-      kafkaConfPath: /etc/kafka/conf
-      kafkaDataPath: /etc/kafka/data
-      kafkaJKSPassword: "K@fk@_store1"
-    
-      redisOndiskDataPath: /etc/redis/data/ondisk
-      redisInmemoryDataPath: /etc/redis/data/inmemory
+        appsLogPath: /var/log/odimra
+        odimraServerCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA server certificate SAN>"
+        odimraServerCertIPSan: "<CSV of IPs to include in ODIM-RA server certificate SAN>"
+        odimraKafkaClientCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA kafka client certificate SAN>"
+        odimraKafkaClientCertIPSan: "<CSV of IPs to include in ODIM-RA kafka client certificate SAN>"
       
-      zookeeperConfPath: /etc/zookeeper/conf
-      zookeeperDataPath: /etc/zookeeper/data
-      zookeeperJKSPassword: "K@fk@_store1"
+        apiNodePort: 30080
+        kafkaNodePort: 30092
+        
+        consulDataPath: /etc/consul/data
+        consulConfPath: /etc/consul/conf
+        
+        kafkaConfPath: /etc/kafka/conf
+        kafkaDataPath: /etc/kafka/data
+        kafkaJKSPassword: "K@fk@_store1"
       
-      rootCACert:
-      odimraServerCert:
-      odimraServerKey:
-      odimraRSAPublicKey:
-      odimraRSAPrivateKey:
-      odimraKafkaClientCert:
-      odimraKafkaClientKey:
- ```
+        redisOndiskDataPath: /etc/redis/data/ondisk
+        redisInmemoryDataPath: /etc/redis/data/inmemory
+        
+        zookeeperConfPath: /etc/zookeeper/conf
+        zookeeperDataPath: /etc/zookeeper/data
+        zookeeperJKSPassword: "K@fk@_store1"
+        
+        rootCACert:
+        odimraServerCert:
+        odimraServerKey:
+        odimraRSAPublicKey:
+        odimraRSAPrivateKey:
+        odimraKafkaClientCert:
+        odimraKafkaClientKey:
+      ```
+   
+   4. Update the following mandatory parameters in the above file:
+   
+   - httpProxy (if your environment is behind a proxy)
+   - httpsProxy (if your environment is behind a proxy)
+   - noProxy (if your environment is behind a proxy)
+   - deploymentID
+   - nodePasswordFilePath
+   - nodes (details of the single deployment node or the cluster nodes based on the type of your deployment)
+   - odimControllerSrcPath
+   - odimVaultKeyFilePath
+   - odimraImagePath
+   - odimPluginPath
+   - fqdn
+   - rootServiceUUID
+   - connectionMethodConf
+   - etcHostsEntries
+   
+   Other parameters can either be empty or have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Odim-controller configuration parameters](#odim-controller-configuration-parameters).
+   
+   <blockquote>
+        NOTE: All parameters in the `kube_deploy_nodes.yaml` file get sorted alphabetically after the successful deployment of Resource Aggregator for ODIM services.
+       </blockquote>
+   
+   ​	**Sample of a "kube_deploy_nodes.yaml" file**
+   
+   ```
+   #(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+   # 
+   #Licensed under the Apache License, Version 2.0 (the "License"); you may
+   #not use this file except in compliance with the License. You may obtain
+   #a copy of the License at
+   # 
+   #    http://www.apache.org/licenses/LICENSE-2.0
+   # 
+   #Unless required by applicable law or agreed to in writing, software
+   #distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+   #WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+   #License for the specific language governing permissions and limitations
+   #under the License.
+   
+   deploymentID: threenodecluster
+   httpProxy: <HTTP Proxy to be set in the nodes>
+   httpsProxy: <HTTPS Proxy to be set in the nodes>
+   noProxy: 127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,10.18.24.100,10.18.24.101,10.18.24.102
+   nodePasswordFilePath: /home/user/ODIM/odim-controller/scripts/nodePasswordFile
+   nodes:
+     knode1:
+       ip: 10.18.24.100
+       username: user
+     knode2:
+       ip: 10.18.24.101
+       username: user
+     knode3:
+       ip: 10.18.24.102
+       username: user
+   odimControllerSrcPath: /home/user/ODIM/odim-controller
+   odimVaultKeyFilePath: /home/user/ODIM/odim-controller/scripts/odimVaultKeyFile
+   odimCertsPath: ""
+   kubernetesImagePath: /home/bruce/kubernetes_images
+   odimraImagePath: /home/bruce/odimra_images
+   odimPluginPath: ""
+   odimra:
+     groupID: 2021
+     userID: 2021
+     namespace: odim
+     fqdn: "odim.example.com"
+     rootServiceUUID: "31991fcb-1ce9-4ca9-ab99-1d8181fcaa60"
+     haDeploymentEnabled: True
+     connectionMethodConf:
+     - ConnectionMethodType: Redfish
+       ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+     - ConnectionMethodType: Redfish
+       ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
+     etcHostsEntries: ""
+   
+     appsLogPath: /var/log/odimra
+     odimraServerCertFQDNSan: ""
+     odimraServerCertIPSan: ""
+     odimraKafkaClientCertFQDNSan: ""
+     odimraKafkaClientCertIPSan: ""
+   
+     apiNodePort: 30080
+     kafkaNodePort: 30092
+     
+     consulDataPath: /etc/consul/data
+     consulConfPath: /etc/consul/conf
+     
+     kafkaConfPath: /etc/kafka/conf
+     kafkaDataPath: /etc/kafka/data
+     kafkaJKSPassword: "K@fk@_store1"
+   
+     redisOndiskDataPath: /etc/redis/data/ondisk
+     redisInmemoryDataPath: /etc/redis/data/inmemory
+     
+     zookeeperConfPath: /etc/zookeeper/conf
+     zookeeperDataPath: /etc/zookeeper/data
+     zookeeperJKSPassword: "K@fk@_store1"
+     
+     rootCACert:
+     odimraServerCert:
+     odimraServerKey:
+     odimraRSAPublicKey:
+     odimraRSAPrivateKey:
+     odimraKafkaClientCert:
+     odimraKafkaClientKey:
+   ```
 
-It is mandatory to update the following parameters in this file:
-
-- deploymentID
-- nodePasswordFilePath
-- nodes (details of the single deployment node or the cluster nodes based on the type of your deployment)
-- odimControllerSrcPath
-- odimVaultKeyFilePath
-- odimraImagePath
-- odimPluginPath
-- fqdn
-- rootServiceUUID
-- connectionMethodConf
-- etcHostsEntries
-
-Other parameters can either be empty or have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Odim-controller configuration parameters](#odim-controller-configuration-parameters).
-
- <blockquote>
-     NOTE: All parameters in the `kube_deploy_nodes.yaml` file get sorted alphabetically after the successful deployment of Resource Aggregator for ODIM services.
-    </blockquote>
-
-**Sample of the updated "kube_deploy_nodes.yaml" file**
-
-    deploymentID: threenodecluster
-     httpProxy: <HTTP Proxy to be set in the nodes>
-        httpsProxy: <HTTPS Proxy to be set in the nodes>
-        kubernetesImagePath: /home/user/ODIM/kubernetes_images
-        noProxy: 127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,10.18.24.100,10.18.24.101,10.18.24.102
-        nodePasswordFilePath: /home/user/ODIM/odim-controller/scripts/nodePasswordFile
-        nodes:
-          knode1:
-            ip: 10.18.24.100
-            username: user
-          knode2:
-            ip: 10.18.24.101
-            username: user
-          knode3:
-            ip: 10.18.24.102
-            username: user    
-        odimCertsPath:
-        odimControllerSrcPath: /home/user/ODIM/odim-controller
-        odimPluginPath: /home/user/plugins
-        odimVaultKeyFilePath: /home/user/ODIM/odim-controller/scripts/odimVaultKeyFile
-        odimra:
-          apiNodePort: 30080
-          appsLogPath: /var/log/odimra
-          connectionMethodConf:
-          - ConnectionMethodType: Redfish
-            ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
-          consulConfPath: /etc/consul/conf
-          consulDataPath: /etc/consul/data
-          etcHostsEntries: ""
-          fqdn: knode1.odim.com
-          groupID: 2021
-          haDeploymentEnabled: true
-          kafkaConfPath: /etc/kafka/conf
-          kafkaDataPath: /etc/kafka/data
-          kafkaJKSPassword: K@fk@_store1
-          kafkaNodePort: 30092
-          namespace: odim
-          odimraKafkaClientCert:
-          odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events,urplugin,api
-          odimraKafkaClientCertIPSan: ""
-          odimraKafkaClientKey:
-          odimraRSAPrivateKey:
-          odimraRSAPublicKey:
-          odimraServerCertFQDNSan: grfplugin,grfplugin-events,urplugin,api
-          odimraServerCertIPSan: ""
-          odimraServerKey:
-          redisInmemoryDataPath: /etc/redis/data/inmemory
-          redisOndiskDataPath: /etc/redis/data/ondisk
-          rootCACert:
-          rootServiceUUID: 334df1c0-118b-40f6-a71f-eb5d4070ae4c
-          userID: 2021
-          zookeeperConfPath: /etc/zookeeper/conf
-          zookeeperDataPath: /etc/zookeeper/data
-          zookeeperJKSPassword: K@fk@_store1
-        odimraImagePath: /home/user/ODIM/odimra_images
-
-2. Set up a Kubernetes cluster: 
+2. Set up a Kubernetes cluster by performing the following procedure: 
     1. Navigate to `odim-controller/scripts` on the deployment node: 
 
         ```
@@ -799,30 +803,28 @@ Other parameters can either be empty or have default values. Optionally, you can
         scripts/kube_deploy_nodes.yaml
         ```
 
-    3. Enable the non-root user to access the Kubernetes command-line tool \(kubectl\) on the cluster nodes: 
-
-        Run the following commands on each cluster node:
+    3. Enable the non-root user to access the Kubernetes command-line tool \(kubectl\) on the cluster nodes. Run the following commands on each cluster node:
 
         ```
-        $ mkdir -p $HOME/.kube
-        ```
-
-        ```
-        $ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-        ```
-
-        ```
-        $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
-        ```
-
-    4. Verify that the Kubernetes pods are up and running in the cluster nodes: 
-
-        Run the following command on each cluster node:
-
-        ```
-        $ kubectl get pods -n kube-system -o wide
+		$ mkdir -p $HOME/.kube
         ```
         
+        ```
+		$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        ```
+        
+        ```
+		$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        ```
+    
+    4. Verify that the Kubernetes pods are up and running in the cluster nodes. Run the following command on each cluster node:
+    
+        ```
+		$ kubectl get pods -n kube-system -o wide
+        ```
+    
+        The following output is displayed.
+    
         ![screenshot](docs/images/kuberenetes_pods_verification.png)
 
 
@@ -841,208 +843,213 @@ Other parameters can either be empty or have default values. Optionally, you can
     2. Log in to each cluster node, run the following command on each cluster node to verify all deployed services are running successfully. 
 
         ```
-    	$ kubectl get pods -n odim -o wide
+        $ kubectl get pods -n odim -o wide
         ```
-        
+
         Example output:
 
         ![screenshot](docs/images/all_services_verification.png)
 
         If the services are not successfully deployed, reset the deployment and try deploying again. 
         To reset, run the following command:
-        
+
         ```
         $ python3 odim-controller.py --reset odimra --config \
         /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
         --ignore-errors
         ```
 
-<blockquote>
-        NOTE: Resetting deployment removes the virtual IP configured through Keepalived. After reset, restart the Keepalived service.
-        </blockquote>
+        <blockquote> NOTE: 
+        - Resetting deployment removes the virtual IP configured through Keepalived. After reset, restart the Keepalived service. <br/>
+        After resetting deployment, reset the odimCertsPath parameter to "" or to actual your certificate path in the kube_deploy_nodes.yaml file. </blockquote>
 
-<blockquote>
-IMPORTANT: Save the RootServiceUUID in the kube_deploy_nodes.yaml file in the path`~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml.
-If the services are not successfully deployed and you want to reset the deployment, you can use the saved RootServiceUUID.
-</blockquote>
-
-4. If it is a three-node cluster configuration, log in to each cluster node and do the following: 
-
--   [Configure Nginx for the resource aggregator](#configuring-nginx-for-the-resource-aggregator).
-- [Configure proxy server for a plugin](#configuring-proxy-server-for-a-plugin-version).
-
-  Skip this step if it is a one-node cluster configuration.
-
-5. Perform HTTP GET on `/redfish/v1` using the following curl command. Verify that all the resource aggregator services are listed in the JSON response body by using curl command. 
-
-   ```
-   curl --cacert \ 
-   {path_of_rootCA.crt} \ 
-   'https://{odim_host}:{port}/redfish/v1'
-   ```
+        <blockquote>IMPORTANT: Save the RootServiceUUID in the kube_deploy_nodes.yaml file in the path ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml.
+            If the services are not successfully deployed and you want to reset the deployment, you can use the saved RootServiceUUID.</blockquote>	
 
 
-- Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file - `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
+4. For a three-node cluster configuration, log in to each cluster node and do the following: 
 
-- {odim_host} is the virtual IP address of the Kubernetes cluster.
+   - [Configure Nginx for the resource aggregator](#configuring-nginx-for-the-resource-aggregator)
+   - [Configure proxy server for a plugin](#configuring-proxy-server-for-a-plugin-version)
+
+   Skip this step if it is a one-node cluster configuration.
+
+5. Perform HTTP GET on `/redfish/v1` using the following curl command on your deployment node. 
 
    <blockquote>
-    NOTE: To use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
-    </blockquote>
+   IMPORTANT: Before running curl commands, unset http and https proxies, check if you have set proxy configuration. If yes, set "no_proxy" using the following command: 
+   </blockquote>
 
-- {port} is the API server port configured in Nginx. The default port is `30080`. If you have changed the default port, use that as the port.
+   ```
+   $ unset https_proxy
+   
+   $ unset http_proxy
+   
+   $ export no_proxy="127.0.0.1,localhost,\
+   localhost.localdomain,10.96.0.0/12,\
+   <Comma-seperated_list_of_IP_addresses_of_the_deployment_node_and_the_cluster_nodes>"
+   ```
 
-<blockquote>
-IMPORTANT: Before running curl commands, check if you have set proxy configuration. If yes, set "no_proxy" using the following command: 
-</blockquote>
-​	` $ export no_proxy="127.0.0.1,localhost,\
-​	localhost.localdomain,10.96.0.0/12,\
-​	<Comma-seperated_list_of_IP_addresses_of_the_cluster_nodes>" `
+   Verify that all the resource aggregator services are listed in the JSON response body by running the following curl command:
 
-The following JSON response is returned:
+   ```
+   curl -s --cacert \ 
+   {path_of_rootCA.crt} \ 
+   'https://{odim_host}:{port}/redfish/v1' -k
+   ```
 
-```
-	{
-	   "@odata.context":"/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
-	   "@odata.id":"/redfish/v1/",
-	   "@odata.type":"#ServiceRoot.v1_5_0.ServiceRoot",
-	   "Id":"RootService",
-	   "Registries":{
-	      "@odata.id":"/redfish/v1/Registries"
-	   },
-	   "SessionService":{
-	      "@odata.id":"/redfish/v1/SessionService"
-	   },
-	   "AccountService":{
-	      "@odata.id":"/redfish/v1/AccountService"
-	   },
-	   "EventService":{
-	      "@odata.id":"/redfish/v1/EventService"
-	   },
-	   "Tasks":{
-	      "@odata.id":"/redfish/v1/TaskService"
-	   },
-	   "AggregationService":{
-	      "@odata.id":"/redfish/v1/AggregationService"
-	   },
-	   "Systems":{
-	      "@odata.id":"/redfish/v1/Systems"
-	   },
-	   "Chassis":{
-	      "@odata.id":"/redfish/v1/Chassis"
-	   },
-	   "Fabrics":{
-	      "@odata.id":"/redfish/v1/Fabrics"
-	   },
-	   "Managers":{
-	      "@odata.id":"/redfish/v1/Managers"
-	   },
-	   "UpdateService":{
-	      "@odata.id":"/redfish/v1/UpdateService"
-	   },
-	   "Links":{
-	      "Sessions":{
-	         "@odata.id":"/redfish/v1/SessionService/Sessions"
-	      }
-	   },
-	   "Name":"Root Service",
-	   "Oem":{
-	
-	   },
-	   "RedfishVersion":"1.11.1",
-	   "UUID":"0554d6ff-a7e7-4c94-80bd-da19125f95e5"
-	}
-```
+   - Replace `{path_of_rootCA.crt}` with the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file - `<odimcertsPath>/rootCA.crt`. The `rootCA.crt` file is required for secure SSL communication.
 
-If you want to run curl commands on a different server, follow the instructions in [Running curl commands on a different server](#Running-curl-commands-on-a-different-server).
+   - {odim_host} is the virtual IP address of the Kubernetes cluster.
+
+     <blockquote>
+      NOTE: For a single node cluster configuration, {odim_host} is the ip address of master node. For a three node cluster configuration, to use FQDN as `{odim_host}`, ensure that FQDN is configured to the virtual IP address in the `/etc/hosts` file or in the DNS server.
+      </blockquote>
+
+   - {port} is the API server port configured in Nginx. The default port is `30080`. If you have changed the default port, use that as the port.
+
+     The following JSON response is returned:
+     
+     ```
+     {
+     	   																	"@odata.context":"/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
+     	   "@odata.id":"/redfish/v1/",
+     	   "@odata.type":"#ServiceRoot.v1_5_0.ServiceRoot",
+     	   "Id":"RootService",
+     	   "Registries":{
+   	      "@odata.id":"/redfish/v1/Registries"
+     	   },
+   	   "SessionService":{
+     	      "@odata.id":"/redfish/v1/SessionService"
+     	   },
+     	   "AccountService":{
+     	      "@odata.id":"/redfish/v1/AccountService"
+     	   },
+     	   "EventService":{
+     	      "@odata.id":"/redfish/v1/EventService"
+     	   },
+     	   "Tasks":{
+     	      "@odata.id":"/redfish/v1/TaskService"
+     	   },
+     	   "AggregationService":{
+     	      "@odata.id":"/redfish/v1/AggregationService"
+     	   },
+     	   "Systems":{
+     	      "@odata.id":"/redfish/v1/Systems"
+     	   },
+     	   "Chassis":{
+     	      "@odata.id":"/redfish/v1/Chassis"
+     	   },
+     	   "Fabrics":{
+     	      "@odata.id":"/redfish/v1/Fabrics"
+     	   },
+     	   "Managers":{
+     	      "@odata.id":"/redfish/v1/Managers"
+     	   },
+     	   "UpdateService":{
+     	      "@odata.id":"/redfish/v1/UpdateService"
+     	   },
+     	   "Links":{
+     	      "Sessions":{
+     	         "@odata.id":"/redfish/v1/SessionService/Sessions"
+     	      }
+     	   },
+     	   "Name":"Root Service",
+     	   "Oem":{
+     	
+     	   },
+     	   "RedfishVersion":"1.11.1",
+     	   "UUID":"0554d6ff-a7e7-4c94-80bd-da19125f95e5"
+     	}
+     ```
+     
+     
+     
+     If you want to run curl commands on a different server, follow the instructions in [Running curl commands on a different server](#Running-curl-commands-on-a-different-server).
 
 6. Change the password of the default administrator account of Resource Aggregator for ODIM:
 
-Username: **admin**
+   Username: **admin**
 
-Password: **Od!m12$4**
+   Password: **Od!m12$4**
 
-To change the password, perform HTTP PATCH on the following URI:
+   To change the password, perform HTTP PATCH on the following URI:
 
-```
-https://{odim_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}
-```
+   ```
+   https://{odim_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}
+   ```
 
-​	Replace \{accountId\} with the username of the default administrator account.
+   Replace \{accountId\} with the username of the default administrator account.
 
-​	Post the new password in a request body as shown in the sample request:
+   Post the new password in a request body as shown in the sample request:
 
-​	**Sample request**
+   **Sample request**
 
-```
-{ 
-   "Password":"Testing)9-_?{}"
-}
-```
+   ```
+   { 
+      "Password":"Testing)9-_?{}"
+   }
+   ```
 
-​	Ensure that the new password meets the following requirements:
+   Ensure that the new password meets the following requirements:
 
--   Your password must not be same as your username.
+   - Your password must not be same as your username.
+   - Your password must be at least 12 characters long and at most 16 characters long.
+   - Your password must contain at least one uppercase letter \(A-Z\), one lowercase letter \(a-z\), one digit \(0-9\), and one special character \(~!@\#$%^&\*-+\_|\(\)\{\}:;<\>,.?/\).
+     The default password is updated to the new password in the database.
 
--   Your password must be at least 12 characters long and at most 16 characters long.
-
-- Your password must contain at least one uppercase letter \(A-Z\), one lowercase letter \(a-z\), one digit \(0-9\), and one special character \(~!@\#$%^&\*-+\_|\(\)\{\}:;<\>,.?/\).
-
-  The default password is updated to the new password in the database.
-
-7. To configure log rotation, do the following on each cluster node: 
+7. To configure log rotation, perform the following procedure on each cluster node: 
    1. Navigate to the `/etc/logrotate.d` directory. 
 
-   ```
-   $ cd /etc/logrotate.d
-   ```
+      ```
+      $ cd /etc/logrotate.d
+      ```
 
    2. Create a file called odimra. 
 
    3. Open the `odimra` file, add the following content and save: 
 
-   ```
-   /var/log/grfplugin_logs/*.log
-   /var/log/odimra/*.log
-   /opt/keepalived/logs/action_script.log
-   /opt/nginx/logs/error.log
-   /opt/nginx/logs/access.log {
-       hourly
-       missingok
-       rotate 10
-       notifempty
-       maxsize 1M
-       compress
-       create 0644 odimra odimra
-       shred
-       copytruncate
-   }
-   
-   ```
-
-   <blockquote>
-    NOTE: After deploying a new plugin, log in to each cluster node and open the odimra file to add the log path entry for the new plugin.
-   </blockquote>
+      ```
+      /var/log/grfplugin_logs/*.log
+      /var/log/odimra/*.log
+      /opt/keepalived/logs/action_script.log
+      /opt/nginx/logs/error.log
+      /opt/nginx/logs/access.log {
+          hourly
+          missingok
+          rotate 10
+          notifempty
+          maxsize 1M
+          compress
+          create 0644 odimra odimra
+          shred
+          copytruncate
+      }
+      ```
+      
+      <blockquote>
+          NOTE: After deploying a new plugin, log in to each cluster node and open the odimra file to add the log path entry for the new plugin.
+         </blockquote>
 
    4. Navigate to the `/etc/cron.hourly` directory. 
 
-   ```
-   $ cd /etc/cron.hourly
-   ```
+      ```
+      $ cd /etc/cron.hourly
+      ```
 
-   5. Create a file called logrotate. 
+   ​	5. Create a file called logrotate. 
 
-   6. Open the `logrotate` file and add the following content: 
+    6. Open the `logrotate` file and add the following content: 
 
-   ```
-   logrotate -s /var/lib/logrotate/status /etc/logrotate.d/odimra
-   ```
+       ```
+       $ logrotate -s /var/lib/logrotate/status /etc/logrotate.d/odimra
+       ```
 
-   7. To verify that the configuration is working, run the following command: 
+    7. To verify that the configuration is working, run the following command: 
 
-   ```
-   $ sudo logrotate -v -f /etc/logrotate.d/odimra
-   ```
+       ```
+       $ sudo logrotate -v -f /etc/logrotate.d/odimra
+       ```
 
 ## Deploying the Unmanaged Rack Plugin
 
@@ -1050,20 +1057,18 @@ https://{odim_host}:{port}/redfish/v1/AccountService/Accounts/{accountId}
 
 Kubernetes cluster is set up and the resource aggregator is successfully deployed.
 
-1. Save the Unmanaged Rack Plugin (URP) Docker image on the deployment node:
-   ```
-   $ sudo docker save -o urplugin.tar urplugin:1.0
-   ```
-2. Create a directory called `plugins` on the deployment node:
+1. Create a directory called `plugins` on the deployment node.
+   
    ```
    $ mkdir plugins
    ```
-3. Create a directory called `urplugin`on the deployment node:
+   
+4. In the `plugins` directory, create a directory called `urplugin`.
    ```
    $ mkdir ~/plugins/urplugin
    ```
 
-2. Log in to each cluster node and run the following commands: 
+5. Log in to each cluster node and run the following commands:
 
     ```
     $ sudo mkdir -p /var/log/urplugin_logs/
@@ -1073,39 +1078,35 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     $ sudo chown odimra:odimra /var/log/urplugin_logs/
     ```
 
-3. Log in to the deployment node and generate an encrypted password of Resource Aggregator for ODIM to be used in the urplugin-config.yaml file: 
+6. Log in to the deployment node and generate an encrypted password of Resource Aggregator for ODIM to be used in the urplugin-config.yaml file. 
 
     Run the following command and copy the output:
 
     ```
-    $ echo -n '<HPE ODIMRA password>'\
-     |openssl pkeyutl -encrypt -inkey \
-     <odimCertsPath>/odimra_rsa.private -pkeyopt \
-     rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+    $ echo -n '<HPE ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
     ```
-
+    
     In this command, replace:
+    
     -  <HPE ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
-    -  <odimCertsPath> with the path specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
-
+    -  <odimCertsPath> with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
+    
     Example output:
     
     ```
     ip/jrKjQdzKIU1JvT4ZQ6gbCe2XJtCKPRgqOQv6g3aIAYtG+hpVgel3k67TB723h9dN2cABWZgE+b9CAxbIXj3qZZFWrUMMuPkT4fwtW8fTlhdR+phmOvnnSw5bvUrXyl5Se1IczwtMXfhqk7U8eqpJnZ6xWNR8Q1K7baDv1QvZwej/v3bqHRTC93pDL+3SvE8VCyrIgbMVdfvv3+mJKvs2F7hXoTJiwjRfKGyzdP0yRIHAFOB3m/xnv6ZIRm8Ak6+sx18NRq8RH20bktzhZ45fT+iX4twMJG1lI0KRJ3j/PL+IqY4MmYzv/72fQhMznL39Rjr9LR6mB/JGI0ww0sMUCFr6obzQfQWv1so+Ck694fNJMQPXQS64VcqVDuISXSd4cqkdMx9zBmfDbgzMQQVwgjDgt4nC1w8/wGSfMtkms8rSJrBa18hKCWi+jfhASbNM84udKc0kQsQJlsnjcdsL84zrE8iUqqXC/fK2cQbNL31H5C+qEfJqdNTauQSskkK3cpNWh1FVw736WBYYJSja59q5QwMniXldwcvRglEIELsjKgjbuOnQoIZaVTcbheaa2b1XAiRKTKuPmweysyV3fbuR0jgSJTmdTehrtYG9omjUbg/L7WFjC43JWq8suWi5uch+jHtGG5mZJFFdkE37pQd3wzHBSa+/9Yq9/ZSY=
     ```
-	
-4. Copy the URP configuration file to `~/plugins/urplugin`:
+
+7. Copy the Unmanaged Rack plugin configuration file to `~/plugins/urplugin`.
    ```
    $ cp ~/ODIM/odim-controller/helmcharts/urplugin/urplugin-config.yaml ~/plugins/urplugin
    ```
 
-4. Open the URP plugin configuration YAML file to edit: 
+8. Open the URP configuration YAML file.
 
     ```
     $ vi ~/plugins/urplugin/urplugin-config.yaml
     ```
-
-5. Update the URP plugin configuration YAML file and save: 
 
     **Sample urplugin-config.yaml file**
 
@@ -1123,111 +1124,109 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
       logPath: /var/log/urplugin_logs
     ```
 
-    The following parameters in the sample plugin configuration file must be updated compulsorily. The other parameters have default values. You can optionally modify them according to your requirements.
+7. Update the following parameters in the plugin configuration file: 
+
+    - **odimUsername**: The username of the default administrator account of Resource Aggregator for ODIM.
+
+    - **odimPassword**:  The encrypted password of the default administrator account of Resource Aggregator for ODIM. To generate the encrypted password, run the following command:
+
+      ```
+      $ echo -n '<odimra_password>' | openssl pkeyutl -encrypt -inkey \ 
+      ~/ODIM/odim-controller/scripts/certs/<deploymentid>/odimra_rsa.private \ 
+      -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+      ```
+
+    - **urPluginRootServiceUUID**: RootServiceUUID to be used by the URP service.
+
+    Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
+
+10. Generate Helm package for URP on the deployment node.
+
+       1. Navigate to `odim-controller/helmcharts/urplugin`.
+          
+          ```
+          $ cd ~/ODIM/odim-controller/helmcharts/urplugin
+          ```
+
+    2. Run the following command to create `urplugin` Helm package at `~/plugins/urplugin`:
+
+       ```
+       $ helm package urplugin -d ~/plugins/urplugin
+       ```
+
+       The Helm package for URP is created in the tgz format.
+
+11. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
+
+      ```
+     $ sudo docker save urplugin:1.0 -o ~/plugins/urplugin/urplugin.tar
+      ```
+
+12. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
+
+      ```
+     $ cd ~/ODIM/odim-controller/scripts
+      ```
+
+13. Open the `kube_deploy_nodes.yaml` file by navigating to`~/ODIM/odim-controller/scripts`.
+
+         $ vi kube_deploy_nodes.yaml
     
-    - urPluginRootServiceUUID
-    - odimUsername
-    - odimPassword
+12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
 
-    To know more about each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
-    
-6. Generate Helm package for URP on the deployment node:
-   1. Navigate to `odim-controller/helmcharts/urplugin`.
+    | Parameter                    | Value                                                        |
+    | ---------------------------- | ------------------------------------------------------------ |
+    | connectionMethodConf         | The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br> |
+    | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br>Add these values to the existing comma-separated list.<br> |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br> Add these values to the existing comma-separated list.<br> |
+    | odimPluginPath               | The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied. |
+
+          Example:
+          
+          odimPluginPath: /home/bruce/plugins
+           connectionMethodConf:
+          
+           - ConnectionMethodType: Redfish
+             ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+           - ConnectionMethodType: Redfish
+             ConnectionMethodVariant: Compute:BasicAuth:URP_v1.0.0
+              odimraKafkaClientCertFQDNSan: urplugin,api
+              odimraServerCertFQDNSan: urplugin,api
+
+13. Run the following command: 
+
+         $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+
+14. Run the following command to install Unmanaged Rack plugin: 
+
+         $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin urplugin
+
+15. Run the following command on the cluster nodes to verify the Unmanaged Rack plugin pod is up and running: 
+
+           $ kubectl get pods -n odim
+
+      Example output of the URP pod details:
+
       ```
-      $ cd ~/ODIM/odim-controller/helmcharts/urplugin
+      NAME 						READY 	STATUS 		RESTARTS 	AGE
+      urplugin-5fc4b6788-2xx97 	1/1 	Running 	0 		    4d22h
       ```
-   2. Run the following command:
-      ```
-      $ helm package urplugin
-      ```
-      The Helm package for URP is created in the tar format.
 
-7. Copy the Helm package, `urplugin.tgz`, and `urplugin.tar` to `~/plugins/urplugin`.
-
-8. Log in to the deployment node and run the following command to install URP: 
-
-    ```
-    $ python3 odim-controller.py --config \
-     /home/${USER}/ODIM/odim-controller/\
-    scripts/kube_deploy_nodes.yaml --add plugin --plugin urplugin
-    ```
-
-8. Verify that the URP pod is up and running: 
-
-    ```
-    $ kubectl get pods -n odim
-    ```
-
-    Example output showing the URP pod details:
-
-    ```
-    NAME READY STATUS RESTARTS AGE
-    urplugin-5fc4b6788-2xx97 1/1 Running 0 4d22h
-    ```
-
-9. Navigate to `~/ODIM/odim-controller/scripts`: 
-
-    ```
-    $ cd ~/ODIM/odim-controller/scripts
-    ```
-
-10. Open the `kube_deploy_nodes.yaml` file to edit: 
-
-    ```
-    $ vi kube_deploy_nodes.yaml
-    ```
-
-11. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
-
-    |Parameter|Value|
-    |---------|-----|
-    |connectionMethodConf|The connection method associated with URP: ConnectionMethodVariant: `Compute:BasicAuth:URP_v1.0.0`<br>|
-    |odimraKafkaClientCertFQDNSan|The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying URP:urplugin, api<br>Add these values to the existing comma-separated list.<br>|
-    |odimraServerCertFQDNSan|The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying URP: `urplugin`, `api`.<br> Add these values to the existing comma-separated list.<br>|
-    |odimPluginPath|The path of the directory where the URP Helm package, the `urplugin` image, and the modified `urplugin-config.yaml` are copied.|
-
-    Example:
-
-    ```
-    connectionMethodConf:
-    - ConnectionMethodType: Redfish
-      ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
-    - ConnectionMethodType: Redfish
-      ConnectionMethodVariant: Compute:BasicAuth:URP_v1.0.0
-    odimraKafkaClientCertFQDNSan: urplugin,api
-    odimraServerCertFQDNSan: urplugin,api
-    ```
-
-12. Run the following command: 
-
-    ```
-    $ python3 odim-controller.py --config \
-     /home/${USER}/ODIM/odim-controller/\
-    scripts/kube_deploy_nodes.yaml --upgrade odimra-config
-    ```
-
-13. [Add URP into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework).
+16. [Add URP into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework).
 
 
 ## Deploying the Dell plugin
-
-This procedure shows how to deploy the Dell plugin.
 
 **Prerequisites**
 
 Kubernetes cluster is set up and the resource aggregator is successfully deployed.
 
-1. Save the Dell plugin Docker image on the deployment node:
-   ```
-   $ sudo docker save -o dellplugin.tar dellplugin:1.0
-   ```
-
-2. Create a directory called `plugins` on the deployment node:
+1. Create a directory called `plugins` on the deployment node.
    ```
    $ mkdir plugins
    ```
-   
-3. In the `plugins` directory, create a directory called `dellplugin` on the deployment node:
+
+3. In the `plugins` directory, create a directory called `dellplugin`.
    ```
    $ mkdir ~/plugins/dellplugin
    ```
@@ -1242,18 +1241,16 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     $ sudo chown odimra:odimra /var/log/dellplugin_logs
     ```
     
-4. Copy the Dell plugin configuration file to `~/plugins/dellplugin`:
+4. On the deployment node, copy the Dell plugin configuration file to `~/plugins/dellplugin`.
    ```
    $ cp ~/ODIM/odim-controller/helmcharts/dellplugin/dellplugin-config.yaml ~/plugins/dellplugin
    ```
 
-4. Log in to the deployment node and open the Dell plugin configuration YAML file to edit: 
+5. Open the Dell plugin configuration YAML file.
 
     ```
     $ vi ~/plugins/dellplugin/dellplugin-config.yaml
     ```
-
-5. Update the Dell plugin configuration YAML file and save: 
 
     **Sample dellplugin-config.yaml file:**
 
@@ -1273,61 +1270,94 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     
     ```
 
-    It is mandatory to update the following parameters in this file:
-    
-    - **hostname**: Hostname of the cluster node where the Dell plugin will be installed.
-    - **lbHost**: IP address of the cluster node where the Dell plugin will be installed.
-    - **lbPort**: Default port is 30084.
-	- **dellPluginRootServiceUUID**
+6. Update the following parameters in the plugin configuration file: 
+   
+   - **hostname**: Hostname of the cluster node where the Dell plugin will be installed.
+   - **lbHost**: IP address of the cluster node where the Dell plugin will be installed for one node cluster configuration. For three node cluster configuration,  lbHost is the virtual IP address configured in Nginx and Keepalived.
+   - **lbPort**: Default port is 30084 for one node cluster configuration. For three node cluster configuration, lbPort is the Nginx API node port configured in the Nginx plugin configuration file.
+   - **dellPluginRootServiceUUID**: RootServiceUUID to be used by the Dell plugin service.
+   
+   Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
+   
+7. Generate the Helm package for the Dell plugin on the deployment node.
 
-    Other parameters can either be empty or have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
-    
-6. Generate Helm package for the Dell plugin on the deployment node:
    1. Navigate to `odim-controller/helmcharts/dellplugin`.
       ```
       $ cd ~/ODIM/odim-controller/helmcharts/dellplugin
       ```
-   2. Run the following command:
+   2. Run the following command to create `dellplugin` Helm package at `~/plugins/dellplugin`:
       ```
-      $ helm package dellplugin
+      $ helm package dellplugin -d ~/plugins/dellplugin
       ```
-      The Helm package for the Dell plugin is created in the tar format.
-	
-7. Copy the Helm package, `dellplugin.tgz`, and `dellplugin.tar` to `~/plugins/dellplugin`.
+      The Helm package for the Dell plugin is created in the tgz format.
 
-6. If it is a three-node cluster configuration, log in to each cluster node and [configure proxy server for the plugin](#configuring-proxy-server-for-a-plugin-version). 
+8. Save the Dell plugin Docker image on the deployment node at `~/plugins/dellplugin`.
+
+    ```
+     $ sudo docker save dellplugin:1.0 -o ~/plugins/dellplugin/dellplugin.tar
+    ```
+
+9. If it is a three-node cluster configuration, log in to each cluster node and [configure proxy server for the plugin](#configuring-proxy-server-for-a-plugin-version). 
 
     Skip this step if it is a one-node cluster configuration.
+
+10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
+
+    ```
+     $ cd ~/ODIM/odim-controller/scripts
+    ```
+
+11. Open the `kube_deploy_nodes.yaml` file.
+
+          $ vi kube_deploy_nodes.yaml
     
-7. Log in to the deployment node and run the following command to install the Dell plugin: 
+12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
 
-    ```
-    $ python3 odim-controller.py --config \
-     /home/${USER}/ODIM/odim-controller/scripts\
-    /kube_deploy_nodes.yaml --add plugin --plugin dellplugin
-    ```
+    | Parameter                    | Value                                                        |
+    | ---------------------------- | ------------------------------------------------------------ |
+    | connectionMethodConf         | The connection method associated with Dell plugin: ConnectionMethodVariant: <br />`Compute:BasicAuth:DELL_v1.0.0`<br> |
+    | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br />`dellplugin`, `dellplugin-events`<br>Add these values to the existing comma-separated list.<br> |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br /> `dellplugin`, `dellplugin-events`<br> Add these values to the existing comma-separated list.<br> |
 
+           Example:
+           
+           odimPluginPath: /home/bruce/plugins
+            connectionMethodConf:
+            - ConnectionMethodType: Redfish
+              ConnectionMethodVariant: Compute:BasicAuth:DELL_v1.0.0
+            odimraKafkaClientCertFQDNSan: dellplugin,dellplugin-events
+            odimraServerCertFQDNSan: dellplugin,dellplugin-events
 
-8. Verify that the Dell plugin pod is up and running: 
+13. Run the following command: 
 
-    ```
-    $ kubectl get pods -n odim
-    ```
+          $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
 
-    Example output showing the Dell plugin pod details:
+14. Run the following command to install the Dell plugin: 
 
-    ```
-    NAME 						READY 			STATUS 			RESTARTS 			AGE
-    dellplugin-5fc4b6788-2xx97  1/1 			Running 		0 			 		4d22h
-    ```
+      ```
+      $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin dellplugin
+      ```
 
+15. Run the following command on the cluster nodes to verify the Dell plugin pod is up and running:
 
-9. [Add the Dell plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
+      `$ kubectl get pods -n odim`
 
+      Example output of the Dell plugin pod details:
+
+      ```
+      NAME 						READY 			STATUS 			RESTARTS 			AGE
+      dellplugin-5fc4b6788-2xx97  1/1 			Running 		0 			 		4d22h
+      ```
+
+16. [Add the Dell plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
+
+## Deploying the Cisco ACI plugin
+
+Refer to the deployment instructions of the Cisco ACI plugin [here](https://github.com/ODIM-Project/PluginCiscoACI/blob/main/README.md).
 
 ## Adding a plugin into the Resource Aggregator for ODIM framework
 
-After a plugin is successfully deployed, you must add it into the Resource Aggregator for ODIM framework to access the plugin service.
+After a plugin is successfully deployed, you must add the plugin into the Resource Aggregator for ODIM framework to access the plugin service.
 
 **Prerequisites**
 
@@ -1365,6 +1395,7 @@ The plugin you want to add is successfully deployed.
     ```
     
     **Sample request payload for adding URP:** 
+    
     ```
     {
        "HostName":"urplugin:45007",
@@ -1378,30 +1409,42 @@ The plugin you want to add is successfully deployed.
     }
     ```
     
-    **Request payload parameters** 
-    
-    |Parameter|Type|Description|
-    |---------|----|-----------|
-    |HostName|String \(required\)<br> |It is the plugin service name and the port specified in the Kubernetes environment. For default plugin ports, see [Resource Aggregator for ODIM default ports](#resource-aggregator-for-odim-default-ports).<br><blockquote>NOTE:<br>If you are using a different port for a plugin, ensure that the port is greater than `45000`.<br></blockquote>|
-    |UserName|String \(required\)<br> |The plugin username. See default administrator account usernames of all the plugins in "Default plugin credentials".<br>|
-    |Password|String \(required\)<br> |The plugin password. See default administrator account passwords of all the plugins in "Default plugin credentials".<br> |
-    |ConnectionMethod|Array \(required\)<br> |Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`.<br><blockquote>NOTE:Ensure that the connection method information for the plugin you want to add is updated in the odim-controller configuration file.<br></blockquote>To know which connection method to use, do the following:<br>    1.  Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of links to available connection methods.<br>    2.  Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. It displays the details of a plugin. Choose a connection method having the details of the plugin of your choice. For available connection method variants, see "Connection method variants" table.<br>|
-
-    |Plugin|Default username|Default password|
-    |------|----------------|----------------|
-    |GRF plugin|admin|GRFPlug!n12$4|
-    |URP|admin|Plug!n12$4|
-    
-    |Plugin name|Connection method variant|
-    |-----------|-------------------------|
-    |URP|Compute:BasicAuth:URP\_v1.0.0|
-    |GRF plugin|Compute:BasicAuth:GRF\_v1.0.0|
-    
-    Use the following curl command to add the plugin:
+    **Sample request payload for adding Dell:** 
     
     ```
+    {
+       "HostName":"dellplugin:45005",
+       "UserName":"admin",
+       "Password":"Plug!n12$4",
+      "Links":{
+              "ConnectionMethod": {
+                "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+            }
+      }
+   }
+   ```
+   
+   
+   
+    **Request payload parameters** 
+   
+   |Parameter|Type|Description|
+   |---------|----|-----------|
+   |HostName|String \(required\)<br> |It is the plugin service name and the port specified in the Kubernetes environment. For default plugin ports, see [Resource Aggregator for ODIM default ports](#resource-aggregator-for-odim-default-ports).<br>NOTE: If you are using a different port for a plugin, ensure that the port is greater than `45000`.|
+   |UserName|String \(required\)<br> |The plugin username. See default administrator account usernames of all the plugins in "Default plugin credentials".<br>|
+   |Password|String \(required\)<br> |The plugin password. See default administrator account passwords of all the plugins in "Default plugin credentials".<br> |
+   |ConnectionMethod|Array \(required\)<br> |Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`.<br><blockquote>NOTE: Ensure that the connection method information for the plugin you want to add is updated in the odim-controller configuration file.<br></blockquote>To know which connection method to use, do the following:<br>    1.  Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of links to available connection methods.<br>    2.  Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. It displays the details of a plugin. Choose a connection method having the details of the plugin of your choice. For available connection method variants, see the following "Connection method variants" table.<br>|
+   
+   |Plugin|Default username|Default password|Connection method variant|
+   |------|----------------|----------------|------|
+   |GRF plugin|admin|GRFPlug!n12$4|Compute:BasicAuth:GRF\_v1.0.0|
+   |URP|admin|Plug!n12$4|Compute:BasicAuth:URP\_v1.0.0|
+   
+    Use the following curl command to add the plugin:
+   
+    ```
     curl -i POST \
-       -H 'Authorization:Basic {base64_encoded_string_of_[odim_username:odim_password]}' \
+       -H 'Authorization:Basic {base64_encoded_string_of_<odim_username:odim_password>}' \
        -H "Content-Type:application/json" \
        -d \
     '{"HostName":"{plugin_host}:{port}",
@@ -1413,33 +1456,29 @@ The plugin you want to add is successfully deployed.
           }
        }
     }' \
-     'https://{odim_host}:30080/redfish/v1/AggregationService/AggregationSources'
+     'https://{odim_host}:30080/redfish/v1/AggregationService/AggregationSources' -k
     ```
-
-   <blockquote>
-    NOTE: To generate a base64 encoded string of `{odim_username:odim_password}`, run the following command:
+   
+    <blockquote>
+        NOTE: To generate a base64 encoded string of `{odim_username:odim_password}`, run the following command:</blockquote>
    
     ```
     $ echo -n '{odim_username}:{odim_password}' | base64 -w0
     ```
    
-    Replace `{base64_encoded_string_of_[odim_username:odim_password]}` with the generated base64 encoded string in the curl command.
-
-   </blockquote>
-    You will receive:
-
-    -   An HTTP `202 Accepted` status code.
+    Replace `{base64_encoded_string_of_[odim_username:odim_password]}` with the generated base64 encoded string in the curl command. You will receive:
    
-    -   A link to the task monitor associated with this operation in the response header.
-
+    - An HTTP `202 Accepted` status code.
+    - A link to the task monitor associated with this operation in the response header.
+   
     To know the status of this task, perform HTTP `GET` on the `taskmon` URI until the task is complete. If the plugin is added successfully, you will receive an HTTP `200 OK` status code.
    
     After the plugin is successfully added, it will also be available as a manager resource at:
    
-    `/redfish/v1/Managers`.
+       /redfish/v1/Managers
    
-    For more information, refer to "Adding a plugin" in [Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs).
-
+    For more information, refer to "Adding a plugin" in the [Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs).
+   
 2. To verify that the added plugin is active and running, do the following: 
     1. To get the list of all available managers, perform HTTP `GET` on: 
 
@@ -1459,7 +1498,7 @@ The plugin you want to add is successfully deployed.
 
         **Sample response \(URP manager\)** 
 
-        ```
+        
         {
            "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
            "@odata.etag":"W/\"AA6D42B0\"",
@@ -1475,16 +1514,15 @@ The plugin you want to add is successfully deployed.
            },
            "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
         }
-        ```
-
-    3. Check in the JSON response of the plugin manager, if: 
-
-        -    `State` is `Enabled` 
-
-        -   `Health` is `Ok` 
-
-        For more information, refer to "Managers" in [Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs).
-		
+    
+3. Check in the JSON response of the plugin manager, if: 
+   
+    -    `State` is `Enabled` 
+    
+    -   `Health` is `Ok` 
+    
+    For more information, refer to "Managers" in [Resource Aggregator for Open Distributed Infrastructure Management™ API Reference and User Guide](https://github.com/ODIM-Project/ODIM/tree/development/docs).
+    	
 
 # Use cases for Resource Aggregator for ODIM
 
@@ -1698,11 +1736,11 @@ The odim-controller command-line interface \(CLI\) offers commands to support th
 |--plugin|It is used to provide the name of the plugin that you want to add, remove, scale, ot upgrade.Supported arguments: plugin<br>|
 |--add|It is used to add a plugin.Supported arguments: plugin<br>|
 |--remove|It is used to remove a plugin.Supported arguments: plugin<br>|
-|--replicas|It is used to specify the replica count of a service during scaling.Supported arguments: A number greater than zero and lesser than ten.<br>|
+|--replicas|It is used to specify the replica count of a service during scaling. Supported arguments: A number greater than zero and lesser than ten.<br>|
 |--list| Supported arguments: deployment, history<br> |
 |--rollback|It is used to roll back the deployment to a particular revision.|
-|--revision|It is used to provide a revision number. It must be used with --rollback.<br><blockquote>NOTE:You can list revision numbers using the --list option.<br></blockquote>|
-|--dep|It is used to provide the name of the deployment.It must be used in combination with the following options:<br>-   --list=history<br>-   --rollback<br>|
+|--revision|It is used to provide a revision number. It must be used with --rollback.<br><blockquote>NOTE: You can list revision numbers using the --list option.<br></blockquote>|
+|--dep|It is used to provide the name of the deployment. It must be used in combination with the following options:<br>-   --list=history<br>-   --rollback<br>|
 
 **Example commands**
 
@@ -1714,7 +1752,7 @@ The odim-controller command-line interface \(CLI\) offers commands to support th
 2. ```
      $ python3 odim-controller.py --config \
     ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-    --scale --svc threenodecluster --replicas 3
+    --scale --svc aggregation --replicas 3
    ```
 For more examples, see [Postdeployment operations](#postdeployment-operations).
 
@@ -1761,7 +1799,7 @@ Following are the two ways of scaling up the resources and services of Resource 
     ```
     $ python3 odim-controller.py --config \
      /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-     --scale --svc <deployment_name> --replicas <replica_count>
+     --scale --svc aggregation --replicas <replica_count>
     ```
 
     Replace <deployment\_name\> with the name of the deployment which you want to scale up. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
@@ -1785,40 +1823,42 @@ Following are the two ways of scaling up the resources and services of Resource 
 Scaling down involves removing one or more worker nodes from an existing three-node cluster where the services of Resource Aggregator for ODIM are deployed.
 
 <blockquote>NOTE: You cannot remove controller nodes in a cluster.</blockquote>
+
 1. To remove a node, do the following: 
     1. Open the `kube\_deploy\_nodes.yaml` file on the deployment node.
-    2. Remove all the node entries under nodes except for the node that    you want to remove. 
-    3. Run the following command: 
-
+    
+    2. Remove all the node entries under nodes except for the node that  you want to remove.
+    
+    3. Run the following command:
+    
         ```
         $ python3 odim-controller.py --rmnode kubernetes --config \
-         /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
+        /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
         ```
-
+    
     4. Log in to each cluster node and remove the deleted node details from all the configuration files inside `/opt/nginx/servers`. 
+    
     5. Run the following commands on the removed cluster node only: 
-
         ```
         $ sudo systemctl stop keepalived
         ```
-
+    
         ```
         $ sudo systemctl stop nginx
         ```
-
-    6.  Run the following commands on the remaining cluster nodes: 
-
+    
+    6. Run the following commands on the remaining cluster nodes: 
+    
         ```
         $ sudo systemctl restart nginx
         ```
-
-
+    
 2. To scale down the resource aggregator deployments, run the following command on the deployment node: 
 
     ```
     $ python3 odim-controller.py --config \
      /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-     --scale --svc <deployment_name> --replicas <replica_count>
+     --scale --svc aggregation --replicas <replica_count>
     ```
 
     Replace <deployment\_name\> with the name of the deployment which you want to scale down. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
@@ -2067,40 +2107,42 @@ Run the following commands:
 NOTE: Before performing the following steps, ensure the `http_proxy`, `https_proxy`, and `no_proxy` environment variables are set.
 </blockquote>
 1. [Optional] If the following content is not present in the `/etc/environment` file, add it:
-   
-	```
-    $ cat << EOF | sudo tee -a /etc/environment
-    http_proxy=${http_proxy}
-    https_proxy=${https_proxy}
-    no_proxy=${no_proxy}
-	EOF
-	```
+
+   ```
+   $ cat << EOF | sudo tee -a /etc/environment
+   http_proxy=${http_proxy}
+   https_proxy=${https_proxy}
+   no_proxy=${no_proxy}
+   EOF
+   ```
+	
 2. Run the following commands to update proxy information in the Docker service file:
    ```
    $ sudo mkdir -p /etc/systemd/system/docker.service.d
    ```
-   
+
    ```
    $ cat << EOF | sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf
-    [Service]
+   [Service]
     Environment="HTTP_PROXY=${http_proxy}"
     Environment="HTTPS_PROXY=${https_proxy}"
     Environment="NO_PROXY=${no_proxy}"
     EOF
    ```
+
 3. Run the following commands to update proxy information in the user Docker config file:
    ```
    $ mkdir ~/.docker
    ```
-   
+
    ```
    $ sudo chown ${USER}:${USER} ~/.docker -R
    ```
-   
+
    ```
    $ sudo chmod 0700 ~/.docker
    ```
-   
+
    ```
    $ cat > ~/.docker/config.json <<EOF
     {
@@ -2116,11 +2158,15 @@ NOTE: Before performing the following steps, ensure the `http_proxy`, `https_pro
    }
    EOF
    ```
-   
+
 ## Installing Docker
 
 1. Run the following commands:
    
+   <blockquote> NOTE: If the current version of a package is outdated, please run the following command to check for the latest available version of that package and install the first version listed in the output.</blockquote>
+   
+   ​	`sudo apt-cache madison <package name>`
+	
    1. ```
       $ sudo apt-get install -y apt-transport-https=1.6.12ubuntu0.2 ca-certificates=20210119~18.04.1 curl=7.58.0-2ubuntu3.12
       ```
@@ -2136,11 +2182,11 @@ NOTE: Before performing the following steps, ensure the `http_proxy`, `https_pro
    4. ```
       $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       ```
-	  
+   
    5. ```
       $  sudo apt-get install -y docker-ce=5:19.03.12~3-0~ubuntu-bionic docker-ce-cli=5:19.03.12~3-0~ubuntu-bionic containerd.io --allow-downgrades
       ```
-
+   
 2. Configure overlay storage for Docker:
    ```
    $ cat << EOF | sudo tee /etc/docker/daemon.json
@@ -2151,48 +2197,51 @@ NOTE: Before performing the following steps, ensure the `http_proxy`, `https_pro
      }
      EOF
    ```
+
 3. Perform the following steps to check and create Docker group if doesn't exist:
 
    1. Check if the Docker group exists using the following command:
       ```
-	    $ getent group docker
-	   ```
-	  ```
-	
-     ```
+       $ getent group docker
+      ```
+      
+      Example output: `docker:x:998:`
+      
+   2. Create the Docker group using the following command:
+
+      ```
+        $ sudo groupadd docker
+      ```
    
-	  Example output: `docker:x:998:<username>`
-	2. Create the Docker group using the following command:
-	  ```
-	  $ sudo groupadd docker
-	
-	  ```
-	
 4. Configure to use Docker CLI without sudo access:
    ```
    $ sudo usermod -aG docker $USER
    ```
+
 5. Run the following command to activate the user added to the Docker group:
+
    ```
    $ newgrp docker
    ```
-   
+
    <blockquote>
    NOTE: If you are unable to access Docker CLI without sudo even after performing this step, log out and log back in so that Docker group membership is re-evaluated.
    </blockquote>
+
 6. Restart Docker service:
    ```
    $ sudo systemctl enable docker
    ```
-   
+
    ```
    $ sudo systemctl restart docker
    ```
+
 7. Verify that Docker is successfully installed:
    ```
    $ docker run hello-world
    ```
-   
+
 ##  Installing and configuring Keepalived
 
 Perform the following steps on each cluster node:
@@ -2449,7 +2498,7 @@ Perform the following steps on each cluster node:
 
     ```
     $ sudo apt-get install -y \
-     curl=7.58.0-2ubuntu3.12 gnupg2=2.2.4-1ubuntu1.3 \
+     curl=7.58.0-2ubuntu3.13 gnupg2=2.2.4-1ubuntu1.3 \
      ca-certificates=20210119~18.04.1 lsb-release=9.20170808ubuntu1
     ```
 
@@ -2467,7 +2516,7 @@ Perform the following steps on each cluster node:
     ```
 
     ```
-    $ sudo apt-get install -y nginx=1.14.0-0ubuntu1.7
+    $ sudo apt-get install -y nginx=1.14.0-0ubuntu1.9
     ```
 
 4. Run the following commands to: 
@@ -2584,11 +2633,11 @@ Perform the following steps on each cluster node:
 
 9. To check the Nginx logs, navigate to the following paths: 
 
-    -   /var/log/syslog
+    -   `/var/log/syslog`
 
-    -   /opt/nginx/logs/error.log
+    -   `/opt/nginx/logs/error.log`
 
-    -   /opt/nginx/logs/access.log
+    -   `/opt/nginx/logs/access.log`
     
 ## Odim-controller configuration parameters
 
@@ -2663,8 +2712,8 @@ odimra:
 
 To run curl commands on a different server, perform the following steps to provide the `rootCA.crt` file.
 
-  		1. Navigate to the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file on the deployment node.
-  		2. Copy the `rootCA.crt` file.
+1. Navigate to the path specified for the odimCertsPath parameter in the kube\_deploy\_nodes.yaml file on the deployment node.
+2. Copy the `rootCA.crt` file.
 
 3. Log in to your server and paste the `rootCA.crt` file in a folder.
 
@@ -2672,15 +2721,15 @@ To run curl commands on a different server, perform the following steps to provi
 
 5. Scroll to the end of the file, add the following line, and then save:
 
-```
-<hostvm_ipv4_address> <FQDN>
-```
+   ```
+   <hostvm_ipv4_address> <FQDN>
+   ```
 
 6. Check if curl is working by using the following command:
 
-```
-curl --cacert rootCA.crt 'https://{odim_host}:{port}/redfish/v1'
-```
+   ```
+   curl --cacert rootCA.crt 'https://{odim_host}:{port}/redfish/v1'
+   ```
 
 <blockquote> NOTE: 
 - To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file available in this path: `/etc/ssl/certs/ca-certificates.crt`. You can access the base URL using a REST client. To access it using a REST client, add the rootCA.crt file of HPE Resource Aggregator for ODIM to the browser where the REST client is launched.</blockquote>
@@ -2688,7 +2737,9 @@ curl --cacert rootCA.crt 'https://{odim_host}:{port}/redfish/v1'
 ## Configuring Nginx for the resource aggregator
 
 1. Open the `kube_deploy_nodes.yaml` file on the deployment node and copy the path specified for the odimCertsPath property. 
+
 2. Navigate to the copied path. 
+
 3. Copy the following files into the `/opt/nginx/certs` directory of any one cluster node: 
 
     ```
@@ -2697,6 +2748,7 @@ curl --cacert rootCA.crt 'https://{odim_host}:{port}/redfish/v1'
     ```
 
 4. Log in to the cluster node where you copied the `rootCA.crt` and `rootCA.key` files. 
+
 5. Create a file called crt.conf in `/opt/nginx/certs/` and copy the content into it: 
 
     ```
@@ -2776,13 +2828,13 @@ curl --cacert rootCA.crt 'https://{odim_host}:{port}/redfish/v1'
       /opt/nginx/certs/crt.conf
     ```
 
-8. Navigate to `/opt/nginx/certs/`: 
+8. Navigate to `/opt/nginx/certs/ ` on all cluster nodes: 
 
     ```
     $ cd /opt/nginx/certs/
     ```
 
-9. Copy the following files to all the other cluster nodes: 
+9. Copy the following files to all cluster nodes: 
 
     -   /opt/nginx/certs/server.key
 
@@ -2864,59 +2916,47 @@ curl --cacert rootCA.crt 'https://{odim_host}:{port}/redfish/v1'
     |<k8sNode2_IP><k8sNode3_IP><br>|The physical IP addresses of the other cluster nodes.|
     |<APInode_port>|The port specified for the apiNodePort configuration parameter in the `kube_deploy_nodes.yaml` file.|
     |<VIP>|Virtual IP address specified in the keepalived.conf file.|
-    |<nginx_api_port>|Any free port on the cluster node having high priority. It must be available on all the other cluster nodes.Preferred port is above 45000.<br>Ensure that this port is not used as any other service port.<br><blockquote>NOTE: You can reach the resource aggregator API server at:<br>`https://<VIP>:<nginx_api_port>`.<br></blockquote>|
+    |<nginx_api_port>|Any free port on the cluster node having high priority. It must be available on all the other cluster nodes. Preferred port is above 45000.<br>Ensure that this port is not used as any other service port.<br>**NOTE**: You can reach the resource aggregator API server at:<br>`https://<VIP>:<nginx_api_port>`.<br>|
 
-14. Restart Nginx systemd service only on the leader node \(cluster node where Keepalived priority is set to a higher number\): 
+14. Restart Keepalived and Nginx systemd services only on the leader node \(cluster node where Keepalived priority is set to a higher number\): 
 
     ```
+    $ sudo systemctl restart keepalived
     $ sudo systemctl restart nginx
     ```
 
-    <blockquote>
-    NOTE: If you restart Nginx on a follower node \(cluster node having lower Keepalived priority number\), the service fails to start with the following error:
-    ```
+<blockquote>
+        NOTE: If you restart Nginx on a follower node (cluster node having lower Keepalived priority number), the service fails to start with the following error: </blockquote>
+
     nginx: [emerg] bind() to <VIP>:<nginx_port> failed (99: Cannot assign requested address)
-    ```
-    </blockquote>
 
 ## Plugin configuration parameters
 
-The following table lists all the configuration parameters required to deploy a plugin service.
+The following table lists all the configuration parameters required to deploy a plugin service:
 
-|Parameter|Description|
-|---------|-----------|
-|odimra|List of configurations required for deploying the services of Resource Aggregator for ODIM and third-party services.<br> <blockquote>NOTE: Ensure that the values of the parameters listed under odimra are same as the ones specified in the `kube_deploy_nodes.yaml` file.<br></blockquote>|
-|namespace|Namespace to be used for creating the service pods of Resource Aggregator for ODIM. The default value is "odim". You can optionally change it to a different value.<br>|
-|groupID|Group ID to be used for creating the odimra group.The default value is 2021. You can optionally change it to a different value.<br><blockquote>NOTE: Ensure that the group id is not already in use on any of the nodes.<br></blockquote>|
-|haDeploymentEnabled|When set to true, it deploys third-party services as a three-instance cluster. By default, it is set to true. Before setting it to false, ensure that there are at least three nodes in the Kubernetes cluster.<br>|
-|grfplugin<br>urplugin<br> |List of configurations required for deploying a plugin service.|
-|eventListenerNodePort|The port used for listening to plugin events. The default port is 30083.<br>|
-|grfPluginRootServiceUUID<br>urPluginRootServiceUUID<br>|RootServiceUUID to be used by the plugin service. To generate an UUID, run the following command:<br> ```$ uuidgen```<br> Copy the output and paste it as the value for rootServiceUUID.<br>|
-|username|Username of the plugin.|
-|password|The encrypted password of the plugin.|
-|odimUsername|The username of the default administrator account of Resource Aggregator for ODIM . <blockquote>NOTE: This parameter is applicable only to URP.<br></blockquote>|
-|odimPassword|The encrypted password of the default administrator account of Resource Aggregator for ODIM.<blockquote>NOTE: This parameter is applicable only to URP.<br></blockquote> To generate the encrypted password, run the command specified in "Command to generate an encrypted password".|
-|lbHost|If there is only one cluster node, the lbHost is the IP address of the cluster node.If there is more than one cluster node \( haDeploymentEnabled is true\), lbHost is the virtual IP address configured in Nginx and Keepalived.<br>|
-|lbPort|The default port is 30083.If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. The default port is 30083.<br>If there is more than one cluster node \( haDeploymentEnabled is true\), lbPort is the Nginx API node port configured in the Nginx plugin configuration file.<br>|
-|logPath|The path where the plugin logs are stored. The default path is `/var/log/<plugin_name>_logs`<br>Example: /var/log/grfplugin\_logs<br>|
-
-**Command to generate an encrypted password**
-
-```
-$ echo -n '<odimra_password>' | openssl pkeyutl -encrypt -inkey \ 
-~/ODIM/odim-controller/scripts/certs/<deploymentid>/odimra_rsa.private \ 
--pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A 
-```
+| Parameter             | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| odimra                | List of configurations required for deploying the services of Resource Aggregator for ODIM and third-party services.<br> **NOTE**: Ensure that the values of the parameters listed under odimra are same as the ones specified in the `kube_deploy_nodes.yaml` file.<br> |
+| namespace             | Namespace to be used for creating the service pods of Resource Aggregator for ODIM. The default value is "odim". You can optionally change it to a different value.<br> |
+| groupID               | Group ID to be used for creating the odimra group. The default value is 2021. You can optionally change it to a different value.<br>**NOTE**: Ensure that the group id is not already in use on any of the nodes.<br> |
+| haDeploymentEnabled   | When set to true, it deploys third-party services as a three-instance cluster. By default, it is set to true. Before setting it to false, ensure that there are at least three nodes in the Kubernetes cluster.<br> |
+| eventListenerNodePort | The port used for listening to plugin events. Refer to the sample plugin yaml configuration file to view the sample port information.<br> |
+| RootServiceUUID       | RootServiceUUID to be used by the plugin service. To generate an UUID, run the following command:<br> ```$ uuidgen```<br> Copy the output and paste it as the value of the plugin's rootServiceUUID.<br> |
+| username              | Username of the plugin.                                      |
+| password              | The encrypted password of the plugin.                        |
+| lbHost                | If there is only one cluster node, the lbHost is the IP address of the cluster node. If there is more than one cluster node \(haDeploymentEnabled is true\), lbHost is the virtual IP address configured in Nginx and Keepalived.<br> |
+| lbPort                | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node \(haDeploymentEnabled is true\), lbPort is the Nginx API node port configured in the Nginx plugin configuration file. |
+| logPath               | The path where the plugin logs are stored. The default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin\_logs` |
 
 ## Configuring proxy server for a plugin version
 
 1. Log in to each cluster node and navigate to the following path: 
 
-    ```
-    $ cd /opt/nginx/servers
-    ```
+   ```
+   $ cd /opt/nginx/servers
+   ```
 
-2. Create a plugin configuration file called `<plugin-name>_nginx\_server.conf`: 
+2. Create a plugin configuration file called `<plugin-name>_nginx_server.conf`: 
 
     ```
     $ vi <plugin-name>_nginx_server.conf
@@ -2928,7 +2968,7 @@ $ echo -n '<odimra_password>' | openssl pkeyutl -encrypt -inkey \
     $ vi grfplugin_nginx_server.conf
     ```
 
-3. Copy the following content into the `<plugin-name>_nginx\_server.conf` file on each cluster node: 
+3. Copy the following content into the `<plugin-name>_nginx_server.conf` file on each cluster node: 
 
     ```
     upstream <plugin_name>  {
@@ -2939,7 +2979,7 @@ $ echo -n '<odimra_password>' | openssl pkeyutl -encrypt -inkey \
      
     server {
             listen <k8s_self_node_IP>:<nginx_plugin_port> ssl;
-            listen <VIP>:<nginx_plugin_port>** ssl;
+            listen <VIP>:<nginx_plugin_port> ssl;
             server_name odim_proxy;
             ssl_session_timeout  5m;
             ssl_prefer_server_ciphers on;
@@ -2970,7 +3010,7 @@ $ echo -n '<odimra_password>' | openssl pkeyutl -encrypt -inkey \
     |<k8s_node2_IP><k8s_node3_IP><br>|The physical IP addresses of the other cluster nodes.|
     |<plugin_node_port>|The port specified for the eventListenerNodePort configuration parameter in the `<plugin_name>-config.yaml` file.|
     |<VIP>|Virtual IP address specified in the keepalived.conf file.|
-    |<nginx_plugin_port>|Any free port on the cluster node. It must be available on all the other cluster nodes.Preferred port is above 45000.<br>Ensure that this port is not used as any other service port.<br><blockquote>NOTE: You can reach the resource aggregator API server at:<br>`https://<VIP>:<nginx_api_port>`.<br></blockquote>|
+    |<nginx_plugin_port>|Any free port on the cluster node. It must be available on all the other cluster nodes.Preferred port is above 45000.<br>Ensure that this port is not used as any other service port.<br>**NOTE**: You can reach the resource aggregator API server at:<br>`https://<VIP>:<nginx_api_port>`.<br>|
 
 4. Restart Nginx systemd service only on the leader node \(cluster node where Keepalived priority is set to a higher number\): 
 
@@ -2979,113 +3019,112 @@ $ echo -n '<odimra_password>' | openssl pkeyutl -encrypt -inkey \
     ```
 
     <blockquote>
-    NOTE:If you restart Nginx on a follower node \(cluster node having lower Keepalived priority number\), the service fails to start with the following error:
+    NOTE:If you restart Nginx on a follower node \(cluster node having lower Keepalived priority number\), the service fails to start with the following error:</blockquote>
 
     ```
     nginx: [emerg] bind() to <VIP>:<nginx_port> failed (99: Cannot assign requested address)
     ```
-
-   </blockquote>
-
-## Resource Aggregator for ODIM deployment names
-
-|Deployment name|Description|
-|---------------|-----------|
-|odimra-config|Deployment name of the ConfigMap which contains the configuration information required by the resource aggregator services|
-|odimra-platformconfig|Deployment name of the ConfigMap which contains the Kafka client configuration information required by the resource aggregator services|
-|configure-hosts|Deployment name of the ConfigMap which contains the entries to be added in the `/etc/hosts` file on all the containers|
-|odimra-secret|Deployment name of the secret which contains the certificates and keys used by the resource aggregator services|
-|kafka-secret|Deployment name of the secret which contains the JKS password of Kafka keystore|
-|zookeeper-secret|Deployment name of the secret which contains the JKS password of zookeeper keystore|
-|account-session|Deployment name of the account-sessions service|
-|aggregation|Deployment name of the aggregation service|
-|api|Deployment name of the api service|
-|events|Deployment name of the events service|
-|fabrics|Deployment name of the fabrics service|
-|managers|Deployment name of the managers service|
-|systems|Deployment name of the systems service|
-|tasks|Deployment name of the tasks service|
-|update|Deployment name of the update service|
-|kafka|Deployment name of the Kafka service|
-|zookeeper|Deployment name of the zookeeper service|
-|redis|Deployment name of the Redis service|
-|consul|Deployment name of the Consul service|
-|all|Deployment name to be used for scaling up all the resource aggregator services|
-|odimra|Deployment name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services|
-|thirdparty|Deployment name to be used for scaling up all the third-party ConfigMaps and secrets|
-
-## Using your own CA certificates and keys
-
-1.  Generate the following certificates and store them in a folder on the deployment node:
-
-    -   odimra_rsa.private: It must be generated only once before deploying the resource aggregator and plugin services.
-
-    -   odimra_rsa.public: It must be generated only once before deploying the resource aggregator and plugin services.
-
-        <blockquote>
-        NOTE: Ensure not to replace the RSA public and private keys. Replacing them results in loss of data and requires reinstallation. If you are generating your own CA certificates to replace the existing CA certificates, move the existing odimra\_rsa.public and odimra\_rsa.private files to the folder where you are generating all the other certificates.
-        </blockquote>
-    -   rootCA.crt: Root CA certificate.
-
-    -   odimra_server.crt: Certificate to be used by the API gateway and the resource aggregator and plugin components.
     
-    -   odimra_server.key: Private key to be used by the API gateway and the resource aggregator and plugin components.
+    ## Resource Aggregator for ODIM deployment names
     
-    -   odimra_kafka_client.crt: Kafka certificate.
+    | Deployment name       | Description                                                  |
+    | --------------------- | ------------------------------------------------------------ |
+    | odimra-config         | Deployment name of the ConfigMap which contains the configuration information required by the resource aggregator services |
+    | odimra-platformconfig | Deployment name of the ConfigMap which contains the Kafka client configuration information required by the resource aggregator services |
+    | configure-hosts       | Deployment name of the ConfigMap which contains the entries to be added in the `/etc/hosts` file on all the containers |
+    | odimra-secret         | Deployment name of the secret which contains the certificates and keys used by the resource aggregator services |
+    | kafka-secret          | Deployment name of the secret which contains the JKS password of Kafka keystore |
+    | zookeeper-secret      | Deployment name of the secret which contains the JKS password of zookeeper keystore |
+    | account-session       | Deployment name of the account-sessions service              |
+    | aggregation           | Deployment name of the aggregation service                   |
+    | api                   | Deployment name of the api service                           |
+    | events                | Deployment name of the events service                        |
+    | fabrics               | Deployment name of the fabrics service                       |
+    | managers              | Deployment name of the managers service                      |
+    | systems               | Deployment name of the systems service                       |
+    | tasks                 | Deployment name of the tasks service                         |
+    | update                | Deployment name of the update service                        |
+    | kafka                 | Deployment name of the Kafka service                         |
+    | zookeeper             | Deployment name of the zookeeper service                     |
+    | redis                 | Deployment name of the Redis service                         |
+    | consul                | Deployment name of the Consul service                        |
+    | all                   | Deployment name to be used for scaling up all the resource aggregator services |
+    | odimra                | Deployment name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services |
+    | thirdparty            | Deployment name to be used for scaling up all the third-party ConfigMaps and secrets |
     
-    -   odimra_kafka_client.key: Kafka key.
+    ## Using your own CA certificates and keys
     
-    -   kafka.keystore.jks: Keystore of type `jks` used by Kafka servers for TLS-based communication.
+    1. Generate the following certificates and store them in a folder on the deployment node:
     
-    -   kafka.truststore.jks: Truststore of type `jks`. It contains CA certificates, used by Kafka server to validate certificates of the client that is contacting the Kafka server.
+       - odimra_rsa.private: It must be generated only once before deploying the resource aggregator and plugin services.
     
-    -   zookeeper.keystore.jks: Keystore of type `jks` used by Zookeeper for TLS-based communication.
+       - odimra_rsa.public: It must be generated only once before deploying the resource aggregator and plugin services.
     
-    -   zookeeper.truststore.jks: Truststore of type `jks`. It contains CA certificates, used by Zookeeper to validate certificates of the client that is contacting it.
+         <blockquote>
+         NOTE: Ensure not to replace the RSA public and private keys. Replacing them results in loss of data and requires reinstallation. If you are generating your own CA certificates to replace the existing CA certificates, move the existing odimra\_rsa.public and odimra\_rsa.private files to the folder where you are generating all the other certificates.
+         </blockquote>
     
-    While generating these certificates:
+       - rootCA.crt: Root CA certificate.
     
-    -   Ensure that `odimra_server.crt` has the SAN entry of FQDN specified in the `kube_deploy_nodes.yaml` file.
+       - odimra_server.crt: Certificate to be used by the API gateway and the resource aggregator and plugin components.
     
-    -   Ensure that `odim_server.crt` and `odim_kafka_client.crt` have the following SAN entries for all the plugins you want to deploy.
+       - odimra_server.key: Private key to be used by the API gateway and the resource aggregator and plugin components.
     
-        Examples: `grfplugin: grfplugin,grfplugin-events`.
+       - odimra_kafka_client.crt: Kafka certificate.
     
-    -   Ensure that `kafka.truststore.jks` and `kafka.truststore.jks` have the following SAN entries:
+       - odimra_kafka_client.key: Kafka key.
     
-        ```
-        DNS.1 = kafka
-        DNS.2 = kafka1.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
-        DNS.3 = kafka2.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
-        DNS.4 = kafka3.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
-        DNS.5 = kafka-ext
-        DNS.6 = kafka1-ext
-        DNS.7 = kafka2-ext
-        DNS.8 = kafka3-ext
-        ```
+       - kafka.keystore.jks: Keystore of type `jks` used by Kafka servers for TLS-based communication.
     
-    -   Ensure that `zookeeper.truststore.jks` and `zookeeper.truststore.jks` have the following SAN entries:
+       - kafka.truststore.jks: Truststore of type `jks`. It contains CA certificates, used by Kafka server to validate certificates of the client that is contacting the Kafka server.
     
-        ```
-        DNS.1 = zookeeper
-        DNS.2 = zookeeper1.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
-        DNS.3 = zookeeper2.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
-        DNS.4 = zookeeper3.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
-        ```
+       - zookeeper.keystore.jks: Keystore of type `jks` used by Zookeeper for TLS-based communication.
     
-    Replace {​​ODIMRA_NAMESPACE} with the value specified for namespace in the `kube_deploy_nodes.yaml` file.
+       - zookeeper.truststore.jks: Truststore of type `jks`. It contains CA certificates, used by Zookeeper to validate certificates of the client that is contacting it.
     
-2.  Update `odimCertsPath` with the path of the folder where you have stored the certificates in the `kube_deploy_nodes.yaml` file.
-
-3.  **\[Optional\]** Perform this step only after you have successfully deployed the resource aggregator and plugin services.
-
+       While generating these certificates:
+    
+       - Ensure that `odimra_server.crt` has the SAN entry of FQDN specified in the `kube_deploy_nodes.yaml` file.
+    
+       - Ensure that `odim_server.crt` and `odim_kafka_client.crt` have the following SAN entries for all the plugins you want to deploy.
+    
+         Examples: `grfplugin: grfplugin,grfplugin-events`.
+    
+       - Ensure that `kafka.truststore.jks` and `kafka.truststore.jks` have the following SAN entries:
+    
+         ```
+         DNS.1 = kafka
+         DNS.2 = kafka1.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
+         DNS.3 = kafka2.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
+         DNS.4 = kafka3.kafka.${​​​​ODIMRA_NAMESPACE}​​​​.svc.cluster.local
+         DNS.5 = kafka-ext
+         DNS.6 = kafka1-ext
+         DNS.7 = kafka2-ext
+         DNS.8 = kafka3-ext
+         ```
+    
+       - Ensure that `zookeeper.truststore.jks` and `zookeeper.truststore.jks` have the following SAN entries:
+    
+         ```
+         DNS.1 = zookeeper
+         DNS.2 = zookeeper1.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
+         DNS.3 = zookeeper2.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
+         DNS.4 = zookeeper3.zookeeper.${​​ODIMRA_NAMESPACE}​​.svc.cluster.local
+         ```
+    
+       Replace {​​ODIMRA_NAMESPACE} with the value specified for namespace in the `kube_deploy_nodes.yaml` file.
+    
+    2. Update `odimCertsPath` with the path of the folder where you have stored the certificates in the `kube_deploy_nodes.yaml` file.
+    
+    3. **\[Optional\]** Perform this step only after you have successfully deployed the resource aggregator and plugin services.
+    
     If you want to replace the existing CA certificates, run the following command:
-
+    
     ```
     $ python3 odim-controller.py --config \
      /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
     ```
-
+    
     **Result**: The existing certificates are replaced with the new certificates and the resource aggregator pods are restarted.
 
 ## Regenerating certificates
@@ -3251,6 +3290,7 @@ The following table lists all the default ports used by the resource aggregator,
 |Kafka node port|30092 for a one-node cluster configuration.30092, 30093, and 30094 for a three-node cluster configuration.<br>|
 |GRF plugin port|45001|
 |URP port|45007|
+|Dell port|45005|
 
 ## Deploying the GRF plugin
 
@@ -3258,21 +3298,17 @@ The following table lists all the default ports used by the resource aggregator,
 
 Kubernetes cluster is set up and the resource aggregator is successfully deployed.
 
-1. Save the GRF plugin Docker image on the deployment node:
-   ```
-   $ sudo docker save -o grfplugin.tar grfplugin:1.0
-   ```
-
-2. Create a directory called `plugins` on the deployment node:
+1. Create a directory called `plugins` on the deployment node.
    ```
    $ mkdir plugins
    ```
-3. Create a directory called `grfplugin`on the deployment node:
+
+3. In the `plugins` directory, create a directory called `grfplugin`.
    ```
    $ mkdir ~/plugins/grfplugin
    ```
    
-2. Log in to each cluster node and run the following commands: 
+3. Log in to each cluster node and run the following commands: 
 
     ```
     $ sudo mkdir -p /var/log/grfplugin_logs/
@@ -3281,19 +3317,17 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     ```
     $ sudo chown odimra:odimra /var/log/grfplugin_logs/
     ```
-	
-4. Copy the GRF configuration file to `~/plugins/grfplugin`:
+
+4. On the deployment node, copy the GRF configuration file to `~/plugins/grfplugin`.
    ```
    $ cp ~/ODIM/odim-controller/helmcharts/grfplugin/grfplugin-config.yaml ~/plugins/grfplugin
    ```
 
-4. Log in to the deployment node and open the GRF plugin configuration YAML file to edit: 
+5. Open the GRF plugin configuration YAML file. 
 
     ```
     $ vi ~/plugins/grfplugin/grfplugin-config.yaml
     ```
-
-5. Update the GRF plugin configuration YAML file and save: 
 
     **Sample grfplugin-config.yaml file:**
 
@@ -3304,99 +3338,114 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
       haDeploymentEnabled: true
     grfplugin:
       eventListenerNodePort: 30081
-      logPath: /var/log/grfplugin_logs
       rootServiceUUID: 65963042-6b99-4206-8532-dcd085a835b1
       username: admin
       password: "UUFCYFpBoHh6UdvytPzm65SkHj5zyl73EYVNJNbrFeAPWYrkpTijGB9zrVQSbbLv052HK7-7chqDQQcjgWf7YA=="
       lbHost: <Ngnix_virtual_IP_address>
       lbPort: <Ngnix_plugin_port>
-    
+      logPath: /var/log/grfplugin_logs
     ```
-
-    It is mandatory to update the following parameters in the sample plugin configuration file:
     
-    - rootServiceUUID
-    - lbHost
-    - lbPort
-
     Other parameters have default values. Optionally, you can modify them according to your requirements. To know more about each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
     
-6. Generate Helm package for the GRF plugin on the deployment node:
+6. Update the following parameters in the plugin configuration file:
+
+   - **lbHost**: IP address of the cluster node where the GRF plugin will be installed for one node cluster configuration.  For three node cluster configuration,  \(haDeploymentEnabled is true\), lbHost is the virtual IP address configured in Nginx and Keepalived.
+   - **lbPort**: Default port is 30081 for one node cluster configuration. For three node cluster configuration, \(haDeploymentEnabled is true\), lbPort is the Nginx API node port configured in the Nginx plugin configuration file.
+   - **grfPluginrootServiceUUID**: RootServiceUUID to be used by the GRF plugin service.
+
+   Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
+
+7. Generate the Helm package for the GRF plugin on the deployment node.
+
    1. Navigate to `odim-controller/helmcharts/grfplugin`.
       ```
       $ cd ~/ODIM/odim-controller/helmcharts/grfplugin
       ```
-   2. Run the following command:
+      
+   2. Run the following command to create `grfplugin` Helm package at `~/plugins/grfplugin`:
+      
       ```
-      $ helm package grfplugin
+      $ helm package grfplugin -d ~/plugins/grfplugin
       ```
-      The Helm package for the GRF plugin is created in the tar format.
-	
-7. Copy the Helm package, `grfplugin.tgz`, and `grfplugin.tar` to `~/plugins/grfplugin`.
+      
+      The Helm package for the GRF plugin is created in the tgz format.
 
-6. If it is a three-node cluster configuration, log in to each cluster node and [configure proxy server for the GRF plugin](#configuring-proxy-server-for-a-plugin-version). 
+8. Save the GRF plugin Docker image on the deployment node at `~/plugins/grfplugin`.
+
+    ```
+    $ sudo docker save grfplugin:1.0 -o ~/plugins/grfplugin/grfplugin.tar
+    ```
+
+9. If it is a three-node cluster configuration, log in to each cluster node and [configure proxy server for the GRF plugin](#configuring-proxy-server-for-a-plugin-version). 
 
     Skip this step if it is a one-node cluster configuration.
 
-11. Log in to the deployment node and run the following command to install the GRF plugin: 
+10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
-```
-$ python3 odim-controller.py --config \
- /home/${USER}/ODIM/odim-controller/scripts\
-/kube_deploy_nodes.yaml --add plugin --plugin grfplugin
-```
+    ```
+     $ cd ~/ODIM/odim-controller/scripts
+    ```
 
-12. Verify that the GRF plugin pod is up and running: 
+11. Open the kube\_deploy\_nodes.yaml file to edit.
 
-```
-$ kubectl get pods -n odim
-```
+     ```
+     $ vi kube_deploy_nodes.yaml
+     ```
 
-Example output showing the GRF plugin pod details:
+12. Update the following parameters in the kube\_deploy\_nodes.yaml file to their corresponding values: 
 
-```
-NAME READY STATUS RESTARTS AGE
-grfplugin-5fc4b6788-2xx97 1/1 Running 0 4d22h
-```
+    | Parameter                    | Value                                                        |
+    | ---------------------------- | ------------------------------------------------------------ |
+    | connectionMethodConf         | The connection method associated with the GRF plugin:<br/> ConnectionMethodVariant: `Compute:BasicAuth:GRF_v1.0.0`<br/>Check if it is there already before updating. If yes, do not add it again.<br/> |
+    | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br/>Add these values to the existing comma-separated list.<br/> |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-eventsAdd these values to the existing comma-separated list.<br> |
+    | odimPluginPath               | The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied. |
 
-13. Navigate to `~/ODIM/odim-controller/scripts`: 
+      Example:
 
-```
-$ cd ~/ODIM/odim-controller/scripts
-```
+      ```
+      connectionMethodConf:
+        ConnectionMethodType: Redfish
+        ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+      odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
+      odimraServerCertFQDNSan: grfplugin,grfplugin-events
+      ```
 
-14. Open the kube\_deploy\_nodes.yaml file to edit: 
+13. Run the following command: 
 
-```
-$ vi kube_deploy_nodes.yaml
-```
+      ```
+      $ python3 odim-controller.py --config \ 
+       /home/${USER}/ODIM/odim-controller/scripts\
+      /kube_deploy_nodes.yaml --upgrade odimra-config
+      ```
 
-15. Update the following parameters in the kube\_deploy\_nodes.yaml file to their corresponding values: 
+14. Run the following command to install the GRF plugin: 
 
-|Parameter|Value|
-|---------|-----|
-|connectionMethodConf|The connection method associated with the GRF plugin:<br> ConnectionMethodVariant: `Compute:BasicAuth:GRF\_v1.0.0`<br>Check if it is there already before updating. If yes, do not add it again.<br>|
-|odimraKafkaClientCertFQDNSan|The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the GRF plugin:grfplugin, grfplugin-events<br>Add these values to the existing comma-separated list.<br>|
-|odimraServerCertFQDNSan|The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the GRF plugin: grfplugin, grfplugin-eventsAdd these values to the existing comma-separated list.<br>|
-|odimPluginPath|The path of the directory where the GRF Helm package, the `grfplugin` image, and the modified `grfplugin-config.yaml` are copied.|
+       ```
+       $ python3 odim-controller.py --config \
+        /home/${USER}/ODIM/odim-controller/scripts\
+       /kube_deploy_nodes.yaml --add plugin --plugin grfplugin
+       ```
 
-Example:
+15. Run the following command on the cluster nodes to verify the GRF plugin pod is up and running: 
 
-```
-connectionMethodConf:
-  ConnectionMethodType: Redfish
-  ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
-odimraKafkaClientCertFQDNSan: grfplugin,grfplugin-events
-odimraServerCertFQDNSan: grfplugin,grfplugin-events
-```
+      ```
+      $ kubectl get pods -n odim
+      ```
 
-16. Run the following command: 
+      Example output showing the GRF plugin pod details:
 
-```
-$ python3 odim-controller.py --config \ 
- /home/${USER}/ODIM/odim-controller/scripts\
-/kube_deploy_nodes.yaml --upgrade odimra-config
-```
+      ```
+      NAME READY STATUS RESTARTS AGE
+      grfplugin-5fc4b6788-2xx97 1/1 Running 0 4d22h
+      ```
+
+16. Navigate to `~/ODIM/odim-controller/scripts`.
+
+      ```
+      $ cd ~/ODIM/odim-controller/scripts
+      ```
 
 17. [Add the GRF plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
 

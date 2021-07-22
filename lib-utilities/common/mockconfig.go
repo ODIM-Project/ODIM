@@ -64,16 +64,22 @@ func SetUpMockConfig() error {
 		},
 	}
 	config.Data.AddComputeSkipResources = &config.AddComputeSkipResources{
-		SystemCollection: []string{
+		SkipResourceListUnderSystem: []string{
+			"Chassis",
+			"Managers",
+			"LogServices",
+		},
+		SkipResourceListUnderManager: []string{
+			"Systems",
 			"Chassis",
 			"LogServices",
 		},
-		ChassisCollection: []string{
+		SkipResourceListUnderChassis: []string{
 			"Managers",
 			"Systems",
 			"Devices",
 		},
-		OtherCollection: []string{
+		SkipResourceListUnderOthers: []string{
 			"Power",
 			"Thermal",
 			"SmartStorage",
@@ -100,7 +106,7 @@ func SetUpMockConfig() error {
 		StartUpResouceBatchSize: 10,
 	}
 	config.Data.AddComputeSkipResources = &config.AddComputeSkipResources{
-		OtherCollection: []string{"Power", "Thermal", "SmartStorage", "LogServices"},
+		SkipResourceListUnderOthers: []string{"Power", "Thermal", "SmartStorage", "LogServices"},
 	}
 	return nil
 }

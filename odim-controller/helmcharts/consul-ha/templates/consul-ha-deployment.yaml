@@ -5,20 +5,21 @@ metadata:
   name: consul1
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: consul
+    app: consul
+    instance: consul1
+    deployment: odim-ra
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: odim-ra
-      unit: consul
+      app: consul
+      instance: consul1
       parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: consul
+        app: consul
+        instance: consul1
         parentdeployment: odim-ra
     spec:
       hostname: consul1
@@ -26,14 +27,19 @@ spec:
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - consul
+                  values: ["consul2", "consul3"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: consul1
@@ -72,20 +78,21 @@ metadata:
   name: consul2
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: consul
+    app: consul
+    instance: consul2
+    deployment: odim-ra
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: odim-ra
-      unit: consul
+      app: consul
+      instance: consul2
       parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: consul
+        app: consul
+        instance: consul2
         parentdeployment: odim-ra
     spec:
       hostname: consul2
@@ -93,14 +100,19 @@ spec:
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - consul
+                  values: ["consul1", "consul3"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: consul2
@@ -139,20 +151,21 @@ metadata:
   name: consul3
   namespace: {{ .Values.odimra.namespace }}
   labels:
-    app: odim-ra
-    unit: consul
+    app: consul
+    instance: consul3
+    deployment: odim-ra
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: odim-ra
-      unit: consul
+      app: consul
+      instance: consul3
       parentdeployment: odim-ra
   template:
     metadata:
       labels:
-        app: odim-ra
-        unit: consul
+        app: consul
+        instance: consul3
         parentdeployment: odim-ra
     spec:
       hostname: consul3
@@ -160,14 +173,19 @@ spec:
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: Exists
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
               matchExpressions:
-                - key: "unit"
+                - key: "instance"
                   operator: In
-                  values:
-                  - consul
+                  values: ["consul1", "consul2"]
             topologyKey: "kubernetes.io/hostname"
       containers:
         - name: consul3

@@ -20,7 +20,7 @@ type Storage struct {
 	ODataContext       string                `json:"@odata.context,omitempty"`
 	ODataEtag          string                `json:"@odata.etag,omitempty"`
 	ODataType          string                `json:"@odata.type,omitempty"`
-	Description        string                `json:"description,omitempty"`
+	Description        string                `json:"Description,omitempty"`
 	ID                 string                `json:"Id,omitempty"`
 	Name               string                `json:"Name,omitempty"`
 	Oem                *Oem                  `json:"Oem,omitempty"`

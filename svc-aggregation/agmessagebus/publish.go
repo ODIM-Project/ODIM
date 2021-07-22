@@ -65,12 +65,12 @@ func Publish(systemID, eventType, collectionType string) {
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
 func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
-	kConn, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	conn, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
 	}
 
-	defer kConn.Close()
+	defer conn.Close()
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal data: %s", err.Error())
@@ -79,7 +79,7 @@ func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
 		MessageType: msgType,
 		Data:        data,
 	}
-	if err := kConn.Distribute(common.InterCommMsgQueueName, ctrlMsg); err != nil {
+	if err := conn.Distribute(common.InterCommMsgQueueName, ctrlMsg); err != nil {
 		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
 	}
 	return nil

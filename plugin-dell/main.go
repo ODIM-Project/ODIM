@@ -36,12 +36,6 @@ import (
 var subscriptionInfo []dpmodel.Device
 var log = logrus.New()
 
-// TokenObject will contains the generated token and public key of odimra
-type TokenObject struct {
-	AuthToken string `json:"authToken"`
-	PublicKey []byte `json:"publicKey"`
-}
-
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
@@ -56,11 +50,9 @@ func main() {
 		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
-	// TODO check db configuration / move preparedbConfig
-	log.SetLevel(log.InfoLevel)
 	dputilities.PrepareDbConfig()
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatal("error while trying to check DB connection health: " + err.Error())
+		log.Fatal("While trying to check DB connection health got: " + err.Error())
 	}
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer

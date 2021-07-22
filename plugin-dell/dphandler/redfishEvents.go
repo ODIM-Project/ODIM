@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
+	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"

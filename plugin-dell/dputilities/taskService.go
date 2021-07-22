@@ -109,7 +109,6 @@ type Payload struct {
 }
 
 func CreateTask() (string, error) {
-	// TODO sessions
 	userName := pluginConf.Data.PluginConf.UserName
 
 	// Frame the model

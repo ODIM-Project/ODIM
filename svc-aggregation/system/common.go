@@ -1548,7 +1548,7 @@ func checkWildCardPresent(val string, values []string) bool {
 func getUpdatedProperty(property, wildCardName string) (string, string) {
 	prop := strings.Split(property, "/")[4]
 	uuid := strings.Split(prop, "#")[0]
-	property = strings.Replace(property, uuid, wildCardName, -1)
+	property = strings.Replace(property, uuid, "{"+wildCardName+"}", -1)
 	return property, uuid
 }
 

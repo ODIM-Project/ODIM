@@ -746,7 +746,6 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
 	}
-	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`:`, -1)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	resp.Body = resource

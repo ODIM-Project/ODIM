@@ -1460,6 +1460,8 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 	return progress
 }
 
+// createWildCard is used to form the create the wild card
+// first check the whether resource already present, if its not then create new wild card
 func createWildCard(resourceData, resourceName, oid string) (string, error) {
 	var resourceDataMap map[string]interface{}
 	err := json.Unmarshal([]byte(resourceData), &resourceDataMap)
@@ -1471,6 +1473,9 @@ func createWildCard(resourceData, resourceName, oid string) (string, error) {
 	return formWildCard(data, resourceDataMap)
 }
 
+// formWildCard is used to form the wild card
+// if the data not present in the db(means first time add server) then create empty wild and update it with metric properties
+// if the wild card data already present then update it with new properties
 func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string, error) {
 	var systemID, chassisID string
 	var wildCards []WildCard
@@ -1529,6 +1534,8 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 	return string(resourceDataByte), nil
 }
 
+// checkWildCardPresent will check the wild card present in the array
+// if its present returns true, else false.
 func checkWildCardPresent(val string, values []string) bool {
 	if len(values) < 1 {
 		return false
@@ -1545,6 +1552,7 @@ func checkWildCardPresent(val string, values []string) bool {
 	return false
 }
 
+// getUpdatedProperty function get the uuid from the property and update the property with wild card name
 func getUpdatedProperty(property, wildCardName string) (string, string) {
 	prop := strings.Split(property, "/")[4]
 	uuid := strings.Split(prop, "#")[0]
@@ -1552,6 +1560,7 @@ func getUpdatedProperty(property, wildCardName string) (string, string) {
 	return property, uuid
 }
 
+// getWildCard function will convert array of interface to array of string
 func getWildCard(wCard []interface{}) []WildCard {
 	var wildCard []WildCard
 	for _, val := range wCard {
@@ -1567,6 +1576,8 @@ func getWildCard(wCard []interface{}) []WildCard {
 	return wildCard
 }
 
+// checkMetricPropertyPresent will check the metric property present in the array
+// if its present returns true, else false.
 func checkMetricPropertyPresent(val string, values []interface{}) bool {
 	if len(values) < 1 {
 		return false
@@ -1583,6 +1594,7 @@ func checkMetricPropertyPresent(val string, values []interface{}) bool {
 	return false
 }
 
+// getEmptyWildCard function is for create empty wild card field with default SystemID and ChassisID name and empty values
 func getEmptyWildCard() []WildCard {
 	var wildCards []WildCard
 	var w WildCard

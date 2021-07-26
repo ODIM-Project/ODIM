@@ -89,6 +89,9 @@ func mockGetResource(table, key string, dbType common.DbType) (string, *errors.E
 }
 
 func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
+	if table == "Plugin" {
+		return []string{"ILO", "GRF"}, nil
+	}
 	return []string{"/redfish/v1/TelemetryService/Triggers/uuid:1"}, nil
 }
 
@@ -110,6 +113,7 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "XAuthToken",
+		PluginType:        "Compute",
 	}
 	return plugin, nil
 }

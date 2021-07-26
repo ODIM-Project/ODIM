@@ -103,6 +103,7 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "BasisAuth",
+		PluginType:        "Compute",
 	}
 	return plugin, nil
 }

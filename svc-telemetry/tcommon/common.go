@@ -74,7 +74,6 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 	for _, value := range plugins {
 		wg.Add(1)
 		go getResourceInfo(value, &metricReportData, req, &lock, &wg)
-		metricReportData.MetricValues = append(metricReportData.MetricValues, metricReportData.MetricValues...)
 	}
 	wg.Wait()
 	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
@@ -91,7 +90,7 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 	defer wg.Done()
 	// Get the Plugin info
 	plugin, gerr := req.GetPluginData(pluginID)
-	if gerr != nil {
+	if gerr != nil || plugin.PluginType != "Compute" {
 		return
 	}
 	var contactRequest PluginContactRequest
@@ -126,9 +125,19 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 	}
 	lock.Lock()
 	defer lock.Unlock()
-	if err := json.Unmarshal(body, metricReportData); err != nil {
+	var metrictData dmtf.MetricReports
+	if err := json.Unmarshal(body, &metrictData); err != nil {
 		return
 	}
+	metricReportData.ODataID = metrictData.ODataID
+	metricReportData.ODataType = metrictData.ODataType
+	metricReportData.ODataContext = metrictData.ODataContext
+	metricReportData.ID = metrictData.ID
+	metricReportData.Name = metrictData.Name
+	metricReportData.Description = metrictData.Description
+	metricReportData.MetricReportDefinition = metrictData.MetricReportDefinition
+	metricReportData.Context = metrictData.Context
+	metricReportData.MetricValues = append(metricReportData.MetricValues, metrictData.MetricValues...)
 	return
 }
 
@@ -159,7 +168,6 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	log.Info("Response: " + string(body))
 	log.Info("Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)

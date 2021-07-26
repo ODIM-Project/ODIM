@@ -191,6 +191,7 @@ func (s *subscriber) subscribe() {
 		switch r.StatusCode {
 		case http.StatusOK:
 			logging.Infof("URP->ODIMRA event subscription registered successfully")
+			return
 		case http.StatusAccepted:
 			continue
 		case http.StatusConflict:

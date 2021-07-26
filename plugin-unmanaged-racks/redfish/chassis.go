@@ -16,7 +16,7 @@
 
 package redfish
 
-import uuid "github.com/satori/go.uuid"
+import "github.com/google/uuid"
 
 // StatusEnabledOk is prototype of Redfish Status containing Enabled,OK values.
 var StatusEnabledOk = Status{
@@ -58,10 +58,10 @@ func ShapeChassis(ch *Chassis) *Chassis {
 }
 
 func generateChassisID(name string) string {
-	return uuid.NewV5(unmanagedChassisBaseUUID, name).String()
+	return uuid.NewSHA1(unmanagedChassisBaseUUID, []byte(name)).String()
 }
 
-var unmanagedChassisBaseUUID = uuid.Must(uuid.FromString("1bde942f-36f3-4e92-9b3b-4e497092430d"))
+var unmanagedChassisBaseUUID = uuid.Must(uuid.Parse("1bde942f-36f3-4e92-9b3b-4e497092430d"))
 
 // Status is representation of Redfish Status
 type Status struct {

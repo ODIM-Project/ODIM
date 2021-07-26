@@ -11,6 +11,7 @@ require (
 	github.com/gavv/httpexpect v2.0.0+incompatible
 	github.com/go-redis/redis/v8 v8.4.0
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/uuid v1.2.0
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/kataras/golog v0.0.10
@@ -18,7 +19,6 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
-	github.com/satori/go.uuid v1.2.0
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.7.0

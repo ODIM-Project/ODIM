@@ -24,8 +24,8 @@ import (
 
 	"github.com/ODIM-Project/ODIM/plugin-unmanaged-racks/logging"
 
+	"github.com/google/uuid"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v3"
 )
 
@@ -88,7 +88,7 @@ func validate(pc *PluginConfig) error {
 		return fmt.Errorf("given OdimURL is not correct URL")
 	}
 
-	if _, err := uuid.FromString(pc.RootServiceUUID); err != nil {
+	if _, err := uuid.Parse(pc.RootServiceUUID); err != nil {
 		return err
 	}
 

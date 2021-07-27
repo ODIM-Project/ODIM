@@ -1,0 +1,1014 @@
+{
+    "@Redfish.Copyright": "Copyright 2014-2020 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "Fabric.1.0.0",
+    "Name": "Fabric Message Registry",
+    "Language": "en",
+    "Description": "This registry defines messages for generic fabrics",
+    "RegistryPrefix": "Fabric",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "MaxFrameSizeExceeded": {
+            "Description": "Indicates that the maximum transmission unit (MTU) for the link has been exceeded.",
+            "LongDescription": "This message shall be used to indicate that packets have been dropped due to the maximum transmission unit (MTU) frame size being exceeded.  This message shall not be emitted more than once in any 24-hour period of time.",
+            "Message": "MTU size on switch '%1' port '%2' is set to %3.  One or more packets with a larger size have been dropped.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 3,
+            "ParamTypes": [
+                "string",
+                "string",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port.",
+                "The MTU size."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch in which one or more packets have been dropped.",
+                "This argument shall contain the value of the `Id` property of the port in which one or more oversize packets were received.",
+                "This argument shall contain the MTU size."
+            ],
+            "Resolution": "Ensure that path MTU discovery is enabled and functioning correctly."
+        },
+        "UpstreamLinkEstablished": {
+            "Description": "Indicates that a switch's upstream connection is established.",
+            "LongDescription": "This message shall be used to indicate that a switch's upstream connection is established.",
+            "Message": "Switch '%1' upstream link is established on port '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the upstream port."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "UpstreamLinkDropped"
+                ]
+            }
+        },
+        "UpstreamLinkDropped": {
+            "Description": "Indicates that a switch's upstream connection has gone down.",
+            "LongDescription": "This message shall be used to indicate that a switch's upstream connection has gone down.",
+            "Message": "Switch '%1' upstream link has gone down on port '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the upstream port."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "DegradedUpstreamLinkEstablished": {
+            "Description": "Indicates that a switch's upstream connection is established, but in a degraded state.",
+            "LongDescription": "This message shall be used to indicate that a switch's upstream connection is established, but that the link state is degraded.",
+            "Message": "Switch '%1' upstream link is established on port '%2', but is running in a degraded state.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the upstream port."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "UpstreamLinkDropped"
+                ]
+            }
+        },
+        "UpstreamLinkFlapDetected": {
+            "Description": "Indicates that a switch's upstream connection is highly unstable.",
+            "LongDescription": "This message shall be used to indicate that a switch's upstream connection has repeatedly been established and dropped.  This message shall not be repeated more than once in any 24-hour period.",
+            "Message": "Switch '%1' upstream link on port '%2' has been established and dropped %3 times in the last %4 minutes.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 4,
+            "ParamTypes": [
+                "string",
+                "string",
+                "number",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port.",
+                "The number of times the link has flapped.",
+                "The number of minutes over which the link has flapped."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the upstream port that is flapping.",
+                "This argument shall contain the count of uplink establishment/disconnection cycles.",
+                "This argument shall contain the number of minutes over which link flapping activity has been detected."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "DownstreamLinkEstablished": {
+            "Description": "Indicates that a switch's downstream connection is established.",
+            "LongDescription": "This message shall be used to indicate that a switch's downstream connection is established.",
+            "Message": "Switch '%1' downstream link is established on port '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the downstream port."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DownstreamLinkDropped"
+                ]
+            }
+        },
+        "DownstreamLinkDropped": {
+            "Description": "Indicates that a switch's downstream connection has gone down.",
+            "LongDescription": "This message shall be used to indicate that a switch's downstream connection has gone down.",
+            "Message": "Switch '%1' downstream link has gone down on port '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the downstream port."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "DegradedDownstreamLinkEstablished": {
+            "Description": "Indicates that a switch's downstream connection is established, but in a degraded state.",
+            "LongDescription": "This message shall be used to indicate that a switch's downstream connection is established, but that the link state is degraded.",
+            "Message": "Switch '%1' downstream link is established on port '%2', but is running in a degraded state.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the downstream port."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "DownstreamLinkDropped"
+                ]
+            }
+        },
+        "DownstreamLinkFlapDetected": {
+            "Description": "Indicates that a switch's downstream connection is highly unstable.",
+            "LongDescription": "This message shall be used to indicate that a switch's downstream connection has repeatedly been established and dropped.  This message shall not be repeated more than once in any 24-hour period.",
+            "Message": "Switch '%1' downstream link on port '%2' has been established and dropped %3 times in the last %4 minutes.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 4,
+            "ParamTypes": [
+                "string",
+                "string",
+                "number",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port.",
+                "The number of times the link has flapped.",
+                "The number of minutes over which the link has flapped."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the downstream port that is flapping.",
+                "This argument shall contain the count of uplink establishment/disconnection cycles.",
+                "This argument shall contain the number of minutes over which link flapping activity has been detected."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "InterswitchLinkEstablished": {
+            "Description": "Indicates that a switch's interswitch connection is established.",
+            "LongDescription": "This message shall be used to indicate that a switch's interswitch connection is established.",
+            "Message": "Switch '%1' interswitch link is established on port '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the interswitch port."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "InterswitchLinkDropped"
+                ]
+            }
+        },
+        "InterswitchLinkDropped": {
+            "Description": "Indicates that a switch's interswitch connection has gone down.",
+            "LongDescription": "This message shall be used to indicate that a switch's interswitch connection has gone down.",
+            "Message": "Switch '%1' interswitch link has gone down on port '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the interswitch port."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "DegradedInterswitchLinkEstablished": {
+            "Description": "Indicates that a switch's interswitch connection is established, but in a degraded state.",
+            "LongDescription": "This message shall be used to indicate that a switch's interswitch connection is established, but that the link state is degraded.",
+            "Message": "Switch '%1' interswitch link is established on port '%2', but is running in a degraded state.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the interswitch port."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "InterswitchLinkDropped"
+                ]
+            }
+        },
+        "InterswitchLinkFlapDetected": {
+            "Description": "Indicates that a switch's interswitch connection is highly unstable.",
+            "LongDescription": "This message shall be used to indicate that a switch's interswitch connection has repeatedly been established and dropped.  This message shall not be repeated more than once in any 24-hour period.",
+            "Message": "Switch '%1' interswitch link on port '%2' has been established and dropped %3 times in the last %4 minutes.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 4,
+            "ParamTypes": [
+                "string",
+                "string",
+                "number",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port.",
+                "The number of times the link has flapped.",
+                "The number of minutes over which the link has flapped."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch.",
+                "This argument shall contain the value of the `Id` property of the interswitch port that is flapping.",
+                "This argument shall contain the count of uplink establishment/disconnection cycles.",
+                "This argument shall contain the number of minutes over which link flapping activity has been detected."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "PortManuallyDisabled": {
+            "Description": "Indicates that a switch's port has been manually disabled.",
+            "LongDescription": "This message shall be used to indicate that a switch's port has been manually disabled, such as by a network administrator.",
+            "Message": "Switch '%1' port '%2' has been manually disabled.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the disabled port.",
+                "This argument shall contain the value of the `Id` property of the port that has been disabled."
+            ],
+            "Resolution": "No action needed."
+        },
+        "PortManuallyEnabled": {
+            "Description": "Indicates that a switch's port has been manually enabled.",
+            "LongDescription": "This message shall be used to indicate that a switch's port has been manually enabled, such as by a network administrator.",
+            "Message": "Switch '%1' port '%2' has been manually enabled.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the enabled port.",
+                "This argument shall contain the value of the `Id` property of the port that has been enabled."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "PortManuallyDisabled"
+                ]
+            }
+        },
+
+
+        "PortAutomaticallyDisabled": {
+            "Description": "Indicates that a switch's port has been automatically disabled.",
+            "LongDescription": "This message shall be used to indicate that a switch's port has been automatically disabled, such as by the service.",
+            "Message": "Switch '%1' port '%2' has been automatically disabled.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the disabled port.",
+                "This argument shall contain the value of the `Id` property of the port that has been disabled."
+            ],
+            "Resolution": "No action needed."
+        },
+        "PortAutomaticallyEnabled": {
+            "Description": "Indicates that a switch's port has been automatically enabled.",
+            "LongDescription": "This message shall be used to indicate that a switch's port has been automatically enabled, such as by the service.",
+            "Message": "Switch '%1' port '%2' has been automatically enabled.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the enabled port.",
+                "This argument shall contain the value of the `Id` property of the port that has been enabled."
+            ],
+            "Resolution": "No action needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "PortAutomaticallyDisabled"
+                ]
+            }
+        },
+        "PortFailed": {
+            "Description": "Indicates that a switch's port has become inoperative.",
+            "LongDescription": "This message shall be used to indicate that a port has become inoperative.  This message shall not be issued when a port is manually disabled.",
+            "Message": "Switch '%1' port '%2' has failed and is inoperative.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the failed port.",
+                "This argument shall contain the value of the `Id` property of the port that has failed."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "PortDegraded": {
+            "Description": "Indicates that a switch's port is in a degraded state.",
+            "LongDescription": "This message shall be used to indicate that a port has entered a degraded state.",
+            "Message": "Switch '%1' port '%2' is in a degraded state.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the degraded port.",
+                "This argument shall contain the value of the `Id` property of the port that has entered a degraded state."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "PortOK": {
+            "Description": "Indicates that a switch's port has returned to a functional state.",
+            "LongDescription": "This message shall be used to indicate that a port has returned to a functional state.",
+            "Message": "Switch '%1' port '%2' has returned to a functional state.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the functional port.",
+                "This argument shall contain the value of the `Id` property of the port that has returned to a functional state."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "PortFailed",
+                    "PortDegraded"
+                ]
+            }
+        },
+        "SwitchFailed": {
+            "Description": "Indicates that a switch has become inoperative.",
+            "LongDescription": "This message shall be used to indicate that a switch has become inoperative.",
+            "Message": "Switch '%1' has failed and is inoperative.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch that has failed."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "SwitchDegraded": {
+            "Description": "Indicates that a switch is in a degraded state.",
+            "LongDescription": "This message shall be used to indicate that a switch has entered a degraded state.",
+            "Message": "Switch '%1' is in a degraded state.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch that has entered a degraded state."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "SwitchOK": {
+            "Description": "Indicates that a switch has returned to a functional state.",
+            "LongDescription": "This message shall be used to indicate that a switch has returned to a functional state.",
+            "Message": "Switch '%1' has returned to a functional state.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch that has returned to a functional state."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "SwitchFailed",
+                    "SwitchDegraded"
+                ]
+            }
+        },
+        "CableRemoved": {
+            "Description": "Indicates that a cable has been removed from a switch's port.",
+            "LongDescription": "This message shall be used to indicate that a cable has been removed from a port on a switch.",
+            "Message": "A cable has been removed from switch '%1' port '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the port whose cable was removed.",
+                "This argument shall contain the value of the `Id` property of the port whose cable was removed."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "CableInserted": {
+            "Description": "Indicates that a cable has been inserted into a switch's port.",
+            "LongDescription": "This message shall be used to indicate that a cable has been inserted into a port on a switch.",
+            "Message": "A cable has been inserted into switch '%1' port '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the port whose cable was inserted.",
+                "This argument shall contain the value of the `Id` property of the port whose cable was inserted."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "CableRemoved"
+                ]
+            }
+        },
+        "CableFailed": {
+            "Description": "Indicates that a cable has failed.",
+            "LongDescription": "This message shall be used to indicate that a cable has been detected as failed.  This message shall not be emitted more than once in any 24-hour period of time.",
+            "Message": "The cable in switch '%1' port '%2' has failed.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the failed cable.",
+                "This argument shall contain the value of the `Id` property of the port with the failed cable."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "CableOK ": {
+            "Description": "Indicates that a cable has returned to working condition.",
+            "LongDescription": "This message shall be used to indicate that a cable has been restored to working condition.",
+            "Message": "The cable in switch '%1' port '%2' has returned to working condition.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch with the cable that returned to a functional state.",
+                "This argument shall contain the value of the `Id` property of the port with the cable that returned to a functional state."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "CableFailed"
+                ]
+            }
+        },
+        "ConnectionCreated": {
+            "Description": "Indicates that a connection has been created.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Connection` has been created.",
+            "Message": "Connection '%1' has been created in fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the connection.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the connection that was created.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the connection was created."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "ConnectionRemoved"
+                ]
+            }
+        },
+        "ConnectionRemoved": {
+            "Description": "Indicates that a connection has been removed.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Connection` has been removed.",
+            "Message": "Connection '%1' has been removed from fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the connection.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the connection that was removed.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the connection was removed."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "ConnectionModified": {
+            "Description": "Indicates that a connection has been modified.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Connection` has been modified.",
+            "Message": "Connection '%1' in fabric '%2' has been modified.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the connection.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the connection that was modified.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the connection was modified."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "ZoneCreated": {
+            "Description": "Indicates that a zone has been created.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Zone` has been created.",
+            "Message": "Zone '%1' has been created in fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the zone.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the zone that was created.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the zone was created."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "ZoneRemoved"
+                ]
+            }
+        },
+        "ZoneRemoved": {
+            "Description": "Indicates that a zone has been removed.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Zone` has been removed.",
+            "Message": "Zone '%1' has been removed from fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the zone.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the zone that was removed.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the zone was removed."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "ZoneModified": {
+            "Description": "Indicates that a zone has been modified.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Zone` has been modified.",
+            "Message": "Zone '%1' in fabric '%2' has been modified.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the zone.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the zone that was modified.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the zone was modified."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "EndpointCreated": {
+            "Description": "Indicates that an endpoint has been created or discovered.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Endpoint` has been created or discovered.",
+            "Message": "Endpoint '%1' has been created in fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the endpoint.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the endpoint that was created.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the endpoint was created."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "EndpointRemoved"
+                ]
+            }
+        },
+        "EndpointRemoved": {
+            "Description": "Indicates that an endpoint has been removed.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Endpoint` has been removed.",
+            "Message": "Endpoint '%1' has been removed from fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the endpoint.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the endpoint that was removed.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the endpoint was removed."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "EndpointModified": {
+            "Description": "Indicates that an endpoint has been modified.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `Endpoint` has been modified.",
+            "Message": "Endpoint '%1' in fabric '%2' has been modified.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the endpoint.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the endpoint that was modified.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the endpoint was modified."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "AddressPoolCreated": {
+            "Description": "Indicates that an address pool has been created.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `AddressPool` has been created.",
+            "Message": "Address pool '%1' has been created in fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the address pool.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the address pool that was created.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the address pool was created."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "AddressPoolRemoved"
+                ]
+            }
+        },
+        "AddressPoolRemoved": {
+            "Description": "Indicates that an address pool has been removed.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `AddressPool` has been removed.",
+            "Message": "Address pool '%1' has been removed from fabric '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the address pool.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the address pool that was removed.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the address pool was removed."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "AddressPoolModified": {
+            "Description": "Indicates that an address pool has been modified.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `AddressPool` has been modified.",
+            "Message": "Address pool '%1' in fabric '%2' has been modified.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the address pool.",
+                "The `Id` of the fabric."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the address pool that was modified.",
+                "This argument shall contain the value of the `Id` property of the fabric in which the address pool was modified."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "MediaControllerAdded": {
+            "Description": "Indicates that a media controller has been added.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `MediaController` has been added.",
+            "Message": "Media controller '%1' has been added to chassis '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the media controller.",
+                "The `Id` of the chassis."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the media controller that was added.",
+                "This argument shall contain the value of the `Id` property of the chassis in which the media controller was added."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "MediaControllerRemoved"
+                ]
+            }
+        },
+        "MediaControllerRemoved": {
+            "Description": "Indicates that a media controller has been removed.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `MediaController` has been removed.",
+            "Message": "Media controller '%1' has been removed from chassis '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the media controller.",
+                "The `Id` of the chassis."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the media controller that was removed.",
+                "This argument shall contain the value of the `Id` property of the chassis in which the media controller was removed."
+            ],
+            "Resolution": "No action is needed."
+        },
+        "MediaControllerModified": {
+            "Description": "Indicates that a media controller has been modified.",
+            "LongDescription": "This message shall be used to indicate that a resource of type `MediaController` has been modified.",
+            "Message": "Media controller '%1' in chassis '%2' has been modified.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the media controller.",
+                "The `Id` of the chassis."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the media controller that was modified.",
+                "This argument shall contain the value of the `Id` property of the chassis in which the media controller was modified."
+            ],
+            "Resolution": "No action is needed."
+        }
+    }
+}

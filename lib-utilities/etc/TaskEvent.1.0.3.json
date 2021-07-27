@@ -1,0 +1,213 @@
+{
+    "@Redfish.Copyright": "Copyright 2014-2020 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_1.MessageRegistry",
+    "Id": "TaskEvent.1.0.3",
+    "Name": "Task Event Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for task related events.",
+    "RegistryPrefix": "TaskEvent",
+    "RegistryVersion": "1.0.3",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "TaskStarted": {
+            "Description": "A task has started.",
+            "LongDescription": "This message shall be used to indicate that a task has started as the `TaskState` property transitions to `Starting` or `Running`.",
+            "Message": "The task with Id '%1' has started.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has started."
+            ],
+            "Resolution": "None."
+        },
+        "TaskCompletedOK": {
+            "Description": "A task has completed.",
+            "LongDescription": "This message shall be used to indicate that a task has completed and the `TaskState` property transitioned to `Completed`.",
+            "Message": "The task with Id '%1' has completed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has completed."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "TaskStarted"
+                ]
+            }
+        },
+        "TaskCompletedWarning": {
+            "Description": "A task has completed with warnings.",
+            "LongDescription": "This message shall be used to indicate that a task has completed with warnings and the `TaskState` property transitioned to `Completed`.",
+            "Message": "The task with Id '%1' has completed with warnings.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has completed with warnings."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "TaskStarted"
+                ]
+            }
+        },
+        "TaskAborted": {
+            "Description": "A task has completed with errors.",
+            "LongDescription": "This message shall be used to indicate that a task has completed with errors and the `TaskState` property transitioned to `Exception`.",
+            "Message": "The task with Id '%1' has completed with errors.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has completed with errors."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "TaskStarted"
+                ]
+            }
+        },
+        "TaskCancelled": {
+            "Description": "A task has been cancelled.",
+            "LongDescription": "This message shall be used to indicate that work on a task has halted prior to completion due to an explicit request.  The `TaskState` property transitioned to `Cancelled`.",
+            "Message": "Work on the task with Id '%1' has been halted prior to completion due to an explicit request.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has been halted."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "TaskStarted"
+                ]
+            }
+        },
+        "TaskRemoved": {
+            "Description": "A task has been removed.",
+            "LongDescription": "This message shall be used to indicate that a task has been removed.",
+            "Message": "The task with Id '%1' has been removed.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has been removed."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsAll": true
+            }
+        },
+        "TaskPaused": {
+            "Description": "A task has been paused.",
+            "LongDescription": "This message shall be used to indicate that a task has been paused and the `TaskState` property transitioned to `Suspended` or `Interrupted`.",
+            "Message": "The task with Id '%1' has been paused.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has been paused."
+            ],
+            "Resolution": "None."
+        },
+        "TaskResumed": {
+            "Description": "A task has been resumed.",
+            "LongDescription": "This message shall be used to indicate that a task has resumed and the `TaskState` property transitioned to `Running` from `Suspended` or `Interrupted`.",
+            "Message": "The task with Id '%1' has been resumed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has been resumed."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "TaskPaused"
+                ]
+            }
+        },
+        "TaskProgressChanged": {
+            "Description": "A task has changed progress.",
+            "LongDescription": "This message shall be used to indicate that a task has changed progress.",
+            "Message": "The task with Id '%1' has changed to progress %2 percent complete.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the task.",
+                "The percent completion of the task."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the task resource that has changed progress.",
+                "This argument shall contain the percent completion of the task that has changed progress."
+            ],
+            "Resolution": "None."
+        }
+    }
+}

@@ -23,9 +23,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-
 	"github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 // ChassisRPCs defines all the RPC methods in system service
@@ -167,10 +167,12 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	requestData := strings.Split(req.RequestParam, ":")
+	data := resp.Body
+	data = []byte(strings.Replace(string(data), `"Id":"`, `"Id":"`+requestData[0]+`:`, -1))
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+	ctx.Write(data)
 }
 
 //UpdateChassis updates an existing chassis

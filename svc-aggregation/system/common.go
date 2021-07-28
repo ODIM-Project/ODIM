@@ -1168,7 +1168,6 @@ func updateResourceDataWithUUID(resourceData, uuid string) string {
 	//to replace the id of system
 	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+":", -1)
 	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/systems/"+uuid+":", -1)
-        updatedResourceData = strings.Replace(updatedResourceData, `"Id":"`, `"Id":"`+uuid+`:`, -1)
 	// to replace the id in managers
 	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+":", -1)
 	// to replace id in chassis

@@ -1095,7 +1095,6 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "HostInterface.v1_2_0"},
 					models.Include{Namespace: "HostInterface.v1_2_1"},
 					models.Include{Namespace: "HostInterface.v1_2_2"},
-					models.Include{Namespace: "HostInterface.v1_2_3"},
 					models.Include{Namespace: "HostInterface.v1_3_0"},
 				},
 			},
@@ -1191,7 +1190,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LogService"},
 					models.Include{Namespace: "LogService.v1_0_0"},
-					models.Include{Namespace: "LogService.v1_0_1"},
 					models.Include{Namespace: "LogService.v1_0_2"},
 					models.Include{Namespace: "LogService.v1_0_3"},
 					models.Include{Namespace: "LogService.v1_0_4"},
@@ -2178,7 +2176,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Settings"},
 					models.Include{Namespace: "Settings.v1_0_0"},
-					models.Include{Namespace: "Settings.v1_0_1"},
 					models.Include{Namespace: "Settings.v1_0_2"},
 					models.Include{Namespace: "Settings.v1_0_3"},
 					models.Include{Namespace: "Settings.v1_0_4"},

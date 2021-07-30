@@ -372,7 +372,6 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Chassis.v1_0_13"},
 					models.Include{Namespace: "Chassis.v1_0_14"},
 					models.Include{Namespace: "Chassis.v1_1_0"},
-					models.Include{Namespace: "Chassis.v1_1_1"},
 					models.Include{Namespace: "Chassis.v1_1_2"},
 					models.Include{Namespace: "Chassis.v1_1_3"},
 					models.Include{Namespace: "Chassis.v1_1_4"},
@@ -751,7 +750,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EthernetInterface"},
 					models.Include{Namespace: "EthernetInterface.v1_0_0"},
-					models.Include{Namespace: "EthernetInterface.v1_0_1"},
 					models.Include{Namespace: "EthernetInterface.v1_0_2"},
 					models.Include{Namespace: "EthernetInterface.v1_0_3"},
 					models.Include{Namespace: "EthernetInterface.v1_0_4"},
@@ -810,7 +808,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EventDestination"},
 					models.Include{Namespace: "EventDestination.v1_0_0"},
-					models.Include{Namespace: "EventDestination.v1_0_1"},
 					models.Include{Namespace: "EventDestination.v1_0_2"},
 					models.Include{Namespace: "EventDestination.v1_0_3"},
 					models.Include{Namespace: "EventDestination.v1_0_4"},
@@ -863,7 +860,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "EventService"},
 					models.Include{Namespace: "EventService.v1_0_0"},
-					models.Include{Namespace: "EventService.v1_0_1"},
 					models.Include{Namespace: "EventService.v1_0_2"},
 					models.Include{Namespace: "EventService.v1_0_3"},
 					models.Include{Namespace: "EventService.v1_0_4"},
@@ -948,7 +944,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LogEntry"},
 					models.Include{Namespace: "LogEntry.v1_0_0"},
-					models.Include{Namespace: "LogEntry.v1_0_1"},
 					models.Include{Namespace: "LogEntry.v1_0_2"},
 					models.Include{Namespace: "LogEntry.v1_0_3"},
 					models.Include{Namespace: "LogEntry.v1_0_4"},
@@ -1055,7 +1050,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ManagerAccount"},
 					models.Include{Namespace: "ManagerAccount.v1_0_0"},
-					models.Include{Namespace: "ManagerAccount.v1_0_1"},
 					models.Include{Namespace: "ManagerAccount.v1_0_2"},
 					models.Include{Namespace: "ManagerAccount.v1_0_3"},
 					models.Include{Namespace: "ManagerAccount.v1_0_4"},
@@ -1202,7 +1196,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MessageRegistry"},
 					models.Include{Namespace: "MessageRegistry.v1_0_0"},
-					models.Include{Namespace: "MessageRegistry.v1_0_1"},
 					models.Include{Namespace: "MessageRegistry.v1_0_2"},
 					models.Include{Namespace: "MessageRegistry.v1_0_3"},
 					models.Include{Namespace: "MessageRegistry.v1_0_4"},
@@ -1242,7 +1235,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "MessageRegistryFile"},
 					models.Include{Namespace: "MessageRegistryFile.v1_0_0"},
-					models.Include{Namespace: "MessageRegistryFile.v1_0_1"},
 					models.Include{Namespace: "MessageRegistryFile.v1_0_2"},
 					models.Include{Namespace: "MessageRegistryFile.v1_0_3"},
 					models.Include{Namespace: "MessageRegistryFile.v1_0_4"},
@@ -1439,7 +1431,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Processor"},
 					models.Include{Namespace: "Processor.v1_0_0"},
-					models.Include{Namespace: "Processor.v1_0_1"},
 					models.Include{Namespace: "Processor.v1_0_2"},
 					models.Include{Namespace: "Processor.v1_0_3"},
 					models.Include{Namespace: "Processor.v1_0_4"},
@@ -1525,7 +1516,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Resource"},
 					models.Include{Namespace: "Resource.v1_0_0"},
-					models.Include{Namespace: "Resource.v1_0_1"},
 					models.Include{Namespace: "Resource.v1_0_2"},
 					models.Include{Namespace: "Resource.v1_0_3"},
 					models.Include{Namespace: "Resource.v1_0_4"},
@@ -1576,8 +1566,6 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Resource.v1_3_9"},
 					models.Include{Namespace: "Resource.v1_3_10"},
 					models.Include{Namespace: "Resource.v1_3_11"},
-					models.Include{Namespace: "Resource.v1_3_12"},
-					models.Include{Namespace: "Resource.v1_3_13"},
 					models.Include{Namespace: "Resource.v1_4_0"},
 					models.Include{Namespace: "Resource.v1_4_1"},
 					models.Include{Namespace: "Resource.v1_4_2"},
@@ -1626,7 +1614,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Role"},
 					models.Include{Namespace: "Role.v1_0_0"},
-					models.Include{Namespace: "Role.v1_0_1"},
 					models.Include{Namespace: "Role.v1_0_2"},
 					models.Include{Namespace: "Role.v1_0_3"},
 					models.Include{Namespace: "Role.v1_0_4"},
@@ -1663,7 +1650,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ServiceRoot"},
 					models.Include{Namespace: "ServiceRoot.v1_0_0"},
-					models.Include{Namespace: "ServiceRoot.v1_0_1"},
 					models.Include{Namespace: "ServiceRoot.v1_0_2"},
 					models.Include{Namespace: "ServiceRoot.v1_0_3"},
 					models.Include{Namespace: "ServiceRoot.v1_0_4"},
@@ -1707,7 +1693,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Session"},
 					models.Include{Namespace: "Session.v1_0_0"},
-					models.Include{Namespace: "Session.v1_0_1"},
 					models.Include{Namespace: "Session.v1_0_2"},
 					models.Include{Namespace: "Session.v1_0_3"},
 					models.Include{Namespace: "Session.v1_0_4"},
@@ -1730,7 +1715,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "SessionService"},
 					models.Include{Namespace: "SessionService.v1_0_0"},
-					models.Include{Namespace: "SessionService.v1_0_1"},
 					models.Include{Namespace: "SessionService.v1_0_2"},
 					models.Include{Namespace: "SessionService.v1_0_3"},
 					models.Include{Namespace: "SessionService.v1_0_4"},
@@ -1807,7 +1791,6 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Storage.v1_4_4"},
 					models.Include{Namespace: "Storage.v1_4_5"},
 					models.Include{Namespace: "Storage.v1_4_6"},
-					models.Include{Namespace: "Storage.v1_4_7"},
 					models.Include{Namespace: "Storage.v1_4_8"},
 					models.Include{Namespace: "Storage.v1_5_0"},
 					models.Include{Namespace: "Storage.v1_5_1"},
@@ -1868,7 +1851,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "Task"},
 					models.Include{Namespace: "Task.v1_0_0"},
-					models.Include{Namespace: "Task.v1_0_1"},
 					models.Include{Namespace: "Task.v1_0_2"},
 					models.Include{Namespace: "Task.v1_0_3"},
 					models.Include{Namespace: "Task.v1_0_4"},
@@ -1913,7 +1895,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "TaskService"},
 					models.Include{Namespace: "TaskService.v1_0_0"},
-					models.Include{Namespace: "TaskService.v1_0_1"},
 					models.Include{Namespace: "TaskService.v1_0_2"},
 					models.Include{Namespace: "TaskService.v1_0_3"},
 					models.Include{Namespace: "TaskService.v1_0_4"},
@@ -2066,7 +2047,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "VirtualMedia"},
 					models.Include{Namespace: "VirtualMedia.v1_0_0"},
-					models.Include{Namespace: "VirtualMedia.v1_0_1"},
 					models.Include{Namespace: "VirtualMedia.v1_0_2"},
 					models.Include{Namespace: "VirtualMedia.v1_0_3"},
 					models.Include{Namespace: "VirtualMedia.v1_0_4"},
@@ -2170,7 +2150,6 @@ func GetMetadata(ctx iris.Context) {
 				TopInclude: []models.Include{
 					models.Include{Namespace: "SerialInterface"},
 					models.Include{Namespace: "SerialInterface.v1_0_0"},
-					models.Include{Namespace: "SerialInterface.v1_0_1"},
 					models.Include{Namespace: "SerialInterface.v1_0_2"},
 					models.Include{Namespace: "SerialInterface.v1_0_3"},
 					models.Include{Namespace: "SerialInterface.v1_0_4"},
@@ -2210,9 +2189,20 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "NetworkPortCollection"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkPort_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "NetworkPort"},
+					models.Include{Namespace: "NetworkPort.v1_2_5"},
+				},
+			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkDeviceFunction_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "NetworkDeviceFunction"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/NetworkDeviceFunctionCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "NetworkDeviceFunctionCollection"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogServiceCollection_v1.xml",

@@ -206,6 +206,8 @@ func routers() *iris.Application {
 		managers.Get("/{id}/SerialInterface/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia/{rid}", rfphandler.GetResource)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", rfphandler.VirtualMediaActions)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", rfphandler.VirtualMediaActions)
 		managers.Get("/{id}/LogServices", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)

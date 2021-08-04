@@ -164,7 +164,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	commonResponse := response.Response{
 		OdataType:    "#SessionCollection.SessionCollection",
-		OdataID:      "/redfish/v1/SessionService/Sessions/",
+		OdataID:      "/redfish/v1/SessionService/Sessions",
 		OdataContext: "/redfish/v1/$metadata#SessionCollection.SessionCollection",
 		Name:         "Session Service",
 	}
@@ -238,7 +238,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 		if checkPrivilege(req.SessionToken, session, currentSession) {
 			member := asresponse.ListMember{
-				OdataID: "/redfish/v1/SessionService/Sessions/" + session.ID + "/",
+				OdataID: "/redfish/v1/SessionService/Sessions/" + session.ID,
 			}
 			listMembers = append(listMembers, member)
 		}

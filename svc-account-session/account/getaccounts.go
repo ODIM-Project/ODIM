@@ -83,7 +83,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	var accountLinks []asresponse.ListMember
 	for _, key := range users {
 		accountLink := asresponse.ListMember{
-			OdataID: "/redfish/v1/AccountService/Accounts/" + key.UserName + "/",
+			OdataID: "/redfish/v1/AccountService/Accounts/" + key.UserName,
 		}
 		accountLinks = append(accountLinks, accountLink)
 	}
@@ -212,7 +212,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		AccountTypes: user.AccountTypes,
 		Links: asresponse.Links{
 			Role: asresponse.Role{
-				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID + "/",
+				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID,
 			},
 		},
 	}

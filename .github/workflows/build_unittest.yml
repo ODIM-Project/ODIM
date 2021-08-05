@@ -38,6 +38,7 @@ jobs:
         sudo tar -C /var/tmp -xzf /var/tmp/redis-6.2.5.tar.gz
         cd /var/tmp/redis-6.2.5
         sudo make install
+        sudo sed -i 's/if \[ \"\${_pid_1_exe\#\#\*\/}\" = systemd \]/if false/' utils/install_server.sh
         sudo utils/install_server.sh << HERE
         
         

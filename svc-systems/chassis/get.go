@@ -17,8 +17,6 @@
 package chassis
 
 import (
-	"net/http"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -26,6 +24,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
+	"net/http"
 )
 
 // GetChassisInfo is used to fetch resource data. The function is supposed to be used as part of RPC
@@ -38,6 +37,7 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 	//managed chassis lookup
 	managedChassis := new(dmtf.Chassis)
 	e := h.findInMemoryDB("Chassis", req.URL, managedChassis)
+	managedChassis.ID = req.RequestParam
 	if e == nil {
 		return response.RPC{
 			StatusMessage: response.Success,

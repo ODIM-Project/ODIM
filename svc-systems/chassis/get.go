@@ -18,7 +18,6 @@ package chassis
 
 import (
 	"net/http"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -38,6 +37,7 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 	//managed chassis lookup
 	managedChassis := new(dmtf.Chassis)
 	e := h.findInMemoryDB("Chassis", req.URL, managedChassis)
+	managedChassis.ID =req.RequestParam	
 	if e == nil {
 		return response.RPC{
 			StatusMessage: response.Success,

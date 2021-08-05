@@ -1,0 +1,301 @@
+{
+    "@Redfish.Copyright": "Copyright 2014-2020 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_1.MessageRegistry",
+    "Id": "Update.1.0.0",
+    "Name": "Update Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the update status and error messages.",
+    "RegistryPrefix": "Update",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "TargetDetermined": {
+            "Description": "Indicates that a target resource or device for a image has been determined for update.",
+            "LongDescription": "This message shall be used to indicate that a target resource or device for a image has been determined for update.",
+            "Message": "The target device '%1' will be updated with image '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The URI or name of the target that will be updated.",
+                "The identfier for the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the URI of the resource or a unique name of the device that will be updated.",
+                "This argument shall contain the identifier for the image."
+            ],
+            "Resolution": "None."
+        },
+        "AllTargetsDetermined": {
+            "Description": "Indicates that all target resources or devices for an update operation have been determined by the service.",
+            "LongDescription": "This message shall be used to indicate that all target resources or devices for an update operation have been determined by the service.",
+            "Message": "All the target device to be updated have been determined.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 0,
+            "Resolution": "None."
+        },
+        "UpdateInProgress": {
+            "Description": "Indicates that an update is in progress.",
+            "LongDescription": "This message shall be used to indicate that an update is in progress.",
+            "Message": "An update is in progress.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "Resolution": "None."
+        },
+        "TransferringToComponent": {
+            "Description": "Indicates that the service is transferring an image to a component.",
+            "LongDescription": "This message shall be used to indicate that the service is transferring an image to a component.",
+            "Message": "Image '%1' is being transferred to '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target receiving the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component receiving the image."
+            ],
+            "Resolution": "None."
+        },
+        "VerifyingAtComponent": {
+            "Description": "Indicates that a component is verifying an image.",
+            "LongDescription": "This message shall be used to indicate that a component is verifying an image.",
+            "Message": "Image '%1' is being verified at '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target verifying the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component verifying the image."
+            ],
+            "Resolution": "None."
+        },
+        "InstallingOnComponent": {
+            "Description": "Indicates that a component is installing an image.",
+            "LongDescription": "This message shall be used to indicate that a component is installing an image.",
+            "Message": "Image '%1' is being installed on '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target installing the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component installing the image."
+            ],
+            "Resolution": "None."
+        },
+        "ApplyingOnComponent": {
+            "Description": "Indicates that a component is applying an image.",
+            "LongDescription": "This message shall be used to indicate that a component is applying an image.",
+            "Message": "Image '%1' is being applied on '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target applying the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component applying the image."
+            ],
+            "Resolution": "None."
+        },
+        "TransferFailed": {
+            "Description": "Indicates that the service failed to transfer an image to a component.",
+            "LongDescription": "This message shall be used to indicate that the service failed to transfer an image to a component.",
+            "Message": "Transfer of image '%1' to '%2' failed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target receiving the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component receiving the image."
+            ],
+            "Resolution": "None."
+        },
+        "VerificationFailed": {
+            "Description": "Indicates that the component failed to verify an image.",
+            "LongDescription": "This message shall be used to indicate that the component failed to verify an image.",
+            "Message": "Verification of image '%1' at '%2' failed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target verifying the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component verifying the image."
+            ],
+            "Resolution": "None."
+        },
+        "ApplyFailed": {
+            "Description": "Indicates that the component failed to apply an image.",
+            "LongDescription": "This message shall be used to indicate that the component failed to apply an image.",
+            "Message": "Installation of image '%1' to '%2' failed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target applying the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component applying the image."
+            ],
+            "Resolution": "None."
+        },
+        "ActivateFailed": {
+            "Description": "Indicates that the component failed to activate the image.",
+            "LongDescription": "This message shall be used to indicate that the component failed to activate the image.",
+            "Message": "Activation of image '%1' on '%2' failed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target activating the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component activating the image."
+            ],
+            "Resolution": "None."
+        },
+        "AwaitToUpdate": {
+            "Description": "Indicates that the resource or device is awaiting for an action to proceed with installing an image.",
+            "LongDescription": "This message shall be used to indicate that the resource or device is awaiting for an action to proceed with installing an image.",
+            "Message": "Awaiting for an action to proceed with installing image '%1' on '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target awating for an action to install the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component awaiting for an action to install the image."
+            ],
+            "Resolution": "Perform the requested action to advance the update operation."
+        },
+        "AwaitToActivate": {
+            "Description": "Indicates that the resource or device is awaiting for an action to proceed with activating an image.",
+            "LongDescription": "This message shall be used to indicate that the resource or device is awaiting for an action to proceed with activating an image.",
+            "Message": "Awaiting for an action to proceed with activating image '%1' on '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": "2",
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The identfier for the image.",
+                "The URI or name of the target awating for an action to activate the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the identifier for the image.",
+                "This argument shall contain the URI of the resource or a unique name of the component awaiting for an action to activate the image."
+            ],
+            "Resolution": "Perform the requested action to advance the update operation."
+        },
+        "UpdateSuccessful": {
+            "Description": "Indicates that a resource or device was updated.",
+            "LongDescription": "This message shall be used to indicate that a resource or device was updated.",
+            "Message": "Device '%1' successfully updated with image '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The URI or name of the device that was updated.",
+                "The identfier for the image."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the URI of the resource or a unique name of the device that was updated.",
+                "This argument shall contain the identifier for the image."
+            ],
+            "Resolution": "None."
+        },
+        "OperationTransitionedToJob": {
+            "Description": "Indicates that the update operation transitioned to a job for managing the progress of the operation.",
+            "LongDescription": "This message shall be used to indicate that the update operation transitioned to a job for managing the progress of the operation.",
+            "Message": "The update operation has transitioned to the job at URI '%1'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The job URI."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the URI of the `Job` resource that is managing the progress of the update operation."
+            ],
+            "Resolution": "Follow the referenced job and monitor the job for further updates."
+        }
+    }
+}

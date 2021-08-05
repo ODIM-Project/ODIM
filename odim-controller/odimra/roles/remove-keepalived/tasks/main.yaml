@@ -1,0 +1,36 @@
+---
+- name: Stop keepalived service
+  systemd:
+    name: keepalived
+    state: stopped
+  ignore_errors: true
+
+- name: Remove keepalived and dependent packages
+  apt:
+    pkg:
+    - keepalived
+    - linux-headers-4.15.0-128-generic
+    force_apt_get: yes
+    autoremove: yes
+    purge: yes
+    state: absent
+
+- name: Clean up keepalived data
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /opt/keepalived
+    - /etc/keepalived
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Remove unused packages from the cache
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes

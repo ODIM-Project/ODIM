@@ -293,7 +293,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		"Connection":        "keep-alive",
 		"Content-type":      "application/json; charset=utf-8",
 		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
-		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName + "/",
+		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName,
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
@@ -308,7 +308,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		AccountTypes: user.AccountTypes,
 		Links: asresponse.Links{
 			Role: asresponse.Role{
-				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID + "/",
+				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID,
 			},
 		},
 	}

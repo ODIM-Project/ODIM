@@ -167,10 +167,9 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	data := resp.Body
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(data)
+	ctx.Write(resp.Body)
 }
 
 //UpdateChassis updates an existing chassis

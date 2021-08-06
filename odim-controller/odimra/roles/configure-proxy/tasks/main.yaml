@@ -1,0 +1,75 @@
+---
+- name: Install packages required by nginx
+  apt:
+    pkg:
+    - curl
+    - gnupg2
+    - ca-certificates
+    - lsb-release
+    force_apt_get: yes
+
+- name: Remove nginx if already installed
+  apt:
+    pkg:
+    - nginx
+    - nginx-common
+    - nginx-core
+    force_apt_get: yes
+    autoremove: yes
+    purge: yes
+    state: absent
+
+- name: Clean up previously installed data
+  file:
+    path: /var/www/html
+    state: absent
+  ignore_errors: true
+
+- name: Create directories required for nginx
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0750
+    recurse: yes
+  loop:
+    - /opt/nginx/servers
+    - /opt/nginx/certs
+    - "{{ odimra.nginxLogPath }}"
+
+- name: Create nginx log files
+  file:
+    path: "{{ item }}"
+    state: touch
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  loop:
+    - "{{ odimra.nginxLogPath }}/error.log"
+    - "{{ odimra.nginxLogPath }}/access.log"
+
+- name: Install nginx=1.14.0-0ubuntu1.9 package
+  apt:
+    name: nginx=1.14.0-0ubuntu1.9
+    force_apt_get: yes
+
+- name: Replace nginx configuration file
+  template:
+    src: "templates/nginx.conf.j2"
+    dest: /etc/nginx/nginx.conf
+    validate: 'nginx -t -c %s'
+  with_items:
+    - logPath: "{{ odimra.nginxLogPath }}"
+      user: "{{ odim_owner_name }}"
+      group: "{{ odim_owner_name }}"
+
+- name: Remove configured default nginx server
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  ignore_errors: true
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes

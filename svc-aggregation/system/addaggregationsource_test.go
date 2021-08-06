@@ -863,6 +863,10 @@ func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 	return nil
 }
 
+func mockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	return []string{}, nil
+}
+
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		ContactClient:           mockContactClient,
@@ -886,5 +890,6 @@ func getMockExternalInterface() *ExternalInterface {
 		DeleteSystem:            deleteSystemforTest,
 		DeleteEventSubscription: mockDeleteSubscription,
 		EventNotification:       mockEventNotification,
+		GetAllMatchingDetails:   mockGetAllMatchingDetails,
 	}
 }

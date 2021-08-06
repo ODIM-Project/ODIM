@@ -330,6 +330,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	e.deleteWildCardValues(key[index+1:])
+
 	for _, chassis := range chassisList {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}
@@ -347,4 +349,59 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	return resp
+}
+
+func (e *ExternalInterface) deleteWildCardValues(systemID string) {
+	telemetryList, dbErr := e.GetAllMatchingDetails("*", "TelemetryService", common.InMemory)
+	if dbErr != nil {
+		log.Error(dbErr)
+		return
+	}
+	for _, oid := range telemetryList {
+		odataID := strings.Split(oid, ":")[1]
+		if !strings.Contains(oid, "MetricReports") && !strings.Contains(oid, "Collection") {
+			resourceData := make(map[string]interface{})
+			data, dbErr := agmodel.GetResourceDetails(odataID)
+			if dbErr != nil {
+				log.Error("Unable to get system data : " + dbErr.Error())
+				continue
+			}
+			// unmarshall the resourceData
+			err := json.Unmarshal([]byte(data), &resourceData)
+			if err != nil {
+				log.Error("Unable to unmarshall  the data: " + err.Error())
+				continue
+			}
+			var wildCards []WildCard
+			wCards := resourceData["Wildcards"]
+			if wCards != nil {
+				for _, wCard := range getWildCard(wCards.([]interface{})) {
+					wCard.Values = checkAndRemoveWildCardValue(systemID, wCard.Values)
+					wildCards = append(wildCards, wCard)
+				}
+			}
+			if len(wildCards) > 0 {
+				resourceData["Wildcards"] = wildCards
+				resourceDataByte, err := json.Marshal(resourceData)
+				if err != nil {
+					continue
+				}
+				agmodel.GenericSave(resourceDataByte, getResourceName(odataID, false), odataID)
+			}
+		}
+	}
+}
+
+// checkAndRemoveWildCardValue will check and remove the wild card value
+func checkAndRemoveWildCardValue(val string, values []string) []string {
+	var wildCardValues []string
+	if len(values) < 1 {
+		return wildCardValues
+	}
+	for _, v := range values {
+		if v != val {
+			wildCardValues = append(wildCardValues, v)
+		}
+	}
+	return wildCardValues
 }

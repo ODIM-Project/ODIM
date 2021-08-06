@@ -103,8 +103,17 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "BasisAuth",
+		PluginType:        "Compute",
 	}
 	return plugin, nil
+}
+
+func mockGetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
+	return "", nil
+}
+
+func mockGenericSave(body []byte, table string, key string) error {
+	return nil
 }
 
 func TestGetResourceInfoFromDevice(t *testing.T) {
@@ -116,6 +125,8 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		DevicePassword:      stubDevicePassword,
 		GetAllKeysFromTable: mockGetAllKeysFromTable,
 		GetPluginData:       mockGetPluginData,
+		GetResource:         mockGetResource,
+		GenericSave:         mockGenericSave,
 	}
 	_, err := GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")

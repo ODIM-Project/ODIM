@@ -864,7 +864,11 @@ func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 }
 
 func mockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
-	return []string{}, nil
+	return []string{
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUICUtilCustom1",
+		"Triggers:/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers",
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3",
+	}, nil
 }
 
 func getMockExternalInterface() *ExternalInterface {

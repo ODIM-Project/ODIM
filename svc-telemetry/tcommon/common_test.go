@@ -108,8 +108,26 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 	return plugin, nil
 }
 
-func mockGetResource(Table, key string, dbtype common.DbType) (string, *errors.Error) {
-	return "", nil
+func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+	if key == "/redfish/v1/TelemetryService/MetricReports" {
+		return `{
+			"@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
+			"@odata.id": "/redfish/v1/TelemetryService/MetricReports",
+			"@odata.type": "#MetricReportCollection.MetricReportCollection",
+			"Description": " Metric Reports view",
+			"Name": "Metric Reports",
+			"Members": [
+			{
+				"@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+			},
+			{
+				"@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2"
+			}
+			],
+			"Members@odata.count": 2
+		}`, nil
+	}
+	return "body", nil
 }
 
 func mockGenericSave(body []byte, table string, key string) error {

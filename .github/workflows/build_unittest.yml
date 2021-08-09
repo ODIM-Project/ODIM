@@ -34,10 +34,11 @@ jobs:
     - name: Setup Redis
       run: |
         sudo apt-get install -y build-essential
-        wget -c http://download.redis.io/releases/redis-5.0.8.tar.gz -P /var/tmp
-        sudo tar -C /var/tmp -xzf /var/tmp/redis-5.0.8.tar.gz
-        cd /var/tmp/redis-5.0.8
+        wget -c http://download.redis.io/releases/redis-6.2.5.tar.gz -P /var/tmp
+        sudo tar -C /var/tmp -xzf /var/tmp/redis-6.2.5.tar.gz
+        cd /var/tmp/redis-6.2.5
         sudo make install
+        sudo sed -i 's/if \[ \"\${_pid_1_exe\#\#\*\/}\" = systemd \]/if false/' utils/install_server.sh
         sudo utils/install_server.sh << HERE
         
         
@@ -109,6 +110,3 @@ jobs:
             fi
             cd ..
           done
-            
-          
-        

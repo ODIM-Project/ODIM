@@ -251,9 +251,12 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 		GetPluginStatus:     e.External.GetPluginStatus,
 		GetAllKeysFromTable: e.DB.GetAllKeysFromTable,
 		GetPluginData:       e.External.GetPluginData,
+		GetResource:         e.DB.GetResource,
+		GenericSave:         e.External.GenericSave,
 	}
 	data, err := tcommon.GetResourceInfoFromDevice(getDeviceInfoRequest)
 	if err != nil {
+		log.Error(err.Error())
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"MetricReport", req.URL}, nil)
 	}
 	var resource map[string]interface{}

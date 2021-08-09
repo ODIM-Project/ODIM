@@ -100,7 +100,7 @@ func TestGetAllAccounts(t *testing.T) {
 					MembersCount: 1,
 					Members: []asresponse.ListMember{
 						asresponse.ListMember{
-							OdataID: "/redfish/v1/AccountService/Accounts/testUser1/",
+							OdataID: "/redfish/v1/AccountService/Accounts/testUser1",
 						},
 					},
 				},
@@ -214,7 +214,7 @@ func TestGetAccount(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/"},
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator"},
 					},
 				},
 			},
@@ -248,7 +248,7 @@ func TestGetAccount(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/"},
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator"},
 					},
 				},
 			},

@@ -171,3 +171,54 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write([]byte(respData))
 }
+
+//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+func VirtualMediaActions(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+	//replacing the request url with south bound translation URL
+	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
+		uri = strings.Replace(uri, key, value, -1)
+	}
+	var deviceDetails rfpmodel.Device
+	//Get device details from request
+	err := ctx.ReadJSON(&deviceDetails)
+	if err != nil {
+		log.Error("While trying to collect data from request, got: " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
+	device := &rfputilities.RedfishDevice{
+		Host:     deviceDetails.Host,
+		Username: deviceDetails.Username,
+		Password: string(deviceDetails.Password),
+		PostBody: deviceDetails.PostBody,
+	}
+
+	redfishClient, err := rfputilities.GetRedfishClient()
+	if err != nil {
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
+	}
+	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
+	if err != nil {
+		errorMessage := "While trying to create volume, got:" + err.Error()
+		log.Error(errorMessage)
+		if resp == nil {
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(errorMessage)
+			return
+		}
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		body = []byte("While trying to read response body, got: " + err.Error())
+		log.Error(string(body))
+	}
+	ctx.StatusCode(resp.StatusCode)
+	ctx.Write(body)
+}

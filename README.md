@@ -209,7 +209,7 @@ The following table lists the software components and their versions that are co
 |Consul|1.6|
 |Java JRE|11|
 |Kafka|2.5.0|
-|Redis|5.0.8|
+|Redis|6.2.5|
 |Ubuntu LTS|18.04|
 |ZooKeeper|3.5.7|
 |Docker|19.03.8, build afacb8b7f0|
@@ -3871,7 +3871,7 @@ These checks run in parallel and take approximately 9 minutes to complete.
 1. build_unittest.yml
    - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
    - Installs Go 1.13.8 package
-   - Installs and configures Redis 5.0.8 with two instances running on ports 6379 and 6380
+   - Installs and configures Redis 6.2.5 with two instances running on ports 6379 and 6380
    - Checks out the PR code into the Go module directory
    - Builds/compiles the code
    - Runs the unit tests

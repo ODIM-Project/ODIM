@@ -160,13 +160,13 @@ func TestGetAllActiveSessions(t *testing.T) {
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
 	commonResponse := response.Response{
 		OdataType:    "#SessionCollection.SessionCollection",
-		OdataID:      "/redfish/v1/SessionService/Sessions/",
+		OdataID:      "/redfish/v1/SessionService/Sessions",
 		OdataContext: "/redfish/v1/$metadata#SessionCollection.SessionCollection",
 		Name:         "Session Service",
 	}
 	var listMembers []asresponse.ListMember
 	listMembers = append(listMembers, asresponse.ListMember{
-		OdataID: "/redfish/v1/SessionService/Sessions/" + sessionID + "/",
+		OdataID: "/redfish/v1/SessionService/Sessions/" + sessionID,
 	})
 	eArgs1 := &response.Args{
 		Code:    response.GeneralError,

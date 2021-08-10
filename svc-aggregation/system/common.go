@@ -89,6 +89,7 @@ type ExternalInterface struct {
 	GenericSave              func([]byte, string, string) error
 	CheckActiveRequest       func(string) (bool, *errors.Error)
 	DeleteActiveRequest      func(string) *errors.Error
+	GetAllMatchingDetails    func(string, string, common.DbType) ([]string, *errors.Error)
 }
 
 type responseStatus struct {
@@ -1525,8 +1526,10 @@ func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string
 			wCards = append(wCards, wCard)
 		}
 	}
-	resourceDataMap["Wildcards"] = wCards
-	resourceDataMap["MetricProperties"] = dbMetricProperities
+	if len(wCards) > 0 {
+		resourceDataMap["Wildcards"] = wCards
+		resourceDataMap["MetricProperties"] = dbMetricProperities
+	}
 	resourceDataByte, err := json.Marshal(resourceDataMap)
 	if err != nil {
 		return "", err

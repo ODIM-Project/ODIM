@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 	"github.com/stretchr/testify/assert"
@@ -90,7 +91,7 @@ func contactClientMock(url, method, token string, odataID string, body interface
 	tokenBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/1"}]}`
 	basicAuthBody := `{"Members": [{"@odata.id":"/ODIM/v1/Chassis/2"}]}`
 	chassisResource := `{"ChassisType":"valid_type","SerialNumber":"valid_serial_number"}`
-	notFound := `{"MessageId":"Base.1.6.1.GeneralError"}`
+	notFound := `{"MessageId":"` + response.GeneralError + `"}`
 	successBody := `{"MessageId":"Success"}`
 	resp := &http.Response{
 		StatusCode: http.StatusOK,

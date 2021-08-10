@@ -37,13 +37,13 @@ import (
 func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	fmt.Println(url)
 	if url == "https://localhost:1234/ODIM/v1/EventSubscriptions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusCreated,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusCreated,
 			Header: map[string][]string{
@@ -52,7 +52,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
 			StatusCode: http.StatusCreated,

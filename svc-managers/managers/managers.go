@@ -195,7 +195,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
-		OdataType:       "#Manager.v1_3_3.Manager",
+		OdataType:       common.ManagerType,
 		Name:            mgrData.Name,
 		ManagerType:     mgrData.ManagerType,
 		ID:              mgrData.ID,

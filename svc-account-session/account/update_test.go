@@ -30,7 +30,7 @@ func TestUpdate(t *testing.T) {
 	acc := getMockExternalInterface()
 
 	successResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser1",
@@ -38,7 +38,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	operatorSuccessResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/operatorUser",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "operatorUser",
@@ -46,7 +46,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	successResponse2 := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser2",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser2",

@@ -94,7 +94,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	}
 	// Construct the response below
 	eventServiceResponse := evresponse.EventServiceResponse{
-		OdataType:    "#EventService.v1_5_0.EventService",
+		OdataType:    common.EventServiceType,
 		ID:           "EventService",
 		Name:         "EventService",
 		Description:  "EventService",
@@ -357,7 +357,7 @@ func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBR
 
 func generateTaskRespone(taskID, taskURI string, resp *eventsproto.EventSubResponse) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2.Task",
+		OdataType:    common.TaskType,
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

@@ -922,7 +922,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState + taskStatus
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState + taskStatus
 	case "Killed":
 		/*This state shall represent that the operation is complete because the task
 		was killed by an operator. Deprecated v1.2+. This value has been deprecated
@@ -945,7 +945,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.TaskAborted"
+		taskEvenMessageID = common.TaskEventType + ".TaskAborted"
 	case "Cancelled":
 		/* This state shall represent that the operation was cancelled either
 		through a Delete on a Task Monitor or Task Resource or by an internal
@@ -967,7 +967,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 	case "Exception":
 		/* This state shall represent that the operation is complete and
 		completed with errors.
@@ -993,14 +993,14 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState + taskStatus
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState + taskStatus
 	case "Cancelling":
 		/*This state shall represent that the operation is in the process of being
 		cancelled.
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "Interrupted":
 		/* This state shall represent that the operation has been interrupted but is
@@ -1012,7 +1012,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "New":
 		/* This state shall represent that this task is newly created but the
@@ -1021,7 +1021,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "Pending":
 		/*This state shall represent that the operation is pending some condition and
@@ -1029,14 +1029,14 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "Running":
 		// This state shall represent that the operation is executing.
 		task.TaskState = taskState
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.TaskProgressChanged"
+		taskEvenMessageID = common.TaskEventType + ".TaskProgressChanged"
 		// TODO
 	case "Service":
 		/* This state shall represent that the operation is now running as a service
@@ -1044,13 +1044,13 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "Starting":
 		// This state shall represent that the operation is starting.
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "Stopping":
 		/* This state shall represent that the operation is stopping but is not yet
@@ -1058,7 +1058,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	case "Suspended":
 		/*This state shall represent that the operation has been suspended but is
@@ -1066,7 +1066,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
 		// TODO
 	default:
 		log.Error("error invalid task state")

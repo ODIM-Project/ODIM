@@ -72,7 +72,7 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	// Construct the response below
 
 	aggregationServiceResponse, _ := json.Marshal(agresponse.AggregationServiceResponse{
-		OdataType:    "#AggregationService.v1_0_0.AggregationService",
+		OdataType:    common.AggregationServiceType,
 		ID:           "AggregationService",
 		Name:         "AggregationService",
 		Description:  "AggregationService",

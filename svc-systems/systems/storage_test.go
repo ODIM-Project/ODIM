@@ -54,21 +54,21 @@ func mockPluginClientData(t *testing.T) error {
 
 func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/2" {
-		body := `{"MessageId": "Base.1.0.Failed"}`
+		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusNotFound,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -136,7 +136,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	}
 
 	var positiveResponse interface{}
-	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
+	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()
 
 	tests := []struct {
@@ -163,7 +163,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
 				},
-				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
+				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		}, {
 			name: "Valid request with multiple drives",
@@ -181,7 +181,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 				Header: map[string]string{
 					"Content-type": "application/json; charset=utf-8",
 				},
-				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
+				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		}, {
 			name: "invalid system id",
@@ -280,7 +280,7 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1/Storage/1/Volumes/1")
 
 	var positiveResponse interface{}
-	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
+	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()
 
 	tests := []struct {

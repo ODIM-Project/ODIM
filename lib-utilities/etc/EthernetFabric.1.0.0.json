@@ -1,0 +1,200 @@
+{
+    "@Redfish.Copyright": "Copyright 2020 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "EthernetFabric.1.0.0",
+    "Name": "Ethernet Fabric Message Registry",
+    "Language": "en",
+    "Description": "This registry defines messages for Ethernet fabrics",
+    "RegistryPrefix": "EthernetFabric",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "MLAGInterfacesUp": {
+            "Description": "Indicates that all multi-chassis link aggregation group (MLAG) interfaces are up.",
+            "LongDescription": "This message shall be used to indicate all multi-chassis link aggregation group (MLAG) interfaces have been established for one MLAG domain ID.",
+            "Message": "All MLAG interfaces have been established for MLAG ID '%1'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The MLAG domain ID."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the MLAG domain ID that has been established."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "MLAGInterfacesDown"
+                ]
+            }
+        },
+        "MLAGInterfaceDown": {
+            "Description": "Indicates that the multi-chassis link aggregation group (MLAG) interface is down on a switch.",
+            "LongDescription": "This message shall be used to indicate that the multi-chassis link aggregation group (MLAG) interface is down on a switch.",
+            "Message": "The MLAG interface '%1' on switch '%2' is down.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The MLAG domain ID.",
+                "The `Id` of the switch."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the MLAG domain ID that has been dropped.",
+                "This argument shall contain the value of the `Id` property of the switch for which an MLAG interface is down."
+            ],
+            "Resolution": "Check physical connectivity and that the MLAG system ID matches on switch pairs."
+        },
+        "MLAGInterfaceDegraded": {
+            "Description": "Indicates that multi-chassis link aggregation group (MLAG) interfaces have been established, but at an unexpectedly low aggregated link speed.",
+            "LongDescription": "This message shall be used to indicate that multi-chassis link aggregation group (MLAG) interfaces have been established, but the aggregated link speed is lower than provisioned.",
+            "Message": "MLAG interface '%1' is degraded on switch '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The MLAG domain ID.",
+                "The `Id` of the switch."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the MLAG domain ID that is degraded.",
+                "This argument shall contain the value of the `Id` property of the switch for which an MLAG interface is degraded."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        },
+        "MLAGPeerUp": {
+            "Description": "Indicates that the multi-chassis link aggregation group (MLAG) peer is up.",
+            "LongDescription": "This message shall be used to indicate that a multi-chassis link aggregation group (MLAG) peer is up.",
+            "Message": "MLAG peer switch '%1' with MLAG ID '%2' is up.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The MLAG domain ID."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the peer switch for which MLAG interfaces are up.",
+                "This argument shall contain the value of the MLAG domain ID that has been established."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "MLAGPeerDown"
+                ]
+            }
+        },
+        "MLAGPeerDown": {
+            "Description": "Indicates that the multi-chassis link aggregation group (MLAG) peer is down.",
+            "LongDescription": "This message shall be used to indicate that a multi-chassis link aggregation group (MLAG) peer is down.",
+            "Message": "MLAG peer switch '%1' with MLAG ID '%2' is down.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The MLAG domain ID."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the peer switch for which MLAG interface has been dropped.",
+                "This argument shall contain the value of the MLAG domain ID that has been dropped."
+            ],
+            "Resolution": "Check physical connectivity and that the port channel ID matches on switch pairs."
+        },
+        "LLDPInterfaceEnabled": {
+            "Description": "Indicates that an interface has enabled Link Layer Discovery Protocol (LLDP).",
+            "LongDescription": "This message shall be used to indicate that an interface has enabled Link Layer Discovery Protocol (LLDP).",
+            "Message": "LLDP has been enabled on switch '%1' port '%2'.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch on which an LLDP connection has been established.",
+                "This argument shall contain the value of the `Id` property of the port on which an LLDP connection has been established."
+            ],
+            "Resolution": "No action is needed.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "LLDPInterfaceDisabled"
+                ]
+            }
+        },
+        "LLDPInterfaceDisabled": {
+            "Description": "Indicates that an interface has disabled Link Layer Discovery Protocol (LLDP).",
+            "LongDescription": "This message shall be used to indicate that an interface has disabled Link Layer Discovery Protocol (LLDP).",
+            "Message": "LLDP has been disabled on switch '%1' port '%2'.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The `Id` of the port."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch on which an LLDP connection has been disabled.",
+                "This argument shall contain the value of the `Id` property of the port on which an LLDP connection has been disabled."
+            ],
+            "Resolution": "Check that LLDP is enabled on device endpoints."
+        },
+        "RoutingFailureThresholdExceeded": {
+            "Description": "Indicates that a switch has encountered an unusually large number of routing errors.",
+            "LongDescription": "This message shall be used to indicate that a switch has exceeded a rate threshold for routing errors.  This message shall not be emitted more than once in any 24-hour period of time.",
+            "Message": "Switch '%1' has encountered %2 routing errors in the last %3 minutes.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 3,
+            "ParamTypes": [
+                "string",
+                "number",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the switch.",
+                "The number of routing errors encountered.",
+                "The number of minutes over which routing errors have been encountered."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the switch that encountered routing errors.",
+                "This argument shall contain the number of routing errors encountered.",
+                "This argument shall contain the number of minutes over which routing errors have been encountered."
+            ],
+            "Resolution": "Contact the network administrator for problem resolution."
+        }
+    }
+}

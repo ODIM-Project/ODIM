@@ -101,7 +101,6 @@ jobs:
         else
           echo "ALL Sanity Tests Passed Sucessfully"
         fi
-
     - name: Prepare Build Artifacts
       run: |
         sudo mkdir /artifacts
@@ -118,5 +117,9 @@ jobs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-       name: my-artifact
-       path: /artifacts
+       name: my-artifiact
+       path: |
+        /var/log/odimra
+        /var/log/DELL_PLUGIN
+        /var/log/odim-plugins
+        /var/log/odim-infra

@@ -25,7 +25,7 @@
     dest: "{{ helm_charts_path }}/"
     owner: "{{ current_user }}"
     group: "{{ current_user }}"
-    mode: 0640
+    mode: 0750
   delegate_to: "{{ item }}"
   loop:
     "{{ groups['kube-node'] }}"
@@ -33,6 +33,11 @@
 - name: Load docker image of {{ release_name }}
   command: "{{ docker_bin_path }} load -i {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}.tar" 
   delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"
+
+- name: Invoke hook script of {{ release_name }} for install operation
+  include_tasks: roles/deploy-plugin/tasks/plugins.yaml
   loop:
     "{{ groups['kube-node'] }}"
 

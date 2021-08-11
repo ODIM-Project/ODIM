@@ -13,6 +13,8 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	google.golang.org/grpc v1.24.0
+	k8s.io/apimachinery v0.18.5
+	k8s.io/client-go v0.18.5
 )
 
 replace (

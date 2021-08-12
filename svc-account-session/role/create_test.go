@@ -59,7 +59,7 @@ func TestCreate(t *testing.T) {
 	common.SetUpMockConfig()
 	defer truncateDB(t)
 	commonResponse := response.Response{
-		OdataType: "#Role.v1_2_4.Role",
+		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/testRole",
 		Name:      "User Role",
 		ID:        "testRole",

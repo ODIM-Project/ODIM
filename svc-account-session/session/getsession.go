@@ -55,7 +55,7 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 // respond RPC response and error if there is.
 func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#Session.v1_2_1.Session",
+		OdataType: common.SessionType,
 		OdataID:   "/redfish/v1/SessionService/Sessions/" + req.SessionId,
 		ID:        req.SessionId,
 		Name:      "User Session",
@@ -264,7 +264,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 // respond RPC response and error if there are.
 func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
 		ID:        "Sessions",
 		Name:      "Session Service",

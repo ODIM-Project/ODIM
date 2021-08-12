@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"encoding/json"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/update"
@@ -62,7 +63,7 @@ func generateRPCResponse(rpcResp response.RPC, aggResp *updateproto.UpdateRespon
 
 func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2.Task",
+		OdataType:    common.TaskType,
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

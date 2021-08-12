@@ -395,11 +395,9 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 				e.GenericSave(resourceDataByte, getResourceName(odataID, false), odataID)
 			} else {
 				exist, dbErr := e.CheckMetricRequest(odataID)
-				log.Info("removeWildCard: ", odataID, "Exist: ", exist, "dbErr: ", dbErr)
 				if exist || dbErr != nil {
 					continue
 				}
-				log.Info("-----table----", oID[0])
 				if derr := e.Delete(oID[0], odataID, common.InMemory); derr != nil {
 					log.Error("error while trying to delete data: " + derr.Error())
 					continue
@@ -427,7 +425,6 @@ func checkAndRemoveWildCardValue(val string, values []string) []string {
 func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
 	resourceName := resName + "Collection"
 	collectionOdataID := odataID[:strings.LastIndexByte(odataID, '/')]
-	//metricID := odataID[strings.LastIndexByte(odataID , '/')+1:]
 	data, dbErr := e.GetResource(resourceName, collectionOdataID)
 	if dbErr != nil {
 		return
@@ -436,7 +433,6 @@ func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
 	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
 		return
 	}
-	//	log.Info(metricID, "   ---telemetry info---   ", telemetryInfo.Members)
 	result := removeMemberFromCollection(odataID, telemetryInfo.Members)
 	telemetryInfo.Members = result
 	telemetryInfo.MembersCount = len(result)
@@ -449,7 +445,6 @@ func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
 
 func removeMemberFromCollection(collectionOdataID string, telemetryInfo []*dmtf.Link) []*dmtf.Link {
 	result := []*dmtf.Link{}
-
 	for _, v := range telemetryInfo {
 		if v.Oid != collectionOdataID {
 			result = append(result, v)

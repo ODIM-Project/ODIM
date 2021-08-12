@@ -49,6 +49,18 @@
     - "{{ odimra.nginxLogPath }}/error.log"
     - "{{ odimra.nginxLogPath }}/access.log"
 
+- name: Copy nginx cert and key files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0400
+  with_items:
+    - { src: "{{ odimCertsPath }}/rootCA.crt", dest: "/opt/nginx/certs/rootCA.crt" }
+    - { src: "{{ odimCertsPath }}/nginx_server.crt", dest: "/opt/nginx/certs/server.crt" }
+    - { src: "{{ odimCertsPath }}/nginx_server.key", dest: "/opt/nginx/certs/server.key" }
+
 - name: Install nginx=1.14.0-0ubuntu1.9 package
   apt:
     name: nginx=1.14.0-0ubuntu1.9
@@ -56,13 +68,37 @@
 
 - name: Replace nginx configuration file
   template:
-    src: "templates/nginx.conf.j2"
+    src: "roles/configure-proxy/templates/nginx.conf.j2"
     dest: /etc/nginx/nginx.conf
     validate: 'nginx -t -c %s'
   with_items:
     - logPath: "{{ odimra.nginxLogPath }}"
       user: "{{ odim_owner_name }}"
       group: "{{ odim_owner_name }}"
+
+- set_fact:
+    cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    serverlist: []
+
+- set_fact:
+    serverlist: "{{ serverlist + [server] }}"
+  with_items: "{{ groups.all }}"
+  vars:
+    server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
+
+- debug:
+    msg: "server_list: {{ serverlist }}"
+
+- name: Replace nginx configuration file
+  template:
+    src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
+    dest: /opt/nginx/servers/api_proxy_server.conf
+    validate: 'nginx -t -c %s'
+  with_items:
+    - selfNodeIP: "{{ cur_host_ip }}"
+      virtualIP: "{{ odimra.virtualIP }}"
+      apiProxyPort: "{{ odimra.apiProxyPort }}"
+      apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
 
 - name: Remove configured default nginx server
   file:

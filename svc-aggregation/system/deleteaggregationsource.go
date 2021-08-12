@@ -352,6 +352,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	return resp
 }
 
+// deleteWildCardValues will delete the wild card values and
+// if all the servers are deleted, then it will delete the telemetry information
 func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 	telemetryList, dbErr := e.GetAllMatchingDetails("*", "TelemetryService", common.InMemory)
 	if dbErr != nil {
@@ -422,6 +424,7 @@ func checkAndRemoveWildCardValue(val string, values []string) []string {
 	return wildCardValues
 }
 
+// updateMemberCollection will remove the member from the collection and update into DB
 func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
 	resourceName := resName + "Collection"
 	collectionOdataID := odataID[:strings.LastIndexByte(odataID, '/')]
@@ -443,6 +446,7 @@ func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
 	e.GenericSave(telemetryData, resourceName, collectionOdataID)
 }
 
+// removeMemberFromCollection will remove the member from the collection
 func removeMemberFromCollection(collectionOdataID string, telemetryInfo []*dmtf.Link) []*dmtf.Link {
 	result := []*dmtf.Link{}
 	for _, v := range telemetryInfo {

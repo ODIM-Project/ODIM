@@ -37,7 +37,7 @@ import (
 // As return parameters RPC response, which contains status code, message, headers and data.
 func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#Role.v1_2_4.Role",
+		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + req.Id,
 		Name:      "User Role",
 		ID:        req.Id,

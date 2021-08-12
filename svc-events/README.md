@@ -76,7 +76,7 @@ Transfer-Encoding:chunked
    "@odata.context":"/redfish/v1/$metadata#EventService.EventService",
    "Id":"EventService",
    "@odata.id":"/redfish/v1/EventService",
-   "@odata.type":"#EventService.v1_5_0.EventService",
+   "@odata.type":"#EventService.v1_7_0.EventService",
    "Name":"EventService",
    "Description":"EventService",
    "Actions":{
@@ -389,13 +389,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "Message":"The task with id taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad"
    ],
@@ -565,7 +565,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_1_0.Event ",
+   "@odata.type":"#Event.v1_6_1.Event ",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",
@@ -591,7 +591,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-"@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
+"@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
 "Id": “Alert.1.0.0",
 "Name": "Base Message Registry",
 "Language": "en",
@@ -624,7 +624,7 @@ Transfer-Encoding:chunked
       "ResourceAdded"
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.2.ResourceAdded"
+      "ResourceEvent.1.0.3.ResourceAdded"
    ],
    ​   "ResourceTypes":[ 
        "ComputerSystem",
@@ -665,7 +665,7 @@ To create this subscription, perform HTTP `POST` on `/redfish/v1/EventService/Su
       "ResourceRemoved"
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.2.ResourceRemoved"
+      "ResourceEvent.1.0.3.ResourceRemoved"
    ],
    ​   "ResourceTypes":[ 
       "ComputerSystem",
@@ -707,7 +707,7 @@ To create this subscription, perform HTTP `POST` on `/redfish/v1/EventService/Su
       
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.2.StatusChange"
+      "ResourceEvent.1.0.3.StatusChange"
    ],
    ​   "ResourceTypes":[ 
       "Task"
@@ -814,7 +814,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_10_1.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "@odata.context":"/redfish/v1/$metadata#EventDestination.EventDestination",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
@@ -869,12 +869,12 @@ curl -i -X DELETE \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_10_1.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",
    "Message":"The resource has been removed successfully.",
-   "MessageId":"ResourceEvent.1.0.2.ResourceRemoved",
+   "MessageId":"ResourceEvent.1.0.3.ResourceRemoved",
    "Severity":"OK"
 }
 ```

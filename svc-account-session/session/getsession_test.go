@@ -44,7 +44,7 @@ func TestGetSession(t *testing.T) {
 
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
 	commonResponse := response.Response{
-		OdataType: "#Session.v1_2_1.Session",
+		OdataType: common.SessionType,
 		OdataID:   "/redfish/v1/SessionService/Sessions/" + sessionID,
 		ID:        sessionID,
 		Name:      "User Session",
@@ -264,7 +264,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 
 func TestGetSessionService(t *testing.T) {
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
 		ID:        "Sessions",
 		Name:      "Session Service",

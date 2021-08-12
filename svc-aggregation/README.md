@@ -95,7 +95,7 @@ Transfer-Encoding":chunked
    "@odata.context":"/redfish/v1/$metadata#AggregationService.AggregationService",
    "Id":"AggregationService",
    "@odata.id":"/redfish/v1/AggregationService",
-   "@odata.type":"#AggregationService.v1_0_0.AggregationService",
+   "@odata.type":"#AggregationService.v1_0_1.AggregationService",
    "Name":"AggregationService",
    "Description":"AggregationService",
    "Actions":{
@@ -401,13 +401,13 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "Name":"Task task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "Message":"The task with id task85de4003-8757-4c7d-942f-55eaf7d6812a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task85de4003-8757-4c7d-942f-55eaf7d6812a"
    ],
@@ -557,13 +557,13 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task4aac9e1e-df58-4fff-b781-52373fcb5699"
    ],
@@ -844,13 +844,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "Message":"The task with id task85de4103-8757-4c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task85de4103-8757-4c7d-942f-55eaf7d6412a"
    ],
@@ -869,7 +869,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -895,7 +895,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -989,13 +989,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Message":"The task with id task80de4003-8757-4c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task80de4003-8757-4c7d-942f-55eaf7d6412a"
    ],
@@ -1014,7 +1014,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1040,7 +1040,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1097,13 +1097,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "Message":"The task with id task85de4003-8757-2c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task85de4003-8757-2c7d-942f-55eaf7d6412a"
    ],
@@ -1201,7 +1201,7 @@ Transfer-Encoding:chunked
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.10.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1242,7 +1242,7 @@ curl -i GET \
       "Id":"Aggregate",
       "Name":"Aggregate",
       "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.6.1.Success",
+      "MessageId":"Base.1.10.0.Success",
       "Severity":"OK",
       "Members@odata.count":1,
       "Members":[
@@ -1285,7 +1285,7 @@ curl -i GET \
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "Name":"Aggregate",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Elements":[
       "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1373,7 +1373,7 @@ curl -i POST \
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.10.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1458,13 +1458,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Message":"The task with id task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591"
    ],
@@ -1483,7 +1483,7 @@ Content-Length:491 bytes
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1509,7 +1509,7 @@ Content-Length:491 bytes
 ```
  {
    "error":{
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1569,13 +1569,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Message":"The task with id task80de4003-8757-4c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task80de4003-8757-4c7d-942f-55eaf7d6412a"
    ],
@@ -1594,7 +1594,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1620,7 +1620,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }

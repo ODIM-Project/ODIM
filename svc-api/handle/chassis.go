@@ -23,7 +23,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-
 	"github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
 )
@@ -167,7 +166,6 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

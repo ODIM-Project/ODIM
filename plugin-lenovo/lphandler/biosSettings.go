@@ -81,6 +81,11 @@ func ChangeSettings(ctx iris.Context) {
 		ctx.WriteString(errMsg)
 		return
 	}
+
+	if strings.HasSuffix(uri, "/Bios/Settings") {
+		uri = strings.Replace(uri, "/Bios/Settings", "/Bios/Pending", -1)
+	}
+
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPatch)
 	if err != nil {
 		errorMessage := "While trying to change bios settings, got: " + err.Error()
@@ -97,6 +102,11 @@ func ChangeSettings(ctx iris.Context) {
 		body = []byte("While trying to change bios settings, got: " + err.Error())
 		log.Error(string(body))
 	}
+
+	// Replace response body with the standard redfish specification
+	respData := string(body)
+	respData = strings.Replace(respData, "/Bios/Pending", "/Bios/Settings", -1)
+
 	ctx.StatusCode(resp.StatusCode)
-	ctx.Write(body)
+	ctx.Write([]byte(respData))
 }

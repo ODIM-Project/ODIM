@@ -215,11 +215,8 @@ func routers() *iris.Application {
 		registries.Get("", lphandler.GetResource)
 		registries.Get("/{id}", lphandler.GetResource)
 
-		registryStore := pluginRoutes.Party("/registrystore", lpmiddleware.BasicAuth)
-		registryStore.Get("/registries/en/{id}", lphandler.GetResource)
-
-		registryStoreCap := pluginRoutes.Party("/RegistryStore", lpmiddleware.BasicAuth)
-		registryStoreCap.Get("/registries/en/{id}", lphandler.GetResource)
+		registryStore := pluginRoutes.Party("/schemas", lpmiddleware.BasicAuth)
+		registryStore.Get("/registries/{id}", lphandler.GetResource)
 
 		// Routes related to Update service
 		update := pluginRoutes.Party("/UpdateService", lpmiddleware.BasicAuth)

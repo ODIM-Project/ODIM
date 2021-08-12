@@ -159,7 +159,7 @@ type Drive struct {
 	BlockSizeBytes                int                `json:"BlockSizeBytes,omitempty"`
 	CapableSpeedGbs               int                `json:"CapableSpeedGbs,omitempty"`
 	CapacityGB                    int                `json:"CapacityGB,omitempty"`
-        CapacityBytes                 int                `json:"CapacityBytes,omitempty"`
+	CapacityBytes                 int                `json:"CapacityBytes,omitempty"`
 	Description                   string             `json:"Description,omitempty"`
 	EncryptionAbility             string             `json:"EncryptionAbility,omitempty"`
 	EncryptionStatus              string             `json:"EncryptionStatus,omitempty"`

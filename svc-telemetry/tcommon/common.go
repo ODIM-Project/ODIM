@@ -250,6 +250,6 @@ func removeNonExistingID(req ResourceInfoRequest) {
 		if jerr != nil {
 			return
 		}
-		req.GenericSave(reportCollection, "MetricReportCollection", collectionURL)
+		req.GenericSave(reportCollection, "MetricReportsCollection", collectionURL)
 	}
 }

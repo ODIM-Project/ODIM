@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"strings"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -358,8 +359,9 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 		return
 	}
 	for _, oid := range telemetryList {
-		odataID := strings.Split(oid, ":")[1]
+		oID := strings.Split(oid, ":")
 		if !strings.Contains(oid, "MetricReports") && !strings.Contains(oid, "Collection") {
+			odataID := oID[1]
 			resourceData := make(map[string]interface{})
 			data, dbErr := agmodel.GetResourceDetails(odataID)
 			if dbErr != nil {
@@ -373,20 +375,36 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 				continue
 			}
 			var wildCards []WildCard
+			var wildCardPresent bool
 			wCards := resourceData["Wildcards"]
 			if wCards != nil {
 				for _, wCard := range getWildCard(wCards.([]interface{})) {
 					wCard.Values = checkAndRemoveWildCardValue(systemID, wCard.Values)
 					wildCards = append(wildCards, wCard)
+					if len(wCard.Values) > 0 {
+						wildCardPresent = true
+					}
 				}
 			}
-			if len(wildCards) > 0 {
+			if wildCardPresent {
 				resourceData["Wildcards"] = wildCards
 				resourceDataByte, err := json.Marshal(resourceData)
 				if err != nil {
 					continue
 				}
-				agmodel.GenericSave(resourceDataByte, getResourceName(odataID, false), odataID)
+				e.GenericSave(resourceDataByte, getResourceName(odataID, false), odataID)
+			} else {
+				exist, dbErr := e.CheckMetricRequest(odataID)
+				log.Info("removeWildCard: ", odataID, "Exist: ", exist, "dbErr: ", dbErr)
+				if exist || dbErr != nil {
+					continue
+				}
+				log.Info("-----table----", oID[0])
+				if derr := e.Delete(oID[0], odataID, common.InMemory); derr != nil {
+					log.Error("error while trying to delete data: " + derr.Error())
+					continue
+				}
+				e.updateMemberCollection(oID[0], odataID)
 			}
 		}
 	}
@@ -404,4 +422,38 @@ func checkAndRemoveWildCardValue(val string, values []string) []string {
 		}
 	}
 	return wildCardValues
+}
+
+func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
+	resourceName := resName + "Collection"
+	collectionOdataID := odataID[:strings.LastIndexByte(odataID, '/')]
+	//metricID := odataID[strings.LastIndexByte(odataID , '/')+1:]
+	data, dbErr := e.GetResource(resourceName, collectionOdataID)
+	if dbErr != nil {
+		return
+	}
+	var telemetryInfo dmtf.Collection
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
+		return
+	}
+	//	log.Info(metricID, "   ---telemetry info---   ", telemetryInfo.Members)
+	result := removeMemberFromCollection(odataID, telemetryInfo.Members)
+	telemetryInfo.Members = result
+	telemetryInfo.MembersCount = len(result)
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return
+	}
+	e.GenericSave(telemetryData, resourceName, collectionOdataID)
+}
+
+func removeMemberFromCollection(collectionOdataID string, telemetryInfo []*dmtf.Link) []*dmtf.Link {
+	result := []*dmtf.Link{}
+
+	for _, v := range telemetryInfo {
+		if v.Oid != collectionOdataID {
+			result = append(result, v)
+		}
+	}
+	return result
 }

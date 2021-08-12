@@ -863,12 +863,21 @@ func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 	return nil
 }
 
+func mockCheckMetricRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteMetricRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
+}
+
 func mockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
-	return []string{
-		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUICUtilCustom1",
-		"Triggers:/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers",
-		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3",
-	}, nil
+	return []string{}, nil
+}
+
+func mockDelete(table, key string, dbtype common.DbType) *errors.Error {
+	return nil
 }
 
 func getMockExternalInterface() *ExternalInterface {
@@ -895,5 +904,9 @@ func getMockExternalInterface() *ExternalInterface {
 		DeleteEventSubscription: mockDeleteSubscription,
 		EventNotification:       mockEventNotification,
 		GetAllMatchingDetails:   mockGetAllMatchingDetails,
+		CheckMetricRequest:      mockCheckMetricRequest,
+		DeleteMetricRequest:     mockDeleteMetricRequest,
+		GetResource:             mockGetResource,
+		Delete:                  mockDelete,
 	}
 }

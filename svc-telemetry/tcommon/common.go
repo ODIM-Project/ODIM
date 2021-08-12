@@ -226,7 +226,7 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 
 func removeNonExistingID(req ResourceInfoRequest) {
 	collectionURL := "/redfish/v1/TelemetryService/MetricReports"
-	data, err := req.GetResource("MetricReportCollection", collectionURL, common.InMemory)
+	data, err := req.GetResource("MetricReportsCollection", collectionURL, common.InMemory)
 	if err != nil {
 		return
 	}

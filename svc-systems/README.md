@@ -146,7 +146,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1",
-   "@odata.type":"#ComputerSystem.v1_4_0.ComputerSystem",
+   "@odata.type":"#ComputerSystem.v1_14_1.ComputerSystem",
    "Id":"e24fb205-6669-4080-b53c-67d4923aa73e:1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
@@ -884,7 +884,7 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
     "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0",
-    "@odata.type": "#Storage.v1_7_1.Storage",
+    "@odata.type": "#Storage.v1_10_0.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
@@ -1374,7 +1374,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
    "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1",
-   "@odata.type":"#Chassis.v1_6_0.Chassis",
+   "@odata.type":"#Chassis.v1_16_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
@@ -2574,7 +2574,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot order settings of a specific system.|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.10.0.Success`. The registry to look up is `Base.1.10.0`.<br> |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -2677,7 +2677,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
    "error":{ 
       "@Message.ExtendedInfo":[ 
          { 
-            "MessageId":"Base.1.0.Success"
+            "MessageId":"Base.1.10.0.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

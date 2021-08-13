@@ -138,7 +138,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"2D2866FD\"",
    "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_12_0.Manager",
    "Actions":{ 
       "#Manager.Reset":{ 
          "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/Actions/Manager.Reset"
@@ -217,7 +217,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_12_0.Manager",
    "Name":"ODIMRA",
    "ManagerType":"Service",
    "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
@@ -236,7 +236,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_12_0.Manager",
    "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",

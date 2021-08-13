@@ -39,7 +39,7 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 		StatusMessage: response.ResourceNotFound,
 		Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 	}
-	json.Unmarshal([]byte(`{"MessageId":"Base.1.6.1.GeneralError"}`), &errResp.Body)
+	json.Unmarshal([]byte(`{"MessageId":"`+response.GeneralError+`"}`), &errResp.Body)
 	type args struct {
 		url  string
 		body *json.RawMessage

@@ -30,7 +30,7 @@ func TestUpdate(t *testing.T) {
 	acc := getMockExternalInterface()
 
 	successResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser1",
@@ -38,7 +38,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	operatorSuccessResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/operatorUser",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "operatorUser",
@@ -46,7 +46,7 @@ func TestUpdate(t *testing.T) {
 	}
 
 	successResponse2 := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser2",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser2",
@@ -195,7 +195,7 @@ func TestUpdate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1/",
+					"Location":          "/redfish/v1/AccountService/Accounts/testUser1",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -205,7 +205,7 @@ func TestUpdate(t *testing.T) {
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Operator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Operator",
 						},
 					},
 				},
@@ -345,7 +345,7 @@ func TestUpdate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -355,7 +355,7 @@ func TestUpdate(t *testing.T) {
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Operator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Operator",
 						},
 					},
 				},
@@ -385,7 +385,7 @@ func TestUpdate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -395,7 +395,7 @@ func TestUpdate(t *testing.T) {
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Operator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Operator",
 						},
 					},
 				},
@@ -426,7 +426,7 @@ func TestUpdate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser/",
+					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -436,7 +436,7 @@ func TestUpdate(t *testing.T) {
 					RoleID:   "Operator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Operator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Operator",
 						},
 					},
 				},
@@ -467,7 +467,7 @@ func TestUpdate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/testUser2/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser2/",
+					"Location":          "/redfish/v1/AccountService/Accounts/testUser2",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -477,7 +477,7 @@ func TestUpdate(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator",
 						},
 					},
 				},
@@ -507,7 +507,7 @@ func TestUpdate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/testUser2/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser2/",
+					"Location":          "/redfish/v1/AccountService/Accounts/testUser2",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -517,7 +517,7 @@ func TestUpdate(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator",
 						},
 					},
 				},

@@ -1297,7 +1297,7 @@ func createEventSubscriptionResponse() interface{} {
 	return errors.ErrorClass{
 		MessageExtendedInfo: []errors.MsgExtendedInfo{
 			errors.MsgExtendedInfo{
-				MessageID: "Base.1.6.1.Created",
+				MessageID: response.Created,
 			},
 		},
 		Code:    errResponse.Created,

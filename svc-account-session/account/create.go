@@ -57,7 +57,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           createAccount.UserName,
@@ -199,7 +199,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		"Connection":        "keep-alive",
 		"Content-type":      "application/json; charset=utf-8",
 		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
-		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName + "/",
+		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName,
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
@@ -212,7 +212,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		AccountTypes: user.AccountTypes,
 		Links: asresponse.Links{
 			Role: asresponse.Role{
-				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID + "/",
+				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID,
 			},
 		},
 	}

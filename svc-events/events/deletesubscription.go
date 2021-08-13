@@ -243,7 +243,7 @@ func (p *PluginContact) DeleteEventSubscriptionsDetails(req *eventsproto.EventRe
 	}
 
 	commonResponse := response.Response{
-		OdataType: "#EventDestination.v1_7_0.EventDestination",
+		OdataType: common.EventDestinationType,
 		OdataID:   "/redfish/v1/EventService/Subscriptions/" + req.EventSubscriptionID,
 		ID:        req.EventSubscriptionID,
 		Name:      "Event Subscription",

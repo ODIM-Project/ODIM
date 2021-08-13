@@ -90,6 +90,10 @@ type ExternalInterface struct {
 	CheckActiveRequest       func(string) (bool, *errors.Error)
 	DeleteActiveRequest      func(string) *errors.Error
 	GetAllMatchingDetails    func(string, string, common.DbType) ([]string, *errors.Error)
+	CheckMetricRequest       func(string) (bool, *errors.Error)
+	DeleteMetricRequest      func(string) *errors.Error
+	GetResource              func(string, string) (string, *errors.Error)
+	Delete                   func(string, string, common.DbType) *errors.Error
 }
 
 type responseStatus struct {
@@ -1317,7 +1321,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	// total estimated work for metric is 10 percent
 	var metricEstimatedWork = int32(3)
 	progress := percentComplete
-	progress, err := storeTelemetryCollectionInfo("MetricDefinitionCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	progress, err := e.storeTelemetryCollectionInfo("MetricDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
 		log.Error(err)
 	}
@@ -1328,7 +1332,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	// Populate the MetricReportDefinitions for telemetry service
 	progress = percentComplete
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
-	progress, err = storeTelemetryCollectionInfo("MetricReportDefinitionCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	progress, err = e.storeTelemetryCollectionInfo("MetricReportDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
 		log.Error(err)
 	}
@@ -1340,7 +1344,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	var metricReportEstimatedWork int32
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
 	progress = percentComplete
-	progress, err = storeTelemetryCollectionInfo("MetricReportCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
+	progress, err = e.storeTelemetryCollectionInfo("MetricReportsCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
 	if err != nil {
 		log.Error(err)
 	}
@@ -1351,7 +1355,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	// Populate the Triggers for telemetry service
 	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
 	progress = percentComplete
-	progress, err = storeTelemetryCollectionInfo("TriggerCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	progress, err = e.storeTelemetryCollectionInfo("TriggersCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
 	if err != nil {
 		log.Error(err)
 	}
@@ -1361,7 +1365,7 @@ func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percen
 	return percentComplete
 }
 
-func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
+func (e *ExternalInterface) storeTelemetryCollectionInfo(resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
 	if err != nil {
 		return progress, err
@@ -1375,15 +1379,15 @@ func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alotted
 		return progress, err
 	}
 
-	data, dbErr := agmodel.GetResource(resourceName, req.OID)
+	data, dbErr := e.GetResource(resourceName, req.OID)
 	if dbErr != nil {
 		// if no resource found then save the metric data into db.
-		if err = agmodel.GenericSave(body, resourceName, req.OID); err != nil {
+		if err = e.GenericSave(body, resourceName, req.OID); err != nil {
 			return progress, err
 		}
-		if resourceName != "MetricReportCollection" {
+		if resourceName != "MetricReportsCollection" {
 			// get and store of individual telemetry info
-			progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+			progress = e.getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
 		}
 		return progress, nil
 	}
@@ -1398,13 +1402,13 @@ func storeTelemetryCollectionInfo(resourceName, taskID string, progress, alotted
 	if err != nil {
 		return progress, err
 	}
-	err = agmodel.GenericSave(telemetryData, resourceName, req.OID)
+	err = e.GenericSave(telemetryData, resourceName, req.OID)
 	if err != nil {
 		return progress, err
 	}
-	if resourceName != "MetricReportCollection" {
+	if resourceName != "MetricReportsCollection" {
 		// get and store of individual telemetry info
-		progress = getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+		progress = e.getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
 	}
 	return progress, nil
 }
@@ -1423,17 +1427,17 @@ func getSuperSet(telemetryInfo, resourceData []*dmtf.Link) []*dmtf.Link {
 	return result
 }
 
-func getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req getResourceRequest, resourceData dmtf.Collection) int32 {
+func (e *ExternalInterface) getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req getResourceRequest, resourceData dmtf.Collection) int32 {
 	// Loop through all the resource members collection and discover all of them
 	for _, member := range resourceData.Members {
 		estimatedWork := alottedWork / int32(len(resourceData.Members))
 		req.OID = member.Oid
-		progress = getTeleInfo(taskID, progress, estimatedWork, req)
+		progress = e.getTeleInfo(taskID, progress, estimatedWork, req)
 	}
 	return progress
 }
 
-func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
+func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -1445,13 +1449,33 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 	//replacing the uuid while saving the data
 	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
 
-	updatedResourceData, err = createWildCard(updatedResourceData, resourceName, req.OID)
+	updatedResourceData, err = e.createWildCard(updatedResourceData, resourceName, req.OID)
 	if err != nil {
 		return progress
 	}
 
+	exist, dErr := e.CheckMetricRequest(req.OID)
+	if exist || dErr != nil {
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
+		log.Println(errMsg)
+		return progress
+	}
+	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return progress
+	}
+
+	defer func() {
+		err := e.DeleteMetricRequest(req.OID)
+		if err != nil {
+			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
+		}
+	}()
+
 	// persist the response with table resource
-	err = agmodel.GenericSave([]byte(updatedResourceData), resourceName, req.OID)
+	err = e.GenericSave([]byte(updatedResourceData), resourceName, req.OID)
 	if err != nil {
 		return progress
 	}
@@ -1463,14 +1487,14 @@ func getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequ
 
 // createWildCard is used to form the create the wild card
 // first check the whether resource already present, if its not then create new wild card
-func createWildCard(resourceData, resourceName, oid string) (string, error) {
+func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid string) (string, error) {
 	var resourceDataMap map[string]interface{}
 	err := json.Unmarshal([]byte(resourceData), &resourceDataMap)
 	if err != nil {
 		log.Error("Failed to unmarshal the resource data, got: " + err.Error())
 		return "", err
 	}
-	data, _ := agmodel.GetResource(resourceName, oid)
+	data, _ := e.GetResource(resourceName, oid)
 	return formWildCard(data, resourceDataMap)
 }
 

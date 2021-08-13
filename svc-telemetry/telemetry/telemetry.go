@@ -106,7 +106,7 @@ func (e *ExternalInterface) GetTelemetryService() response.RPC {
 func (e *ExternalInterface) GetMetricDefinitionCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = header
-	data, err := e.DB.GetResource("MetricDefinitionCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource("MetricDefinitionsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		metricDefinitionCollection := tlresp.Collection{
@@ -135,7 +135,7 @@ func (e *ExternalInterface) GetMetricDefinitionCollection(req *teleproto.Telemet
 func (e *ExternalInterface) GetMetricReportDefinitionCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = header
-	data, err := e.DB.GetResource("MetricReportDefinitionCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource("MetricReportDefinitionsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		metricReportDefinitionCollection := tlresp.Collection{
@@ -164,7 +164,7 @@ func (e *ExternalInterface) GetMetricReportDefinitionCollection(req *teleproto.T
 func (e *ExternalInterface) GetMetricReportCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = header
-	data, err := e.DB.GetResource("MetricReportCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource("MetricReportsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		metricReportCollection := tlresp.Collection{
@@ -193,7 +193,7 @@ func (e *ExternalInterface) GetMetricReportCollection(req *teleproto.TelemetryRe
 func (e *ExternalInterface) GetTriggerCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = header
-	data, err := e.DB.GetResource("TriggerCollection", req.URL, common.InMemory)
+	data, err := e.DB.GetResource("TriggersCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
 		triggersCollection := tlresp.Collection{

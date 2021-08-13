@@ -74,6 +74,10 @@ func GetResource(ctx iris.Context) {
 		return
 	}
 
+	if strings.HasSuffix(uri, "/Bios/Settings") {
+		uri = strings.Replace(uri, "/Bios/Settings", "/Bios/Pending", -1)
+	}
+
 	//Fetching generic resource details from the device
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
@@ -110,6 +114,9 @@ func GetResource(ctx iris.Context) {
 	for key, value := range pluginConfig.Data.URLTranslation.NorthBoundURL {
 		respData = strings.Replace(respData, key, value, -1)
 	}
+
+	respData = strings.Replace(respData, "/Bios/Pending", "/Bios/Settings", -1)
+
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write([]byte(respData))
 }

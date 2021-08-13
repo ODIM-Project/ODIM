@@ -86,9 +86,6 @@
   vars:
     server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
 
-- debug:
-    msg: "server_list: {{ serverlist }}"
-
 - name: Replace nginx configuration file
   template:
     src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"

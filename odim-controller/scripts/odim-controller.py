@@ -304,7 +304,7 @@ def gen_ssh_keys():
 	
 	pubkey = privkey.publickey()
 	with open(ssh_pub_key_path, 'wb') as f:
-		os.chmod(ssh_pub_key_path, 0o644)
+		os.chmod(ssh_pub_key_path, 0o640)
 		f.write(pubkey.exportKey('OpenSSH'))
 
 # enable_passwordless_login is used for enabling password-less

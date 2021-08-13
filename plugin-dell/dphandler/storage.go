@@ -33,6 +33,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var taskService dputilities.TaskService = dputilities.GetTaskService()
+var hardwareService volumeOnHardwareService = GetVolumeOnHardwareService()
+
 //CreateVolume function is used for creating a volume under storage
 func CreateVolume(ctx iris.Context) {
 	// Get token from Request
@@ -56,7 +59,7 @@ func CreateVolume(ctx iris.Context) {
 	}
 
 	// Create new task
-	taskURI, err := dputilities.CreateTask()
+	taskURI, err := taskService.CreateTask()
 	if err != nil {
 		log.Errorf("Unable to create the task: %s", err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -114,13 +117,13 @@ func CreateVolume(ctx iris.Context) {
 	statusCode, verErrMsg := getFirmwareVersion(managersURI, device)
 	if statusCode != http.StatusOK {
 		log.Error(verErrMsg)
-		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString(verErrMsg)
 		return
 	}
 
 	taskID := retrieveTaskID(taskURI)
-	go createVolume(device, taskID, uri, reqPostBody)
+	go hardwareService.createVolume(device, taskID, uri, reqPostBody)
 
 	ctx.Header("Location", "/taskmon/"+taskID)
 	ctx.StatusCode(http.StatusAccepted)
@@ -176,7 +179,6 @@ func createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody st
 func waitForTaskToFinish(taskURI string, device *dputilities.RedfishDevice, taskID string, uri string, requestBody string,
 	httpMethod string) error {
 	for {
-		time.Sleep(5 * time.Second)
 		statusCode, _, body, err := queryDevice(taskURI, device, http.MethodGet)
 		if err != nil {
 			log.Errorf("Error while retrieving volume task. StatusCode: %d, msg: %s", statusCode, err.Error())
@@ -192,7 +194,7 @@ func waitForTaskToFinish(taskURI string, device *dputilities.RedfishDevice, task
 			return err
 		}
 
-		state, err := dputilities.GetTaskState(volumeTask.TaskState)
+		state, err := taskService.GetTaskState(volumeTask.TaskState)
 		if err != nil {
 			log.Errorf("error while trying to get task state from task: " + err.Error())
 			updateTaskWithException(taskID, device.Host, uri, requestBody, httpMethod)
@@ -201,6 +203,7 @@ func waitForTaskToFinish(taskURI string, device *dputilities.RedfishDevice, task
 
 		switch state {
 		case dputilities.New, dputilities.Starting, dputilities.Running:
+			time.Sleep(5 * time.Second)
 			continue
 		case dputilities.Completed:
 			log.Infof("volume task is completed!")
@@ -255,7 +258,7 @@ func DeleteVolume(ctx iris.Context) {
 		PostBody: deviceDetails.PostBody,
 	}
 
-	taskURI, err := dputilities.CreateTask()
+	taskURI, err := taskService.CreateTask()
 	if err != nil {
 		log.Errorf("Unable to create the task: %s", err.Error())
 		ctx.StatusCode(http.StatusInternalServerError)
@@ -264,7 +267,7 @@ func DeleteVolume(ctx iris.Context) {
 	}
 
 	taskID := retrieveTaskID(taskURI)
-	go deleteVolume(device, taskID, uri)
+	go hardwareService.deleteVolume(device, taskID, uri)
 
 	ctx.StatusCode(http.StatusAccepted)
 	ctx.Header("Location", "/taskmon/"+taskID)
@@ -355,7 +358,7 @@ func updateTask(taskID, host, targetURI, request string, taskState dputilities.T
 		TargetURI:     targetURI,
 	}
 
-	err := dputilities.UpdateTask(taskID, host, taskState, taskStatus, percentComplete, payLoad, time.Now())
+	err := taskService.UpdateTask(taskID, host, taskState, taskStatus, percentComplete, payLoad, time.Now())
 	if err != nil {
 		log.Errorf("Unable to update task with ID: %s", taskID)
 	}
@@ -435,4 +438,24 @@ func getFirmwareVersion(uri string, device *dputilities.RedfishDevice) (int, str
 		return http.StatusBadRequest, "Unsupported Firmware version, Firmware version should be >= 4.40"
 	}
 	return http.StatusOK, ""
+}
+
+type volumeOnHardwareService interface {
+	createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody string)
+	deleteVolume(device *dputilities.RedfishDevice, taskID, uri string)
+}
+
+type volumeOnHardwareServiceImpl struct {
+}
+
+func (h *volumeOnHardwareServiceImpl) createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody string) {
+	createVolume(device, taskID, uri, requestBody)
+}
+
+func (h *volumeOnHardwareServiceImpl) deleteVolume(device *dputilities.RedfishDevice, taskID, uri string) {
+	deleteVolume(device, taskID, uri)
+}
+
+func GetVolumeOnHardwareService() *volumeOnHardwareServiceImpl {
+	return &volumeOnHardwareServiceImpl{}
 }

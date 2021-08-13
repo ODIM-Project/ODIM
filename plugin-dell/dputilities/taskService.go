@@ -108,7 +108,22 @@ type Payload struct {
 	TargetURI     string            `json:"TargetUri"`
 }
 
-func CreateTask() (string, error) {
+type TaskService interface {
+	CreateTask() (string, error)
+	UpdateTask(taskID, host string, taskState TaskState, taskStatus TaskStatus, percentComplete int32,
+		payLoad *taskproto.Payload, endTime time.Time) error
+	GetTaskState(state string) (TaskState, error)
+	GetTaskStatus(status string) (TaskStatus, error)
+}
+
+type TaskServiceImpl struct {
+}
+
+func GetTaskService() *TaskServiceImpl {
+	return &TaskServiceImpl{}
+}
+
+func (ts *TaskServiceImpl) CreateTask() (string, error) {
 	userName := pluginConf.Data.PluginConf.UserName
 
 	// Frame the model
@@ -148,9 +163,9 @@ func CreateTask() (string, error) {
 //	err of type error
 //	nil - On Success
 //	Non nil - On Failure
-func UpdateTask(taskID, host string, taskState TaskState, taskStatus TaskStatus, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
+func (ts *TaskServiceImpl) UpdateTask(taskID, host string, taskState TaskState, taskStatus TaskStatus, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
 	// Retrieve the task details using taskID
-	task, err := getTaskFromDb(taskID)
+	task, err := ts.getTaskFromDb(taskID)
 	if err != nil {
 		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
 	}
@@ -251,7 +266,7 @@ func updateTaskStatus(t *Task) error {
 //		On Success - return nil value
 //		On Failure - return non nill value
 //	t of type *Task implicitly valid only when error is nil
-func getTaskFromDb(taskID string) (*Task, error) {
+func (ts *TaskServiceImpl) getTaskFromDb(taskID string) (*Task, error) {
 	connPool, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		log.Error("error while trying to get the db connection")
@@ -262,7 +277,7 @@ func getTaskFromDb(taskID string) (*Task, error) {
 		return nil, fmt.Errorf("error while trying to read from DB: %v", err.Error())
 	}
 
-	task, errs := unmarshalTask([]byte(taskData))
+	task, errs := ts.unmarshalTask([]byte(taskData))
 	if errs != nil {
 		return nil, fmt.Errorf("error while trying to unmarshal task data: %v", errs)
 	}
@@ -284,19 +299,19 @@ func buildCompletedTaskIndex(completedTask *Task, table string) error {
 	return nil
 }
 
-func unmarshalTask(taskData []byte) (*Task, error) {
+func (ts *TaskServiceImpl) unmarshalTask(taskData []byte) (*Task, error) {
 	dbTask := new(TaskDb)
 	errorMsg := "error while trying to unmarshal task data: %v"
 	if err := json.Unmarshal(taskData, &dbTask); err != nil {
 		return nil, fmt.Errorf(errorMsg, err)
 	}
 
-	taskState, err := GetTaskState(dbTask.TaskState)
+	taskState, err := ts.GetTaskState(dbTask.TaskState)
 	if err != nil {
 		return nil, fmt.Errorf(errorMsg, err)
 	}
 
-	taskStatus, err := GetTaskStatus(dbTask.TaskStatus)
+	taskStatus, err := ts.GetTaskStatus(dbTask.TaskStatus)
 	if err != nil {
 		return nil, fmt.Errorf(errorMsg, err)
 	}
@@ -336,7 +351,7 @@ func PrepareDbConfig() {
 	}
 }
 
-func GetTaskState(state string) (TaskState, error) {
+func (ts *TaskServiceImpl) GetTaskState(state string) (TaskState, error) {
 	switch strings.ToLower(state) {
 	case strings.ToLower(Completed.String()):
 		return Completed, nil
@@ -367,7 +382,7 @@ func GetTaskState(state string) (TaskState, error) {
 	}
 }
 
-func GetTaskStatus(status string) (TaskStatus, error) {
+func (ts *TaskServiceImpl) GetTaskStatus(status string) (TaskStatus, error) {
 	switch strings.ToLower(status) {
 	case strings.ToLower(Critical.String()):
 		return Critical, nil

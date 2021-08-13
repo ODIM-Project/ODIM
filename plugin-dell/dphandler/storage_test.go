@@ -18,8 +18,13 @@ package dphandler
 import (
 	"encoding/json"
 	"fmt"
+	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
+	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
+	"github.com/google/uuid"
 	"net/http"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -35,7 +40,7 @@ func mockDevice(username, password, url string, w http.ResponseWriter) {
 		OdataType:    "#VolumeCollection.VolumeCollection",
 		Description:  "Volume Collection view",
 		Members: []dpmodel.OdataIDLink{
-			dpmodel.OdataIDLink{
+			{
 				OdataID: "/redfish/v1/Systems/1/Storage/ArrayControllers-0/Volumes/1",
 			},
 		},
@@ -49,6 +54,10 @@ func mockDevice(username, password, url string, w http.ResponseWriter) {
 
 	firmwareOld := dpmodel.FirmwareVersion{
 		FirmwareVersion: "4.39.10.00",
+	}
+
+	volumeTask := dpmodel.Task{
+		TaskState: "Completed",
 	}
 
 	if url == "/redfish/v1/Managers/1" {
@@ -67,6 +76,7 @@ func mockDevice(username, password, url string, w http.ResponseWriter) {
 
 	if url == "/ODIM/v1/Systems/1/Storage/1/Volumes" && username == "admin" {
 		e, _ := json.Marshal(volume)
+		w.Header().Add("Location", "/taskmon/1")
 		w.WriteHeader(http.StatusOK)
 		w.Write(e)
 		return
@@ -81,6 +91,17 @@ func mockDevice(username, password, url string, w http.ResponseWriter) {
 	}
 	if url == "/ODIM/v1/Systems/1/Storage/1/Volumes/1" && username != "admin" {
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if url == "/ODIM/v1/Systems/1/Storage/Volumes/1" && username == "admin" {
+		w.Header().Add("Location", "/taskmon/1")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if url == "/taskmon/1" && username == "admin" {
+		e, _ := json.Marshal(volumeTask)
+		w.WriteHeader(http.StatusOK)
+		w.Write(e)
 		return
 	}
 	return
@@ -105,9 +126,10 @@ func TestCreateVolume(t *testing.T) {
 	e := httptest.New(t, mockApp)
 
 	reqPostBody := map[string]interface{}{
-		"Name":     "Volume_Test1",
-		"RAIDType": "RAID0",
-		"Drives":   []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:1/Storage/ArrayControllers-0/Drives/0"}},
+		"Name":       "Volume_Test1",
+		"RAIDType":   "RAID0",
+		"VolumeType": "NonRedundant",
+		"Drives":     []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:1/Storage/ArrayControllers-0/Drives/0"}},
 	}
 	reqBodyBytes, _ := json.Marshal(reqPostBody)
 	requestBody := map[string]interface{}{
@@ -117,21 +139,28 @@ func TestCreateVolume(t *testing.T) {
 		"PostBody":       reqBodyBytes,
 	}
 
-	//Unit Test for success scenario
-	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusOK)
+	taskService = newTaskServiceMock()
+	hardwareMock := newVolumeOnHardwareServiceMock()
+	hardwareService = hardwareMock
 
-	//Case for invalid token
+	// Unit Test for success scenario
+	hardwareMock.wg.Add(1)
+	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusAccepted)
+	hardwareMock.wg.Wait()
+
+	// Case for invalid token
 	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
 
-	//unittest for bad request scenario
+	// Unit test for bad request scenario
 	invalidRequestBody := "invalid"
 	e.POST("/redfish/v1/Systems/1/Storage/1/Volumes").WithJSON(invalidRequestBody).Expect().Status(http.StatusBadRequest)
 
 	// Unit test for firmware version less than 4.40
 	reqPostBody = map[string]interface{}{
-		"Name":     "Volume_Test2",
-		"RAIDType": "RAID0",
-		"Drives":   []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:2/Storage/ArrayControllers-0/Drives/0"}},
+		"Name":       "Volume_Test2",
+		"RAIDType":   "RAID0",
+		"VolumeType": "NonRedundant",
+		"Drives":     []dpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:2/Storage/ArrayControllers-0/Drives/0"}},
 	}
 	reqBodyBytes, _ = json.Marshal(reqPostBody)
 	requestBody = map[string]interface{}{
@@ -140,11 +169,11 @@ func TestCreateVolume(t *testing.T) {
 		"Password":       []byte("P@$$w0rd"),
 		"PostBody":       reqBodyBytes,
 	}
-	//Unit Test for firmware version less than 4.40 scenario
+	// Unit Test for firmware version less than 4.40 scenario
 	e.POST("/redfish/v1/Systems/2/Storage/1/Volumes").WithJSON(requestBody).Expect().Status(http.StatusBadRequest)
 }
 
-func TesDeleteVolume(t *testing.T) {
+func TestDeleteVolume(t *testing.T) {
 	config.SetUpMockConfig(t)
 	deviceHost := "localhost"
 	devicePort := "1234"
@@ -156,7 +185,7 @@ func TesDeleteVolume(t *testing.T) {
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1")
 
-	redfishRoutes.Delete("/Systems/{id}/Storage/{id2}/Volumes/rid", CreateVolume)
+	redfishRoutes.Delete("/Systems/{id}/Storage/{id2}/Volumes/{rid}", DeleteVolume)
 
 	dpresponse.PluginToken = "token"
 
@@ -168,9 +197,58 @@ func TesDeleteVolume(t *testing.T) {
 		"Password":       []byte("P@$$w0rd"),
 	}
 
+	taskService = newTaskServiceMock()
+	hardwareMock := newVolumeOnHardwareServiceMock()
+	hardwareService = hardwareMock
+
 	//Unit Test for success scenario
-	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithJSON(requestBody).Expect().Status(http.StatusOK)
+	hardwareMock.wg.Add(1)
+	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithJSON(requestBody).Expect().Status(http.StatusAccepted)
+	hardwareMock.wg.Wait()
 
 	//Case for invalid token
 	e.DELETE("/redfish/v1/Systems/1/Storage/1/Volumes/1").WithHeader("X-Auth-Token", "token").WithJSON(requestBody).Expect().Status(http.StatusUnauthorized)
+}
+
+type volumeOnHardwareServiceMock struct {
+	wg sync.WaitGroup
+}
+
+func (hm *volumeOnHardwareServiceMock) createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody string) {
+	defer hm.wg.Done()
+	createVolume(device, taskID, uri, requestBody)
+}
+
+func (hm *volumeOnHardwareServiceMock) deleteVolume(device *dputilities.RedfishDevice, taskID, uri string) {
+	defer hm.wg.Done()
+	deleteVolume(device, taskID, uri)
+}
+
+func newVolumeOnHardwareServiceMock() *volumeOnHardwareServiceMock {
+	return &volumeOnHardwareServiceMock{}
+}
+
+type taskServiceMock struct {
+	dputilities.TaskService
+}
+
+func (ts *taskServiceMock) CreateTask() (string, error) {
+	return "task" + uuid.New().String(), nil
+}
+
+func (ts *taskServiceMock) UpdateTask(taskID, host string, taskState dputilities.TaskState, taskStatus dputilities.TaskStatus,
+	percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
+	return nil
+}
+
+func (ts *taskServiceMock) GetTaskState(state string) (dputilities.TaskState, error) {
+	return dputilities.Completed, nil
+}
+
+func (ts *taskServiceMock) GetTaskStatus(status string) (dputilities.TaskStatus, error) {
+	return dputilities.Ok, nil
+}
+
+func newTaskServiceMock() *taskServiceMock {
+	return &taskServiceMock{}
 }

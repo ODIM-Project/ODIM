@@ -42,7 +42,7 @@ import (
 // Output is the RPC response, which contains the status code, status message, headers and body.
 func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, session *asmodel.Session) response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + req.AccountID,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           req.AccountID,

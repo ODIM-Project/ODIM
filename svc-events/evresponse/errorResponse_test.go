@@ -16,6 +16,7 @@
 package evresponse
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -24,11 +25,11 @@ func TestCreateErrorResponse(t *testing.T) {
 	message := "Success"
 	var expectedResp = ErrorResopnse{
 		Error{
-			Code:    "Base.1.0.ExtendedInfo",
+			Code:    response.ExtendedInfo,
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
 				MsgExtendedInfo{
-					MessageID: "Base.1.0.Success",
+					MessageID: response.Success,
 				},
 			},
 		},

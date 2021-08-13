@@ -281,7 +281,7 @@ Content-Length:491 bytes
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "Name":"Task taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "Message":"The task with id taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70"
    ],
@@ -310,7 +310,7 @@ Content-Length:491 bytes
 
 ```
 {
-"code": "Base.1.6.1.Success",
+"code": "Base.1.10.0.Success",
 "message": "Request completed successfully."
 }
 ```
@@ -320,7 +320,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.GeneralError",
+      "code":"Base.1.10.0.GeneralError",
       "message":"one or more of the reset actions failed, check sub tasks for more info."
    }
 ```

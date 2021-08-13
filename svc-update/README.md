@@ -167,7 +167,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_4_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -253,7 +253,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_4_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -327,7 +327,7 @@ curl -i POST \
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
   "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
   "@Redfish.OperationApplyTimeSupport": {
-            "@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport",
+            "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
               "SupportedValues": ["OnStartUpdate"]
             }
 }
@@ -375,13 +375,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task4aac9e1e-df58-4fff-b781-52373fcb5699"
    ],
@@ -451,13 +451,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task4aac9e1e-df58-4fff-b781-52373fcb5699"
    ],

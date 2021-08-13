@@ -91,7 +91,7 @@ func contactPluginClient(url, method, token string, odataID string, body interfa
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/1/Volumes/1" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
-			StatusCode: http.StatusOK,
+			StatusCode: http.StatusNoContent,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}

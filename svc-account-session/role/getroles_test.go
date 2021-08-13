@@ -50,7 +50,7 @@ func TestGetRole(t *testing.T) {
 		"OData-Version":     "4.0",
 	}
 	commonResponse := response.Response{
-		OdataType: "#Role.v1_2_4.Role",
+		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + common.RoleAdmin,
 		Name:      "User Role",
 		ID:        common.RoleAdmin,

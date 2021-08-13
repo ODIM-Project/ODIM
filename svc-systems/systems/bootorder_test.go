@@ -209,7 +209,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
-				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
+				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		},
 	}
@@ -405,7 +405,7 @@ func mockloginClient(url, method, token string, odataID string, body interface{}
 	if url == "http://localhost:9091/redfishplugin/login" {
 		header := make(http.Header)
 		header.Set("X-Auth-Token", token)
-		body := `{"MessageId": "Base.1.0.Failed"}`
+		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
 			Header:     header,
@@ -419,14 +419,14 @@ func mockloginClient(url, method, token string, odataID string, body interface{}
 func mockPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 
 	if url == "http://localhost:9091/ODIM/v1/systems/1/bios/settings" {
-		body := `{"MessageId": "Base.1.0.Failed"}`
+		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "http://localhost:9091/ODIM/v1/Systems/1" {
-		body := `{"MessageId": "Base.1.0.Failed"}`
+		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),

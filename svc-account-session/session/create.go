@@ -40,7 +40,7 @@ import (
 // respond RPC response and error if there is.
 func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, string) {
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService/Sessions",
 		ID:        "Sessions",
 		Name:      "Session Service",

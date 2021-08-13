@@ -78,19 +78,21 @@
 
 - set_fact:
     cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-    serverlist: []
+
+- set_fact:
+    serverlist: ["server {{ cur_host_ip }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s;"]
 
 - set_fact:
     serverlist: "{{ serverlist + [server] }}"
   with_items: "{{ groups.all }}"
   vars:
     server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
+  when: hostvars[item].ansible_host != cur_host_ip
 
-- name: Replace nginx configuration file
+- name: Prepare and copy proxy conf for API service
   template:
     src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
     dest: /opt/nginx/servers/api_proxy_server.conf
-    validate: 'nginx -t -c %s'
   with_items:
     - selfNodeIP: "{{ cur_host_ip }}"
       virtualIP: "{{ odimra.virtualIP }}"

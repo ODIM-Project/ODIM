@@ -322,6 +322,8 @@ For a complete list of curl flags, see information provided at [https://curl.hax
     $ export no_proxy="127.0.0.1,localhost,{odimra_host}"
      ```
 
+
+
 **Including HTTP certificate**
 
 Without CA certificate, curl fails to verify that HTTP connections are secure and curl commands may fail with the SSL
@@ -837,7 +839,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#SessionService.v1_1_6.SessionService",
+   "@odata.type":"#SessionService.v1_1_8.SessionService",
    "@odata.id":"/redfish/v1/SessionService",
    "Id":"Sessions",
    "Name":"Session Service",
@@ -922,12 +924,12 @@ Transfer-Encoding:chunked
 
 ```
 {
-	"@odata.type": "#SessionService.v1_1_6.SessionService",
+	"@odata.type": "#SessionService.v1_1_8.SessionService",
 	"@odata.id": "/redfish/v1/SessionService/Sessions/1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
 	"Message": "The resource has been created successfully",
-	"MessageId": "Base.1.6.1.Created",
+	"MessageId": "Base.1.10.0.Created",
 	"Severity": "OK",
 	"UserName": "abc"
 }
@@ -985,7 +987,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Session.v1_2_1.Session",
+   "@odata.type":"#Session.v1_3_0.Session",
    "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
    "Id":"4ee42139-22db-4e2a-97e4-020013248768",
    "Name":"User Session",
@@ -1077,7 +1079,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_6_0.AccountService",
+   "@odata.type":"#AccountService.v1_9_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -1164,12 +1166,12 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
    "Message":"The resource has been created successfully.",
-   "MessageId":"ResourceEvent.1.0.2.ResourceCreated",
+   "MessageId":"ResourceEvent.1.0.3.ResourceCreated",
    "Severity":"OK",
    "IsPredefined":false,
    "AssignedPrivileges":[
@@ -1264,7 +1266,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1465,13 +1467,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.6.1.Created",
+   "MessageId":"Base.1.10.0.Created",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -1537,7 +1539,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1614,13 +1616,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.6.1.AccountModified",
+   "MessageId":"Base.1.10.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -1744,7 +1746,7 @@ Transfer-Encoding":chunked
    "@odata.context":"/redfish/v1/$metadata#AggregationService.AggregationService",
    "Id":"AggregationService",
    "@odata.id":"/redfish/v1/AggregationService",
-   "@odata.type":"#AggregationService.v1_0_0.AggregationService",
+   "@odata.type":"#AggregationService.v1_0_1.AggregationService",
    "Name":"AggregationService",
    "Description":"AggregationService",
    "Actions":{
@@ -2048,13 +2050,13 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "Name":"Task task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "Message":"The task with id task85de4003-8757-4c7d-942f-55eaf7d6812a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task85de4003-8757-4c7d-942f-55eaf7d6812a"
    ],
@@ -2204,13 +2206,13 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task4aac9e1e-df58-4fff-b781-52373fcb5699"
    ],
@@ -2491,13 +2493,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "Message":"The task with id task85de4103-8757-4c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task85de4103-8757-4c7d-942f-55eaf7d6412a"
    ],
@@ -2516,7 +2518,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -2542,7 +2544,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -2636,13 +2638,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Message":"The task with id task80de4003-8757-4c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task80de4003-8757-4c7d-942f-55eaf7d6412a"
    ],
@@ -2661,7 +2663,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -2687,7 +2689,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -2744,13 +2746,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "Message":"The task with id task85de4003-8757-2c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task85de4003-8757-2c7d-942f-55eaf7d6412a"
    ],
@@ -2848,7 +2850,7 @@ Transfer-Encoding:chunked
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.10.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -2889,7 +2891,7 @@ curl -i GET \
       "Id":"Aggregate",
       "Name":"Aggregate",
       "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.6.1.Success",
+      "MessageId":"Base.1.10.0.Success",
       "Severity":"OK",
       "Members@odata.count":1,
       "Members":[
@@ -2932,7 +2934,7 @@ curl -i GET \
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "Name":"Aggregate",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Elements":[
       "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -3020,7 +3022,7 @@ curl -i POST \
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.6.1.Created",
+      "MessageId":"Base.1.10.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -3105,13 +3107,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Message":"The task with id task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591"
    ],
@@ -3130,7 +3132,7 @@ Content-Length:491 bytes
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -3156,7 +3158,7 @@ Content-Length:491 bytes
 ```
  {
    "error":{
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3216,13 +3218,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Name":"Task task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "Message":"The task with id task80de4003-8757-4c7d-942f-55eaf7d6412a has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task80de4003-8757-4c7d-942f-55eaf7d6412a"
    ],
@@ -3241,7 +3243,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -3267,7 +3269,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.10.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3489,7 +3491,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1",
-   "@odata.type":"#ComputerSystem.v1_4_0.ComputerSystem",
+   "@odata.type":"#ComputerSystem.v1_15_0.ComputerSystem",
    "Id":"e24fb205-6669-4080-b53c-67d4923aa73e:1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
@@ -4227,7 +4229,7 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
     "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0",
-    "@odata.type": "#Storage.v1_7_1.Storage",
+    "@odata.type": "#Storage.v1_10_0.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
@@ -4722,7 +4724,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
    "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1",
-   "@odata.type":"#Chassis.v1_6_0.Chassis",
+   "@odata.type":"#Chassis.v1_16_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
@@ -5919,7 +5921,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. The changes will be seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.10.0.Success`. The registry to look up is `Base.1.10.0`.<br> |
 |**Response code** |`200 OK`|
 |**Authentication** |Yes|
 
@@ -6024,7 +6026,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
    "error":{ 
       "@Message.ExtendedInfo":[ 
          { 
-            "MessageId":"Base.1.0.Success"
+            "MessageId":"Base.1.10.0.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",
@@ -6167,7 +6169,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"2D2866FD\"",
    "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_12_0.Manager",
    "Actions":{ 
       "#Manager.Reset":{ 
          "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/Actions/Manager.Reset"
@@ -6246,7 +6248,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_12_0.Manager",
    "Name":"ODIMRA",
    "ManagerType":"Service",
    "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
@@ -6265,7 +6267,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_12_0.Manager",
    "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",
@@ -6318,20 +6320,21 @@ curl -i GET \
 
 ```
 {
-  "@odata.context":"/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
-   "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/",
+   "@odata.context":"/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
+   "@odata.etag":"W/\"570254F2\"",
+   "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia",
    "@odata.type":"#VirtualMediaCollection.VirtualMediaCollection",
-   "Description":"Virtual Media Services Settings",
-   "Name":"Virtual Media Services",
+   "Description":"iLO Virtual Media Services Settings",
    "Members":[
       {
-         "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/1/"
+         "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1"
       },
       {
-         "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/2/"
+         "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/2"
       }
    ],
-   "Members@odata.count":2
+   "Members@odata.count":2,
+   "Name":"Virtual Media Services"
 }
 ```
 
@@ -6358,15 +6361,44 @@ curl -i GET \
 
 ```
 {
-    "error": {
-        "@Message.ExtendedInfo": [
-            {
-                "MessageId": "Base.1.4.Success"
+   "@odata.context":"/redfish/v1/$metadata#VirtualMedia.VirtualMedia",
+   "@odata.etag":"W/\"7647E98E\"",
+   "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1",
+   "@odata.type":"#VirtualMedia.v1_2_0.VirtualMedia",
+   "Actions":{
+      "#VirtualMedia.EjectMedia":{
+         "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia"
+      },
+      "#VirtualMedia.InsertMedia":{
+         "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia"
+      }
+   },
+   "ConnectedVia":"URI",
+   "Description":"Virtual Removable Media",
+   "Id":"1",
+   "Image":"http://10.24.1.24/ISO/ubuntu-18.04.4-server-amd64.iso",
+   "ImageName":"ubuntu-18.04.4-server-amd64.iso",
+   "Inserted":true,
+   "MediaTypes":[
+      "Floppy",
+      "USBStick"
+   ],
+   "Name":"VirtualMedia",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeiLOVirtualMedia.HpeiLOVirtualMedia",
+         "@odata.type":"#HpeiLOVirtualMedia.v2_2_0.HpeiLOVirtualMedia",
+         "Actions":{
+            "#HpeiLOVirtualMedia.EjectVirtualMedia":{
+               "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/Oem/Hpe/HpeiLOVirtualMedia.EjectVirtualMedia""…"
+            },
+            "#HpeiLOVirtualMedia.InsertVirtualMedia":{
+               "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/Oem/Hpe/HpeiLOVirtualMedia.InsertVirtualMedia""…"
             }
-        ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
-    }
+         }
+      }
+   },
+   "WriteProtected":true
 }
 ```
 
@@ -6400,14 +6432,17 @@ curl -i POST \
 
 ```
 {
-    "error": {
+    "Error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "Message": "Successfully performed virtual media actions",
+                "MessageArgs": [
+                ],
+                "MessageId": "Base.1.10.0.Success"
             }
         ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
+        "Code": "Base.1.10.0.Success",
+        "Message": "See @Message.ExtendedInfo for more information."
     }
 }
  
@@ -6440,14 +6475,17 @@ curl -i POST \
 
 ```
 {
-    "error": {
+    "Error": {
         "@Message.ExtendedInfo": [
             {
-                "MessageId": "Base.1.4.Success"
+                "Message": "Successfully performed virtual media actions",
+                "MessageArgs": [
+                ],
+                "MessageId": "Base.1.10.0.Success"
             }
         ],
-        "code": "iLO.0.10.ExtendedInfo",
-        "message": "See @Message.ExtendedInfo for more information."
+        "Code": "Base.1.10.0.Success",
+        "Message": "See @Message.ExtendedInfo for more information."
     }
 }
  
@@ -6512,7 +6550,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#UpdateService.v1_8_1.UpdateService",
+   "@odata.type":"#UpdateService.v1_9_0.UpdateService",
    "@odata.id":"/redfish/v1/UpdateService",
    "@odata.context":"/redfish/v1/$metadata#UpdateService.UpdateService",
    "Id":"UpdateService",
@@ -6631,7 +6669,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_4_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -6717,7 +6755,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_4_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -6790,7 +6828,7 @@ curl -i POST \
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
   "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
   "@Redfish.OperationApplyTimeSupport": {
-            "@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport",
+            "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
               "SupportedValues": ["OnStartUpdate"]
             }
 }
@@ -6838,13 +6876,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task4aac9e1e-df58-4fff-b781-52373fcb5699"
    ],
@@ -6913,13 +6951,13 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "task4aac9e1e-df58-4fff-b781-52373fcb5699"
    ],
@@ -8877,7 +8915,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_5_0.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
@@ -8959,7 +8997,7 @@ Content-Length:491 bytes
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "Name":"Task taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "Message":"The task with id taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70"
    ],
@@ -8988,7 +9026,7 @@ Content-Length:491 bytes
 
 ```
 {
-"code": "Base.1.6.1.Success",
+"code": "Base.1.10.0.Success",
 "message": "Request completed successfully."
 }
 ```
@@ -8998,7 +9036,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.GeneralError",
+      "code":"Base.1.10.0.GeneralError",
       "message":"one or more of the reset actions failed, check sub tasks for more info."
    }
 ```
@@ -9395,13 +9433,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "Message":"The task with id taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageId":"TaskEvent.1.0.3.TaskStarted",
    "MessageArgs":[
       "taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad"
    ],
@@ -9420,7 +9458,7 @@ Transfer-Encoding:chunked
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.10.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -9498,6 +9536,12 @@ curl -i POST \
 
 
 
+
+
+
+
+
+
 > Sample event payload 
 
 ```
@@ -9565,7 +9609,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_1_0.Event ",
+   "@odata.type":"#Event.v1_6_1.Event ",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",
@@ -9591,7 +9635,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-"@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
+"@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
 "Id": “Alert.1.0.0",
 "Name": "Base Message Registry",
 "Language": "en",
@@ -9624,7 +9668,7 @@ Transfer-Encoding:chunked
       "ResourceAdded"
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.2.ResourceAdded"
+      "ResourceEvent.1.0.3.ResourceAdded"
    ],
    ​   "ResourceTypes":[ 
        "ComputerSystem",
@@ -9665,7 +9709,7 @@ To create this subscription, perform HTTP `POST` on `/redfish/v1/EventService/Su
       "ResourceRemoved"
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.2.ResourceRemoved"
+      "ResourceEvent.1.0.3.ResourceRemoved"
    ],
    ​   "ResourceTypes":[ 
       "ComputerSystem",
@@ -9707,7 +9751,7 @@ To create this subscription, perform HTTP `POST` on `/redfish/v1/EventService/Su
       
    ],
    ​   "MessageIds":[ 
-      "ResourceEvent.1.0.2.StatusChange"
+      "ResourceEvent.1.0.3.StatusChange"
    ],
    ​   "ResourceTypes":[ 
       "Task"
@@ -9866,7 +9910,7 @@ curl -i -X DELETE \
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",
    "Message":"The resource has been removed successfully.",
-   "MessageId":"ResourceEvent.1.0.2.ResourceRemoved",
+   "MessageId":"ResourceEvent.1.0.3.ResourceRemoved",
    "Severity":"OK"
 }
 ```
@@ -9991,7 +10035,7 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.3"
       },
       {
          "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryA40.v1_1_46"
@@ -10056,7 +10100,7 @@ curl -i GET \
    "Location":[
       {
          "Language":"en",
-         "Uri":"/redfish/v1/registries/Base.1.6.1.json"
+         "Uri":"/redfish/v1/registries/Base.1.10.0.json"
       }
    ],
    "Registry":"Base.1.6.1"

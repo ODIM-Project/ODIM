@@ -32,6 +32,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +40,7 @@ import (
 func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
 		if method == http.MethodDelete {
-			body := `{"MessageId": "Base.1.0.Success"}`
+			body := `{"MessageId": "` + response.Success + `"}`
 			response := &http.Response{
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -48,7 +49,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}
 		b := body.(*evmodel.Target)
 		if b.DeviceUUID == "d72dade0-c35a-984c-4859-1108132d72da" {
-			body := `{"MessageId": "Base.1.0.Failed"}`
+			body := `{"MessageId": "` + response.Failure + `"}`
 			return &http.Response{
 				StatusCode: http.StatusBadRequest,
 				Header: map[string][]string{
@@ -57,7 +58,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 				Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 			}, nil
 		}
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusCreated,
 			Header: map[string][]string{
@@ -68,7 +69,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		response.Header.Set("location", "/ODIM/v1/Subscriptions/12")
 		return response, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusCreated,
 			Header: map[string][]string{
@@ -79,7 +80,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		response.Header.Set("location", "/ODIM/v1/Subscriptions/12")
 		return response, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
 			StatusCode: http.StatusCreated,
@@ -90,7 +91,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}
 		return r, nil
 	} else if url == "https://10.24.1.23:4321/ODIM/v1/Sessions" || url == "https://10.4.1.6:4321/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
 			StatusCode: http.StatusCreated,
@@ -101,27 +102,27 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}
 		return r, nil
 	} else if url == "https://10.24.1.23:4321/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "Base.1.0.Failed"}`
+		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://10.4.1.5:1234/ODIM/v1/Subscriptions/123" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return response, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions/12345" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return response, nil
 	} else if url == "https://10.4.1.6:4321/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusCreated,
 			Header: map[string][]string{
@@ -132,7 +133,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		response.Header.Set("location", "/ODIM/v1/Subscriptions/12345")
 		return response, nil
 	} else if url == "https://10.4.1.6:4321/ODIM/v1/Subscriptions/12345" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),

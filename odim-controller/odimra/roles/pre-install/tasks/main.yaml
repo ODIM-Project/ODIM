@@ -76,9 +76,9 @@
     grpadd_bin_path: "{{ groupadd_path.stdout }}"
 
 - name: Create odimra group
-  shell: | 
-    {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 && 
-    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) || 
+  shell: |
+    {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 &&
+    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) ||
     {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }}
 
 - name: Create odimra user
@@ -149,3 +149,24 @@
     owner: "{{ odim_owner_name }}"
     group: "{{ odim_owner_name }}"
     mode: 0444
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+  when: odimPluginPath is defined
+
+- name: Call plugin pre-install scripts
+  include_tasks: roles/pre-install/tasks/plugins.yaml
+  loop: "{{ plugin_packages.files }}"
+
+- name: Install, configure and start nginx, keepalived
+  block:
+    - name: Install and configure nginx
+      include_tasks: roles/configure-proxy/tasks/main.yaml
+
+    - name: Install and configure keepalived
+      include_tasks: roles/configure-keepalived/tasks/main.yaml
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool

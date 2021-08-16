@@ -41,7 +41,7 @@ import (
 // error will be passed back.
 func (e *ExternalInterface) GetUpdateService() response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#UpdateService.v1_8_1.UpdateService",
+		OdataType:    common.UpdateServiceType,
 		OdataID:      "/redfish/v1/UpdateService",
 		OdataContext: "/redfish/v1/$metadata#UpdateService.UpdateService",
 		ID:           "UpdateService",

@@ -40,7 +40,7 @@ func (c *Collection) AddMember(m dmtf.Link) {
 func NewChassisCollection() Collection {
 	return Collection{
 		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
-		OdataID:      "/redfish/v1/Chassis/",
+		OdataID:      "/redfish/v1/Chassis",
 		OdataType:    "#ChassisCollection.ChassisCollection",
 		Description:  "Chassis Collection",
 		Name:         "Chassis Collection",

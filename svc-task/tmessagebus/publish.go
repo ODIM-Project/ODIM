@@ -46,7 +46,7 @@ func Publish(taskURI string, messageID string, eventType string) {
 	var messageData = common.MessageData{
 		Name:      "Resource Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
-		OdataType: "#Event.v1_4_0.Event",
+		OdataType: common.EventType,
 		Events:    events,
 	}
 	data, _ := json.Marshal(messageData)

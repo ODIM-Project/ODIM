@@ -6,7 +6,7 @@
  You may obtain a copy of the License at
 
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,57 +30,16 @@ Full specification of URP is available here: https://wiki.odim.io/display/HOME/P
 
 Please be aware this plugin is still under development, and some features might be missing.
 
-## Build 
 
-Build URP using following command:
-```
-cd plugin-unmanaged-racks
-make build
-``` 
 
-Run URP using run target:
-```
-make run
-```
+## URP deployment instructions
 
-## Register URP in ODIMRA
+For deploying the Unmanaged Racks plugin and adding the plugin to the Resource Aggregator for ODIM framework, refer to the "Deploying the Unmanaged Rack Plugin" section in the [Resource Aggregator for Open Distributed Infrastructure Management™ Readme](https://github.com/ODIM-Project/ODIM/blob/main/README.md).
 
-1. Make `https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods` endpoint exposes connection method required by URP plugin. `ConnectionMethodVariant` should be `Compute:BasicAuth:URP_v1.0.0`.
 
-```
-{
-  "@odata.type": "#ConnectionMethod.v1_0_0.ConnectionMethod",
-  "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/bea4ab96-edd1-4cce-b57c-f83e218e97b6",
-  "@odata.context": "/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
-  "Id": "bea4ab96-edd1-4cce-b57c-f83e218e97b6",
-  "Name": "Connection Method",
-  "Severity": "OK",
-  "ConnectionMethodType": "Redfish",
-  "ConnectionMethodVariant": "Compute:BasicAuth:URP_v1.0.0",
-  "Links": {
-    "AggregationSources": []
-  }
-}
-```
-
-2. Execute plugin registration request:
-```
-POST https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources
-Authorization:Basic YWRtaW46T2QhbTEyJDQ=
-
-{
- "HostName": "{urp_plugin_host}:{urp_plugin_port}",
- "Password":"Od!m12$4",
- "UserName":"admin",
- "Links": {
-   "ConnectionMethod":{
-       "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/bea4ab96-edd1-4cce-b57c-f83e218e97b6"
-   }
- }
-}
-```
 
 ## Create RackGroup
+
 ```
 POST https://{odim_host}:{port}/redfish/v1/Chassis
 Authorization:Basic YWRtaW46T2QhbTEyJDQ=

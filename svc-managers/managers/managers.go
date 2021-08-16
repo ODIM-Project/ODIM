@@ -154,7 +154,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 					return resp
 				}
 			}
-			err = e.DB.UpdateManagersData(req.URL, managerData)
+			err = e.DB.UpdateData(req.URL, managerData, "Managers")
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
 				log.Error(errorMessage)
@@ -195,7 +195,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
-		OdataType:       "#Manager.v1_3_3.Manager",
+		OdataType:       common.ManagerType,
 		Name:            mgrData.Name,
 		ManagerType:     mgrData.ManagerType,
 		ID:              mgrData.ID,
@@ -313,10 +313,29 @@ func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerReques
 	}
 	// splitting managerID to get uuid
 	requestData := strings.Split(req.ManagerID, ":")
-	log.Info(requestData)
 	uuid := requestData[0]
-	log.Info(req.URL, uuid, string(requestBody))
 	resp = e.deviceCommunication(req.URL, uuid, requestData[1], http.MethodPost, requestBody)
+
+	// If the virtualmedia action is success then updating DB
+	if resp.StatusCode == http.StatusOK {
+		vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
+		vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
+		deviceData, err := e.getResourceInfoFromDevice(vmURI, uuid, requestData[1])
+		if err != nil {
+			log.Error("while trying get on URI " + vmURI + " : " + err.Error())
+		} else {
+			var vmData map[string]interface{}
+			jerr := json.Unmarshal([]byte(deviceData), &vmData)
+			if jerr != nil {
+				log.Error("while unmarshaling virtual media details: " + jerr.Error())
+			} else {
+				err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
+				if err != nil {
+					log.Error("while saving virtual media details: " + err.Error())
+				}
+			}
+		}
+	}
 	return resp
 }
 

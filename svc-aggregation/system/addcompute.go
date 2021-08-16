@@ -17,9 +17,10 @@ package system
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -268,12 +269,17 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
-	pluginContactRequest.CreateSubcription(h.SystemURL)
-	pluginContactRequest.PublishEvent(h.SystemURL, "SystemsCollection")
-	// get all managers and chassis info
 	aggSourceIDChassisAndManager := saveSystem.DeviceUUID + ":"
 	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", aggSourceIDChassisAndManager, common.InMemory)
 	managersList, _ := agmodel.GetAllMatchingDetails("Managers", aggSourceIDChassisAndManager, common.InMemory)
+	urlList := h.SystemURL
+	urlList = append(urlList, chassisList...)
+	urlList = append(urlList, managersList...)
+	pluginContactRequest.CreateSubcription(urlList)
+
+	pluginContactRequest.PublishEvent(h.SystemURL, "SystemsCollection")
+
+	// get all managers and chassis info
 	pluginContactRequest.PublishEvent(chassisList, "ChassisCollection")
 	pluginContactRequest.PublishEvent(managersList, "ManagerCollection")
 

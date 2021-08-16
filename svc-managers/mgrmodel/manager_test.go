@@ -61,7 +61,7 @@ func TestManager_Update(t *testing.T) {
 			"State": "Absent",
 		},
 	}
-	err = UpdateManagersData(key, m)
+	err = UpdateData(key, m, "Managers")
 
 	data, err := GetResource(table, key)
 	assert.Nil(t, err, "There should be no error getting data")

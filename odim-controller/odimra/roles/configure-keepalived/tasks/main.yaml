@@ -13,7 +13,7 @@
 
 - name: Copy keepalived action script
   copy:
-    src: "templates/action_script.sh.j2"
+    src: "roles/configure-keepalived/templates/action_script.sh.j2"
     dest: /opt/keepalived/bin/action_script.sh
     owner: root
     group: root
@@ -39,7 +39,7 @@
 
 - name: Copy keepalived configuration file
   template:
-    src: "templates/keepalived.conf.j2"
+    src: "roles/configure-keepalived/templates/keepalived.conf.j2"
     dest: /etc/keepalived/keepalived.conf
     owner: root
     group: root
@@ -48,7 +48,7 @@
     - routerID: "{{ inventory_hostname | mandatory }}"
       interfaceName: "{{ interfaceName | mandatory }}"
       virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
-      priority: "{{ priority|int + 100 }}"
+      priority: "{{ 100 - priority|int }}"
       virtualIP: "{{ odimra.virtualIP | mandatory }}"
 
 - name: Enable keepalived systemd service

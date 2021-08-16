@@ -304,7 +304,7 @@ def gen_ssh_keys():
 	
 	pubkey = privkey.publickey()
 	with open(ssh_pub_key_path, 'wb') as f:
-		os.chmod(ssh_pub_key_path, 0o644)
+		os.chmod(ssh_pub_key_path, 0o640)
 		f.write(pubkey.exportKey('OpenSSH'))
 
 # enable_passwordless_login is used for enabling password-less
@@ -1644,9 +1644,8 @@ def main():
 	global CONTROLLER_CONF_FILE, DRY_RUN_SET, NO_PROMPT_SET, IGNORE_ERRORS_SET
 
 	if args.deploy == None and args.reset == None and args.addnode == None and \
-			args.rmnode == None and args.upgrade == None and args.scale == None and \
-			args.list == None and args.rollback == None and args.add == None and \
-			args.remove == None:
+			args.rmnode == None and args.upgrade == None and args.scale == False and \
+			args.list == None and args.add == None and args.remove == None and args.rollback == False:
 		logger.critical("Atleast one mandatory option must be provided")
 		parser.print_help()
 		sys.exit(1)

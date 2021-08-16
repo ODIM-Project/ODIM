@@ -60,6 +60,8 @@ type ResourceInfoRequest struct {
 	ResourceName        string
 	GetAllKeysFromTable func(string, common.DbType) ([]string, error)
 	GetPluginData       func(string) (tmodel.Plugin, *errors.Error)
+	GetResource         func(string, string, common.DbType) (string, *errors.Error)
+	GenericSave         func([]byte, string, string) error
 }
 
 // GetResourceInfoFromDevice will contact to the southbound client and gets the Particual resource info from device
@@ -74,10 +76,10 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) ([]byte, error) {
 	for _, value := range plugins {
 		wg.Add(1)
 		go getResourceInfo(value, &metricReportData, req, &lock, &wg)
-		metricReportData.MetricValues = append(metricReportData.MetricValues, metricReportData.MetricValues...)
 	}
 	wg.Wait()
 	if reflect.DeepEqual(metricReportData, dmtf.MetricReports{}) {
+		removeNonExistingID(req)
 		return []byte{}, fmt.Errorf("Metric report not found")
 	}
 	data, err := json.Marshal(metricReportData)
@@ -91,7 +93,7 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 	defer wg.Done()
 	// Get the Plugin info
 	plugin, gerr := req.GetPluginData(pluginID)
-	if gerr != nil {
+	if gerr != nil || plugin.PluginType != "Compute" {
 		return
 	}
 	var contactRequest PluginContactRequest
@@ -126,9 +128,19 @@ func getResourceInfo(pluginID string, metricReportData *dmtf.MetricReports, req 
 	}
 	lock.Lock()
 	defer lock.Unlock()
-	if err := json.Unmarshal(body, metricReportData); err != nil {
+	var metrictData dmtf.MetricReports
+	if err := json.Unmarshal(body, &metrictData); err != nil {
 		return
 	}
+	metricReportData.ODataID = metrictData.ODataID
+	metricReportData.ODataType = metrictData.ODataType
+	metricReportData.ODataContext = metrictData.ODataContext
+	metricReportData.ID = metrictData.ID
+	metricReportData.Name = metrictData.Name
+	metricReportData.Description = metrictData.Description
+	metricReportData.MetricReportDefinition = metrictData.MetricReportDefinition
+	metricReportData.Context = metrictData.Context
+	metricReportData.MetricValues = append(metricReportData.MetricValues, metrictData.MetricValues...)
 	return
 }
 
@@ -159,7 +171,6 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	log.Info("Response: " + string(body))
 	log.Info("Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
@@ -211,4 +222,34 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+
+func removeNonExistingID(req ResourceInfoRequest) {
+	collectionURL := "/redfish/v1/TelemetryService/MetricReports"
+	data, err := req.GetResource("MetricReportsCollection", collectionURL, common.InMemory)
+	if err != nil {
+		return
+	}
+	var resource map[string]interface{}
+	json.Unmarshal([]byte(data), &resource)
+
+	var result []*dmtf.Link
+	if resource["Members"] != nil {
+		members := resource["Members"].([]interface{})
+		for _, v := range members {
+			oid := v.(map[string]interface{})
+			if oid["@odata.id"].(string) != req.URL {
+				result = append(result, &dmtf.Link{Oid: oid["@odata.id"].(string)})
+			}
+		}
+	}
+	if len(result) > 0 {
+		resource["Members"] = result
+		resource["Members@odata.count"] = len(result)
+		reportCollection, jerr := json.Marshal(resource)
+		if jerr != nil {
+			return
+		}
+		req.GenericSave(reportCollection, "MetricReportsCollection", collectionURL)
+	}
 }

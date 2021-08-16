@@ -29,13 +29,14 @@ type Device struct {
 
 //EvtSubPost ...
 type EvtSubPost struct {
-	Destination   string        `json:"Destination"`
-	EventTypes    []string      `json:"EventTypes,omitempty"`
-	MessageIds    []string      `json:"MessageIds,omitempty"`
-	ResourceTypes []string      `json:"ResourceTypes,omitempty"`
-	HTTPHeaders   []HTTPHeaders `json:"HttpHeaders"`
-	Context       string        `json:"Context"`
-	Protocol      string        `json:"Protocol"`
+	Destination     string        `json:"Destination"`
+	EventTypes      []string      `json:"EventTypes,omitempty"`
+	MessageIds      []string      `json:"MessageIds,omitempty"`
+	ResourceTypes   []string      `json:"ResourceTypes,omitempty"`
+	HTTPHeaders     []HTTPHeaders `json:"HttpHeaders"`
+	Context         string        `json:"Context"`
+	Protocol        string        `json:"Protocol"`
+	EventFormatType string        `json:"EventFormatType"`
 }
 
 //HTTPHeaders ...

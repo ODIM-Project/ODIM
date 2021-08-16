@@ -103,8 +103,35 @@ func mockGetPluginData(pluginID string) (tmodel.Plugin, *errors.Error) {
 		Password:          password,
 		ID:                pluginID,
 		PreferredAuthType: "BasisAuth",
+		PluginType:        "Compute",
 	}
 	return plugin, nil
+}
+
+func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
+	if key == "/redfish/v1/TelemetryService/MetricReports" {
+		return `{
+			"@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
+			"@odata.id": "/redfish/v1/TelemetryService/MetricReports",
+			"@odata.type": "#MetricReportCollection.MetricReportCollection",
+			"Description": " Metric Reports view",
+			"Name": "Metric Reports",
+			"Members": [
+			{
+				"@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+			},
+			{
+				"@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2"
+			}
+			],
+			"Members@odata.count": 2
+		}`, nil
+	}
+	return "body", nil
+}
+
+func mockGenericSave(body []byte, table string, key string) error {
+	return nil
 }
 
 func TestGetResourceInfoFromDevice(t *testing.T) {
@@ -116,6 +143,8 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		DevicePassword:      stubDevicePassword,
 		GetAllKeysFromTable: mockGetAllKeysFromTable,
 		GetPluginData:       mockGetPluginData,
+		GetResource:         mockGetResource,
+		GenericSave:         mockGenericSave,
 	}
 	_, err := GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")

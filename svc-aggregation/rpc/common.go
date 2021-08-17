@@ -61,6 +61,11 @@ func GetAggregator() *Aggregator {
 			GenericSave:              agmodel.GenericSave,
 			CheckActiveRequest:       agmodel.CheckActiveRequest,
 			DeleteActiveRequest:      agmodel.DeleteActiveRequest,
+			GetAllMatchingDetails:    agmodel.GetAllMatchingDetails,
+			CheckMetricRequest:       agmodel.CheckMetricRequest,
+			DeleteMetricRequest:      agmodel.DeleteMetricRequest,
+			GetResource:              agmodel.GetResource,
+			Delete:                   agmodel.Delete,
 		},
 	}
 }

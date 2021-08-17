@@ -15,6 +15,13 @@
 // Package common ...
 package common
 
+type EventConst int
+
+const (
+	RedfishEvent EventConst = iota
+	MetricReport
+)
+
 const (
 	// RoleAdmin defines admin role for all service to authorize
 	RoleAdmin = "Administrator"

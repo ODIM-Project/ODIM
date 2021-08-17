@@ -1,0 +1,5 @@
+odimra:
+  namespace:
+  groupID:
+  haDeploymentEnabled:
+  telemetryImageTag: "1.0"

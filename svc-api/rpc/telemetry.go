@@ -27,7 +27,12 @@ import (
 // the GetTelemetryService from telemetry micro service
 func DoGetTelemetryService(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetTelemetryService(context.TODO(), &req)
 	if err != nil {
@@ -41,12 +46,17 @@ func DoGetTelemetryService(req teleproto.TelemetryRequest) (*teleproto.Telemetry
 // the GetMetricDefinitionCollection from telemetry micro service
 func DoGetMetricDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
-
-	resp, err := telemetry.GetMetricDefinitionCollection(context.TODO(), &req)
+	conn, err := services.ODIMService.Client(services.Telemetry)
 	if err != nil {
-		return nil, fmt.Errorf("error: RPC error: %v", err)
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
+	resp, err := telemetry.GetMetricDefinitionCollection(context.TODO(), &req)
+        if err != nil {
+                return nil, fmt.Errorf("error: RPC error: %v", err)
+        }
+
 
 	return resp, err
 }
@@ -55,7 +65,12 @@ func DoGetMetricDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto
 // the GetMetricReportDefinitionCollection from telemetry micro service
 func DoGetMetricReportDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetMetricReportDefinitionCollection(context.TODO(), &req)
 	if err != nil {
@@ -69,7 +84,12 @@ func DoGetMetricReportDefinitionCollection(req teleproto.TelemetryRequest) (*tel
 // the GetMetricReportCollection from telemetry micro service
 func DoGetMetricReportCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetMetricReportCollection(context.TODO(), &req)
 	if err != nil {
@@ -83,7 +103,12 @@ func DoGetMetricReportCollection(req teleproto.TelemetryRequest) (*teleproto.Tel
 // the GetTriggerCollection from telemetry micro service
 func DoGetTriggerCollection(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetTriggerCollection(context.TODO(), &req)
 	if err != nil {
@@ -97,7 +122,12 @@ func DoGetTriggerCollection(req teleproto.TelemetryRequest) (*teleproto.Telemetr
 // the GetMetricDefinition from telemetry micro service
 func DoGetMetricDefinition(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetMetricDefinition(context.TODO(), &req)
 	if err != nil {
@@ -111,7 +141,12 @@ func DoGetMetricDefinition(req teleproto.TelemetryRequest) (*teleproto.Telemetry
 // the GetMetricReportDefinition from telemetry micro service
 func DoGetMetricReportDefinition(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetMetricReportDefinition(context.TODO(), &req)
 	if err != nil {
@@ -125,7 +160,12 @@ func DoGetMetricReportDefinition(req teleproto.TelemetryRequest) (*teleproto.Tel
 // the GetMetricReport from telemetry micro service
 func DoGetMetricReport(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetMetricReport(context.TODO(), &req)
 	if err != nil {
@@ -139,7 +179,12 @@ func DoGetMetricReport(req teleproto.TelemetryRequest) (*teleproto.TelemetryResp
 // the GetTrigger from telemetry micro service
 func DoGetTrigger(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.GetTrigger(context.TODO(), &req)
 	if err != nil {
@@ -153,7 +198,12 @@ func DoGetTrigger(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse,
 // the UpdateTrigger from telemetry micro service
 func DoUpdateTrigger(req teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 
-	telemetry := teleproto.NewTelemetryService(services.Telemetry, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Telemetry)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	telemetry := teleproto.NewTelemetryClient(conn)
 
 	resp, err := telemetry.UpdateTrigger(context.TODO(), &req)
 	if err != nil {

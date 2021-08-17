@@ -23,14 +23,6 @@ import (
 
 var log = logrus.New()
 
-func init() {
-	err := srv.InitializeService(srv.Tasks)
-	if err != nil {
-		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
-	}
-
-}
-
 // Authentication is used to authenticate using session token from svc-account-session
 func Authentication(sessionToken string, privileges []string) response.RPC {
 	oemprivileges := []string{}

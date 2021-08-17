@@ -21,12 +21,17 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/coreos/etcd/clientv3"
 	micro "github.com/micro/go-micro"
 	"github.com/micro/go-micro/transport"
+	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -67,6 +72,8 @@ func InitializeService(serviceName string) error {
 		if err != nil {
 			return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
 		}
+
+		ODIMService.intiateSignalHandler()
 
 	case "GOMICRO":
 		tlsConfig, err := getGoMicroTLSConfig()
@@ -140,7 +147,7 @@ func (s *odimService) Run() error {
 // Init initializes the ODIMService with server and client TLS, server and registry details etc.
 // It also initialize ODIMService.server which will help in bring up a microservice
 func (s *odimService) Init(serviceName string) error {
-	s.serverName = serviceName
+	s.serverName = serviceName + "-" + uuid.NewV4().String()
 	s.registryAddress = config.CLArgs.RegistryAddress
 	if s.registryAddress == "" {
 		return fmt.Errorf("RegistryAddress not found")
@@ -200,6 +207,24 @@ func (s *odimService) registerService() error {
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
 	_, err = kv.Put(context.TODO(), s.serverName, s.serverAddress)
+	if err != nil {
+		return fmt.Errorf("While trying to register the service, got: %v", err)
+	}
+	return nil
+}
+
+func (s *odimService) deregisterService() error {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{s.registryAddress},
+		DialTimeout: 5 * time.Second,
+		TLS:         s.etcdTLSConfig,
+	})
+	if err != nil {
+		return fmt.Errorf("While trying to create registry client, got: %v", err)
+	}
+	defer cli.Close()
+	kv := clientv3.NewKV(cli)
+	_, err = kv.Delete(context.TODO(), s.serverName)
 	if err != nil {
 		return fmt.Errorf("While trying to register the service, got: %v", err)
 	}
@@ -283,4 +308,18 @@ func getTLSConfig() (*tls.Config, error) {
 		RootCAs:      clientTLS.RootCAs,
 		Certificates: serverTLS.Certificates,
 	}, nil
+}
+
+func (s *odimService) intiateSignalHandler() {
+	sigs := make(chan os.Signal, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigs
+		log.Infof("Received signal: %v", sig)
+		err := s.deregisterService()
+		log.Error(err)
+	}()
+
 }

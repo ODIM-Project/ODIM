@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
 	github.com/kataras/iris/v12 v12.1.8
 	github.com/micro/go-micro v1.13.2
+	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	google.golang.org/grpc v1.24.0

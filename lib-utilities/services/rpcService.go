@@ -85,6 +85,8 @@ func InitializeService(serviceName string) error {
 			),
 		)
 		Service.Init()
+	default:
+		return fmt.Errorf("unknown framework type")
 	}
 	return nil
 }

@@ -5,7 +5,7 @@
 		"Host": "",
 		"Port": "45007",
 		"UserName": "admin",
-		"Password": "O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw=="
+		"Password": "sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ=="
 	},
 	"EventConf": {
 		"DestinationURI": "/redfishEventListener",
@@ -16,6 +16,20 @@
 		"RootCACertificatePath": "",
 		"PrivateKeyPath": "",
 		"CertificatePath": ""
+	},
+	"DBConf": {
+		"Protocol": "tcp",
+		"InMemoryHost": "localhost",
+		"InMemoryPort": "6379",
+		"OnDiskHost": "localhost",
+		"OnDiskPort": "6380",
+		"MaxIdleConns": 10,
+		"MaxActiveConns": 120,
+		"RedisHAEnabled": false,
+		"InMemorySentinelPort": "26379",
+		"OnDiskSentinelPort": "26379",
+		"InMemoryMasterSet": "mymaster",
+		"OnDiskMasterSet": "mymaster"
 	},
 	"TLSConf" : {
 		"MinVersion": "TLS_1.2",

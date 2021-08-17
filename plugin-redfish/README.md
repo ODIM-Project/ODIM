@@ -3,7 +3,7 @@
 Redfish-plugin communicates with redfish compliant BMC.  
 This is an independent module which provides two primary communication channels:  
 1.  An API mechanism that is used to exchange control data  
-2.  An Event Message Bus (EMB) that is used to exchange event and notifications.
+2.  An Event Message Bus (EMB) that is used to forward event and notifications to the Resource Aggregator for ODIM.
 
 
 This guide provides a set of guidelines for developing API and EMB functions to work within the Resource Aggregator for ODIM™ environment. It ensures consistency around API semantics for all plugins.
@@ -17,16 +17,16 @@ To ensure continued adoption of open technologies, the APIs for the plugins are 
 
 The plugin layer uses JSON as the primary data format for communication. Standardizing on a well-known data-interchange format ensures consistency among plugins and simplifies the task for plugin developers. The API service uses [HATEOAS \(Hypermedia as the Engine of Application State\)](https://restfulapi.net/hateoas/) principles to link resources using the `href` key.
 
-The API service under the plugin layer uses token-based authentication for securing the platform. The token-based authentication is applicable to:
+The API service under the plugin layer may use basic auth or token-based authentication for securing the platform. The token-based authentication is applicable to:
 
 -   The authentication information flowing from the aggregator to the plugin where the aggregator is authenticated.
-
--   The data flowing from the plugin to the aggregator where the aggregator is authenticated.
-
+<aside class="notice">
+Note: The data flows from the plugin to the aggregator via the EMB. The plugin gets authenticated by the EMD using TLS certificates.
+</aside>
 
 The plugin currently uses credentials of the client for authenticating the same.
 
-Data on the wire is encrypted using TLS and is not sent out as cleartext. For this, the plugin exposes a CA signed certificate for the clients to authenticate itself. The plugins communicate primarily with the aggregator. To gather resource information, they can also communicate with another plugin through the north-bound APIs provided by the aggregator. For plugin-to-plugin communication, the aggregator defines a plugin role to set and allows permissions for plugins to communicate with other plugins.
+Data on the wire is encrypted using TLS and is not sent out as cleartext. For this, the plugin exposes a CA signed certificate for the clients to authenticate itself. The plugins communicate with the aggregator if required using the north bound aggregator API. This may be needed to gather resource information that are not directly managed by the particuar plugin. 
 
 API operations must adhere to the standard Restful API rules—Ensure that the API operations are not idempotent and concurrent. APIs can, in selective cases, implement capabilities to use subresources, filtering, sorting, and other value additions effectively. Return codes are fully in compliance with HTTP. A core objective of the plugin layer is to be able to perform many different operations using the primary HTTP operations —GET, PUT, POST, and DELETE.
 
@@ -92,17 +92,20 @@ NOTE: Recommended TLS version is 1.2.
 
 ### Mandatory and optional functions implemented by plugins
 
-The plugin layer forms the southern-most boundary of Resource Aggregator for ODIM's architecture. Plugins are started by the aggregator and they use HTTPS encrypted communication for security reasons.
+The plugin layer forms the southern-most boundary of Resource Aggregator for ODIM's architecture. Plugins and the aggregator use HTTPS encrypted communication for security reasons.
 
 The plugin's primary responsibility is to interface with the resource on behalf of the aggregator. There are two key components to any plugin:
 
 1.  Control data
 
-    Control data describes any messages sent by the administrator to enact on a certain resource. This includes tasks such as adding a resource, discovering a resource, setting up events, and retrieving resource information among others. Control data exchange is synchronous and is initiated by the administrator or by another entity through the north-bound APIs of the aggregator.
+    Control data describes any messages sent by the administrator to enact on a certain resource. This includes tasks such as adding a resource, discovering a resource, setting up event subscriptions, and retrieving resource information among others. Control data exchange is synchronous and is initiated by the administrator or by another entity through the north-bound APIs of the aggregator.
 
 2.  Event data
 
-    Event data describes any messages sent by the resource based on a certain previous event notification request. Resource-specific events such as component failures, telemetry, and log files among others are examples of Event data. Event data exchange is asynchronous \(a push operation\) and is initiated by the resource. This communication happens from the plugin to the aggregator only and not the opposite way.
+    Event data describes any messages sent by the resource based on a certain previous event notification request. Resource-specific events such as component failures, recovery, status and telemetry among others are examples of Event data. Event data exchange is asynchronous \(a push operation\) and is initiated by the resource. This communication happens from the plugin to the aggregator only using the EMB and not the opposite way.
+    <aside class="notice">
+    Note: The EMB is currently used as an internal interface between plugins and the aggregator. 
+	</aside>
 
 ### Plugin API service
 
@@ -193,18 +196,33 @@ Each plugin implements API services conforming to specific standards targeted at
 
     The aggregator can request to collect resource telemetry information that will be set up by the plugins. The type of telemetry information varies from plugin to plugin.
 
-2.  Multicast status:
-
-    The aggregator can send a multicast request to all plugins requesting status information for all active plugins to determine the health of the system.
-
 <aside class="notice">
-NOTE: All events are sent to the aggregator over the message bus.
+NOTE: All events are sent to the aggregator over the message bus. Further these deliver the redfish events as json payloads. 
 </aside>
 
 
-## Plugin message bus
+## Event message bus interface
 
-Plugin message bus is a mandatory function.
+The message bus interface is specified as an abstract interface. The aggregator defines the following for go lang:
+
+// MQBus Interface defines the Process interface function that the message bus 
+// consumer should call). 
+// Distribute - API to Publish Messages into specified Pipe \(Topic/Subject\).
+// Accept - Consume the incoming message if subscribed by that component.
+// Get - Would initiate blocking call to remote process to get response.
+// Remove - remove subscription for a particular topic.
+// Close - Would disconnect the connection with Middleware.
+type MQBus interface {
+	Distribute(pipe string, data interface{}) error
+	Accept(pipe string, fn MsgProcess) error
+	Get(pipe string, d interface{}) interface{}
+	Remove(pipe string) error
+	Close()
+}
+
+THe aggregator provides a concrete implementation of this interface. This go lang  interface be used by plugins implemented in go language as well. Plugins that are written in a different language will have to provide an equivalent definition for eg. Plugins implemented in java will need an interface defined in java syntax and plugins developed in python will need an abstract base class to define the same.
+
+Support for a new message bus will need a new concrete implementation for this interface. The code of the aggregator/plugin at large will not have to be modified for this. The concrete implementation shall interface with the actual message bus in such way as to provide the consistent behaviour to the client code.
 
 ### Message payloads
 
@@ -551,7 +569,12 @@ Information on parameters needed by the plugin service on start-up are available
 -   Session timeout configurations
 
 -   Rules for converting south bound messages to ODIM format \(optionally\).
-
+<aside class=notice>
+	Plugins that need to share state amongst themselves will need special handling. This might apply in scenarios like
+	-  multiple plugin instances managing the same resource type should not poll the same resource simultaneously.
+	- muliple plugin instances should not try to create/delete/update same sub resource simultaneously.
+	- the aggregator should be able to authenticate/authorise with all instances of a plugin with a single token.
+	</aside>
 
 ## Deployment guidelines
 

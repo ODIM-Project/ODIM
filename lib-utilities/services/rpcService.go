@@ -23,6 +23,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -153,7 +154,7 @@ func (s *odimService) Init(serviceName string) error {
 		return fmt.Errorf("RegistryAddress not found")
 	}
 	s.serverAddress = config.CLArgs.ServerAddress
-	if s.serverAddress == "" && s.serverName != APIClient {
+	if s.serverAddress == "" && !strings.Contains(s.serverName, APIClient) {
 		return fmt.Errorf("ServerAddress not found")
 	}
 	err := s.loadTLSCredentials(serverService)
@@ -311,11 +312,15 @@ func getTLSConfig() (*tls.Config, error) {
 }
 
 func (s *odimService) intiateSignalHandler() {
+
 	sigs := make(chan os.Signal, 1)
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
+	signal.Notify(sigs,
+		os.Interrupt,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
 	go func() {
+		log.Info("Inside the signal handler")
 		sig := <-sigs
 		log.Infof("Received signal: %v", sig)
 		err := s.deregisterService()

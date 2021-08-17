@@ -71,6 +71,8 @@ func InitializeService(serviceName string) error {
 
 		ODIMService.intiateSignalHandler()
 
+	default:
+		return fmt.Errorf("unknown framework type")
 	}
 	return nil
 }
@@ -356,6 +358,12 @@ func GetEnabledServiceList() map[string]bool {
 
 		case "UpdateService":
 			resp, err := kv.Get(context.TODO(), Update, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "TelemetryService":
+			resp, err := kv.Get(context.TODO(), Telemetry, clientv3.WithPrefix())
 			if err == nil && len(resp.Kvs) > 0 {
 				data[microService] = true
 			}

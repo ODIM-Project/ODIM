@@ -95,6 +95,15 @@ func PublishEventsToDestination(data interface{}) bool {
 		requestData = strings.Replace(requestData, key, value, -1)
 	}
 
+	switch event.EventType {
+	case "PluginStartUp":
+		log.Info("received plugin started event from ", event.IP)
+		go callPluginStartUp(event)
+		return true
+	case "MetricReport":
+		return publishMetricReport(requestData)
+	}
+
 	var flag bool
 	var uuid string
 	var message common.MessageData
@@ -205,6 +214,17 @@ func PublishEventsToDestination(data interface{}) bool {
 		go postEvent(key, data)
 	}
 	return flag
+}
+
+func publishMetricReport(requestData string) bool {
+	subscriptions, err := evmodel.GetEvtSubscriptions("MetricReport")
+	if err != nil {
+		return false
+	}
+	for _, sub := range subscriptions {
+		go postEvent(sub.Destination, []byte(requestData))
+	}
+	return true
 }
 
 func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.Event, originResources []string) bool {

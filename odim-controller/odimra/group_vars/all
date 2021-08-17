@@ -39,6 +39,7 @@ odim_svc_helmcharts:
    systems: systems-0.1.0
    task: task-0.1.0
    update: update-0.1.0
+   telemetry: telemetry-0.1.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation
@@ -49,6 +50,7 @@ odim_docker_images:
    systems: systems
    task: task
    update: update
+   telemetry: telemetry
    kafka: kafka
    zookeeper: zookeeper
    consul: consul

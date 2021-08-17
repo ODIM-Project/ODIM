@@ -24,17 +24,19 @@ type Device struct {
 	Password []byte `json:"Password"`
 	PostBody []byte `json:"PostBody"`
 	Location string `json:"Location"`
+	SystemID string `json:"SystemID"`
 }
 
 //EvtSubPost ...
 type EvtSubPost struct {
-	Destination   string        `json:"Destination"`
-	EventTypes    []string      `json:"EventTypes,omitempty"`
-	MessageIds    []string      `json:"MessageIds,omitempty"`
-	ResourceTypes []string      `json:"ResourceTypes,omitempty"`
-	HTTPHeaders   []HTTPHeaders `json:"HttpHeaders"`
-	Context       string        `json:"Context"`
-	Protocol      string        `json:"Protocol"`
+	Destination     string        `json:"Destination"`
+	EventTypes      []string      `json:"EventTypes,omitempty"`
+	MessageIds      []string      `json:"MessageIds,omitempty"`
+	ResourceTypes   []string      `json:"ResourceTypes,omitempty"`
+	HTTPHeaders     []HTTPHeaders `json:"HttpHeaders"`
+	Context         string        `json:"Context"`
+	Protocol        string        `json:"Protocol"`
+	EventFormatType string        `json:"EventFormatType"`
 }
 
 //HTTPHeaders ...
@@ -102,4 +104,26 @@ func DeleteDeviceInInventory(uuid string) {
 	defer DeviceInventory.mutex.Unlock()
 	delete(DeviceInventory.Device, uuid)
 	return
+}
+
+// GetAllDevicesInInventory is for getting list of all devices
+// in the inventory by acquiring read lock
+// Expects uninitialized slice of type Device
+func GetAllDevicesInInventory(devices *[]Device) int {
+	DeviceInventory.mutex.RLock()
+	defer DeviceInventory.mutex.RUnlock()
+
+	deviceCount := len(DeviceInventory.Device)
+	*devices = make([]Device, deviceCount)
+	count := 0
+	for uuid, device := range DeviceInventory.Device {
+		(*devices)[count] = Device{
+			Host:     device.Address,
+			Username: device.UserName,
+			Password: device.Password,
+			SystemID: uuid,
+		}
+		count++
+	}
+	return deviceCount
 }

@@ -8,10 +8,6 @@
 - name: Remove nginx and dependent packages
   apt:
     pkg:
-    - curl
-    - gnupg2
-    - ca-certificates
-    - lsb-release
     - nginx
     - nginx-common
     - nginx-core
@@ -36,7 +32,3 @@
 - name: Remove unused packages from the cache
   apt:
     autoclean: yes
-
-- name: Remove dependencies that are no longer required
-  apt:
-    autoremove: yes

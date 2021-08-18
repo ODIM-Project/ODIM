@@ -28,7 +28,6 @@
 
 - set_fact: 
     interfaceName: "{{ interface.stdout }}"
-    priority: "{{ hostvars[inventory_hostname]['groups']['all'].index(inventory_hostname) }}"
 
 - name: Install keepalived=1:1.3.9-1ubuntu0.18.04.2 package
   apt:
@@ -48,7 +47,7 @@
     - routerID: "{{ inventory_hostname | mandatory }}"
       interfaceName: "{{ interfaceName | mandatory }}"
       virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
-      priority: "{{ 100 - priority|int }}"
+      priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
       virtualIP: "{{ odimra.virtualIP | mandatory }}"
 
 - name: Enable keepalived systemd service

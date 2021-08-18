@@ -1,0 +1,72 @@
+---
+- name: Updating nginx conf with {{ host }} nodes info
+  set_fact:
+    nodes_list: "{{ host.split(',') }}"
+
+- name: Update nginx conf with added nodes in all existing nodes
+  block:
+    - set_fact:
+        cur_host_ip: "{{ hostvars[host_item].ansible_host }}"
+    
+    - set_fact:
+        serverlist: ["server {{ cur_host_ip }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s;"]
+    
+    - set_fact:
+        serverlist: "{{ serverlist + [server] }}"
+      with_items: "{{ groups.all }}"
+      vars:
+        server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
+      when: hostvars[item].ansible_host != cur_host_ip
+    
+    - name: Update API proxy service conf
+      template:
+        src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
+        dest: /opt/nginx/servers/api_proxy_server.conf
+      with_items:
+        - selfNodeIP: "{{ cur_host_ip }}"
+          virtualIP: "{{ odimra.virtualIP }}"
+          apiProxyPort: "{{ odimra.apiProxyPort }}"
+          apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
+      delegate_to: "{{ host_item }}"
+
+    - name: Get list of plugins under plugin helm charts path
+      find:
+        paths: "{{ odimPluginPath }}"
+        file_type: "directory"
+      register: plugin_packages
+      delegate_to: localhost
+      when: odimPluginPath is defined
+    
+    - name: Call plugin pre-install scripts
+      include_tasks: roles/update-proxy-conf/tasks/plugins.yaml
+      loop: "{{ plugin_packages.files }}"
+
+    - name: Reload nginx to refresh the proxy conf
+      systemd:
+        name: nginx.service
+        state: reloaded
+      ignore_errors: true
+      delegate_to: "{{ host_item }}"
+  when:
+    - scenario is defined and scenario == 'add-node'
+    - host_item not in nodes_list
+
+- name: Update nginx conf with removed nodes in all existing nodes
+  block:
+    - name: Get the list of all nginx conf files at /opt/nginx/servers
+      find:
+        paths: "/opt/nginx/servers"
+        file_type: file
+      register: conf_dir
+      delegate_to: "{{ host_item }}"
+
+    - set_fact:
+        matchString: "{{ 'server ' + hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+    - name: Delete {{ inventory_hostname }} from nginx conf files
+      command: "sed -i '/{{ matchString }}/d' {{ item.path }}"
+      loop: "{{ conf_dir.files }}"
+      delegate_to: "{{ host_item }}"
+  when:
+    - scenario is defined and scenario == 'rm-node'
+    - host_item not in nodes_list

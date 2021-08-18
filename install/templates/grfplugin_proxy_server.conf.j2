@@ -1,10 +1,10 @@
 upstream grfplugin_server {
-{{ item.grpServerList }}
+{{ plugin_item.pluginServerList }}
 }
  
 server {
-	listen {{ item.selfNodeIP }}:{{ item.grpProxyPort }} ssl;
-	listen {{ item.virtualIP }}:{{ item.grpProxyPort }} ssl;
+	listen {{ plugin_item.selfNodeIP }}:{{ plugin_item.pluginProxyPort }} ssl;
+	listen {{ plugin_item.virtualIP }}:{{ plugin_item.pluginProxyPort }} ssl;
 
 	server_name odimra.proxy.net;
 	ssl_session_timeout  5m;

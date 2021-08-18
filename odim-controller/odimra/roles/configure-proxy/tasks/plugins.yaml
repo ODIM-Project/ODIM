@@ -1,0 +1,44 @@
+- set_fact:
+    plugin_name: "{{ item.path.split('/')[-1] }}"
+
+- name: Check if {{ odimPluginPath }}/{{ plugin_name }}/{{ plugin_name }}_proxy_server.conf.j2 exists
+  stat:
+    path: "{{ odimPluginPath }}/{{ plugin_name }}/{{ plugin_name }}_proxy_server.conf.j2"
+  register: stat_result
+  delegate_to: localhost
+
+- name: Include user defined {{ plugin_name }} configurations
+  include_vars: "{{ odimPluginPath }}/{{ plugin_name }}/{{ plugin_name }}-config.yaml"
+  when: stat_result.stat.exists and stat_result.stat.isreg
+
+- name: Prepare and copy proxy conf for {{ plugin_name }} service
+  block:
+    - set_fact:
+        cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        node_port: "{{ hostvars[inventory_hostname][plugin_name]['eventListenerNodePort'] }}"
+        proxy_port: "{{ hostvars[inventory_hostname][plugin_name]['lbPort'] }}"
+
+    - set_fact:
+        pluginserverlist: ["server {{ cur_host_ip }}:{{ node_port }} max_fails=2 fail_timeout=10s;"]
+
+    - set_fact:
+        pluginserverlist: "{{ pluginserverlist + [server] }}"
+      with_items: "{{ groups.all }}"
+      vars:
+        server: "server {{ hostvars[server_item].ansible_host }}:{{ node_port }} max_fails=2 fail_timeout=10s backup;"
+      when: hostvars[server_item].ansible_host != cur_host_ip
+      loop_control:
+        loop_var: server_item
+
+    - name: Replace values in {{ plugin_name }} proxy conf template
+      template:
+        src: "{{ odimPluginPath }}/{{ plugin_name }}/{{ plugin_name }}_proxy_server.conf.j2"
+        dest: "/opt/nginx/servers/{{ plugin_name }}_proxy_server.conf"
+      with_items:
+        - selfNodeIP: "{{ cur_host_ip }}"
+          virtualIP: "{{ odimra.virtualIP }}"
+          pluginProxyPort: "{{ proxy_port }}"
+          pluginServerList: "{{ pluginserverlist|join('\n')|indent(8, True) }}"
+      loop_control:
+        loop_var: plugin_item
+  when: stat_result.stat.exists and stat_result.stat.isreg

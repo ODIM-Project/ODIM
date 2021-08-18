@@ -15,3 +15,31 @@
   include_tasks: roles/remove-plugin/tasks/plugins.yaml
   loop:
     "{{ groups['kube-node'] }}"
+
+- name: Remove proxy conf file of {{ release_name }} and reload nginx
+  block:
+    - name: Remove nginx conf file of {{ release_name }}
+      file:
+        path: "/opt/nginx/servers/{{ release_name }}_proxy_server.conf"
+        state: absent
+      delegate_to: "{{ item }}"
+      loop:
+        "{{ groups['kube-node'] }}"
+
+    - name: Reload nginx to remove {{ release_name }} conf
+      systemd:
+        name: nginx.service
+        state: reloaded
+      delegate_to: "{{ item }}"
+      loop:
+        "{{ groups['kube-node'] }}"
+      ignore_errors: true
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Remove {{ release_name }} content on all nodes
+  file:
+    path: "{{ helm_charts_path }}/{{ release_name }}"
+    state: absent
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube-node'] }}"

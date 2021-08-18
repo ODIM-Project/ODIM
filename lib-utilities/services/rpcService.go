@@ -291,7 +291,6 @@ func (s *odimService) intiateSignalHandler() {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 	go func() {
-		log.Info("Inside the signal handler")
 		sig := <-sigs
 		log.Infof("Received signal: %v", sig)
 		err := s.deregisterService()

@@ -41,5 +41,11 @@
   loop:
     "{{ groups['kube-node'] }}"
 
+- name: Configure and copy {{ release_name }} proxy conf to all nodes
+  include_tasks: roles/deploy-plugin/tasks/proxy.yaml
+  loop:
+    "{{ groups['kube-node'] }}"
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
 - name: Deploy {{ release_name }}
   shell: "{{ helm_bin_path }} upgrade {{ release_name }} {{ helm_charts_path }}/{{ release_name }}/*.tgz -n {{ helm_name_space }} -f {{ helm_charts_path }}/{{ release_name }}/{{ release_name }}-config.yaml -f {{ values_file_path }} --install --cleanup-on-fail"

@@ -9,7 +9,6 @@
   apt:
     pkg:
     - keepalived
-    - linux-headers-4.15.0-128-generic
     force_apt_get: yes
     autoremove: yes
     purge: yes
@@ -30,7 +29,3 @@
 - name: Remove unused packages from the cache
   apt:
     autoclean: yes
-
-- name: Remove dependencies that are no longer required
-  apt:
-    autoremove: yes

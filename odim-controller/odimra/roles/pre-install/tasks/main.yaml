@@ -167,6 +167,14 @@
     - name: Install and configure nginx
       include_tasks: roles/configure-proxy/tasks/main.yaml
 
+    - name: Update nginx configuration on existing nodes
+      include_tasks: roles/update-proxy-conf/tasks/main.yaml
+      loop:
+        "{{ groups['kube-node'] }}"
+      loop_control:
+        loop_var: host_item
+      when: scenario is defined
+
     - name: Install and configure keepalived
       include_tasks: roles/configure-keepalived/tasks/main.yaml
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool

@@ -1,0 +1,10 @@
+build/odimra/odimra_config/*
+build/odimra/odimra
+build/DELLPlugin/dell_plugin_config
+build/RFPlugin/plugin_config
+build/Redis/redis-persistence
+build/cert_generator/*.crt
+build/cert_generator/*.key
+build/cert_generator/*.jks
+build/cert_generator/*.private
+build/cert_generator/*.public

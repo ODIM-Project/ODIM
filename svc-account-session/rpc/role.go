@@ -41,7 +41,8 @@ type Role struct {
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest, resp *roleproto.RoleResponse) error {
+func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*roleproto.RoleResponse, error) {
+	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -69,7 +70,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest, resp 
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -84,7 +85,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest, resp 
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	data := role.Create(req, sess)
@@ -100,9 +101,9 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest, resp 
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		log.Printf(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
-	return nil
+	return &resp, nil
 }
 
 //GetRole defines the operations which handles the RPC request response
@@ -111,7 +112,8 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest, resp 
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest, resp *roleproto.RoleResponse) error {
+func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
+	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -139,7 +141,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest, resp 
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -154,7 +156,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest, resp 
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	data := role.GetRole(req, sess)
@@ -170,10 +172,10 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest, resp 
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		log.Printf(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 
-	return nil
+	return &resp, nil
 }
 
 //GetAllRoles defines the operations which handles the RPC request response
@@ -182,7 +184,8 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest, resp 
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest, resp *roleproto.RoleResponse) error {
+func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
+	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -209,7 +212,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest, r
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -224,7 +227,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest, r
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	data := role.GetAllRoles(sess)
@@ -240,10 +243,10 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest, r
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		log.Printf(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 
-	return nil
+	return &resp, nil
 }
 
 //UpdateRole defines the operations which handles the RPC request response
@@ -252,7 +255,8 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest, r
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest, resp *roleproto.RoleResponse) error {
+func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
+	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -280,7 +284,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest,
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -295,7 +299,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest,
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
 		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	data := role.Update(req, sess)
@@ -311,14 +315,15 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest,
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		log.Printf(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 
-	return nil
+	return &resp, nil
 }
 
 // DeleteRole handles the RPC call from the client
-func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest, resp *roleproto.RoleResponse) error {
+func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
+	var resp roleproto.RoleResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -345,8 +350,8 @@ func (r *Role) DeleteRole(ctx context.Context, req *roleproto.DeleteRoleRequest,
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 		log.Printf(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 
-	return nil
+	return &resp, nil
 }

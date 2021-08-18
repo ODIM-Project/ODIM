@@ -67,9 +67,8 @@ func TestUpdate_GetUpdateService(t *testing.T) {
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *updateproto.UpdateRequest
-		resp *updateproto.UpdateResponse
+		ctx context.Context
+		req *updateproto.UpdateRequest
 	}
 	tests := []struct {
 		name    string
@@ -81,8 +80,7 @@ func TestUpdate_GetUpdateService(t *testing.T) {
 			name: "positive GetAggregationService",
 			a:    update,
 			args: args{
-				req:  &updateproto.UpdateRequest{SessionToken: "validToken"},
-				resp: &updateproto.UpdateResponse{},
+				req: &updateproto.UpdateRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
 		},
@@ -90,15 +88,14 @@ func TestUpdate_GetUpdateService(t *testing.T) {
 			name: "auth fail",
 			a:    update,
 			args: args{
-				req:  &updateproto.UpdateRequest{SessionToken: "invalidToken"},
-				resp: &updateproto.UpdateResponse{},
+				req: &updateproto.UpdateRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetUpdateService(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.GetUpdateService(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Update.GetUpdateService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -109,9 +106,8 @@ func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *updateproto.UpdateRequest
-		resp *updateproto.UpdateResponse
+		ctx context.Context
+		req *updateproto.UpdateRequest
 	}
 	tests := []struct {
 		name       string
@@ -126,7 +122,6 @@ func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
 				req: &updateproto.UpdateRequest{
 					SessionToken: "validToken",
 				},
-				resp: &updateproto.UpdateResponse{},
 			}, StatusCode: 200,
 		},
 		{
@@ -136,14 +131,13 @@ func TestUpdate_GetFirmwareInventoryCollection(t *testing.T) {
 				req: &updateproto.UpdateRequest{
 					SessionToken: "invalidToken",
 				},
-				resp: &updateproto.UpdateResponse{},
 			}, StatusCode: 401,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetFirmwareInventoryCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Update.GetFirmwareInventoryCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			if resp, err := tt.a.GetFirmwareInventoryCollection(tt.args.ctx, tt.args.req); err != nil {
+				t.Errorf("Update.GetFirmwareInventoryCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -153,9 +147,8 @@ func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *updateproto.UpdateRequest
-		resp *updateproto.UpdateResponse
+		ctx context.Context
+		req *updateproto.UpdateRequest
 	}
 	tests := []struct {
 		name       string
@@ -170,7 +163,6 @@ func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
 				req: &updateproto.UpdateRequest{
 					SessionToken: "validToken",
 				},
-				resp: &updateproto.UpdateResponse{},
 			}, StatusCode: 200,
 		},
 		{
@@ -180,14 +172,13 @@ func TestUpdate_GetSoftwareInventoryCollection(t *testing.T) {
 				req: &updateproto.UpdateRequest{
 					SessionToken: "invalidToken",
 				},
-				resp: &updateproto.UpdateResponse{},
 			}, StatusCode: 401,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetSoftwareInventoryCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Update.GetSoftwareInventoryCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			if resp, err := tt.a.GetSoftwareInventoryCollection(tt.args.ctx, tt.args.req); err != nil {
+				t.Errorf("Update.GetSoftwareInventoryCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -202,8 +193,7 @@ func TestGetFirmwareInventorywithInValidtoken(t *testing.T) {
 		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &updateproto.UpdateResponse{}
-	update.GetFirmwareInventory(ctx, req, resp)
+	resp, _ := update.GetFirmwareInventory(ctx, req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -215,8 +205,7 @@ func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
 		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b:1",
 		SessionToken: "validToken",
 	}
-	var resp = &updateproto.UpdateResponse{}
-	err := update.GetFirmwareInventory(ctx, req, resp)
+	resp, err := update.GetFirmwareInventory(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
@@ -230,8 +219,7 @@ func TestGetSoftwareInventorywithInValidtoken(t *testing.T) {
 		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &updateproto.UpdateResponse{}
-	update.GetSoftwareInventory(ctx, req, resp)
+	resp, _ := update.GetSoftwareInventory(ctx, req)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -243,8 +231,7 @@ func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
 		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b:1",
 		SessionToken: "validToken",
 	}
-	var resp = &updateproto.UpdateResponse{}
-	err := update.GetSoftwareInventory(ctx, req, resp)
+	resp, err := update.GetSoftwareInventory(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }

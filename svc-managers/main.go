@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -40,6 +41,8 @@ func main() {
 		log.Fatal("fatal: error while trying set up configuration: %v" + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal(err.Error())
 	}
@@ -63,7 +66,7 @@ func main() {
 	}
 	mgrcommon.Token.Tokens = make(map[string]string)
 	registerHandlers()
-	if err = services.Service.Run(); err != nil {
+	if err = services.ODIMService.Run(); err != nil {
 		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
@@ -74,7 +77,7 @@ func registerHandlers() {
 	manager.IsAuthorizedRPC = services.IsAuthorized
 	manager.EI = managers.GetExternalInterface()
 
-	managersproto.RegisterManagersHandler(services.Service.Server(), manager)
+	managersproto.RegisterManagersServer(services.ODIMService.Server(), manager)
 }
 
 func addManagertoDB(managerInterface mgrcommon.DBInterface) error {

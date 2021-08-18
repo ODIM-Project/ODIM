@@ -304,7 +304,7 @@ def gen_ssh_keys():
 	
 	pubkey = privkey.publickey()
 	with open(ssh_pub_key_path, 'wb') as f:
-		os.chmod(ssh_pub_key_path, 0o644)
+		os.chmod(ssh_pub_key_path, 0o640)
 		f.write(pubkey.exportKey('OpenSSH'))
 
 # enable_passwordless_login is used for enabling password-less
@@ -767,6 +767,8 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
+	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 
 	# updating key pair once after deployment is not supported.
 	if not isUpgrade:
@@ -1166,6 +1168,7 @@ def update_helm_charts(config_map_name):
 		"api":"odim_svc_helmcharts",
 		"events":"odim_svc_helmcharts",
 		"fabrics":"odim_svc_helmcharts",
+		"telemetry":"odim_svc_helmcharts",
 		"managers":"odim_svc_helmcharts",
 		"systems":"odim_svc_helmcharts",
                 "task":"odim_svc_helmcharts",
@@ -1173,7 +1176,7 @@ def update_helm_charts(config_map_name):
 		"kafka":"odim_third_party_helmcharts",
 		"zookeeper":"odim_third_party_helmcharts",
 		"redis":"odim_third_party_helmcharts",
-		"consul":"odim_third_party_helmcharts"
+		"etcd":"odim_third_party_helmcharts"
 	}
 	operationHelmChartInfo={
 		"odimra-config":"upgrade-config",
@@ -1188,6 +1191,7 @@ def update_helm_charts(config_map_name):
 		"api":"upgrade-config",
 		"events":"upgrade-config",
 		"fabrics":"upgrade-config",
+		"telemetry":"upgrade-config",
 		"managers":"upgrade-config",
 		"systems":"upgrade-config",
                 "task":"upgrade-config",
@@ -1195,7 +1199,7 @@ def update_helm_charts(config_map_name):
 		"kafka":"upgrade_thirdparty",
 		"zookeeper":"upgrade_thirdparty",
 		"redis":"upgrade_thirdparty",
-		"consul":"upgrade_thirdparty"
+		"etcd":"upgrade_thirdparty"
 	}
 
 	if config_map_name not in optionHelmChartInfo:
@@ -1626,9 +1630,9 @@ def main():
 	parser.add_argument('--dryrun', action='store_true', help='only check for configurations without deploying k8s')
 	parser.add_argument('--noprompt', action='store_true', help='do not prompt for confirmation')
 	parser.add_argument('--ignore-errors', action='store_true', help='ignore errors during odimra reset')
-	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-k8s-access-config,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,managers,systems,task,update,kafka,zookeeper,redis,consul,plugin,all,odimra,thirdparty')
+	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-k8s-access-config,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,kafka,zookeeper,redis,etcd,plugin,all,odimra,thirdparty')
 	parser.add_argument("--scale", action='store_true', help='scale odimra services and plugins')
-	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,managers,systems,task,update,all')
+	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,all')
 	parser.add_argument("--plugin", help='release name of the plugin deployment to add,remove,upgrade or scale')
 	parser.add_argument('--add', help='supported values: plugin')
 	parser.add_argument('--remove', help='supported values: plugin')
@@ -1642,9 +1646,8 @@ def main():
 	global CONTROLLER_CONF_FILE, DRY_RUN_SET, NO_PROMPT_SET, IGNORE_ERRORS_SET
 
 	if args.deploy == None and args.reset == None and args.addnode == None and \
-			args.rmnode == None and args.upgrade == None and args.scale == None and \
-			args.list == None and args.rollback == None and args.add == None and \
-			args.remove == None:
+			args.rmnode == None and args.upgrade == None and args.scale == False and \
+			args.list == None and args.add == None and args.remove == None and args.rollback == False:
 		logger.critical("Atleast one mandatory option must be provided")
 		parser.print_help()
 		sys.exit(1)

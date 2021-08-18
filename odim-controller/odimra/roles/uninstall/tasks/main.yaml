@@ -29,13 +29,13 @@
   loop: "{{ odim_svc_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
 
-- name: Remove consul, redis, kafka, zookeeper services
+- name: Remove etcd, redis, kafka, zookeeper services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
   loop: "{{ odim_third_party_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
   when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
 
-- name: Remove consul, redis, kafka, zookeeper HA services
+- name: Remove etcd, redis, kafka, zookeeper HA services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
   loop: "{{ odim_third_party_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"

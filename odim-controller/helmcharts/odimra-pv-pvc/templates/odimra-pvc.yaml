@@ -54,19 +54,6 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: consul-data-pvc
-  namespace: {{ .Values.odimra.namespace }}
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
   name: odimra-log-claim
   namespace: {{ .Values.odimra.namespace }}
 spec:
@@ -102,3 +89,29 @@ spec:
   resources:
     requests:
       storage: 8Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: etcd-conf-pvc
+  namespace: {{ .Values.odimra.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: etcd-data-pvc
+  namespace: {{ .Values.odimra.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

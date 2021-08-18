@@ -114,7 +114,7 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret e
 		RequestType:           "full",
 		ResyncEvtSubscription: resyncSubscription,
 	}
-	batchedServersData := make([]agmodel.Target, 0)
+	var batchedServersData []agmodel.Target
 	startIndex := 0
 	for startIndex < managedServersCount {
 		endIndex := startIndex + phc.PluginConfig.StartUpResouceBatchSize

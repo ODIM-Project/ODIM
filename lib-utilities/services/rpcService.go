@@ -21,12 +21,16 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/coreos/etcd/clientv3"
-	micro "github.com/micro/go-micro"
-	"github.com/micro/go-micro/transport"
+	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -52,9 +56,6 @@ type odimService struct {
 // ODIMService holds the initialized instance of odimService
 var ODIMService odimService
 
-// Service holds the microservice instance
-var Service micro.Service
-
 // InitializeService will initialize a new micro service with the selected framework.
 func InitializeService(serviceName string) error {
 	switch config.CLArgs.FrameWork {
@@ -68,23 +69,8 @@ func InitializeService(serviceName string) error {
 			return fmt.Errorf("While trying to register the service in the registry, got: %v", err)
 		}
 
-	case "GOMICRO":
-		tlsConfig, err := getGoMicroTLSConfig()
-		if err != nil {
-			return fmt.Errorf("Failed to load TLS config for go micro: %v", err)
-		}
-		config.Server.SetTLSConfig(tlsConfig)
+		ODIMService.intiateSignalHandler()
 
-		Service = micro.NewService(
-			micro.Name(serviceName),
-			micro.Transport(
-				transport.NewTransport(
-					transport.Secure(true),
-					transport.TLSConfig(tlsConfig),
-				),
-			),
-		)
-		Service.Init()
 	default:
 		return fmt.Errorf("unknown framework type")
 	}
@@ -142,13 +128,13 @@ func (s *odimService) Run() error {
 // Init initializes the ODIMService with server and client TLS, server and registry details etc.
 // It also initialize ODIMService.server which will help in bring up a microservice
 func (s *odimService) Init(serviceName string) error {
-	s.serverName = serviceName
+	s.serverName = serviceName + "-" + uuid.NewV4().String()
 	s.registryAddress = config.CLArgs.RegistryAddress
 	if s.registryAddress == "" {
 		return fmt.Errorf("RegistryAddress not found")
 	}
 	s.serverAddress = config.CLArgs.ServerAddress
-	if s.serverAddress == "" && s.serverName != APIClient {
+	if s.serverAddress == "" && !strings.Contains(s.serverName, APIClient) {
 		return fmt.Errorf("ServerAddress not found")
 	}
 	err := s.loadTLSCredentials(serverService)
@@ -202,6 +188,24 @@ func (s *odimService) registerService() error {
 	defer cli.Close()
 	kv := clientv3.NewKV(cli)
 	_, err = kv.Put(context.TODO(), s.serverName, s.serverAddress)
+	if err != nil {
+		return fmt.Errorf("While trying to register the service, got: %v", err)
+	}
+	return nil
+}
+
+func (s *odimService) deregisterService() error {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{s.registryAddress},
+		DialTimeout: 5 * time.Second,
+		TLS:         s.etcdTLSConfig,
+	})
+	if err != nil {
+		return fmt.Errorf("While trying to create registry client, got: %v", err)
+	}
+	defer cli.Close()
+	kv := clientv3.NewKV(cli)
+	_, err = kv.Delete(context.TODO(), s.serverName)
 	if err != nil {
 		return fmt.Errorf("While trying to register the service, got: %v", err)
 	}
@@ -263,15 +267,6 @@ func loadClientTLSConfig() (*tls.Config, error) {
 	}, nil
 }
 
-func getGoMicroTLSConfig() (*tls.Config, error) {
-	goMicroTLS, err := getTLSConfig()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to load certificates for GoMicro: %v", err)
-	}
-	goMicroTLS.ServerName = config.Data.LocalhostFQDN
-	return goMicroTLS, nil
-}
-
 func getTLSConfig() (*tls.Config, error) {
 	serverTLS, err := loadServerTLSConfig()
 	if err != nil {
@@ -285,4 +280,94 @@ func getTLSConfig() (*tls.Config, error) {
 		RootCAs:      clientTLS.RootCAs,
 		Certificates: serverTLS.Certificates,
 	}, nil
+}
+
+func (s *odimService) intiateSignalHandler() {
+
+	sigs := make(chan os.Signal, 1)
+
+	signal.Notify(sigs,
+		os.Interrupt,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+	go func() {
+		log.Info("Inside the signal handler")
+		sig := <-sigs
+		log.Infof("Received signal: %v", sig)
+		err := s.deregisterService()
+		log.Error(err)
+	}()
+
+}
+
+// GetEnabledServiceList checks  etcd  registry for enabled services
+func GetEnabledServiceList() map[string]bool {
+	data := map[string]bool{
+		"JSONSchemas": true,
+	}
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{ODIMService.registryAddress},
+		DialTimeout: 5 * time.Second,
+		TLS:         ODIMService.etcdTLSConfig,
+	})
+	if err != nil {
+		return data
+	}
+	defer cli.Close()
+	kv := clientv3.NewKV(cli)
+	for _, microService := range config.Data.EnabledServices {
+		switch microService {
+		case "AccountService", "SessionService":
+			resp, err := kv.Get(context.TODO(), AccountSession, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "EventService":
+			resp, err := kv.Get(context.TODO(), Events, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+		case "Systems", "Chassis":
+			resp, err := kv.Get(context.TODO(), Systems, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+		case "TaskService":
+			resp, err := kv.Get(context.TODO(), Tasks, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "AggregationService":
+			resp, err := kv.Get(context.TODO(), Aggregator, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+		case "Fabrics":
+			resp, err := kv.Get(context.TODO(), Fabrics, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "Managers":
+			resp, err := kv.Get(context.TODO(), Managers, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "UpdateService":
+			resp, err := kv.Get(context.TODO(), Update, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+
+		case "TelemetryService":
+			resp, err := kv.Get(context.TODO(), Telemetry, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
+		}
+	}
+	return data
 }

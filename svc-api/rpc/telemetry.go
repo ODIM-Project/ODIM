@@ -53,10 +53,9 @@ func DoGetMetricDefinitionCollection(req teleproto.TelemetryRequest) (*teleproto
 	defer conn.Close()
 	telemetry := teleproto.NewTelemetryClient(conn)
 	resp, err := telemetry.GetMetricDefinitionCollection(context.TODO(), &req)
-        if err != nil {
-                return nil, fmt.Errorf("error: RPC error: %v", err)
-        }
-
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
 
 	return resp, err
 }

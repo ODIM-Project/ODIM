@@ -1,9 +1,9 @@
 # Redfish-plugin  
-  
+
 Redfish-plugin communicates with redfish compliant BMC.  
 This is an independent module which provides two primary communication channels:  
-1.  An API mechanism that is used to exchange control data  
-2.  An Event Message Bus (EMB) that is used to exchange event and notifications.
+- An API mechanism that is used to exchange control data
+- An Event Message Bus (EMB) that is used to forward event and notifications to Resource Aggregator for ODIM.
 
 
 This guide provides a set of guidelines for developing API and EMB functions to work within the Resource Aggregator for ODIM™ environment. It ensures consistency around API semantics for all plugins.
@@ -17,16 +17,16 @@ To ensure continued adoption of open technologies, the APIs for the plugins are 
 
 The plugin layer uses JSON as the primary data format for communication. Standardizing on a well-known data-interchange format ensures consistency among plugins and simplifies the task for plugin developers. The API service uses [HATEOAS \(Hypermedia as the Engine of Application State\)](https://restfulapi.net/hateoas/) principles to link resources using the `href` key.
 
-The API service under the plugin layer uses token-based authentication for securing the platform. The token-based authentication is applicable to:
+The API service under the plugin layer can use basic authentication or token-based authentication for securing the platform. Token-based authentication is applicable to the authentication information flowing from the aggregator to the plugin where the aggregator is authenticated.
 
--   The authentication information flowing from the aggregator to the plugin where the aggregator is authenticated.
-
--   The data flowing from the plugin to the aggregator where the aggregator is authenticated.
+<blockquote>
+Note: Data flows from the plugin to the aggregator via the EMB. The plugin gets authenticated by the EMB using TLS certificates.
+</blockquote>
 
 
 The plugin currently uses credentials of the client for authenticating the same.
 
-Data on the wire is encrypted using TLS and is not sent out as cleartext. For this, the plugin exposes a CA signed certificate for the clients to authenticate itself. The plugins communicate primarily with the aggregator. To gather resource information, they can also communicate with another plugin through the north-bound APIs provided by the aggregator. For plugin-to-plugin communication, the aggregator defines a plugin role to set and allows permissions for plugins to communicate with other plugins.
+Data on the wire is encrypted using TLS and is not sent out as clear text. For this, the plugin exposes a CA signed certificate for the clients to authenticate itself. The plugins communicate with the aggregator, if required, using the northbound aggregator API. This may be needed to gather resource information that are not directly managed by the particular plugin. 
 
 API operations must adhere to the standard Restful API rules—Ensure that the API operations are not idempotent and concurrent. APIs can, in selective cases, implement capabilities to use subresources, filtering, sorting, and other value additions effectively. Return codes are fully in compliance with HTTP. A core objective of the plugin layer is to be able to perform many different operations using the primary HTTP operations —GET, PUT, POST, and DELETE.
 
@@ -71,7 +71,7 @@ Each plugin is typically started as a system service and hence requires an expli
 
 The plugin layer’s primary role is to act as a translator between the aggregator and the resource. It receives aggregator-native messages and translates them to resource-native messages one way and then receives resource-native messages that must be translated to aggregator-native messages in the other.
 
-In the context of ODIM™, the aggregator receives Redfish messages from its north-bound clients that it passes as a payload to the plugin’s API server. The plugin translates the payload to a resource-native mechanism and performs an operation on the resource. Similarly, when a plugin receives a response from the resource in the resource-native format, the plugin responds to the aggregator with a Redfish payload put in an ODIM API response. By providing a common set of endpoints that do not pertain to either the north-bound or south-bound protocols, the plugin layer is able to perform tasks on any identified protocol without modifying its existing interfaces.
+In the context of ODIM™, the aggregator receives Redfish messages from its northbound clients that it passes as a payload to the plugin’s API server. The plugin translates the payload to a resource-native mechanism and performs an operation on the resource. Similarly, when a plugin receives a response from the resource in the resource-native format, the plugin responds to the aggregator with a Redfish payload put in an ODIM API response. By providing a common set of endpoints that do not pertain to either the northbound or southbound protocols, the plugin layer is able to perform tasks on any identified protocol without modifying its existing interfaces.
 
 
 ### Certificate TLS communication
@@ -92,17 +92,21 @@ NOTE: Recommended TLS version is 1.2.
 
 ### Mandatory and optional functions implemented by plugins
 
-The plugin layer forms the southern-most boundary of Resource Aggregator for ODIM's architecture. Plugins are started by the aggregator and they use HTTPS encrypted communication for security reasons.
+The plugin layer forms the southern-most boundary of the Resource Aggregator for ODIM architecture. Plugins and the aggregator use HTTPS encrypted communication for security reasons.
 
 The plugin's primary responsibility is to interface with the resource on behalf of the aggregator. There are two key components to any plugin:
 
-1.  Control data
+- Control data
 
-    Control data describes any messages sent by the administrator to enact on a certain resource. This includes tasks such as adding a resource, discovering a resource, setting up events, and retrieving resource information among others. Control data exchange is synchronous and is initiated by the administrator or by another entity through the north-bound APIs of the aggregator.
+  Control data includes messages sent by the administrator to take action on a certain resource. Examples include tasks such as adding a resource, discovering a resource, setting up event subscriptions, retrieving resource information and so on. Control data exchange is synchronous and is initiated by the administrator or by another entity through the northbound APIs of the aggregator.
 
-2.  Event data
+- Event data
 
-    Event data describes any messages sent by the resource based on a certain previous event notification request. Resource-specific events such as component failures, telemetry, and log files among others are examples of Event data. Event data exchange is asynchronous \(a push operation\) and is initiated by the resource. This communication happens from the plugin to the aggregator only and not the opposite way.
+  Event data includes messages sent by the resource based on any previous event notification requests. Examples include resource-specific events such as component failures, recovery, status, telemetry and so on. Event data exchange is asynchronous \(it's a push operation\) and is initiated by the resource. This communication happens only from the plugin to the aggregator (using EMB) and NOT vice versa.
+
+<blockquote>
+Note: EMB is currently used as an internal interface between plugins and the aggregator. 
+</blockquote>
 
 ### Plugin API service
 
@@ -110,7 +114,7 @@ The plugin's primary responsibility is to interface with the resource on behalf 
 
 Each plugin implements API services conforming to specific standards targeted at addressing control data transfer.
 
-1.  Plugin Life cycle
+-  Plugin Life cycle
     -   Start-up handshake
 
         The start-up handshake occurs after the plugin's service has been started up by the aggregator based on incoming request. The start-up handshake method exchanges state information from the aggregator to the plugin which contains information on currently managed resources, their last-known configuration, and a list of events subscriptions for compute plugins. Fabric plugins which maintain their own state need not use this data.
@@ -119,7 +123,7 @@ Each plugin implements API services conforming to specific standards targeted at
 
         The status method provides a way for the aggregator to verify if the service is still up by providing, at a minimal level, a heartbeat response while having the option to be able to provide any other relevant information on the plugin's status.
 
-2.  Action on Resources and Collections
+-  Action on Resources and Collections
 
     Servers are an ideal example for action on resources. As an example, when the aggregator is about to take action on servers, it is typically performed on the actual resource instead of the entire collection since the collection has been updated by the resident Redfish implementation on the iLO.
 
@@ -127,7 +131,7 @@ Each plugin implements API services conforming to specific standards targeted at
 
     -   Discover
 
-        Discover tasks the plugin to look for resources that fit a certain profile and report back to the aggregator. The aggregator might then choose to take an action on the returned resources or collections. The Discover method is typically a trigger from the aggregator initiated locally by the aggregator or another north-bound entity to perform the task. Auto-discovery of resources is a desirable feature, but an optional feature at this time.
+        Discover tasks the plugin to look for resources that fit a certain profile and report back to the aggregator. The aggregator might then choose to take an action on the returned resources or collections. The Discover method is typically a trigger from the aggregator initiated locally by the aggregator or another northbound entity to perform the task. Auto-discovery of resources is a desirable feature, but an optional feature at this time.
 
         Lookup of resources, however, is not a plugin task and is implemented in the aggregator. The aggregator gets all the necessary information from the plugin and performs the filtering itself thereby reducing the need for additional processing on the plugin front keeping the tasks simpler.
 
@@ -155,56 +159,69 @@ Each plugin implements API services conforming to specific standards targeted at
 
         Plugins can optionally support a method that responds with a report on the status of an ongoing job. In situations when an immediate response cannot be relayed back, the plugin can send a `202` message indicating that it has accepted a request. This response can optionally include an endpoint that the aggregator can query for status of this ongoing request.
 
-
-
 #### Optional functions
 
-1.  Redfish OEM object processing
+- Redfish OEM object processing
 
-    Resource characteristics that are currently not covered in a Redfish approved schema \(either approved spec or draft spec\) are typically added to the OEM block within each resource type. A plugin uses the OEM object to receive and respond to changes that are unique to the resource.
+  Resource characteristics that are currently not covered in a Redfish approved schema \(either approved spec or draft spec\) are typically added to the OEM block within each resource type. A plugin uses the OEM object to receive and respond to changes that are unique to the resource.
 
-2.  Redfish Draft Schemas
+- Redfish Draft Schemas
 
-    Support for schema elements that are currently in draft status is an optional method that plugins can support. This allows an implementation of Resource Aggregator for ODIM to validate newer schemas that are relevant to the customer's use-case. A corresponding optional element to process the new schema might be provided by the aggregator for this draft schema. As an example, Redfish has a draft schema to enable `syslog` methods to be sent to a collector and this can be enabled by a server plugin. An aggregator may choose to recognize draft schemas.
+  Support for schema elements that are currently in draft status is an optional method that plugins can support. This allows an implementation of Resource Aggregator for ODIM to validate newer schemas that are relevant to the customer's use-case. A corresponding optional element to process the new schema might be provided by the aggregator for this draft schema. As an example, Redfish has a draft schema to enable `syslog` methods to be sent to a collector and this can be enabled by a server plugin. An aggregator may choose to recognize draft schemas.
 
-3.  Auto Discovery
+- Auto Discovery
 
-    Plugins can use well-defined auto discovery mechanisms, such as SSDP, to detect and report events on finding new resources added to the deployment.
+  Plugins can use well-defined auto discovery mechanisms, such as SSDP, to detect and report events on finding new resources added to the deployment.
 
 
 ### Message bus services
 
 #### Mandatory functions
 
- 
+- Events on resources
 
-1.  Events on resources:
+  The aggregator should be able to post a message requesting for a subscription to certain events on a resource. The type of events varies based on the resource in question and will be described in detail for each individual plugin.
 
-    The aggregator should be able to post a message requesting for a subscription to certain events on a resource. The type of events varies based on the resource in question and will be described in detail for each individual plugin.
+- Event synchronizer
 
-2.  Event synchronizer:
-
-    If the resource does not support a Redfish-aligned, REST-based event notification system, the plugin implements an event-oriented synchronizer that receives the event notifications in their native format \(SNMP, logs, and so on\) and responds to the aggregator or an external entity with compliant message types.
+  If the resource does not support a Redfish-aligned, REST-based event notification system, the plugin implements an event-oriented synchronizer that receives the event notifications in their native format \(SNMP, logs, and so on\) and responds to the aggregator or an external entity with compliant message types.
 
 
-#### Optional functions
+#### Optional function
 
-1.  Telemetry on resources:
+- Telemetry on resources
 
-    The aggregator can request to collect resource telemetry information that will be set up by the plugins. The type of telemetry information varies from plugin to plugin.
+  The aggregator can request to collect resource telemetry information that will be set up by the plugins. The type of telemetry information varies based on the plugin.
 
-2.  Multicast status:
+  <blockquote>
+  NOTE: All events are sent to the aggregator over the message bus. These events further deliver the redfish events as json payloads. 
+  </blockquote>
 
-    The aggregator can send a multicast request to all plugins requesting status information for all active plugins to determine the health of the system.
+## Event message bus interface
 
-<aside class="notice">
-NOTE: All events are sent to the aggregator over the message bus.
-</aside>
+The message bus interface is specified as an abstract interface. The aggregator defines the following for Golang:
 
+```
+// MQBus Interface defines the Process interface function that the message bus 
+// consumer should call). 
+// Distribute - API to publish messages into specified Pipe \(Topic/Subject\).
+// Accept - Consume the incoming message if subscribed by that component.
+// Get - Would initiate blocking call to remote process to get response.
+// Remove - remove subscription for a particular topic.
+// Close - Would disconnect the connection with Middleware.
 
-## Plugin message bus
+type MQBus interface {
+	Distribute(pipe string, data interface{}) error
+	Accept(pipe string, fn MsgProcess) error
+	Get(pipe string, d interface{}) interface{}
+	Remove(pipe string) error
+	Close()
+}
+```
 
-Plugin message bus is a mandatory function.
+The aggregator provides a concrete implementation of this interface. This Golang interface can be used by plugins implemented in go language as well. Plugins that are written in a different language will have to provide an equivalent definition. For example, plugins implemented in java will need an interface defined in java syntax and plugins developed in python will need an abstract base class to define the same.
+
+Support for a new message bus will need a new concrete implementation for this interface. The code of the aggregator/plugin at large will not have to be modified for this. The concrete implementation shall interface with the actual message bus in such a way as to provide consistent behavior to the client code.
 
 ### Message payloads
 
@@ -532,7 +549,7 @@ When adding a new subscription, follow these guidelines:
 
 The Plugin service is an in-memory process started as a docker instance as part of the overall host start-up process. This service hosts the API server, event synchronizer, load balancers, worker threads, EMB publishers and, subscribers among other entities as the implementation decides.
 
-The plugin service has the capability to schedule individual, short-lived instances that perform specific functionality as required by the north-bound entity. The current plugin service is hosted centrally. In future, it may be possible to deploy individual instances of the plugin service across distributed sites thereby allowing the plugin layer to scale.
+The plugin service has the capability to schedule individual, short-lived instances that perform specific functionality as required by the northbound entity. The current plugin service is hosted centrally. In future, it may be possible to deploy individual instances of the plugin service across distributed sites thereby allowing the plugin layer to scale.
 
 Information on parameters needed by the plugin service on start-up are available from the plugin configuration file for each instance. The files are configured as JSON files for the aggregator to read and take action. It includes information about:
 
@@ -552,12 +569,17 @@ Information on parameters needed by the plugin service on start-up are available
 
 -   Rules for converting south bound messages to ODIM format \(optionally\).
 
+NOTE: Plugins that need to share state amongst themselves will need special handling. This might apply in scenarios such as:
+-  Multiple plugin instances managing the same resource type should not poll the same resource simultaneously.
+- Multiple plugin instances should not try to create/delete/update same sub-resource simultaneously.
+- The aggregator should be able to authenticate/authorize with all instances of a plugin with a single token.
+
 
 ## Deployment guidelines
 
 The plugin layer, and all the components of ODIM™ are built in a deployment-agnostic manner. ODIM™ and all its components, including the plugin layer, must be deployed in an environment regardless of any underlying virtualization mechanism – KVM, ESX, or containers or its absence thereof. Any plugin expecting a tighter dependency on the underlying infrastructure must identify it as part of its specifications. The open-source version has packages to run on Docker. This is not a mandatory requirement. Individual projects may choose to have their own deployment platforms and strategies.
 
-The plugin component must provide access to the source code and build/deploy instructions on the source repository publically hosted on GitHub. Deployers can use this information to deploy ODIM™ and its components within their existing framework as a virtual machine or a container or a bare metal service. The individual services required by a plugin \(For example, API server\) are part of the build instructions provided by the plugin layer.
+The plugin component must provide access to the source code and build/deploy instructions on the source repository publicly hosted on GitHub. Deployers can use this information to deploy ODIM™ and its components within their existing framework as a virtual machine or a container or a bare metal service. The individual services required by a plugin \(For example, API server\) are part of the build instructions provided by the plugin layer.
 
 As an example, for a containerized version, the deployment looks as follows:
 
@@ -583,7 +605,7 @@ NOTE:
 -   When any request comes to plugin, do the following:
 
          -  Check if header has auth token or basic auth. If the header does not have auth token or basic auth, return an unauthorized error.
-
+        
          -  Check if auth token is valid or basic auth has valid user name and password. If auth token is not valid or basic auth does not have valid user name and password, return an unauthorized error.
 
 

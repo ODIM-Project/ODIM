@@ -59,24 +59,24 @@ type ChassisRPC struct {
 	CreateHandler        *chassis.Create
 }
 
-func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (resp *chassisproto.GetChassisResponse, e error) {
-
+func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.UpdateHandler.Handle(req)
 	})
 
-	rewrite(r, resp)
-	return
+	rewrite(r, &resp)
+	return &resp, nil
 }
 
-func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (resp *chassisproto.GetChassisResponse, e error) {
-
+func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.DeleteHandler.Handle(req)
 	})
 
-	rewrite(r, resp)
-	return
+	rewrite(r, &resp)
+	return &resp, nil
 }
 
 func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {

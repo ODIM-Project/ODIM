@@ -32,6 +32,8 @@ sed -i "s#\"PrivateKeyPath\".*#\"PrivateKeyPath\": \"$t/odimra_server.key\",#"  
 sed -i "s#\"CertificatePath\".*#\"CertificatePath\": \"$t/odimra_server.crt\"#" /etc/dell_plugin_config/config_dell_plugin.json
 sed -i "s#\"LBHost\".*#\"LBHost\": \"$ip\",#" /etc/dell_plugin_config/config_dell_plugin.json
 sed -i "s#\"LBPort\".*#\"LBPort\": \"45008\"#" /etc/dell_plugin_config/config_dell_plugin.json
+sed -i "s#\"InMemoryHost\".*#\"InMemoryHost\": \"redis\",#" /etc/dell_plugin_config/config_dell_plugin.json
+sed -i "s#\"OnDiskHost\".*#\"OnDiskHost\": \"redis\",#" /etc/dell_plugin_config/config_dell_plugin.json
 sed -i "s#\"MessageQueueConfigFilePath\".*#\"MessageQueueConfigFilePath\": \"/etc/dell_plugin_config/platformconfig.toml\",#" /etc/dell_plugin_config/config_dell_plugin.json
 
 ########changes in platformconfig.toml file ######

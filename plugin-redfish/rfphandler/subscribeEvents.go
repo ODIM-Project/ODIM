@@ -58,11 +58,12 @@ func CreateEventSubscription(ctx iris.Context) {
 	// remove the mesaageids, resourcestypes and originresources from the request and post it to device
 	// since some of device doesnt support these
 	req := rfpmodel.EvtSubPost{
-		Destination: "https://" + evtConfig.Data.LoadBalancerConf.Host + ":" + evtConfig.Data.LoadBalancerConf.Port + evtConfig.Data.EventConf.DestURI,
-		EventTypes:  reqPostBody.EventTypes,
-		Context:     reqPostBody.Context,
-		HTTPHeaders: reqPostBody.HTTPHeaders,
-		Protocol:    reqPostBody.Protocol,
+		Destination:     "https://" + evtConfig.Data.LoadBalancerConf.Host + ":" + evtConfig.Data.LoadBalancerConf.Port + evtConfig.Data.EventConf.DestURI,
+		EventTypes:      reqPostBody.EventTypes,
+		Context:         reqPostBody.Context,
+		HTTPHeaders:     reqPostBody.HTTPHeaders,
+		Protocol:        reqPostBody.Protocol,
+		EventFormatType: reqPostBody.EventFormatType,
 	}
 	device.PostBody, err = json.Marshal(req)
 	if err != nil {

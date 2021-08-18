@@ -152,6 +152,13 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
 				}
 			}
+		case "TelemetryService":
+			serviceNodes, err := reg.GetService(srv.Telemetry)
+			if err == nil {
+				if len(serviceNodes) != 0 {
+					serviceRoot.TelemetryService = &models.Service{OdataID: servicePath}
+				}
+			}
 		}
 	}
 
@@ -2640,7 +2647,6 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Zone.v1_6_1"},
 				},
 			},
-
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ZoneCollection_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ZoneCollection"},
@@ -2735,6 +2741,28 @@ func GetMetadata(ctx iris.Context) {
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/LogServiceCollection_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "LogServiceCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TelemetryService_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "TelemetryService.v1_0_0"},
+					models.Include{Namespace: "TelemetryService.v1_0_1"},
+					models.Include{Namespace: "TelemetryService.v1_0_2"},
+					models.Include{Namespace: "TelemetryService.v1_0_3"},
+					models.Include{Namespace: "TelemetryService.v1_0_4"},
+					models.Include{Namespace: "TelemetryService.v1_0_5"},
+					models.Include{Namespace: "TelemetryService.v1_1_0"},
+					models.Include{Namespace: "TelemetryService.v1_1_1"},
+					models.Include{Namespace: "TelemetryService.v1_1_2"},
+					models.Include{Namespace: "TelemetryService.v1_1_3"},
+					models.Include{Namespace: "TelemetryService.v1_1_4"},
+					models.Include{Namespace: "TelemetryService.v1_1_5"},
+					models.Include{Namespace: "TelemetryService.v1_2_0"},
+					models.Include{Namespace: "TelemetryService.v1_2_1"},
+					models.Include{Namespace: "TelemetryService.v1_2_2"},
+					models.Include{Namespace: "TelemetryService.v1_2_3"},
+					models.Include{Namespace: "TelemetryService.v1_3_0"},
+					models.Include{Namespace: "TelemetryService.v1_3_1"},
 				},
 			},
 		},

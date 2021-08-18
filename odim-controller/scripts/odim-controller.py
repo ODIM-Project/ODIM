@@ -1166,6 +1166,7 @@ def update_helm_charts(config_map_name):
 		"api":"odim_svc_helmcharts",
 		"events":"odim_svc_helmcharts",
 		"fabrics":"odim_svc_helmcharts",
+		"telemetry":"odim_svc_helmcharts",
 		"managers":"odim_svc_helmcharts",
 		"systems":"odim_svc_helmcharts",
                 "task":"odim_svc_helmcharts",
@@ -1188,6 +1189,7 @@ def update_helm_charts(config_map_name):
 		"api":"upgrade-config",
 		"events":"upgrade-config",
 		"fabrics":"upgrade-config",
+		"telemetry":"upgrade-config",
 		"managers":"upgrade-config",
 		"systems":"upgrade-config",
                 "task":"upgrade-config",
@@ -1626,9 +1628,9 @@ def main():
 	parser.add_argument('--dryrun', action='store_true', help='only check for configurations without deploying k8s')
 	parser.add_argument('--noprompt', action='store_true', help='do not prompt for confirmation')
 	parser.add_argument('--ignore-errors', action='store_true', help='ignore errors during odimra reset')
-	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-k8s-access-config,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,managers,systems,task,update,kafka,zookeeper,redis,consul,plugin,all,odimra,thirdparty')
+	parser.add_argument("--upgrade", help='supported values:odimra-config,odimra-platformconfig,configure-hosts,odimra-k8s-access-config,odimra-secret,kafka-secret,zookeeper-secret,account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,kafka,zookeeper,redis,consul,plugin,all,odimra,thirdparty')
 	parser.add_argument("--scale", action='store_true', help='scale odimra services and plugins')
-	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,managers,systems,task,update,all')
+	parser.add_argument("--svc", help='supported values:account-session,aggregation,api,events,fabrics,telemetry,managers,systems,task,update,all')
 	parser.add_argument("--plugin", help='release name of the plugin deployment to add,remove,upgrade or scale')
 	parser.add_argument('--add', help='supported values: plugin')
 	parser.add_argument('--remove', help='supported values: plugin')

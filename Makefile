@@ -17,7 +17,7 @@
 build/odimra/odimra:
 	mkdir build/odimra/odimra
 
-COPY =plugin-unmanaged-racks build/cert_generator  svc-account-session svc-aggregation svc-api svc-events svc-fabrics svc-managers svc-systems svc-task svc-update lib-dmtf lib-messagebus lib-persistence-manager lib-utilities plugin-redfish lib-rest-client plugin-dell
+COPY =plugin-unmanaged-racks build/cert_generator  svc-account-session svc-aggregation svc-api svc-events svc-fabrics svc-telemetry svc-managers svc-systems svc-task svc-update lib-dmtf lib-messagebus lib-persistence-manager lib-utilities plugin-redfish lib-rest-client plugin-dell
 
 copy: build/odimra/odimra
 	$(foreach var,$(COPY),cp -a $(var) build/odimra/odimra/;)

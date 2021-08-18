@@ -1,7 +1,3 @@
-odimra:
-  namespace: odim 
-  groupID: 
-  haDeploymentEnabled:
 dellplugin:
   eventListenerNodePort: 30084
   dellPluginRootServiceUUID: 

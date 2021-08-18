@@ -1,6 +1,6 @@
 user {{ item.user }} {{ item.group }};
 worker_processes auto;
-pid /opt/nginx/nginx.pid;
+pid /run/nginx.pid;
 include /etc/nginx/modules-enabled/*.conf;
 
 events {

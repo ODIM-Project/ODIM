@@ -202,7 +202,7 @@ func TestGetManagerCollection(t *testing.T) {
 		name       string
 		mgr        *Managers
 		args       args
-		StatusCode int
+		StatusCode int32
 	}{
 		{
 			name: "Request with valid token",
@@ -227,8 +227,12 @@ func TestGetManagerCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.mgr.GetManagersCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Manager.GetManagersCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			resp, err := tt.mgr.GetManagersCollection(tt.args.ctx, tt.args.req)
+			if err != nil {
+				t.Errorf("Manager.GetManagersCollection() got = %v, want %v", err, nil)
+			}
+			if resp.StatusCode != tt.StatusCode {
+				t.Errorf("Manager.GetManagersCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -244,8 +248,7 @@ func TestGetManagerwithInValidtoken(t *testing.T) {
 		ManagerID:    "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &managersproto.ManagerResponse{}
-	mgr.GetManager(ctx, req, resp)
+	resp, _ := mgr.GetManager(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusOK.")
 }
 func TestGetManagerwithValidtoken(t *testing.T) {
@@ -258,8 +261,7 @@ func TestGetManagerwithValidtoken(t *testing.T) {
 		ManagerID:    config.Data.RootServiceUUID,
 		SessionToken: "validToken",
 	}
-	var resp = &managersproto.ManagerResponse{}
-	err := mgr.GetManager(ctx, req, resp)
+	resp, err := mgr.GetManager(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 
 	var manager mgrmodel.Manager
@@ -282,8 +284,7 @@ func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 		ManagerID:    "uuid:1",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &managersproto.ManagerResponse{}
-	mgr.GetManagersResource(ctx, req, resp)
+	resp, _ := mgr.GetManagersResource(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 }
 func TestGetManagerResourcewithValidtoken(t *testing.T) {
@@ -299,8 +300,7 @@ func TestGetManagerResourcewithValidtoken(t *testing.T) {
 		URL:          "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1",
 		ResourceID:   "1",
 	}
-	var resp = &managersproto.ManagerResponse{}
-	err := mgr.GetManagersResource(ctx, req, resp)
+	resp, err := mgr.GetManagersResource(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 }
@@ -317,7 +317,7 @@ func TestVirtualMediaEject(t *testing.T) {
 		ResourceID:   "1",
 	}
 	var resp = &managersproto.ManagerResponse{}
-	err := mgr.VirtualMediaEject(ctx, req, resp)
+	resp, err := mgr.VirtualMediaEject(ctx, req)
 	fmt.Println(resp)
 	assert.Nil(t, err, "The two words should be the same.")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
@@ -330,7 +330,7 @@ func TestVirtualMediaEject(t *testing.T) {
 		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 	}
 	resp = &managersproto.ManagerResponse{}
-	mgr.VirtualMediaEject(ctx, req, resp)
+	resp, _ = mgr.VirtualMediaEject(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 
 }
@@ -352,7 +352,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 										}`),
 	}
 	var resp = &managersproto.ManagerResponse{}
-	err := mgr.VirtualMediaInsert(ctx, req, resp)
+	resp, err := mgr.VirtualMediaInsert(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
@@ -365,6 +365,6 @@ func TestVirtualMediaInsert(t *testing.T) {
 		RequestBody:  []byte(`{"Image":"http://10.1.0.1/ISO/ubuntu-18.04.4-server-amd64.iso"}`),
 	}
 	resp = &managersproto.ManagerResponse{}
-	mgr.VirtualMediaInsert(ctx, req, resp)
+	resp, _ = mgr.VirtualMediaInsert(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 }

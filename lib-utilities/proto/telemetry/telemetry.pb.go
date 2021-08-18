@@ -3,9 +3,15 @@
 
 package telemetry
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -16,7 +22,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type TelemetryRequest struct {
 	SessionToken         string   `protobuf:"bytes,1,opt,name=SessionToken,proto3" json:"SessionToken,omitempty"`
@@ -32,16 +38,17 @@ func (m *TelemetryRequest) Reset()         { *m = TelemetryRequest{} }
 func (m *TelemetryRequest) String() string { return proto.CompactTextString(m) }
 func (*TelemetryRequest) ProtoMessage()    {}
 func (*TelemetryRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_telemetry_837c53d5446c28aa, []int{0}
+	return fileDescriptor_edbfcf76559f568d, []int{0}
 }
+
 func (m *TelemetryRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TelemetryRequest.Unmarshal(m, b)
 }
 func (m *TelemetryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TelemetryRequest.Marshal(b, m, deterministic)
 }
-func (dst *TelemetryRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TelemetryRequest.Merge(dst, src)
+func (m *TelemetryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TelemetryRequest.Merge(m, src)
 }
 func (m *TelemetryRequest) XXX_Size() int {
 	return xxx_messageInfo_TelemetryRequest.Size(m)
@@ -94,16 +101,17 @@ func (m *TelemetryResponse) Reset()         { *m = TelemetryResponse{} }
 func (m *TelemetryResponse) String() string { return proto.CompactTextString(m) }
 func (*TelemetryResponse) ProtoMessage()    {}
 func (*TelemetryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_telemetry_837c53d5446c28aa, []int{1}
+	return fileDescriptor_edbfcf76559f568d, []int{1}
 }
+
 func (m *TelemetryResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_TelemetryResponse.Unmarshal(m, b)
 }
 func (m *TelemetryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_TelemetryResponse.Marshal(b, m, deterministic)
 }
-func (dst *TelemetryResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TelemetryResponse.Merge(dst, src)
+func (m *TelemetryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TelemetryResponse.Merge(m, src)
 }
 func (m *TelemetryResponse) XXX_Size() int {
 	return xxx_messageInfo_TelemetryResponse.Size(m)
@@ -148,9 +156,9 @@ func init() {
 	proto.RegisterMapType((map[string]string)(nil), "TelemetryResponse.HeaderEntry")
 }
 
-func init() { proto.RegisterFile("telemetry.proto", fileDescriptor_telemetry_837c53d5446c28aa) }
+func init() { proto.RegisterFile("telemetry.proto", fileDescriptor_edbfcf76559f568d) }
 
-var fileDescriptor_telemetry_837c53d5446c28aa = []byte{
+var fileDescriptor_edbfcf76559f568d = []byte{
 	// 384 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xc1, 0x6e, 0xda, 0x40,
 	0x10, 0xad, 0x31, 0x20, 0x31, 0x80, 0x80, 0x2d, 0x07, 0x17, 0xa9, 0xc8, 0x72, 0x7b, 0xe0, 0xe4,
@@ -176,4 +184,408 @@ var fileDescriptor_telemetry_837c53d5446c28aa = []byte{
 	0xe0, 0x6c, 0x40, 0x97, 0x9c, 0x71, 0x8e, 0x4a, 0x1f, 0x6a, 0x19, 0x95, 0xd3, 0xb9, 0x7f, 0x01,
 	0x3e, 0x23, 0x38, 0x9d, 0xd6, 0x83, 0xea, 0x3c, 0x74, 0x6d, 0x81, 0x5f, 0x65, 0x2e, 0x8a, 0xf1,
 	0xc3, 0xf0, 0xe7, 0x23, 0x00, 0x00, 0xff, 0xff, 0x24, 0x51, 0xf9, 0x42, 0x2b, 0x04, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// TelemetryClient is the client API for Telemetry service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type TelemetryClient interface {
+	GetTelemetryService(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetMetricDefinitionCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetMetricReportDefinitionCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetMetricReportCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetTriggerCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetMetricDefinition(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetMetricReportDefinition(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetMetricReport(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	GetTrigger(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+	UpdateTrigger(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error)
+}
+
+type telemetryClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewTelemetryClient(cc *grpc.ClientConn) TelemetryClient {
+	return &telemetryClient{cc}
+}
+
+func (c *telemetryClient) GetTelemetryService(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetTelemetryService", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetMetricDefinitionCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetMetricDefinitionCollection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetMetricReportDefinitionCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetMetricReportDefinitionCollection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetMetricReportCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetMetricReportCollection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetTriggerCollection(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetTriggerCollection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetMetricDefinition(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetMetricDefinition", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetMetricReportDefinition(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetMetricReportDefinition", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetMetricReport(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetMetricReport", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) GetTrigger(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/GetTrigger", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *telemetryClient) UpdateTrigger(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (*TelemetryResponse, error) {
+	out := new(TelemetryResponse)
+	err := c.cc.Invoke(ctx, "/Telemetry/UpdateTrigger", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TelemetryServer is the server API for Telemetry service.
+type TelemetryServer interface {
+	GetTelemetryService(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetMetricDefinitionCollection(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetMetricReportDefinitionCollection(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetMetricReportCollection(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetTriggerCollection(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetMetricDefinition(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetMetricReportDefinition(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetMetricReport(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	GetTrigger(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+	UpdateTrigger(context.Context, *TelemetryRequest) (*TelemetryResponse, error)
+}
+
+// UnimplementedTelemetryServer can be embedded to have forward compatible implementations.
+type UnimplementedTelemetryServer struct {
+}
+
+func (*UnimplementedTelemetryServer) GetTelemetryService(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTelemetryService not implemented")
+}
+func (*UnimplementedTelemetryServer) GetMetricDefinitionCollection(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricDefinitionCollection not implemented")
+}
+func (*UnimplementedTelemetryServer) GetMetricReportDefinitionCollection(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricReportDefinitionCollection not implemented")
+}
+func (*UnimplementedTelemetryServer) GetMetricReportCollection(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricReportCollection not implemented")
+}
+func (*UnimplementedTelemetryServer) GetTriggerCollection(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTriggerCollection not implemented")
+}
+func (*UnimplementedTelemetryServer) GetMetricDefinition(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricDefinition not implemented")
+}
+func (*UnimplementedTelemetryServer) GetMetricReportDefinition(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricReportDefinition not implemented")
+}
+func (*UnimplementedTelemetryServer) GetMetricReport(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetricReport not implemented")
+}
+func (*UnimplementedTelemetryServer) GetTrigger(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTrigger not implemented")
+}
+func (*UnimplementedTelemetryServer) UpdateTrigger(ctx context.Context, req *TelemetryRequest) (*TelemetryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTrigger not implemented")
+}
+
+func RegisterTelemetryServer(s *grpc.Server, srv TelemetryServer) {
+	s.RegisterService(&_Telemetry_serviceDesc, srv)
+}
+
+func _Telemetry_GetTelemetryService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetTelemetryService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetTelemetryService",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetTelemetryService(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetMetricDefinitionCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetMetricDefinitionCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetMetricDefinitionCollection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetMetricDefinitionCollection(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetMetricReportDefinitionCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetMetricReportDefinitionCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetMetricReportDefinitionCollection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetMetricReportDefinitionCollection(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetMetricReportCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetMetricReportCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetMetricReportCollection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetMetricReportCollection(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetTriggerCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetTriggerCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetTriggerCollection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetTriggerCollection(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetMetricDefinition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetMetricDefinition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetMetricDefinition",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetMetricDefinition(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetMetricReportDefinition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetMetricReportDefinition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetMetricReportDefinition",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetMetricReportDefinition(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetMetricReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetMetricReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetMetricReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetMetricReport(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_GetTrigger_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).GetTrigger(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/GetTrigger",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).GetTrigger(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Telemetry_UpdateTrigger_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelemetryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TelemetryServer).UpdateTrigger(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Telemetry/UpdateTrigger",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TelemetryServer).UpdateTrigger(ctx, req.(*TelemetryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Telemetry_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "Telemetry",
+	HandlerType: (*TelemetryServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetTelemetryService",
+			Handler:    _Telemetry_GetTelemetryService_Handler,
+		},
+		{
+			MethodName: "GetMetricDefinitionCollection",
+			Handler:    _Telemetry_GetMetricDefinitionCollection_Handler,
+		},
+		{
+			MethodName: "GetMetricReportDefinitionCollection",
+			Handler:    _Telemetry_GetMetricReportDefinitionCollection_Handler,
+		},
+		{
+			MethodName: "GetMetricReportCollection",
+			Handler:    _Telemetry_GetMetricReportCollection_Handler,
+		},
+		{
+			MethodName: "GetTriggerCollection",
+			Handler:    _Telemetry_GetTriggerCollection_Handler,
+		},
+		{
+			MethodName: "GetMetricDefinition",
+			Handler:    _Telemetry_GetMetricDefinition_Handler,
+		},
+		{
+			MethodName: "GetMetricReportDefinition",
+			Handler:    _Telemetry_GetMetricReportDefinition_Handler,
+		},
+		{
+			MethodName: "GetMetricReport",
+			Handler:    _Telemetry_GetMetricReport_Handler,
+		},
+		{
+			MethodName: "GetTrigger",
+			Handler:    _Telemetry_GetTrigger_Handler,
+		},
+		{
+			MethodName: "UpdateTrigger",
+			Handler:    _Telemetry_UpdateTrigger_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "telemetry.proto",
 }

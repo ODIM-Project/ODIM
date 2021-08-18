@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -39,6 +40,8 @@ func main() {
 	if err := config.SetConfiguration(); err != nil {
 		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
+
+	config.CollectCLArgs()
 
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
@@ -68,17 +71,17 @@ func main() {
 	task.OverWriteCompletedTaskUtilHelper = task.OverWriteCompletedTaskUtil
 	task.CreateTaskUtilHelper = task.CreateTaskUtil
 	task.GetCompletedTasksIndexModel = tmodel.GetCompletedTasksIndex
+
 	task.DeleteTaskFromDBModel = tmodel.DeleteTaskFromDB
 	task.DeleteTaskIndex = tmodel.DeleteTaskIndex
 	task.UpdateTaskStatusModel = tmodel.UpdateTaskStatus
 	task.PersistTaskModel = tmodel.PersistTask
 	task.ValidateTaskUserNameModel = tmodel.ValidateTaskUserName
 	task.PublishToMessageBus = tmessagebus.Publish
-
-	taskproto.RegisterGetTaskServiceHandler(services.Service.Server(), task)
+	taskproto.RegisterGetTaskServiceServer(services.ODIMService.Server(), task)
 
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }

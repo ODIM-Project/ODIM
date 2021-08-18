@@ -96,14 +96,14 @@
     mode: 0750
     recurse: yes
   loop:
-    - "{{ odimra.consulDataPath }}"
-    - "{{ odimra.consulConfPath }}"
     - "{{ odimra.kafkaConfPath }}"
     - "{{ odimra.kafkaDataPath }}"
     - "{{ odimra.redisOndiskDataPath }}"
     - "{{ odimra.redisInmemoryDataPath }}"
     - "{{ odimra.zookeeperConfPath }}"
     - "{{ odimra.zookeeperDataPath }}"
+    - "{{ odimra.etcdConfPath }}"
+    - "{{ odimra.etcdDataPath }}"
 
 - name: Create directories required for storing logs
   file:
@@ -141,14 +141,6 @@
     files:
       - "{{ odimCertsPath }}/zookeeper.keystore.jks"
       - "{{ odimCertsPath }}/zookeeper.truststore.jks"
-
-- name: Copy consul config file
-  copy:
-    src: "templates/config.json.j2"
-    dest: "{{ odimra.consulConfPath }}/config.json"
-    owner: "{{ odim_owner_name }}"
-    group: "{{ odim_owner_name }}"
-    mode: 0444
 
 - name: Get list of plugins under plugin helm charts path
   find:

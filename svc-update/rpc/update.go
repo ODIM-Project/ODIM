@@ -29,80 +29,86 @@ import (
 const SESSAUTHFAILED string = "Unable to authenticate session"
 
 // GetUpdateService is an rpc handler, it gets invoked during GET on UpdateService API (/redfis/v1/UpdateService/)
-func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	resp := &updateproto.UpdateResponse{}
 	fillProtoResponse(resp, a.connector.GetUpdateService())
-	return nil
+	return resp, nil
 }
 
 // GetFirmwareInventoryCollection an rpc handler which is invoked during GET on firmware inventory collection
-func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetAllFirmwareInventory(req))
-	return nil
+	return resp, nil
 }
 
 // GetFirmwareInventory is an rpc handler which is invoked during GET on firmware inventory
-func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetFirmwareInventory(req))
-	return nil
+	return resp, nil
 }
 
 // GetSoftwareInventoryCollection is an rpc handler which is invoked during GET on software inventory collection
-func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetAllSoftwareInventory(req))
-	return nil
+	return resp, nil
 }
 
 // GetSoftwareInventory is an rpc handler which is invoked during GET on software inventory
-func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetSoftwareInventory(req))
-	return nil
+	return resp, nil
 }
 
 // SimepleUpdate is an rpc handler, it gets involked during POST on UpdateService API actions (/Actions/UpdateService.SimpleUpdate)
-func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.External.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Warn(errMsg)
-		return nil
+		return resp, nil
 	}
 	taskURI, err := a.connector.External.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Warn(errMsg)
-		return nil
+		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
 	var taskID string
@@ -135,31 +141,33 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateRPCResponse(rpcResp, resp)
 	//fillProtoResponse(resp, a.connector.SimpleUpdate(req))
-	return nil
+	return resp, nil
 }
 
 // StartUpdate is an rpc handler, it gets involked during POST on UpdateService API actions (/Actions/UpdateService.StartUpdate)
-func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateRequest, resp *updateproto.UpdateResponse) error {
+func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
+
+	resp := &updateproto.UpdateResponse{}
 	sessionToken := req.SessionToken
 	authResp := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn("Unable to authenticate session")
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.External.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "error while trying to get the session username: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Warn(errMsg)
-		return nil
+		return resp, nil
 	}
 	taskURI, err := a.connector.External.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "error while trying to create task: " + err.Error()
 		generateRPCResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Warn(errMsg)
-		return nil
+		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
 	var taskID string
@@ -193,5 +201,5 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateRPCResponse(rpcResp, resp)
 	//fillProtoResponse(resp, a.connector.StartUpdate(req))
-	return nil
+	return resp, nil
 }

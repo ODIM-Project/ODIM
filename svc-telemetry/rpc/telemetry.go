@@ -27,115 +27,125 @@ import (
 const SESSAUTHFAILED string = "Unable to authenticate session"
 
 // GetTelemetryService is an rpc handler, it gets invoked during GET on TelemetryService API (/redfis/v1/TelemetryService/)
-func (a *Telemetry) GetTelemetryService(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetTelemetryService(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	fillProtoResponse(resp, a.connector.GetTelemetryService())
-	return nil
+	return resp, nil
 }
 
 // GetMetricDefinitionCollection an rpc handler which is invoked during GET on MetricDefinition Collection
-func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetMetricDefinitionCollection(req))
-	return nil
+	return resp, nil
 }
 
 // GetMetricReportDefinitionCollection is an rpc handler which is invoked during GET on MetricReportDefinition Collection
-func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetMetricReportDefinitionCollection(req))
-	return nil
+	return resp, nil
 }
 
 // GetMetricReportCollection is an rpc handler which is invoked during GET on MetricReport Collection
-func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetMetricReportCollection(req))
-	return nil
+	return resp, nil
 }
 
 // GetTriggerCollection is an rpc handler which is invoked during GET on TriggerCollection
-func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetTriggerCollection(req))
-	return nil
+	return resp, nil
 }
 
 // GetMetricDefinition is an rpc handler which is invoked during GET on MetricDefinition
-func (a *Telemetry) GetMetricDefinition(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetMetricDefinition(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetMetricDefinition(req))
-	return nil
+	return resp, nil
 }
 
 // GetMetricReportDefinition is an rpc handler which is invoked during GET on MetricReportDefinition
-func (a *Telemetry) GetMetricReportDefinition(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetMetricReportDefinition(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetMetricReportDefinition(req))
-	return nil
+	return resp, nil
 }
 
 // GetMetricReport is an rpc handler which is invoked during GET on MetricReport
-func (a *Telemetry) GetMetricReport(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetMetricReport(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetMetricReport(req))
-	return nil
+	return resp, nil
 }
 
 // GetTrigger is an rpc handler which is invoked during GET on Triggers
-func (a *Telemetry) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.GetTrigger(req))
-	return nil
+	return resp, nil
 }
 
 // UpdateTrigger is an rpc handler which is invoked during update on Trigger
-func (a *Telemetry) UpdateTrigger(ctx context.Context, req *teleproto.TelemetryRequest, resp *teleproto.TelemetryResponse) error {
+func (a *Telemetry) UpdateTrigger(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
+	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
-		return nil
+		return resp, nil
 	}
 	fillProtoResponse(resp, a.connector.UpdateTrigger(req))
-	return nil
+	return resp, nil
 }

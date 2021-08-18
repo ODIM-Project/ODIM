@@ -216,7 +216,7 @@ func TestTasksRPC_GetTaskMonitor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.GetTaskMonitor(tt.args.ctx, tt.args.req, tt.args.rsp); err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetTaskMonitor(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTaskMonitor() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}

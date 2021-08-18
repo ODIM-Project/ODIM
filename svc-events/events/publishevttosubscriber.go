@@ -26,11 +26,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -360,8 +361,16 @@ func postEvent(destination string, event []byte) {
 // and rediscover all of them
 func rediscoverSystemInventory(systemID, systemURL string) {
 	systemURL = strings.TrimSuffix(systemURL, "/")
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-	_, err := aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
+
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	_, err = aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})
@@ -377,9 +386,14 @@ func addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
-	fab := fabricproto.NewFabricsService(services.Fabrics, services.Service.Client())
-
-	_, err := fab.AddFabric(context.TODO(), &fabricproto.AddFabricRequest{
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		log.Error("Error while AddFabric ", err.Error())
+		return
+	}
+	defer conn.Close()
+	fab := fabricproto.NewFabricsClient(conn)
+	_, err = fab.AddFabric(context.TODO(), &fabricproto.AddFabricRequest{
 		OriginResource: origin,
 		Address:        address,
 	})
@@ -414,8 +428,16 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 	} else {
 		state = "Off"
 	}
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-	_, err := aggregator.UpdateSystemState(context.TODO(), &aggregatorproto.UpdateSystemStateRequest{
+
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	_, err = aggregator.UpdateSystemState(context.TODO(), &aggregatorproto.UpdateSystemStateRequest{
 		SystemUUID: systemUUID,
 		SystemID:   id,
 		SystemURI:  uri,
@@ -438,12 +460,17 @@ func callPluginStartUp(event common.Events) {
 		return
 	}
 
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-	_, err := aggregator.SendStartUpData(context.TODO(), &aggregatorproto.SendStartUpDataRequest{
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+	if _, err = aggregator.SendStartUpData(context.TODO(), &aggregatorproto.SendStartUpDataRequest{
 		PluginAddr: event.IP,
 		OriginURI:  message.OriginatorID,
-	})
-	if err != nil {
+	}); err != nil {
 		log.Error("failed to send plugin startup data to " + event.IP + ": " + err.Error())
 		return
 	}

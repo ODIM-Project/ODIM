@@ -76,9 +76,9 @@
     grpadd_bin_path: "{{ groupadd_path.stdout }}"
 
 - name: Create odimra group
-  shell: | 
-    {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 && 
-    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) || 
+  shell: |
+    {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 &&
+    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) ||
     {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }}
 
 - name: Create odimra user
@@ -161,3 +161,20 @@
 - name: Call plugin pre-install scripts
   include_tasks: roles/pre-install/tasks/plugins.yaml
   loop: "{{ plugin_packages.files }}"
+
+- name: Install, configure and start nginx, keepalived
+  block:
+    - name: Install and configure nginx
+      include_tasks: roles/configure-proxy/tasks/main.yaml
+
+    - name: Update nginx configuration on existing nodes
+      include_tasks: roles/update-proxy-conf/tasks/main.yaml
+      loop:
+        "{{ groups['kube-node'] }}"
+      loop_control:
+        loop_var: host_item
+      when: scenario is defined
+
+    - name: Install and configure keepalived
+      include_tasks: roles/configure-keepalived/tasks/main.yaml
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool

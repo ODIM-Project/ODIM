@@ -403,7 +403,7 @@ func GetSubscribedEvtTypes(searchKey string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	eventTypes := make([]string, 0)
+	var eventTypes []string
 	for _, sub := range subscriptions {
 		var subscription map[string]interface{}
 		if err := json.Unmarshal([]byte(sub), &subscription); err != nil {

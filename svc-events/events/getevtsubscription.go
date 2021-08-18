@@ -83,7 +83,7 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 			return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 		}
 		commonResponse := response.Response{
-			OdataType:    "#EventDestination.v1_7_0.EventDestination",
+			OdataType:    common.EventDestinationType,
 			ID:           evtSubscription.SubscriptionID,
 			Name:         evtSubscription.Name,
 			OdataContext: "/redfish/v1/$metadata#EventDestination.EventDestination",

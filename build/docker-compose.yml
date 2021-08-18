@@ -166,6 +166,7 @@ services:
       - '../build/odimra/systems.service:/etc/systemd/system/systems.service:rw'
       - '../build/odimra/task.service:/etc/systemd/system/task.service:rw'
       - '../build/odimra/fabrics.service:/etc/systemd/system/fabrics.service:rw'
+      - '../build/odimra/telemetry.service:/etc/systemd/system/telemetry.service:rw'
       - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
       - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
     command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh" 

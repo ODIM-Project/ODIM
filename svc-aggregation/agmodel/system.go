@@ -184,7 +184,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		return plugin, err
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
 	}
 
 	plugindata, err := conn.Read("Plugin", pluginID)

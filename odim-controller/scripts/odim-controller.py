@@ -14,18 +14,23 @@
 #License for the specific language governing permissions and limitations
 #under the License.
 
+import argparse, yaml, logging
+import os, sys, subprocess, grp, time
+import glob, shutil, copy, getpass
+
 from yaml import SafeDumper
 from Crypto.PublicKey import RSA
 from os import path
-
-import argparse, yaml, logging
-import os, sys, subprocess
-import glob, shutil, copy, getpass
+from logging.handlers import RotatingFileHandler
 
 # global variables
+global logger, logger_u, logger_f
 logger = None
+logger_u = None
+logger_f = None
 CONTROLLER_CONF_DATA = None
 CONTROLLER_CONF_FILE = ""
+CONTROLLER_LOG_FILE = "odim-controller.log"
 DEPLOYMENT_SRC_DIR = ""
 KUBESPRAY_SRC_PATH = ""
 CONTROLLER_SRC_PATH = ""
@@ -41,8 +46,9 @@ ANSIBLE_BECOME_PASS = ""
 DEPLOYMENT_ID = ""
 ODIMRA_SRC_PATH = ""
 ODIMRA_VAULT_BIN = ""
-MIN_REPLICA_COUNT= 0
-MAX_REPLICA_COUNT= 10
+MIN_REPLICA_COUNT = 0
+MAX_REPLICA_COUNT = 10
+MAX_LOG_FILE_SIZE = 5*1024*1024
 
 # write_node_details is used for creating hosts.yaml required
 # for deploying kuberentes cluster using kubespray. hosts.yaml
@@ -259,7 +265,7 @@ def exec(cmd, set_env):
 			universal_newlines=True)
 
 	for output in execHdlr.stdout:
-		print(output.strip())
+		logger_u.info(output.strip())
 
 	try:
 		std_out, std_err = execHdlr.communicate()
@@ -1605,21 +1611,68 @@ def remove_plugin(plugin_name):
 	os.chdir(cur_dir)
 
 def init_log():
-	global logger
+	global logger, logger_u, logger_f
 
-	logger = logging.getLogger('odim_controller')
+	# check if log path is set and use it for storing
+	# log file else create log file in current dir
+	oclp_env = os.getenv("ODIM_CONTROLLER_LOG_PATH", "./")
+	logPath = os.path.join(oclp_env, CONTROLLER_LOG_FILE)
+
+	# logger is for logging the with the configured log
+	# format to both console and the log file
+	logger = logging.getLogger('odim-controller')
 	logger.setLevel(logging.DEBUG)
 
+	# logger_u is for logging plain logs without log level,
+	# timestamp or any other tags(unformatted) to both
+	# console and the log file
+	logger_u = logging.getLogger('logger_u')
+	logger_u.setLevel(logging.DEBUG)
+
+	# logger_f is for logging plain logs without log level,
+	# timestamp or any other tags(unformatted) only to log file
+	logger_f = logging.getLogger('logger_f')
+	logger_f.setLevel(logging.DEBUG)
+
+	# consoleHdlr is the log handler to log to stdout
 	consoleHdlr = logging.StreamHandler()
 	consoleHdlr.setLevel(logging.DEBUG)
 
-	logFormatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)-5s - %(message)s')
+	# fileHdlr is the log handler to log to file
+	fileHdlr = RotatingFileHandler(logPath, mode = 'a', maxBytes=MAX_LOG_FILE_SIZE, backupCount=1, encoding=None, delay=0)
+	fileHdlr.setLevel(logging.DEBUG)
+
+	# consoleHdlr is the unformatted log handler to log to stdout
+	consoleHdlr_u = logging.StreamHandler()
+	consoleHdlr_u.setLevel(logging.DEBUG)
+
+	# fileHdlr is the unformatetd log handler to log to file
+	fileHdlr_u = RotatingFileHandler(logPath, mode = 'a', maxBytes=MAX_LOG_FILE_SIZE, backupCount=1, encoding=None, delay=0)
+	fileHdlr_u.setLevel(logging.DEBUG)
+
+	# logFormatter is for defining the log format, which will contain
+	# timestamp, logger name, log level and the log
+	logFormatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)-5s - %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
 	consoleHdlr.setFormatter(logFormatter)
+	fileHdlr.setFormatter(logFormatter)
 
 	logger.addHandler(consoleHdlr)
+	logger.addHandler(fileHdlr)
+
+	logger_u.addHandler(consoleHdlr_u)
+	logger_u.addHandler(fileHdlr_u)
+
+	logger_f.addHandler(fileHdlr_u)
 
 def main():
 	init_log()
+
+	user = getpass.getuser()
+	groups = [grp.getgrgid(g).gr_name for g in os.getgroups()]
+
+	logger_f.info("----------------------------------------------------------\n")
+	logger_f.info("%s - %s invoked by user: \"%s\"\n\tgroups: %s\n\toptions: %s",
+			time.strftime("%Y-%m-%d %H:%M:%S"), sys.argv[0], user, groups, str(sys.argv[1:]))
 
 	parser = argparse.ArgumentParser(description='ODIM controller')
 	parser.add_argument('--deploy', help='supported values: kubernetes, odimra')

@@ -16,6 +16,7 @@
 package lphandler
 
 import (
+	"encoding/json"
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-lenovo/config"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
@@ -170,4 +171,54 @@ func getInfoFromDevice(uri string, deviceDetails lpmodel.Device, ctx iris.Contex
 	}
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write([]byte(respData))
+}
+
+//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+func VirtualMediaActions(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+	//replacing the request url with south bound translation URL
+	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
+		uri = strings.Replace(uri, key, value, -1)
+	}
+	var deviceDetails lpmodel.Device
+	//Get device details from request
+	err := ctx.ReadJSON(&deviceDetails)
+	if err != nil {
+		log.Error("While trying to collect data from request, got: " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
+	device := &lputilities.RedfishDevice{
+		Host:     deviceDetails.Host,
+		Username: deviceDetails.Username,
+		Password: string(deviceDetails.Password),
+		PostBody: deviceDetails.PostBody,
+	}
+
+	// creating a eject virtual media payload for lenovo plugin
+	if strings.HasSuffix(uri, "VirtualMedia.EjectMedia") {
+		//Creating a payload for eject virtual media
+		payload := lpmodel.VirtualMediaEject{}
+		log.Info("Payload for Eject virtual media ", payload)
+		device.PostBody, err = json.Marshal(payload)
+		if err != nil {
+			log.Error(err.Error())
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(err.Error())
+			return
+		}
+	}
+	uri = convertToSouthBoundURI(uri)
+	statusCode, _, body, err := queryDevice(uri, device, http.MethodPatch)
+	if err != nil {
+		errMsg := "while performing actions on virtual media, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(statusCode)
+		ctx.WriteString(errMsg)
+		return
+	}
+
+	ctx.StatusCode(statusCode)
+	ctx.Write(body)
 }

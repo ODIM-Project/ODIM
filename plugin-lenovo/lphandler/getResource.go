@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strings"
 
+	"encoding/json"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-lenovo/config"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
@@ -102,7 +104,7 @@ func GetResource(ctx iris.Context) {
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.WriteString("Authtication with the device failed")
+		ctx.WriteString("Authentication with the device failed")
 		return
 	}
 	if resp.StatusCode >= 300 {
@@ -116,6 +118,38 @@ func GetResource(ctx iris.Context) {
 	}
 
 	respData = strings.Replace(respData, "/Bios/Pending", "/Bios/Settings", -1)
+
+	//Adding actions links under virtual media get
+	if strings.Contains(uri, "/VirtualMedia/") {
+		vmActions := dmtf.VMActions{
+			EjectMedia: dmtf.ActionTarget{
+				Target: uri + "/Actions/VirtualMedia.EjectMedia",
+			},
+			InsertMedia: dmtf.ActionTarget{
+				Target: uri + "/Actions/VirtualMedia.InsertMedia",
+			},
+		}
+		var vm = dmtf.VirtualMedia{}
+		err = json.Unmarshal([]byte(respData), &vm)
+		if err != nil {
+			errMsg := "while trying to unmarshal the response body" + err.Error()
+			log.Error(errMsg)
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(errMsg)
+			return
+		}
+		vm.Actions = vmActions
+
+		out, err := json.Marshal(vm)
+		if err != nil {
+			errMsg := "while trying to marshal the response body" + err.Error()
+			log.Error(errMsg)
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(errMsg)
+			return
+		}
+		respData = string(out)
+	}
 
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write([]byte(respData))

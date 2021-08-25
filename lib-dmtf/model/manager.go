@@ -69,3 +69,39 @@ type ManagerLinks struct {
 	Oem                     interface{} `json:"Oem,omitempty"`
 	SoftwareImages          *Link       `json:"SoftwareImages,omitempty"`
 }
+
+//VirtualMedia is a redfish virtual media model
+type VirtualMedia struct {
+	ODataContext         string      `json:"@odata.context,omitempty"`
+	ODataEtag            string      `json:"@odata.etag,omitempty"`
+	ODataID              string      `json:"@odata.id"`
+	ODataType            string      `json:"@odata.type"`
+	Actions              VMActions   `json:"Actions,omitempty"`
+	ConnectedVia         string      `json:"ConnectedVia,omitempty"`
+	Description          string      `json:"Description,omitempty"`
+	ID                   string      `json:"Id"`
+	Image                string      `json:"Image,omitempty"`
+	ImageName            string      `json:"ImageName,omitempty"`
+	Inserted             bool        `json:"Inserted,omitempty"`
+	MediaTypes           []string    `json:"MediaTypes,omitempty"`
+	Name                 string      `json:"Name"`
+	Oem                  interface{} `json:"Oem,omitempty"`
+	Password             string      `json:"Password,omitempty"`
+	TransferMethod       string      `json:"TransferMethod,omitempty"`
+	TransferProtocolType string      `json:"TransferProtocolType,omitempty"`
+	UserName             string      `json:"UserName,omitempty"`
+	VerifyCertificate    bool        `json:"VerifyCertificate,omitempty"`
+	WriteProtected       bool        `json:"WriteProtected,omitempty"`
+	Status               *Status     `json:"Status,omitempty"`
+}
+
+// VMActions contains the actions property details of virtual media
+type VMActions struct {
+	EjectMedia  ActionTarget `json:"EjectMedia"`
+	InsertMedia ActionTarget `json:"InsertMedia"`
+}
+
+// ActionTarget contains the action target
+type ActionTarget struct {
+	Target string `json:"target"`
+}

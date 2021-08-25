@@ -14,9 +14,9 @@
 #License for the specific language governing permissions and limitations
 #under the License.
 
-import argparse, yaml, logging
+import argparse, yaml, logging, traceback
 import os, sys, subprocess, grp, time
-import glob, shutil, copy, getpass
+import glob, shutil, copy, getpass, socket
 
 from yaml import SafeDumper
 from Crypto.PublicKey import RSA
@@ -24,13 +24,15 @@ from os import path
 from logging.handlers import RotatingFileHandler
 
 # global variables
-global logger, logger_u, logger_f
+global logger, logger_u, logger_f, lock
 logger = None
 logger_u = None
 logger_f = None
+lock = None
 CONTROLLER_CONF_DATA = None
 CONTROLLER_CONF_FILE = ""
 CONTROLLER_LOG_FILE = "odim-controller.log"
+CONTROLLER_LOCK_FILE = "/tmp/odim-controller.lock"
 DEPLOYMENT_SRC_DIR = ""
 KUBESPRAY_SRC_PATH = ""
 CONTROLLER_SRC_PATH = ""
@@ -97,7 +99,7 @@ def read_conf():
 
 	if not os.path.isfile(CONTROLLER_CONF_FILE):
 		logger.critical("invalid conf file %s passed, exiting!!!", CONTROLLER_CONF_FILE)
-		sys.exit(1)
+		exit(1)
 
 	logger.debug("Reading config file %s", CONTROLLER_CONF_FILE)
 	with open(CONTROLLER_CONF_FILE) as f:
@@ -111,7 +113,7 @@ def load_k8s_host_conf():
 
 	if not os.path.exists(K8S_INVENTORY_FILE):
 		logger.critical("Previous deployment data not found for %s, not an existing deployment deployment", DEPLOYMENT_ID)
-		sys.exit(1)
+		exit(1)
 
 	with open(K8S_INVENTORY_FILE) as f:
 		K8S_INVENTORY_DATA = yaml.load(f, Loader=yaml.FullLoader)
@@ -161,7 +163,7 @@ def perform_checks(skip_opt_param_check=False):
 
 	if 'deploymentID' not in CONTROLLER_CONF_DATA or CONTROLLER_CONF_DATA['deploymentID'] == None or CONTROLLER_CONF_DATA['deploymentID'] == "":
 		logger.critical("deployment ID not configured, exiting!!!")
-		sys.exit(1)
+		exit(1)
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
 
 	if not skip_opt_param_check:
@@ -170,33 +172,33 @@ def perform_checks(skip_opt_param_check=False):
 		for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
 			if cur_user != attrs['username']:
 				logger.critical("User names of local host and all remote hosts should match")
-				sys.exit(1)
+				exit(1)
 
 	if 'odimControllerSrcPath' not in CONTROLLER_CONF_DATA or \
 		CONTROLLER_CONF_DATA['odimControllerSrcPath'] == None or \
 		CONTROLLER_CONF_DATA['odimControllerSrcPath'] == "":
 		logger.critical("odim-controller source path not configured, exiting!!!")
-		sys.exit(1)
+		exit(1)
 
 	CONTROLLER_BASE_PATH = CONTROLLER_CONF_DATA['odimControllerSrcPath']
 	if not os.path.isdir(CONTROLLER_BASE_PATH):
 		logger.critical("invalid odim-controller source path configured, exiting!!!")
-		sys.exit(1)
+		exit(1)
 
 	CONTROLLER_SRC_PATH = os.path.join(CONTROLLER_BASE_PATH, 'scripts')
 	if not os.path.isdir(CONTROLLER_SRC_PATH):
 		logger.critical("%s directory does not exist, exiting!!!", CONTROLLER_SRC_PATH)
-		sys.exit(1)
+		exit(1)
 
 	KUBESPRAY_SRC_PATH = os.path.join(CONTROLLER_BASE_PATH, 'kubespray')
 	if not os.path.isdir(KUBESPRAY_SRC_PATH):
 		logger.critical("%s directory does not exist, exiting!!!", KUBESPRAY_SRC_PATH)
-		sys.exit(1)
+		exit(1)
 
 	ODIMRA_SRC_PATH = os.path.join(CONTROLLER_BASE_PATH, 'odimra')
 	if not os.path.isdir(ODIMRA_SRC_PATH):
 		logger.critical("%s directory does not exist, exiting!!!", ODIMRA_SRC_PATH)
-		sys.exit(1)
+		exit(1)
 
 	check_extract_kubespray_src()
 
@@ -246,7 +248,7 @@ def perform_checks(skip_opt_param_check=False):
 		ODIMRA_IMAGE_PATH = CONTROLLER_CONF_DATA['odimraImagePath']
 		if not os.path.isdir(ODIMRA_IMAGE_PATH):
 			logger.critical("invalid odimra image source path configured, exiting!!!")
-			sys.exit(1)
+			exit(1)
 		
 # exec is used for executing shell commands.
 # It accepts the command to be executed and environment
@@ -290,7 +292,7 @@ def copy_ssh_keys_remote_host():
 		ret = exec(sync_cmd, {'SSHPASS': ANSIBLE_BECOME_PASS})
 		if ret != 0:
 			logger.critical("Enabling password-less login to %s(%s) failed", node, attrs['ip'])
-			sys.exit(1)
+			exit(1)
 
 # gen_ssh_keys is used for generating ssh keys on the local node
 # if not present, required for enabling password-less login
@@ -379,14 +381,14 @@ def check_time_sync():
 			if (baseTimeInfo[i].find(':') == -1):
 				if baseTimeInfo[i] != timeToCompare[i]:
 					logger.critical("Time in %s(%s) is not in sync with other nodes", host, time)
-					sys.exit(1)
+					exit(1)
 			else:
 				# Compare time
 				timeStr1 =  baseTimeInfo[i].split(':')
 				timeStr2 =  timeToCompare[i].split(':')
 				if len(timeStr1) != 3 or len(timeStr2) != 3:
 					logger.critical("Timestamp fetched from %s(%s) is not in expected format", host, time)
-					sys.exit(1)
+					exit(1)
 
 				# Compare time by converting hours into minutes and add the elasped minutes too,
 				# the difference should not be greater than 1 minute
@@ -394,7 +396,7 @@ def check_time_sync():
 				timeToCompareInMins = (int(timeStr2[0]) * 60) + int(timeStr2[1])
 				if timeToCompareInMins - baseTimeInMins > 1:
 					logger.critical("Time in %s(%s) is not in sync with other nodes", host, time)
-					sys.exit(1)
+					exit(1)
 			i += 1
 
 		baseTimeInfo = time.split(' ')
@@ -445,10 +447,10 @@ def scale_in_k8s():
 
 		if confirmation != 'y' and confirmation != 'n':
 			logger.critical("Invalid input, exiting!!!")
-			sys.exit(1)
+			exit(1)
 
 		if confirmation == 'n':
-			sys.exit(0)
+			exit(0)
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
@@ -458,7 +460,7 @@ def scale_in_k8s():
 		if ret != 0:
 			logger.critical("k8s cluster scale-in failed")
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 		# copy controller config file
 		helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/post-uninstall/files/odim_controller_config.yaml')
@@ -538,10 +540,10 @@ def scale_out_k8s():
 
 		if confirmation != 'y' and confirmation != 'n':
 			logger.critical("Invalid input, exiting!!!")
-			sys.exit(1)
+			exit(1)
 
 		if confirmation == 'n':
-			sys.exit(0)
+			exit(0)
 
 	if not DRY_RUN_SET:
 		logger.info("Starting k8s cluster scale-out")
@@ -566,7 +568,7 @@ def scale_out_k8s():
 		if ret != 0:
 			logger.critical("k8s cluster scale-out failed")
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 		# copy controller config file
 		helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
@@ -584,7 +586,7 @@ def scale_out_k8s():
 		if ret != 0:
 			logger.critical("ODIMRA pre-install action failed on nodes %s", nodes_list)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 		else:
 			logger.info("ODIMRA pre-install action was successful on nodes %s", nodes_list)
 
@@ -595,6 +597,9 @@ def scale_out_k8s():
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster scale-out")
 
+# delete_k8_images is used for removing kubernetes
+# in the cluster nodes when kubernetesImagePath
+# config is set
 def delete_k8_images(host_file,nodes_list):
 	cur_dir = os.getcwd()
 	os.chdir(ODIMRA_SRC_PATH)
@@ -620,7 +625,7 @@ def remove_k8s():
 
 	if not os.path.exists(host_file):
 		logger.critical("Previous deployment data not found for %s, make sure deployment_id is correct", DEPLOYMENT_ID)
-		sys.exit(1)
+		exit(1)
 
 	with open(host_file) as f:
 		host_data = yaml.load(f, Loader=yaml.FullLoader)
@@ -638,10 +643,10 @@ def remove_k8s():
 
 		if confirmation != 'y' and confirmation != 'n':
 			logger.critical("Invalid input, exiting!!!")
-			sys.exit(1)
+			exit(1)
 
 		if confirmation == 'n':
-			sys.exit(0)
+			exit(0)
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
@@ -651,7 +656,7 @@ def remove_k8s():
 		if ret != 0:
 			logger.critical("k8s cluster reset failed")
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 		logger.info("Deleteing k8s images")
 		delete_k8_images(host_file,nodes_list)
@@ -673,7 +678,7 @@ def copy_k8_images(host_file,nodes_list):
 		if ret != 0:
 		    logger.critical("k8s image deployment failed")
 		    os.chdir(cur_dir)
-		    sys.exit(1)
+		    exit(1)
 		os.remove(helm_config_file)
 		os.chdir(KUBESPRAY_SRC_PATH)
 
@@ -686,7 +691,7 @@ def deploy_k8s():
 	host_file = os.path.join(DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 	if os.path.exists(host_file):
 		logger.error("Cluster with deployment ID %s already exists" %(DEPLOYMENT_ID))
-		sys.exit(1)
+		exit(1)
 
 	node_ip_list = ""
 	nodes_list = ""
@@ -716,7 +721,7 @@ def deploy_k8s():
 		if ret != 0:
 			logger.critical("k8s cluster hosts file generation failed")
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 		# update proxy info in ansible conf
 		update_ansible_conf()
@@ -728,11 +733,13 @@ def deploy_k8s():
 		if ret != 0:
 			logger.critical("k8s cluster deployment failed")
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster deployment")
 
+# read_file is for reading a file with read
+# only mode and returns the file descriptor
 def read_file(filepath):
 	return open(filepath, 'r').read()
 
@@ -746,12 +753,15 @@ def represent_yaml_multline_str(dumper, data):
 		return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
 	return dumper.org_represent_str(data)
 
+# reload_odimra_certs is for re-generating missing
+# cerificates and keys and reloading the config file
+# with latest content
 def reload_odimra_certs():
 	if 'odimCertsPath' not in CONTROLLER_CONF_DATA or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == None or \
 	CONTROLLER_CONF_DATA['odimCertsPath'] == "":
 		logger.critical("ODIM-RA certificates path does not exist")
-		sys.exit(1)
+		exit(1)
 
 	cert_dir = CONTROLLER_CONF_DATA['odimCertsPath']
 	if os.path.exists(os.path.join(cert_dir, '.gen_odimra_certs.ok')):
@@ -760,7 +770,7 @@ def reload_odimra_certs():
 		ret = exec(gen_cert_cmd, {})
 		if ret != 0:
 			logger.critical("ODIM-RA certificate generation failed")
-			sys.exit(1)
+			exit(1)
 
 	load_odimra_certs(True)
 
@@ -803,11 +813,11 @@ def perform_odimra_deploy_prereqs():
 		ret = exec(gen_cert_cmd, {})
 		if ret != 0:
 			logger.critical("ODIM-RA certificate generation failed")
-			sys.exit(1)
+			exit(1)
 	else:
 		if not os.path.isdir(CONTROLLER_CONF_DATA['odimCertsPath']):
 			logger.critical("ODIM-RA certificates path does not exist")
-			sys.exit(1)
+			exit(1)
 
 	load_odimra_certs(False)
 
@@ -857,7 +867,7 @@ def operation_odimra(operation):
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 	if not os.path.exists(host_file):
 		logger.error("Host file not found for deployment id %s" %(DEPLOYMENT_ID))
-		sys.exit(1)
+		exit(1)
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
@@ -892,7 +902,7 @@ def operation_odimra(operation):
 		if ret != 0:
 			logger.critical("ODIMRA %s failed on master node %s", operation, master_node)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 		if operation == "uninstall" and os.path.exists(os.path.join(CONTROLLER_CONF_DATA['odimCertsPath'], '.gen_odimra_certs.ok')):
 			logger.info("Cleaning up certificates generated for the deployment")
@@ -901,6 +911,7 @@ def operation_odimra(operation):
 		logger.info("Completed ODIMRA %s operation", operation)
 
 	os.chdir(cur_dir)
+
 
 def cleanUp():
 	if DEPLOYMENT_SRC_DIR != "":
@@ -921,7 +932,7 @@ def install_k8s():
 	perform_check_ha_deploy()
 	# Initiate k8s deployment
 	deploy_k8s()
-	sys.exit(0)
+	exit(0)
 
 # reset_k8s is for performing all the necessary steps
 # for removing k8s from the deployed nodes
@@ -934,7 +945,7 @@ def reset_k8s():
 	perform_checks(skip_opt_param_check=True)
 	# Remove k8s from the deployed nodes
 	remove_k8s()
-	sys.exit(0)
+	exit(0)
 
 # install_odimra is for performing all the necessary steps for installing ODIMRA
 def install_odimra():
@@ -947,7 +958,7 @@ def install_odimra():
 	load_k8s_host_conf()
 	# Initiate ODIMRA deployment
 	operation_odimra("install")
-	sys.exit(0)
+	exit(0)
 
 # uninstall_odimra is used for performing all the necessary steps for uninstalling ODIMRA
 def uninstall_odimra():
@@ -960,7 +971,7 @@ def uninstall_odimra():
 	load_k8s_host_conf()
 	# Initiate ODIMRA removal
 	operation_odimra("uninstall")
-	sys.exit(0)
+	exit(0)
 
 # add_k8s_node is for performing all the necessary steps
 # for adding a new node to existing k8s cluster
@@ -975,7 +986,7 @@ def add_k8s_node():
 	load_k8s_host_conf()
 	# Initiate k8s deployment on new nodes
 	scale_out_k8s()
-	sys.exit(0)
+	exit(0)
 
 # rm_k8s_node is for performing all the necessary steps
 # for removing a node from the existing k8s cluster
@@ -990,7 +1001,7 @@ def rm_k8s_node():
 	load_k8s_host_conf()
 	# Initiate node removal from k8s deployment
 	scale_in_k8s()
-	sys.exit(0)
+	exit(0)
 
 # generateRandomAlphaNum geneartes generates a random
 # string of requested length containing alphanumeric and
@@ -1017,7 +1028,7 @@ def store_vault_key():
 		first_pw, second_pw = pw_from_prompt()
 		if first_pw != second_pw:
 			logger.critical("Passwords provided do not match")
-			sys.exit(1)
+			exit(1)
 
 		fd = open(ODIMRA_VAULT_KEY_FILE, "wb")
 		fd.write(first_pw.encode('utf-8'))
@@ -1027,7 +1038,7 @@ def store_vault_key():
 		ret = exec(encode_cmd, {})
 		if ret != 0:
 			logger.critical("storing vault key failed")
-			sys.exit(1)
+			exit(1)
 
 	return
 
@@ -1041,7 +1052,7 @@ def store_password_in_vault():
 	first_pw, second_pw = pw_from_prompt()
 	if first_pw != second_pw:
 		logger.critical("Passwords provided do not match")
-		sys.exit(1)
+		exit(1)
 
 	fd = open(ANSIBLE_SUDO_PW_FILE, "wb")
 	fd.write(first_pw.encode('utf-8'))
@@ -1052,7 +1063,7 @@ def store_password_in_vault():
 	ret = exec(encrypt_cmd, {})
 	if ret != 0:
 		logger.critical("storing node password failed")
-		sys.exit(1)
+		exit(1)
 
 	ANSIBLE_BECOME_PASS = first_pw
 
@@ -1080,7 +1091,7 @@ def load_password_from_vault(cur_dir):
 		print(std_out.strip())
 		logger.critical("failed to read node password")
 		os.chdir(cur_dir)
-		sys.exit(1)
+		exit(1)
 
 	ANSIBLE_BECOME_PASS = std_out.rstrip('\n')
 
@@ -1095,14 +1106,14 @@ def check_extract_kubespray_src():
 		ret = exec(kubespray_extract_cmd, {})
 		if ret != 0:
 			logger.critical("Extracting and configuring kubespray failed")
-			sys.exit(1)
+			exit(1)
 
 def read_groupvar():
 	global GROUP_VAR_DATA
 	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all'
 	if not os.path.isfile(group_var_file):
 		logger.critical("invalid group_var file %s passed, exiting!!!", group_var_file)
-		sys.exit(1)
+		exit(1)
 
 	logger.debug("Reading group_var file %s", group_var_file)
 	with open(group_var_file) as f:
@@ -1157,8 +1168,9 @@ def upgrade_config_map(config_map_name):
 				update_helm_charts(helm_chart_name)
 		else:
 			update_helm_charts(data)
-                       
 
+# update_helm_charts is for upgrading the deployed
+# helm releases
 def update_helm_charts(config_map_name):
 	
 	optionHelmChartInfo = {
@@ -1210,7 +1222,7 @@ def update_helm_charts(config_map_name):
 
 	if config_map_name not in optionHelmChartInfo:
 		logger.critical("%s upgrade is not supported!!!", config_map_name)
-		sys.exit(1)
+		exit(1)
 
 	helmCharatGroupName=optionHelmChartInfo[config_map_name]
 	if 'haDeploymentEnabled' in CONTROLLER_CONF_DATA['odimra'] and \
@@ -1223,7 +1235,7 @@ def update_helm_charts(config_map_name):
 	fullHelmChartName = helmchartData[config_map_name]
 	if fullHelmChartName=='':
 		logger.critical("%s upgrade is not supported!!!", config_map_name)
-		sys.exit(1)
+		exit(1)
 
 	logger.info('Full helm chart name %s',fullHelmChartName)
 	cur_dir = os.getcwd()
@@ -1232,7 +1244,7 @@ def update_helm_charts(config_map_name):
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 	if not os.path.exists(host_file):
 		logger.error("Host file not found for deployment id %s" %(DEPLOYMENT_ID))
-		sys.exit(1)
+		exit(1)
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
@@ -1262,7 +1274,7 @@ def update_helm_charts(config_map_name):
 				if ret != 0:
 					logger.critical("ODIMRA %s failed to copy docker image %s", operationName, dockerImageName)
 					os.chdir(cur_dir)
-					sys.exit(1)
+					exit(1)
 				else:
 					logger.info("ODIMRA %s success copy docker image %s", operationName, dockerImageName)
 
@@ -1289,10 +1301,12 @@ def update_helm_charts(config_map_name):
 		else:
 			logger.info("Could not %s ODIMRA on any master nodes", operationName)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 
+# list_deployments is for listing the
+# helm deployed releases
 def list_deployments():
 	# Parse the conf file passed
 	read_conf()
@@ -1302,7 +1316,7 @@ def list_deployments():
 		CONTROLLER_CONF_DATA['odimra']['namespace'] == None or \
 	CONTROLLER_CONF_DATA['odimra']['namespace'] == "":
 		logger.critical("namespace not configured, exiting!!!")
-		sys.exit(1)
+		exit(1)
 
 	# load existing hosts.yaml created for the deployment_id
 	load_k8s_host_conf()
@@ -1318,8 +1332,10 @@ def list_deployments():
 			break
 
 	if not list_flag:
-		sys.exit(1)
+		exit(1)
 
+# list_deployment_history is for listing the
+# details of a particular helm deployed release
 def list_deployment_history(depName):
 	# Parse the conf file passed
 	read_conf()
@@ -1329,7 +1345,7 @@ def list_deployment_history(depName):
 		CONTROLLER_CONF_DATA['odimra']['namespace'] == None or \
 	CONTROLLER_CONF_DATA['odimra']['namespace'] == "":
 		logger.critical("namespace not configured, exiting!!!")
-		sys.exit(1)
+		exit(1)
 
 	# load existing hosts.yaml created for the deployment_id
 	load_k8s_host_conf()
@@ -1346,8 +1362,10 @@ def list_deployment_history(depName):
 			break
 
 	if not list_flag:
-		sys.exit(1)
+		exit(1)
 
+# rollback_deployment is for doing rollback of a
+# particular helm deployed release
 def rollback_deployment(depName, revision):
 	logger.info("rollback %s deployment to revision %d", depName, revision)
 
@@ -1385,10 +1403,12 @@ def rollback_deployment(depName, revision):
 		else:
 			logger.info("rollback of %s deployment to revision %d failed", depName, revision)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 
+# scale_plugin is for scaling the helm deployed
+# plugin release
 def scale_plugin(plugin_name, replica_count):
 	logger.info("scaling plugin %s deployment to replicas %d", plugin_name, replica_count)
 
@@ -1410,7 +1430,7 @@ def scale_plugin(plugin_name, replica_count):
 		pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
 		if not(path.isdir(pluginPackagePath)):
 			logger.error("%s plugin info not present in configured odimPluginPath, scaling not supported", plugin_name)
-			sys.exit(1)
+			exit(1)
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
@@ -1432,10 +1452,12 @@ def scale_plugin(plugin_name, replica_count):
 		else:
 			logger.info("failed to scale %s plugin to %d replica(s)", plugin_name, replica_count)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 
+# scale_svc is for scaling the helm deployed
+# odim service release
 def scale_svc(svc_uservice_name,replica_count):
 	logger.info("scaling svc  %s deployment to replicas %d", svc_uservice_name, replica_count)
 	# Parse the conf file passed
@@ -1458,7 +1480,7 @@ def scale_svc(svc_uservice_name,replica_count):
 def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 	if svc_uservice_name not in helmchartData:
 		logger.critical("scaling of svc %s is not supported!!!", svc_uservice_name)
-		sys.exit(1)
+		exit(1)
 	fullHelmChartName=helmchartData[svc_uservice_name]
 	logger.info('Full helm chart name %s',fullHelmChartName)
 	operationName="scale_svc"
@@ -1467,7 +1489,7 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 	if not os.path.exists(host_file):
 		logger.error("Host file not found for deployment id %s" %(DEPLOYMENT_ID))
-		sys.exit(1)
+		exit(1)
 
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
@@ -1495,7 +1517,7 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 		else:
 			logger.info("Could not %s ODIMRA on any master nodes", operationName)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 
@@ -1516,7 +1538,7 @@ def deploy_plugin(plugin_name):
 		pluginPackagePath = CONTROLLER_CONF_DATA['odimPluginPath'] + "/" + plugin_name
 		if not(path.isdir(pluginPackagePath)):
 			logger.error("%s plugin content not present in configured odimPluginPath, cannot deploy", plugin_name)
-			sys.exit(1)
+			exit(1)
 		plugin_list.append(plugin_name)
 	else:
 		temp_list = []
@@ -1557,7 +1579,7 @@ def deploy_plugin(plugin_name):
 		else:
 			logger.info("Deployment of %d plugin(s) in %s failed", upgrade_failed_count, plugin_list)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 
@@ -1606,10 +1628,12 @@ def remove_plugin(plugin_name):
 		else:
 			logger.info("Failed to remove %s plugin", plugin_name)
 			os.chdir(cur_dir)
-			sys.exit(1)
+			exit(1)
 
 	os.chdir(cur_dir)
 
+# init_log is for initializing logger for
+# logging to console and odim-controller log file
 def init_log():
 	global logger, logger_u, logger_f
 
@@ -1664,15 +1688,57 @@ def init_log():
 
 	logger_f.addHandler(fileHdlr_u)
 
+# create_lock is for creating a lock to restrict
+# multiple invocation of odim-controller CLI
+def create_lock():
+	global lock
+
+	lock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+	lock.bind(CONTROLLER_LOCK_FILE)
+
+# lockControllerInvocation is to lock and restrict
+# multiple invocation of odim-controller CLI
+def lockControllerInvocation():
+	try:
+		create_lock()
+	except socket.error as e:
+		# OSError : [Errno 98] Address already in use
+		if e.errno == 98:
+			logger.error("An instance odim-controller is already active, another execution not allowed")
+		else:
+			logger.error("failed to get lock on odim-controller invocation: %s", str(e))
+			logger_f.error('%s', traceback.format_exc())
+		sys.exit(1)
+	except Exception as e:
+		logger.error("failed to get lock on odim-controller invocation: %s", str(e))
+		logger_f.error('%s', traceback.format_exc())
+		sys.exit(1)
+
+# unlockControllerInvocation is for removing the lock
+# and to allow invocation of odim-controller CLI
+def unlockControllerInvocation():
+	try:
+		lock.close()
+		os.unlink(CONTROLLER_LOCK_FILE)
+	except Exception:
+		pass
+
+# exit is for cleaning resouces and formal exit
+def exit(code):
+	unlockControllerInvocation()
+	logger_f.info ("--------- %-7s %s ---------\n", "Ended", time.strftime("%d-%m-%Y %H:%M:%S"))
+	sys.exit(code)
+
 def main():
 	init_log()
 
 	user = getpass.getuser()
 	groups = [grp.getgrgid(g).gr_name for g in os.getgroups()]
 
-	logger_f.info("----------------------------------------------------------\n")
+	logger_f.info ("--------- %-7s %s ---------", "Started", time.strftime("%d-%m-%Y %H:%M:%S"))
 	logger_f.info("%s - %s invoked by user: \"%s\"\n\tgroups: %s\n\toptions: %s",
 			time.strftime("%Y-%m-%d %H:%M:%S"), sys.argv[0], user, groups, str(sys.argv[1:]))
+	lockControllerInvocation()
 
 	parser = argparse.ArgumentParser(description='ODIM controller')
 	parser.add_argument('--deploy', help='supported values: kubernetes, odimra')
@@ -1694,7 +1760,10 @@ def main():
 	parser.add_argument('--dep', help='deployment name, should be used with --list=history, --rollback')
 	parser.add_argument('--rollback', action='store_true', help='rollback deployment to particular revision')
 	parser.add_argument('--revision', help='revision number of the deployment, should be used with --rollback', type=int)
-	args = parser.parse_args()
+	try:
+		args = parser.parse_args()
+	except SystemExit as e:
+		exit(1)
 
 	global CONTROLLER_CONF_FILE, DRY_RUN_SET, NO_PROMPT_SET, IGNORE_ERRORS_SET
 
@@ -1703,7 +1772,7 @@ def main():
 			args.list == None and args.add == None and args.remove == None and args.rollback == False:
 		logger.critical("Atleast one mandatory option must be provided")
 		parser.print_help()
-		sys.exit(1)
+		exit(1)
 
 	if args.dryrun:
 		DRY_RUN_SET = True
@@ -1722,7 +1791,7 @@ def main():
 		else:
 			logger.critical("Unsupported value %s for deploy option", args.deploy)
 			parser.print_help()
-			sys.exit(1)
+			exit(1)
 
 	if args.reset != None:
 		if args.reset == 'kubernetes':
@@ -1736,7 +1805,7 @@ def main():
 		else:
 			logger.critical("Unsupported value %s for reset option", args.reset)
 			parser.print_help()
-			sys.exit(1)
+			exit(1)
 
 	if args.addnode != None:
 		if args.addnode == 'kubernetes':
@@ -1744,7 +1813,7 @@ def main():
 		else:
 			logger.critical("Unsupported value %s for addnode option", args.addnode)
 			parser.print_help()
-			sys.exit(1)
+			exit(1)
 
 	if args.rmnode != None:
 		if args.rmnode == 'kubernetes':
@@ -1752,13 +1821,13 @@ def main():
 		else:
 			logger.critical("Unsupported value %s for rmnode option", args.rmnode)
 			parser.print_help()
-			sys.exit(1)
+			exit(1)
 
 	if args.upgrade != None:
 		if args.upgrade == 'plugin':
 			if args.plugin == None:
 				logger.error("option --upgrade=plugin: expects --plugin argument")
-				sys.exit(1)
+				exit(1)
 			deploy_plugin(args.plugin)
 		else:
 			upgrade_config_map(args.upgrade)
@@ -1767,27 +1836,27 @@ def main():
 		if args.add == 'plugin':
 			if args.plugin == None:
 				logger.error("option --add=plugin: expects --plugin argument")
-				sys.exit(1)
+				exit(1)
 			deploy_plugin(args.plugin)
 		else:
 			logger.critical("Unsupported value %s for add option", args.add)
-			sys.exit(1)
+			exit(1)
 
 	if args.remove != None:
 		if args.remove == 'plugin':
 			if args.plugin == None:
 				logger.error("option --remove=plugin: expects --plugin argument")
-				sys.exit(1)
+				exit(1)
 			remove_plugin(args.plugin)
 		else:
 			logger.critical("Unsupported value %s for remove option", args.remove)
 			parser.print_help()
-			sys.exit(1)
+			exit(1)
 
 	if args.scale:
 		if args.replicas == None or args.replicas <= MIN_REPLICA_COUNT or args.replicas > MAX_REPLICA_COUNT:
 			logger.critical("Unsupported value %d for replicas option", args.replicas)
-			sys.exit(1)
+			exit(1)
 		if args.svc != None:
 			scale_svc(args.svc, args.replicas)
 		elif args.plugin != None:
@@ -1795,7 +1864,7 @@ def main():
 		else:
 			logger.critical("option --scale: expects --svc or --plugin argument")
 			parser.print_help()
-			sys.exit(1)
+			exit(1)
 
 	if args.list != None:
 		if args.list == 'deployment':
@@ -1803,17 +1872,27 @@ def main():
 		elif args.list == 'history':
 			if args.dep == None:
 				logger.error("option --history: expects --dep argument")
-				sys.exit(1)
+				exit(1)
 			list_deployment_history(args.dep)
 		else:
 			logger.error("Unsupported value %s for list option", args.list)
-			sys.exit(1)
+			exit(1)
 
 	if args.rollback:
 		if args.dep == None or args.revision == None:
 			logger.error("option --rollback: expects both --dep and --revision arguments")
-			sys.exit(1)
+			exit(1)
 		rollback_deployment(args.dep, args.revision)
 
 if __name__=="__main__":
-	main()
+	try:
+		main()
+	except KeyboardInterrupt:
+		logger.error("Caught interrupt from keyboard, exiting")
+		exit(1)
+	except Exception as e:
+		logger.error("Caught an exception: %s", str(e))
+		logger_f.error('%s', traceback.format_exc())
+		exit(1)
+
+	exit(0)

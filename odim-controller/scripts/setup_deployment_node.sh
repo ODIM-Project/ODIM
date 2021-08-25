@@ -242,7 +242,7 @@ pull_k8s_images()
 pull_odimra_pre_req_images()
 {
 	if [[ -z ${ODIMRA_IMAGES_PATH} ]]; then
-		echo "[$(date)] -- INFO  -- ODIMRA_IMAGES_PATH not set, not fetching kubernetes images"
+		echo "[$(date)] -- INFO  -- ODIMRA_IMAGES_PATH not set, not fetching ODIMRA deployment required images"
 		return
 	fi
 
@@ -254,6 +254,41 @@ pull_odimra_pre_req_images()
 	echo "[$(date)] -- INFO  -- ODIMRA_IMAGES_PATH set, fetching docker images required for ODIM-RA deployment"
 	docker_save "stakater/reloader" "v0.0.76" "${ODIMRA_IMAGES_PATH}/stakater_reloader.tar"
 	docker_save "busybox" "1.33" "${ODIMRA_IMAGES_PATH}/busybox.tar"
+}
+
+build_odim_images()
+{
+	if [[ -z ${ODIMRA_SRC_PATH} ]]; then
+		echo "[$(date)] -- INFO  -- ODIMRA_SRC_PATH not set, not building ODIMRA images"
+		return
+	fi
+
+	if [[ -z ${ODIMRA_USER_ID} ]] || [[ -z ${ODIMRA_GROUP_ID} ]]; then
+		echo "[$(date)] -- ERROR -- either ODIMRA_USER_ID or ODIMRA_GROUP_ID env var is not set"
+		return
+	fi
+
+	export ODIMRA_USER_ID=${ODIMRA_USER_ID}
+	export ODIMRA_GROUP_ID=${ODIMRA_GROUP_ID}
+	cur_dir=$(pwd 2>/dev/null)
+	cd ${ODIMRA_SRC_PATH}
+	/bin/bash ${ODIMRA_SRC_PATH}/build_images.sh
+	eCode=$?
+	cd ${cur_dir}
+	_if_ne_0_exit_ $eCode "failed to build ODIMRA images"
+
+	if [[ -z ${ODIMRA_IMAGES_PATH} ]]; then
+		echo "[$(date)] -- INFO  -- ODIMRA_IMAGES_PATH not set, not storing ODIMRA images"
+		return
+	fi
+
+	if [[ ! -d ${ODIMRA_IMAGES_PATH} ]]; then
+		echo "[$(date)] -- ERROR -- ${ODIMRA_IMAGES_PATH} is not a valid directory"
+		exit 1
+	fi
+
+	/bin/bash ${ODIMRA_SRC_PATH}/docker-images.sh save ${ODIMRA_IMAGES_PATH}
+	_if_ne_0_exit_ $? "failed to store ODIMRA images at ${ODIMRA_IMAGES_PATH}"
 }
 
 build_odim_vault()
@@ -277,8 +312,9 @@ build_odim_vault()
 	cur_dir=$(pwd 2>/dev/null)
 	cd ${ODIMRA_SRC_PATH}/odim-controller/scripts
 	go build -ldflags "-s -w" -o odim-vault odim-vault.go
-	_if_ne_0_exit_ $? "failed to build odim-vault binary"
+	eCode=$?
 	cd ${cur_dir}
+	_if_ne_0_exit_ $eCode "failed to build odim-vault binary"
 }
 
 create_vault_key()
@@ -295,7 +331,7 @@ create_vault_key()
 
 	echo "[$(date)] -- INFO  -- encode ${ODIMRA_VAULT_KEY_PATH} odim-vault key"
 	${ODIMRA_SRC_PATH}/odim-controller/scripts/odim-vault -encode ${ODIMRA_VAULT_KEY_PATH} &&
-	chmod 0400 ${ODIMRA_VAULT_KEY_PATH}
+	chmod 0600 ${ODIMRA_VAULT_KEY_PATH}
 	_if_ne_0_exit_ $? "failed to create odim vault key"
 }
 
@@ -320,6 +356,8 @@ install_helm
 pull_k8s_images
 
 pull_odimra_pre_req_images
+
+build_odim_images
 
 build_odim_vault
 

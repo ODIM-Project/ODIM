@@ -80,9 +80,9 @@ type VirtualMedia struct {
 	ConnectedVia         string      `json:"ConnectedVia,omitempty"`
 	Description          string      `json:"Description,omitempty"`
 	ID                   string      `json:"Id"`
-	Image                string      `json:"Image,omitempty"`
+	Image                string      `json:"Image"`
 	ImageName            string      `json:"ImageName,omitempty"`
-	Inserted             bool        `json:"Inserted,omitempty"`
+	Inserted             bool        `json:"Inserted"`
 	MediaTypes           []string    `json:"MediaTypes,omitempty"`
 	Name                 string      `json:"Name"`
 	Oem                  interface{} `json:"Oem,omitempty"`

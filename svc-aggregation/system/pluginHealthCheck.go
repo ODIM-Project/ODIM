@@ -141,7 +141,7 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret e
 				EventSubscriptionInfo: evtSubsInfo,
 			}
 		}
-		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData)
+		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData, "")
 		if err != nil {
 			ret = fmt.Errorf("%w: %w", ret, err)
 			continue
@@ -169,28 +169,29 @@ func sendPluginInventoryUpdate(plugin agmodel.Plugin, startupData interface{}) e
 		}
 		var ret error
 		for _, addr := range addrList {
+			serverName := plugin.IP
 			plugin.IP = addr
-			if _, err := sendPluginStartupRequest(plugin, startupData); err != nil {
+			if _, err := sendPluginStartupRequest(plugin, startupData, serverName); err != nil {
 				ret = fmt.Errorf("%w: %w", ret, err)
 			}
 		}
 		return ret
 	}
 
-	if _, err := sendPluginStartupRequest(plugin, startupData); err != nil {
+	if _, err := sendPluginStartupRequest(plugin, startupData, ""); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}) (*http.Response, error) {
+func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}, serverName string) (*http.Response, error) {
 	contactRequest := agmodel.PluginContactRequest{}
 	contactRequest.Plugin = plugin
 	contactRequest.URL = "/ODIM/v1/Startup"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = startupData
-	response, err := agcommon.ContactPlugin(contactRequest)
+	response, err := agcommon.ContactPlugin(contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err.Error(), response)
 		return nil, err

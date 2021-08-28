@@ -1329,7 +1329,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     docker save dellplugin:1.0 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
-8. Save the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to the ODIM plugin path.
+8. Save the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
 
     **Important**: Do NOT change the value of any parameter in this file. 
 
@@ -2726,7 +2726,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     docker save grfplugin:1.0 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
-8. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to the ODIM plugin path.
+8. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.
 
     **Important**: Do NOT change the value of any parameter in this file. 
 

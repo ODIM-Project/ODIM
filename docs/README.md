@@ -159,7 +159,7 @@
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
-- [Redfish Telemetry](#redfish-telemetry)
+- [Redfish Telemetry](#redfish-telemetry-service)
   * [Viewing the telemetry service root](#viewing-the-telemetry-service-root)
   * [Collection of metric definitions](#collection-of-metric-definitions)
   * [Single metric definition](#single-metric-definition)
@@ -10247,36 +10247,42 @@ curl -i GET \
 
 ```
 {
-   "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/PowerConsumedWatts",
-   "@odata.type":"#MetricDefinition.v1_0_3.MetricDefinition",
-   "Id":"PowerConsumedWatts",
-   "Name":"Power Consumed Watts Metric Definition",
-   "MetricType":"Numeric",
-   "Implementation":"PhysicalSensor",
-   "PhysicalContext":"PowerSupply",
-   "MetricDataType":"Decimal",
-   "Units":"W",
-   "Precision":4,
-   "Accuracy":1,
-   "Calibration":2,
-   "MinReadingRange":0,
-   "MaxReadingRange":50,
-   "SensingInterval":"PT1S",
-   "TimestampAccuracy":"PT1S",
-   "Wildcards":[
-      {
-         "Name":"ChassisID",
-         "Values":[
-            "1",
-            "2",
-            "3"
-         ]
-      }
-   ],
-   "MetricProperties":[
-      "/redfish/v1/Chassis/{ChassisID}/Power#/PowerControl/0/PowerConsumedWatts",
-      "/redfish/v1/Chassis/{ChassisID}/Power#/PowerControl/1/PowerConsumedWatts"
-   ]
+    "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
+    "@odata.etag": "W/\"1E796226\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions",
+    "@odata.type": "#MetricDefinitionCollection.MetricDefinitionCollection",
+    "Description": "Metric Definitions view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/MemoryBusUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/IOBusUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUICUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/JitterCount"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/AvgCPU0Freq"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPU0Power"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/AvgCPU1Freq"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPU1Power"
+        }
+    ],
+    "Members@odata.count": 9,
+    "Name": "Metric Definitions"
 }
 ```
 
@@ -10304,33 +10310,34 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#MetricDefinition.v1_2_0.MetricDefinition",
-   "Id":"PowerConsumedWatts",
-   "Name":"Power Consumed Watts Metric Definition",
-   "MetricType":"Numeric",
-   "Implementation":"PhysicalSensor",
-   "PhysicalContext":"PowerSupply",
-   "MetricDataType":"Decimal",
-   "Units":"W",
-   "Precision":4,
-   "Accuracy":1,
-   "Calibration":2,
-   "MinReadingRange":0,
-   "MaxReadingRange":50,
-   "SensingInterval":"PT1S",
-   "TimestampAccuracy":"PT1S",
-   "Wildcards":[
-      {
-         "Name":"ChassisID",
-         "Values":[
-            "1"
-         ]
-      }
-   ],
-   "MetricProperties":[
-      "/redfish/v1/Chassis/{ChassisID}/Power#/PowerControl/0/PowerConsumedWatts"
-   ],
-   "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/PowerConsumedWatts"
+    "@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
+    "@odata.etag": "W/\"AB720077\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
+    "@odata.type": "#MetricDefinition.v1_0_0.MetricDefinition",
+    "Calculable": "NonSummable",
+    "CalculationAlgorithm": "Average",
+    "Description": "Metric definition for CPU Utilization",
+    "Id": "CPUUtil",
+    "Implementation": "PhysicalSensor",
+    "IsLinear": true,
+    "MaxReadingRange": 100,
+    "MetricDataType": "Decimal",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil"
+    ],
+    "MetricType": "Numeric",
+    "MinReadingRange": 0,
+    "Name": "Metric definition for CPU Utilization",
+    "Units": "%",
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a:1",
+                "ba5cd083-b360-4994-bc30-12b450859b27:1"
+            ]
+        }
+    ]
 }
 ```
 
@@ -10358,51 +10365,33 @@ curl -i GET \
 
 ```
 {
-   "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/PowerMetrics",
-   "@odata.type":"#MetricReportDefinition.v1_3_0.MetricReportDefinition",
-   "Id":"PowerMetrics",
-   "Name":"Transmit and Log Power Metrics",
-   "MetricReportDefinitionType":"Periodic",
-   "MetricReportDefinitionEnabled":true,
-   "Schedule":{
-      "RecurrenceInterval":"PT0.1S"
-   },
-   "ReportActions":[
-      "RedfishEvent",
-      "LogToMetricReportsCollection"
-   ],
-   "ReportUpdates":"Overwrite",
-   "MetricReport":{
-      "@odata.id":"/redfish/v1/TelemetryService/MetricReports/PowerMetrics"
-   },
-   "Status":{
-      "State":"Enabled"
-   },
-   "Wildcards":[
-      {
-         "Name":"PWild",
-         "Values":[
-            "0",
-            "1"
-         ]
-      },
-      {
-         "Name":"TWild",
-         "Values":[
-            "Tray_1",
-            "Tray_2",
-            "Tray_3"
-         ]
-      }
-   ],
-   "MetricProperties":[
-      "/redfish/v1/Chassis/{TWild}/Power#/PowerControl/{PWild}/PowerMetrics/
-AverageConsumedWatts",
-      "/redfish/v1/Chassis/{TWild}/Power#/PowerControl/{PWild}/PowerMetrics/
-MinConsumedWatts",
-      "/redfish/v1/Chassis/{TWild}/Power#/PowerControl/{PWild}/PowerMetrics/
-MaxConsumedWatts"
-   ]
+    "@odata.context": "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
+    "@odata.etag": "W/\"BFD5C070\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions",
+    "@odata.type": "#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
+    "Description": " MetricReportDefinitions view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom4"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/MemoryBusUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/MemoryBusUtilCustom2"
+        },
+    ],
+    "Members@odata.count": 6,
+    "Name": "MetricReportDefinitions"
 }
 ```
 
@@ -10430,34 +10419,41 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#MetricReport.v1_4_2.MetricReport",
-   "Id":"AvgPlatformPowerUsage",
-   "Name":"Average Platform Power Usage metric report",
-   "ReportSequence":"127",
-   "MetricReportDefinition":{
-      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/AvgPlatformPowerUsage"
-   },
-   "MetricValues":[
-      {
-         "MetricId":"AverageConsumedWatts",
-         "MetricValue":"100",
-         "Timestamp":"2016-11-08T12:25:00-05:00",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/0/PowerConsumedWatts"
-      },
-      {
-         "MetricId":"AverageConsumedWatts",
-         "MetricValue":"94",
-         "Timestamp":"2016-11-08T13:25:00-05:00",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/0/PowerConsumedWatts"
-      },
-      {
-         "MetricId":"AverageConsumedWatts",
-         "MetricValue":"100",
-         "Timestamp":"2016-11-08T14:25:00-05:00",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/0/PowerConsumedWatts"
-      }
-   ],
-   "@odata.id":"/redfish/v1/TelemetryService/MetricReports/AvgPlatformPowerUsage"
+    "@odata.context": "/redfish/v1/$metadata#MetricReportDefinition.MetricReportDefinition",
+    "@odata.etag": "W/\"9A613B5C\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1",
+    "@odata.type": "#MetricReportDefinition.v1_0_0.MetricReportDefinition",
+    "Description": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
+    "Id": "CPUUtilCustom1",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil",
+        "SystemUsage/CPUUtil"
+    ],
+    "MetricReport": {
+        "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+    },
+    "MetricReportDefinitionType": "OnRequest",
+    "Metrics": [
+        {
+            "CollectionDuration": "PT20S",
+            "CollectionFunction": "Average",
+            "CollectionTimeScope": "Interval",
+            "MetricId": "CPUUtil"
+        }
+    ],
+    "Name": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a:1"
+            ]
+        }
+    ]
 }
 ```
 
@@ -10485,53 +10481,38 @@ curl -i GET \
 
 ```
 {
-   "@odata.id":"/redfish/v1/TelemetryService/MetricReports/PlatformPowerUsage",
-   "@odata.type":"#MetricReport.v1_3_0.MetricReport",
-   "Id":"PlatformPowerUsage",
-   "Name":"PlatformPowerUsage",
-   "MetricReportDefinition":{
-      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/
-PlatformPowerUsage"
-   },
-   "MetricValues":[
-      {
-         "Timestamp":"2016-11-08T12:25:00-05:00",
-         "MetricValue":"103",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/PowerControl/0/
-PlatformConsumedWatts"
-      },
-      {
-         "Timestamp":"2016-11-08T12:25:00-05:00",
-         "MetricValue":"103",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_2/Power#/PowerControl/0/
-PlatformConsumedWatts"
-      },
-      {
-         "Timestamp":"2016-11-08T13:25:00-05:00",
-         "MetricValue":"106",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/PowerControl/0/
-PlatformConsumedWatts"
-      },
-      {
-         "Timestamp":"2016-11-08T13:25:00-05:00",
-         "MetricValue":"106",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_2/Power#/PowerControl/0/
-PlatformConsumedWatts"
-      },
-      {
-         "Timestamp":"2016-11-08T14:25:00-05:00",
-         "MetricValue":"107",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/PowerControl/0/
-PlatformConsumedWatts"
-      },
-      {
-         "Timestamp":"2016-11-08T14:25:00-05:00",
-         "MetricValue":"107",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_2/Power#/PowerControl/0/
-PlatformConsumedWatts"
-      }
-   ]
+    "@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
+    "@odata.etag": "W/\"BFD5C070\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReports",
+    "@odata.type": "#MetricReportCollection.MetricReportCollection",
+    "Description": " Metric Reports view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom4"
+        },        
+    ],
+    "Members@odata.count": 7,
+    "Name": "Metric Reports"
 }
+ 
 ```
 
 ## Single metric report 
@@ -10558,36 +10539,56 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#MetricReport.v1_4_2.MetricReport",
-   "Id":"AvgPlatformPowerUsage",
-   "Name":"Average Platform Power Usage metric report",
-   "ReportSequence":"127",
+   "@odata.context":"/redfish/v1/$metadata#MetricReport.MetricReport",
+   "@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2",
+   "@odata.type":"#MetricReport.v1_0_0.MetricReport",
+   "Description":"Metric report of CPU Utilization for 60 minutes with sensing interval of 20 seconds.",
+   "Id":"CPUUtilCustom2",
    "MetricReportDefinition":{
-      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/AvgPlatformPowerUsage"
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom2"
    },
    "MetricValues":[
       {
-         "MetricId":"AverageConsumedWatts",
-         "MetricValue":"100",
-         "Timestamp":"2016-11-08T12:25:00-05:00",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/0/PowerConsumedWatts"
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:05Z"
       },
       {
-         "MetricId":"AverageConsumedWatts",
-         "MetricValue":"94",
-         "Timestamp":"2016-11-08T13:25:00-05:00",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/0/PowerConsumedWatts"
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:25Z"
       },
       {
-         "MetricId":"AverageConsumedWatts",
-         "MetricValue":"100",
-         "Timestamp":"2016-11-08T14:25:00-05:00",
-         "MetricProperty":"/redfish/v1/Chassis/Tray_1/Power#/0/PowerConsumedWatts"
-      }
-   ],
-   "@odata.id":"/redfish/v1/TelemetryService/MetricReports/AvgPlatformPowerUsage"
-}
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:45Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:47:05Z"
+      },
+      "Name":"Metric report of CPU Utilization for 60 minutes with sensing interval of 20 seconds."
+   }
 ```
+
+<blockquote> NOTE:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. </blockquote>
 
 ## Collection of triggers
 
@@ -10613,29 +10614,36 @@ curl -i GET \
 
 ```
 {
-   "@odata.id":"/redfish/v1/TelemetryService/Triggers/PlatformPowerCapTriggers",
-   "@odata.type":"#Triggers.v1_1_1.Triggers",
-   "Id":"PlatformPowerCapTriggers",
-   "Name":"Triggers for platform power consumed",
-   "MetricType":"Numeric",
-   "TriggerActions":[
-      "RedfishEvent"
-   ],
-   "NumericThresholds":{
-      "UpperCritical":{
-         "Reading":50,
-         "Activation":"Increasing",
-         "DwellTime":"PT0.001S"
-      },
-      "UpperWarning":{
-         "Reading":48.1,
-         "Activation":"Increasing",
-         "DwellTime":"PT0.004S"
-      }
-   },
-   "MetricProperties":[
-      "/redfish/v1/Chassis/1/Power#/PowerControl/0/PowerConsumedWatts"
-   ]
+    "@odata.context": "/redfish/v1/$metadata#TriggersCollection.TriggersCollection",
+    "@odata.etag": "W/\"DA402EBA\"",
+    "@odata.id": "/redfish/v1/TelemetryService/Triggers",
+    "@odata.type": "#TriggersCollection.TriggersCollection",
+    "Description": " Triggers view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/MemoryBusUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/IOBusUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUICUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/JitterCountTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPU1PowerTriggers"
+        }
+    ],
+    "Members@odata.count": 7,
+    "Name": "Triggers"
 }
 ```
 
@@ -10663,29 +10671,45 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Triggers.v1_1_4.Triggers",
-   "Id":"PlatformPowerCapTriggers",
-   "Name":"Triggers for platform power consumed",
-   "MetricType":"Numeric",
-   "TriggerActions":[
-      "RedfishEvent"
-   ],
-   "NumericThresholds":{
-      "UpperCritical":{
-         "Reading":50,
-         "Activation":"Increasing",
-         "DwellTime":"PT0.001S"
-      },
-      "UpperWarning":{
-         "Reading":48.1,
-         "Activation":"Increasing",
-         "DwellTime":"PT0.004S"
-      }
-   },
-   "MetricProperties":[
-      "/redfish/v1/Chassis/1/Power#/PowerControl/0/PowerConsumedWatts"
-   ],
-   "@odata.id":"/redfish/v1/TelemetryService/Triggers/{TriggerID}"
+    "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
+    "@odata.etag": "W/\"BFAAE441\"",
+    "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
+    "@odata.type": "#Triggers.v1_0_0.Triggers",
+    "Description": "Triggers for CPU Utilization",
+    "Id": "CPUUtilTriggers",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil"
+    ],
+    "MetricType": "Numeric",
+    "Name": "Triggers for CPU Utilization",
+    "NumericThresholds": {
+        "LowerCritical": {
+            "Activation": "Decreasing",
+            "DwellTime": "PT0S",
+            "Reading": 0
+        },
+        "UpperCritical": {
+            "Activation": "Increasing",
+            "DwellTime": "PT0S",
+            "Reading": 0
+        }
+    },
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "TriggerActions": [
+        "LogToLogService"
+    ],
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a:1",
+                "ba5cd083-b360-4994-bc30-12b450859b27:1"
+            ]
+        }
+    ]
 }
 ```
 

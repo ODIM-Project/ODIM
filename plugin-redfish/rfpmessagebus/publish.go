@@ -36,17 +36,14 @@ func Publish(data interface{}) bool {
 		return false
 	}
 	event := data.(common.Events)
-
-	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
-	if err != nil {
-		log.Error("Unable communicate with kafka, got:" + err.Error())
-		return false
+	if event.EventType == "PluginStartUp" {
+		return writeToMessageBus(event)
 	}
-	defer K.Close()
+
 	// this map is to check what type of event is recieved.
 	// if @odata.type contains MetricReport then its of type MetricReport message objects else event message objects
 	var metricReportEventDataMap map[string]interface{}
-	err = json.Unmarshal(event.Request, &metricReportEventDataMap)
+	err := json.Unmarshal(event.Request, &metricReportEventDataMap)
 	if err != nil {
 		log.Error("Failed to unmarshal the event, got: " + err.Error())
 		return false
@@ -60,9 +57,7 @@ func Publish(data interface{}) bool {
 	if err != nil {
 		return false
 	}
-	topic := config.Data.MessageBusConf.EmbQueue[0]
-	if err := K.Distribute(topic, event); err != nil {
-		log.Error("Unable Publish events to kafka, got: " + err.Error())
+	if !writeToMessageBus(event) {
 		return false
 	}
 	log.Info("Forwarded event: " + string(event.Request))
@@ -110,6 +105,7 @@ func formatMetricReportEventRequest(eventRequest common.Events) (common.Events, 
 	updatedData = strings.Replace(updatedData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+systemUUID+":", -1)
 
 	event.Request, _ = json.Marshal(updatedData)
+	event.IP = eventRequest.IP
 	event.EventType = "MetricReport"
 
 	return event, nil
@@ -184,4 +180,20 @@ func getIPFromHostName(fqdn string) string {
 		return ""
 	}
 	return fmt.Sprintf("%v", addr[0])
+}
+
+func writeToMessageBus(events common.Events) bool {
+	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
+	if err != nil {
+		log.Error("Unable communicate with kafka, got: " + err.Error())
+		return false
+	}
+	defer K.Close()
+
+	topic := config.Data.MessageBusConf.EmbQueue[0]
+	if err := K.Distribute(topic, events); err != nil {
+		log.Error("Unable Publish events to kafka, got: " + err.Error())
+		return false
+	}
+	return true
 }

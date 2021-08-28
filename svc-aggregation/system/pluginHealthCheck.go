@@ -72,7 +72,7 @@ func checkPluginStatus(phc *agcommon.PluginHealthCheckInterface, plugin agmodel.
 		switch {
 		case count != 0 && active:
 			agcommon.SetPluginStatusRecord(plugin.ID, 0)
-			if err := sharePluginInventory(plugin, true); err != nil {
+			if err := sharePluginInventory(plugin, true, plugin.IP); err != nil {
 				log.Error("failed to update server inventory of plugin " +
 					plugin.ID + ": " + err.Error())
 				agcommon.SetPluginStatusRecord(plugin.ID, count+1)
@@ -99,7 +99,7 @@ func PushPluginStartUpData(plugin agmodel.Plugin, startUpData *agmodel.PluginSta
 	return sendPluginInventoryUpdate(plugin, *startUpData)
 }
 
-func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret error) {
+func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, serverName string) (ret error) {
 	phc := agcommon.PluginHealthCheckInterface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 	}
@@ -141,7 +141,7 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool) (ret e
 				EventSubscriptionInfo: evtSubsInfo,
 			}
 		}
-		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData)
+		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData, serverName)
 		if err != nil {
 			ret = fmt.Errorf("%w: %w", ret, err)
 			continue
@@ -169,28 +169,29 @@ func sendPluginInventoryUpdate(plugin agmodel.Plugin, startupData interface{}) e
 		}
 		var ret error
 		for _, addr := range addrList {
+			serverName := plugin.IP
 			plugin.IP = addr
-			if _, err := sendPluginStartupRequest(plugin, startupData); err != nil {
+			if _, err := sendPluginStartupRequest(plugin, startupData, serverName); err != nil {
 				ret = fmt.Errorf("%w: %w", ret, err)
 			}
 		}
 		return ret
 	}
 
-	if _, err := sendPluginStartupRequest(plugin, startupData); err != nil {
+	if _, err := sendPluginStartupRequest(plugin, startupData, plugin.IP); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}) (*http.Response, error) {
+func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}, serverName string) (*http.Response, error) {
 	contactRequest := agmodel.PluginContactRequest{}
 	contactRequest.Plugin = plugin
 	contactRequest.URL = "/ODIM/v1/Startup"
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = startupData
-	response, err := agcommon.ContactPlugin(contactRequest)
+	response, err := agcommon.ContactPlugin(contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
 		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err.Error(), response)
 		return nil, err
@@ -201,6 +202,7 @@ func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}) (*
 
 func sendFullPluginInventory(pluginIP string, plugin agmodel.Plugin) error {
 	var reSubsEvent bool
+	serverName := plugin.IP
 
 	count, exist := agcommon.GetPluginStatusRecord(plugin.ID)
 	if !exist || count > 0 {
@@ -213,7 +215,7 @@ func sendFullPluginInventory(pluginIP string, plugin agmodel.Plugin) error {
 		plugin.IP = pluginIP
 	}
 
-	if err := sharePluginInventory(plugin, reSubsEvent); err != nil {
+	if err := sharePluginInventory(plugin, reSubsEvent, serverName); err != nil {
 		log.Errorf("failed to update server inventory of plugin %s(%s): %s", plugin.ID, plugin.IP, err.Error())
 		agcommon.SetPluginStatusRecord(plugin.ID, count+1)
 		return err

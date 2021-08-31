@@ -328,7 +328,10 @@ func (phc *PluginHealthCheckInterface) getAllServers(pluginID string) ([]agmodel
 }
 
 // ContactPlugin is for sending requests to a plugin.
-func ContactPlugin(req agmodel.PluginContactRequest) (*http.Response, error) {
+func ContactPlugin(req agmodel.PluginContactRequest, serverName string) (*http.Response, error) {
+	req.LoginCredential = map[string]string{}
+	//ToDo: Variable "LoginCredentials" to be changed
+	req.LoginCredential["ServerName"] = serverName
 	if strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
 		payload := map[string]interface{}{
 			"Username": req.Plugin.Username,
@@ -342,10 +345,8 @@ func ContactPlugin(req agmodel.PluginContactRequest) (*http.Response, error) {
 		}
 		req.Token = response.Header.Get("X-Auth-Token")
 	} else {
-		req.LoginCredential = map[string]string{
-			"UserName": req.Plugin.Username,
-			"Password": string(req.Plugin.Password),
-		}
+		req.LoginCredential["UserName"] = req.Plugin.Username
+		req.LoginCredential["Password"] = string(req.Plugin.Password)
 	}
 	reqURL := fmt.Sprintf("https://%s%s", net.JoinHostPort(req.Plugin.IP, req.Plugin.Port), req.URL)
 	return pmbhandle.ContactPlugin(reqURL, req.HTTPMethodType, req.Token, "", req.PostBody, req.LoginCredential)

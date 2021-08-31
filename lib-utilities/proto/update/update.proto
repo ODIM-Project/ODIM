@@ -31,7 +31,6 @@ message UpdateRequest {
     string resourceID=4;
 }
 
-
 message UpdateResponse {
     int32 statusCode = 1;
     string statusMessage = 2;

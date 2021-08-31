@@ -136,9 +136,8 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 	telemetry := new(Telemetry)
 	telemetry.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *teleproto.TelemetryRequest
-		resp *teleproto.TelemetryResponse
+		ctx context.Context
+		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
 		name    string
@@ -150,8 +149,7 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 			name: "positive GetTelemetryService",
 			a:    telemetry,
 			args: args{
-				req:  &teleproto.TelemetryRequest{SessionToken: "validToken"},
-				resp: &teleproto.TelemetryResponse{},
+				req: &teleproto.TelemetryRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
 		},
@@ -159,15 +157,14 @@ func TestTelemetry_GetTelemetryService(t *testing.T) {
 			name: "auth fail",
 			a:    telemetry,
 			args: args{
-				req:  &teleproto.TelemetryRequest{SessionToken: "invalidToken"},
-				resp: &teleproto.TelemetryResponse{},
+				req: &teleproto.TelemetryRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetTelemetryService(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.GetTelemetryService(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Telemetry.GetTelemetryService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -178,9 +175,8 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 	telemetry := new(Telemetry)
 	telemetry.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *teleproto.TelemetryRequest
-		resp *teleproto.TelemetryResponse
+		ctx context.Context
+		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
 		name       string
@@ -195,7 +191,6 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 200,
 		},
 		{
@@ -205,14 +200,13 @@ func TestTelemetry_GetMetricDefinitionCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "invalidToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 401,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetMetricDefinitionCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Telemetry.GetMetricDefinitionCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			if resp, err := tt.a.GetMetricDefinitionCollection(tt.args.ctx, tt.args.req); err != nil {
+				t.Errorf("Telemetry.GetMetricDefinitionCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -222,9 +216,8 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 	telemetry := new(Telemetry)
 	telemetry.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *teleproto.TelemetryRequest
-		resp *teleproto.TelemetryResponse
+		ctx context.Context
+		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
 		name       string
@@ -239,7 +232,6 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 200,
 		},
 		{
@@ -249,14 +241,13 @@ func TestTelemetry_GetMetricReportDefinitionCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "invalidToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 401,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetMetricReportDefinitionCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Telemetry.GetMetricReportDefinitionCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			if resp, err := tt.a.GetMetricReportDefinitionCollection(tt.args.ctx, tt.args.req); err != nil {
+				t.Errorf("Telemetry.GetMetricReportDefinitionCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -266,9 +257,8 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 	telemetry := new(Telemetry)
 	telemetry.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *teleproto.TelemetryRequest
-		resp *teleproto.TelemetryResponse
+		ctx context.Context
+		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
 		name       string
@@ -283,7 +273,6 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 200,
 		},
 		{
@@ -293,14 +282,13 @@ func TestTelemetry_GetMetricReportCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "invalidToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 401,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetMetricReportCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Telemetry.GetMetricReportCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			if resp, err := tt.a.GetMetricReportCollection(tt.args.ctx, tt.args.req); err != nil {
+				t.Errorf("Telemetry.GetMetricReportCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -310,9 +298,8 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 	telemetry := new(Telemetry)
 	telemetry.connector = mockGetExternalInterface()
 	type args struct {
-		ctx  context.Context
-		req  *teleproto.TelemetryRequest
-		resp *teleproto.TelemetryResponse
+		ctx context.Context
+		req *teleproto.TelemetryRequest
 	}
 	tests := []struct {
 		name       string
@@ -327,7 +314,6 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "validToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 200,
 		},
 		{
@@ -337,14 +323,13 @@ func TestTelemetry_GetTriggerCollection(t *testing.T) {
 				req: &teleproto.TelemetryRequest{
 					SessionToken: "invalidToken",
 				},
-				resp: &teleproto.TelemetryResponse{},
 			}, StatusCode: 401,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetTriggerCollection(tt.args.ctx, tt.args.req, tt.args.resp); err != nil {
-				t.Errorf("Telemetry.GetTriggerCollection() got = %v, want %v", tt.args.resp.StatusCode, tt.StatusCode)
+			if resp, err := tt.a.GetTriggerCollection(tt.args.ctx, tt.args.req); err != nil {
+				t.Errorf("Telemetry.GetTriggerCollection() got = %v, want %v", resp.StatusCode, tt.StatusCode)
 			}
 		})
 	}
@@ -359,8 +344,8 @@ func TestGetMetricDefinitionwithInValidtoken(t *testing.T) {
 		ResourceID:   "custom1",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	telemetry.GetMetricDefinition(ctx, req, resp)
+	resp, err := telemetry.GetMetricDefinition(ctx, req)
+	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -372,8 +357,7 @@ func TestGetMetricDefinitionwithValidtoken(t *testing.T) {
 		ResourceID:   "custom1",
 		SessionToken: "validToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	err := telemetry.GetMetricDefinition(ctx, req, resp)
+	resp, err := telemetry.GetMetricDefinition(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
@@ -387,8 +371,8 @@ func TestGetMetricReportDefinitionwithInValidtoken(t *testing.T) {
 		ResourceID:   "custom1",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	telemetry.GetMetricReportDefinition(ctx, req, resp)
+	resp, err := telemetry.GetMetricReportDefinition(ctx, req)
+	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -400,8 +384,7 @@ func TestGetMetricReportDefinitionwithValidtoken(t *testing.T) {
 		ResourceID:   "custom1",
 		SessionToken: "validToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	err := telemetry.GetMetricReportDefinition(ctx, req, resp)
+	resp, err := telemetry.GetMetricReportDefinition(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
@@ -414,8 +397,8 @@ func TestGetMetricReportwithInValidtoken(t *testing.T) {
 	req := &teleproto.TelemetryRequest{
 		SessionToken: "InvalidToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	telemetry.GetMetricReport(ctx, req, resp)
+	resp, err := telemetry.GetMetricReport(ctx, req)
+	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -428,8 +411,7 @@ func TestGetMetricReportwithValidtoken(t *testing.T) {
 		SessionToken: "validToken",
 		URL:          "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	err := telemetry.GetMetricReport(ctx, req, resp)
+	resp, err := telemetry.GetMetricReport(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
@@ -443,8 +425,8 @@ func TestGetTriggerwithInValidtoken(t *testing.T) {
 		ResourceID:   "custom1",
 		SessionToken: "InvalidToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	telemetry.GetTrigger(ctx, req, resp)
+	resp, err := telemetry.GetTrigger(ctx, req)
+	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -456,8 +438,7 @@ func TestGetTriggerwithValidtoken(t *testing.T) {
 		ResourceID:   "custom1",
 		SessionToken: "validToken",
 	}
-	var resp = &teleproto.TelemetryResponse{}
-	err := telemetry.GetTrigger(ctx, req, resp)
+	resp, err := telemetry.GetTrigger(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }

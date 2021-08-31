@@ -98,5 +98,8 @@ echo
 mv client.key odimra_kafka_client.key
 mv client.crt odimra_kafka_client.crt
 
+# generate etcd server certificates
+/bin/bash generate_etcd_certs.sh
+
 # cleanup temp files generated
 rm -f odimra_server.csr rootCA.srl client.csr

@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -40,6 +41,8 @@ func main() {
 	if err := config.SetConfiguration(); err != nil {
 		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
+
+	config.CollectCLArgs()
 
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
@@ -92,7 +95,7 @@ func main() {
 	go startUPInterface.SubscribePluginEMB()
 
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -105,5 +108,5 @@ func registerHandler() {
 	events.CreateTaskRPC = services.CreateTask
 	events.UpdateTaskRPC = evt.UpdateTaskData
 	events.CreateChildTaskRPC = services.CreateChildTask
-	eventsproto.RegisterEventsHandler(services.Service.Server(), events)
+	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 }

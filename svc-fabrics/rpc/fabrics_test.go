@@ -20,13 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabrics"
-	"io/ioutil"
-	"net/http"
-	"testing"
 
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -153,9 +154,8 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 		ContactClientRPC: mockContactClient,
 	}
 	type args struct {
-		ctx  context.Context
-		req  *fabricsproto.FabricRequest
-		resp *fabricsproto.FabricResponse
+		ctx context.Context
+		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
 		name    string
@@ -172,13 +172,12 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 					URL:          "/redfish/v1/Fabrics/fabid1",
 					Method:       "GET",
 				},
-				resp: &fabricsproto.FabricResponse{},
 			}, wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.f.GetFabricResource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.f.GetFabricResource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Fabrics.GetFabricResource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -206,9 +205,8 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 		ContactClientRPC: mockContactClient,
 	}
 	type args struct {
-		ctx  context.Context
-		req  *fabricsproto.FabricRequest
-		resp *fabricsproto.FabricResponse
+		ctx context.Context
+		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
 		name    string
@@ -226,13 +224,12 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 					RequestBody:  postData,
 					Method:       "POST",
 				},
-				resp: &fabricsproto.FabricResponse{},
 			}, wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.f.UpdateFabricResource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.f.UpdateFabricResource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Fabrics.UpdateFabricResource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -257,9 +254,8 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 		ContactClientRPC: mockContactClient,
 	}
 	type args struct {
-		ctx  context.Context
-		req  *fabricsproto.FabricRequest
-		resp *fabricsproto.FabricResponse
+		ctx context.Context
+		req *fabricsproto.FabricRequest
 	}
 	tests := []struct {
 		name    string
@@ -276,13 +272,12 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 					URL:          "/redfish/v1/Fabrics/fabid1",
 					Method:       "DELETE",
 				},
-				resp: &fabricsproto.FabricResponse{},
 			}, wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.f.DeleteFabricResource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.f.DeleteFabricResource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Fabrics.DeleteFabricResource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -307,9 +302,8 @@ func TestFabrics_AddFabric(t *testing.T) {
 	}
 
 	type args struct {
-		ctx  context.Context
-		req  *fabricsproto.AddFabricRequest
-		resp *fabricsproto.FabricResponse
+		ctx context.Context
+		req *fabricsproto.AddFabricRequest
 	}
 	tests := []struct {
 		name    string
@@ -325,13 +319,12 @@ func TestFabrics_AddFabric(t *testing.T) {
 					OriginResource: "/redfish/v1/Fabrics/a926dec5-61eb-499b-988a-d45b45847466",
 					Address:        "localhost",
 				},
-				resp: &fabricsproto.FabricResponse{},
 			}, wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.f.AddFabric(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.f.AddFabric(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Fabrics.AddFabric() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

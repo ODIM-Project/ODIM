@@ -223,7 +223,7 @@ func routers() *iris.Application {
 		// Routes related to Update service
 		update := pluginRoutes.Party("/UpdateService", lpmiddleware.BasicAuth)
 		update.Post("/Actions/UpdateService.SimpleUpdate", lphandler.SimpleUpdate)
-		update.Post("/Actions/UpdateService.StartUpdate", lphandler.StartUpdate)
+		update.Post("/Actions/UpdateService.StartUpdate", lphandler.SimpleUpdate)
 		update.Get("/FirmwareInventory", lphandler.GetResource)
 		update.Get("/FirmwareInventory/{id}", lphandler.GetResource)
 		update.Get("/SoftwareInventory", lphandler.GetResource)

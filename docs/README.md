@@ -10588,7 +10588,8 @@ curl -i GET \
    }
 ```
 
-<blockquote> NOTE:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. </blockquote>
+<blockquote> NOTE:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. 
+This is an implementation choice in Resource Aggregator for ODIM because Telemetry service is defined for a collection of BMCs and not for an individual BMC as per the DMTF Redfish specification.</blockquote>
 
 ## Collection of triggers
 

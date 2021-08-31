@@ -16,7 +16,7 @@
 package lphandler
 
 import (
-	pluginConfig "github.com/ODIM-Project/ODIM/plugin-lenovo/config"
+	"encoding/json"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
@@ -42,6 +42,8 @@ func SimpleUpdate(ctx iris.Context) {
 	}
 	var deviceDetails lpmodel.Device
 	uri := ctx.Request().RequestURI
+	uri = translateToSouthBoundURL(uri)
+	log.Debug("Incoming uri in SimpleUpdate : ", uri)
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
@@ -51,91 +53,51 @@ func SimpleUpdate(ctx iris.Context) {
 		ctx.WriteString(errMsg)
 		return
 	}
-
-	var reqData string
-	//replacing the request url with south bound translation URL
-	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
-		uri = strings.Replace(uri, key, value, -1)
-		reqData = strings.Replace(string(deviceDetails.PostBody), key, value, -1)
-	}
-
-	device := &lputilities.RedfishDevice{
-		Host:     deviceDetails.Host,
-		Username: deviceDetails.Username,
-		Password: string(deviceDetails.Password),
-		PostBody: []byte(reqData),
-	}
-
-	redfishClient, err := lputilities.GetRedfishClient()
+	var requestBody map[string]interface{}
+	err = json.Unmarshal(deviceDetails.PostBody, &requestBody)
 	if err != nil {
-		errMsg := "While trying to create the redfish client, got:" + err.Error()
-		log.Error(errMsg)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.WriteString(errMsg)
-		return
-	}
-	//Update BMC resource
-	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
-	if err != nil {
-		errorMessage := "While trying to update BMC resource, got: " + err.Error()
-		log.Error(errorMessage)
-		if resp == nil {
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString(errorMessage)
-			return
-		}
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		body = []byte("While trying to read the response body, got: " + err.Error())
-		log.Error(string(body))
-	}
-
-	ctx.StatusCode(resp.StatusCode)
-	ctx.Write(body)
-}
-
-// StartUpdate updates the BMC resources
-func StartUpdate(ctx iris.Context) {
-	//Get token from Request
-	token := ctx.GetHeader("X-Auth-Token")
-	//Validating the token
-	if token != "" {
-		flag := TokenValidation(token)
-		if !flag {
-			log.Error("Invalid/Expired X-Auth-Token")
-			ctx.StatusCode(http.StatusUnauthorized)
-			ctx.WriteString("Invalid/Expired X-Auth-Token")
-			return
-		}
-	}
-	var deviceDetails lpmodel.Device
-	uri := ctx.Request().RequestURI
-	//Get device details from request
-	err := ctx.ReadJSON(&deviceDetails)
-	if err != nil {
-		errMsg := "Error while trying to collect data from request: " + err.Error()
-		log.Error(errMsg)
+		log.Error("While trying to unmarshal request, got: " + err.Error())
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString(errMsg)
+		ctx.WriteString("Error: bad request.")
 		return
 	}
+	log.Debug("Incoming request body in SimpleUpdate: ", requestBody)
+	delete(requestBody, "Targets")
+	urlList := strings.Split(uri, ".")
+	if requestBody["@Redfish.OperationApplyTimeSupport"] != nil && urlList[1] == "SimpleUpdate" {
+		body := `{"error":{"code": Base.1.4.Success,"message": "See @Message.ExtendedInfo for more information.","@Message.ExtendedInfo":[{"MessageId": "Base.1.4.Success"}]}}`
+		ctx.StatusCode(http.StatusOK)
+		ctx.WriteString(body)
+		return
+	}
+	if urlList[1] == "StartUpdate" {
+		uri = strings.Replace(uri, "StartUpdate", "SimpleUpdate", -1)
+		delete(requestBody, "@Redfish.OperationApplyTimeSupport")
+	}
 
+	marshalBody, err := json.Marshal(requestBody)
+	if err != nil {
+		log.Error("While trying to marshal request, got: " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+	}
 	device := &lputilities.RedfishDevice{
 		Host:     deviceDetails.Host,
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
+		PostBody: marshalBody,
 	}
-
 	redfishClient, err := lputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		errMsg := "While trying to get redfish client, got: " + err.Error()
 		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
+	log.Debug("URI for device in SimpleUpdate:", uri)
+	log.Debug("Payload for device in SimpleUpdate:", string(marshalBody))
+
 	//Update BMC resource
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
@@ -150,10 +112,12 @@ func StartUpdate(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		body = []byte("While trying to read the response body, got: " + err.Error())
-		log.Error(string(body))
+		errorMessage := "While trying to update BMC resource, got: " + err.Error()
+		log.Error(errorMessage)
+		ctx.WriteString(errorMessage)
 	}
-
+	log.Debug("Device response status : ", resp.StatusCode)
+	log.Debug("Device response body in SimpleUpdate: ", string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }

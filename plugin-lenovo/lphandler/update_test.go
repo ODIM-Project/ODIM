@@ -29,6 +29,7 @@ func TestSimpleUpdate(t *testing.T) {
 	redfishRoutes := mockApp.Party("/ODIM/v1")
 
 	redfishRoutes.Post("/UpdateService/Actions.SimpleUpdate", SimpleUpdate)
+	redfishRoutes.Post("/UpdateService/Actions.StartUpdate", SimpleUpdate)
 	lpresponse.PluginToken = "token"
 	test := httptest.New(t, mockApp)
 	attributes := map[string]interface{}{"ImageUri": "abc",
@@ -41,27 +42,5 @@ func TestSimpleUpdate(t *testing.T) {
 		"PostBody":       attributeByte,
 	}
 	test.POST("/ODIM/v1/UpdateService/Actions.SimpleUpdate").WithJSON(requestBody).Expect().Status(http.StatusOK)
-}
-
-func TestStartUpdate(t *testing.T) {
-	config.SetUpMockConfig(t)
-
-	deviceHost := "localhost"
-	devicePort := "1234"
-	ts := startTestServer(mockSimpleUpdate)
-	// Start the server.
-	ts.StartTLS()
-	defer ts.Close()
-	mockApp := iris.New()
-	redfishRoutes := mockApp.Party("/ODIM/v1")
-
-	redfishRoutes.Post("/UpdateService/Actions.StartUpdate", StartUpdate)
-	lpresponse.PluginToken = "token"
-	test := httptest.New(t, mockApp)
-	requestBody := map[string]interface{}{
-		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),
-		"UserName":       "admin",
-		"Password":       []byte("P@$$w0rd"),
-	}
 	test.POST("/ODIM/v1/UpdateService/Actions.StartUpdate").WithJSON(requestBody).Expect().Status(http.StatusOK)
 }

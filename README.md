@@ -90,7 +90,7 @@ Resource Aggregator for ODIM comprises the following two key components:
    -  Cisco ACI plugin: Plugin for managing Cisco ACI servers
    -  Integration of additional third-party plugins
    
-   Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
+   Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/main/plugin-redfish/README.md).
 
 ## Filing Resource Aggregator for ODIM defects 
 

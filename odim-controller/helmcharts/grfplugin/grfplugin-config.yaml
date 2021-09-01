@@ -1,7 +1,3 @@
-odimra:
-  namespace: odim
-  groupID:
-  haDeploymentEnabled:
 grfplugin:
   eventListenerNodePort: 30081
   logPath: /var/log/grfplugin_logs

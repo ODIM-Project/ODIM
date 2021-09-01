@@ -184,7 +184,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		return plugin, err
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
 	}
 
 	plugindata, err := conn.Read("Plugin", pluginID)
@@ -1073,6 +1073,37 @@ func UpdateDeviceSubscription(devSubscription common.DeviceSubscription) error {
 	}
 	if err := conn.UpdateDeviceSubscription(common.DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources); err != nil {
 		return fmt.Errorf("error while trying to update subscription of device %v", err.Error())
+	}
+	return nil
+}
+
+// CheckMetricRequest will check the DB to see whether there are any active requests for the given key
+// It will return true if there is an active request or false if not
+// It will also through an error if any DB connection issues arise
+func CheckMetricRequest(key string) (bool, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return false, errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	_, err = conn.Read("ActiveMetricRequest", key)
+	if err != nil {
+		if errors.DBKeyNotFound == err.ErrNo() {
+			return false, nil
+		}
+		return false, errors.PackError(err.ErrNo(), "error: while trying to fetch active connection details: ", err.Error())
+	}
+	return true, nil
+}
+
+// DeleteMetricRequest deletes the active request key from the DB, return error if any
+func DeleteMetricRequest(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err = conn.Delete("ActiveMetricRequest", key)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to delete active connection details: ", err.Error())
 	}
 	return nil
 }

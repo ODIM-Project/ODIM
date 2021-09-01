@@ -1,7 +1,8 @@
 ---
 - name: Perform pre-install steps required for ODIM-RA deployment
   hosts: '{{ host }}'
-
+  vars:
+    scenario: 'add-node'
   roles:
     - odimra-copy-image
     - pre-install

@@ -26,12 +26,12 @@
   command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
   loop: "{{ odim_pv_pvc_secrets_helmcharts | dict2items  }}"
 
-- name: Deploy consul, redis, kafka, zookeeper services
+- name: Deploy etcd, redis, kafka, zookeeper services
   command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
   loop: "{{ odim_third_party_helmcharts | dict2items  }}"
   when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
 
-- name: Deploy consul, redis, kafka, zookeeper HA services
+- name: Deploy etcd, redis, kafka, zookeeper HA services
   command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
   loop: "{{ odim_third_party_ha_helmcharts | dict2items  }}"
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool

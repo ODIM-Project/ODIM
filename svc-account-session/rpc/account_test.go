@@ -129,7 +129,8 @@ func TestAccount_Create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.Create(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.a.Create(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Account.Create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -183,7 +184,8 @@ func TestAccount_GetAllAccounts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetAllAccounts(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.a.GetAllAccounts(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Account.GetAllAccounts() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -242,7 +244,8 @@ func TestAccount_GetAccount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetAccount(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.a.GetAccount(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Account.GetAccount() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -295,7 +298,8 @@ func TestAccount_GetAccountServices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetAccountServices(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.a.GetAccountServices(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Account.GetAccountServices() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -361,7 +365,8 @@ func TestAccount_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.Update(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.a.Update(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Account.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -420,7 +425,8 @@ func TestAccount_Delete(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.Delete(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			_, err := tt.a.Delete(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
 				t.Errorf("Account.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

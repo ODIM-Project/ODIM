@@ -1,7 +1,8 @@
 ---
 - name: Perform post-uninstall steps to clean up ODIM-RA data
   hosts: '{{ host }}'
-
+  vars:
+    scenario: 'rm-node'
   roles:
     - plugin-delete-image
     - odimra-delete-image

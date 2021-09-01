@@ -21,12 +21,15 @@ nodes:
   <Node1_Hostname>:
     ip: <Node1_IPAddress>
     username: <Node1_Username>
+    priority: 100
   <Node2_Hostname>:
     ip: <Node2_IPAddress>
     username: <Node2_Username>
+    priority: 99
   <Node3_Hostname>:
     ip: <Node3_IPAddress>
     username: <Node3_Username>
+    priority: 98
 odimControllerSrcPath:
 odimVaultKeyFilePath:
 odimCertsPath:
@@ -55,8 +58,8 @@ odimra:
   apiNodePort: 30080
   kafkaNodePort: 30092
   
-  consulDataPath: /etc/consul/data
-  consulConfPath: /etc/consul/conf
+  etcdConfPath: /etc/etcd/conf
+  etcdDataPath: /etc/etcd/data
   
   kafkaConfPath: /etc/kafka/conf
   kafkaDataPath: /etc/kafka/data
@@ -80,3 +83,5 @@ odimra:
   odimraRSAPrivateKey:
   odimraKafkaClientCert:
   odimraKafkaClientKey:
+  odimraEtcdServerCert:
+  odimraEtcdServerKey:

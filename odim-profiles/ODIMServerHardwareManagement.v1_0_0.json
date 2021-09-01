@@ -1,0 +1,303 @@
+{
+  "SchemaDefinition": "RedfishInteroperabilityProfile.v1_3_0",
+  "ProfileName": "ODIMServerHardwareManagement",
+  "ProfileVersion": "1.0.0",
+  "Purpose": "Specifies the ODIM management requirements for the Redfish interface on ODIM Server platforms",
+  "OwningEntity": "ODIM Open Source Projec",
+  "ContactInfo": "tsc@odim.org",
+  "RequiredProfiles": {
+    "ODIMBaselineHardwareManagement": {
+      "MinVersion": "1.0.0"
+    }
+  },
+  "Resources": {
+    "ComputerSystem": {
+      "MinVersion": "1.12.0",
+      "PropertyRequirements": {
+        "AssetTag": {
+          "ReadRequirement": "Mandatory",
+          "WriteRequirement": "Mandatory"
+        },
+        "SystemType": {},
+        "SerialNumber": {},
+        "Manufacturer": {},
+        "MemorySummary": {
+          "PropertyRequirements": {
+            "TotalSystemMemoryGiB": {}
+          }
+        },
+        "ProcessorSummary": {
+          "PropertyRequirements": {
+            "Count": {},
+            "LogicalProcessorCount": {"ReadRequirement": "Recommended"},
+            "Model": {}
+          }
+        },
+        "Model": {},
+        "SKU": {
+          "ReadRequirement": "Recommended",
+          "ConditionalRequirements": [
+            {
+              "Purpose": "Either PartNumber or SKU (or both) must be implemented.",
+              "CompareProperty": "PartNumber",
+              "Comparison": "Absent",
+              "ReadRequirement": "Mandatory"
+            }
+          ]
+        },
+        "PartNumber": {
+          "ReadRequirement": "Recommended",
+          "ConditionalRequirements": [{
+            "Purpose": "Either PartNumber or SKU (or both) must be implemented.",
+            "CompareProperty": "SKU",
+            "Comparison": "Absent",
+            "ReadRequirement": "Mandatory"
+          }]
+        },
+        "PowerState": {},
+        "BiosVersion": {},
+        "UUID": {},
+        "IndicatorLED": {
+          "ReadRequirement": "Recommended",
+          "ConditionalRequirements": [{
+            "Purpose": "Physical Systems must have a writable Indicator LED",
+            "CompareProperty": "SystemType",
+            "Comparison": "AnyOf",
+            "Values": ["Physical"],
+            "ReadRequirement": "Mandatory",
+            "WriteRequirement": "Mandatory"
+          }]
+        },
+        "Status": {
+          "PropertyRequirements": {
+            "State": {},
+            "Health": {}
+          }
+        },
+        "Boot": {
+          "PropertyRequirements": {
+            "BootSourceOverrideEnabled": {},
+            "BootSourceOverrideMode": {
+              "ReadRequirement": "Recommended"
+            },
+            "BootSourceOverrideTarget": {},
+            "UefiTargetBootSourceOverride": {
+              "ReadRequirement": "Recommended",
+              "ConditionalRequirements": [{
+                "Purpose": "If UEFI mode is selected, must allow for UEFI target.",
+                "CompareProperty": "BootSourceOverrideMode",
+                "Comparison": "Equal",
+                "Values": ["UEFI"],
+                "ReadRequirement": "Mandatory"
+              }]
+            }
+          }
+        },
+        "LogServices": {
+          "ReadRequirement": "Recommended"
+        },
+        "Links": {
+          "PropertyRequirements": {
+            "Chassis": {},
+            "ManagedBy": {}
+          }
+        },
+        "Storage": {}
+      },
+      "ActionRequirements": {
+        "Reset": {
+          "ReadRequirement": "Mandatory",
+          "Parameters": {
+            "ResetType": {
+              "AllowableValues": ["ForceOff", "On", "ForceRestart"],
+              "Purpose": "Minimal set to allow power on, off and reboot.",
+              "ReadRequirement": "Mandatory"
+            }
+          }
+        }
+      }
+    },
+    "ComputerSystemCollection": {
+      "PropertyRequirements": {
+        "Members": {
+          "MinCount": 1
+        }
+      }
+    },
+    "EthernetInterface": {
+      "MinVersion": "1.6.1",
+      "ReadRequirement": "Recommended",
+      "PropertyRequirements": {
+        "MACAddress": {},
+        "SpeedMbps": {"ReadRequirement": "Recommended"},
+        "InterfaceEnabled": {},
+        "LinkStatus": {},
+        "Status": {
+          "PropertyRequirements": {
+            "Health": {},
+            "State": {}
+          }
+        },
+        "HostName": {"ReadRequirement": "Recommended"},
+        "FQDN": {"ReadRequirement": "Recommended"},
+        "NameServers": {},
+        "IPv4Addresses": {
+          "PropertyRequirements": {
+            "Address": {},
+            "SubnetMask": {},
+            "AddressOrigin": {},
+            "Gateway": {}
+          }
+        }
+      }
+    },
+    "Power": {
+      "ReadRequirement": "Mandatory",
+      "PropertyRequirements": {
+        "PowerControl": {
+          "PropertyRequirements": {
+            "PowerConsumedWatts": {},
+            "PowerCapacityWatts": {},
+            "PowerLimit": {
+              "PropertyRequirements": {
+                "LimitInWatts": {},
+                "LimitException": {"ReadRequirement": "Recommended"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "Storage": {
+      "Drives": {
+        "MinCount": 0
+      },
+      "StorageControllers": {
+        "MinCount": 0
+      },
+      "Volumes": {}
+    },
+    "VolumeCollection": {
+      "PropertyRequirements": {
+        "Members": {
+          "MinCount": 0
+        }
+      }
+    },
+    "Drive": {
+      "BlockSizeBytes": {},
+      "CapacityBytes": {},
+      "Links": {
+        "Volumes": {}
+      },
+      "MediaType": {},
+      "Model": {},
+      "PhysicalLocation": {
+        "PartLocation": {
+          "LocationOrdinalValue": {},
+          "LocationType": {},
+          "ServiceLabel": {
+            "ReadRequirement": "Recommended"
+          }
+        }
+      },
+      "Revision": {},
+      "RotationSpeedRPM": {},
+      "SerialNumber": {
+        "ReadRequirement": "Recommended"
+      },
+      "SKU": {
+        "ReadRequirement": "Recommended"
+      },
+      "PartNumber": {
+        "ReadRequirement": "Recommended"
+      },
+      "Status": {}
+    },
+    "StorageController": {
+      "FirmwareVersion": {},
+      "Location": {
+        "PartLocation": {
+          "LocationOrdinalValue": {},
+          "LocationType": {},
+          "ServiceLabel": {
+            "ReadRequirement": "Recommended"
+          }
+        }
+      },
+      "Manufacturer": {},
+      "MemberId": {},
+      "Model": {},
+      "Name": {},
+      "SKU": {
+        "ReadRequirement": "Recommended"
+      },
+      "PartNumber": {
+        "ReadRequirement": "Recommended"
+      },
+      "SerialNumber": {},
+      "Status": {}
+    },
+    "Volume": {
+      "CapacityBytes": {
+        "ReadRequirement": "Mandatory",
+        "WriteRequirement": "Mandatory"
+      },
+      "Encrypted": {
+        "ReadRequirement": "Mandatory",
+        "WriteRequirement": "Mandatory"
+      },
+      "Identifiers": {},
+      "Links": {
+        "Drives": {}
+      },
+      "Name": {},
+      "RAIDType": {},
+      "Status": {}
+    },
+    "Thermal": {
+      "MinVersion": "1.6.2",
+      "PropertyRequirements": {
+        "Temperatures": {
+          "ReadRequirement": "Mandatory",
+          "MinCount": 3,
+          "PropertyRequirements": {
+            "ReadingCelsius": {},
+            "PhysicalContext": {
+              "Comparison": "AllOf",
+              "Values": ["CPU", "Intake", "SystemBoard"]
+            },
+            "UpperThresholdFatal": {
+              "ReadRequirement": "Recommended"
+            },
+            "UpperThresholdCritical": {
+              "ReadRequirement": "Recommended"
+            },
+            "UpperThresholdNonCritical": {
+              "ReadRequirement": "Recommended"
+            },
+            "Status": {}
+          }
+        },
+        "Redundancy": {
+          "ReadRequirement": "IfImplemented",
+          "PropertyRequirements": {
+            "MemberId": {},
+            "RedundancySet": {},
+            "Mode": {},
+            "Status": {},
+            "MinNumNeeded": {},
+            "MaxNumSupported": {
+              "ReadRequirement": "Recommended"
+            }
+          }
+        }
+      }
+    },
+    "ServiceRoot": {
+      "PropertyRequirements": {
+        "Systems": {}
+      }
+    }
+  }
+}

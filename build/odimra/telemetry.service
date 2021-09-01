@@ -1,0 +1,30 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+[Unit]
+Description=Telemetry Service
+Requires=network-online.target
+After=network-online.target
+[Service]
+Type=forking
+Restart=always
+ExecStart=/bin/sh -c 'cd /bin ; export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json; sudo -E -u odimra nohup ./svc-telemetry --registry=etcd --registry_address=etcd:2379 --server_address=odimra:45106  --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/telemetry.log 2>&1 &'
+KillMode=process
+KillSignal=SIGTERM
+User=root
+StartLimitBurst=3
+RestartSec=3
+StartLimitInterval=100
+[Install]
+WantedBy=multi-user.target
+

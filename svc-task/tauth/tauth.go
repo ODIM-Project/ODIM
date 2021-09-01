@@ -18,15 +18,10 @@ package auth
 import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
-	micro "github.com/micro/go-micro"
+	"github.com/sirupsen/logrus"
 )
 
-var service micro.Service
-
-func init() {
-	service = micro.NewService(micro.Name("svc.task.client"))
-	service.Init()
-}
+var log = logrus.New()
 
 // Authentication is used to authenticate using session token from svc-account-session
 func Authentication(sessionToken string, privileges []string) response.RPC {

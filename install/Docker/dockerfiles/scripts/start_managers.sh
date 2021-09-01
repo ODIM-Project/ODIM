@@ -40,9 +40,9 @@ run_forever()
 
 start_manager()
 {
-        registry_address="consul:8500"
+        registry_address="etcd:2379"
 	export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
-	nohup /bin/svc-managers --registry=consul --registry_address=${registry_address} --server_address=managers:45107 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/managers.log 2>&1 &
+	nohup /bin/svc-managers --registry=etcd --registry_address=${registry_address} --server_address=managers:45107  --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s >> /var/log/odimra_logs/managers.log 2>&1 &
 	PID=$!
 	sleep 3
 

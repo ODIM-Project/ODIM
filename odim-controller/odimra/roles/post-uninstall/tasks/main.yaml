@@ -27,14 +27,14 @@
     state: absent
   loop:
     - "{{ odimra.appsLogPath }}"
-    - "{{ odimra.consulDataPath }}"
-    - "{{ odimra.consulConfPath }}"
     - "{{ odimra.kafkaConfPath }}"
     - "{{ odimra.kafkaDataPath }}"
     - "{{ odimra.redisOndiskDataPath }}"
     - "{{ odimra.redisInmemoryDataPath }}"
     - "{{ odimra.zookeeperConfPath }}"
     - "{{ odimra.zookeeperDataPath }}"
+    - "{{ odimra.etcdConfPath }}"
+    - "{{ odimra.etcdDataPath }}"
   ignore_errors: "{{ ignore_err }}"
 
 - name: Get userdel bin path
@@ -59,4 +59,12 @@
 
     - name: Remove and cleanup keepalived
       include_tasks: roles/remove-keepalived/tasks/main.yaml
+
+    - name: Update nginx configuration on existing nodes
+      include_tasks: roles/update-proxy-conf/tasks/main.yaml
+      loop:
+        "{{ groups['kube-node'] }}"
+      loop_control:
+        loop_var: host_item
+      when: scenario is defined
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool

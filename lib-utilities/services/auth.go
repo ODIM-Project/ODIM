@@ -33,7 +33,15 @@ import (
 // A RPC call is made with these parameters to the Account-Session service
 // to check whether the session is valid and have all the privileges which are passed to it.
 func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errResponse.RPC {
-	asService := authproto.NewAuthorizationService(AccountSession, Service.Client())
+	conn, err := ODIMService.Client(AccountSession)
+	if err != nil {
+
+		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
+	}
+	defer conn.Close()
+	asService := authproto.NewAuthorizationClient(conn)
 	response, err := asService.IsAuthorized(
 		context.TODO(),
 		&authproto.AuthRequest{
@@ -56,7 +64,12 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 
 // GetSessionUserName will get user name from the session token by rpc call to account-session service
 func GetSessionUserName(sessionToken string) (string, error) {
-	asService := sessionproto.NewSessionService(AccountSession, Service.Client())
+	conn, err := ODIMService.Client(AccountSession)
+	if err != nil {
+		return "", fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
 	response, err := asService.GetSessionUserName(
 		context.TODO(),
 		&sessionproto.SessionRequest{

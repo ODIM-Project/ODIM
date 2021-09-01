@@ -3,9 +3,15 @@
 
 package aggregator
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -16,12 +22,12 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type AggregatorRequest struct {
-	SessionToken         string   `protobuf:"bytes,1,opt,name=SessionToken,proto3" json:"SessionToken,omitempty"`
-	RequestBody          []byte   `protobuf:"bytes,2,opt,name=RequestBody,proto3" json:"RequestBody,omitempty"`
-	URL                  string   `protobuf:"bytes,3,opt,name=URL,proto3" json:"URL,omitempty"`
+	SessionToken         string   `protobuf:"bytes,1,opt,name=SessionToken,json=sessionToken,proto3" json:"SessionToken,omitempty"`
+	RequestBody          []byte   `protobuf:"bytes,2,opt,name=RequestBody,json=requestBody,proto3" json:"RequestBody,omitempty"`
+	URL                  string   `protobuf:"bytes,3,opt,name=URL,json=uRL,proto3" json:"URL,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -31,16 +37,17 @@ func (m *AggregatorRequest) Reset()         { *m = AggregatorRequest{} }
 func (m *AggregatorRequest) String() string { return proto.CompactTextString(m) }
 func (*AggregatorRequest) ProtoMessage()    {}
 func (*AggregatorRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{0}
+	return fileDescriptor_60785b04c84bec7e, []int{0}
 }
+
 func (m *AggregatorRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AggregatorRequest.Unmarshal(m, b)
 }
 func (m *AggregatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_AggregatorRequest.Marshal(b, m, deterministic)
 }
-func (dst *AggregatorRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AggregatorRequest.Merge(dst, src)
+func (m *AggregatorRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AggregatorRequest.Merge(m, src)
 }
 func (m *AggregatorRequest) XXX_Size() int {
 	return xxx_messageInfo_AggregatorRequest.Size(m)
@@ -86,16 +93,17 @@ func (m *AggregatorResponse) Reset()         { *m = AggregatorResponse{} }
 func (m *AggregatorResponse) String() string { return proto.CompactTextString(m) }
 func (*AggregatorResponse) ProtoMessage()    {}
 func (*AggregatorResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{1}
+	return fileDescriptor_60785b04c84bec7e, []int{1}
 }
+
 func (m *AggregatorResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AggregatorResponse.Unmarshal(m, b)
 }
 func (m *AggregatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_AggregatorResponse.Marshal(b, m, deterministic)
 }
-func (dst *AggregatorResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AggregatorResponse.Merge(dst, src)
+func (m *AggregatorResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AggregatorResponse.Merge(m, src)
 }
 func (m *AggregatorResponse) XXX_Size() int {
 	return xxx_messageInfo_AggregatorResponse.Size(m)
@@ -135,8 +143,8 @@ func (m *AggregatorResponse) GetBody() []byte {
 }
 
 type RediscoverSystemInventoryRequest struct {
-	SystemID             string   `protobuf:"bytes,1,opt,name=SystemID,proto3" json:"SystemID,omitempty"`
-	SystemURL            string   `protobuf:"bytes,2,opt,name=SystemURL,proto3" json:"SystemURL,omitempty"`
+	SystemID             string   `protobuf:"bytes,1,opt,name=SystemID,json=systemID,proto3" json:"SystemID,omitempty"`
+	SystemURL            string   `protobuf:"bytes,2,opt,name=SystemURL,json=systemURL,proto3" json:"SystemURL,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -146,16 +154,17 @@ func (m *RediscoverSystemInventoryRequest) Reset()         { *m = RediscoverSyst
 func (m *RediscoverSystemInventoryRequest) String() string { return proto.CompactTextString(m) }
 func (*RediscoverSystemInventoryRequest) ProtoMessage()    {}
 func (*RediscoverSystemInventoryRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{2}
+	return fileDescriptor_60785b04c84bec7e, []int{2}
 }
+
 func (m *RediscoverSystemInventoryRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RediscoverSystemInventoryRequest.Unmarshal(m, b)
 }
 func (m *RediscoverSystemInventoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_RediscoverSystemInventoryRequest.Marshal(b, m, deterministic)
 }
-func (dst *RediscoverSystemInventoryRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RediscoverSystemInventoryRequest.Merge(dst, src)
+func (m *RediscoverSystemInventoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RediscoverSystemInventoryRequest.Merge(m, src)
 }
 func (m *RediscoverSystemInventoryRequest) XXX_Size() int {
 	return xxx_messageInfo_RediscoverSystemInventoryRequest.Size(m)
@@ -181,7 +190,7 @@ func (m *RediscoverSystemInventoryRequest) GetSystemURL() string {
 }
 
 type RediscoverSystemInventoryResponse struct {
-	TaskURL              string   `protobuf:"bytes,1,opt,name=TaskURL,proto3" json:"TaskURL,omitempty"`
+	TaskURL              string   `protobuf:"bytes,1,opt,name=TaskURL,json=taskURL,proto3" json:"TaskURL,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -191,16 +200,17 @@ func (m *RediscoverSystemInventoryResponse) Reset()         { *m = RediscoverSys
 func (m *RediscoverSystemInventoryResponse) String() string { return proto.CompactTextString(m) }
 func (*RediscoverSystemInventoryResponse) ProtoMessage()    {}
 func (*RediscoverSystemInventoryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{3}
+	return fileDescriptor_60785b04c84bec7e, []int{3}
 }
+
 func (m *RediscoverSystemInventoryResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RediscoverSystemInventoryResponse.Unmarshal(m, b)
 }
 func (m *RediscoverSystemInventoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_RediscoverSystemInventoryResponse.Marshal(b, m, deterministic)
 }
-func (dst *RediscoverSystemInventoryResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RediscoverSystemInventoryResponse.Merge(dst, src)
+func (m *RediscoverSystemInventoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RediscoverSystemInventoryResponse.Merge(m, src)
 }
 func (m *RediscoverSystemInventoryResponse) XXX_Size() int {
 	return xxx_messageInfo_RediscoverSystemInventoryResponse.Size(m)
@@ -219,11 +229,11 @@ func (m *RediscoverSystemInventoryResponse) GetTaskURL() string {
 }
 
 type UpdateSystemStateRequest struct {
-	SystemUUID           string   `protobuf:"bytes,1,opt,name=SystemUUID,proto3" json:"SystemUUID,omitempty"`
-	SystemID             string   `protobuf:"bytes,2,opt,name=SystemID,proto3" json:"SystemID,omitempty"`
-	SystemURI            string   `protobuf:"bytes,3,opt,name=SystemURI,proto3" json:"SystemURI,omitempty"`
-	UpdateKey            string   `protobuf:"bytes,4,opt,name=UpdateKey,proto3" json:"UpdateKey,omitempty"`
-	UpdateVal            string   `protobuf:"bytes,5,opt,name=UpdateVal,proto3" json:"UpdateVal,omitempty"`
+	SystemUUID           string   `protobuf:"bytes,1,opt,name=SystemUUID,json=systemUUID,proto3" json:"SystemUUID,omitempty"`
+	SystemID             string   `protobuf:"bytes,2,opt,name=SystemID,json=systemID,proto3" json:"SystemID,omitempty"`
+	SystemURI            string   `protobuf:"bytes,3,opt,name=SystemURI,json=systemURI,proto3" json:"SystemURI,omitempty"`
+	UpdateKey            string   `protobuf:"bytes,4,opt,name=UpdateKey,json=updateKey,proto3" json:"UpdateKey,omitempty"`
+	UpdateVal            string   `protobuf:"bytes,5,opt,name=UpdateVal,json=updateVal,proto3" json:"UpdateVal,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -233,16 +243,17 @@ func (m *UpdateSystemStateRequest) Reset()         { *m = UpdateSystemStateReque
 func (m *UpdateSystemStateRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateSystemStateRequest) ProtoMessage()    {}
 func (*UpdateSystemStateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{4}
+	return fileDescriptor_60785b04c84bec7e, []int{4}
 }
+
 func (m *UpdateSystemStateRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateSystemStateRequest.Unmarshal(m, b)
 }
 func (m *UpdateSystemStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_UpdateSystemStateRequest.Marshal(b, m, deterministic)
 }
-func (dst *UpdateSystemStateRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UpdateSystemStateRequest.Merge(dst, src)
+func (m *UpdateSystemStateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateSystemStateRequest.Merge(m, src)
 }
 func (m *UpdateSystemStateRequest) XXX_Size() int {
 	return xxx_messageInfo_UpdateSystemStateRequest.Size(m)
@@ -289,7 +300,7 @@ func (m *UpdateSystemStateRequest) GetUpdateVal() string {
 }
 
 type UpdateSystemStateResponse struct {
-	TaskURL              string   `protobuf:"bytes,1,opt,name=TaskURL,proto3" json:"TaskURL,omitempty"`
+	TaskURL              string   `protobuf:"bytes,1,opt,name=TaskURL,json=taskURL,proto3" json:"TaskURL,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -299,16 +310,17 @@ func (m *UpdateSystemStateResponse) Reset()         { *m = UpdateSystemStateResp
 func (m *UpdateSystemStateResponse) String() string { return proto.CompactTextString(m) }
 func (*UpdateSystemStateResponse) ProtoMessage()    {}
 func (*UpdateSystemStateResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{5}
+	return fileDescriptor_60785b04c84bec7e, []int{5}
 }
+
 func (m *UpdateSystemStateResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UpdateSystemStateResponse.Unmarshal(m, b)
 }
 func (m *UpdateSystemStateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_UpdateSystemStateResponse.Marshal(b, m, deterministic)
 }
-func (dst *UpdateSystemStateResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UpdateSystemStateResponse.Merge(dst, src)
+func (m *UpdateSystemStateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateSystemStateResponse.Merge(m, src)
 }
 func (m *UpdateSystemStateResponse) XXX_Size() int {
 	return xxx_messageInfo_UpdateSystemStateResponse.Size(m)
@@ -327,8 +339,8 @@ func (m *UpdateSystemStateResponse) GetTaskURL() string {
 }
 
 type SendStartUpDataRequest struct {
-	PluginAddr           string   `protobuf:"bytes,1,opt,name=PluginAddr,proto3" json:"PluginAddr,omitempty"`
-	OriginURI            string   `protobuf:"bytes,2,opt,name=OriginURI,proto3" json:"OriginURI,omitempty"`
+	PluginAddr           string   `protobuf:"bytes,1,opt,name=PluginAddr,json=pluginAddr,proto3" json:"PluginAddr,omitempty"`
+	OriginURI            string   `protobuf:"bytes,2,opt,name=OriginURI,json=originURI,proto3" json:"OriginURI,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -338,16 +350,17 @@ func (m *SendStartUpDataRequest) Reset()         { *m = SendStartUpDataRequest{}
 func (m *SendStartUpDataRequest) String() string { return proto.CompactTextString(m) }
 func (*SendStartUpDataRequest) ProtoMessage()    {}
 func (*SendStartUpDataRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{6}
+	return fileDescriptor_60785b04c84bec7e, []int{6}
 }
+
 func (m *SendStartUpDataRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendStartUpDataRequest.Unmarshal(m, b)
 }
 func (m *SendStartUpDataRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SendStartUpDataRequest.Marshal(b, m, deterministic)
 }
-func (dst *SendStartUpDataRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SendStartUpDataRequest.Merge(dst, src)
+func (m *SendStartUpDataRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendStartUpDataRequest.Merge(m, src)
 }
 func (m *SendStartUpDataRequest) XXX_Size() int {
 	return xxx_messageInfo_SendStartUpDataRequest.Size(m)
@@ -373,7 +386,7 @@ func (m *SendStartUpDataRequest) GetOriginURI() string {
 }
 
 type SendStartUpDataResponse struct {
-	ResponseBody         []byte   `protobuf:"bytes,1,opt,name=ResponseBody,proto3" json:"ResponseBody,omitempty"`
+	ResponseBody         []byte   `protobuf:"bytes,1,opt,name=ResponseBody,json=responseBody,proto3" json:"ResponseBody,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -383,16 +396,17 @@ func (m *SendStartUpDataResponse) Reset()         { *m = SendStartUpDataResponse
 func (m *SendStartUpDataResponse) String() string { return proto.CompactTextString(m) }
 func (*SendStartUpDataResponse) ProtoMessage()    {}
 func (*SendStartUpDataResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aggregator_71bebc22d5875603, []int{7}
+	return fileDescriptor_60785b04c84bec7e, []int{7}
 }
+
 func (m *SendStartUpDataResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SendStartUpDataResponse.Unmarshal(m, b)
 }
 func (m *SendStartUpDataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_SendStartUpDataResponse.Marshal(b, m, deterministic)
 }
-func (dst *SendStartUpDataResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SendStartUpDataResponse.Merge(dst, src)
+func (m *SendStartUpDataResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendStartUpDataResponse.Merge(m, src)
 }
 func (m *SendStartUpDataResponse) XXX_Size() int {
 	return xxx_messageInfo_SendStartUpDataResponse.Size(m)
@@ -422,52 +436,853 @@ func init() {
 	proto.RegisterType((*SendStartUpDataResponse)(nil), "SendStartUpDataResponse")
 }
 
-func init() { proto.RegisterFile("aggregator.proto", fileDescriptor_aggregator_71bebc22d5875603) }
+func init() { proto.RegisterFile("aggregator.proto", fileDescriptor_60785b04c84bec7e) }
 
-var fileDescriptor_aggregator_71bebc22d5875603 = []byte{
-	// 697 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0xdd, 0x4e, 0xdb, 0x4a,
-	0x10, 0x4e, 0x08, 0xe1, 0x9c, 0x4c, 0x72, 0x04, 0x2c, 0x1c, 0x30, 0x6e, 0x45, 0xc3, 0xaa, 0xaa,
-	0xb8, 0xf2, 0x05, 0x55, 0xd5, 0x52, 0x15, 0xa9, 0x21, 0xe1, 0x4f, 0x05, 0x51, 0xd9, 0x84, 0xab,
-	0xde, 0x2c, 0xec, 0x10, 0xac, 0x38, 0xde, 0x74, 0x77, 0x13, 0x29, 0x6f, 0xd5, 0x77, 0xe8, 0x9b,
-	0xf4, 0x49, 0x2a, 0xff, 0x25, 0x0e, 0x49, 0x4a, 0x9d, 0xdc, 0xed, 0x7e, 0xbb, 0xf3, 0xcd, 0x37,
-	0xb3, 0x33, 0x63, 0xc3, 0x1a, 0x6b, 0xb5, 0x24, 0xb6, 0x98, 0x16, 0xd2, 0xea, 0x4a, 0xa1, 0x05,
-	0x6d, 0xc3, 0x7a, 0x6d, 0x88, 0xd9, 0xf8, 0xbd, 0x87, 0x4a, 0x13, 0x0a, 0x15, 0x07, 0x95, 0x72,
-	0x85, 0x7f, 0x23, 0xda, 0xe8, 0x1b, 0xf9, 0x6a, 0x7e, 0xbf, 0x64, 0x8f, 0x61, 0xa4, 0x0a, 0xe5,
-	0xf8, 0xfa, 0xb1, 0xe0, 0x03, 0x63, 0xa9, 0x9a, 0xdf, 0xaf, 0xd8, 0x69, 0x88, 0xac, 0x41, 0xa1,
-	0x69, 0x5f, 0x1a, 0x85, 0xd0, 0x38, 0x58, 0xd2, 0x5f, 0x79, 0x20, 0x69, 0x6f, 0xaa, 0x2b, 0x7c,
-	0x85, 0x64, 0x17, 0x40, 0x69, 0xa6, 0x7b, 0xaa, 0x2e, 0x38, 0x86, 0xce, 0x8a, 0x76, 0x0a, 0x21,
-	0xaf, 0xe1, 0xbf, 0x68, 0x77, 0x85, 0x4a, 0xb1, 0x16, 0x86, 0xce, 0x4a, 0xf6, 0x38, 0x48, 0xde,
-	0xc3, 0xca, 0x23, 0x32, 0x8e, 0xd2, 0x28, 0x54, 0x0b, 0xfb, 0xe5, 0x83, 0x57, 0xd6, 0xa4, 0x2b,
-	0xeb, 0x3c, 0xbc, 0x71, 0xe2, 0x6b, 0x39, 0xb0, 0xe3, 0xeb, 0x84, 0xc0, 0xf2, 0x5d, 0x10, 0xc2,
-	0x72, 0x18, 0x42, 0xb8, 0x36, 0x0f, 0xa1, 0x9c, 0xba, 0x1a, 0x84, 0xd2, 0xc6, 0x41, 0x9c, 0x87,
-	0x60, 0x49, 0x36, 0xa1, 0xd8, 0x67, 0x5e, 0x2f, 0xd1, 0x12, 0x6d, 0x3e, 0x2e, 0x7d, 0xc8, 0xd3,
-	0x6f, 0x50, 0xb5, 0x91, 0xbb, 0xea, 0x5e, 0xf4, 0x51, 0x3a, 0x03, 0xa5, 0xb1, 0x73, 0xe1, 0xf7,
-	0xd1, 0xd7, 0x42, 0x0e, 0x92, 0x04, 0x9b, 0xf0, 0x6f, 0x7c, 0xd2, 0x88, 0x49, 0x87, 0x7b, 0xf2,
-	0x12, 0x4a, 0xd1, 0x3a, 0x48, 0x5e, 0xc4, 0x3e, 0x02, 0xe8, 0x11, 0xec, 0xfd, 0x81, 0x3d, 0x4e,
-	0xa8, 0x01, 0xff, 0xdc, 0x30, 0xd5, 0x0e, 0x08, 0x22, 0xf6, 0x64, 0x4b, 0x7f, 0xe4, 0xc1, 0x68,
-	0x76, 0x39, 0xd3, 0x18, 0xd9, 0x3a, 0x9a, 0x69, 0x4c, 0x54, 0xed, 0x02, 0xc4, 0x8e, 0x9a, 0x43,
-	0x5d, 0x29, 0x64, 0x4c, 0xf5, 0xd2, 0x6c, 0xd5, 0x17, 0xf1, 0x93, 0x8f, 0x80, 0xe0, 0x34, 0xf2,
-	0xfa, 0x05, 0xa3, 0x3c, 0x97, 0xec, 0x11, 0x30, 0x3a, 0xbd, 0x65, 0x9e, 0x51, 0x4c, 0x9f, 0xde,
-	0x32, 0x8f, 0xbe, 0x83, 0x9d, 0x29, 0x8a, 0x9f, 0x8d, 0xf4, 0x16, 0xb6, 0x1c, 0xf4, 0xb9, 0xa3,
-	0x99, 0xd4, 0xcd, 0x6e, 0x83, 0x69, 0x96, 0x0a, 0xf3, 0xab, 0xd7, 0x6b, 0xb9, 0x7e, 0x8d, 0x73,
-	0x99, 0x84, 0x39, 0x42, 0x02, 0x39, 0xd7, 0xd2, 0x6d, 0xb9, 0x7e, 0x10, 0x4a, 0xfc, 0x00, 0x43,
-	0x80, 0x1e, 0xc1, 0xf6, 0x04, 0x6f, 0x2c, 0x86, 0x42, 0x25, 0x59, 0x87, 0x3d, 0x91, 0x0f, 0x0b,
-	0x6a, 0x0c, 0x3b, 0xf8, 0x59, 0x06, 0x18, 0xd5, 0x25, 0x39, 0x86, 0xff, 0xcf, 0x50, 0x27, 0x80,
-	0x2b, 0x7c, 0x07, 0x65, 0xdf, 0xbd, 0x47, 0x42, 0xac, 0x89, 0xb6, 0x34, 0x37, 0xa6, 0x54, 0x34,
-	0xcd, 0x91, 0x03, 0x28, 0xda, 0xa8, 0x50, 0x67, 0xb1, 0xf9, 0x0c, 0x1b, 0x0e, 0xea, 0x06, 0x3e,
-	0xb0, 0x9e, 0xa7, 0x8f, 0x85, 0xd0, 0xd7, 0x32, 0x6c, 0x85, 0xbf, 0x67, 0xe0, 0xb0, 0x33, 0xb3,
-	0x10, 0xc9, 0x9e, 0xf5, 0x5c, 0x0b, 0x98, 0xd4, 0x7a, 0xb6, 0x8e, 0x69, 0x8e, 0x5c, 0xc2, 0xfa,
-	0xc4, 0xe3, 0x93, 0x1d, 0x6b, 0x56, 0x09, 0x9b, 0xa6, 0x35, 0xb3, 0x56, 0x68, 0x8e, 0xd4, 0x60,
-	0xb3, 0xc6, 0x79, 0x3a, 0xdb, 0xa2, 0x27, 0xb3, 0x25, 0xbb, 0x01, 0xdb, 0xc1, 0x83, 0x79, 0xde,
-	0x42, 0x2c, 0x35, 0xd8, 0x7c, 0xf2, 0xec, 0xf3, 0x08, 0x89, 0x42, 0x5d, 0x94, 0xa5, 0x81, 0x1e,
-	0x2e, 0xc8, 0xf2, 0x09, 0x56, 0xeb, 0x12, 0x53, 0x5a, 0x32, 0x59, 0x1f, 0xc1, 0xda, 0x78, 0x4a,
-	0x51, 0x65, 0x31, 0x3f, 0x84, 0x4a, 0x2a, 0x97, 0x59, 0x75, 0x8f, 0x47, 0x9f, 0xc9, 0xba, 0x0e,
-	0x5b, 0x35, 0xce, 0x4f, 0x3c, 0xec, 0xa0, 0xaf, 0xd5, 0x8d, 0x98, 0x8b, 0xe4, 0x1c, 0x5e, 0xd8,
-	0xd8, 0x11, 0x7d, 0x4c, 0x78, 0x4e, 0xa5, 0xe8, 0xcc, 0xc5, 0x74, 0x02, 0x46, 0x38, 0x06, 0x12,
-	0xa2, 0xeb, 0x87, 0xb9, 0x68, 0x1c, 0x78, 0x33, 0x65, 0x32, 0x2c, 0x48, 0x3a, 0xec, 0x9a, 0xba,
-	0xf0, 0x7d, 0xbc, 0x0f, 0xaa, 0xec, 0x0a, 0xf5, 0xa3, 0xe0, 0x2a, 0xe3, 0xd0, 0x3a, 0x43, 0xfd,
-	0x94, 0x22, 0x0b, 0xc3, 0x29, 0xac, 0x3e, 0x19, 0xde, 0x64, 0xdb, 0x9a, 0xfe, 0x99, 0x30, 0x0d,
-	0x6b, 0xc6, 0x9c, 0xa7, 0xb9, 0xbb, 0x95, 0xf0, 0xe7, 0xe9, 0xed, 0xef, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0xdb, 0x50, 0xb9, 0xc6, 0x50, 0x09, 0x00, 0x00,
+var fileDescriptor_60785b04c84bec7e = []byte{
+	// 711 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x56, 0x5d, 0x4f, 0x1a, 0x4d,
+	0x14, 0x06, 0x11, 0x95, 0x03, 0x6f, 0xd4, 0xd1, 0x57, 0x57, 0xde, 0x37, 0x16, 0x27, 0x4d, 0xe3,
+	0xd5, 0x5e, 0xd8, 0x34, 0xad, 0x4d, 0x4d, 0x8a, 0xe0, 0x57, 0xaa, 0xb1, 0xd9, 0x15, 0xaf, 0x7a,
+	0x33, 0x3a, 0x47, 0xdc, 0xb0, 0xec, 0xd0, 0x99, 0x59, 0x12, 0xfe, 0x55, 0xff, 0x43, 0xff, 0x49,
+	0x7f, 0x49, 0xb3, 0x5f, 0xb8, 0x08, 0xd4, 0x2e, 0xdc, 0xed, 0x3c, 0x33, 0xe7, 0x39, 0xcf, 0xf9,
+	0x04, 0x58, 0x63, 0xed, 0xb6, 0xc4, 0x36, 0xd3, 0x42, 0x9a, 0x3d, 0x29, 0xb4, 0xa0, 0x1d, 0x58,
+	0xaf, 0x0f, 0x31, 0x0b, 0xbf, 0xfb, 0xa8, 0x34, 0xa1, 0x50, 0xb1, 0x51, 0x29, 0x47, 0x78, 0x37,
+	0xa2, 0x83, 0x9e, 0x91, 0xaf, 0xe5, 0xf7, 0x4b, 0x56, 0x45, 0xa5, 0x30, 0x52, 0x83, 0x72, 0xfc,
+	0xfc, 0x58, 0xf0, 0x81, 0xb1, 0x50, 0xcb, 0xef, 0x57, 0xac, 0xb2, 0x7c, 0x82, 0xc8, 0x1a, 0x14,
+	0x5a, 0xd6, 0xa5, 0x51, 0x08, 0x8d, 0x0b, 0xbe, 0x75, 0x49, 0x7f, 0xe5, 0x81, 0xa4, 0xbd, 0xa9,
+	0x9e, 0xf0, 0x14, 0x92, 0x5d, 0x00, 0xa5, 0x99, 0xf6, 0x55, 0x43, 0x70, 0x0c, 0x9d, 0x15, 0xad,
+	0x14, 0x42, 0x5e, 0xc3, 0x3f, 0xd1, 0xe9, 0x0a, 0x95, 0x62, 0x6d, 0x0c, 0x9d, 0x95, 0xac, 0x51,
+	0x90, 0xbc, 0x87, 0xa5, 0x47, 0x64, 0x1c, 0xa5, 0x51, 0xa8, 0x15, 0xf6, 0xcb, 0x07, 0xaf, 0xcc,
+	0x71, 0x57, 0xe6, 0x79, 0xf8, 0xe2, 0xc4, 0xd3, 0x72, 0x60, 0xc5, 0xcf, 0x09, 0x81, 0xc5, 0xbb,
+	0x20, 0x84, 0xc5, 0x30, 0x84, 0xf0, 0xbb, 0x7a, 0x08, 0xe5, 0xd4, 0xd3, 0x20, 0x94, 0x0e, 0x0e,
+	0xe2, 0x3c, 0x04, 0x9f, 0x64, 0x13, 0x8a, 0x7d, 0xe6, 0xfa, 0x89, 0x96, 0xe8, 0xf0, 0x71, 0xe1,
+	0x43, 0x9e, 0x7e, 0x83, 0x9a, 0x85, 0xdc, 0x51, 0xf7, 0xa2, 0x8f, 0xd2, 0x1e, 0x28, 0x8d, 0xdd,
+	0x0b, 0xaf, 0x8f, 0x9e, 0x16, 0x72, 0x90, 0x24, 0xb8, 0x0a, 0x2b, 0xf1, 0x4d, 0x33, 0x26, 0x5d,
+	0x51, 0xf1, 0x99, 0xfc, 0x0f, 0xa5, 0xe8, 0x2e, 0x48, 0x5e, 0xc4, 0x5e, 0x52, 0x09, 0x40, 0x8f,
+	0x60, 0xef, 0x0f, 0xec, 0x71, 0x42, 0x0d, 0x58, 0xbe, 0x61, 0xaa, 0x13, 0x10, 0x44, 0xec, 0xcb,
+	0x3a, 0x3a, 0xd2, 0x1f, 0x79, 0x30, 0x5a, 0x3d, 0xce, 0x34, 0x46, 0xb6, 0xb6, 0x66, 0x1a, 0x13,
+	0x55, 0xbb, 0x00, 0xb1, 0xe7, 0xd6, 0x50, 0x17, 0xa8, 0x21, 0x32, 0xa2, 0x7a, 0x61, 0xba, 0xea,
+	0x8b, 0xb8, 0xe4, 0x43, 0xd5, 0x17, 0xc1, 0x6d, 0xe4, 0xf5, 0x0b, 0x46, 0x79, 0x2e, 0x59, 0x25,
+	0x3f, 0x01, 0x9e, 0x6e, 0x6f, 0x99, 0x6b, 0x14, 0xd3, 0xb7, 0xb7, 0xcc, 0xa5, 0xef, 0x60, 0x67,
+	0x82, 0xe2, 0x17, 0x23, 0xbd, 0x85, 0x2d, 0x1b, 0x3d, 0x6e, 0x6b, 0x26, 0x75, 0xab, 0xd7, 0x64,
+	0x9a, 0xa5, 0xc2, 0xfc, 0xea, 0xfa, 0x6d, 0xc7, 0xab, 0x73, 0x2e, 0x93, 0x30, 0x7b, 0x43, 0x24,
+	0x90, 0x73, 0x2d, 0x9d, 0xb6, 0xe3, 0x05, 0xa1, 0xc4, 0x05, 0x10, 0x09, 0x40, 0x8f, 0x60, 0x7b,
+	0x8c, 0x37, 0x16, 0x43, 0xa1, 0x92, 0x7c, 0x87, 0x33, 0x91, 0x0f, 0x1b, 0xaa, 0x22, 0x53, 0xd8,
+	0xc1, 0xcf, 0x32, 0xc0, 0x53, 0x5f, 0x92, 0x63, 0xf8, 0xf7, 0x0c, 0x75, 0x02, 0x38, 0xc2, 0xb3,
+	0x51, 0xf6, 0x9d, 0x7b, 0x24, 0xc4, 0x1c, 0x1b, 0xcb, 0xea, 0xc6, 0x84, 0x8e, 0xa6, 0x39, 0x72,
+	0x00, 0x45, 0x0b, 0x15, 0xea, 0x2c, 0x36, 0x9f, 0x61, 0xc3, 0x46, 0xdd, 0xc4, 0x07, 0xe6, 0xbb,
+	0xfa, 0x58, 0x08, 0x7d, 0x2d, 0xc3, 0x51, 0xf8, 0x7b, 0x06, 0x0e, 0x3b, 0x53, 0x1b, 0x91, 0xec,
+	0x99, 0x2f, 0x8d, 0x40, 0x95, 0x9a, 0x2f, 0xf6, 0x31, 0xcd, 0x91, 0x4b, 0x58, 0x1f, 0x2b, 0x3e,
+	0xd9, 0x31, 0xa7, 0xb5, 0x70, 0xb5, 0x6a, 0x4e, 0xed, 0x15, 0x9a, 0x23, 0x75, 0xd8, 0xac, 0x73,
+	0x9e, 0xce, 0xb6, 0xf0, 0x65, 0xb6, 0x64, 0x37, 0x61, 0x3b, 0x28, 0x98, 0xeb, 0xce, 0xc5, 0x52,
+	0x87, 0xcd, 0x67, 0x65, 0x9f, 0x45, 0x48, 0x14, 0xea, 0xbc, 0x2c, 0x4d, 0x74, 0x71, 0x4e, 0x96,
+	0x4f, 0xb0, 0xda, 0x90, 0x98, 0xd2, 0x92, 0xc9, 0xfa, 0x08, 0xd6, 0x46, 0x53, 0x8a, 0x2a, 0x8b,
+	0xf9, 0x21, 0x54, 0x52, 0xb9, 0xcc, 0xaa, 0x7b, 0x34, 0xfa, 0x4c, 0xd6, 0x0d, 0xd8, 0xaa, 0x73,
+	0x7e, 0xe2, 0x62, 0x17, 0x3d, 0xad, 0x6e, 0xc4, 0x4c, 0x24, 0xe7, 0xf0, 0x9f, 0x85, 0x5d, 0xd1,
+	0xc7, 0x84, 0xe7, 0x54, 0x8a, 0xee, 0x4c, 0x4c, 0x27, 0x60, 0x84, 0x6b, 0x20, 0x21, 0xba, 0x7e,
+	0x98, 0x89, 0xc6, 0x86, 0x37, 0x13, 0x36, 0xc3, 0x9c, 0xa4, 0xc3, 0xa9, 0x69, 0x08, 0xcf, 0xc3,
+	0xfb, 0xa0, 0xcb, 0xae, 0x50, 0x3f, 0x0a, 0xae, 0x32, 0x2e, 0xad, 0x33, 0xd4, 0xcf, 0x29, 0xb2,
+	0x30, 0x9c, 0xc2, 0xea, 0xb3, 0xe5, 0x4d, 0xb6, 0xcd, 0xc9, 0x3f, 0x13, 0x55, 0xc3, 0x9c, 0xb2,
+	0xe7, 0x69, 0xee, 0x6e, 0x29, 0xfc, 0xf3, 0xf4, 0xf6, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0x65,
+	0x16, 0x6f, 0x5a, 0x50, 0x09, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// AggregatorClient is the client API for Aggregator service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type AggregatorClient interface {
+	GetAggregationService(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	Reset(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	SetDefaultBootOrder(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, opts ...grpc.CallOption) (*RediscoverSystemInventoryResponse, error)
+	UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, opts ...grpc.CallOption) (*UpdateSystemStateResponse, error)
+	AddAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	GetAllAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	GetAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	CreateAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	GetAllAggregates(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	GetAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	DeleteAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	AddElementsToAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	GetConnectionMethod(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error)
+	SendStartUpData(ctx context.Context, in *SendStartUpDataRequest, opts ...grpc.CallOption) (*SendStartUpDataResponse, error)
+}
+
+type aggregatorClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewAggregatorClient(cc *grpc.ClientConn) AggregatorClient {
+	return &aggregatorClient{cc}
+}
+
+func (c *aggregatorClient) GetAggregationService(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetAggregationService", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) Reset(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/Reset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) SetDefaultBootOrder(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/SetDefaultBootOrder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) RediscoverSystemInventory(ctx context.Context, in *RediscoverSystemInventoryRequest, opts ...grpc.CallOption) (*RediscoverSystemInventoryResponse, error) {
+	out := new(RediscoverSystemInventoryResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/RediscoverSystemInventory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) UpdateSystemState(ctx context.Context, in *UpdateSystemStateRequest, opts ...grpc.CallOption) (*UpdateSystemStateResponse, error) {
+	out := new(UpdateSystemStateResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/UpdateSystemState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) AddAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/AddAggregationSource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) GetAllAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetAllAggregationSource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) GetAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetAggregationSource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) UpdateAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/UpdateAggregationSource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) DeleteAggregationSource(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/DeleteAggregationSource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) CreateAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/CreateAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) GetAllAggregates(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetAllAggregates", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) GetAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) DeleteAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/DeleteAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) AddElementsToAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/AddElementsToAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) RemoveElementsFromAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/RemoveElementsFromAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) ResetElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/ResetElementsOfAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/SetDefaultBootOrderElementsOfAggregate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) GetAllConnectionMethods(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetAllConnectionMethods", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) GetConnectionMethod(ctx context.Context, in *AggregatorRequest, opts ...grpc.CallOption) (*AggregatorResponse, error) {
+	out := new(AggregatorResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/GetConnectionMethod", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aggregatorClient) SendStartUpData(ctx context.Context, in *SendStartUpDataRequest, opts ...grpc.CallOption) (*SendStartUpDataResponse, error) {
+	out := new(SendStartUpDataResponse)
+	err := c.cc.Invoke(ctx, "/Aggregator/SendStartUpData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AggregatorServer is the server API for Aggregator service.
+type AggregatorServer interface {
+	GetAggregationService(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	Reset(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	SetDefaultBootOrder(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	RediscoverSystemInventory(context.Context, *RediscoverSystemInventoryRequest) (*RediscoverSystemInventoryResponse, error)
+	UpdateSystemState(context.Context, *UpdateSystemStateRequest) (*UpdateSystemStateResponse, error)
+	AddAggregationSource(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	GetAllAggregationSource(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	GetAggregationSource(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	UpdateAggregationSource(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	DeleteAggregationSource(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	CreateAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	GetAllAggregates(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	GetAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	DeleteAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	AddElementsToAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	RemoveElementsFromAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	ResetElementsOfAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	SetDefaultBootOrderElementsOfAggregate(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	GetAllConnectionMethods(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	GetConnectionMethod(context.Context, *AggregatorRequest) (*AggregatorResponse, error)
+	SendStartUpData(context.Context, *SendStartUpDataRequest) (*SendStartUpDataResponse, error)
+}
+
+// UnimplementedAggregatorServer can be embedded to have forward compatible implementations.
+type UnimplementedAggregatorServer struct {
+}
+
+func (*UnimplementedAggregatorServer) GetAggregationService(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAggregationService not implemented")
+}
+func (*UnimplementedAggregatorServer) Reset(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
+}
+func (*UnimplementedAggregatorServer) SetDefaultBootOrder(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetDefaultBootOrder not implemented")
+}
+func (*UnimplementedAggregatorServer) RediscoverSystemInventory(ctx context.Context, req *RediscoverSystemInventoryRequest) (*RediscoverSystemInventoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RediscoverSystemInventory not implemented")
+}
+func (*UnimplementedAggregatorServer) UpdateSystemState(ctx context.Context, req *UpdateSystemStateRequest) (*UpdateSystemStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSystemState not implemented")
+}
+func (*UnimplementedAggregatorServer) AddAggregationSource(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAggregationSource not implemented")
+}
+func (*UnimplementedAggregatorServer) GetAllAggregationSource(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllAggregationSource not implemented")
+}
+func (*UnimplementedAggregatorServer) GetAggregationSource(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAggregationSource not implemented")
+}
+func (*UnimplementedAggregatorServer) UpdateAggregationSource(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAggregationSource not implemented")
+}
+func (*UnimplementedAggregatorServer) DeleteAggregationSource(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAggregationSource not implemented")
+}
+func (*UnimplementedAggregatorServer) CreateAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) GetAllAggregates(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllAggregates not implemented")
+}
+func (*UnimplementedAggregatorServer) GetAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) DeleteAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) AddElementsToAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddElementsToAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) RemoveElementsFromAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveElementsFromAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) ResetElementsOfAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetElementsOfAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetDefaultBootOrderElementsOfAggregate not implemented")
+}
+func (*UnimplementedAggregatorServer) GetAllConnectionMethods(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllConnectionMethods not implemented")
+}
+func (*UnimplementedAggregatorServer) GetConnectionMethod(ctx context.Context, req *AggregatorRequest) (*AggregatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConnectionMethod not implemented")
+}
+func (*UnimplementedAggregatorServer) SendStartUpData(ctx context.Context, req *SendStartUpDataRequest) (*SendStartUpDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendStartUpData not implemented")
+}
+
+func RegisterAggregatorServer(s *grpc.Server, srv AggregatorServer) {
+	s.RegisterService(&_Aggregator_serviceDesc, srv)
+}
+
+func _Aggregator_GetAggregationService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetAggregationService(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetAggregationService",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetAggregationService(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_Reset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).Reset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/Reset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).Reset(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_SetDefaultBootOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).SetDefaultBootOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/SetDefaultBootOrder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).SetDefaultBootOrder(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_RediscoverSystemInventory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RediscoverSystemInventoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).RediscoverSystemInventory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/RediscoverSystemInventory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).RediscoverSystemInventory(ctx, req.(*RediscoverSystemInventoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_UpdateSystemState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSystemStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).UpdateSystemState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/UpdateSystemState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).UpdateSystemState(ctx, req.(*UpdateSystemStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_AddAggregationSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).AddAggregationSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/AddAggregationSource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).AddAggregationSource(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_GetAllAggregationSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetAllAggregationSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetAllAggregationSource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetAllAggregationSource(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_GetAggregationSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetAggregationSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetAggregationSource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetAggregationSource(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_UpdateAggregationSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).UpdateAggregationSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/UpdateAggregationSource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).UpdateAggregationSource(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_DeleteAggregationSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).DeleteAggregationSource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/DeleteAggregationSource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).DeleteAggregationSource(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_CreateAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).CreateAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/CreateAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).CreateAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_GetAllAggregates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetAllAggregates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetAllAggregates",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetAllAggregates(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_GetAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_DeleteAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).DeleteAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/DeleteAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).DeleteAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_AddElementsToAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).AddElementsToAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/AddElementsToAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).AddElementsToAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_RemoveElementsFromAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).RemoveElementsFromAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/RemoveElementsFromAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).RemoveElementsFromAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_ResetElementsOfAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).ResetElementsOfAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/ResetElementsOfAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).ResetElementsOfAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_SetDefaultBootOrderElementsOfAggregate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).SetDefaultBootOrderElementsOfAggregate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/SetDefaultBootOrderElementsOfAggregate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).SetDefaultBootOrderElementsOfAggregate(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_GetAllConnectionMethods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetAllConnectionMethods(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetAllConnectionMethods",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetAllConnectionMethods(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_GetConnectionMethod_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AggregatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).GetConnectionMethod(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/GetConnectionMethod",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).GetConnectionMethod(ctx, req.(*AggregatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Aggregator_SendStartUpData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendStartUpDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AggregatorServer).SendStartUpData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Aggregator/SendStartUpData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AggregatorServer).SendStartUpData(ctx, req.(*SendStartUpDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Aggregator_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "Aggregator",
+	HandlerType: (*AggregatorServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetAggregationService",
+			Handler:    _Aggregator_GetAggregationService_Handler,
+		},
+		{
+			MethodName: "Reset",
+			Handler:    _Aggregator_Reset_Handler,
+		},
+		{
+			MethodName: "SetDefaultBootOrder",
+			Handler:    _Aggregator_SetDefaultBootOrder_Handler,
+		},
+		{
+			MethodName: "RediscoverSystemInventory",
+			Handler:    _Aggregator_RediscoverSystemInventory_Handler,
+		},
+		{
+			MethodName: "UpdateSystemState",
+			Handler:    _Aggregator_UpdateSystemState_Handler,
+		},
+		{
+			MethodName: "AddAggregationSource",
+			Handler:    _Aggregator_AddAggregationSource_Handler,
+		},
+		{
+			MethodName: "GetAllAggregationSource",
+			Handler:    _Aggregator_GetAllAggregationSource_Handler,
+		},
+		{
+			MethodName: "GetAggregationSource",
+			Handler:    _Aggregator_GetAggregationSource_Handler,
+		},
+		{
+			MethodName: "UpdateAggregationSource",
+			Handler:    _Aggregator_UpdateAggregationSource_Handler,
+		},
+		{
+			MethodName: "DeleteAggregationSource",
+			Handler:    _Aggregator_DeleteAggregationSource_Handler,
+		},
+		{
+			MethodName: "CreateAggregate",
+			Handler:    _Aggregator_CreateAggregate_Handler,
+		},
+		{
+			MethodName: "GetAllAggregates",
+			Handler:    _Aggregator_GetAllAggregates_Handler,
+		},
+		{
+			MethodName: "GetAggregate",
+			Handler:    _Aggregator_GetAggregate_Handler,
+		},
+		{
+			MethodName: "DeleteAggregate",
+			Handler:    _Aggregator_DeleteAggregate_Handler,
+		},
+		{
+			MethodName: "AddElementsToAggregate",
+			Handler:    _Aggregator_AddElementsToAggregate_Handler,
+		},
+		{
+			MethodName: "RemoveElementsFromAggregate",
+			Handler:    _Aggregator_RemoveElementsFromAggregate_Handler,
+		},
+		{
+			MethodName: "ResetElementsOfAggregate",
+			Handler:    _Aggregator_ResetElementsOfAggregate_Handler,
+		},
+		{
+			MethodName: "SetDefaultBootOrderElementsOfAggregate",
+			Handler:    _Aggregator_SetDefaultBootOrderElementsOfAggregate_Handler,
+		},
+		{
+			MethodName: "GetAllConnectionMethods",
+			Handler:    _Aggregator_GetAllConnectionMethods_Handler,
+		},
+		{
+			MethodName: "GetConnectionMethod",
+			Handler:    _Aggregator_GetConnectionMethod_Handler,
+		},
+		{
+			MethodName: "SendStartUpData",
+			Handler:    _Aggregator_SendStartUpData_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "aggregator.proto",
 }

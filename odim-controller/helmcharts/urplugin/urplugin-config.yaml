@@ -1,7 +1,3 @@
-odimra:
-  namespace: odim
-  groupID:
-  haDeploymentEnabled:
 urplugin:
   urPluginRootServiceUUID:
   username: admin

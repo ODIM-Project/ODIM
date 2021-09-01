@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
 )
@@ -177,20 +178,22 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 		managersData[pluginContactRequest.OID] = body
 	}
-	e.SubscribeToEMB(plugin.ID, queueList)
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
-		dbErr := agmodel.GenericSave(updateManagerName(data, plugin.ID), "Managers", oid)
-		if err != nil {
-			errMsg := "error: while saving the plugin data with generic save: " + dbErr.Error()
+
+		dbErr := agmodel.SavePluginManagerInfo(updateManagerName(data, plugin.ID), "Managers", oid)
+		if dbErr != nil {
+			errMsg := dbErr.Error()
 			log.Error(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 		}
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})
 	}
+	e.SubscribeToEMB(plugin.ID, queueList)
 
 	// store encrypted password
 	plugin.Password = ciphertext
@@ -213,5 +216,13 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	e.PublishEvent(managersList, "ManagerCollection")
 	resp.StatusCode = http.StatusCreated
 	log.Error("sucessfully added  plugin with the id ", cmVariants.PluginID)
+
+	phc := agcommon.PluginHealthCheckInterface{
+		DecryptPassword: common.DecryptWithPrivateKey,
+	}
+	phc.DupPluginConf()
+	_, topics := phc.GetPluginStatus(plugin)
+	PublishPluginStatusOKEvent(plugin.ID, topics)
+
 	return resp, managerUUID, ciphertext
 }

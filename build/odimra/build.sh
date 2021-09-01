@@ -24,7 +24,6 @@ for i in $LIST; do
         else
                 go build -i -race .
         fi
-
 	if [ $? -eq 0 ]; then
 		echo Build for odimra service/lib $i is Successful !!!!
 		arr1+=$i;

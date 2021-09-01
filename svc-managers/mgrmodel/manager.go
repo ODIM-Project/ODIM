@@ -37,6 +37,7 @@ type Manager struct {
 	FirmwareVersion    string            `json:"FirmwareVersion"`
 	Status             *Status           `json:"Status,omitempty"`
 	HostInterfaces     *OdataID          `json:"HostInterfaces,omitempty"`
+	SerialInterface    *OdataID          `json:"SerialInterface,omitempty"`
 	EthernetInterfaces *OdataID          `json:"EthernetInterfaces,omitempty"`
 	LogServices        *OdataID          `json:"LogServices,omitempty"`
 	NetworkProtocol    *OdataID          `json:"NetworkProtocol,omitempty"`
@@ -100,6 +101,17 @@ type RAManager struct {
 	State           string `json:"State"`
 }
 
+// VirtualMediaInsert struct is to store the insert virtual media request payload
+type VirtualMediaInsert struct {
+	Image                string `json:"Image" validate:"required"`
+	Inserted             bool   `json:"Inserted"`
+	WriteProtected       bool   `json:"WriteProtected"`
+	Password             string `json:"Password,omitempty"`
+	TransferMethod       string `json:"TransferMethod,omitempty"`
+	TransferProtocolType string `json:"TransferProtocolType,omitempty"`
+	UserName             string `json:"UserName,omitempty"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -148,19 +160,19 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 	return manager, nil
 }
 
-// UpdateManagersData will modify the current details to given changes
-func UpdateManagersData(key string, managerData map[string]interface{}) error {
+// UpdateData will modify the current details to given changes
+func UpdateData(key string, updateData map[string]interface{}, table string) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("unable to connect DB: %v", err)
 	}
-	data, jerr := json.Marshal(managerData)
+	data, jerr := json.Marshal(updateData)
 	if jerr != nil {
-		return fmt.Errorf("unable to marshal manager data for updating: %v", jerr)
+		return fmt.Errorf("unable to marshal data for updating: %v", jerr)
 	}
-	if _, err = conn.Update("Managers", key, string(data)); err != nil {
-		return fmt.Errorf("unable to update manager details in DB: %v", err)
+	if _, err = conn.Update(table, key, string(data)); err != nil {
+		return fmt.Errorf("unable to update details in DB: %v", err)
 	}
 	return nil
 }

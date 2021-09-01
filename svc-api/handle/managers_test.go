@@ -111,7 +111,81 @@ func mockGetManagersCollectionRequest(req managersproto.ManagerRequest) (*manage
 	}
 	return response, nil
 }
+func mockVirtualMediaInsertRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var response = &managersproto.ManagerResponse{}
+	if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "InvalidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.ManagerID == "2A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    403,
+			StatusMessage: "Forbidden",
+			Body:          []byte(`{"Response":"Forbidden"}`),
+		}
+	} else if req.ManagerID == "1A" && req.ResourceID == "2B" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    403,
+			StatusMessage: "Forbidden",
+			Body:          []byte(`{"Response":"Forbidden"}`),
+		}
+	} else if req.ManagerID == "1A" && req.ResourceID == "2B" && req.SessionToken == "" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.ManagerID == "3A" {
+		return &managersproto.ManagerResponse{}, fmt.Errorf("RPC Error")
+	}
+	return response, nil
+}
 
+func mockVirtualMediaEjectRequest(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var response = &managersproto.ManagerResponse{}
+	if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.ManagerID == "1A" && req.ResourceID == "1B" && req.SessionToken == "InvalidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.ManagerID == "2A" && req.ResourceID == "1B" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    403,
+			StatusMessage: "Forbidden",
+			Body:          []byte(`{"Response":"Forbidden"}`),
+		}
+	} else if req.ManagerID == "1A" && req.ResourceID == "2B" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    403,
+			StatusMessage: "Forbidden",
+			Body:          []byte(`{"Response":"Forbidden"}`),
+		}
+	} else if req.ManagerID == "1A" && req.ResourceID == "2B" && req.SessionToken == "" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.ManagerID == "3A" {
+		return &managersproto.ManagerResponse{}, fmt.Errorf("RPC Error")
+	}
+	return response, nil
+}
 func TestGetManager_ValidManagerID(t *testing.T) {
 	var mgr ManagersRPCs
 	mgr.GetManagersRPC = mockGetManagersRequest
@@ -214,5 +288,55 @@ func TestGetManagerResource_RPCError(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Managers/3A/NetworkInterfaces/1B",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestVirtualMediaInsert(t *testing.T) {
+	var mgr ManagersRPCs
+	mgr.VirtualMediaInsertRPC = mockVirtualMediaInsertRequest
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
+	redfishRoutes.Post("/{id}/VirtualMedia/{rid}/VirtualMedia.InsertMedia", mgr.VirtualMediaInsert)
+	test := httptest.New(t, mockApp)
+
+	test.POST(
+		"/redfish/v1/Managers/1A/VirtualMedia/1B/VirtualMedia.InsertMedia",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusOK)
+	test.POST(
+		"/redfish/v1/Managers/1A/VirtualMedia/1B/VirtualMedia.InsertMedia",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusUnauthorized)
+	test.POST(
+		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.InsertMedia",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusForbidden)
+	test.POST(
+		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.InsertMedia",
+	).WithHeader("X-Auth-Token", "").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusUnauthorized)
+	test.POST(
+		"/redfish/v1/Managers/3A/VirtualMedia/1B/VirtualMedia.InsertMedia",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusInternalServerError)
+}
+
+func TestVirtualMediaEject(t *testing.T) {
+	var mgr ManagersRPCs
+	mgr.VirtualMediaEjectRPC = mockVirtualMediaInsertRequest
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
+	redfishRoutes.Post("/{id}/VirtualMedia/{rid}/VirtualMedia.EjectMedia", mgr.VirtualMediaEject)
+	test := httptest.New(t, mockApp)
+
+	test.POST(
+		"/redfish/v1/Managers/1A/VirtualMedia/1B/VirtualMedia.EjectMedia",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.POST(
+		"/redfish/v1/Managers/1A/VirtualMedia/1B/VirtualMedia.EjectMedia",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+	test.POST(
+		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.EjectMedia",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusForbidden)
+	test.POST(
+		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.EjectMedia",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.POST(
+		"/redfish/v1/Managers/3A/VirtualMedia/1B/VirtualMedia.EjectMedia",
 	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusInternalServerError)
 }

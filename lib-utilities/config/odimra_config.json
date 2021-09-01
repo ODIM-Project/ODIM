@@ -57,17 +57,24 @@
 		}
 	},
 	"AddComputeSkipResources": { 
-		"SystemCollection": [ 
+		"SkipResourceListUnderSystem": [ 
+			"Chassis",
+			"Managers",
+			"LogServices",
+			"WorkloadPerformanceAdvisor"
+		],
+		"SkipResourceListUnderManager": [
+			"Systems",
 			"Chassis",
 			"LogServices",
 			"WorkloadPerformanceAdvisor"
 		],
-		"ChassisCollection": [ 
+		"SkipResourceListUnderChassis": [ 
 			"Managers",
 			"Systems",
 			"Devices"
 		],
-		"OtherCollection": [
+		"SkipResourceListUnderOthers": [
 			"Power",
 			"Thermal",
 			"SmartStorage",
@@ -104,7 +111,8 @@
 		"EventService",
 		"Fabrics",
 		"Managers",
-		"UpdateService"
+		"UpdateService",
+		"TelemetryService"
 	],
 	"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
   "ConnectionMethodConf": [

@@ -12,15 +12,14 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-//Package dmtfmodel
-package dmtfmodel
+package model
 
 import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
-// ComputerSystem
+// ComputerSystem redfish structure
 type ComputerSystem struct {
 	Ocontext           string             `json:"@odata.context"`
 	Oid                string             `json:"@odata.id"`
@@ -29,6 +28,7 @@ type ComputerSystem struct {
 	ID                 string             `json:"Id"`
 	Description        string             `json:"Description"`
 	Name               string             `json:"Name"`
+	Actions            *OemActions        `json:"Actions,omitempty"`
 	AssetTag           string             `json:"AssetTag"`
 	BiosVersion        string             `json:"BiosVersion"`
 	HostName           string             `json:"HostName"`
@@ -65,9 +65,11 @@ type ComputerSystem struct {
 	Status             Status             `json:"Status"`
 	Storage            Storage            `json:"Storage"`
 	TrustedModules     []TrustedModule    `json:"TrustedModules"`
+	Oem                Oem                `json:"Oem,omitempty"`
+	PCIeDevicesCount   int                `json:"PCIeDevices@odata.count,omitempty"`
 }
 
-// Bios
+// Bios redfish structure
 type Bios struct {
 	Oid         string `json:"@odata.id"`
 	Ocontext    string `json:"@odata.context,omitempty"`
@@ -80,13 +82,11 @@ type Bios struct {
 	/*The reference to the Attribute Registry that lists the metadata describing the
 	BIOS attribute settings in this resource.
 	*/
-	AttributeRegistry string `json:"AttributeRegistry,omitempty"` // read-only (null)
-	/* Attributes is an object but we are handling as string
-	 */
-	Attributes string `json:"Attributes,omitempty"` // object
+	AttributeRegistry string                 `json:"AttributeRegistry,omitempty"` // read-only (null)
+	Attributes        map[string]interface{} `json:"Attributes,omitempty"`        // object
 }
 
-// Boot
+// Boot redfish structure
 type Boot struct {
 	AliasBootOrder               []string     `json:"AliasBootOrder"`
 	BootNext                     string       `json:"BootNext"`
@@ -209,23 +209,23 @@ type StatelessAddressAutoConfig struct {
 	IPv6AutoConfigEnabled bool `json:"IPv6AutoConfigEnabled"`
 }
 
-//VLAN
+//VLAN redfish structure
 type VLAN struct {
 	Oid string `json:"@odata.id"`
 }
 
-//VLANs
+//VLANs redfish structure
 type VLANs struct {
 	Oid string `json:"@odata.id"`
 }
 
-// HostedServices
+// HostedServices redfish structure
 type HostedServices struct {
 	Oem             Oem             `json:"Oem"`
 	StorageServices StorageServices `json:"StorageServices"`
 }
 
-// HostWatchdogTimer ..
+// HostWatchdogTimer redfish structure
 type HostWatchdogTimer struct {
 	FunctionEnabled bool   `json:"FunctionEnabled"`
 	Oem             Oem    `json:"Oem"`
@@ -234,7 +234,7 @@ type HostWatchdogTimer struct {
 	WarningAction   string `json:"WarningAction"`
 }
 
-// Memory
+// Memory redfish structure
 type Memory struct {
 	Oid                                     string                `json:"@odata.id"`
 	Ocontext                                string                `json:"@odata.context,omitempty"`
@@ -336,7 +336,7 @@ type SecurityCapabilities struct {
 	SecurityStates           []string `json:"SecurityStates"` //enum
 }
 
-// MemoryDomains
+// MemoryDomains redfish structure
 type MemoryDomains struct {
 	Oid                       string                   `json:"@odata.id"`
 	Ocontext                  string                   `json:"@odata.context,omitempty"`
@@ -359,7 +359,7 @@ type InterleavableMemorySet struct {
 	MemorySet []Memory `json:"MemorySet"`
 }
 
-//MemoryChunks
+//MemoryChunks redfish structure
 type MemoryChunks struct {
 	Oid string `json:"@odata.id"`
 }
@@ -397,17 +397,16 @@ type NetworkInterfaces struct {
 	Status                 Status                 `json:"Status,omitempty"`
 }
 
-//NetworkDeviceFunctions
+//NetworkDeviceFunctions redfish structure
 type NetworkDeviceFunctions struct {
 	Oid string `json:"@odata.id"`
 }
 
-//NetworkPorts
+//NetworkPorts redfish structure
 type NetworkPorts struct {
 	Oid string `json:"@odata.id"`
 }
 
-//PCIeDevice get
 /*
 PCIeDevice 1.3.1
 
@@ -415,7 +414,6 @@ This resource shall be used to represent a PCIeDevice attached to a System.
 URIs:
 /redfish/v1/Chassis/{ChassisId}/PCIeDevices/{PCIeDeviceId}
 /redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}
-
 */
 type PCIeDevice struct {
 	Oid             string        `json:"@odata.id"`
@@ -449,14 +447,12 @@ type PCIeInterface struct {
 	PCIeType    string `json:"PCIeType"` //enum
 }
 
-//PCIeFunction
 /*
 PCIeFunction 1.2.2
 This resource shall be used to represent a PCIeFunction attached to a System.
 URIs:
 /redfish/v1/Chassis/{ChassisId}/PCIeDevices/{PCIeDeviceId}/PCIeFunctions/{PCIeFunctionId}
 /redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}/PCIeFunctions/{PCIeFunctionId}
-
 */
 type PCIeFunction struct {
 	Oid               string `json:"@odata.id"`
@@ -480,9 +476,8 @@ type PCIeFunction struct {
 	VendorID          string `json:"VendorId,omitempty"`
 }
 
-// Processors
 /*
-Processor 1.5.0
+Processors 1.5.0
 
 This resource shall be used to represent a single processor contained within a system.
 URIs:
@@ -524,7 +519,7 @@ type Processors struct {
 	UUID                  string                `json:"UUID,omitempty"`
 }
 
-//AccelerationFunctions
+//AccelerationFunctions redfish structure
 type AccelerationFunctions struct {
 	Oid string `json:"@odata.id"`
 }
@@ -566,7 +561,7 @@ type ReconfigurationSlot struct {
 	UUID                 string               `json:"UUID"`
 }
 
-//AccelerationFunction
+//AccelerationFunction redfish structure
 type AccelerationFunction struct {
 	Oid string `json:"@odata.id"`
 }
@@ -589,12 +584,12 @@ type ProcessorMemory struct {
 	SpeedMHz         int    `json:"SpeedMHz"`
 }
 
-//SubProcessors
+//SubProcessors redfish structure
 type SubProcessors struct {
 	Oid string `json:"@odata.id"`
 }
 
-// ProcessorSummary
+// ProcessorSummary redfish structure
 type ProcessorSummary struct {
 	Count                 int     `json:"Count"`
 	LogicalProcessorCount int     `json:"LogicalProcessorCount"`
@@ -603,12 +598,7 @@ type ProcessorSummary struct {
 	Status                Status  `json:"Status"`
 }
 
-// Redundancy
-type Redundancy struct {
-	Oid string `json:"@odata.id"`
-}
-
-// SecureBoot
+// SecureBoot redfish structure
 type SecureBoot struct {
 	Oid                   string `json:"@odata.id"`
 	Ocontext              string `json:"@odata.context,omitempty"`
@@ -623,7 +613,7 @@ type SecureBoot struct {
 	SecureBootMode        string `json:"SecureBootMode,omitempty"`
 }
 
-// SimpleStorage
+// SimpleStorage redfish structure
 type SimpleStorage struct {
 	Oid            string   `json:"@odata.id"`
 	Ocontext       string   `json:"@odata.context,omitempty"`
@@ -649,91 +639,7 @@ type Device struct {
 	Status        Status `json:"Status"`
 }
 
-// Storage
-type Storage struct {
-	Oid                string              `json:"@odata.id"`
-	Ocontext           string              `json:"@odata.context,omitempty"`
-	Oetag              string              `json:"@odata.etag,omitempty"`
-	Otype              string              `json:"@odata.type,omitempty"`
-	Description        string              `json:"description,omitempty"`
-	ID                 string              `json:"Id,omitempty"`
-	Name               string              `json:"Name,omitempty"`
-	Oem                Oem                 `json:"Oem,omitempty"`
-	Drives             []Drive             `json:"Drives,omitempty"`
-	Links              Links               `json:"Links,omitempty"`
-	Redundancy         []Redundancy        `json:"Redundancy,omitempty"` //TODO
-	Status             Status              `json:"Status,omitempty"`
-	StorageControllers []StorageController `json:"StorageControllers,omitempty"`
-	Volumes            Volumes             `json:"Volumes,omitempty"`
-}
-
-//Drive
-type Drive struct {
-	Oid string `json:"@odata.id"`
-}
-
-//StorageController in place(it has Oid it may be get, TODO)
-type StorageController struct {
-	Oid                          string          `json:"@odata.id"`
-	Actions                      Actions         `json:"Actions,omitempty"`
-	Assembly                     Assembly        `json:"Assembly,omitempty"`
-	AssetTag                     string          `json:"AssetTag,omitempty"`
-	CacheSummary                 CacheSummary    `json:"CacheSummary,omitempty"`
-	ControllerRates              ControllerRates `json:"ControllerRates,omitempty"`
-	FirmwareVersion              string          `json:"FirmwareVersion,omitempty"`
-	Identifiers                  []Identifier    `json:"Identifiers,omitempty"`
-	Links                        Links           `json:"Links,omitempty"`
-	Location                     Location        `json:"Location,omitempty"`
-	Manufacturer                 string          `json:"Manufacturer,omitempty"`
-	MemberID                     string          `json:"MemberId,omitempty"`
-	Model                        string          `json:"Model,omitempty"`
-	Name                         string          `json:"Name,omitempty"`
-	Oem                          Oem             `json:"Oem,omitempty"`
-	PartNumber                   string          `json:"PartNumber,omitempty"`
-	PCIeInterface                PCIeInterface   `json:"PCIeInterface,omitempty"`
-	Ports                        Ports           `json:"Ports,omitempty"`
-	SerialNumber                 string          `json:"SerialNumber,omitempty"`
-	SKU                          string          `json:"SKU,omitempty"`
-	SpeedGbps                    int             `json:"SpeedGbps,omitempty"`
-	Status                       Status          `json:"Status,omitempty"`
-	SupportedControllerProtocols []string        `json:"SupportedControllerProtocols,omitempty"` //enum
-	SupportedDeviceProtocols     []string        `json:"SupportedDeviceProtocols,omitempty"`     //enum
-	SupportedRAIDTypes           []string        `json:"SupportedRAIDTypes,omitempty"`           //enum
-}
-
-//Actions ...
-type Actions struct {
-}
-
-//Ports
-type Ports struct {
-	Oid string `json:"@odata.id"`
-}
-
-//CacheSummary in place object
-type CacheSummary struct {
-	PersistentCacheSizeMiB int    `json:"PersistentCacheSizeMiB"`
-	Status                 Status `json:"Status"`
-	TotalCacheSizeMiB      int    `json:"TotalCacheSizeMiB"`
-}
-
-//ControllerRates in place object
-type ControllerRates struct {
-	ConsistencyCheckRatePercent int `json:"ConsistencyCheckRatePercent"`
-	RebuildRatePercent          int `json:"RebuildRatePercent"`
-	TransformationRatePercent   int `json:"TransformationRatePercent"`
-}
-
-//Identifier
-type Identifier struct {
-}
-
-//Volumes
-type Volumes struct {
-	Oid string `json:"@odata.id"`
-}
-
-// TrustedModule
+// TrustedModule redfish structure
 type TrustedModule struct {
 	FirmwareVersion        string `json:"FirmwareVersion"`
 	FirmwareVersion2       string `json:"FirmwareVersion2"`
@@ -743,22 +649,22 @@ type TrustedModule struct {
 	Status                 Status `json:"Status"`
 }
 
-// BootOptions
+// BootOptions redfish structure
 type BootOptions struct {
 	Oid string `json:"@odata.id"`
 }
 
-//Certificates
+//Certificates redfish structure
 type Certificates struct {
 	Oid string `json:"@odata.id"`
 }
 
-// StorageServices
+// StorageServices redfish structure
 type StorageServices struct {
 	Oid string `json:"@odata.id"`
 }
 
-// Metrics
+// Metrics redfish structure
 type Metrics struct {
 	Oid string `json:"@odata.id"`
 }

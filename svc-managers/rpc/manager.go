@@ -36,7 +36,8 @@ type Managers struct {
 // for getting the odimra systems.
 // Retrieves all the keys with table name systems collection and create the response
 // to send back to requested user.
-func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
+func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -45,14 +46,14 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
 		resp.Header = authResp.Header
-		return nil
+		return &resp, nil
 	}
 	data, _ := m.EI.GetManagersCollection(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-	return nil
+	return &resp, nil
 }
 
 //GetManager defines the operations which handles the RPC request response
@@ -61,7 +62,8 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
+func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -70,14 +72,14 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
 		resp.Header = authResp.Header
-		return nil
+		return &resp, nil
 	}
 	data := m.EI.GetManagers(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-	return nil
+	return &resp, nil
 }
 
 //GetManagersResource defines the operations which handles the RPC request response
@@ -86,7 +88,8 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.ManagerRequest, resp *managersproto.ManagerResponse) error {
+func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
@@ -95,14 +98,60 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
 		resp.Header = authResp.Header
-		return nil
+		return &resp, nil
 	}
 	data := m.EI.GetManagersResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-	return nil
+	return &resp, nil
+}
+
+//VirtualMediaInsert defines the operations which handles the RPC request response
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
+func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	sessionToken := req.SessionToken
+	resp := &managersproto.ManagerResponse{}
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Error("while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return resp, nil
+	}
+	data := m.EI.VirtualMediaActions(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return resp, nil
+}
+
+//VirtualMediaEject defines the operations which handles the RPC request response
+// The function uses IsAuthorized of util-lib to validate the session
+// which is present in the request.
+func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	sessionToken := req.SessionToken
+	resp := &managersproto.ManagerResponse{}
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		log.Error("while trying to authenticate session")
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return resp, nil
+	}
+	data := m.EI.VirtualMediaActions(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return resp, nil
 }
 
 func generateResponse(input interface{}) []byte {

@@ -37,13 +37,13 @@ import (
 func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	fmt.Println(url)
 	if url == "https://localhost:1234/ODIM/v1/EventSubscriptions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusCreated,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusCreated,
 			Header: map[string][]string{
@@ -52,7 +52,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:1234/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
 			StatusCode: http.StatusCreated,
@@ -145,8 +145,8 @@ func TestGetEventService(t *testing.T) {
 	req := &eventsproto.EventSubRequest{
 		SessionToken: "validToken",
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err := events.GetEventService(ctx, req, resp)
+
+	resp, err := events.GetEventService(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 
 	var eventServiceResp evresponse.EventServiceResponse
@@ -160,9 +160,9 @@ func TestGetEventService(t *testing.T) {
 	req = &eventsproto.EventSubRequest{
 		SessionToken: "InValidToken",
 	}
-	resp = &eventsproto.EventSubResponse{}
-	events.GetEventService(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+
+	esResp, _ := events.GetEventService(ctx, req)
+	assert.Equal(t, int(esResp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 }
 
 func TestCreateEventSubscription(t *testing.T) {
@@ -205,8 +205,8 @@ func TestCreateEventSubscription(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     postBody,
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err := events.CreateEventSubscription(ctx, req, resp)
+
+	resp, err := events.CreateEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 
 	assert.Equal(t, int(resp.StatusCode), http.StatusAccepted, "Status code should be StatusAccepted.")
@@ -214,19 +214,18 @@ func TestCreateEventSubscription(t *testing.T) {
 	req1 := &eventsproto.EventSubRequest{
 		SessionToken: "InValidToken",
 	}
-	resp = &eventsproto.EventSubResponse{}
-	events.CreateEventSubscription(ctx, req1, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+
+	esResp, _ := events.CreateEventSubscription(ctx, req1)
+	assert.Equal(t, int(esResp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 
 	req.SessionToken = "token1"
-	resp = &eventsproto.EventSubResponse{}
-	events.CreateEventSubscription(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+	esRespTest, _ := events.CreateEventSubscription(ctx, req)
+	assert.Equal(t, int(esRespTest.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 
 	req.SessionToken = "token"
-	resp = &eventsproto.EventSubResponse{}
-	events.CreateEventSubscription(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusInternalServerError, "Status code should be StatusUnauthorized.")
+
+	esRespTest2, _ := events.CreateEventSubscription(ctx, req)
+	assert.Equal(t, int(esRespTest2.StatusCode), http.StatusInternalServerError, "Status code should be StatusUnauthorized.")
 }
 
 func TestSubmitTestEvent(t *testing.T) {
@@ -266,9 +265,9 @@ func TestSubmitTestEvent(t *testing.T) {
 		SessionToken: "validToken",
 		PostBody:     message,
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err = events.SubmitTestEvent(ctx, req, resp)
-	assert.Nil(t, err, "There should be no error")
+
+	resp, errTest := events.SubmitTestEvent(ctx, req)
+	assert.Nil(t, errTest, "There should be no error")
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status code should be StatusOK.")
 }
 
@@ -293,8 +292,8 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err := events.GetEventSubscriptionsCollection(ctx, req, resp)
+
+	resp, err := events.GetEventSubscriptionsCollection(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
@@ -326,18 +325,18 @@ func TestGetEventSubscriptions(t *testing.T) {
 		SessionToken:        "validToken",
 		EventSubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err := events.GetEventSubscription(ctx, req, resp)
+
+	esResp, err := events.GetEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(esResp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
 	var evResp = &evresponse.SubscriptionResponse{}
-	json.Unmarshal(resp.Body, evResp)
+	json.Unmarshal(esResp.Body, evResp)
 	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", evResp.Response.ID, "ID should be 81de0110-c35a-4859-984c-072d6c5a32d7")
 
 	req.EventSubscriptionID = "81de0110"
-	resp = &eventsproto.EventSubResponse{}
-	events.GetEventSubscription(ctx, req, resp)
+	//resp := &eventsproto.EventSubResponse{}
+	resp, _ := events.GetEventSubscription(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusBadRequest.")
 }
 
@@ -363,15 +362,15 @@ func TestDeleteEventSubscription(t *testing.T) {
 		SessionToken:        "validToken",
 		EventSubscriptionID: "81de0110-c35a-4859-984c-072d6c5a32d7",
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err := events.DeleteEventSubscription(ctx, req, resp)
+
+	resp, err := events.DeleteEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusNotFound.")
 
 	req.EventSubscriptionID = "81de0110"
-	resp = &eventsproto.EventSubResponse{}
-	events.DeleteEventSubscription(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
+
+	delResp, _ := events.DeleteEventSubscription(ctx, req)
+	assert.Equal(t, int(delResp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 }
 
 func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
@@ -396,15 +395,15 @@ func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 		SessionToken: "validToken",
 		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
 	}
-	var resp = &eventsproto.EventSubResponse{}
-	err := events.DeleteEventSubscription(ctx, req, resp)
+
+	resp, err := events.DeleteEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
 
 	req.UUID = "81de0110"
-	resp = &eventsproto.EventSubResponse{}
-	events.DeleteEventSubscription(ctx, req, resp)
-	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
+
+	delResp, _ := events.DeleteEventSubscription(ctx, req)
+	assert.Equal(t, int(delResp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
 }
 
 func TestCreateDefaultSubscriptions(t *testing.T) {
@@ -432,8 +431,8 @@ func TestCreateDefaultSubscriptions(t *testing.T) {
 		ResourceTypes: []string{},
 		Protocol:      "redfish",
 	}
-	var resp = &eventsproto.DefaultEventSubResponse{}
-	err := events.CreateDefaultEventSubscription(ctx, req, resp)
+
+	_, err := events.CreateDefaultEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 
 }
@@ -446,8 +445,8 @@ func TestSubscribeEMB(t *testing.T) {
 		PluginID:     "GRF",
 		EMBQueueName: []string{"topic"},
 	}
-	var resp = &eventsproto.SubscribeEMBResponse{}
-	err := events.SubsribeEMB(ctx, req, resp)
+
+	resp, err := events.SubsribeEMB(ctx, req)
 	assert.Nil(t, err, "There should be no error")
 	assert.True(t, resp.Status, "status should be true")
 }

@@ -19,15 +19,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"testing"
-
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
-	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
 	iris "github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
+	"io/ioutil"
+	"net/http"
+	"testing"
 )
 
 func mockCreateVolume(username, url string) (*http.Response, error) {
@@ -89,7 +88,7 @@ func TestCreateVolume(t *testing.T) {
 	reqPostBody := map[string]interface{}{
 		"Name":     "Volume_Test1",
 		"RAIDType": "RAID0",
-		"Drives":   []rfpmodel.OdataIDLink{{OdataID: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:1/Storage/ArrayControllers-0/Drives/0"}},
+		"Drives":   []dmtf.Link{{Oid: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:1/Storage/ArrayControllers-0/Drives/0"}},
 	}
 	reqBodyBytes, _ := json.Marshal(reqPostBody)
 	requestBody := map[string]interface{}{

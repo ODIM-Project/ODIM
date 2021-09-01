@@ -537,7 +537,8 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		PreferredAuthType: "BasicAuth",
 		PluginType:        "RF-GENERIC",
 	})
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions("10.4.1.2")
+	searchKey := GetSearchKey("10.4.1.2", evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}

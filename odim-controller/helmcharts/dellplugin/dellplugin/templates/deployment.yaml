@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dellplugin
+  namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+spec:
+  replicas: {{ .Values.ReplicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: dellplugin
+  template:
+    metadata:
+      labels:
+        app: dellplugin
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      hostname: dellplugin
+      volumes:
+        - name: dellplugin-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: dellplugin-config
+            - configMap:
+                name: odimra-platformconfig
+        - name: configure-hosts
+          configMap:
+            name: configure-hosts
+            items:
+            - key: hosts
+              path: host.append
+              mode: 0644
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+        - name: dellplugin-log
+          persistentVolumeClaim:
+            claimName: dellplugin-log-claim
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+        - name: dellplugin
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+            - name: ASSIGNED_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          image: dellplugin:{{ .Values.dellplugin.imageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 45005
+            - containerPort: 45006
+          volumeMounts:
+            - name: dellplugin-config-vol
+              mountPath: /etc/dellplugin_config
+            - name: configure-hosts
+              mountPath: /tmp
+            - name: dellplugin-log
+              mountPath: /var/log/dellplugin_logs
+            - name: odimra-secret
+              mountPath: /etc/odimra_certs

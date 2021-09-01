@@ -27,8 +27,12 @@ import (
 // the GetFabricResource from fabrics micro service
 func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 
-	fab := fabricsproto.NewFabricsService(services.Fabrics, services.Service.Client())
-
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	fab := fabricsproto.NewFabricsClient(conn)
 	resp, err := fab.GetFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {
 		return nil, fmt.Errorf("error: something went wrong with rpc call: %v", err)
@@ -41,7 +45,12 @@ func GetFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResp
 // the Fabric Resource such as Endpoints, Zones from fabrics micro service
 func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 
-	fab := fabricsproto.NewFabricsService(services.Fabrics, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	fab := fabricsproto.NewFabricsClient(conn)
 
 	resp, err := fab.UpdateFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {
@@ -55,7 +64,12 @@ func UpdateFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricR
 // the DeleteFabricResource from fabrics micro service
 func DeleteFabricResource(req fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 
-	fab := fabricsproto.NewFabricsService(services.Fabrics, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	fab := fabricsproto.NewFabricsClient(conn)
 
 	resp, err := fab.DeleteFabricResource(context.TODO(), &req)
 	if err != nil && resp == nil {

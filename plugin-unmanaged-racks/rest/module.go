@@ -64,11 +64,16 @@ func configureTLS(c *config.PluginConfig) host.Configurator {
 		if err != nil {
 			panic(err)
 		}
+
+		// 0xc02f #TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+		// 0xc030 #TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+		preferredCipherSuites := []uint16{0xc02f, 0xc030}
+
 		su.Server.TLSConfig = &tls.Config{
 			Certificates:             []tls.Certificate{cert},
 			MinVersion:               c.TLSConf.MinVersion,
 			MaxVersion:               c.TLSConf.MaxVersion,
-			CipherSuites:             c.TLSConf.PreferredCipherSuites,
+			CipherSuites:             preferredCipherSuites,
 			PreferServerCipherSuites: true,
 		}
 	}
@@ -186,6 +191,7 @@ func (s *subscriber) subscribe() {
 		switch r.StatusCode {
 		case http.StatusOK:
 			logging.Infof("URP->ODIMRA event subscription registered successfully")
+			return
 		case http.StatusAccepted:
 			continue
 		case http.StatusConflict:

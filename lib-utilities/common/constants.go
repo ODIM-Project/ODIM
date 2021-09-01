@@ -15,6 +15,13 @@
 // Package common ...
 package common
 
+type EventConst int
+
+const (
+	RedfishEvent EventConst = iota
+	MetricReport
+)
+
 const (
 	// RoleAdmin defines admin role for all service to authorize
 	RoleAdmin = "Administrator"
@@ -99,6 +106,41 @@ const (
 	ManagerTypeRackManager = "RackManager"
 	// ManagerTypeService - A software-based service that provides management functions.
 	ManagerTypeService = "Service"
+
+	// SubscriptionIndex is a index name which required for indexing of event subscriptions
+	SubscriptionIndex = "Subscription"
+	// DeviceSubscriptionIndex is a index name which required for indexing
+	// subscription of device
+	DeviceSubscriptionIndex = "DeviceSubscription"
+
+	// ManagerAccountType has schema version to be returned with manager account
+	ManagerAccountType = "#ManagerAccount.v1_8_0.ManagerAccount"
+	// AccountServiceType has schema version to be returned with accountservice
+	AccountServiceType = "#AccountService.v1_9_0.AccountService"
+	// RoleType has schema version to be returned with Role
+	RoleType = "#Role.v1_3_1.Role"
+	// SessionServiceType has schema version to be returned with sessionservice
+	SessionServiceType = "#SessionService.v1_1_8.SessionService"
+	// SessionType has schema version to be returned with session
+	SessionType = "#Session.v1_3_0.Session"
+	// EventType has schema version to be returned with event
+	EventType = "#Event.v1_6_1.Event"
+	// AggregationServiceType has schema version to be returned with Aggregationservice
+	AggregationServiceType = "#AggregationService.v1_0_1.AggregationService"
+	// TaskType has schema version to be returned with Task
+	TaskType = "#Task.v1_5_1.Task"
+	// EventDestinationType has schema version to be returned with EventDestination
+	EventDestinationType = "#EventDestination.v1_10_1.EventDestination"
+	// EventServiceType has schema version to be returned with Event Service Type
+	EventServiceType = "#EventService.v1_7_0.EventService"
+	// ManagerType has schema version to be returned with Manager
+	ManagerType = "#Manager.v1_12_0.Manager"
+	// TaskEventType has schema version to be returned with TaskEvent
+	TaskEventType = "TaskEvent.1.0.3"
+	// UpdateServiceType has schema version to be returned with UpdateService
+	UpdateServiceType = "#UpdateService.v1_9_0.UpdateService"
+	// SettingsType has schema version to be returned with Settings in update service
+	SettingsType = "#Settings.v1_3_3.OperationApplyTimeSupport"
 )
 
 // SystemResource contains the Resource name and table name
@@ -127,9 +169,16 @@ var SystemResource = map[string]string{
 // so it will be usefull to store the resource data into the particular database table
 // and also it will be usefull to retrives the chassis resource data
 var ChassisResource = map[string]string{
-	"Power":           "Power",
-	"Thermal":         "Thermal",
-	"NetworkAdapters": "NetworkAdaptersCollection",
+	"Power":                  "Power",
+	"Thermal":                "Thermal",
+	"NetworkAdapters":        "NetworkAdaptersCollection",
+	"NetworkPorts":           "NetworkPortsCollection",
+	"NetworkDeviceFunctions": "NetworkDeviceFunctionsCollection",
+	"Assembly":               "Assembly",
+	"PCIeSlots":              "PCIeSlots",
+	"PCIeDevices":            "PCIeDevicesCollection",
+	"Sensors":                "SensorsCollection",
+	"LogServices":            "LogServicesCollection",
 }
 
 // ManagersResource contains the Resource name and table name
@@ -142,6 +191,7 @@ var ManagersResource = map[string]string{
 	"HostInterfaces":     "HostInterfacesCollection",
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
+	"SerialInterface":    "SerialInterfaceCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription
@@ -210,8 +260,9 @@ var ResourceTypes = map[string]string{
 
 // Events contains the data with IP sent fro mplugin to PMB
 type Events struct {
-	IP      string `json:"ip"`
-	Request []byte `json:"request"`
+	IP        string `json:"ip"`
+	Request   []byte `json:"request"`
+	EventType string `json:"eventType"`
 }
 
 // MessageData contains information of Events and message details including arguments
@@ -242,4 +293,11 @@ type Event struct {
 // Link  property shall contain a link to the resource or object that originated the condition that caused the event to be generated
 type Link struct {
 	Oid string `json:"@odata.id"`
+}
+
+//DeviceSubscription is a model to store the subscription details of a device
+type DeviceSubscription struct {
+	EventHostIP     string   `json:"EventHostIP,omitempty"`
+	OriginResources []string `json:"OriginResources"`
+	Location        string   `json:"location,omitempty"`
 }

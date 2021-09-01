@@ -1,0 +1,6 @@
+---
+- name: Scale plugin deployment to desired replica count
+  hosts: '{{ host }}'
+
+  roles:
+    - scale-plugin

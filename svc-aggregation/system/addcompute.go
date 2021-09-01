@@ -17,11 +17,13 @@ package system
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
@@ -30,7 +32,7 @@ import (
 )
 
 // AddCompute is the handler for adding system
-// Discovers Computersystem & Chassis and its top level odata.ID links and store them in inmemory db.
+// Discovers Computersystem, Manager & Chassis and its top level odata.ID links and store them in inmemory db.
 // Upon successfull operation this api returns Systems root UUID in the response body with 200 OK.
 func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, percentComplete int32, addResourceRequest AddResourceRequest, pluginContactRequest getResourceRequest) (response.RPC, string, []byte) {
 	var resp response.RPC
@@ -123,7 +125,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)
 	progress := percentComplete
-	systemsEstimatedWork := int32(65)
+	systemsEstimatedWork := int32(60)
 	var computeSystemID, resourceURI string
 	if computeSystemID, resourceURI, progress, err = h.getAllSystemInfo(taskID, progress, systemsEstimatedWork, pluginContactRequest); err != nil {
 		errMsg := "error while trying to add compute: " + err.Error()
@@ -156,8 +158,8 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	firmwareEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest)
+	firmwareEstimatedWork := int32(5)
+	progress = h.getAllRootInfo(taskID, progress, firmwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
@@ -169,11 +171,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	softwareEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest)
+	softwareEstimatedWork := int32(5)
+	progress = h.getAllRootInfo(taskID, progress, softwareEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	e.UpdateTask(task)
+
+	// Discover telemetry service
+	percentComplete = e.getTelemetryService(taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
 
 	// Lets Discover/gather registry files of this server and store them in DB
 
@@ -183,7 +188,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 
 	progress = percentComplete
-	registriesEstimatedWork := int32(15)
+	registriesEstimatedWork := int32(5)
 	progress = h.getAllRegistries(taskID, progress, registriesEstimatedWork, pluginContactRequest)
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
@@ -209,7 +214,33 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 
 	progress = percentComplete
 	chassisEstimatedWork := int32(15)
-	progress = h.getAllRootInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest)
+	progress = h.getAllRootInfo(taskID, progress, chassisEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderChassis)
+
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	err = e.UpdateTask(task)
+	if err != nil && (err.Error() == common.Cancelling) {
+		go e.rollbackInMemory(resourceURI)
+		return resp, "", nil
+	}
+
+	//Logic for getting the manager information
+	// Logic for getting manager information and saving it into the database
+	// Discover manager Collection this can be a function later.
+	getManagerBody := map[string]interface{}{
+		"ManagerAddress": addResourceRequest.ManagerAddress,
+		"UserName":       addResourceRequest.UserName,
+		"Password":       saveSystem.Password,
+	}
+	pluginContactRequest.DeviceInfo = getManagerBody
+	pluginContactRequest.OID = "/redfish/v1/Managers"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	progress = percentComplete
+	managerEstimatedWork := int32(15)
+	progress = h.getAllRootInfo(taskID, progress, managerEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderManager)
+
 	percentComplete = progress
 	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
 	err = e.UpdateTask(task)
@@ -238,11 +269,17 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
-	pluginContactRequest.CreateSubcription(h.SystemURL)
+	aggSourceIDChassisAndManager := saveSystem.DeviceUUID + ":"
+	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", aggSourceIDChassisAndManager, common.InMemory)
+	managersList, _ := agmodel.GetAllMatchingDetails("Managers", aggSourceIDChassisAndManager, common.InMemory)
+	urlList := h.SystemURL
+	urlList = append(urlList, chassisList...)
+	urlList = append(urlList, managersList...)
+	pluginContactRequest.CreateSubcription(urlList)
+
 	pluginContactRequest.PublishEvent(h.SystemURL, "SystemsCollection")
+
 	// get all managers and chassis info
-	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", aggregationSourceID, common.InMemory)
-	managersList, _ := agmodel.GetAllMatchingDetails("Managers", aggregationSourceID, common.InMemory)
 	pluginContactRequest.PublishEvent(chassisList, "ChassisCollection")
 	pluginContactRequest.PublishEvent(managersList, "ManagerCollection")
 
@@ -259,5 +296,21 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 	log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)
+
+	pluginStartUpData := &agmodel.PluginStartUpData{
+		RequestType: "delta",
+		Devices: map[string]agmodel.DeviceData{
+			saveSystem.DeviceUUID: agmodel.DeviceData{
+				Address:   addResourceRequest.ManagerAddress,
+				UserName:  addResourceRequest.UserName,
+				Password:  []byte(addResourceRequest.Password),
+				Operation: "add",
+			},
+		},
+	}
+	if err = PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
+		log.Error(err.Error())
+	}
+
 	return resp, aggregationSourceID, ciphertext
 }

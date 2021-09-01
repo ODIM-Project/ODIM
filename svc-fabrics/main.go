@@ -14,9 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
-	"sync"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -40,6 +40,8 @@ func main() {
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
@@ -54,12 +56,11 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	registerHandlers()
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
@@ -69,5 +70,5 @@ func registerHandlers() {
 
 	fabrics.IsAuthorizedRPC = services.IsAuthorized
 	fabrics.ContactClientRPC = pmbhandle.ContactPlugin
-	fabricsproto.RegisterFabricsHandler(services.Service.Server(), fabrics)
+	fabricsproto.RegisterFabricsServer(services.ODIMService.Server(), fabrics)
 }

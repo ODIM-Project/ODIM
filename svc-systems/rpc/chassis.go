@@ -59,31 +59,34 @@ type ChassisRPC struct {
 	CreateHandler        *chassis.Create
 }
 
-func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest, resp *chassisproto.GetChassisResponse) (e error) {
+func (cha *ChassisRPC) UpdateChassis(ctx context.Context, req *chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.UpdateHandler.Handle(req)
 	})
 
-	rewrite(r, resp)
-	return
+	rewrite(r, &resp)
+	return &resp, nil
 }
 
-func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest, resp *chassisproto.GetChassisResponse) (e error) {
+func (cha *ChassisRPC) DeleteChassis(ctx context.Context, req *chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.DeleteHandler.Handle(req)
 	})
 
-	rewrite(r, resp)
-	return
+	rewrite(r, &resp)
+	return &resp, nil
 }
 
-func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest, resp *chassisproto.GetChassisResponse) error {
+func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeConfigureComponents}, func() response.RPC {
 		return cha.CreateHandler.Handle(req)
 	})
 
-	rewrite(r, resp)
-	return nil
+	rewrite(r, &resp)
+	return &resp, nil
 }
 
 //GetChassisResource defines the operations which handles the RPC request response
@@ -92,34 +95,36 @@ func (cha *ChassisRPC) CreateChassis(_ context.Context, req *chassisproto.Create
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
+func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	sessionToken := req.SessionToken
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		rewrite(authResp, resp)
-		return nil
+		rewrite(authResp, &resp)
+		return &resp, nil
 	}
 	var pc = chassis.PluginContact{
 		ContactClient:   pmbhandle.ContactPlugin,
 		DecryptPassword: common.DecryptWithPrivateKey,
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
-	data := pc.GetChassisResource(req)
-	rewrite(data, resp)
-	return nil
+	data, _ := pc.GetChassisResource(req)
+	rewrite(data, &resp)
+	return &resp, nil
 }
 
 // GetChassisCollection defines the operation which handles the RPC request response
 // for getting all the server chassis added.
 // Retrieves all the keys with table name ChassisCollection and create the response
 // to send back to requested user.
-func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
+func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetCollectionHandler.Handle()
 	})
-	addDefaultHeaders(rewrite(r, resp))
-	return nil
+	addDefaultHeaders(rewrite(r, &resp))
+	return &resp, nil
 }
 
 //GetChassisInfo defines the operations which handles the RPC request response
@@ -128,13 +133,14 @@ func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.GetChassisRequest, resp *chassisproto.GetChassisResponse) error {
+func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
+	var resp chassisproto.GetChassisResponse
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetHandler.Handle(req)
 	})
 
-	addDefaultHeaders(rewrite(r, resp))
-	return nil
+	addDefaultHeaders(rewrite(r, &resp))
+	return &resp, nil
 }
 
 func rewrite(source response.RPC, target *chassisproto.GetChassisResponse) *chassisproto.GetChassisResponse {

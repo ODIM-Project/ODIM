@@ -4,8 +4,12 @@
 package managers
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -25,6 +29,7 @@ type ManagerRequest struct {
 	ManagerID            string   `protobuf:"bytes,2,opt,name=managerID,proto3" json:"managerID,omitempty"`
 	URL                  string   `protobuf:"bytes,3,opt,name=URL,proto3" json:"URL,omitempty"`
 	ResourceID           string   `protobuf:"bytes,4,opt,name=resourceID,proto3" json:"resourceID,omitempty"`
+	RequestBody          []byte   `protobuf:"bytes,5,opt,name=RequestBody,proto3" json:"RequestBody,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -81,6 +86,13 @@ func (m *ManagerRequest) GetResourceID() string {
 		return m.ResourceID
 	}
 	return ""
+}
+
+func (m *ManagerRequest) GetRequestBody() []byte {
+	if m != nil {
+		return m.RequestBody
+	}
+	return nil
 }
 
 type ManagerResponse struct {
@@ -155,25 +167,251 @@ func init() {
 func init() { proto.RegisterFile("managers.proto", fileDescriptor_49f5910ae72958ed) }
 
 var fileDescriptor_49f5910ae72958ed = []byte{
-	// 309 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0x4f, 0x4f, 0xf2, 0x40,
-	0x10, 0xc6, 0xdf, 0xf2, 0x2f, 0x2f, 0x03, 0x02, 0x19, 0x35, 0x69, 0x08, 0x31, 0xa4, 0xf1, 0xc0,
-	0xa9, 0x89, 0xe8, 0x41, 0x89, 0x37, 0x30, 0x4a, 0x22, 0x97, 0x8d, 0x7e, 0x80, 0x05, 0x26, 0x48,
-	0xc0, 0x5d, 0xdc, 0xd9, 0x9a, 0x70, 0xf7, 0x3b, 0xf9, 0x65, 0xfc, 0x30, 0xa6, 0xcb, 0x22, 0x85,
-	0x13, 0xb7, 0x99, 0xdf, 0xcc, 0xd3, 0xe7, 0xe9, 0xb4, 0x50, 0x7b, 0x97, 0x4a, 0xce, 0xc8, 0x70,
-	0xbc, 0x32, 0xda, 0xea, 0xe8, 0x2b, 0x80, 0xda, 0x68, 0x83, 0x04, 0x7d, 0x24, 0xc4, 0x16, 0x23,
-	0xa8, 0x32, 0x31, 0xcf, 0xb5, 0x7a, 0xd1, 0x0b, 0x52, 0x61, 0xd0, 0x0e, 0x3a, 0x65, 0xb1, 0xc7,
-	0xb0, 0x05, 0x65, 0xff, 0xa0, 0xe1, 0x20, 0xcc, 0xb9, 0x85, 0x1d, 0xc0, 0x06, 0xe4, 0x5f, 0xc5,
-	0x73, 0x98, 0x77, 0x3c, 0x2d, 0xf1, 0x02, 0xc0, 0x10, 0xeb, 0xc4, 0x4c, 0x68, 0x38, 0x08, 0x0b,
-	0x6e, 0x90, 0x21, 0xd1, 0x4f, 0x00, 0xf5, 0xbf, 0x18, 0xbc, 0xd2, 0x8a, 0x29, 0xd5, 0xb0, 0x95,
-	0x36, 0xe1, 0xbe, 0x9e, 0x92, 0x4b, 0x51, 0x14, 0x19, 0x82, 0x97, 0x70, 0xb2, 0xe9, 0x46, 0xc4,
-	0x2c, 0x67, 0xe4, 0x73, 0xec, 0x43, 0x44, 0x28, 0x8c, 0xf5, 0x74, 0xed, 0x3c, 0xab, 0xc2, 0xd5,
-	0x78, 0x03, 0xa5, 0x37, 0x92, 0x53, 0x32, 0x61, 0xb1, 0x9d, 0xef, 0x54, 0xba, 0xad, 0xf8, 0xc0,
-	0x3b, 0x7e, 0x72, 0xe3, 0x07, 0x65, 0xcd, 0x5a, 0xf8, 0xdd, 0xe6, 0x1d, 0x54, 0x32, 0x38, 0x7d,
-	0xc9, 0x05, 0xad, 0xfd, 0x75, 0xd2, 0x12, 0xcf, 0xa0, 0xf8, 0x29, 0x97, 0xc9, 0x36, 0xc8, 0xa6,
-	0xe9, 0xe5, 0x6e, 0x83, 0xee, 0x77, 0x00, 0xff, 0xbd, 0x05, 0xe3, 0x3d, 0x9c, 0x3f, 0x92, 0xdd,
-	0xb6, 0x7d, 0xbd, 0x5c, 0xd2, 0xc4, 0xce, 0xb5, 0xc2, 0x7a, 0xbc, 0xff, 0x25, 0x9a, 0x8d, 0xc3,
-	0x5c, 0xd1, 0x3f, 0xbc, 0x02, 0xd8, 0xa9, 0x8f, 0x93, 0xf4, 0xe0, 0x34, 0x63, 0x28, 0xfc, 0xd5,
-	0x8f, 0xd2, 0x8e, 0x4b, 0xee, 0x37, 0xb9, 0xfe, 0x0d, 0x00, 0x00, 0xff, 0xff, 0xf1, 0xe1, 0x96,
-	0xea, 0x38, 0x02, 0x00, 0x00,
+	// 349 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xc1, 0x4e, 0xc2, 0x40,
+	0x10, 0x86, 0x2d, 0x50, 0x22, 0x03, 0x02, 0xae, 0x9a, 0x34, 0x84, 0x98, 0xa6, 0xf1, 0xc0, 0xa9,
+	0x89, 0xe8, 0x01, 0x88, 0x27, 0x81, 0x28, 0x89, 0x5c, 0x1a, 0xf5, 0xbe, 0xd0, 0x09, 0x56, 0x6a,
+	0x17, 0x77, 0xb6, 0x26, 0xbc, 0x90, 0x27, 0x1f, 0xc9, 0x87, 0x31, 0x5d, 0x8a, 0x14, 0x4e, 0xbd,
+	0xcd, 0x7c, 0xbb, 0xff, 0xfe, 0x7f, 0x66, 0x16, 0xea, 0x1f, 0x3c, 0xe2, 0x0b, 0x94, 0xe4, 0xae,
+	0xa4, 0x50, 0xc2, 0xf9, 0x36, 0xa0, 0x3e, 0xdd, 0x20, 0x0f, 0x3f, 0x63, 0x24, 0xc5, 0x1c, 0xa8,
+	0x11, 0x12, 0x05, 0x22, 0x7a, 0x16, 0x4b, 0x8c, 0x2c, 0xc3, 0x36, 0x3a, 0x15, 0x6f, 0x8f, 0xb1,
+	0x36, 0x54, 0xd2, 0x87, 0x26, 0x23, 0xab, 0xa0, 0x2f, 0xec, 0x00, 0x6b, 0x42, 0xf1, 0xc5, 0x7b,
+	0xb2, 0x8a, 0x9a, 0x27, 0x25, 0xbb, 0x04, 0x90, 0x48, 0x22, 0x96, 0x73, 0x9c, 0x8c, 0xac, 0x92,
+	0x3e, 0xc8, 0x10, 0x66, 0x43, 0x35, 0xb5, 0xbf, 0x17, 0xfe, 0xda, 0x32, 0x6d, 0xa3, 0x53, 0xf3,
+	0xb2, 0xc8, 0xf9, 0x35, 0xa0, 0xf1, 0x1f, 0x94, 0x56, 0x22, 0x22, 0x4c, 0x5e, 0x25, 0xc5, 0x55,
+	0x4c, 0x43, 0xe1, 0xa3, 0xce, 0x69, 0x7a, 0x19, 0xc2, 0xae, 0xe0, 0x64, 0xd3, 0x4d, 0x91, 0x88,
+	0x2f, 0x30, 0x4d, 0xba, 0x0f, 0x19, 0x83, 0xd2, 0x2c, 0x31, 0x2d, 0x69, 0x53, 0x5d, 0xb3, 0x5b,
+	0x28, 0xbf, 0x21, 0xf7, 0x51, 0x5a, 0xa6, 0x5d, 0xec, 0x54, 0xbb, 0x6d, 0xf7, 0xc0, 0xdb, 0x7d,
+	0xd4, 0xc7, 0xe3, 0x48, 0xc9, 0xb5, 0x97, 0xde, 0x6d, 0xf5, 0xa1, 0x9a, 0xc1, 0xc9, 0x18, 0x96,
+	0xb8, 0x4e, 0xe7, 0x97, 0x94, 0xec, 0x1c, 0xcc, 0x2f, 0x1e, 0xc6, 0xdb, 0x20, 0x9b, 0x66, 0x50,
+	0xe8, 0x19, 0xdd, 0x9f, 0x02, 0x1c, 0xa7, 0x16, 0xc4, 0xee, 0xe0, 0xe2, 0x01, 0xd5, 0xb6, 0x1d,
+	0x8a, 0x30, 0xc4, 0xb9, 0x0a, 0x44, 0xc4, 0x1a, 0xee, 0xfe, 0xae, 0x5a, 0xcd, 0xc3, 0x5c, 0xce,
+	0x11, 0xbb, 0x06, 0xd8, 0xa9, 0xf3, 0x49, 0x06, 0x70, 0x96, 0x31, 0xf4, 0xd2, 0xbd, 0xe4, 0xd3,
+	0xf6, 0x81, 0xbd, 0x06, 0x52, 0xc5, 0x3c, 0x9c, 0xa2, 0x1f, 0xf0, 0x49, 0x44, 0x28, 0x55, 0x3e,
+	0x69, 0x0f, 0x4e, 0xb3, 0xd2, 0xf1, 0x3b, 0xce, 0xf3, 0x29, 0x67, 0x65, 0xfd, 0x7b, 0x6f, 0xfe,
+	0x02, 0x00, 0x00, 0xff, 0xff, 0xf3, 0xcd, 0x99, 0xb3, 0xcf, 0x02, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// ManagersClient is the client API for Managers service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type ManagersClient interface {
+	GetManagersCollection(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+	GetManager(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+	GetManagersResource(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+	VirtualMediaInsert(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+	VirtualMediaEject(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error)
+}
+
+type managersClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewManagersClient(cc *grpc.ClientConn) ManagersClient {
+	return &managersClient{cc}
+}
+
+func (c *managersClient) GetManagersCollection(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/GetManagersCollection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managersClient) GetManager(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/GetManager", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managersClient) GetManagersResource(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/GetManagersResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managersClient) VirtualMediaInsert(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/VirtualMediaInsert", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managersClient) VirtualMediaEject(ctx context.Context, in *ManagerRequest, opts ...grpc.CallOption) (*ManagerResponse, error) {
+	out := new(ManagerResponse)
+	err := c.cc.Invoke(ctx, "/Managers/VirtualMediaEject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ManagersServer is the server API for Managers service.
+type ManagersServer interface {
+	GetManagersCollection(context.Context, *ManagerRequest) (*ManagerResponse, error)
+	GetManager(context.Context, *ManagerRequest) (*ManagerResponse, error)
+	GetManagersResource(context.Context, *ManagerRequest) (*ManagerResponse, error)
+	VirtualMediaInsert(context.Context, *ManagerRequest) (*ManagerResponse, error)
+	VirtualMediaEject(context.Context, *ManagerRequest) (*ManagerResponse, error)
+}
+
+// UnimplementedManagersServer can be embedded to have forward compatible implementations.
+type UnimplementedManagersServer struct {
+}
+
+func (*UnimplementedManagersServer) GetManagersCollection(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManagersCollection not implemented")
+}
+func (*UnimplementedManagersServer) GetManager(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManager not implemented")
+}
+func (*UnimplementedManagersServer) GetManagersResource(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManagersResource not implemented")
+}
+func (*UnimplementedManagersServer) VirtualMediaInsert(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VirtualMediaInsert not implemented")
+}
+func (*UnimplementedManagersServer) VirtualMediaEject(ctx context.Context, req *ManagerRequest) (*ManagerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VirtualMediaEject not implemented")
+}
+
+func RegisterManagersServer(s *grpc.Server, srv ManagersServer) {
+	s.RegisterService(&_Managers_serviceDesc, srv)
+}
+
+func _Managers_GetManagersCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).GetManagersCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/GetManagersCollection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).GetManagersCollection(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Managers_GetManager_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).GetManager(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/GetManager",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).GetManager(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Managers_GetManagersResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).GetManagersResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/GetManagersResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).GetManagersResource(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Managers_VirtualMediaInsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).VirtualMediaInsert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/VirtualMediaInsert",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).VirtualMediaInsert(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Managers_VirtualMediaEject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ManagerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagersServer).VirtualMediaEject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Managers/VirtualMediaEject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagersServer).VirtualMediaEject(ctx, req.(*ManagerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Managers_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "Managers",
+	HandlerType: (*ManagersServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetManagersCollection",
+			Handler:    _Managers_GetManagersCollection_Handler,
+		},
+		{
+			MethodName: "GetManager",
+			Handler:    _Managers_GetManager_Handler,
+		},
+		{
+			MethodName: "GetManagersResource",
+			Handler:    _Managers_GetManagersResource_Handler,
+		},
+		{
+			MethodName: "VirtualMediaInsert",
+			Handler:    _Managers_VirtualMediaInsert_Handler,
+		},
+		{
+			MethodName: "VirtualMediaEject",
+			Handler:    _Managers_VirtualMediaEject_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "managers.proto",
 }

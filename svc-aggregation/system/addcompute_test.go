@@ -46,7 +46,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 	host := strings.Split(url, "/ODIM")[0]
 	uid := "test1"
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Add" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -70,7 +70,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if strings.Contains(url, "SomeRegistry.json") {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -204,7 +204,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 		}, nil
 
 	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" || url == host+"/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		if bData.UserName == "incorrectusername" || bytes.Compare(bData.Password, []byte("incorrectPassword")) == 0 {
 			return &http.Response{
 				StatusCode: http.StatusUnauthorized,
@@ -226,7 +226,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {

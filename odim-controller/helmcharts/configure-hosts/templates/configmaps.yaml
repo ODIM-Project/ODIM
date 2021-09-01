@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configure-hosts
+  namespace: {{ .Values.odimra.namespace }}
+data:
+  hosts: {{ .Values.odimra.etcHostsEntries | quote }}

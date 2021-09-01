@@ -229,7 +229,7 @@ func TestCreate(t *testing.T) {
 	})
 
 	successResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser",
@@ -262,7 +262,7 @@ func TestCreate(t *testing.T) {
 					"Connection":        "keep-alive",
 					"Content-type":      "application/json; charset=utf-8",
 					"Link":              "</redfish/v1/AccountService/Accounts/testUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser/",
+					"Location":          "/redfish/v1/AccountService/Accounts/testUser",
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
@@ -273,7 +273,7 @@ func TestCreate(t *testing.T) {
 					AccountTypes: []string{"Redfish"},
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator",
 						},
 					},
 				},

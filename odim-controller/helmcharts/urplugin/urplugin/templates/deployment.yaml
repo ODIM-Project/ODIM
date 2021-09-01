@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: urplugin
+  namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+spec:
+  replicas: {{ .Values.ReplicaCount | default 1}}
+  selector:
+    matchLabels:
+      app: urplugin
+  template:
+    metadata:
+      labels:
+        app: urplugin
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      hostname: urplugin
+      volumes:
+        - name: urplugin-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: urplugin-config
+        - name: configure-hosts
+          configMap:
+            name: configure-hosts
+            items:
+            - key: hosts
+              path: host.append
+              mode: 0644
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
+        - name: urplugin-log
+          persistentVolumeClaim:
+            claimName: urplugin-log-claim
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+        - name: urplugin
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+          image: urplugin:{{ .Values.urplugin.imageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 45007
+          volumeMounts:
+            - name: urplugin-config-vol
+              mountPath: /etc/urplugin_config
+            - name: configure-hosts
+              mountPath: /tmp
+            - name: urplugin-log
+              mountPath: /var/log/urplugin_logs
+            - name: odimra-secret
+              mountPath: /etc/urplugin_certs

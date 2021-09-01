@@ -21,19 +21,21 @@ COPY svc-aggregation /ODIM/svc-aggregation
 COPY svc-api /ODIM/svc-api
 COPY svc-events /ODIM/svc-events
 COPY svc-fabrics /ODIM/svc-fabrics
+COPY svc-telemetry /ODIM/svc-telemetry
 COPY svc-managers /ODIM/svc-managers
 COPY svc-systems /ODIM/svc-systems
 COPY svc-task /ODIM/svc-task
 COPY svc-update /ODIM/svc-update
 COPY plugin-redfish /ODIM/plugin-redfish
+COPY plugin-dell /ODIM/plugin-dell
+COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks
 COPY lib-dmtf /ODIM/lib-dmtf/
 COPY lib-messagebus /ODIM/lib-messagebus/
 COPY lib-persistence-manager /ODIM/lib-persistence-manager/
 COPY lib-rest-client /ODIM/lib-rest-client/
 COPY lib-utilities /ODIM/lib-utilities/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
 
 COPY install/Docker/dockerfiles/scripts/build_odim.sh .
 RUN ./build_odim.sh
 
-COPY install/Docker/dockerfiles/scripts/add-hosts.go .
-RUN go build -o add-hosts add-hosts.go

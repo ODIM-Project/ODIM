@@ -1,0 +1,26 @@
+---
+- name: Include user defined configurations
+  include_vars: "files/helm_config_values.yaml"
+
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Delete Kubernetes Images
+  shell: "{{ docker_bin_path }} rmi $(docker images '{{ item.key }}' -q)"
+  loop: "{{ kubernetes_images | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Delete Dangling Images
+  shell: "{{ docker_bin_path }} rmi $(docker images -f 'dangling=true' -q) || /bin/true"
+
+- name: Clean-up data in odim-controller directory
+  file:
+    path: "{{ odim_controller_path }}"
+    state: absent
+  ignore_errors: "{{ ignore_err }}"

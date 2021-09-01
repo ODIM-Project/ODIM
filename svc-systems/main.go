@@ -27,8 +27,8 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
 
 	"github.com/sirupsen/logrus"
@@ -46,9 +46,13 @@ func main() {
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
+
+	chassis.Token.Tokens = make(map[string]string)
 
 	schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 	if err != nil {
@@ -72,7 +76,7 @@ func main() {
 
 	registerHandler()
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -81,7 +85,7 @@ func registerHandler() {
 	systemRPC := new(rpc.Systems)
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
 	systemRPC.EI = systems.GetExternalInterface()
-	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
+	systemsproto.RegisterSystemsServer(services.ODIMService.Server(), systemRPC)
 
 	pcf := plugin.NewClientFactory(config.Data.URLTranslation)
 	chassisRPC := rpc.NewChassisRPC(
@@ -93,5 +97,5 @@ func registerHandler() {
 		chassis.NewUpdateHandler(pcf),
 	)
 
-	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)
+	chassisproto.RegisterChassisServer(services.ODIMService.Server(), chassisRPC)
 }

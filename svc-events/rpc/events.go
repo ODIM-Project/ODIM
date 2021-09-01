@@ -51,7 +51,8 @@ func generateResponse(input interface{}) []byte {
 }
 
 //GetEventService handles the RPC to get EventService details.
-func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 
 	// Fill the response header first
 	resp.Header = map[string]string{
@@ -75,7 +76,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusMessage = authResp.StatusMessage
 		resp.StatusCode = authResp.StatusCode
-		return nil
+		return &resp, nil
 	}
 	// Check whether the Event Service is enbaled in configuration file.
 	//If so set ServiceEnabled to true.
@@ -94,7 +95,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	}
 	// Construct the response below
 	eventServiceResponse := evresponse.EventServiceResponse{
-		OdataType:    "#EventService.v1_5_0.EventService",
+		OdataType:    common.EventServiceType,
 		ID:           "EventService",
 		Name:         "EventService",
 		Description:  "EventService",
@@ -154,13 +155,14 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	resp.StatusMessage = "Success"
 	resp.Body = generateResponse(eventServiceResponse)
 
-	return nil
+	return &resp, nil
 }
 
 //CreateEventSubscription defines the operations which handles the RPC request response
 // for the Create event subscription RPC call to events micro service.
 // The functionality is to create the subscrription with Resource provided in origin resources.
-func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
 	var taskID string
 	pc := events.PluginContact{
@@ -177,7 +179,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusCode = authResp.StatusCode
-		return nil
+		return &resp, nil
 	}
 	sessionUserName, err := pc.GetSessionUserName(req.SessionToken)
 	if err != nil {
@@ -185,7 +187,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
 		resp.StatusCode = http.StatusUnauthorized
 		log.Error(errorMessage)
-		return err
+		return &resp, err
 	}
 	// Create the task and get the taskID
 	// Contact Task Service using RPC and get the taskID
@@ -200,7 +202,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 			"Content-type": "application/json; charset=utf-8", // TODO: add all error   headers
 		}
 		log.Error(errorMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	strArray := strings.Split(taskURI, "/")
 	if strings.HasSuffix(taskURI, "/") {
@@ -217,14 +219,15 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		"Location":     "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted
-	generateTaskRespone(taskID, taskURI, resp)
-	return nil
+	generateTaskRespone(taskID, taskURI, &resp)
+	return &resp, nil
 }
 
 //SubmitTestEvent defines the operations which handles the RPC request response
 // for the SubmitTestEvent RPC call to events micro service.
 // The functionality is to submit a test event.
-func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
 	pc := events.PluginContact{
 		ContactClient:      e.ContactClientRPC,
@@ -238,19 +241,20 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for submit test event: " + err.Error()
 		log.Error(resp.StatusMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 //GetEventSubscriptionsCollection defines the operations which handles the RPC request response
 // for the get event subscriptions collection RPC call to events micro service.
 // The functionality is to get the collection of subscrription details.
-func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
 	pc := events.PluginContact{
 		ContactClient: e.ContactClientRPC,
@@ -265,19 +269,20 @@ func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *event
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
 		log.Error(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 //GetEventSubscription defines the operations which handles the RPC request response
 // for the get event subscription RPC call to events micro service.
 // The functionality is to get the subscrription details.
-func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.EventRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
 	pc := events.PluginContact{
 		ContactClient: e.ContactClientRPC,
@@ -292,19 +297,20 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
 		log.Error(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 // DeleteEventSubscription defines the operations which handles the RPC request response
 // for the delete event subscription RPC call to events micro service.
 // The functionality is to delete the subscrription details.
-func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
 	pc := events.PluginContact{
 		ContactClient: e.ContactClientRPC,
@@ -325,39 +331,41 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
 		log.Error(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	return nil
+	return &resp, nil
 }
 
 //CreateDefaultEventSubscription defines the operations which handles the RPC request response
 // after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
-func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *eventsproto.DefaultEventSubRequest, resp *eventsproto.DefaultEventSubResponse) error {
+func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *eventsproto.DefaultEventSubRequest) (*eventsproto.DefaultEventSubResponse, error) {
+	var resp eventsproto.DefaultEventSubResponse
 	pc := events.PluginContact{
 		ContactClient: e.ContactClientRPC,
 		Auth:          e.IsAuthorizedRPC,
 	}
 	pc.CreateDefaultEventSubscription(req.SystemID, req.EventTypes, req.MessageIDs, req.ResourceTypes, req.Protocol)
-	return nil
+	return &resp, nil
 }
 
 //SubsribeEMB defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
-func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest, resp *eventsproto.SubscribeEMBResponse) error {
+func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
 	log.Info("Subscribing on emb for plugin " + req.PluginID)
 	for i := 0; i < len(req.EMBQueueName); i++ {
 		evcommon.EMBTopics.ConsumeTopic(req.EMBQueueName[i])
 	}
 	resp.Status = true
-	return nil
+	return &resp, nil
 }
 
 func generateTaskRespone(taskID, taskURI string, resp *eventsproto.EventSubResponse) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2.Task",
+		OdataType:    common.TaskType,
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

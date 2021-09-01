@@ -1,0 +1,67 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: redis-ha-inmemory-data
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: {{ .Values.odimra.namespace }}
+    name: redis-ha-inmemory-data-claim
+  hostPath:
+    path: {{ .Values.odimra.redisInmemoryDataPath }}
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: redis-ha-inmemory-data-claim
+  namespace: {{ .Values.odimra.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: redis-ha-ondisk-data
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  claimRef:
+    namespace: {{ .Values.odimra.namespace }}
+    name: redis-ha-ondisk-data-claim
+  hostPath:
+    path: {{ .Values.odimra.redisOndiskDataPath }}
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: redis-ha-ondisk-data-claim
+  namespace: {{ .Values.odimra.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+---

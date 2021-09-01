@@ -306,7 +306,7 @@ func TestGetMessageRegistryFileID(t *testing.T) {
 		Auth: authMock,
 	}
 	message := []byte("Just Testing")
-	err = ioutil.WriteFile("/tmp/Base.1.0.0.json", message, 0644)
+	err = ioutil.WriteFile("/tmp/Base.1.10.0.json", message, 0644)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -315,9 +315,9 @@ func TestGetMessageRegistryFileID(t *testing.T) {
 	redfishRoutes.Get("/Registries/{id}", r.GetMessageRegistryFileID)
 	test := httptest.New(t, router)
 	test.GET("/redfish/v1/Registries/UnknownID").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusNotFound)
-	test.GET("/redfish/v1/Registries/Base.1.0.0").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
-	test.GET("/redfish/v1/Registries/Base.1.0.0").Expect().Status(http.StatusUnauthorized)
-	test.GET("/redfish/v1/Registries/Base.1.0.0").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/Registries/Base.1.10.0").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
+	test.GET("/redfish/v1/Registries/Base.1.10.0").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/Registries/Base.1.10.0").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 func TestGetMessageRegistryFile(t *testing.T) {
 	err := common.SetUpMockConfig()
@@ -329,7 +329,7 @@ func TestGetMessageRegistryFile(t *testing.T) {
 		Auth: authMock,
 	}
 	message := []byte("Just Testing")
-	err = ioutil.WriteFile("/tmp/Base.1.0.0.json", message, 0644)
+	err = ioutil.WriteFile("/tmp/Base.1.10.0.json", message, 0644)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -338,9 +338,9 @@ func TestGetMessageRegistryFile(t *testing.T) {
 	redfishRoutes.Get("/registries/{id}", r.GetMessageRegistryFile)
 	test := httptest.New(t, router)
 	test.GET("/redfish/v1/registries/UnknownID").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusNotFound)
-	test.GET("/redfish/v1/registries/Base.1.0.0.json").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
-	test.GET("/redfish/v1/registries/Base.1.0.0.json").Expect().Status(http.StatusUnauthorized)
-	test.GET("/redfish/v1/registries/Base.1.0.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/registries/Base.1.10.0.json").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
+	test.GET("/redfish/v1/registries/Base.1.10.0.json").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/registries/Base.1.10.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
 //TestTsMethodNotAllowed is unittest method for TsMethodNotAllowed func.
@@ -439,6 +439,13 @@ func TestChassisMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Chassis/{id}/Power#Redundancy/{rid}", ChassisMethodNotAllowed)
 	redfishRoutes.Any("/v1/Chassis/{id}/Thermal#Fans/{rid}", ChassisMethodNotAllowed)
 	redfishRoutes.Any("/v1/Chassis/{id}/Thermal#Temperatures/{rid}", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/Assembly", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/PCIeSlots", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/PCIeSlots/{rid}", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/PCIeDevices", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/PCIeDevices/{rid}", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/Sensors", ChassisMethodNotAllowed)
+	redfishRoutes.Any("/v1/Chassis/{id}/Sensors/{rid}", ChassisMethodNotAllowed)
 
 	e := httptest.New(t, router)
 	chassisID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
@@ -478,6 +485,41 @@ func TestChassisMethodNotAllowed(t *testing.T) {
 	e.PUT("/redfish/v1/Chassis/" + chassisID + "/Thermal#Temperatures/" + rID).Expect().Status(http.StatusMethodNotAllowed)
 	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/Thermal#Temperatures/" + rID).Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/Thermal#Temperatures/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/Assembly").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/Assembly").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/Assembly").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/Assembly").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeSlots/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/PCIeDevices/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/Sensors").Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/Sensors").Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/Sensors").Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/Sensors").Expect().Status(http.StatusMethodNotAllowed)
+
+	e.POST("/redfish/v1/Chassis/" + chassisID + "/Sensors/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PUT("/redfish/v1/Chassis/" + chassisID + "/Sensors/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.PATCH("/redfish/v1/Chassis/" + chassisID + "/Sensors/" + rID).Expect().Status(http.StatusMethodNotAllowed)
+	e.DELETE("/redfish/v1/Chassis/" + chassisID + "/Sensors/" + rID).Expect().Status(http.StatusMethodNotAllowed)
 }
 
 // TestRegMethodNotAllowed is the unit test method for RegMethodNotAllowed func.

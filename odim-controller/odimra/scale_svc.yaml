@@ -1,0 +1,6 @@
+---
+- name: Scale svc deployment to desired replica count
+  hosts: '{{ host }}'
+
+  roles:
+    - scale-svc

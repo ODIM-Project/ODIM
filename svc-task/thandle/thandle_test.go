@@ -288,8 +288,8 @@ func TestTasksRPC_GetTasks(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.ts.GetTasks(tt.args.ctx, tt.args.req, tt.args.rsp)
-			if err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			rsp, err := tt.ts.GetTasks(tt.args.ctx, tt.args.req)
+			if err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTasks() got = %v, want: %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -350,7 +350,7 @@ func TestTasksRPC_TaskCollection(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.TaskCollection(tt.args.ctx, tt.args.req, tt.args.rsp); err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.TaskCollection(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.TaskCollection() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -406,7 +406,7 @@ func TestTasksRPC_GetTaskService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.GetTaskService(tt.args.ctx, tt.args.req, tt.args.rsp); err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetTaskService(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetTaskService() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -520,7 +520,7 @@ func TestTasksRPC_GetSubTasks(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.GetSubTasks(tt.args.ctx, tt.args.req, tt.args.rsp); err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetSubTasks(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetSubTasks() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -658,7 +658,7 @@ func TestTasksRPC_GetSubTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.GetSubTask(tt.args.ctx, tt.args.req, tt.args.rsp); err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.GetSubTask(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.GetSubTask() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -796,7 +796,7 @@ func TestTasksRPC_DeleteTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.DeleteTask(tt.args.ctx, tt.args.req, tt.args.rsp); err != nil || !reflect.DeepEqual(tt.args.rsp.StatusCode, tt.want.StatusCode) {
+			if rsp, err := tt.ts.DeleteTask(tt.args.ctx, tt.args.req); err != nil || !reflect.DeepEqual(rsp.StatusCode, tt.want.StatusCode) {
 				got := tt.args.rsp
 				t.Errorf("TasksRPC.DeleteTask() got = %v, want %v", got.StatusCode, tt.want.StatusCode)
 			}
@@ -854,9 +854,9 @@ func TestTasksRPC_CreateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.CreateTask(tt.args.ctx, tt.args.req, tt.args.rsp); !reflect.DeepEqual(tt.args.rsp.TaskURI, tt.want.TaskURI) {
+			if rsp, err := tt.ts.CreateTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(rsp.TaskURI, tt.want.TaskURI) {
 				t.Errorf("TasksRPC.CreateTask() got error = %v, wantError %v", err, tt.wantError)
-				t.Errorf("TasksRPC.CreateTask() got = %v, want %v", tt.args.rsp, tt.want)
+				t.Errorf("TasksRPC.CreateTask() got = %v, want %v", rsp, tt.want)
 			}
 		})
 	}
@@ -1041,9 +1041,9 @@ func TestTasksRPC_CreateChildTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.CreateChildTask(tt.args.ctx, tt.args.req, tt.args.rsp); !reflect.DeepEqual(err, tt.wantErr) || !reflect.DeepEqual(tt.args.rsp.TaskURI, tt.wantRsp.TaskURI) {
+			if rsp, err := tt.ts.CreateChildTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(err, tt.wantErr) || !reflect.DeepEqual(rsp.TaskURI, tt.wantRsp.TaskURI) {
 				t.Errorf("TasksRPC.CreateChildTask() got error = %v, wantErr: %v", err, tt.wantErr)
-				t.Errorf("TasksRPC.CreateChildTask() got response = %v, want: %v", tt.args.rsp, tt.wantRsp)
+				t.Errorf("TasksRPC.CreateChildTask() got response = %v, want: %v", rsp, tt.wantRsp)
 			}
 		})
 	}
@@ -1655,7 +1655,7 @@ func TestTasksRPC_UpdateTask(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.ts.UpdateTask(tt.args.ctx, tt.args.req, tt.args.rsp); !reflect.DeepEqual(err, tt.wantErr) {
+			if _, err := tt.ts.UpdateTask(tt.args.ctx, tt.args.req); !reflect.DeepEqual(err, tt.wantErr) {
 				t.Errorf("TasksRPC.UpdateTask() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

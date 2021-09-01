@@ -16,7 +16,6 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 	"os"
-	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -40,6 +39,8 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("Error while trying to check DB connection health: " + err.Error())
 	}
@@ -49,23 +50,22 @@ func main() {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
 	eventChan := make(chan interface{})
-	var lock sync.Mutex
 	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
-	go common.TrackConfigFileChanges(configFilePath, eventChan, &lock)
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	if err := services.InitializeService(services.AccountSession); err != nil {
 		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}
 
 	registerHandlers()
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal("Failed to run a service: " + err.Error())
 	}
 }
 
 func registerHandlers() {
-	authproto.RegisterAuthorizationHandler(services.Service.Server(), new(rpc.Auth))
-	sessionproto.RegisterSessionHandler(services.Service.Server(), new(rpc.Session))
-	accountproto.RegisterAccountHandler(services.Service.Server(), new(rpc.Account))
-	roleproto.RegisterRolesHandler(services.Service.Server(), new(rpc.Role))
+	authproto.RegisterAuthorizationServer(services.ODIMService.Server(), new(rpc.Auth))
+	sessionproto.RegisterSessionServer(services.ODIMService.Server(), new(rpc.Session))
+	accountproto.RegisterAccountServer(services.ODIMService.Server(), new(rpc.Account))
+	roleproto.RegisterRolesServer(services.ODIMService.Server(), new(rpc.Role))
 }

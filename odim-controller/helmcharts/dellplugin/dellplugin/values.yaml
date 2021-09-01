@@ -1,0 +1,15 @@
+odimra:
+  namespace: 
+  groupID:
+  haDeploymentEnabled:
+dellplugin:
+  eventListenerNodePort: 
+  imageTag: "1.0"
+  dellPluginRootServiceUUID: 
+  username: 
+  password: 
+  host: dellplugin
+  eventHost: dellplugin
+  lbHost: 
+  lbPort: 
+  logPath:

@@ -107,11 +107,12 @@ type APIGatewayConf struct {
 	Certificate     []byte
 }
 
-// AddComputeSkipResources stores all resource which need to igonered while adding Computer System
+// AddComputeSkipResources stores list of resources which need to ignored while inserting the contents to DB while adding Computer System
 type AddComputeSkipResources struct {
-	SystemCollection  []string `json:"SystemCollection"`  // holds the value of  system resource which need to be ignored
-	ChassisCollection []string `json:"ChassisCollection"` // holds the value of  chassis resource which need to be ignored
-	OtherCollection   []string `json:"OtherCollection"`   // holds the value resource name  for which next level retrieval to be ignored
+	SkipResourceListUnderSystem  []string `json:"SkipResourceListUnderSystem"`  // holds the list of resources which needs to be ignored for storing in DB under system resource
+	SkipResourceListUnderManager []string `json:"SkipResourceListUnderManager"` // holds the list of resources which needs to be ignored for storing in DB under manager resource
+	SkipResourceListUnderChassis []string `json:"SkipResourceListUnderChassis"` // holds the list of resources which needs to be ignored for storing in DB under chassis resource
+	SkipResourceListUnderOthers  []string `json:"SkipResourceListUnderOthers"`  // holds the list of resources which needs to be ignored for storing in DB under a generic resource apart from system,manager and chassis
 }
 
 // URLTranslation ...
@@ -154,15 +155,15 @@ type ConnectionMethodConf struct {
 func SetConfiguration() error {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return fmt.Errorf("error: no value set to environment variable CONFIG_FILE_PATH")
+		return fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		return fmt.Errorf("error: failed to read the config file: %v", err)
+		return fmt.Errorf("Failed to read the config file: %v", err)
 	}
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
-		return fmt.Errorf("error: failed to unmarshal config data: %v", err)
+		return fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
 
 	return ValidateConfiguration()
@@ -381,23 +382,28 @@ func checkAddComputeSkipResources() {
 	if Data.AddComputeSkipResources == nil {
 		log.Warn("No value found for AddComputeRetrival, setting default value")
 		Data.AddComputeSkipResources = &AddComputeSkipResources{
-			SystemCollection:  DefaultSystemCollection,
-			ChassisCollection: DefaultChassisCollection,
-			OtherCollection:   DefaultOtherCollection,
+			SkipResourceListUnderSystem:  DefaultSkipListUnderSystem,
+			SkipResourceListUnderManager: DefaultSkipListUnderManager,
+			SkipResourceListUnderChassis: DefaultSkipListUnderChassis,
+			SkipResourceListUnderOthers:  DefaultSkipListUnderOthers,
 		}
 		return
 	}
-	if len(Data.AddComputeSkipResources.SystemCollection) == 0 {
-		log.Warn("No value found for SystemCollection, setting default value")
-		Data.AddComputeSkipResources.SystemCollection = DefaultSystemCollection
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderSystem) == 0 {
+		log.Warn("No value found for SkipResourceListUnderSystem, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderSystem = DefaultSkipListUnderSystem
 	}
-	if len(Data.AddComputeSkipResources.ChassisCollection) == 0 {
-		log.Warn("No value found for ChassisCollection, setting default value")
-		Data.AddComputeSkipResources.ChassisCollection = DefaultChassisCollection
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderManager) == 0 {
+		log.Warn("No value found for SkipResourceListUnderManager, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderManager = DefaultSkipListUnderManager
 	}
-	if len(Data.AddComputeSkipResources.OtherCollection) == 0 {
-		log.Warn("No value found for OtherCollection, setting default value")
-		Data.AddComputeSkipResources.OtherCollection = DefaultOtherCollection
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderChassis) == 0 {
+		log.Warn("No value found for SkipResourceListUnderChassis, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderChassis = DefaultSkipListUnderChassis
+	}
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderOthers) == 0 {
+		log.Warn("No value found for SkipResourceListUnderOthers, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderOthers = DefaultSkipListUnderOthers
 	}
 }
 

@@ -16,7 +16,6 @@
 package rfphandler
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -52,9 +51,10 @@ func GetResource(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Error("Unable to collect data from request: " + err.Error())
+		errMsg := "Unable to collect data from request: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errMsg)
 		return
 	}
 
@@ -67,7 +67,7 @@ func GetResource(ctx iris.Context) {
 	//device.Password = plainText
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "Internal processing error: " + err.Error()
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
 		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
@@ -89,7 +89,11 @@ func GetResource(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf(err.Error())
+		errMsg := "While trying to read the response body, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {

@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -40,6 +41,19 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmessagebus"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
+
+const (
+	// SystemUUID is used to replace with system id in wildcard property
+	SystemUUID = "SystemID"
+	// ChassisUUID is used to replace with chassis id in wildcard property
+	ChassisUUID = "ChassisID"
+)
+
+// WildCard is used to reduce the size the of list of metric properties
+type WildCard struct {
+	Name   string
+	Values []string
+}
 
 //Device struct to define the response from plugin for UUID
 type Device struct {
@@ -75,6 +89,11 @@ type ExternalInterface struct {
 	GenericSave              func([]byte, string, string) error
 	CheckActiveRequest       func(string) (bool, *errors.Error)
 	DeleteActiveRequest      func(string) *errors.Error
+	GetAllMatchingDetails    func(string, string, common.DbType) ([]string, *errors.Error)
+	CheckMetricRequest       func(string) (bool, *errors.Error)
+	DeleteMetricRequest      func(string) *errors.Error
+	GetResource              func(string, string) (string, *errors.Error)
+	Delete                   func(string, string, common.DbType) *errors.Error
 }
 
 type responseStatus struct {
@@ -182,21 +201,8 @@ func getIPAndPortFromAddress(address string) (string, string) {
 	return ip, port
 }
 
-func getIPFromHostName(fqdn string) (string, error) {
-	addr, err := net.LookupIP(fqdn)
-	if err != nil || len(addr) < 1 {
-		errMsg := "Can't lookup the ip from host name"
-		if err != nil {
-			errMsg = "Can't lookup the ip from host name" + err.Error()
-		}
-		return "", fmt.Errorf("%v", errMsg)
-	}
-	return fmt.Sprintf("%v", addr[0]), nil
-}
-
 func getKeyFromManagerAddress(managerAddress string) string {
-	host, port := getIPAndPortFromAddress(managerAddress)
-	ipAddr, err := getIPFromHostName(host)
+	ipAddr, host, port, err := agcommon.LookupHost(managerAddress)
 	if err != nil {
 		ipAddr = host
 	}
@@ -545,7 +551,7 @@ func isFileExist(existingFiles []string, substr string) bool {
 	return fileExist
 }
 
-func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := req.OID
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the"+resourceName+"collection details: ")
 	if err != nil {
@@ -578,7 +584,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req)
+		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
 	}
 	return progress
 }
@@ -649,10 +655,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -741,10 +746,9 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -794,7 +798,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		if firmwareVersion := getFirmwareVersion(oidKey); firmwareVersion != "" {
+		if firmwareVersion := getFirmwareVersion(oidKey, deviceUUID); firmwareVersion != "" {
 			searchForm["FirmwareVersion"] = firmwareVersion
 		}
 	}
@@ -844,7 +848,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -884,10 +888,9 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	}
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resource, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.ChassisCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
 	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -922,7 +925,14 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.lock.Unlock()
 		return progress
 	}
-	oidKey := keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+
+	oidKey := req.OID
+	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
+	} else {
+		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+	}
 	var memberFlag bool
 	if _, ok := resourceData["Members"]; ok {
 		memberFlag = true
@@ -946,6 +956,7 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		return progress
 	}
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resourceData, retrievalLinks, req.OemFlag)
 	/* Loop through  Collection members and discover all of them*/
 	for oid, oemFlag := range retrievalLinks {
@@ -1026,7 +1037,7 @@ func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool 
 	}
 	//skiping the Retrieval if parent oid contains links in other resource of config
 	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(parentoid, resourceName) {
 			return false
 		}
@@ -1077,12 +1088,22 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid string) string {
-	// replace the system with the manager
-	managerID := strings.Replace(oid, "Systems", "Managers", -1)
-	data, dbErr := agmodel.GetResource("Managers", managerID)
-	if dbErr != nil {
-		log.Error("error while getting the managers data" + dbErr.Error())
+func getFirmwareVersion(oid, deviceUUID string) string {
+	strArray := strings.Split(oid, "/")
+	id := strArray[len(strArray)-1]
+	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+":", -1)
+	key = strings.Replace(key, "Systems", "Managers", -1)
+	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	if dberr != nil {
+		log.Error("while getting the managers data" + dberr.Error())
+		return ""
+	} else if len(keys) == 0 {
+		log.Error("Manager data is not available")
+		return ""
+	}
+	data, dberr := agmodel.GetResource("Managers", keys[0])
+	if dberr != nil {
+		log.Error("while getting the managers data: ", dberr.Error())
 		return ""
 	}
 	// unmarshall the managers data
@@ -1103,7 +1124,15 @@ func getFirmwareVersion(oid string) string {
 // CreateDefaultEventSubscription will create default events subscriptions
 func CreateDefaultEventSubscription(systemID []string) {
 	log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
-	events := eventsproto.NewEventsService(services.Events, services.Service.Client())
+
+	conn, connErr := services.ODIMService.Client(services.Events)
+	if connErr != nil {
+		log.Error("error while connecting: " + connErr.Error())
+		return
+	}
+	defer conn.Close()
+	events := eventsproto.NewEventsClient(conn)
+
 	_, err := events.CreateDefaultEventSubscription(context.TODO(), &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,
 		EventTypes:    []string{"Alert"},
@@ -1122,6 +1151,20 @@ func PublishEvent(systemIDs []string, collectionName string) {
 	for i := 0; i < len(systemIDs); i++ {
 		agmessagebus.Publish(systemIDs[i], "ResourceAdded", collectionName)
 	}
+}
+
+// PublishPluginStatusOKEvent is for notifying active status of a plugin
+// and indicating to resubscribe the EMB of the plugin
+func PublishPluginStatusOKEvent(plugin string, msgQueues []string) {
+	data := common.SubscribeEMBData{
+		PluginID:  plugin,
+		EMBQueues: msgQueues,
+	}
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+		log.Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
+		return
+	}
+	log.Info("Published event to resubscribe to " + plugin + " EMB")
 }
 
 func getIDsFromURI(uri string) (string, string, error) {
@@ -1151,11 +1194,13 @@ func updateResourceDataWithUUID(resourceData, uuid string) string {
 	//replacing the uuid while saving the data
 	//to replace the id of system
 	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+":", -1)
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/systems/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+":", -1)
 	// to replace the id in managers
 	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+":", -1)
 	// to replace id in chassis
-	return strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+
+	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
 
 }
 
@@ -1226,6 +1271,9 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	if err != nil {
 		errMsg := err.Error()
 		log.Error(errMsg)
+		if getResponse.StatusCode == http.StatusNotFound {
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil), getResponse.StatusCode, queueList
+		}
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 	}
 	// extracting the EMB Type and EMB Queue name
@@ -1264,4 +1312,332 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 		PluginID:          cm[2],
 		FirmwareVersion:   firmwareVersion[1],
 	}
+}
+
+func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percentComplete int32, pluginContactRequest getResourceRequest, resp response.RPC, saveSystem agmodel.SaveSystem) int32 {
+	deviceInfo := map[string]interface{}{
+		"ManagerAddress": saveSystem.ManagerAddress,
+		"UserName":       saveSystem.UserName,
+		"Password":       saveSystem.Password,
+	}
+	// Populate the resource MetricDefinitions for telemetry service
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricDefinitions"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	// total estimated work for metric is 10 percent
+	var metricEstimatedWork = int32(3)
+	progress := percentComplete
+	progress, err := e.storeTelemetryCollectionInfo("MetricDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReportDefinitions for telemetry service
+	progress = percentComplete
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
+	progress, err = e.storeTelemetryCollectionInfo("MetricReportDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReports for telemetry service
+	var metricReportEstimatedWork int32
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
+	progress = percentComplete
+	progress, err = e.storeTelemetryCollectionInfo("MetricReportsCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress + metricReportEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the Triggers for telemetry service
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
+	progress = percentComplete
+	progress, err = e.storeTelemetryCollectionInfo("TriggersCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+	return percentComplete
+}
+
+func (e *ExternalInterface) storeTelemetryCollectionInfo(resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
+	if err != nil {
+		return progress, err
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress, fmt.Errorf(getResponse.StatusMessage)
+	}
+	var resourceData dmtf.Collection
+	err = json.Unmarshal(body, &resourceData)
+	if err != nil {
+		return progress, err
+	}
+
+	data, dbErr := e.GetResource(resourceName, req.OID)
+	if dbErr != nil {
+		// if no resource found then save the metric data into db.
+		if err = e.GenericSave(body, resourceName, req.OID); err != nil {
+			return progress, err
+		}
+		if resourceName != "MetricReportsCollection" {
+			// get and store of individual telemetry info
+			progress = e.getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+		}
+		return progress, nil
+	}
+	var telemetryInfo dmtf.Collection
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
+		return progress, err
+	}
+	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
+	telemetryInfo.Members = result
+	telemetryInfo.MembersCount = len(result)
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return progress, err
+	}
+	err = e.GenericSave(telemetryData, resourceName, req.OID)
+	if err != nil {
+		return progress, err
+	}
+	if resourceName != "MetricReportsCollection" {
+		// get and store of individual telemetry info
+		progress = e.getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+	}
+	return progress, nil
+}
+
+func getSuperSet(telemetryInfo, resourceData []*dmtf.Link) []*dmtf.Link {
+	telemetryInfo = append(telemetryInfo, resourceData...)
+	existing := map[string]bool{}
+	result := []*dmtf.Link{}
+
+	for v := range telemetryInfo {
+		if !existing[telemetryInfo[v].Oid] {
+			existing[telemetryInfo[v].Oid] = true
+			result = append(result, telemetryInfo[v])
+		}
+	}
+	return result
+}
+
+func (e *ExternalInterface) getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req getResourceRequest, resourceData dmtf.Collection) int32 {
+	// Loop through all the resource members collection and discover all of them
+	for _, member := range resourceData.Members {
+		estimatedWork := alottedWork / int32(len(resourceData.Members))
+		req.OID = member.Oid
+		progress = e.getTeleInfo(taskID, progress, estimatedWork, req)
+	}
+	return progress
+}
+
+func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
+	resourceName := getResourceName(req.OID, false)
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
+	if err != nil {
+		return progress
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress
+	}
+	//replacing the uuid while saving the data
+	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+
+	updatedResourceData, err = e.createWildCard(updatedResourceData, resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+
+	exist, dErr := e.CheckMetricRequest(req.OID)
+	if exist || dErr != nil {
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
+		log.Println(errMsg)
+		return progress
+	}
+	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return progress
+	}
+
+	defer func() {
+		err := e.DeleteMetricRequest(req.OID)
+		if err != nil {
+			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
+		}
+	}()
+
+	// persist the response with table resource
+	err = e.GenericSave([]byte(updatedResourceData), resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+	progress = progress + alottedWork
+	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
+	req.UpdateTask(task)
+	return progress
+}
+
+// createWildCard is used to form the create the wild card
+// first check the whether resource already present, if its not then create new wild card
+func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid string) (string, error) {
+	var resourceDataMap map[string]interface{}
+	err := json.Unmarshal([]byte(resourceData), &resourceDataMap)
+	if err != nil {
+		log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+		return "", err
+	}
+	data, _ := e.GetResource(resourceName, oid)
+	return formWildCard(data, resourceDataMap)
+}
+
+// formWildCard is used to form the wild card
+// if the data not present in the db(means first time add server) then create empty wild and update it with metric properties
+// if the wild card data already present then update it with new properties
+func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string, error) {
+	var systemID, chassisID string
+	var wildCards []WildCard
+	var dbMetricProperities []interface{}
+
+	if len(dbData) < 1 {
+		wildCards = getEmptyWildCard()
+	} else {
+		var dbDataMap map[string]interface{}
+		err := json.Unmarshal([]byte(dbData), &dbDataMap)
+		if err != nil {
+			log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+			return "", err
+		}
+		if dbDataMap["Wildcards"] == nil {
+			return "", fmt.Errorf("wild card map is empty")
+		}
+		wildCards = getWildCard(dbDataMap["Wildcards"].([]interface{}))
+		dbMetricProperities = dbDataMap["MetricProperties"].([]interface{})
+	}
+	metricProperties := resourceDataMap["MetricProperties"].([]interface{})
+	for _, mProperty := range metricProperties {
+		property := mProperty.(string)
+		for i, wCard := range wildCards {
+			if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
+				property, systemID = getUpdatedProperty(property, SystemUUID)
+				if !checkWildCardPresent(systemID, wildCards[i].Values) {
+					wildCards[i].Values = append(wildCards[i].Values, systemID)
+				}
+				break
+			}
+			if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
+				property, chassisID = getUpdatedProperty(property, ChassisUUID)
+				if !checkWildCardPresent(chassisID, wCard.Values) {
+					wildCards[i].Values = append(wildCards[i].Values, chassisID)
+				}
+				break
+			}
+		}
+		if !checkMetricPropertyPresent(property, dbMetricProperities) {
+			dbMetricProperities = append(dbMetricProperities, property)
+		}
+	}
+	var wCards []WildCard
+	for _, wCard := range wildCards {
+		if len(wCard.Values) > 0 {
+			wCards = append(wCards, wCard)
+		}
+	}
+	if len(wCards) > 0 {
+		resourceDataMap["Wildcards"] = wCards
+		resourceDataMap["MetricProperties"] = dbMetricProperities
+	}
+	resourceDataByte, err := json.Marshal(resourceDataMap)
+	if err != nil {
+		return "", err
+	}
+	return string(resourceDataByte), nil
+}
+
+// checkWildCardPresent will check the wild card present in the array
+// if its present returns true, else false.
+func checkWildCardPresent(val string, values []string) bool {
+	if len(values) < 1 {
+		return false
+	}
+	front := 0
+	rear := len(values) - 1
+	for front <= rear {
+		if values[front] == val || values[rear] == val {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
+}
+
+// getUpdatedProperty function get the uuid from the property and update the property with wild card name
+func getUpdatedProperty(property, wildCardName string) (string, string) {
+	prop := strings.Split(property, "/")[4]
+	uuid := strings.Split(prop, "#")[0]
+	property = strings.Replace(property, uuid, "{"+wildCardName+"}", -1)
+	return property, uuid
+}
+
+// getWildCard function will convert array of interface to array of string
+func getWildCard(wCard []interface{}) []WildCard {
+	var wildCard []WildCard
+	for _, val := range wCard {
+		card := val.(map[string]interface{})
+		b, err := json.Marshal(card)
+		if err != nil {
+			continue
+		}
+		var wc WildCard
+		json.Unmarshal(b, &wc)
+		wildCard = append(wildCard, wc)
+	}
+	return wildCard
+}
+
+// checkMetricPropertyPresent will check the metric property present in the array
+// if its present returns true, else false.
+func checkMetricPropertyPresent(val string, values []interface{}) bool {
+	if len(values) < 1 {
+		return false
+	}
+	front := 0
+	rear := len(values) - 1
+	for front <= rear {
+		if values[front].(string) == val || values[rear].(string) == val {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
+}
+
+// getEmptyWildCard function is for create empty wild card field with default SystemID and ChassisID name and empty values
+func getEmptyWildCard() []WildCard {
+	var wildCards []WildCard
+	var w WildCard
+	w.Name = SystemUUID
+	w.Values = []string{}
+	wildCards = append(wildCards, w)
+	w.Name = ChassisUUID
+	w.Values = []string{}
+	wildCards = append(wildCards, w)
+	return wildCards
 }

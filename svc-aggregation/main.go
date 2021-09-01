@@ -14,8 +14,9 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -48,6 +49,8 @@ func main() {
 		log.Fatal("error while trying to set configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
@@ -56,23 +59,22 @@ func main() {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	var connectionMethoodInterface = agcommon.DBInterface{
+	var connectionMethodInterface = agcommon.DBInterface{
 		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
 		GetConnectionMethodInterface: agmodel.GetConnectionMethod,
 		AddConnectionMethodInterface: agmodel.AddConnectionMethod,
 		DeleteInterface:              agmodel.Delete,
 	}
-	if err := connectionMethoodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
+	if err := connectionMethodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
 		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
-	err := services.InitializeService(services.Aggregator)
-	if err != nil {
+	if err := services.InitializeService(services.Aggregator); err != nil {
 		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}
 
 	aggregator := rpc.GetAggregator()
-	aggregatorproto.RegisterAggregatorHandler(services.Service.Server(), aggregator)
+	aggregatorproto.RegisterAggregatorServer(services.ODIMService.Server(), aggregator)
 
 	// Rediscover the Resources by looking in OnDisk DB, populate the resources in InMemory DB
 	//This happens only if the InMemory DB lost it contents due to DB reboot or host VM reboot.
@@ -86,13 +88,16 @@ func main() {
 		UpdateTask:      system.UpdateTaskData,
 	}
 	go p.RediscoverResources()
+
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {
 		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethoodInterface)
-	if err = services.Service.Run(); err != nil {
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface)
+
+	go system.PerformPluginHealthCheck()
+
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal("failed to run a service: " + err.Error())
 	}
-
 }

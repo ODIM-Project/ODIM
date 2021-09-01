@@ -26,7 +26,12 @@ import (
 
 //GetChassisCollection will do the rpc call to collect all chassis
 func GetChassisCollection(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	asService := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := chassisproto.NewChassisClient(conn)
 	resp, err := asService.GetChassisCollection(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
@@ -36,7 +41,12 @@ func GetChassisCollection(req chassisproto.GetChassisRequest) (*chassisproto.Get
 
 //GetChassisResource will do the rpc call to collect Chassis Resource
 func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	asService := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := chassisproto.NewChassisClient(conn)
 	resp, err := asService.GetChassisResource(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
@@ -44,9 +54,14 @@ func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetCh
 	return resp, nil
 }
 
-//GetChassis will do the rpc call to collect System Resource
+//GetChassis will do the rpc call to  System Resource
 func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	asService := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := chassisproto.NewChassisClient(conn)
 	resp, err := asService.GetChassisInfo(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
@@ -54,8 +69,14 @@ func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisRes
 	return resp, nil
 }
 
+//CreateChassis will do the rpc call to create a Chassis
 func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	service := chassisproto.NewChassisClient(conn)
 	resp, err := service.CreateChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
@@ -63,8 +84,14 @@ func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChas
 	return resp, nil
 }
 
+//DeleteChassis will do the rpc call to delete a chassis
 func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	service := chassisproto.NewChassisClient(conn)
 	resp, err := service.DeleteChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
@@ -72,8 +99,14 @@ func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChas
 	return resp, nil
 }
 
+//UpdateChassis will do the rpc call to update a chassis
 func UpdateChassis(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	service := chassisproto.NewChassisService(services.Systems, services.Service.Client())
+	conn, err := services.ODIMService.Client(services.Systems)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	service := chassisproto.NewChassisClient(conn)
 	resp, err := service.UpdateChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)

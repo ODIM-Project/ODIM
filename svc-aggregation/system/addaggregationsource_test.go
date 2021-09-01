@@ -38,7 +38,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -249,7 +249,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -316,7 +316,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -378,7 +378,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
@@ -573,7 +573,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {
@@ -770,7 +770,7 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -863,6 +863,27 @@ func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 	return nil
 }
 
+func mockCheckMetricRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteMetricRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
+}
+
+func mockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	return []string{
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUICUtilCustom1",
+		"Triggers:/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers",
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3",
+	}, nil
+}
+
+func mockDelete(table, key string, dbtype common.DbType) *errors.Error {
+	return nil
+}
+
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		ContactClient:           mockContactClient,
@@ -886,5 +907,10 @@ func getMockExternalInterface() *ExternalInterface {
 		DeleteSystem:            deleteSystemforTest,
 		DeleteEventSubscription: mockDeleteSubscription,
 		EventNotification:       mockEventNotification,
+		GetAllMatchingDetails:   mockGetAllMatchingDetails,
+		CheckMetricRequest:      mockCheckMetricRequest,
+		DeleteMetricRequest:     mockDeleteMetricRequest,
+		GetResource:             mockGetResource,
+		Delete:                  mockDelete,
 	}
 }

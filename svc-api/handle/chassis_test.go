@@ -17,13 +17,13 @@ package handle
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"testing"
-
+	errorResponse "github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
-
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
+	"net/http"
+	"testing"
 )
 
 func mockGetChassisResource(chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
@@ -202,6 +202,43 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 		"X-Frame-Options": {"sameorigin"},
 		"Location":        {"/redfish/odim/blebleble"},
 	})
+}
+func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
+	expectedRPCResponse := chassisproto.GetChassisResponse{
+		StatusCode: http.StatusBadRequest,
+		Body: []byte(`{
+  "error": {
+    "code": "` + response.GeneralError + `",
+    "message": "An error has occurred. See ExtendedInfo for more information.",
+    "@Message.ExtendedInfo": [
+      {
+        "@odata.type": "#Message.v1_0_8.Message",
+        "MessageId": "` + errorResponse.MalformedJSON + `",
+        "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
+        "Severity": "Critical",
+        "Resolution": "Ensure that the request body is valid JSON and resubmit the request."
+      }
+    ]
+  }
+}
+`),
+	}
+
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+			return &expectedRPCResponse, nil
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"Sample":"Body","Links":{[],},}`)).
+		Expect()
+	resp.Status(http.StatusBadRequest)
+	resp.Body().Contains(string(expectedRPCResponse.Body))
+
 }
 
 var redfishErrorSchema = `

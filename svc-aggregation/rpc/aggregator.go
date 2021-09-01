@@ -34,7 +34,10 @@ import (
 )
 
 // GetAggregationService is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
-func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
+	resp := &aggregatorproto.AggregatorResponse{}
 	// Fill the response header first
 	resp.Header = map[string]string{
 		"Allow":             "GET",
@@ -55,7 +58,7 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	// Check whether the Aggregation Service is enbaled in configuration file.
 	//If so set ServiceEnabled to true.
@@ -72,7 +75,7 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	// Construct the response below
 
 	aggregationServiceResponse, _ := json.Marshal(agresponse.AggregationServiceResponse{
-		OdataType:    "#AggregationService.v1_0_0.AggregationService",
+		OdataType:    common.AggregationServiceType,
 		ID:           "AggregationService",
 		Name:         "AggregationService",
 		Description:  "AggregationService",
@@ -80,12 +83,10 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 		OdataID:      "/redfish/v1/AggregationService",
 		Actions: agresponse.Actions{
 			Reset: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
-				ActionInfo: "/redfish/v1/AggregationService/ResetActionInfo",
+				Target: "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
 			},
 			SetDefaultBootOrder: agresponse.Action{
-				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
-				ActionInfo: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
+				Target: "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
 			},
 		},
 		Aggregates: agresponse.OdataID{
@@ -107,7 +108,7 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	resp.Body = aggregationServiceResponse
-	return nil
+	return resp, nil
 }
 
 func isIpv4Net(host string) bool {
@@ -129,24 +130,25 @@ func validateManagerAddress(managerAddress string) error {
 }
 
 // Reset function is for handling the RPC communication for Reset Action
-func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
 
 	// Verfy the credentials here
 	var oemprivileges []string
-
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 
 	// Task Service using RPC and get the taskID
@@ -155,7 +157,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
 	go a.reset(ctx, taskID, sessionUserName, req)
@@ -170,9 +172,10 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
-	return nil
+	return resp, nil
 
 }
+
 func (a *Aggregator) reset(ctx context.Context, taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) error {
 	// Update the task status here
 	// PercentComplete: 0% Completed
@@ -206,29 +209,31 @@ func (a *Aggregator) reset(ctx context.Context, taskID string, sessionUserName s
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	var oemprivileges []string
+func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
 
+	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	taskURI, err := a.connector.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
 	var taskID string
@@ -262,16 +267,18 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
 
-	return nil
+	return resp, nil
 }
 
 // RediscoverSystemInventory defines the operations which handles the RPC request response
 // for the RediscoverSystemInventory service of aggregator micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the lib-utilities package.
-func (a *Aggregator) RediscoverSystemInventory(ctx context.Context, req *aggregatorproto.RediscoverSystemInventoryRequest, resp *aggregatorproto.RediscoverSystemInventoryResponse) error {
+func (a *Aggregator) RediscoverSystemInventory(ctx context.Context, req *aggregatorproto.RediscoverSystemInventoryRequest) (
+	*aggregatorproto.RediscoverSystemInventoryResponse, error) {
+	resp := &aggregatorproto.RediscoverSystemInventoryResponse{}
 	go a.connector.RediscoverSystemInventory(req.SystemID, req.SystemURL, true)
-	return nil
+	return resp, nil
 
 }
 
@@ -279,28 +286,32 @@ func (a *Aggregator) RediscoverSystemInventory(ctx context.Context, req *aggrega
 // for the UpdateSystemState call to aggregator micro service.
 // The functionality retrives the request and return backs the response to
 // RPC according to the protoc file defined in the lib-utilities package.
-func (a *Aggregator) UpdateSystemState(ctx context.Context, req *aggregatorproto.UpdateSystemStateRequest, resp *aggregatorproto.UpdateSystemStateResponse) error {
-	return a.connector.UpdateSystemState(req)
+func (a *Aggregator) UpdateSystemState(ctx context.Context, req *aggregatorproto.UpdateSystemStateRequest) (
+	*aggregatorproto.UpdateSystemStateResponse, error) {
+	resp := &aggregatorproto.UpdateSystemStateResponse{}
+	return resp, a.connector.UpdateSystemState(req)
 }
 
 // AddAggregationSource function is for handling the RPC communication for AddAggregationSource
-func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
 
 	var taskID string
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 
 	// parsing the AggregationSourceRequest
@@ -310,7 +321,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		errMsg := "Unable to parse the add request" + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 
 	//validating the AggregationSourceRequest
@@ -319,14 +330,14 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		errMsg := "Mandatory field " + invalidParam + " Missing"
 		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{invalidParam}, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	managerAddress := addRequest.HostName
 	err = validateManagerAddress(managerAddress)
 	if err != nil {
 		generateResponse(common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{managerAddress, "ManagerAddress"}, nil), resp)
 		log.Error(err.Error())
-		return nil
+		return resp, nil
 	}
 
 	// Task Service using RPC and get the taskID
@@ -335,7 +346,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		errMsg := "Unable to create the task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
 	if strings.HasSuffix(taskURI, "/") {
@@ -357,7 +368,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
-	return nil
+	return resp, nil
 }
 
 func validateAggregationSourceRequest(req system.AggregationSource) string {
@@ -394,21 +405,24 @@ func validateLinks(req *system.Links) string {
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	data := a.connector.GetAggregationSourceCollection()
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	generateResponse(data, resp)
-	return nil
+	return resp, nil
 }
 
 // GetAggregationSource defines the operations which handles the RPC request response
@@ -417,21 +431,24 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	data := a.connector.GetAggregationSource(req.URL)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	generateResponse(data, resp)
-	return nil
+	return resp, nil
 }
 
 // UpdateAggregationSource defines the operations which handles the RPC request response
@@ -440,21 +457,24 @@ func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorpr
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	data := a.connector.UpdateAggregationSource(req)
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 	generateResponse(data, resp)
-	return nil
+	return resp, nil
 }
 
 // DeleteAggregationSource defines the operations which handles the RPC request response
@@ -463,23 +483,26 @@ func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregato
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	// Task Service using RPC and get the taskID
 	targetURI := req.URL
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 
 	// Task Service using RPC and get the taskID
@@ -488,7 +511,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	var taskID string
 	strArray := strings.Split(taskURI, "/")
@@ -509,7 +532,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
-	return nil
+	return resp, nil
 }
 
 func deleteAggregationSource(taskID string, targetURI string, a *Aggregator, req *aggregatorproto.AggregatorRequest) error {
@@ -564,18 +587,21 @@ func deleteAggregationSource(taskID string, targetURI string, a *Aggregator, req
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.CreateAggregate(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // GetAllAggregates defines the operations which handles the RPC request response
@@ -584,18 +610,21 @@ func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.A
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.GetAllAggregates(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // GetAggregate defines the operations which handles the RPC request response
@@ -604,18 +633,21 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.GetAggregate(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // DeleteAggregate defines the operations which handles the RPC request response
@@ -624,18 +656,21 @@ func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.Aggr
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.DeleteAggregate(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // AddElementsToAggregate defines the operations which handles the RPC request response
@@ -644,18 +679,21 @@ func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.A
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.AddElementsToAggregate(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // RemoveElementsFromAggregate defines the operations which handles the RPC request response
@@ -664,18 +702,21 @@ func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregator
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.RemoveElementsFromAggregate(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // ResetElementsOfAggregate defines the operations which handles the RPC request response
@@ -684,24 +725,25 @@ func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggre
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
 
 	// Verfy the credentials here
 	var oemprivileges []string
-
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 
 	// Task Service using RPC and get the taskID
@@ -710,7 +752,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	taskID := strings.TrimPrefix(taskURI, "/redfish/v1/TaskService/Tasks/")
 	go a.resetElements(ctx, taskID, sessionUserName, req)
@@ -725,7 +767,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
-	return nil
+	return resp, nil
 }
 
 func (a *Aggregator) resetElements(ctx context.Context, taskID string, sessionUserName string, req *aggregatorproto.AggregatorRequest) error {
@@ -761,29 +803,31 @@ func (a *Aggregator) resetElements(ctx context.Context, taskID string, sessionUs
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
-	var oemprivileges []string
+func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
 
+	var oemprivileges []string
 	privileges := []string{common.PrivilegeConfigureComponents}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	sessionUserName, err := a.connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errMsg := "Unable to get session username: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	taskURI, err := a.connector.CreateTask(sessionUserName)
 	if err != nil {
 		errMsg := "Unable to create task: " + err.Error()
 		generateResponse(common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), resp)
 		log.Error(errMsg)
-		return nil
+		return resp, nil
 	}
 	strArray := strings.Split(taskURI, "/")
 	var taskID string
@@ -817,7 +861,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	generateTaskRespone(taskID, taskURI, &rpcResp)
 	generateResponse(rpcResp, resp)
 
-	return nil
+	return resp, nil
 }
 
 // GetAllConnectionMethods defines the operations which handles the RPC request response
@@ -826,18 +870,21 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.GetAllConnectionMethods(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
 }
 
 // GetConnectionMethod defines the operations which handles the RPC request response
@@ -846,16 +893,35 @@ func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregato
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorproto.AggregatorRequest, resp *aggregatorproto.AggregatorResponse) error {
+func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
-		return nil
+		return resp, nil
 	}
 	rpcResponce := a.connector.GetConnectionMethodInfo(req)
 	generateResponse(rpcResponce, resp)
-	return nil
+	return resp, nil
+}
+
+// SendStartUpData defines the operations which handles the RPC request response
+// for the SendStartUpData call to aggregator micro service.
+// The functionality retrives the request and return backs the response to
+// RPC according to the protoc file defined in the lib-utilities package.
+// The function is used for sending plugin start up data to the plugin
+// which has restarted.
+func (a *Aggregator) SendStartUpData(ctx context.Context, req *aggregatorproto.SendStartUpDataRequest) (
+	resp *aggregatorproto.SendStartUpDataResponse, err error) {
+	rpcResponce := a.connector.SendStartUpData(req)
+	bytes, _ := json.Marshal(rpcResponce.Body)
+	resp = &aggregatorproto.SendStartUpDataResponse{
+		ResponseBody: bytes,
+	}
+	return resp, nil
 }

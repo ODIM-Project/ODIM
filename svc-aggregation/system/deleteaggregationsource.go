@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"strings"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -94,6 +95,26 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	if resp.StatusCode != http.StatusOK {
 		return resp
 	}
+
+	if target != nil {
+		plugin, errs := agmodel.GetPluginData(target.PluginID)
+		if errs != nil {
+			log.Error("failed to get " + target.PluginID + " plugin info: " + errs.Error())
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(), []interface{}{"plugin", target.PluginID}, nil)
+		}
+		pluginStartUpData := &agmodel.PluginStartUpData{
+			RequestType: "delta",
+			Devices: map[string]agmodel.DeviceData{
+				target.DeviceUUID: agmodel.DeviceData{
+					Operation: "del",
+				},
+			},
+		}
+		if err := PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
+			log.Error("failed to notify device removal to " + target.PluginID + " plugin: " + err.Error())
+		}
+	}
+
 	// Delete the Aggregation Source
 	dbErr = agmodel.DeleteAggregationSource(req.URL)
 	if dbErr != nil {
@@ -261,7 +282,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	defer func() {
-		agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/"))
+		if err := agmodel.DeleteSystemOperationInfo(strings.TrimSuffix(key, "/")); err != nil {
+			log.Errorf("failed to delete SystemOperation info of %s:%s", key, err.Error())
+		}
 	}()
 	// Delete Subscription on odimra and also on device
 	subResponse, err := e.DeleteEventSubscription(key)
@@ -276,7 +299,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
-	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", key[index+1:], common.InMemory)
+	keys := strings.Split(key[index+1:], ":")
+	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", keys[0], common.InMemory)
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
@@ -307,6 +331,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	e.deleteWildCardValues(key[index+1:])
+
 	for _, chassis := range chassisList {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}
@@ -324,4 +350,109 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	return resp
+}
+
+// deleteWildCardValues will delete the wild card values and
+// if all the servers are deleted, then it will delete the telemetry information
+func (e *ExternalInterface) deleteWildCardValues(systemID string) {
+	telemetryList, dbErr := e.GetAllMatchingDetails("*", "TelemetryService", common.InMemory)
+	if dbErr != nil {
+		log.Error(dbErr)
+		return
+	}
+	for _, oid := range telemetryList {
+		oID := strings.Split(oid, ":")
+		if !strings.Contains(oid, "MetricReports") && !strings.Contains(oid, "Collection") {
+			odataID := oID[1]
+			resourceData := make(map[string]interface{})
+			data, dbErr := agmodel.GetResourceDetails(odataID)
+			if dbErr != nil {
+				log.Error("Unable to get system data : " + dbErr.Error())
+				continue
+			}
+			// unmarshall the resourceData
+			err := json.Unmarshal([]byte(data), &resourceData)
+			if err != nil {
+				log.Error("Unable to unmarshall  the data: " + err.Error())
+				continue
+			}
+			var wildCards []WildCard
+			var wildCardPresent bool
+			wCards := resourceData["Wildcards"]
+			if wCards != nil {
+				for _, wCard := range getWildCard(wCards.([]interface{})) {
+					wCard.Values = checkAndRemoveWildCardValue(systemID, wCard.Values)
+					wildCards = append(wildCards, wCard)
+					if len(wCard.Values) > 0 {
+						wildCardPresent = true
+					}
+				}
+			}
+			if wildCardPresent {
+				resourceData["Wildcards"] = wildCards
+				resourceDataByte, err := json.Marshal(resourceData)
+				if err != nil {
+					continue
+				}
+				e.GenericSave(resourceDataByte, getResourceName(odataID, false), odataID)
+			} else {
+				exist, dbErr := e.CheckMetricRequest(odataID)
+				if exist || dbErr != nil {
+					continue
+				}
+				if derr := e.Delete(oID[0], odataID, common.InMemory); derr != nil {
+					log.Error("error while trying to delete data: " + derr.Error())
+					continue
+				}
+				e.updateMemberCollection(oID[0], odataID)
+			}
+		}
+	}
+}
+
+// checkAndRemoveWildCardValue will check and remove the wild card value
+func checkAndRemoveWildCardValue(val string, values []string) []string {
+	var wildCardValues []string
+	if len(values) < 1 {
+		return wildCardValues
+	}
+	for _, v := range values {
+		if v != val {
+			wildCardValues = append(wildCardValues, v)
+		}
+	}
+	return wildCardValues
+}
+
+// updateMemberCollection will remove the member from the collection and update into DB
+func (e *ExternalInterface) updateMemberCollection(resName, odataID string) {
+	resourceName := resName + "Collection"
+	collectionOdataID := odataID[:strings.LastIndexByte(odataID, '/')]
+	data, dbErr := e.GetResource(resourceName, collectionOdataID)
+	if dbErr != nil {
+		return
+	}
+	var telemetryInfo dmtf.Collection
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
+		return
+	}
+	result := removeMemberFromCollection(odataID, telemetryInfo.Members)
+	telemetryInfo.Members = result
+	telemetryInfo.MembersCount = len(result)
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return
+	}
+	e.GenericSave(telemetryData, resourceName, collectionOdataID)
+}
+
+// removeMemberFromCollection will remove the member from the collection
+func removeMemberFromCollection(collectionOdataID string, telemetryInfo []*dmtf.Link) []*dmtf.Link {
+	result := []*dmtf.Link{}
+	for _, v := range telemetryInfo {
+		if v.Oid != collectionOdataID {
+			result = append(result, v)
+		}
+	}
+	return result
 }

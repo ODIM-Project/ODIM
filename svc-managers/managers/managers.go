@@ -31,6 +31,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -153,7 +154,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 					return resp
 				}
 			}
-			err = e.DB.UpdateManagersData(req.URL, managerData)
+			err = e.DB.UpdateData(req.URL, managerData, "Managers")
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
 				log.Error(errorMessage)
@@ -194,7 +195,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
-		OdataType:       "#Manager.v1_3_3.Manager",
+		OdataType:       common.ManagerType,
 		Name:            mgrData.Name,
 		ManagerType:     mgrData.ManagerType,
 		ID:              mgrData.ID,
@@ -262,6 +263,93 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	resp.StatusMessage = response.Success
 
 	return resp
+}
+
+// VirtualMediaActions is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var requestBody = req.RequestBody
+	//InsertMedia payload validation
+	if strings.Contains(req.URL, "VirtualMedia.InsertMedia") {
+		var vmiReq mgrmodel.VirtualMediaInsert
+		// Updating the default values
+		vmiReq.Inserted = true
+		vmiReq.WriteProtected = true
+		err := json.Unmarshal(req.RequestBody, &vmiReq)
+		if err != nil {
+			errorMessage := "while unmarshaling the virtual media insert request: " + err.Error()
+			log.Error(errorMessage)
+			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+			return resp
+		}
+
+		// Validating the request JSON properties for case sensitive
+		invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, vmiReq)
+		if err != nil {
+			errMsg := "while validating request parameters for virtual media insert: " + err.Error()
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		} else if invalidProperties != "" {
+			errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+			log.Error(errorMessage)
+			response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+			return response
+		}
+
+		// Check mandatory fields
+		statuscode, statusMessage, messageArgs, err := validateFields(&vmiReq)
+		if err != nil {
+			errorMessage := "request payload validation failed: " + err.Error()
+			log.Error(errorMessage)
+			resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
+			return resp
+		}
+		requestBody, err = json.Marshal(vmiReq)
+		if err != nil {
+			log.Error("while marshalling the virtual media insert request: " + err.Error())
+			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+			return resp
+		}
+	}
+	// splitting managerID to get uuid
+	requestData := strings.Split(req.ManagerID, ":")
+	uuid := requestData[0]
+	resp = e.deviceCommunication(req.URL, uuid, requestData[1], http.MethodPost, requestBody)
+
+	// If the virtualmedia action is success then updating DB
+	if resp.StatusCode == http.StatusOK {
+		vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
+		vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
+		deviceData, err := e.getResourceInfoFromDevice(vmURI, uuid, requestData[1])
+		if err != nil {
+			log.Error("while trying get on URI " + vmURI + " : " + err.Error())
+		} else {
+			var vmData map[string]interface{}
+			jerr := json.Unmarshal([]byte(deviceData), &vmData)
+			if jerr != nil {
+				log.Error("while unmarshaling virtual media details: " + jerr.Error())
+			} else {
+				err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
+				if err != nil {
+					log.Error("while saving virtual media details: " + err.Error())
+				}
+			}
+		}
+	}
+	return resp
+}
+
+// validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
+func validateFields(request *mgrmodel.VirtualMediaInsert) (int32, string, []interface{}, error) {
+	validate := validator.New()
+	// if any of the mandatory fields missing in the struct, then it will return an error
+	err := validate.Struct(request)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			return http.StatusBadRequest, response.PropertyMissing, []interface{}{err.Field()}, fmt.Errorf(err.Field() + " field is missing")
+		}
+	}
+	return http.StatusOK, common.OK, []interface{}{}, nil
 }
 
 func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
@@ -341,7 +429,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 func fillResponse(body []byte) response.RPC {
 	var resp response.RPC
 	data := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
@@ -377,4 +465,17 @@ func (e *ExternalInterface) getResourceInfoFromDevice(reqURL, uuid, systemID str
 	}
 	return e.Device.GetDeviceInfo(getDeviceInfoRequest)
 
+}
+
+func (e *ExternalInterface) deviceCommunication(reqURL, uuid, systemID, httpMethod string, requestBody []byte) response.RPC {
+	var deviceInfoRequest = mgrcommon.ResourceInfoRequest{
+		URL:                   reqURL,
+		UUID:                  uuid,
+		SystemID:              systemID,
+		ContactClient:         e.Device.ContactClient,
+		DecryptDevicePassword: e.Device.DecryptDevicePassword,
+		HTTPMethod:            httpMethod,
+		RequestBody:           requestBody,
+	}
+	return e.Device.DeviceRequest(deviceInfoRequest)
 }

@@ -95,12 +95,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		requestData = strings.Replace(requestData, key, value, -1)
 	}
 
-	switch event.EventType {
-	case "PluginStartUp":
-		log.Info("received plugin started event from ", event.IP)
-		go callPluginStartUp(event)
-		return true
-	case "MetricReport":
+	if event.EventType == "MetricReport" {
 		return publishMetricReport(requestData)
 	}
 

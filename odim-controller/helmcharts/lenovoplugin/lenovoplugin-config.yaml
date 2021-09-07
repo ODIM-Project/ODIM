@@ -1,7 +1,3 @@
-odimra:
-  namespace: odim
-  groupID:
-  haDeploymentEnabled:
 lenovoplugin:
   eventListenerNodePort: 30089
   logPath: /var/log/lenovoplugin_logs

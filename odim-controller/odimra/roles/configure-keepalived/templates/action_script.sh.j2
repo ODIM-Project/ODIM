@@ -47,7 +47,7 @@ syslog()
  
 start_nginx()
 {
-        /bin/systemctl start nginx
+        /bin/systemctl restart nginx
         eval_cmd_exec $? "state:${STATE}, failed to start nginx service"
         echo "[$(date)] -- INFO  -- state:${STATE}, nginx service started"
 }

@@ -824,7 +824,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 				storageRes := agcommon.GetStorageResources(strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
-					quantity = len(drives.([]interface{}))
+					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
 						driveRes := agcommon.GetStorageResources(strings.TrimSuffix(driveODataID, "/"))

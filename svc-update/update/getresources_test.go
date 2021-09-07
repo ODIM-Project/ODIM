@@ -153,10 +153,10 @@ func TestGetUpdateService(t *testing.T) {
 					},
 					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
 						},
 						UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/StartUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
 						},
 					},
 				},
@@ -192,10 +192,10 @@ func TestGetUpdateService(t *testing.T) {
 					},
 					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
 						},
 						UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/StartUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
 						},
 					},
 				},

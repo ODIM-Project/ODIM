@@ -1704,7 +1704,7 @@ def lockControllerInvocation():
 	except socket.error as e:
 		# OSError : [Errno 98] Address already in use
 		if e.errno == 98:
-			logger.error("An instance odim-controller is already active, another execution not allowed")
+			logger.error("An instance of odim-controller is already active, another execution is not allowed")
 		else:
 			logger.error("failed to get lock on odim-controller invocation: %s", str(e))
 			logger_f.error('%s', traceback.format_exc())

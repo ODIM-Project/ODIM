@@ -364,6 +364,8 @@ func PrepareDbConfig() {
 		RedisHAEnabled:       pluginConf.Data.DBConf.RedisHAEnabled,
 		InMemorySentinelPort: pluginConf.Data.DBConf.InMemorySentinelPort,
 		InMemoryMasterSet:    pluginConf.Data.DBConf.InMemoryMasterSet,
+		OnDiskMasterSet:      pluginConf.Data.DBConf.OnDiskMasterSet,
+		OnDiskSentinelPort:   pluginConf.Data.DBConf.OnDiskSentinelPort,
 	}
 }
 

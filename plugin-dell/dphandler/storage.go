@@ -378,10 +378,6 @@ func updateTaskWithException(taskID, host, uri, requestBody, method string) {
 }
 
 func validateRequest(requestBody dpmodel.Volume) (bool, response.RPC) {
-	if requestBody.VolumeType == "" {
-		return true, common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"VolumeType"}, nil)
-	}
-
 	if requestBody.Drives == nil || len(requestBody.Drives) == 0 {
 		return true, common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"Drives"}, nil)
 	}

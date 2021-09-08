@@ -64,10 +64,3 @@
 
 - name: Check status of keepalived service
   command: systemctl is-active keepalived
-
-- name: Restart nginx service
-  systemd:
-    name: nginx
-    state: restarted
-    daemon_reload: yes
-  ignore_errors: true

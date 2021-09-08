@@ -112,8 +112,11 @@
 
 - name: Remove configured default nginx server
   file:
-    path: /etc/nginx/sites-enabled/default
+    path: "{{ item }}"
     state: absent
+  loop:
+    - /var/www/html
+    - /etc/nginx/sites-enabled/default
   ignore_errors: true
 
 - name: reload systemd daemon

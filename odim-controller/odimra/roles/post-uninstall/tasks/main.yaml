@@ -2,6 +2,23 @@
 - name: Include user defined configurations
   include_vars: "files/odim_controller_config.yaml"
 
+- name: Stop, remove and clenup nginx, keepalived
+  block:
+    - name: Remove and cleanup nginx
+      include_tasks: roles/remove-proxy/tasks/main.yaml
+
+    - name: Remove and cleanup keepalived
+      include_tasks: roles/remove-keepalived/tasks/main.yaml
+
+    - name: Update nginx configuration on existing nodes
+      include_tasks: roles/update-proxy-conf/tasks/main.yaml
+      loop:
+        "{{ groups['kube-node'] }}"
+      loop_control:
+        loop_var: host_item
+      when: scenario is defined
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
 - name: Get list of plugins under plugin helm charts path
   find:
     paths: "{{ odimPluginPath }}"
@@ -51,20 +68,3 @@
 - name: Delete odimra user and group
   command: "{{ usrdel_bin_path }} {{ odim_owner_name }}"
   ignore_errors: "{{ ignore_err }}"
-
-- name: Stop, remove and clenup nginx, keepalived
-  block:
-    - name: Remove and cleanup nginx
-      include_tasks: roles/remove-proxy/tasks/main.yaml
-
-    - name: Remove and cleanup keepalived
-      include_tasks: roles/remove-keepalived/tasks/main.yaml
-
-    - name: Update nginx configuration on existing nodes
-      include_tasks: roles/update-proxy-conf/tasks/main.yaml
-      loop:
-        "{{ groups['kube-node'] }}"
-      loop_control:
-        loop_var: host_item
-      when: scenario is defined
-  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool

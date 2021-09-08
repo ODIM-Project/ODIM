@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lenovoplugin
+  namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+spec:
+  replicas: {{ .Values.ReplicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: lenovoplugin
+  template:
+    metadata:
+      labels:
+        app: lenovoplugin
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      hostname: lenovoplugin
+      volumes:
+        - name: lenovoplugin-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: lenovoplugin-config
+            - configMap:
+                name: odimra-platformconfig
+        - name: configure-hosts
+          configMap:
+            name: configure-hosts
+            items:
+            - key: hosts
+              path: host.append
+              mode: 0644
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+        - name: lenovoplugin-log
+          persistentVolumeClaim:
+            claimName: lenovoplugin-log-claim
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+        - name: lenovoplugin
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+          image: lenovoplugin:{{ .Values.lenovoplugin.imageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 45009
+            - containerPort: 45010
+          volumeMounts:
+            - name: lenovoplugin-config-vol
+              mountPath: /etc/lenovoplugin_config
+            - name: configure-hosts
+              mountPath: /tmp
+            - name: lenovoplugin-log
+              mountPath: /var/log/lenovoplugin_logs
+            - name: odimra-secret
+              mountPath: /etc/odimra_certs

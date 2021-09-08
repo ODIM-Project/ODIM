@@ -197,7 +197,7 @@ services:
       - '../build/odimra/telemetry.service:/etc/systemd/system/telemetry.service:rw'
       - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
       - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
-    command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh" 
+    command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh"
   grf_plugin:
     build:
       context: ./.
@@ -229,7 +229,7 @@ services:
       - '/etc/plugincert/odimra_kafka_client.key:/etc/plugin_certs/odimra_kafka_client.key:ro'
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
       - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw' 
-    command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh" 
+    command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh"
   urp:
     build:
       context: plugin-unmanaged-racks/.
@@ -305,3 +305,35 @@ services:
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/dell_plugin_certs/odimra_kafka_client.crt:ro'
       - '../build/DELLPlugin/dell_plugin.service:/etc/systemd/system/dell_plugin.service:rw' 
     command: bash -c "cp -r /var/dell_plugin_config/ /etc && /var/tmp/dell_plugin-edit_config.sh && rm -rf /var/dell_plugin_config/* && /bin/start_plugin.sh"
+  lenovo_plugin:
+    build:
+      context: ./.
+      dockerfile: LenovoPlugin/Dockerfile.lenovo_plugin
+      args:
+        http_proxy: $http_proxy
+        https_proxy: $https_proxy
+    hostname: lenovo_plugin
+    restart: always
+    privileged: true
+    environment:
+      - HOSTIP=$HOSTIP
+    image: lenovo-plugin:1.0
+    depends_on:
+      - "odimra"
+    ports:
+      - '45009:45009'
+      - '45010:45010'
+    expose:
+      - '45009'
+      - '45010'
+    volumes:
+      - '/var/log/LENOVO_PLUGIN:/var/log/lenovo_plugin_logs'
+      - '/etc/lenovo_plugin_config:/etc/lenovo_plugin_config:rw'
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '/etc/plugincert/rootCA.crt:/etc/lenovo_plugin_certs/rootCA.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/etc/lenovo_plugin_certs/odimra_server.key:ro'
+      - '/etc/plugincert/odimra_server.crt:/etc/lenovo_plugin_certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_kafka_client.key:/etc/lenovo_plugin_certs/odimra_kafka_client.key:ro'
+      - '/etc/plugincert/odimra_kafka_client.crt:/etc/lenovo_plugin_certs/odimra_kafka_client.crt:ro'
+      - '../build/LenovoPlugin/lenovo_plugin.service:/etc/systemd/system/lenovo_plugin.service:rw'
+    command: bash -c "cp -r /var/lenovo_plugin_config/ /etc && /var/tmp/lenovo_plugin-edit_config.sh && rm -rf /var/lenovo_plugin_config/* && /bin/start_plugin.sh"

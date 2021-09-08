@@ -219,7 +219,7 @@ func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}, se
 	contactRequest.PostBody = startupData
 	response, err := agcommon.ContactPlugin(contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
-		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err.Error(), response)
+		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)
 		return nil, err
 	}
 	log.Infof("Successfully sent startup data to %s(%s)", plugin.ID, plugin.IP)

@@ -71,3 +71,4 @@ eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.up
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t urplugin:1.0 ." "urplugin"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.grfplugin -t grfplugin:1.0 ." "grfplugin"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.dellplugin -t dellplugin:1.0 ." "dellplugin"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.lenovoplugin -t lenovoplugin:1.0 ." "lenovoplugin"

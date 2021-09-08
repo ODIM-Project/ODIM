@@ -119,6 +119,7 @@ Deploying Resource Aggregator for ODIM in a data center involves installing the 
     - Systems
     - Tasks
     - Update
+    - Telemetry
 -   The plugin microservices such as the Dell plugin, URP, and additional third-party plugins
 -   Third-party services such as Kafka, etcd, Zookeeper, and Redis
 
@@ -227,7 +228,7 @@ The following table lists the software components and their versions that are co
     - To add 5,000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200GB HDD each
 
 
-1. Download and install Ubuntu 18.04 LTS on the deployment node and all the cluster nodes. 
+1. Download and install [Ubuntu 18.04 LTS](https://old-releases.ubuntu.com/releases/18.04.4/ubuntu-18.04-server-amd64.iso) on the deployment node and all the cluster nodes. 
     During installation, configure the IP addresses of cluster nodes to reach the management VLANs where devices are connected. Ensure there is no firewall or switches blocking the connections and ports.
 
    <blockquote>
@@ -2195,7 +2196,7 @@ NOTE: Before performing the following steps, ensure the `http_proxy`, `https_pro
    ​	`sudo apt-cache madison <package name>`
 	
    1. ```
-      sudo apt-get install -y apt-transport-https=1.6.12ubuntu0.2 ca-certificates=20210119~18.04.1 curl=7.58.0-2ubuntu3.12
+      sudo apt-get install -y apt-transport-https=1.6.12ubuntu0.2 ca-certificates=20210119~18.04.1 curl=7.58.0-2ubuntu3.14
       ```
 	  
    2. ```

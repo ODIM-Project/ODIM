@@ -1,0 +1,52 @@
+{
+	"RootServiceUUID": "",
+	"PluginConf": {
+		"ID": "LENOVO",
+		"Host": "",
+		"Port": "45009",
+		"UserName": "admin",
+		"Password": "UUFCYFpBoHh6UdvytPzm65SkHj5zyl73EYVNJNbrFeAPWYrkpTijGB9zrVQSbbLv052HK7-7chqDQQcjgWf7YA=="
+	},
+	"EventConf": {
+		"DestinationURI": "/redfishEventListener",
+		"ListenerHost": "",
+		"ListenerPort": "45010"
+	},
+	"KeyCertConf": {
+		"RootCACertificatePath": "",
+		"PrivateKeyPath": "",
+		"CertificatePath": ""
+	},
+	"TLSConf" : {
+		"MinVersion": "TLS_1.2",
+		"MaxVersion": "TLS_1.2",
+		"VerifyPeer": true,
+		"PreferredCipherSuites": [
+                        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                        "TLS_RSA_WITH_AES_128_GCM_SHA256",
+                        "TLS_RSA_WITH_AES_256_GCM_SHA384"
+		]
+	},
+	"FirmwareVersion": "v1.0.0",
+	"SessionTimeoutInMinutes": 30,
+	"LoadBalancerConf": {
+		"LBHost": "",
+		"LBPort": ""
+	},
+	"MessageBusConf": {
+		"MessageQueueConfigFilePath": "",
+		"MessageBusType": "Kafka",
+		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	},
+	"URLTranslation": {
+		"NorthBoundURL": {
+			"redfish": "ODIM"
+		},
+		"SouthBoundURL": {
+			"ODIM": "redfish"
+		}
+	}
+}

@@ -141,6 +141,8 @@ const (
 	UpdateServiceType = "#UpdateService.v1_9_0.UpdateService"
 	// SettingsType has schema version to be returned with Settings in update service
 	SettingsType = "#Settings.v1_3_3.OperationApplyTimeSupport"
+	// TelemetryServiceType has version to be returned with Telemetry Service
+	TelemetryServiceType = "#TelemetryService.v1_3_1.TelemetryService"
 )
 
 // SystemResource contains the Resource name and table name

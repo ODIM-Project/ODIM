@@ -30,9 +30,9 @@ type Chassis struct {
 	Name               string            `json:"Name"`
 	AssetTag           string            `json:"AssetTag,omitempty"`
 	ChassisType        string            `json:"ChassisType"`
-	DepthMm            int               `json:"DepthMm,omitempty"`
+	DepthMm            float32           `json:"DepthMm,omitempty"`
 	EnvironmentalClass string            `json:"EnvironmentalClass,omitempty"`
-	HeightMm           int               `json:"HeightMm,omitempty"`
+	HeightMm           float32           `json:"HeightMm,omitempty"`
 	IndicatorLED       string            `json:"IndicatorLED,omitempty"`
 	Manufacturer       string            `json:"Manufacturer,omitempty"`
 	Model              string            `json:"Model,omitempty"`
@@ -41,8 +41,8 @@ type Chassis struct {
 	SerialNumber       string            `json:"SerialNumber,omitempty"`
 	SKU                string            `json:"SKU,omitempty"`
 	UUID               string            `json:"UUID,omitempty"`
-	WeightKg           int               `json:"WeightKg,omitempty"`
-	WidthMm            int               `json:"WidthMm,omitempty"`
+	WeightKg           float32           `json:"WeightKg,omitempty"`
+	WidthMm            float32           `json:"WidthMm,omitempty"`
 	Links              *Links            `json:"Links,omitempty"`
 	Location           *Link             `json:"Location,omitempty"`
 	LogServices        *LogServices      `json:"LogServices,omitempty"`

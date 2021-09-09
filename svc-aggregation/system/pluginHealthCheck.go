@@ -33,15 +33,38 @@ import (
 
 // SendStartUpData is for sending plugin start up data
 func (e *ExternalInterface) SendStartUpData(startUpReq *aggregatorproto.SendStartUpDataRequest) response.RPC {
+	resp := response.RPC{}
 	plugin, err := agcommon.LookupPlugin(startUpReq.PluginAddr)
 	if err != nil {
 		log.Error("failed to find plugin with address " + startUpReq.PluginAddr + ": " + err.Error())
-		return response.RPC{}
+		return resp
 	}
-	if err = SendPluginStartUpData(startUpReq.OriginURI, plugin); err != nil {
-		return response.RPC{}
+
+	log.Infof("received plugin start up event from %s(%s)", plugin.ID, plugin.PluginType)
+
+	// for plugins managing resources of non Compute type, at present
+	// there is no usecase to share inventory, so subscribing to
+	// EMB topic of the plugin should be enough
+	if plugin.PluginType != "Compute" {
+		phc := agcommon.PluginHealthCheckInterface{
+			DecryptPassword: common.DecryptWithPrivateKey,
+		}
+		phc.DupPluginConf()
+
+		active, topics := phc.GetPluginStatus(plugin)
+		count, exist := agcommon.GetPluginStatusRecord(plugin.ID)
+		if !exist || (active && count != 0) {
+			agcommon.SetPluginStatusRecord(plugin.ID, 0)
+			PublishPluginStatusOKEvent(plugin.ID, topics)
+			log.Infof("subscribing to %s message bus topics of plugin %s", topics, plugin.ID)
+		} else {
+			agcommon.SetPluginStatusRecord(plugin.ID, count+1)
+		}
+		return resp
 	}
-	return response.RPC{}
+
+	SendPluginStartUpData(startUpReq.OriginURI, plugin)
+	return resp
 }
 
 // PerformPluginHealthCheck is for checking the status of
@@ -72,12 +95,15 @@ func checkPluginStatus(phc *agcommon.PluginHealthCheckInterface, plugin agmodel.
 		switch {
 		case count != 0 && active:
 			agcommon.SetPluginStatusRecord(plugin.ID, 0)
-			if err := sharePluginInventory(plugin, true, plugin.IP); err != nil {
-				log.Error("failed to update server inventory of plugin " +
-					plugin.ID + ": " + err.Error())
-				agcommon.SetPluginStatusRecord(plugin.ID, count+1)
+			if plugin.PluginType == "Compute" {
+				if err := sharePluginInventory(plugin, true, plugin.IP); err != nil {
+					log.Error("failed to update server inventory of plugin " +
+							plugin.ID + ": " + err.Error())
+					agcommon.SetPluginStatusRecord(plugin.ID, count+1)
+				}
 			}
 			PublishPluginStatusOKEvent(plugin.ID, topics)
+			log.Infof("subscribing to %s message bus topics of plugin %s", topics, plugin.ID)
 		case !active:
 			agcommon.SetPluginStatusRecord(plugin.ID, count+1)
 		}
@@ -193,7 +219,7 @@ func sendPluginStartupRequest(plugin agmodel.Plugin, startupData interface{}, se
 	contactRequest.PostBody = startupData
 	response, err := agcommon.ContactPlugin(contactRequest, serverName)
 	if err != nil || (response != nil && response.StatusCode != http.StatusOK) {
-		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err.Error(), response)
+		log.Errorf("failed to send startup data to %s(%s): %s: %+v", plugin.ID, plugin.IP, err, response)
 		return nil, err
 	}
 	log.Infof("Successfully sent startup data to %s(%s)", plugin.ID, plugin.IP)

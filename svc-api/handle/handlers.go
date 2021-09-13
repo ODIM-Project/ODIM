@@ -2916,7 +2916,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	regCollectionResp := response.ListResponse{
 		OdataContext: "/redfish/v1/$metadata#MessageRegistryFileCollection.MessageRegistryFileCollection",
-		OdataID:      "/redfish/v1/Registries/",
+		OdataID:      "/redfish/v1/Registries",
 		OdataType:    "#MessageRegistryFileCollection.MessageRegistryFileCollection",
 		Name:         "Registry File Repository",
 		Description:  "Registry Repository",

@@ -40,7 +40,7 @@ import (
 // error will be passed back.
 func (e *ExternalInterface) GetTelemetryService() response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#TelemetryService.v1_2.TelemetryService",
+		OdataType:    common.TelemetryServiceType,
 		OdataID:      "/redfish/v1/TelemetryService",
 		OdataContext: "/redfish/v1/$metadata#TelemetryService.TelemetryService",
 		ID:           "TelemetryService",
@@ -139,11 +139,11 @@ func (e *ExternalInterface) GetMetricReportDefinitionCollection(req *teleproto.T
 	if err != nil {
 		// return empty collection response
 		metricReportDefinitionCollection := tlresp.Collection{
-			OdataContext: "/redfish/v1/$metadata#MetricReportDefinition.MetricReportDefinition",
+			OdataContext: "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
 			OdataID:      "/redfish/v1/TelemetryService/MetricReportDefinition",
 			OdataType:    "#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
 			Description:  "MetricReportDefinition Collection view",
-			Name:         "MetricReportDefinition",
+			Name:         "MetricReportDefinitionCollection",
 			Members:      []dmtf.Link{},
 			MembersCount: 0,
 		}

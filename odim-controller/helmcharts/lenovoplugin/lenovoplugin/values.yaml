@@ -1,0 +1,16 @@
+odimra:
+  namespace:
+  groupID:
+  haDeploymentEnabled:
+lenovoplugin:
+  hostname:
+  eventListenerNodePort:
+  imageTag: "1.0"
+  logPath:
+  lenovoPluginRootServiceUUID:
+  username:
+  password:
+  host: lenovoplugin
+  eventHost: lenovoplugin
+  lbHost:
+  lbPort:

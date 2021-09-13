@@ -6,7 +6,7 @@
   command: "{{ helm_bin_path }} uninstall {{ release_name }}  -n {{ helm_name_space }}"
 
 - name: Removing {{ release_name }} docker image
-  shell: "sleep 30; {{ docker_bin_path }} rmi $(docker images {{ release_name }} -q)"
+  shell: "sleep 30; {{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ release_name }} -q | sort -u) -f"
   delegate_to: "{{ item }}"
   loop:
     "{{ groups['kube-node'] }}"

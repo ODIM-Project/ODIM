@@ -19,10 +19,10 @@
   when: odimraImagePath is defined
 
 - name: Delete ODIMRA Images
-  shell: "{{ docker_bin_path }} rmi $(docker images {{ item.value }} -q)"
+  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ item.value }} -q | sort -u) -f"
   loop: "{{ odim_docker_images | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
   when: odimraImagePath is defined and odimra_file_details.stat.exists and odimra_file_details.stat.isdir == true
 
 - name: Delete Dangling Images
-  shell: "{{ docker_bin_path }} rmi $(docker images -f 'dangling=true' -q) || /bin/true"
+  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images -f 'dangling=true' -q) || /bin/true"

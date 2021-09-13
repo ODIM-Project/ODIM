@@ -12,12 +12,12 @@
     current_user: "{{ get_user.stdout }}"
 
 - name: Delete Kubernetes Images
-  shell: "{{ docker_bin_path }} rmi $(docker images '{{ item.key }}' -q)"
+  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images '{{ item.key }}' -q | sort -u) -f"
   loop: "{{ kubernetes_images | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
 
 - name: Delete Dangling Images
-  shell: "{{ docker_bin_path }} rmi $(docker images -f 'dangling=true' -q) || /bin/true"
+  shell: "{{ docker_bin_path }} rmi $({{ docker_bin_path }} images -f 'dangling=true' -q) || /bin/true"
 
 - name: Clean-up data in odim-controller directory
   file:

@@ -301,9 +301,7 @@ func (s *odimService) intiateSignalHandler() {
 
 // GetEnabledServiceList checks  etcd  registry for enabled services
 func GetEnabledServiceList() map[string]bool {
-	data := map[string]bool{
-		"JSONSchemas": true,
-	}
+	data := map[string]bool{}
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{ODIMService.registryAddress},
 		DialTimeout: 5 * time.Second,

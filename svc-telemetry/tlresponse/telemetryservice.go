@@ -30,14 +30,14 @@ type Status struct {
 // TelemetryService defines the service properties of update service
 type TelemetryService struct {
 	response.Response
-	Status                       Status     `json:"Status"`
-	ServiceEnabled               bool       `json:"ServiceEnabled"`
+	Status                       Status     `json:"Status,omitempty"`
+	ServiceEnabled               bool       `json:"ServiceEnabled,omitempty"`
 	SupportedCollectionFunctions []string   `json:"SupportedCollectionFunctions,omitempty"`
 	MinCollectionInterval        string     `json:"MinCollectionInterval,omitempty"`
-	MetricDefinitions            *dmtf.Link `json:"MetricDefinitions"`
-	MetricReportDefinitions      *dmtf.Link `json:"MetricReportDefinitions"`
-	MetricReports                *dmtf.Link `json:"MetricReports"`
-	Triggers                     *dmtf.Link `json:"Triggers"`
+	MetricDefinitions            *dmtf.Link `json:"MetricDefinitions,omitempty"`
+	MetricReportDefinitions      *dmtf.Link `json:"MetricReportDefinitions,omitempty"`
+	MetricReports                *dmtf.Link `json:"MetricReports,omitempty"`
+	Triggers                     *dmtf.Link `json:"Triggers,omitempty"`
 	OEM                          *OEM       `json:"Oem,omitempty"`
 }
 

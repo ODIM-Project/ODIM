@@ -32,8 +32,8 @@ type TelemetryService struct {
 	response.Response
 	Status                       Status     `json:"Status,omitempty"`
 	ServiceEnabled               bool       `json:"ServiceEnabled,omitempty"`
-	SupportedCollectionFunctions []string   `json:"SupportedCollectionFunctions"`
-	MinCollectionInterval        string     `json:"MinCollectionInterval"`
+	SupportedCollectionFunctions []string   `json:"SupportedCollectionFunctions,omitempty"`
+	MinCollectionInterval        string     `json:"MinCollectionInterval,omitempty"`
 	MetricDefinitions            *dmtf.Link `json:"MetricDefinitions,omitempty"`
 	MetricReportDefinitions      *dmtf.Link `json:"MetricReportDefinitions,omitempty"`
 	MetricReports                *dmtf.Link `json:"MetricReports,omitempty"`

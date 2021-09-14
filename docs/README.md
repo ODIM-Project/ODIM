@@ -10195,7 +10195,7 @@ curl -i GET \
 ```
 {
    "@odata.id":"/redfish/v1/TelemetryService",
-   "@odata.type":"#TelemetryService.v1_2_0.TelemetryService",
+   "@odata.type":"#TelemetryService.v1_3_1.TelemetryService",
    "Id":"TelemetryService",
    "Name":"Telemetry Service",
    "Status":{

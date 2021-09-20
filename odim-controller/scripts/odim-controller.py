@@ -1112,7 +1112,7 @@ def check_extract_kubespray_src():
 
 def read_groupvar():
 	global GROUP_VAR_DATA
-	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all'
+	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all/all.yaml'
 	if not os.path.isfile(group_var_file):
 		logger.critical("invalid group_var file %s passed, exiting!!!", group_var_file)
 		exit(1)

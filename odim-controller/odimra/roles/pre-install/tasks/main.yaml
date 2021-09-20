@@ -170,3 +170,19 @@
     - name: Install and configure keepalived
       include_tasks: roles/configure-keepalived/tasks/main.yaml
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Collecting temp files created
+  find:
+    path: "{{ odimControllerSrcPath }}/odimra/roles/pre-install/files/helmcharts"
+    patterns: '*.tgz'
+  register: temp
+  ignore_errors: true
+  delegate_to: localhost
+
+- name: Removing all collected temp files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ temp.files }}"
+  ignore_errors: true
+  delegate_to: localhost

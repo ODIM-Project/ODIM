@@ -480,7 +480,6 @@ def scale_in_k8s():
 		else:
 			logger.info("Post-uninstall action was successful on nodes %s", nodes_list)
 
-		logger.info("Deleting k8s images")
 		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		# remove copy of controller config file created
 		os.remove(helm_config_file)
@@ -601,6 +600,10 @@ def scale_out_k8s():
 # in the cluster nodes when kubernetesImagePath
 # config is set
 def delete_k8_images(host_file,nodes_list):
+	if KUBERNETES_IMAGE_PATH == "":
+		return
+
+	logger.info("Removing k8s images in cluster nodes")
 	cur_dir = os.getcwd()
 	os.chdir(ODIMRA_SRC_PATH)
 	helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/k8-delete-image/files/helm_config_values.yaml')
@@ -658,7 +661,6 @@ def remove_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		logger.info("Deleteing k8s images")
 		delete_k8_images(host_file,nodes_list)
 		logger.debug("Clearing deployment specific data of %s cluster" %(DEPLOYMENT_ID))
 		shutil.rmtree(DEPLOYMENT_SRC_DIR)

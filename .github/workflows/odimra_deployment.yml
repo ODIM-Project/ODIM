@@ -101,8 +101,13 @@ jobs:
         python3 --version
         echo
 
-        echo "[$(date)] -- INFO  -- clone ODIM respository development branch"
-        git clone https://github.com/ODIM-Project/ODIM.git -b development
+        PR_BRANCH=${{github.event.pull_request.base.ref}}
+        if [[ $PR_BRANCH == "" ]]; then
+                PR_BRANCH="development"
+        fi
+
+        echo "[$(date)] -- INFO  -- clone ODIM respository $PR_BRANCH branch"
+        git clone https://github.com/ODIM-Project/ODIM.git -b $PR_BRANCH
         echo
         
         export ODIM_SOURCE_PATH=${cur_path}/ODIM

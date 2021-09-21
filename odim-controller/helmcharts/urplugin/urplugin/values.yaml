@@ -3,7 +3,7 @@ odimra:
   groupID:
   haDeploymentEnabled:
 urplugin:
-  imageTag: "1.0"
+  imageTag: "2.0"
   urPluginRootServiceUUID:
   username:
   password:

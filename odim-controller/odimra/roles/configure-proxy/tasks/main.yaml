@@ -1,12 +1,15 @@
 ---
+- set_fact:
+    proxy_env:
+      http_proxy: "{{ httpProxy | default('') }}"
+      https_proxy: "{{ httpsProxy | default('') }}"
+      no_proxy: "{{ noProxy | default('') }}"
+
 - name: Install packages required by nginx
   apt:
-    pkg:
-    - curl
-    - gnupg2
-    - ca-certificates
-    - lsb-release
+    pkg: "{{ nginx_dep_pkgs }}"
     force_apt_get: yes
+  environment: "{{ proxy_env }}"
 
 - name: Remove nginx if already installed
   apt:
@@ -61,10 +64,11 @@
     - { src: "{{ odimCertsPath }}/nginx_server.crt", dest: "/opt/nginx/certs/server.crt" }
     - { src: "{{ odimCertsPath }}/nginx_server.key", dest: "/opt/nginx/certs/server.key" }
 
-- name: Install nginx=1.14.0-0ubuntu1.9 package
+- name: Install nginx packages
   apt:
-    name: nginx=1.14.0-0ubuntu1.9
+    pkg: "{{ nginx_pkgs }}"
     force_apt_get: yes
+  environment: "{{ proxy_env }}"
 
 - name: Replace nginx configuration file
   template:

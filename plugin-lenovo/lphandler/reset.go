@@ -22,9 +22,9 @@ import (
 	"net/http"
 	"strings"
 
-    "github.com/ODIM-Project/ODIM/lib-utilities/response"
-    "github.com/ODIM-Project/ODIM/plugin-lenovo/lpresponse"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
 
@@ -107,7 +107,7 @@ func ResetComputerSystem(ctx iris.Context) {
 		log.Error(string(body))
 	}
 
-    // If the response code is http.StatusNoContent then converting it to http.StatusOK
+	// If the response code is http.StatusNoContent then converting it to http.StatusOK
 	if resp.StatusCode == http.StatusNoContent {
 		resp.StatusCode = http.StatusOK
 		body, err = createResetActionResponse()

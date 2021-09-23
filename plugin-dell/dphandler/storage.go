@@ -130,7 +130,7 @@ func CreateVolume(ctx iris.Context) {
 }
 
 func createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody string) {
-	updateTask(taskID, device.Host, uri, requestBody, dputilities.Running, dputilities.Ok, 0, http.MethodPost)
+	updateTask(taskID, device.Host, uri, requestBody, dputilities.Running, dputilities.Ok, 0, http.MethodPost, http.StatusAccepted)
 
 	// Getting the list of volumes before creating a new volume
 	volumeListBeforeCreate, err := getVolumeCollection(uri, device)
@@ -150,7 +150,7 @@ func createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody st
 	taskURI := header.Get("Location")
 	if taskURI == "" {
 		log.Errorf("missing location in volume create response header. Unable to track task - create volume might or might not finish successfully")
-		updateTask(taskID, device.Host, uri, requestBody, dputilities.Completed, dputilities.Warning, 100, http.MethodPost)
+		updateTask(taskID, device.Host, uri, requestBody, dputilities.Completed, dputilities.Warning, 100, http.MethodPost, http.StatusOK)
 		return
 	}
 	// Wait for create Volume task to change its state
@@ -167,7 +167,7 @@ func createVolume(device *dputilities.RedfishDevice, taskID, uri, requestBody st
 	}
 
 	log.Info("volume was created successfully.")
-	updateTask(taskID, device.Host, uri, requestBody, dputilities.Completed, dputilities.Ok, 100, http.MethodPost)
+	updateTask(taskID, device.Host, uri, requestBody, dputilities.Completed, dputilities.Ok, 100, http.MethodPost, http.StatusCreated)
 
 	// Getting the origin of condition for event
 	oriOfCondition := compareCollection(volumeListBeforeCreate, volumeListAfterCreate)
@@ -274,7 +274,7 @@ func DeleteVolume(ctx iris.Context) {
 }
 
 func deleteVolume(device *dputilities.RedfishDevice, taskID, uri string) {
-	updateTask(taskID, device.Host, uri, "", dputilities.Running, dputilities.Ok, 0, http.MethodDelete)
+	updateTask(taskID, device.Host, uri, "", dputilities.Running, dputilities.Ok, 0, http.MethodDelete, http.StatusAccepted)
 
 	// Send delete Volume request to BMC
 	statusCode, header, _, err := queryDevice(uri, device, http.MethodDelete)
@@ -287,7 +287,7 @@ func deleteVolume(device *dputilities.RedfishDevice, taskID, uri string) {
 	taskURI := header.Get("Location")
 	if taskURI == "" {
 		log.Errorf("missing location in volume delete response header. Unable to track task - delete volume might or might not finish successfully")
-		updateTask(taskID, device.Host, uri, "", dputilities.Completed, dputilities.Warning, 100, http.MethodPost)
+		updateTask(taskID, device.Host, uri, "", dputilities.Completed, dputilities.Warning, 100, http.MethodPost, http.StatusOK)
 		return
 	}
 
@@ -298,7 +298,7 @@ func deleteVolume(device *dputilities.RedfishDevice, taskID, uri string) {
 	}
 
 	log.Infof("volume was deleted successfully.")
-	updateTask(taskID, device.Host, uri, "", dputilities.Completed, dputilities.Ok, 100, http.MethodDelete)
+	updateTask(taskID, device.Host, uri, "", dputilities.Completed, dputilities.Ok, 100, http.MethodDelete, http.StatusOK)
 
 	event := createEvent("Volume removed event", "ResourceRemoved", "Volume is deleted successfully",
 		"ResourceEvent.1.0.3.ResourceRemoved", uri)
@@ -351,11 +351,12 @@ func compareCollection(list1, list2 []string) string {
 }
 
 func updateTask(taskID, host, targetURI, request string, taskState dputilities.TaskState, taskStatus dputilities.TaskStatus,
-	percentComplete int32, httpMethod string) {
+	percentComplete int32, httpMethod string, statusCode int) {
 	payLoad := &taskproto.Payload{
 		HTTPOperation: httpMethod,
 		JSONBody:      request,
 		TargetURI:     targetURI,
+		StatusCode:    int32(statusCode),
 	}
 
 	err := taskService.UpdateTask(taskID, host, taskState, taskStatus, percentComplete, payLoad, time.Now())
@@ -374,7 +375,7 @@ func retrieveTaskID(taskURI string) string {
 }
 
 func updateTaskWithException(taskID, host, uri, requestBody, method string) {
-	updateTask(taskID, host, uri, requestBody, dputilities.Exception, dputilities.Critical, 100, method)
+	updateTask(taskID, host, uri, requestBody, dputilities.Exception, dputilities.Critical, 100, method, http.StatusInternalServerError)
 }
 
 func validateRequest(requestBody dpmodel.Volume) (bool, response.RPC) {

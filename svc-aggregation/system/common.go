@@ -1463,9 +1463,12 @@ func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int
 	}
 
 	exist, dErr := e.CheckMetricRequest(req.OID)
-	if exist || dErr != nil {
-		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
-		log.Println(errMsg)
+	if dErr != nil {
+		log.Info("Unable to collect the active request details from DB: ", dErr.Error())
+		return progress
+	}
+	if exist {
+		log.Info("An active request already exists for metric request")
 		return progress
 	}
 	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)

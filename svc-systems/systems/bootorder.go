@@ -214,6 +214,10 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+
+	// Adding Settings URL to the DB to fetch data from device
+	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
+	smodel.AddSystemResetInfo(URL, "None")
 	return resp
 }
 

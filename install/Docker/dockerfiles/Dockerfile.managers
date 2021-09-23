@@ -12,7 +12,7 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-FROM odim:1.0 as build-stage
+FROM odim:2.0 as build-stage
 
 FROM ubuntu:18.04
 

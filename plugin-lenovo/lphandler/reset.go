@@ -22,7 +22,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
 
@@ -67,6 +69,13 @@ func ResetComputerSystem(ctx iris.Context) {
 
 	var request map[string]interface{}
 	err = json.Unmarshal(deviceDetails.PostBody, &request)
+	if err != nil {
+		errMsg := "Unable to unmarshal request body in reset operation: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString(errMsg)
+		return
+	}
 	resetType := request["ResetType"].(string)
 	device.PostBody, _ = json.Marshal(lpmodel.ResetPostRequest{
 		ResetType: resetType,
@@ -98,6 +107,38 @@ func ResetComputerSystem(ctx iris.Context) {
 		log.Error(string(body))
 	}
 
+	// If the response code is http.StatusNoContent then converting it to http.StatusOK
+	if resp.StatusCode == http.StatusNoContent {
+		resp.StatusCode = http.StatusOK
+		body, err = createResetActionResponse()
+		if err != nil {
+			errMsg := "while creating a response for computersystem reset action" + err.Error()
+			log.Error(errMsg)
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(errMsg)
+			return
+		}
+	}
+
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
+}
+
+// createResetActionResponse is used for creating a final response for reset action success scenario
+func createResetActionResponse() ([]byte, error) {
+	resp := lpresponse.ErrorResopnse{
+		Error: lpresponse.Error{
+			Code:    response.Success,
+			Message: "See @Message.ExtendedInfo for more information.",
+			MessageExtendedInfo: []lpresponse.MsgExtendedInfo{
+				lpresponse.MsgExtendedInfo{
+					MessageID:   response.Success,
+					Message:     "Reset initiated successfully",
+					MessageArgs: []string{},
+				},
+			},
+		},
+	}
+	body, err := json.Marshal(resp)
+	return body, err
 }

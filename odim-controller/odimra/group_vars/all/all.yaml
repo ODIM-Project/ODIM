@@ -11,35 +11,35 @@ helm_op_timeout: "90s"
 odim_owner_name: "odimra"
 odim_secret_reloader_chart: "reloader-0.1.0"
 odim_pv_pvc_secrets_helmcharts:
-   odimra-pv-pvc: odimra-pv-pvc-0.1.0
-   odimra-config: odimra-config-0.1.0
+   odimra-pv-pvc: odimra-pv-pvc-2.0.0
+   odimra-config: odimra-config-2.0.0
    odimra-platformconfig: odimra-platformconfig-0.1.0
-   odimra-secret: odimra-secret-0.1.0
+   odimra-secret: odimra-secret-2.0.0
    kafka-secret: kafka-secret-0.1.0
    zookeeper-secret: zookeeper-secret-0.1.0
    configure-hosts: configure-hosts-0.1.0
-   odimra-k8s-access-config: odimra-k8s-access-config-0.1.0
+   odimra-k8s-access-config: odimra-k8s-access-config-1.0.0
 odim_third_party_helmcharts:
    zookeeper: zookeeper-2.5.0-0.1.0
-   redis: redis-6.2.5-0.1.0
+   redis: redis-6.2.5-2.0.0
    kafka: kafka-2.5.0-0.1.0
-   etcd: etcd-0.1.0
+   etcd: etcd-1.0.0
 odim_third_party_ha_helmcharts:
    zookeeper: zookeeper-ha-2.5.0-0.1.0
-   redis: redis-ha-6.2.5-0.1.0
+   redis: redis-ha-6.2.5-2.0.0
    kafka: kafka-ha-2.5.0-0.1.0
-   etcd: etcd-ha-0.1.0
+   etcd: etcd-ha-1.0.0
 odim_svc_helmcharts:
-   account-session: account-session-0.1.0
-   aggregation: aggregation-0.1.0
-   api: api-0.1.0
-   events: events-0.1.0
-   fabrics: fabrics-0.1.0
-   managers: managers-0.1.0
-   systems: systems-0.1.0
-   task: task-0.1.0
-   update: update-0.1.0
-   telemetry: telemetry-0.1.0
+   account-session: account-session-2.0.0
+   aggregation: aggregation-2.0.0
+   api: api-2.0.0
+   events: events-2.0.0
+   fabrics: fabrics-2.0.0
+   managers: managers-2.0.0
+   systems: systems-2.0.0
+   task: task-2.0.0
+   update: update-2.0.0
+   telemetry: telemetry-1.0.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation

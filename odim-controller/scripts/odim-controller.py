@@ -480,7 +480,6 @@ def scale_in_k8s():
 		else:
 			logger.info("Post-uninstall action was successful on nodes %s", nodes_list)
 
-		logger.info("Deleting k8s images")
 		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		# remove copy of controller config file created
 		os.remove(helm_config_file)
@@ -570,29 +569,30 @@ def scale_out_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		# copy controller config file
-		helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
-		odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
-		shutil.copyfile(CONTROLLER_CONF_FILE, helm_config_file)
-		shutil.copyfile(CONTROLLER_CONF_FILE, odimra_config_file)
+		if os.path.exists(os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed')):
+			# copy controller config file
+			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
+			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
+			shutil.copyfile(CONTROLLER_CONF_FILE, helm_config_file)
+			shutil.copyfile(CONTROLLER_CONF_FILE, odimra_config_file)
 
-		os.chdir(ODIMRA_SRC_PATH)
-		logger.info("Performing ODIMRA pre-install action nodes %s", nodes_list)
+			os.chdir(ODIMRA_SRC_PATH)
+			logger.info("Performing ODIMRA pre-install action nodes %s", nodes_list)
 
-		odimra_add_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-				 --extra-vars "host={nodes}" pre_install.yaml'.format( \
-						 host_conf_file=K8S_INVENTORY_FILE, nodes=nodes_list)
-		ret = exec(odimra_add_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
-		if ret != 0:
-			logger.critical("ODIMRA pre-install action failed on nodes %s", nodes_list)
-			os.chdir(cur_dir)
-			exit(1)
-		else:
-			logger.info("ODIMRA pre-install action was successful on nodes %s", nodes_list)
+			odimra_add_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
+					--extra-vars "host={nodes}" pre_install.yaml'.format( \
+							host_conf_file=K8S_INVENTORY_FILE, nodes=nodes_list)
+			ret = exec(odimra_add_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
+			if ret != 0:
+				logger.critical("ODIMRA pre-install action failed on nodes %s", nodes_list)
+				os.chdir(cur_dir)
+				exit(1)
+			else:
+				logger.info("ODIMRA pre-install action was successful on nodes %s", nodes_list)
 
-		# remove copy of controller config file created
-		os.remove(helm_config_file)
-		os.remove(odimra_config_file)
+			# remove copy of controller config file created
+			os.remove(helm_config_file)
+			os.remove(odimra_config_file)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster scale-out")
@@ -601,6 +601,10 @@ def scale_out_k8s():
 # in the cluster nodes when kubernetesImagePath
 # config is set
 def delete_k8_images(host_file,nodes_list):
+	if KUBERNETES_IMAGE_PATH == "":
+		return
+
+	logger.info("Removing k8s images in cluster nodes")
 	cur_dir = os.getcwd()
 	os.chdir(ODIMRA_SRC_PATH)
 	helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/k8-delete-image/files/helm_config_values.yaml')
@@ -658,7 +662,6 @@ def remove_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		logger.info("Deleteing k8s images")
 		delete_k8_images(host_file,nodes_list)
 		logger.debug("Clearing deployment specific data of %s cluster" %(DEPLOYMENT_ID))
 		shutil.rmtree(DEPLOYMENT_SRC_DIR)
@@ -904,9 +907,15 @@ def operation_odimra(operation):
 			os.chdir(cur_dir)
 			exit(1)
 
-		if operation == "uninstall" and os.path.exists(os.path.join(CONTROLLER_CONF_DATA['odimCertsPath'], '.gen_odimra_certs.ok')):
-			logger.info("Cleaning up certificates generated for the deployment")
-			shutil.rmtree(CONTROLLER_CONF_DATA['odimCertsPath'])
+		if operation == "uninstall":
+			if os.path.exists(os.path.join(CONTROLLER_CONF_DATA['odimCertsPath'], '.gen_odimra_certs.ok')):
+				logger.info("Cleaning up certificates generated for the deployment")
+				shutil.rmtree(CONTROLLER_CONF_DATA['odimCertsPath'])
+			if os.path.exists(os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed')):
+				os.remove(os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed'))
+		if operation == "install":
+			deployed_odimra_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed')
+			open(deployed_odimra_file, 'w').close()
 
 		logger.info("Completed ODIMRA %s operation", operation)
 
@@ -1110,7 +1119,7 @@ def check_extract_kubespray_src():
 
 def read_groupvar():
 	global GROUP_VAR_DATA
-	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all'
+	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all/all.yaml'
 	if not os.path.isfile(group_var_file):
 		logger.critical("invalid group_var file %s passed, exiting!!!", group_var_file)
 		exit(1)

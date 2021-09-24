@@ -154,6 +154,10 @@ func TestGetUpdateService(t *testing.T) {
 					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
 							Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+							RedfishOperationApplyTimeSupport: uresponse.RedfishOperationApplyTimeSupport{
+								OdataType:       common.SettingsType,
+								SupportedValues: []string{"OnStartUpdateRequest"},
+							},
 						},
 						UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
 							Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
@@ -193,6 +197,10 @@ func TestGetUpdateService(t *testing.T) {
 					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
 							Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+							RedfishOperationApplyTimeSupport: uresponse.RedfishOperationApplyTimeSupport{
+								OdataType:       common.SettingsType,
+								SupportedValues: []string{"OnStartUpdateRequest"},
+							},
 						},
 						UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
 							Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",

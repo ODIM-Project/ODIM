@@ -84,18 +84,12 @@ type DB struct {
 
 // UpdateRequestBody struct defines the request body for update action
 type UpdateRequestBody struct {
-	ImageURI                         string                            `json:"ImageURI"`
-	Password                         string                            `json:"Password,omitempty"`
-	Targets                          []string                          `json:"Targets"`
-	TransferProtocol                 string                            `json:"TransferProtocol,omitempty"`
-	Username                         string                            `json:"Username,omitempty"`
-	RedfishOperationApplyTimeSupport *RedfishOperationApplyTimeSupport `json:"@Redfish.OperationApplyTimeSupport,omitempty"`
-}
-
-// RedfishOperationApplyTimeSupport struct defines the apply time for the action in place
-type RedfishOperationApplyTimeSupport struct {
-	OdataType       string   `json:"@odata.type,omitempty"`
-	SupportedValues []string `json:"SupportedValues,omitempty"`
+	ImageURI                  string   `json:"ImageURI"`
+	Password                  string   `json:"Password,omitempty"`
+	Targets                   []string `json:"Targets"`
+	TransferProtocol          string   `json:"TransferProtocol,omitempty"`
+	Username                  string   `json:"Username,omitempty"`
+	RedfishOperationApplyTime string   `json:"@Redfish.OperationApplyTime,omitempty"`
 }
 
 // GetExternalInterface retrieves all the external connections update package functions uses

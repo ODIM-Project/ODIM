@@ -887,6 +887,8 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 }
 
 func validateFields(request *evmodel.RequestBody) (int32, string, []interface{}, error) {
+	validEventFormatTypes := map[string]bool{"Event": true, "MetricReport": true}
+	validEventTypes := map[string]bool{"Alert": true, "MetricReport": true, "ResourceAdded": true, "ResourceRemoved": true, "ResourceUpdated": true, "StatusChange": true, "Other": true}
 
 	validate := validator.New()
 
@@ -898,11 +900,30 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 	if request.EventFormatType == "" {
-		request.EventFormatType = evmodel.EventFormatType
-	} else if request.EventFormatType == "MetricReport" {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"EventFormatType"}, fmt.Errorf("Unsupported EventFormatType")
-	} else if request.EventFormatType != evmodel.EventFormatType {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"EventFormatType"}, fmt.Errorf("Invalid EventFormatType")
+		request.EventFormatType = "Event"
+	}
+
+	if _, ok := validEventFormatTypes[request.EventFormatType]; !ok {
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.EventFormatType, "EventFormatType"}, fmt.Errorf("Invalid EventFormatType")
+	}
+
+	if len(request.EventTypes) == 0 && request.EventFormatType == "MetricReport" {
+		request.EventTypes = []string{"MetricReport"}
+	}
+
+	for _, eventType := range request.EventTypes {
+		if _, ok := validEventTypes[eventType]; !ok {
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("Invalid EventTypes")
+		}
+	}
+
+	if request.EventFormatType == "MetricReport" {
+		if len(request.EventTypes) > 1 {
+			return http.StatusBadRequest, errResponse.PropertyValueFormatError, []interface{}{request.EventFormatType, "EventTypes"}, fmt.Errorf("Unsupported EventType")
+		}
+		if request.EventTypes[0] != "MetricReport" {
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.EventTypes[0], "EventType"}, fmt.Errorf("Unsupported EventType")
+		}
 	}
 
 	if request.SubscriptionType == "" {
@@ -1297,7 +1318,7 @@ func createEventSubscriptionResponse() interface{} {
 	return errors.ErrorClass{
 		MessageExtendedInfo: []errors.MsgExtendedInfo{
 			errors.MsgExtendedInfo{
-				MessageID: "Base.1.6.1.Created",
+				MessageID: response.Created,
 			},
 		},
 		Code:    errResponse.Created,

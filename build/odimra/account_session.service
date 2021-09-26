@@ -18,7 +18,7 @@ After=network-online.target
 [Service]
 Type=forking
 Restart=always
-ExecStart=/bin/sh -c 'cd /bin ; export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json; sudo -E -u odimra nohup ./svc-account-session --registry=consul --registry_address=consul:8500 --server_address=odimra:45101 >> /var/log/odimra_logs/account_session.log 2>&1 &'
+ExecStart=/bin/sh -c 'cd /bin ; export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json; sudo -E -u odimra nohup ./svc-account-session --registry=etcd  --registry_address=etcd:2379  --server_address=odimra:45101 >> /var/log/odimra_logs/account_session.log 2>&1 &'
 KillMode=process
 KillSignal=SIGTERM
 User=root

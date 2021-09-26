@@ -47,7 +47,7 @@ func CreateErrorResponse(errs string) ErrorResopnse {
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
 				MsgExtendedInfo{
-					MessageID: "Base.1.6.1.GeneralError",
+					MessageID: errorResponse.GeneralError,
 					Message:   errs,
 				},
 			},

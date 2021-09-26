@@ -106,7 +106,10 @@ func routers() *iris.Application {
 		}
 		next(w, r)
 	})
-
+	e := rfphandler.ExternalInterface{
+		TokenValidation: rfphandler.TokenValidation,
+		GetDeviceData:   rfphandler.GetDeviceData,
+	}
 	pluginRoutes := app.Party("/ODIM/v1")
 	{
 		pluginRoutes.Post("/validate", rfpmiddleware.BasicAuth, rfphandler.Validate)
@@ -206,6 +209,8 @@ func routers() *iris.Application {
 		managers.Get("/{id}/SerialInterface/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia", rfphandler.GetResource)
 		managers.Get("/{id}/VirtualMedia/{rid}", rfphandler.GetResource)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", rfphandler.VirtualMediaActions)
+		managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", rfphandler.VirtualMediaActions)
 		managers.Get("/{id}/LogServices", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}", rfphandler.GetResource)
 		managers.Get("/{id}/LogServices/{rid}/Entries", rfphandler.GetResource)
@@ -238,6 +243,11 @@ func routers() *iris.Application {
 		telemetry.Get("/MetricReportDefinitions", rfphandler.GetResource)
 		telemetry.Get("/MetricReports", rfphandler.GetResource)
 		telemetry.Get("/Triggers", rfphandler.GetResource)
+		telemetry.Get("/MetricReports/{id}", e.GetMetricReport)
+		telemetry.Get("/MetricDefinitions/{id}", rfphandler.GetResource)
+		telemetry.Get("/MetricReportDefinitions/{id}", rfphandler.GetResource)
+		telemetry.Get("/Triggers/{id}", rfphandler.GetResource)
+
 	}
 	pluginRoutes.Get("/Status", rfphandler.GetPluginStatus)
 	pluginRoutes.Post("/Startup", rfpmiddleware.BasicAuth, rfphandler.GetPluginStartup)

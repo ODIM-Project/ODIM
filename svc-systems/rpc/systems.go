@@ -40,13 +40,14 @@ type Systems struct {
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	var pc = systems.PluginContact{
 		ContactClient:   pmbhandle.ContactPlugin,
@@ -54,25 +55,26 @@ func (s *Systems) GetSystemResource(ctx context.Context, req *systemsproto.GetSy
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystemResource(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // GetSystemsCollection defines the operation which has the RPC request
 // for getting the systems data from odimra.
 // Retrieves all the keys with table name systems collection and create the response
 // to send back to requested user.
-func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	data := systems.GetSystemsCollection(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 //GetSystems defines the operations which handles the RPC request response
@@ -81,13 +83,14 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 // RPC according to the protoc file defined in the util-lib package.
 // The function uses IsAuthorized of util-lib to validate the session
 // which is present in the request.
-func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	var pc = systems.PluginContact{
 		ContactClient:   pmbhandle.ContactPlugin,
@@ -95,8 +98,8 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
 	data := pc.GetSystems(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // ComputerSystemReset defines the operations which handles the RPC request response
@@ -105,21 +108,22 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ComputerSystemReset(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // SetDefaultBootOrder defines the operations which handles the RPC request response
@@ -128,21 +132,22 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.SetDefaultBootOrder(req.SystemID)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // ChangeBiosSettings defines the operations which handles the RPC request response
@@ -151,21 +156,22 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBiosSettings(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // ChangeBootOrderSettings defines the operations which handles the RPC request response
@@ -174,21 +180,22 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 	var pc = systems.PluginContact{
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 	}
 	data := pc.ChangeBootOrderSettings(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // CreateVolume defines the operations which handles the RPC request response
@@ -197,18 +204,19 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 
 	data := s.EI.CreateVolume(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 // DeleteVolume defines the operations which handles the RPC request response
@@ -217,18 +225,19 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 // RPC according to the protoc file defined in the lib-utilities package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest, resp *systemsproto.SystemsResponse) error {
+func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
+	var resp systemsproto.SystemsResponse
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session")
-		fillSystemProtoResponse(resp, authResp)
-		return nil
+		fillSystemProtoResponse(&resp, authResp)
+		return &resp, nil
 	}
 
 	data := s.EI.DeleteVolume(req)
-	fillSystemProtoResponse(resp, data)
-	return nil
+	fillSystemProtoResponse(&resp, data)
+	return &resp, nil
 }
 
 func fillSystemProtoResponse(resp *systemsproto.SystemsResponse, data response.RPC) {

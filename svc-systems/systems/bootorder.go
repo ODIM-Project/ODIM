@@ -214,6 +214,10 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+
+	// Adding Settings URL to the DB to fetch data from device
+	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
+	smodel.AddSystemResetInfo(URL, "None")
 	return resp
 }
 
@@ -233,9 +237,18 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	// parsing the bootOrderSettings
 	err := json.Unmarshal(req.RequestBody, &bootOrderSettings)
 	if err != nil {
+		if ute, ok := err.(*json.UnmarshalTypeError); ok {
+			errMsg := fmt.Sprintf("UnmarshalTypeError: Expected field type %v but got %v \n", ute.Type, ute.Value)
+			log.Error(errMsg)
+			index := strings.LastIndex(string(req.RequestBody[:ute.Offset]), ":")
+			if index < 0 {
+				index = 0
+			}
+			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{string(req.RequestBody[index+1 : ute.Offset]), ute.Field}, nil)
+		}
 		errMsg := "unable to parse the BootOrderSettings request" + err.Error()
 		log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{}, nil)
 	}
 
 	// Validating the request JSON properties for case sensitive

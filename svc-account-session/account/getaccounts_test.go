@@ -100,7 +100,7 @@ func TestGetAllAccounts(t *testing.T) {
 					MembersCount: 1,
 					Members: []asresponse.ListMember{
 						asresponse.ListMember{
-							OdataID: "/redfish/v1/AccountService/Accounts/testUser1/",
+							OdataID: "/redfish/v1/AccountService/Accounts/testUser1",
 						},
 					},
 				},
@@ -138,7 +138,7 @@ func TestGetAllAccounts(t *testing.T) {
 
 func TestGetAccount(t *testing.T) {
 	successResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser1",
@@ -214,7 +214,7 @@ func TestGetAccount(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/"},
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator"},
 					},
 				},
 			},
@@ -248,7 +248,7 @@ func TestGetAccount(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/"},
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator"},
 					},
 				},
 			},
@@ -330,7 +330,7 @@ func TestGetAccount(t *testing.T) {
 
 func TestGetAccountService(t *testing.T) {
 	successResponse := response.Response{
-		OdataType:    "#AccountService.v1_6_0.AccountService",
+		OdataType:    common.AccountServiceType,
 		OdataID:      "/redfish/v1/AccountService",
 		OdataContext: "/redfish/v1/$metadata#AccountService.AccountService",
 		ID:           "AccountService",

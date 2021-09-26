@@ -1,0 +1,74 @@
+---
+# default path on k8s-cluster nodes to store odim-controller data
+odim_controller_path: "/opt/odim_controller"
+helm_charts_path: "{{ odim_controller_path }}/helmcharts"
+docker_images_path: "{{ odim_controller_path }}/docker_images"
+values_file_path: "{{ helm_charts_path }}/helm_config_values.yaml"
+helm_bin_path: "/usr/local/bin/helm"
+docker_bin_path: "/usr/bin/docker"
+helm_name_space: "odim"
+helm_op_timeout: "90s"
+odim_owner_name: "odimra"
+odim_secret_reloader_chart: "reloader-0.1.0"
+odim_pv_pvc_secrets_helmcharts:
+   odimra-pv-pvc: odimra-pv-pvc-2.0.0
+   odimra-config: odimra-config-2.0.0
+   odimra-platformconfig: odimra-platformconfig-0.1.0
+   odimra-secret: odimra-secret-2.0.0
+   kafka-secret: kafka-secret-0.1.0
+   zookeeper-secret: zookeeper-secret-0.1.0
+   configure-hosts: configure-hosts-0.1.0
+   odimra-k8s-access-config: odimra-k8s-access-config-1.0.0
+odim_third_party_helmcharts:
+   zookeeper: zookeeper-2.5.0-0.1.0
+   redis: redis-6.2.5-2.0.0
+   kafka: kafka-2.5.0-0.1.0
+   etcd: etcd-1.0.0
+odim_third_party_ha_helmcharts:
+   zookeeper: zookeeper-ha-2.5.0-0.1.0
+   redis: redis-ha-6.2.5-2.0.0
+   kafka: kafka-ha-2.5.0-0.1.0
+   etcd: etcd-ha-1.0.0
+odim_svc_helmcharts:
+   account-session: account-session-2.0.0
+   aggregation: aggregation-2.0.0
+   api: api-2.0.0
+   events: events-2.0.0
+   fabrics: fabrics-2.0.0
+   managers: managers-2.0.0
+   systems: systems-2.0.0
+   task: task-2.0.0
+   update: update-2.0.0
+   telemetry: telemetry-1.0.0
+odim_docker_images:
+   account-session: account-session
+   aggregation: aggregation
+   api: api
+   events: events
+   fabrics: fabrics
+   managers: managers
+   systems: systems
+   task: task
+   update: update
+   telemetry: telemetry
+   kafka: kafka
+   zookeeper: zookeeper
+   etcd: etcd
+   redis: redis
+   stakater_reloader: stakater/reloader
+   busybox: busybox
+kubernetes_images:
+   calico/cni: calico_cni
+   calico/kube-controllers: calico_kube-controllers
+   calico/node: calico_node
+   coredns/coredns: coredns_coredns
+   k8s.gcr.io/cluster-proportional-autoscaler-amd64: k8s.gcr.io_cluster-proportional-autoscaler-amd64
+   k8s.gcr.io/k8s-dns-node-cache: k8s.gcr.io_k8s-dns-node-cache
+   k8s.gcr.io/kube-apiserver: k8s.gcr.io_kube-apiserver
+   k8s.gcr.io/kube-controller-manager: k8s.gcr.io_kube-controller-manager
+   k8s.gcr.io/kube-proxy: k8s.gcr.io_kube-proxy
+   k8s.gcr.io/kube-scheduler: k8s.gcr.io_kube-scheduler
+   k8s.gcr.io/pause: k8s.gcr.io_pause
+   lachlanevenson/k8s-helm: lachlanevenson_k8s-helm
+   nginx: nginx
+   quay.io/coreos/etcd: quay.io_coreos_etcd

@@ -1,6 +1,7 @@
 odimra:
   appsLogPath:
-  consulDataPath:
+  etcdConfPath:
+  etcdDataPath:
   redisOndiskDataPath:
   redisInmemoryDataPath:
   kafkaConfPath:

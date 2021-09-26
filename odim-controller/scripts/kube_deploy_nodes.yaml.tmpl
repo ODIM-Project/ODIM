@@ -12,52 +12,54 @@
 #License for the specific language governing permissions and limitations
 #under the License.
 
-deploymentID: <Unique identifier for the deployment>
-httpProxy: <HTTP Proxy to be set in the nodes>
-httpsProxy: <HTTPS Proxy to be set in the nodes>
-noProxy: <NO PROXY env to be set in the nodes>
-nodePasswordFilePath: <Absolute path of the file containing encrypted node password>
+deploymentID:
+httpProxy:
+httpsProxy:
+noProxy:
+nodePasswordFilePath:
 nodes:
   <Node1_Hostname>:
     ip: <Node1_IPAddress>
     username: <Node1_Username>
+    priority: 100
   <Node2_Hostname>:
     ip: <Node2_IPAddress>
     username: <Node2_Username>
+    priority: 99
   <Node3_Hostname>:
     ip: <Node3_IPAddress>
     username: <Node3_Username>
-odimControllerSrcPath: <Absolute_Path_odim-controller_Src>
-odimVaultKeyFilePath: <Absolute path of the file containing encoded odim vault password>
-odimCertsPath: <Absolute_path_of_odim_certificates>
-kubernetesImagePath: <Absolute_Path_of_kubernetes_Images>
-odimraImagePath: <Absolute_Path_of_odimra_Images>
-odimPluginPath: <Absolute_Path_plugin_helm_charts>
+    priority: 98
+odimControllerSrcPath:
+odimVaultKeyFilePath:
+odimCertsPath:
+kubernetesImagePath:
+odimraImagePath:
+odimPluginPath:
 odimra:
   groupID: 2021
   userID: 2021
   namespace: odim
-  fqdn: ''
-  rootServiceUUID: ''
+  fqdn:
+  rootServiceUUID:
   haDeploymentEnabled: True
   connectionMethodConf:
   - ConnectionMethodType: Redfish
     ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
-  - ConnectionMethodType: Redfish
-    ConnectionMethodVariant: Storage:BasicAuth:STG_v1.0.0
-  etcHostsEntries: ''
+  etcHostsEntries:
 
   appsLogPath: /var/log/odimra
-  odimraServerCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA server certificate SAN>"
-  odimraServerCertIPSan: "<CSV of IPs to include in ODIM-RA server certificate SAN>"
-  odimraKafkaClientCertFQDNSan: "<CSV of FQDNs to include in ODIM-RA kafka client certificate SAN>"
-  odimraKafkaClientCertIPSan: "<CSV of IPs to include in ODIM-RA kafka client certificate SAN>"
+  odimraServerCertFQDNSan:
+  odimraServerCertIPSan:
+  odimraKafkaClientCertFQDNSan:
+  odimraKafkaClientCertIPSan:
 
+  apiProxyPort: 45000
   apiNodePort: 30080
   kafkaNodePort: 30092
   
-  consulDataPath: /etc/consul/data
-  consulConfPath: /etc/consul/conf
+  etcdConfPath: /etc/etcd/conf
+  etcdDataPath: /etc/etcd/data
   
   kafkaConfPath: /etc/kafka/conf
   kafkaDataPath: /etc/kafka/data
@@ -69,6 +71,10 @@ odimra:
   zookeeperConfPath: /etc/zookeeper/conf
   zookeeperDataPath: /etc/zookeeper/data
   zookeeperJKSPassword: "K@fk@_store1"
+
+  nginxLogPath: /var/log/nginx
+  virtualRouterID: 100
+  virtualIP:
   
   rootCACert:
   odimraServerCert:
@@ -77,3 +83,5 @@ odimra:
   odimraRSAPrivateKey:
   odimraKafkaClientCert:
   odimraKafkaClientKey:
+  odimraEtcdServerCert:
+  odimraEtcdServerKey:

@@ -50,7 +50,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 	}
 
 	commonResponse := response.Response{
-		OdataType: "#Role.v1_2_4.Role",
+		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + createRoleReq.ID,
 		Name:      "User Role",
 	}

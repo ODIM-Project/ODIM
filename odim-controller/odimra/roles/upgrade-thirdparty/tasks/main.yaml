@@ -38,4 +38,4 @@
     mode: 0640
 
 - name: Upgrading  thirdparty configmap
-  command: "{{ helm_bin_path }} upgrade {{helm_chart_name}} {{ helm_charts_path }}/{{helm_chart_name_version}}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  command: "{{ helm_bin_path }} upgrade {{helm_chart_name}} {{ helm_charts_path }}/{{ helm_chart_name_version }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"

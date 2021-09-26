@@ -83,7 +83,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	var accountLinks []asresponse.ListMember
 	for _, key := range users {
 		accountLink := asresponse.ListMember{
-			OdataID: "/redfish/v1/AccountService/Accounts/" + key.UserName + "/",
+			OdataID: "/redfish/v1/AccountService/Accounts/" + key.UserName,
 		}
 		accountLinks = append(accountLinks, accountLink)
 	}
@@ -126,7 +126,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 // error will be passed back.
 func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + accountID,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           accountID,
@@ -212,7 +212,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		AccountTypes: user.AccountTypes,
 		Links: asresponse.Links{
 			Role: asresponse.Role{
-				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID + "/",
+				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID,
 			},
 		},
 	}
@@ -228,7 +228,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 // error will be passed back.
 func GetAccountService() response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#AccountService.v1_6_0.AccountService",
+		OdataType:    common.AccountServiceType,
 		OdataID:      "/redfish/v1/AccountService",
 		OdataContext: "/redfish/v1/$metadata#AccountService.AccountService",
 		ID:           "AccountService",

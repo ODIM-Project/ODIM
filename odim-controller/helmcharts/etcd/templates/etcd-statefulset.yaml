@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: etcd
+  namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+  labels:
+    app: etcd
+    deployment: odim-ra
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: etcd
+      parentdeployment: odim-ra
+  serviceName: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+        parentdeployment: odim-ra
+    spec:
+      hostname: etcd
+      subdomain: etcd
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+        - name: etcd
+          image: etcd:{{ .Values.odimra.etcdImageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: etcd-server
+              containerPort: 2379
+            - name: etcd-quorum
+              containerPort: 2380
+          env:
+            - name: MEMBER_NAME
+              value: etcd
+            - name: ENABLE_TLS
+              value: "true"
+            - name: DATA_DIR_PATH
+              value: /opt/etcd/data
+            - name: LISTEN_PEER_ADDR
+              value: https://0.0.0.0:2380
+            - name: LISTEN_CLIENT_ADDR
+              value: https://0.0.0.0:2379
+            - name: INITIAL_ADV_ADDR
+              value: https://etcd:2380
+            - name: INITIAL_CLUSTER
+              value: "etcd=https://etcd:2380"
+            - name: INITIAL_CLUSTER_STATE
+              value: new
+            - name: INITIAL_CLUSTER_TOKEN
+              value: odim-etcd-cluster
+            - name: ADV_CLIENT_ADDR
+              value: https://etcd:2379
+            - name: CLIENT_CERT_FILE
+              value: /opt/etcd/conf/odimra_etcd_server.crt
+            - name: CLIENT_KEY_FILE
+              value: /opt/etcd/conf/odimra_etcd_server.key
+            - name: CA_FILE
+              value: /opt/etcd/conf/rootCA.crt
+            - name: SERVER_CERT_FILE
+              value: /opt/etcd/conf/odimra_etcd_server.crt
+            - name: SERVER_KEY_FILE
+              value: /opt/etcd/conf/odimra_etcd_server.key
+          volumeMounts:
+            - mountPath: "/opt/etcd/conf"
+              name: odimra-secret
+            - mountPath: "/opt/etcd/data"
+              name: etcd-data-pv
+          workingDir: /home/etcd
+      volumes:
+        - name: etcd-data-pv
+          persistentVolumeClaim:
+            claimName: etcd-data-pvc
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_etcd_servercrt
+              path: odimra_etcd_server.crt
+              mode: 0444
+            - key: odimra_etcd_serverkey
+              path: odimra_etcd_server.key
+              mode: 0444
+---

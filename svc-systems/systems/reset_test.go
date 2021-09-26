@@ -71,14 +71,14 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) r
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Reset" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.SetDefaultBootOrder" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -193,7 +193,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
 	var positiveResponse interface{}
-	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
+	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
@@ -264,7 +264,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 					"Transfer-Encoding": "chunked",
 					"OData-Version":     "4.0",
 				},
-				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
+				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		},
 	}

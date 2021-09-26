@@ -45,14 +45,14 @@ jobs:
         export HOSTIP=${HOSTIP}
         make all
         sleep 15s
-        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-managers|svc-update|plugin-redfish|urp|plugin-dell'`
+        b=`pgrep -f -c 'svc-api|svc-account-session|svc-aggregation|svc-events|svc-systems|svc-task|svc-fabrics|svc-telemetry|svc-managers|svc-update|plugin-redfish|urp|plugin-dell|plugin-lenovo'`
         echo "Detected number of ODIM related processes: " $b
-        if [ $b -eq 23 ];
+        if [ $b -eq 25 ];
         then
-            echo "ODIMRA processes & GRF,Dell and urp plugin are up & running"
+            echo "ODIMRA processes & GRF,Dell,urp and Lenovo plugin are up & running"
             echo "Deployment sucessful" 
         else
-            echo "ODIMRA processes or GRF,Dell and urp plugin failed to come up. Check ODIMRA or PLUGIN logs"
+            echo "ODIMRA processes or GRF,Dell,urp and Lenovo plugin failed to come up. Check ODIMRA or PLUGIN logs"
             echo "Deployemnt Failed" 
             exit -1
         fi
@@ -103,15 +103,17 @@ jobs:
         fi
     - name: Prepare Build Artifacts
       run: |
-        sudo mkdir /var/log/odim-infra
-        docker-compose -f build/docker-compose.yml logs kafka | sudo tee /var/log/odim-infra/kafka.log
-        docker-compose -f build/docker-compose.yml logs zookeeper| sudo tee /var/log/odim-infra/zookeeper.log
-        docker-compose -f build/docker-compose.yml logs consul | sudo tee /var/log/odim-infra/consul.log
-        docker-compose -f build/docker-compose.yml logs redis | sudo tee /var/log/odim-infra/redis.log
-        sudo mkdir /var/log/odim-plugins
-        docker-compose -f build/docker-compose.yml logs urp |sudo tee /var/log/odim-plugins/urp.log
-        sudo cp /var/log/GRF_PLUGIN/plugin.log /var/log/odim-plugins/grf.log
-        sudo cp /var/log/DELL_PLUGIN/dell_plugin.log /var/log/odim-plugins/dell.log
+        sudo mkdir /artifacts
+        docker logs odim_kafka | sudo tee /artifacts/kafka.log  > /dev/null
+        docker logs odim_zookeeper| sudo tee /artifacts/zookeeper.log
+        docker logs odim_etcd | sudo tee /artifacts/etcd.log
+        docker logs build_redis_1 | sudo tee /artifacts/redis.log
+        docker logs build_urp_1 |sudo tee /artifacts/ur_plugin.log
+        sudo cp /var/log/GRF_PLUGIN/plugin.log /artifacts/grf_plugin.log
+        sudo cp /var/log/DELL_PLUGIN/dell_plugin.log /artifacts/dell_plugin.log
+        sudo cp /var/log/LENOVO_PLUGIN/lenovo_plugin.log /artifacts/lenovo_plugin.log
+        sudo cp /var/log/odimra/* /artifacts/
+
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v2
       if: always()
@@ -122,3 +124,4 @@ jobs:
         /var/log/DELL_PLUGIN
         /var/log/odim-plugins
         /var/log/odim-infra
+        /var/log/LENOVO_PLUGIN

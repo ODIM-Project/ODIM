@@ -12,7 +12,7 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-FROM redis:5.0.8
+FROM redis:6.2.5
 
 ARG ODIMRA_USER_ID
 ARG ODIMRA_GROUP_ID

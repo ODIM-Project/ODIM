@@ -550,6 +550,34 @@ func TestCreateErrorResponse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: NoOperation,
+			args: Args{
+				Code:    NoOperation,
+				Message: NoOperation,
+				ErrorArgs: []ErrArgs{
+					ErrArgs{
+						StatusMessage: NoOperation,
+						ErrorMessage:  errMsg,
+					},
+				},
+			},
+			want: CommonError{
+				Error: ErrorClass{
+					Code:    NoOperation,
+					Message: NoOperation,
+					MessageExtendedInfo: []Msg{
+						Msg{
+							OdataType:  ErrorMessageOdataType,
+							MessageID:  NoOperation,
+							Message:    "The request body submitted contain no data to act upon and no changes to the resource took place.",
+							Severity:   "Warning",
+							Resolution: "Add properties in the JSON object and resubmit the request.",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

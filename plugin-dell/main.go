@@ -36,12 +36,6 @@ import (
 var subscriptionInfo []dpmodel.Device
 var log = logrus.New()
 
-// TokenObject will contains the generated token and public key of odimra
-type TokenObject struct {
-	AuthToken string `json:"authToken"`
-	PublicKey []byte `json:"publicKey"`
-}
-
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
@@ -56,13 +50,18 @@ func main() {
 		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
+	dputilities.PrepareDbConfig()
+	if err := common.CheckDBConnection(); err != nil {
+		log.Fatal("While trying to check DB connection health got: " + err.Error())
+	}
+
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	dphandler.In, dphandler.Out = common.CreateJobQueue()
+	dputilities.In, dputilities.Out = common.CreateJobQueue()
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
-	go common.RunReadWorkers(dphandler.Out, dpmessagebus.Publish, 5)
+	go common.RunReadWorkers(dputilities.Out, dpmessagebus.Publish, 5)
 
 	configFilePath := os.Getenv("PLUGIN_CONFIG_FILE_PATH")
 	if configFilePath == "" {
@@ -284,6 +283,6 @@ func sendStartupEvent() {
 
 	done := make(chan bool)
 	events := []interface{}{event}
-	go common.RunWriteWorkers(dphandler.In, events, 1, done)
+	go common.RunWriteWorkers(dputilities.In, events, 1, done)
 	log.Info("successfully sent startup event")
 }

@@ -19,17 +19,11 @@ import (
 	"encoding/json"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
+	"github.com/ODIM-Project/ODIM/plugin-dell/dputilities"
 	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"strings"
-)
-
-var (
-	// In Channel
-	In chan<- interface{}
-	// Out Channel
-	Out <-chan interface{}
 )
 
 // RedfishEvents receives the subscribed events from the south bound system
@@ -76,14 +70,6 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call writeEventToJobQueue to write events to worker pool
-	writeEventToJobQueue(event)
+	dputilities.WriteEventToJobQueue(event)
 	w.WriteHeader(http.StatusOK)
-}
-
-// writeEventToJobQueue will write events to worker pool
-func writeEventToJobQueue(event common.Events) {
-	var events []interface{}
-	events = append(events, event)
-	done := make(chan bool)
-	go common.RunWriteWorkers(In, events, 5, done)
 }

@@ -39,6 +39,7 @@ type configModel struct {
 	KeyCertConf             *KeyCertConf      `json:"KeyCertConf"`
 	URLTranslation          *URLTranslation   `json:"URLTranslation"`
 	TLSConf                 *TLSConf          `json:"TLSConf"`
+	DBConf                  *DBConf           `json:"DBConf"`
 }
 
 //PluginConf is for holding all the plugin related configurations
@@ -48,6 +49,22 @@ type PluginConf struct {
 	Port     string `json:"Port"`
 	UserName string `json:"UserName"`
 	Password string `json:"Password"`
+}
+
+// DBConf holds all DB related configurations
+type DBConf struct {
+	Protocol             string `json:"Protocol"`
+	InMemoryHost         string `json:"InMemoryHost"`
+	InMemoryPort         string `json:"InMemoryPort"`
+	OnDiskHost           string `json:"OnDiskHost"`
+	OnDiskPort           string `json:"OnDiskPort"`
+	MaxIdleConns         int    `json:"MaxIdleConns"`
+	MaxActiveConns       int    `json:"MaxActiveConns"`
+	RedisHAEnabled       bool   `json:"RedisHAEnabled"`
+	InMemorySentinelPort string `json:"InMemorySentinelPort"`
+	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
+	InMemoryMasterSet    string `json:"InMemoryMasterSet"`
+	OnDiskMasterSet      string `json:"OnDiskMasterSet"`
 }
 
 //LoadBalancerConf is for holding all load balancer related configurations

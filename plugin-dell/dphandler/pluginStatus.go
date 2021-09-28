@@ -24,7 +24,6 @@ import (
 	"reflect"
 	"sync"
 	"time"
-	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
@@ -48,8 +47,8 @@ func GetPluginStatus(ctx iris.Context) {
 	}
 	var messageQueueInfo []dpresponse.EmbQueue
 	var resp = dpresponse.PluginStatusResponse{
-		Comment: "Plugin Status Response",
-		Name:    "Common Redfish Plugin Status",
+		Comment: "Dell Plugin Status Response",
+		Name:    "Dell Redfish Plugin Status",
 		Version: pluginConfig.Data.FirmwareVersion,
 	}
 	resp.Status = dputilities.Status
@@ -205,7 +204,6 @@ func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]s
 				Destination: "https://" + pluginConfig.Data.LoadBalancerConf.Host + ":" + pluginConfig.Data.LoadBalancerConf.Port + pluginConfig.Data.EventConf.DestURI,
 				EventTypes:  server.EventSubscriptionInfo.EventTypes,
 				Context:     "Event Subscription",
-				//      HTTPHeaders: reqPostBody.HTTPHeaders,
 				Protocol: "Redfish",
 			}
 			device.PostBody, err = json.Marshal(req)
@@ -229,7 +227,6 @@ func checkCreateSub(server dpmodel.DeviceData, startUpResponse chan map[string]s
 			Destination: "https://" + pluginConfig.Data.LoadBalancerConf.Host + ":" + pluginConfig.Data.LoadBalancerConf.Port + pluginConfig.Data.EventConf.DestURI,
 			EventTypes:  []string{"Alert"},
 			Context:     "Event Subscription",
-			//	HTTPHeaders: reqPostBody.HTTPHeaders,
 			Protocol: "Redfish",
 		}
 		device.PostBody, err = json.Marshal(req)

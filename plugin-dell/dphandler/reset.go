@@ -63,40 +63,7 @@ func ResetComputerSystem(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-	/*
-		priv := []byte(dpmodel.PluginPrivateKey)
-		block, _ := pem.Decode(priv)
-		enc := x509.IsEncryptedPEMBlock(block)
-		b := block.Bytes
-		if enc {
-			log.Println("is encrypted pem block")
-			b, err = x509.DecryptPEMBlock(block, nil)
-			if err != nil {
-				log.Println("Error: " + err.Error())
-			}
-		}
-		key, err := x509.ParsePKCS1PrivateKey(b)
-		if err != nil {
-			log.Println("Error: " + err.Error())
-		}
 
-		hash := sha512.New()
-
-		plainText, err := rsa.DecryptOAEP(
-			hash,
-			rand.Reader,
-			key,
-			device.Password,
-			nil,
-		)
-		if err != nil {
-			log.Println("Error while trying decrypt data: ", err)
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("Error while trying to decypt data")
-			return
-		}
-		device.Password = plainText
-	*/
 	var request map[string]interface{}
 	err = json.Unmarshal(deviceDetails.PostBody, &request)
 	resetType := request["ResetType"].(string)

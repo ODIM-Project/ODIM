@@ -17,6 +17,20 @@
 		"PrivateKeyPath": "",
 		"CertificatePath": ""
 	},
+	"DBConf": {
+		"Protocol": "tcp",
+		"InMemoryHost": "localhost",
+		"InMemoryPort": "6379",
+		"OnDiskHost": "localhost",
+		"OnDiskPort": "6380",
+		"MaxIdleConns": 10,
+		"MaxActiveConns": 120,
+		"RedisHAEnabled": false,
+		"InMemorySentinelPort": "26379",
+		"OnDiskSentinelPort": "26379",
+		"InMemoryMasterSet": "mymaster",
+		"OnDiskMasterSet": "mymaster"
+	},
 	"TLSConf" : {
 		"MinVersion": "TLS_1.2",
 		"MaxVersion": "TLS_1.2",
@@ -26,7 +40,7 @@
 			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
 			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-                        "TLS_RSA_WITH_AES_128_GCM_SHA256",
+			"TLS_RSA_WITH_AES_128_GCM_SHA256",
 			"TLS_RSA_WITH_AES_256_GCM_SHA384"
 		]
 	},

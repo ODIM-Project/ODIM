@@ -21,6 +21,7 @@ type Volume struct {
 	RAIDType           string        `json:"RAIDType"`
 	Drives             []OdataIDLink `json:"Drives"`
 	OperationApplyTime string        `json:"@Redfish.OperationApplyTime"`
+	VolumeType			string        `json:"VolumeType"`
 }
 
 // OdataIDLink contains link to a resource

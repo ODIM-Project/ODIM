@@ -166,12 +166,24 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	resp.Header = map[string]string{
 		"Content-type": "application/json; charset=utf-8",
 	}
-	resp.StatusCode = http.StatusOK
-	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
-	if err != nil {
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+
+	for key, values := range getResponse.Header {
+		for _, value := range values {
+			resp.Header[key] = value
+		}
 	}
+
+	resp.StatusCode = getResponse.StatusCode
+	resp.StatusMessage = response.Success
+
+	// Unmarshal response body only when body is not empty.
+	if len(body) > 0 {
+		err = json.Unmarshal(body, &resp.Body)
+		if err != nil {
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		}
+	}
+
 	return resp
 }
 
@@ -415,7 +427,13 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	smodel.AddSystemResetInfo(key, "On")
 	smodel.AddSystemResetInfo(collectionKey, "On")
 
-	resp.StatusCode = http.StatusNoContent
+	for key, values := range getResponse.Header {
+		for _, value := range values {
+			resp.Header[key] = value
+		}
+	}
+
+	resp.StatusCode = getResponse.StatusCode
 	resp.StatusMessage = response.Success
 	return resp
 }

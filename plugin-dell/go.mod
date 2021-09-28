@@ -8,8 +8,11 @@ require (
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/golang/protobuf v1.4.2
+	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/kataras/iris/v12 v12.1.9-0.20200616210209-a85c83b70ad0
+	github.com/micro/go-micro v1.13.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/yudai/pp v2.0.1+incompatible // indirect

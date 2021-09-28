@@ -56,6 +56,7 @@ type PluginContactRequest struct {
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
+	Header        http.Header
 }
 
 //ResourceInfoRequest  hold the request of getting  Resource
@@ -228,11 +229,14 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	}
 	log.Info("Response" + string(body))
 	log.Info("response.StatusCode" + string(response.StatusCode))
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
+	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK && response.StatusCode != http.StatusAccepted {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
+
+	resp.StatusCode = int32(response.StatusCode)
+	resp.Header = response.Header
 
 	data := string(body)
 	//replacing the resposne with north bound translation URL

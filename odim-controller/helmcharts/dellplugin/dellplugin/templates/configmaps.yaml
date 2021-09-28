@@ -24,6 +24,27 @@ data:
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
     	},
+        "DBConf": {
+                   "Protocol": "tcp",
+                   {{ if eq .Values.odimra.haDeploymentEnabled false }}
+                   "InMemoryHost": "redis-inmemory",
+                   "OnDiskHost": "redis-ondisk",
+                   "InMemoryMasterSet": "mymaster",
+                   "OnDiskMasterSet": "mymaster",
+                   {{ else }}
+                   "InMemoryHost": "redis-ha-inmemory",
+                   "OnDiskHost": "redis-ha-ondisk",
+                   "InMemoryMasterSet": "primaryset",
+                   "OnDiskMasterSet": "primaryset",
+                   {{ end }}
+                   "InMemoryPort": "6379",
+                   "OnDiskPort": "6379",
+                   "MaxIdleConns": 200,
+                   "MaxActiveConns": 200,
+                   "RedisHAEnabled": {{ .Values.odimra.haDeploymentEnabled }},
+                   "InMemorySentinelPort": "26379",
+                   "OnDiskSentinelPort": "26379"
+        },
     	"TLSConf" : {
     		"MinVersion": "TLS_1.2",
     		"MaxVersion": "TLS_1.2",

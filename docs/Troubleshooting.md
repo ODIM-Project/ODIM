@@ -361,11 +361,14 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
    ​Resource Aggregator for ODIM deployment can fail due to multiple reasons. 
 
-      1. Analyze and fix the errors first.
-      2. Reset Resource Aggregator for ODIM deployment using the following command:
-         `python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --ignore-errors`
-      3. Retry deploying Resource Aggregator for ODIM services using the following command:
-         `python3 odim-controller.py --deploy \<br/> odimra --config /home/${USER}/ODIM/odim-controller/\<br/>scripts/kube_deploy_nodes.yaml`
+1. Analyze and fix the errors first.
+
+2. Reset Resource Aggregator for ODIM deployment using the following command:
+   `python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --ignore-errors`
+
+3. Retry deploying Resource Aggregator for ODIM services using the following command:
+
+   `python3 odim-controller.py --deploy \<br/> odimra --config /home/${USER}/ODIM/odim-controller/\<br/>scripts/kube_deploy_nodes.yaml`
 
 <blockquote>NOTE: Verify the content and the formatting of the content in the `kube_deploy_nodes.yaml` configuration file. Formatting in the `kube_deploy_nodes.yaml.tmpl` file provided must be copied and retained.</blockquote>
 

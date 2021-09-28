@@ -303,6 +303,15 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					MessageArgs: errArg.MessageArgs,
 					Resolution:  "No resolution is required.",
 				})
+		case NoOperation:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    "The request body submitted contain no data to act upon and no changes to the resource took place.",
+					Severity:   "Warning",
+					Resolution: "Add properties in the JSON object and resubmit the request.",
+				})
 		}
 	}
 	return e

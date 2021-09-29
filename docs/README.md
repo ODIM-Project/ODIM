@@ -6534,9 +6534,15 @@ curl -i GET \
    "Action":{
       "#UpdateService.SimpleUpdate":{
          "target":"/redfish/v1/UpdateService/Actions/SimpleUpdate"
-      },
-      "#UpdateService.StartUpdate":{
-         "target":"/redfish/v1/UpdateService/Actions/StartUpdate"
+         "@Redfish.OperationApplyTimeSupport": {
+                "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
+                "SupportedValues": [
+                    "OnStartUpdateRequest"
+                ]
+            }
+        },
+        "#UpdateService.StartUpdate":{
+           "target":"/redfish/v1/UpdateService/Actions/StartUpdate"
       }
    }
 }
@@ -6765,6 +6771,7 @@ curl -i POST \
 "ImageURI": "<URI_of_the_firmware_image>",
 "Password": "<password>",
 "Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
+"@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 "TransferProtocol": "",
 "Username": "<username>"
 }' \
@@ -6781,6 +6788,7 @@ curl -i POST \
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
   "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
+  "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 }
 ```
 
@@ -6790,9 +6798,7 @@ curl -i POST \
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
   "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
-  "@Redfish.OperationApplyTimeSupport": {
-            "@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport",
-              "SupportedValues": ["OnStartUpdate"]
+  "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
             }
 }
 ```

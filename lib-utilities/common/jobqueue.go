@@ -38,8 +38,8 @@ func getCurrentData(buff []interface{}) interface{} {
 //
 // The in channel must be closed by the user, but the closing of
 // the out channel is taken care by the function itself.
-func CreateJobQueue() (chan<- interface{}, <-chan interface{}) {
-	in, out := make(chan interface{}), make(chan interface{})
+func CreateJobQueue(qsize int) (chan<- interface{}, <-chan interface{}) {
+	in, out := make(chan interface{}, qsize), make(chan interface{}, qsize)
 	go func() {
 		var buff []interface{}
 		// for loop must continue until buff is empty (all data are read) and the in channel is closed

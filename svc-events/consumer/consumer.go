@@ -19,11 +19,12 @@ package consumer
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
+	"time"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -38,8 +39,6 @@ var (
 	// internal messages received from intercomm messae bus queue
 	CtrlMsgProcQueue <-chan interface{}
 )
-
-var done = make(chan bool)
 
 // KafkaSubscriber consume messages from PMB
 func KafkaSubscriber(event interface{}) {
@@ -57,10 +56,33 @@ func KafkaSubscriber(event interface{}) {
 // writeEventToJobQueue align events to job queue
 func writeEventToJobQueue(kafkaMessage common.Events) {
 	// events contains a slice of event subscribed from kafka
-	var events = make([]interface{}, 0)
-	events = append(events, kafkaMessage)
-
-	go common.RunWriteWorkers(In, events, 5, done)
+	events := []interface{}{kafkaMessage}
+	go func() {
+		// Wait for the write workers to finish writing to
+		// In buffer and clear the memory assigned to the data
+		ticker := time.NewTicker(500 * time.Millisecond)
+		done := make(chan bool)
+		breakLoop := false
+		workerCount := 1
+		common.RunWriteWorkers(In, events, workerCount, done)
+		for !breakLoop {
+			select {
+			case <-done:
+				workerCount--
+				if workerCount == 0 {
+					breakLoop = true
+					break
+				}
+			case <-ticker.C:
+			}
+		}
+		// empty the slice passed to RunWriteWorkers for GC
+		events = nil
+		// empty the slice in the passed kafkaMessage data for GC
+		kafkaMessage.Request = nil
+		ticker.Stop()
+		close(done)
+	}()
 }
 
 // Consume create a consumer for message bus
@@ -105,11 +127,20 @@ func SubscribeCtrlMsgQueue(topicName string) {
 // consumeCtrlMsg consume control messages
 func consumeCtrlMsg(event interface{}) {
 	var ctrlMessage common.ControlMessageData
+	done := make(chan bool)
 	data, _ := json.Marshal(&event)
 	if err := json.Unmarshal(data, &ctrlMessage); err != nil {
 		log.Error("error while unmarshaling the event" + err.Error())
 		return
 	}
 	msg := []interface{}{ctrlMessage}
-	go common.RunWriteWorkers(CtrlMsgRecvQueue, msg, 5, done)
+	go common.RunWriteWorkers(CtrlMsgRecvQueue, msg, 1, done)
+	// range on the channel done, on receiving data on this
+	// which indicates write was completed, break the loop
+	// and close the channel
+	for range done {
+		break
+	}
+	msg = nil
+	close(done)
 }

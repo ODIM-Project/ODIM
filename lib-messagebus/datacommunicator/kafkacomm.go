@@ -146,7 +146,7 @@ func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
 		kp.Writers[pipe] = kafka.NewWriter(kafka.WriterConfig{
 			Brokers:       kp.ServersInfo,
 			Topic:         pipe,
-			Balancer:      &kafka.LeastBytes{},
+			Balancer:      &kafka.RoundRobin{},
 			BatchSize:     1,
 			QueueCapacity: 1,
 			Async:         true,

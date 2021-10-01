@@ -7,7 +7,7 @@
 - name: Set current_user fact
   set_fact:
     current_user: "{{ get_user.stdout }}"
-
+    
 - name: Copying helm config file
   copy:
     src: "{{ helm_config_file }}"
@@ -32,7 +32,7 @@
   when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
 
 - name: Deploy etcd, redis, kafka, zookeeper HA services
-  command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
+  command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }} {{ groups['kube-node'] }}"
   loop: "{{ odim_third_party_ha_helmcharts | dict2items  }}"
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
 

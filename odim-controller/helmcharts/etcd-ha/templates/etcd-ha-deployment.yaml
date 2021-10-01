@@ -36,7 +36,7 @@ spec:
             - matchExpressions:
               - key: "kubernetes.io/hostname"
                 operator: In
-                values: [hostname[0]]
+                values: [ {{ index .Values.hostname 0 }} ]
       containers:
         - name: etcd1
           image: etcd:{{ .Values.odimra.etcdImageTag }}
@@ -140,7 +140,7 @@ spec:
             - matchExpressions:
               - key: "kubernetes.io/hostname"
                 operator: In
-                values: [hostname[1]]
+                values: [ {{ index .Values.hostname 1 }} ]
       containers:
         - name: etcd2
           image: etcd:{{ .Values.odimra.etcdImageTag }}
@@ -244,7 +244,7 @@ spec:
             - matchExpressions:
               - key: "kubernetes.io/hostname"
                 operator: In
-                values: [hostname[2]]
+                values: [ {{ index .Values.hostname 2 }} ]
       containers:
         - name: etcd3
           image: etcd:{{ .Values.odimra.etcdImageTag }}

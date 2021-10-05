@@ -24,6 +24,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"sync"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -66,6 +67,12 @@ type KafkaPacket struct {
 // partitions, Sync and Async messaging, Flushing of messages in case of App shutdown.)
 // Some of the features are for Future Expansion.
 type kafkaReadWriter struct {
+	// reader is defined for controlling concurrent Readers map update
+	reader *sync.Mutex
+
+	// reader is defined for controlling concurrent Writers map update
+	writer *sync.Mutex
+
 	// Readers would maintain a mapping between the Kafka Reader pointer
 	// and the Topic which is handled in that reader.
 	Readers map[string]*kafka.Reader
@@ -75,11 +82,17 @@ type kafkaReadWriter struct {
 	Writers map[string]*kafka.Writer
 }
 
-var krw = kafkaReadWriter{}
+// krw is defined for maintaining the KAFKA reader and writer data
+var krw *kafkaReadWriter
 
+// init is for intializing global variables defined in this package
 func init() {
-	krw.Readers = make(map[string]*kafka.Reader)
-	krw.Writers = make(map[string]*kafka.Writer)
+	krw = &kafkaReadWriter{
+		reader:  new(sync.Mutex),
+		writer:  new(sync.Mutex),
+		Readers: make(map[string]*kafka.Reader),
+		Writers: make(map[string]*kafka.Writer),
+	}
 }
 
 // TLS creates the TLS Configuration object to used by any Broker for Auth and
@@ -144,10 +157,22 @@ func kafkaConnect(kp *KafkaPacket) error {
 // message in the specified Pipe, it will be converted into Byte stream using
 // "Encode" API. Encryption is enabled for the message via TLS.
 func (kp *KafkaPacket) Distribute(d interface{}) error {
+
+	// recover is called here to catch any panic in kafka.NewWriter
+	// and to release the lock
+	unlocked := false
+	defer func() {
+		if err := recover(); err != nil && !unlocked {
+			krw.writer.Unlock()
+		}
+	}()
+
+	krw.writer.Lock()
 	// Check for existing Writers. If not existing for this specific Pipe,
 	// then we would create this Writer object for sending the message.
 	if _, exist := krw.Writers[kp.pipe]; !exist {
 		if e := kafkaConnect(kp); e != nil {
+			krw.writer.Unlock()
 			return e
 		}
 
@@ -161,6 +186,9 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 			Dialer:        kp.DialerConn,
 		})
 	}
+	writer := krw.Writers[kp.pipe]
+	krw.writer.Unlock()
+	unlocked = true
 
 	// Encode the message before appending into KAFKA Message struct
 	b, e := Encode(d)
@@ -176,7 +204,7 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 	}
 
 	// Write the messgae in the specified Pipe.
-	if e = krw.Writers[kp.pipe].WriteMessages(context.Background(), km); e != nil {
+	if e = writer.WriteMessages(context.Background(), km); e != nil {
 		log.Error(e.Error())
 		return e
 	}
@@ -190,9 +218,20 @@ func (kp *KafkaPacket) Distribute(d interface{}) error {
 // handle the incoming messages.
 func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 
+	// recover is called here to catch any panic in kafka.NewReader
+	// and to release the lock
+	unlocked := false
+	defer func() {
+		if err := recover(); err != nil && !unlocked {
+			krw.writer.Unlock()
+		}
+	}()
+
 	// If for the Reader Object for pipe and create one if required.
+	krw.reader.Lock()
 	if _, exist := krw.Readers[kp.pipe]; !exist {
 		if e := kafkaConnect(kp); e != nil {
+			krw.reader.Unlock()
 			return e
 		}
 		krw.Readers[kp.pipe] = kafka.NewReader(kafka.ReaderConfig{
@@ -205,6 +244,8 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 			Dialer:         kp.DialerConn,
 		})
 	}
+	krw.reader.Unlock()
+	unlocked = true
 
 	kp.Read(fn)
 	return nil
@@ -219,13 +260,16 @@ func (kp *KafkaPacket) Read(fn MsgProcess) error {
 	// of having local scope interface pointer into passing to remote one
 	var d interface{}
 	c := context.Background()
+	krw.reader.Lock()
+	reader := krw.Readers[kp.pipe]
+	krw.reader.Unlock()
 
 	// Infinite loop to make sure we are constantly reading the messages
 	// from KAFKA.
 	for {
 		// ReadMessages is also possible.  Here in this case, we are
 		// explicitly committing the messages
-		m, e := krw.Readers[kp.pipe].ReadMessage(c)
+		m, e := reader.ReadMessage(c)
 		if e != nil {
 			log.Error(e.Error())
 			return e
@@ -251,6 +295,8 @@ func (kp *KafkaPacket) Get(pipe string, d interface{}) interface{} {
 // Remove will just remove the existing subscription. This API would check just
 // the Reader map as to Distribute / Publish messages, we don't need subscription
 func (kp *KafkaPacket) Remove() error {
+	krw.reader.Lock()
+	defer krw.reader.Unlock()
 	es, ok := krw.Readers[kp.pipe]
 	if ok == false {
 		return fmt.Errorf("specified pipe is not subscribed yet. please check the pipe name passed")
@@ -264,6 +310,8 @@ func (kp *KafkaPacket) Remove() error {
 // Close will terminate the write connection created for the topic. This API would check just
 // the Writer map for the connection object.
 func (kp *KafkaPacket) Close() error {
+	krw.writer.Lock()
+	defer krw.writer.Unlock()
 	wc, ok := krw.Writers[kp.pipe]
 	if ok == false {
 		return fmt.Errorf("specified pipe does not have open conenction. please check the pipe name passed")
@@ -279,12 +327,16 @@ func (kp *KafkaPacket) Close() error {
 // close just one channel subscription using this API. For that we would be have
 // different APIs defined, called "Remove".
 func CloseAll() {
+	krw.reader.Lock()
+	defer krw.reader.Unlock()
 	// Closing all opened Readers Connections
 	for rp, rc := range krw.Readers {
 		rc.Close()
 		delete(krw.Readers, rp)
 	}
 
+	krw.writer.Lock()
+	defer krw.writer.Unlock()
 	// Closing all opened Writers Connections
 	for wp, wc := range krw.Writers {
 		wc.Close()

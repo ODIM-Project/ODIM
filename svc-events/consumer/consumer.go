@@ -92,13 +92,13 @@ func Consume(topicName string) {
 	messageQueueConfigFilePath := config.Data.MessageQueueConfigFilePath
 	config.TLSConfMutex.RUnlock()
 	// connecting to kafka
-	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath)
+	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath, topicName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
-	if err := k.Accept(topicName, KafkaSubscriber); err != nil {
+	if err := k.Accept(KafkaSubscriber); err != nil {
 		log.Error(err.Error())
 		return
 	}
@@ -111,13 +111,13 @@ func SubscribeCtrlMsgQueue(topicName string) {
 	messageQueueConfigFilePath := config.Data.MessageQueueConfigFilePath
 	config.TLSConfMutex.RUnlock()
 	// connecting to kafka
-	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath)
+	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath, topicName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
-	if err := k.Accept(topicName, consumeCtrlMsg); err != nil {
+	if err := k.Accept(consumeCtrlMsg); err != nil {
 		log.Error(err.Error())
 		return
 	}

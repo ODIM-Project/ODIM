@@ -23,11 +23,11 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"time"
 
 	"github.com/segmentio/kafka-go"
+	log "github.com/sirupsen/logrus"
 )
 
 // KafkaPacket defines the KAFKA Message Object. This one conains all the required
@@ -39,26 +39,10 @@ import (
 // Writer maps, It also maintains the Dialer Object for initial Kafka connection.
 // Current Active Server name too maintained as part of KafkaPacket Object.
 type KafkaPacket struct {
-
 	// All common base function objects are defined in this object. This
 	// object will support only Publishing and Subscriptions based on KAFKA
 	// support. We use KAFKA 2.2.0 with Scala 2.12.
 	Packet
-
-	// Following are the map definition of both KAFKA reader and writers with Topic name.
-	// Instead of using low level Conn Object from KAFKA-GO, we are using this high level
-	// handle to make sure it does provide and help us with additional features like (Retry
-	// or Reconnect in case of errors, Configurable distribution of messages based on
-	// partitions, Sync and Async messaging, Flushing of messages in case of App shutdown.)
-	// Some of the features are for Future Expansion.
-
-	// Readers would maintain a mapping between the Kafka Reader pointer
-	// and the Topic which is handled in that reader.
-	Readers map[string]*kafka.Reader
-
-	// Writers defines the mapping between KAFKA Writer pointer reference
-	// and the Topic which is handled in that Writer
-	Writers map[string]*kafka.Writer
 
 	// DialerConn defines the member which can be used for single connection
 	// towards KAFKA
@@ -66,6 +50,36 @@ type KafkaPacket struct {
 
 	// ServerInfo  defines list of the KAFKA server with port
 	ServersInfo []string
+
+	// messageBusConfigFile defines the config file path containing
+	// configurations required for establishing connection with KAFKA
+	messageBusConfigFile string
+
+	// pipe is defined to maintain the object created for which specific pipe
+	pipe string
+}
+
+// Following are the map definition of both KAFKA reader and writers with Topic name.
+// Instead of using low level Conn Object from KAFKA-GO, we are using this high level
+// handle to make sure it does provide and help us with additional features like (Retry
+// or Reconnect in case of errors, Configurable distribution of messages based on
+// partitions, Sync and Async messaging, Flushing of messages in case of App shutdown.)
+// Some of the features are for Future Expansion.
+type kafkaReadWriter struct {
+	// Readers would maintain a mapping between the Kafka Reader pointer
+	// and the Topic which is handled in that reader.
+	Readers map[string]*kafka.Reader
+
+	// Writers defines the mapping between KAFKA Writer pointer reference
+	// and the Topic which is handled in that Writer
+	Writers map[string]*kafka.Writer
+}
+
+var krw = kafkaReadWriter{}
+
+func init() {
+	krw.Readers = make(map[string]*kafka.Reader)
+	krw.Writers = make(map[string]*kafka.Writer)
 }
 
 // TLS creates the TLS Configuration object to used by any Broker for Auth and
@@ -98,13 +112,13 @@ func TLS(cCert, cKey, caCert string) (*tls.Config, error) {
 	return &tlsConfig, e2
 }
 
-// KafkaConnect defines the connection procedure for KAFKA Server. For now, we are
+// kafkaConnect defines the connection procedure for KAFKA Server. For now, we are
 // taking only one server as input. TLS for client send would be formed as TLS
 // object and same would be passed to the Server for connnection request. Common
 // Dialer object will be used for both Reader and Writer objects. These objects
 // would be updated if there is a request coming for specific Pipe, that specific
 // Pipe name and Connection object would be stored as part of this map pair.
-func KafkaConnect(kp *KafkaPacket, messageQueueConfigPath string) error {
+func kafkaConnect(kp *KafkaPacket) error {
 
 	// Using MQF details, connecting to the KAFKA Server.
 	kp.ServersInfo = mq.KServersInfo
@@ -121,14 +135,6 @@ func KafkaConnect(kp *KafkaPacket, messageQueueConfigPath string) error {
 		TLS:       tls,
 	}
 
-	// Initialize the connection map for both Reader and Writer for KAFKA
-	if kp.Readers == nil {
-		kp.Readers = make(map[string]*kafka.Reader)
-	}
-	if kp.Writers == nil {
-		kp.Writers = make(map[string]*kafka.Writer)
-	}
-
 	return nil
 }
 
@@ -137,15 +143,17 @@ func KafkaConnect(kp *KafkaPacket, messageQueueConfigPath string) error {
 // exists, that connection would be used for this call. Before publishing the
 // message in the specified Pipe, it will be converted into Byte stream using
 // "Encode" API. Encryption is enabled for the message via TLS.
-func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
-
+func (kp *KafkaPacket) Distribute(d interface{}) error {
 	// Check for existing Writers. If not existing for this specific Pipe,
 	// then we would create this Writer object for sending the message.
-	if _, a := kp.Writers[pipe]; a == false {
+	if _, exist := krw.Writers[kp.pipe]; !exist {
+		if e := kafkaConnect(kp); e != nil {
+			return e
+		}
 
-		kp.Writers[pipe] = kafka.NewWriter(kafka.WriterConfig{
+		krw.Writers[kp.pipe] = kafka.NewWriter(kafka.WriterConfig{
 			Brokers:       kp.ServersInfo,
-			Topic:         pipe,
+			Topic:         kp.pipe,
 			Balancer:      &kafka.RoundRobin{},
 			BatchSize:     1,
 			QueueCapacity: 1,
@@ -163,12 +171,12 @@ func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
 
 	// Place the byte stream into Kafka.Message
 	km := kafka.Message{
-		Key:   []byte(pipe),
+		Key:   []byte(kp.pipe),
 		Value: b,
 	}
 
 	// Write the messgae in the specified Pipe.
-	if e = kp.Writers[pipe].WriteMessages(context.Background(), km); e != nil {
+	if e = krw.Writers[kp.pipe].WriteMessages(context.Background(), km); e != nil {
 		log.Error(e.Error())
 		return e
 	}
@@ -180,15 +188,17 @@ func (kp *KafkaPacket) Distribute(pipe string, d interface{}) error {
 // If Reader object for the specified Pipe is not available, New Reader Object
 // would be created. From this function Goroutine "Read" will be invoked to
 // handle the incoming messages.
-func (kp *KafkaPacket) Accept(pipe string, fn MsgProcess) error {
+func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 
 	// If for the Reader Object for pipe and create one if required.
-	if _, a := kp.Readers[pipe]; a == false {
-
-		kp.Readers[pipe] = kafka.NewReader(kafka.ReaderConfig{
+	if _, exist := krw.Readers[kp.pipe]; !exist {
+		if e := kafkaConnect(kp); e != nil {
+			return e
+		}
+		krw.Readers[kp.pipe] = kafka.NewReader(kafka.ReaderConfig{
 			Brokers:        kp.ServersInfo,
-			GroupID:        pipe,
-			Topic:          pipe,
+			GroupID:        kp.pipe,
+			Topic:          kp.pipe,
 			MinBytes:       10e1,
 			MaxBytes:       10e6,
 			CommitInterval: 1 * time.Second,
@@ -196,13 +206,13 @@ func (kp *KafkaPacket) Accept(pipe string, fn MsgProcess) error {
 		})
 	}
 
-	kp.Read(pipe, fn)
+	kp.Read(fn)
 	return nil
 }
 
 // Read would access the KAFKA messages in a infinite loop. Callback method
 // access is existing only in "goka" library.  Not available in "kafka-go".
-func (kp *KafkaPacket) Read(p string, fn MsgProcess) error {
+func (kp *KafkaPacket) Read(fn MsgProcess) error {
 
 	// This interface should be defined outside the inner level to make sure
 	// we are making the ToData API to work. Otherwise we would get exception
@@ -215,7 +225,7 @@ func (kp *KafkaPacket) Read(p string, fn MsgProcess) error {
 	for {
 		// ReadMessages is also possible.  Here in this case, we are
 		// explicitly committing the messages
-		m, e := kp.Readers[p].ReadMessage(c)
+		m, e := krw.Readers[kp.pipe].ReadMessage(c)
 		if e != nil {
 			log.Error(e.Error())
 			return e
@@ -240,34 +250,44 @@ func (kp *KafkaPacket) Get(pipe string, d interface{}) interface{} {
 
 // Remove will just remove the existing subscription. This API would check just
 // the Reader map as to Distribute / Publish messages, we don't need subscription
-func (kp *KafkaPacket) Remove(pipe string) error {
-
-	es, ok := kp.Readers[pipe]
+func (kp *KafkaPacket) Remove() error {
+	es, ok := krw.Readers[kp.pipe]
 	if ok == false {
-		e := fmt.Errorf("specified pipe is not subscribed yet. please check the pipe name passed")
-		return e
+		return fmt.Errorf("specified pipe is not subscribed yet. please check the pipe name passed")
 	}
 	es.Close()
-	delete(kp.Readers, pipe)
+	delete(krw.Readers, kp.pipe)
 
 	return nil
 }
 
-// Close will disconnect KAFKA Connection. This API should be called when client
+// Close will terminate the write connection created for the topic. This API would check just
+// the Writer map for the connection object.
+func (kp *KafkaPacket) Close() error {
+	wc, ok := krw.Writers[kp.pipe]
+	if ok == false {
+		return fmt.Errorf("specified pipe does not have open conenction. please check the pipe name passed")
+	}
+	wc.Close()
+	delete(krw.Writers, kp.pipe)
+
+	return nil
+}
+
+// CloseAll will disconnect KAFKA Connection. This API should be called when client
 // is completely closing Kafka connection, both Reader and Writer objects. We don't
 // close just one channel subscription using this API. For that we would be have
 // different APIs defined, called "Remove".
-func (kp *KafkaPacket) Close() {
-
+func CloseAll() {
 	// Closing all opened Readers Connections
-	for rp, rc := range kp.Readers {
+	for rp, rc := range krw.Readers {
 		rc.Close()
-		delete(kp.Readers, rp)
+		delete(krw.Readers, rp)
 	}
 
 	// Closing all opened Writers Connections
-	for wp, wc := range kp.Writers {
+	for wp, wc := range krw.Writers {
 		wc.Close()
-		delete(kp.Writers, wp)
+		delete(krw.Writers, wp)
 	}
 }

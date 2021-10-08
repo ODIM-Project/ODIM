@@ -17,10 +17,13 @@ package dphandler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -63,43 +66,39 @@ func ResetComputerSystem(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-	/*
-		priv := []byte(dpmodel.PluginPrivateKey)
-		block, _ := pem.Decode(priv)
-		enc := x509.IsEncryptedPEMBlock(block)
-		b := block.Bytes
-		if enc {
-			log.Println("is encrypted pem block")
-			b, err = x509.DecryptPEMBlock(block, nil)
-			if err != nil {
-				log.Println("Error: " + err.Error())
-			}
-		}
-		key, err := x509.ParsePKCS1PrivateKey(b)
-		if err != nil {
-			log.Println("Error: " + err.Error())
-		}
 
-		hash := sha512.New()
-
-		plainText, err := rsa.DecryptOAEP(
-			hash,
-			rand.Reader,
-			key,
-			device.Password,
-			nil,
-		)
-		if err != nil {
-			log.Println("Error while trying decrypt data: ", err)
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("Error while trying to decypt data")
-			return
-		}
-		device.Password = plainText
-	*/
 	var request map[string]interface{}
 	err = json.Unmarshal(deviceDetails.PostBody, &request)
+	if err != nil {
+		log.Error("While trying to unmarshall data : " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
 	resetType := request["ResetType"].(string)
+	systemURI := strings.Split(uri, "Actions")[0]
+	statusCode, _, body, err := queryDevice(systemURI, device, http.MethodGet)
+	if err != nil {
+		errMsg := "error while getting system data, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(int(statusCode))
+		ctx.WriteString(errMsg)
+		return
+	}
+	var respData model.ComputerSystem
+	if err := json.Unmarshal(body, &respData); err != nil {
+		log.Warn("While unmarshaling the bios settings response from device, got: " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
+	respBody, statuscode, err := checkPowerState(resetType, respData.PowerState)
+	if err != nil {
+		log.Error(err.Error())
+		ctx.StatusCode(int(statuscode))
+		ctx.Write(respBody)
+		return
+	}
 	device.PostBody, _ = json.Marshal(dpmodel.ResetPostRequest{
 		ResetType: resetType,
 	})
@@ -112,7 +111,6 @@ func ResetComputerSystem(ctx iris.Context) {
 		return
 	}
 
-	//Subscribe to Events
 	resp, err := redfishClient.ResetComputerSystem(device, uri)
 	if err != nil {
 		errorMessage := "While trying to reset the computer system, got: " + err.Error()
@@ -124,7 +122,7 @@ func ResetComputerSystem(ctx iris.Context) {
 		}
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		errorMessage := "While trying to read the response body, got: " + err.Error()
 		log.Error(errorMessage)
@@ -147,4 +145,36 @@ func updateResetResponse() []byte {
 	resp.CreateGenericErrorResponse()
 	body, _ := json.Marshal(resp)
 	return body
+}
+
+func checkPowerState(resetType, powerState string) ([]byte, int32, error) {
+	resp := response.Args{
+		Code:    response.NoOperation,
+		Message: "",
+		ErrorArgs: []response.ErrArgs{
+			response.ErrArgs{
+				StatusMessage: response.NoOperation,
+			},
+		},
+	}
+	r := resp.CreateGenericErrorResponse()
+	body, _ := json.Marshal(r)
+
+	switch powerState {
+	case "On":
+		if resetType == "On" {
+			return body, http.StatusOK, fmt.Errorf("power state is on")
+		}
+	case "Off":
+		if resetType == "ForceOff" {
+			return body, http.StatusOK, fmt.Errorf("power state is Off")
+		}
+		if resetType != "On" {
+			errorMessage := "Can't reset, power is in off state"
+			resp := common.GeneralError(http.StatusConflict, response.PropertyValueConflict, errorMessage, []interface{}{resetType, powerState}, nil)
+			body, _ := json.Marshal(resp.Body)
+			return body, http.StatusConflict, fmt.Errorf("power state is Off")
+		}
+	}
+	return body, 0, nil
 }

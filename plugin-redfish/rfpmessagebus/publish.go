@@ -183,15 +183,14 @@ func getIPFromHostName(fqdn string) string {
 }
 
 func writeToMessageBus(events common.Events) bool {
-	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
+	topic := config.Data.MessageBusConf.EmbQueue[0]
+	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath, topic)
 	if err != nil {
 		log.Error("Unable communicate with kafka, got: " + err.Error())
 		return false
 	}
-	defer K.Close()
 
-	topic := config.Data.MessageBusConf.EmbQueue[0]
-	if err := K.Distribute(topic, events); err != nil {
+	if err := K.Distribute(events); err != nil {
 		log.Error("Unable Publish events to kafka, got: " + err.Error())
 		return false
 	}

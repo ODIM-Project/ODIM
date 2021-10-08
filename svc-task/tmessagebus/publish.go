@@ -26,14 +26,14 @@ import (
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
 func Publish(taskURI string, messageID string, eventType string) {
-
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	topic := "REDFISH-EVENTS-TOPIC"
+	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, topic)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
+
 	var eventID = uuid.NewV4().String()
-	defer k.Close()
 	var event = common.Event{
 		EventID:   eventID,
 		MessageID: messageID,
@@ -55,7 +55,7 @@ func Publish(taskURI string, messageID string, eventType string) {
 		Request: data,
 	}
 
-	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
+	if err := k.Distribute(mbevent); err != nil {
 		log.Error("unable to publish the event to message bus: " + err.Error())
 		return
 	}

@@ -1,0 +1,8 @@
+lenovoplugin:
+  eventListenerNodePort: 30089
+  logPath: /var/log/lenovoplugin_logs
+  lenovoPluginRootServiceUUID:
+  username: admin
+  password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
+  lbHost:
+  lbPort:

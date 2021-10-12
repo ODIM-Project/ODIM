@@ -38,8 +38,15 @@ type SoftwareInventory struct {
 
 // UpdateServiceSimpleUpdate defines Target information for the upgrade
 type UpdateServiceSimpleUpdate struct {
-	Target     string `json:"target"`
-	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
+	Target                           string                           `json:"target"`
+	ActionInfo                       string                           `json:"@Redfish.ActionInfo,omitempty"`
+	RedfishOperationApplyTimeSupport RedfishOperationApplyTimeSupport `json:"@Redfish.OperationApplyTimeSupport,omitempty"`
+}
+
+// RedfishOperationApplyTimeSupport struct defines the apply time for the action in place
+type RedfishOperationApplyTimeSupport struct {
+	OdataType       string   `json:"@odata.type,omitempty"`
+	SupportedValues []string `json:"SupportedValues,omitempty"`
 }
 
 // UpdateServiceStartUpdate defines Target information for the upgrade

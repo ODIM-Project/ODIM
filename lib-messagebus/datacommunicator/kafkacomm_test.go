@@ -51,8 +51,7 @@ func TestTLS(t *testing.T) {
 
 func TestKafkaConnect(t *testing.T) {
 	type args struct {
-		kp               *KafkaPacket
-		mqConfigFilePath string
+		kp *KafkaPacket
 	}
 	tests := []struct {
 		name    string
@@ -63,8 +62,8 @@ func TestKafkaConnect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := KafkaConnect(tt.args.kp, tt.args.mqConfigFilePath); (err != nil) != tt.wantErr {
-				t.Errorf("KafkaConnect() error = %v, wantErr %v", err, tt.wantErr)
+			if err := kafkaConnect(tt.args.kp); (err != nil) != tt.wantErr {
+				t.Errorf("kafkaConnect() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -73,14 +72,11 @@ func TestKafkaConnect(t *testing.T) {
 func TestKafkaPacket_Distribute(t *testing.T) {
 	type fields struct {
 		Packet     Packet
-		Readers    map[string]*kafka.Reader
-		Writers    map[string]*kafka.Writer
 		DialerConn *kafka.Dialer
 		Server     []string
 	}
 	type args struct {
-		pipe string
-		d    interface{}
+		d interface{}
 	}
 	tests := []struct {
 		name   string
@@ -93,12 +89,10 @@ func TestKafkaPacket_Distribute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			kp := &KafkaPacket{
 				Packet:      tt.fields.Packet,
-				Readers:     tt.fields.Readers,
-				Writers:     tt.fields.Writers,
 				DialerConn:  tt.fields.DialerConn,
 				ServersInfo: tt.fields.Server,
 			}
-			kp.Distribute(tt.args.pipe, tt.args.d)
+			kp.Distribute(tt.args.d)
 		})
 	}
 }
@@ -106,49 +100,10 @@ func TestKafkaPacket_Distribute(t *testing.T) {
 func TestKafkaPacket_Accept(t *testing.T) {
 	type fields struct {
 		Packet     Packet
-		Readers    map[string]*kafka.Reader
-		Writers    map[string]*kafka.Writer
 		DialerConn *kafka.Dialer
 		Server     []string
 	}
 	type args struct {
-		pipe string
-		fn   MsgProcess
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			kp := &KafkaPacket{
-				Packet:      tt.fields.Packet,
-				Readers:     tt.fields.Readers,
-				Writers:     tt.fields.Writers,
-				DialerConn:  tt.fields.DialerConn,
-				ServersInfo: tt.fields.Server,
-			}
-			if err := kp.Accept(tt.args.pipe, tt.args.fn); (err != nil) != tt.wantErr {
-				t.Errorf("KafkaPacket.Accept() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestKafkaPacket_Read(t *testing.T) {
-	type fields struct {
-		Packet     Packet
-		Readers    map[string]*kafka.Reader
-		Writers    map[string]*kafka.Writer
-		DialerConn *kafka.Dialer
-		Server     []string
-	}
-	type args struct {
-		p  string
 		fn MsgProcess
 	}
 	tests := []struct {
@@ -163,12 +118,41 @@ func TestKafkaPacket_Read(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			kp := &KafkaPacket{
 				Packet:      tt.fields.Packet,
-				Readers:     tt.fields.Readers,
-				Writers:     tt.fields.Writers,
 				DialerConn:  tt.fields.DialerConn,
 				ServersInfo: tt.fields.Server,
 			}
-			if err := kp.Read(tt.args.p, tt.args.fn); (err != nil) != tt.wantErr {
+			if err := kp.Accept(tt.args.fn); (err != nil) != tt.wantErr {
+				t.Errorf("KafkaPacket.Accept() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestKafkaPacket_Read(t *testing.T) {
+	type fields struct {
+		Packet     Packet
+		DialerConn *kafka.Dialer
+		Server     []string
+	}
+	type args struct {
+		fn MsgProcess
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			kp := &KafkaPacket{
+				Packet:      tt.fields.Packet,
+				DialerConn:  tt.fields.DialerConn,
+				ServersInfo: tt.fields.Server,
+			}
+			if err := kp.Read(tt.args.fn); (err != nil) != tt.wantErr {
 				t.Errorf("KafkaPacket.Read() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -178,8 +162,6 @@ func TestKafkaPacket_Read(t *testing.T) {
 func TestKafkaPacket_Get(t *testing.T) {
 	type fields struct {
 		Packet     Packet
-		Readers    map[string]*kafka.Reader
-		Writers    map[string]*kafka.Writer
 		DialerConn *kafka.Dialer
 		Server     []string
 	}
@@ -199,8 +181,6 @@ func TestKafkaPacket_Get(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			kp := &KafkaPacket{
 				Packet:      tt.fields.Packet,
-				Readers:     tt.fields.Readers,
-				Writers:     tt.fields.Writers,
 				DialerConn:  tt.fields.DialerConn,
 				ServersInfo: tt.fields.Server,
 			}
@@ -214,8 +194,6 @@ func TestKafkaPacket_Get(t *testing.T) {
 func TestKafkaPacket_Close(t *testing.T) {
 	type fields struct {
 		Packet     Packet
-		Readers    map[string]*kafka.Reader
-		Writers    map[string]*kafka.Writer
 		DialerConn *kafka.Dialer
 		Server     []string
 	}
@@ -229,8 +207,6 @@ func TestKafkaPacket_Close(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			kp := &KafkaPacket{
 				Packet:      tt.fields.Packet,
-				Readers:     tt.fields.Readers,
-				Writers:     tt.fields.Writers,
 				DialerConn:  tt.fields.DialerConn,
 				ServersInfo: tt.fields.Server,
 			}

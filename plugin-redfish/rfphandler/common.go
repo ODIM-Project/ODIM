@@ -16,9 +16,14 @@
 package rfphandler
 
 import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
+	log "github.com/sirupsen/logrus"
 )
 
 //translateToSouthBoundURL replacing the request url with south bound translation URL
@@ -27,4 +32,30 @@ func translateToSouthBoundURL(uri string) string {
 		uri = strings.Replace(uri, key, value, -1)
 	}
 	return uri
+}
+
+// queryDevice is for querying a Dell server
+func queryDevice(uri string, device *rfputilities.RedfishDevice, method string) (int, http.Header, []byte, error) {
+	redfishClient, err := rfputilities.GetRedfishClient()
+	if err != nil {
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
+		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
+	}
+	resp, err := redfishClient.DeviceCall(device, uri, method)
+	if err != nil {
+		log.Error(err.Error())
+		if resp == nil {
+			return http.StatusBadRequest, nil, nil, err
+		}
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		errMsg := "While trying to read the response body, got: " + err.Error()
+		log.Error(errMsg)
+		return http.StatusInternalServerError, nil, nil, fmt.Errorf(errMsg)
+	}
+	return resp.StatusCode, resp.Header, body, nil
 }

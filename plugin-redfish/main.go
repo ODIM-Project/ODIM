@@ -59,7 +59,8 @@ func main() {
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	rfphandler.In, rfphandler.Out = common.CreateJobQueue()
+	jobQueueSize := 10
+	rfphandler.In, rfphandler.Out = common.CreateJobQueue(jobQueueSize)
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.

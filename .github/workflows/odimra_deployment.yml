@@ -101,11 +101,7 @@ jobs:
         python3 --version
         echo
 
-        echo "[$(date)] -- INFO  -- clone ODIM respository development branch"
-        git clone https://github.com/ODIM-Project/ODIM.git -b development
-        echo
-        
-        export ODIM_SOURCE_PATH=${cur_path}/ODIM
+        export ODIM_SOURCE_PATH=${cur_path}
         export ODIM_CONTROLLER_PATH=${ODIM_SOURCE_PATH}/odim-controller
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         cp kube_deploy_nodes.yaml.tmpl kube_deploy_nodes.yaml

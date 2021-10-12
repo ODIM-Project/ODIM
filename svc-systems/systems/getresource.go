@@ -542,6 +542,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
+	log.Debug("Entering the GetSystemResource with URL : ", req.URL)
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
@@ -551,14 +552,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		"Transfer-Encoding": "chunked",
 		"OData-Version":     "4.0",
 	}
-
-	var saveRequired bool
-	// check the whether SystemResetInfo available in db. If it is available, then don't save the data in DB.
-	_, err := smodel.GetSystemResetInfo(req.URL)
-	if err != nil { // if err means, url is not available in SystemResetInfo, so data can be saved in DB.
-		saveRequired = true
-	}
-
+	// Splitting the SystemID to get UUID
 	requestData := strings.Split(req.RequestParam, ":")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
@@ -566,48 +560,89 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	}
 	uuid := requestData[0]
 
-	urlData := strings.Split(req.URL, "/")
-	//generating serachUrl which will be a part of key and also used in formatting  response
-	var tableName string
-	if req.ResourceID == "" {
-		resourceName := urlData[len(urlData)-1]
-		tableName = common.SystemResource[resourceName]
-	} else {
-		tableName = urlData[len(urlData)-2]
-	}
-
-	data, err := smodel.GetResource(tableName, req.URL)
-	if err != nil {
-		log.Error("error getting system details : " + err.Error())
-		errorMessage := err.Error()
-		if errors.DBKeyNotFound == err.ErrNo() {
-			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-				URL:             req.URL,
-				UUID:            uuid,
-				SystemID:        requestData[1],
-				ContactClient:   p.ContactClient,
-				DevicePassword:  p.DevicePassword,
-				GetPluginStatus: p.GetPluginStatus,
-			}
-			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
-				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
-			}
-			if saveRequired && strings.Contains(req.URL, "/Storage") {
-				rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
-			}
-
-		} else {
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	var respData string
+	var saveRequired bool
+	// Getting the reset flag details for the requested URL
+	deviceLoadFlag := getDeviceLoadInfo(req.URL, req.RequestParam)
+	// deviceLoadFlag is true means flag is set for requested URL or the SystemID URL, load from device
+	// deviceLoadFlag is false indicates flag is not set, load from DB
+	if deviceLoadFlag {
+		log.Debug("SystemReset flag is found for the URL ", req.URL)
+		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+			URL:             req.URL,
+			UUID:            uuid,
+			SystemID:        requestData[1],
+			ContactClient:   p.ContactClient,
+			DevicePassword:  p.DevicePassword,
+			GetPluginStatus: p.GetPluginStatus,
 		}
+		log.Debug("Getting resource data from device for URL ", req.URL)
+		var err error
+		if respData, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+		}
+	} else {
+		saveRequired = true
+		urlData := strings.Split(req.URL, "/")
+		//generating search URL which will be a part of key and also used in formatting response
+		var tableName string
+		if req.ResourceID == "" {
+			resourceName := urlData[len(urlData)-1]
+			tableName = common.SystemResource[resourceName]
+		} else {
+			tableName = urlData[len(urlData)-2]
+		}
+
+		log.Debug("Getting the details from DB for URL ", req.URL)
+		data, err := smodel.GetResource(tableName, req.URL)
+		if err != nil {
+			log.Error("getting system details from DB: " + err.Error())
+			errorMessage := err.Error()
+			if errors.DBKeyNotFound == err.ErrNo() {
+				var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+					URL:             req.URL,
+					UUID:            uuid,
+					SystemID:        requestData[1],
+					ContactClient:   p.ContactClient,
+					DevicePassword:  p.DevicePassword,
+					GetPluginStatus: p.GetPluginStatus,
+				}
+				var err error
+				log.Debug("Getting the details from device for URL ", req.URL)
+				if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
+					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+				}
+				if saveRequired && strings.Contains(req.URL, "/Storage") {
+					rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
+				}
+			} else {
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+			}
+		}
+		respData = data
 	}
 	var resource map[string]interface{}
-	json.Unmarshal([]byte(data), &resource)
+	json.Unmarshal([]byte(respData), &resource)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-
+	log.Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
+}
+
+// getDeviceLoadInfo accepts URL and System ID as parameters and returns int
+// returns true if exact URL entry is found in the DeviceLoad
+// returns true if System ID entry is found in the DeviceLoad
+// returns false if no entry is found in the DeviceLoad for the requested URL and System ID
+func getDeviceLoadInfo(URL, systemID string) bool {
+	systemURL := "/redfish/v1/Systems/" + systemID
+	if _, err := smodel.GetSystemResetInfo(URL); err == nil {
+		return true
+	} else if _, err := smodel.GetSystemResetInfo(systemURL); err == nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 // rediscoverSystemInventory will be triggered when ever the a valid storage URI or underneath URI's

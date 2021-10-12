@@ -75,6 +75,8 @@ const (
 	ResourceCannotBeDeleted = "Base.1.10.0.ResourceCannotBeDeleted"
 	// PropertyValueConflict indicates that the requested write of a property value could not be completed, because of a conflict with another property value.
 	PropertyValueConflict = "Base.1.10.0.PropertyValueConflict"
+	// NoOperation  defines the status message at the time of of there is no opeartion need to be performed.
+	NoOperation = "Base.1.10.0.NoOperation"
 )
 
 // Response holds the generic response from odimra
@@ -83,7 +85,7 @@ type Response struct {
 	OdataID      string   `json:"@odata.id"`
 	OdataContext string   `json:"@odata.context,omitempty"`
 	Description  string   `json:"Description,omitempty"`
-	ID           string   `json:"Id,omitempty"`
+	ID           string   `json:"Id"`
 	Name         string   `json:"Name"`
 	Message      string   `json:"Message,omitempty"`
 	MessageID    string   `json:"MessageId,omitempty"`

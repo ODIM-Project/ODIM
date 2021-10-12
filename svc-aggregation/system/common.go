@@ -815,15 +815,16 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 		storageCollection := agcommon.GetStorageResources(strings.TrimSuffix(storageCollectionOdataID, "/"))
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
+			var capacity []float64
+			var types []string
+			var quantity int
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
 				storageRes := agcommon.GetStorageResources(strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
-					quantity := len(drives.([]interface{}))
-					var capacity []float64
-					var types []string
+					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
 						driveRes := agcommon.GetStorageResources(strings.TrimSuffix(driveODataID, "/"))
@@ -838,7 +839,6 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 							types = append(types, mediaType.(string))
 						}
 					}
-
 					searchForm["Storage/Drives/Quantity"] = quantity
 					searchForm["Storage/Drives/Capacity"] = capacity
 					searchForm["Storage/Drives/Type"] = types
@@ -1463,9 +1463,12 @@ func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int
 	}
 
 	exist, dErr := e.CheckMetricRequest(req.OID)
-	if exist || dErr != nil {
-		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
-		log.Println(errMsg)
+	if dErr != nil {
+		log.Info("Unable to collect the active request details from DB: ", dErr.Error())
+		return progress
+	}
+	if exist {
+		log.Info("An active request already exists for metric request")
 		return progress
 	}
 	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)

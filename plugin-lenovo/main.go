@@ -14,10 +14,11 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -124,6 +125,14 @@ func routers() *iris.Application {
 		systems.Post("/{id}/Storage/{rid}/Volumes", lphandler.MethodNotAllowed)
 		systems.Delete("/{id}/Storage/{id2}/Volumes/{rid}", lphandler.MethodNotAllowed)
 		systems.Get("/{id}/Storage/{id2}/Drives/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{rid}/StoragePools", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{rid}/AllocatedVolumes", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", lphandler.GetResource)
+
 		systems.Get("/{id}/BootOptions", lphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", lphandler.GetResource)
 		systems.Get("/{id}/Processors", lphandler.GetResource)

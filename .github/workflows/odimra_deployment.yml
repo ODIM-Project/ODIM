@@ -1,9 +1,12 @@
 name: odimra_deploy
 
+#on:
+#  pull_request:
+#    branches:
+#      - '**'
+
 on:
-  pull_request:
-    branches:
-      - '**'
+  [push]
  
 jobs:
   build:

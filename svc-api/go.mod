@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/svc-api
 
-go 1.13
+go 1.17
 
 require (
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20210622112605-b6361e8ba368

@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/svc-events
 
-go 1.13
+go 1.17
 
 require (
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201201072448-9772421f1b55

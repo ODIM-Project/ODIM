@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/lib-utilities
 
-go 1.13
+go 1.17
 
 require (
 	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55

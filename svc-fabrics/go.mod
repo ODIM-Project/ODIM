@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/svc-fabrics
 
-go 1.13
+go 1.17
 
 require (
 	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20210201115703-c080c23df61e

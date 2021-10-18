@@ -1,6 +1,6 @@
 module github.com/ODIM-Project/ODIM/plugin-unmanaged-racks
 
-go 1.13
+go 1.17
 
 require (
 	github.com/ajg/form v1.5.1 // indirect

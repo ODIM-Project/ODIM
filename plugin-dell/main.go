@@ -43,6 +43,9 @@ type TokenObject struct {
 }
 
 func main() {
+	// intializing the plugin start time
+	dputilities.PluginStartTime = time.Now()
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
@@ -256,7 +259,6 @@ func eventsrouters() {
 // intializePluginStatus sets plugin status
 func intializePluginStatus() {
 	dputilities.Status.Available = "yes"
-	dputilities.Status.Uptime = time.Now().Format(time.RFC3339)
 }
 
 // sendStartupEvent is for sending startup event

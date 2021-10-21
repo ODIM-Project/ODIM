@@ -35,6 +35,8 @@ import (
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/pem"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/config"
@@ -77,6 +79,9 @@ func GetPlainText(password []byte) ([]byte, error) {
 
 //Status holds the Status of plugin it will be intizaied during startup time
 var Status lpresponse.Status
+
+// PluginStartTime hold the time from which plugin started
+var PluginStartTime time.Time
 
 // TrackConfigFileChanges monitors the odim config changes using fsnotfiy
 func TrackConfigFileChanges(configFilePath string) {

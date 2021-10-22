@@ -129,9 +129,14 @@ func consumeCtrlMsg(event interface{}) {
 	var ctrlMessage common.ControlMessageData
 	done := make(chan bool)
 	data, _ := json.Marshal(&event)
-	if err := json.Unmarshal(data, &ctrlMessage); err != nil {
-		log.Error("error while unmarshaling the event" + err.Error())
-		return
+	var redfishEvent common.Events
+	if err := json.Unmarshal(data, &redfishEvent); err == nil {
+		writeEventToJobQueue(redfishEvent)
+	} else {
+		if err := json.Unmarshal(data, &ctrlMessage); err != nil {
+			log.Error("error while unmarshaling the event" + err.Error())
+			return
+		}
 	}
 	msg := []interface{}{ctrlMessage}
 	go common.RunWriteWorkers(CtrlMsgRecvQueue, msg, 1, done)

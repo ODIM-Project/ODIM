@@ -27,8 +27,7 @@ import (
 
 //Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(systemID, eventType, collectionType string) {
-	topic := "REDFISH-EVENTS-TOPIC"
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, topic)
+	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, common.InterCommMsgQueueName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

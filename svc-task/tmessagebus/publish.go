@@ -16,6 +16,7 @@ package tmessagebus
 
 import (
 	"encoding/json"
+
 	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -26,8 +27,7 @@ import (
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
 func Publish(taskURI string, messageID string, eventType string) {
-	topic := "REDFISH-EVENTS-TOPIC"
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, topic)
+	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, common.InterCommMsgQueueName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

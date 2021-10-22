@@ -56,7 +56,6 @@ func GetPluginStatus(ctx iris.Context) {
 	}
 	resp.Status = lputilities.Status
 	elapsedTime := time.Since(lputilities.PluginStartTime)
-	log.Info("Time elapsed after the plugin started: ", elapsedTime.String())
 	resp.Status.Uptime = elapsedTime.String()
 	resp.Status.TimeStamp = time.Now().Format(time.RFC3339)
 	resp.EventMessageBus = lpresponse.EventMessageBus{

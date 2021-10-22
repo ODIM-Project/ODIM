@@ -45,6 +45,7 @@ var log = logrus.New()
 func main() {
 	// intializing the plugin start time
 	lputilities.PluginStartTime = time.Now()
+	log.Info("Plugin Start time:", lputilities.PluginStartTime.Format(time.RFC3339))
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {

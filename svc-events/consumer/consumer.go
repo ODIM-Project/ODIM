@@ -130,6 +130,7 @@ func consumeCtrlMsg(event interface{}) {
 	done := make(chan bool)
 	data, _ := json.Marshal(&event)
 	var redfishEvent common.Events
+	// verifying the incoming event to check whether it's of type common events or control message data
 	if err := json.Unmarshal(data, &redfishEvent); err == nil {
 		writeEventToJobQueue(redfishEvent)
 	} else {

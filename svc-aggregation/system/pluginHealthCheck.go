@@ -169,17 +169,17 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, server
 		}
 		resp, err := sendPluginStartupRequest(plugin, pluginStartUpData, serverName)
 		if err != nil {
-			ret = fmt.Errorf("%w: %w", ret, err)
+			ret = fmt.Errorf("%v: %w", ret, err)
 			continue
 		}
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			ret = fmt.Errorf("%w: %w", ret, err)
+			ret = fmt.Errorf("%v: %w", ret, err)
 			continue
 		}
 		var subsData map[string]string
 		if err := json.Unmarshal(body, &subsData); err != nil {
-			ret = fmt.Errorf("%w: %w", ret, err)
+			ret = fmt.Errorf("%v: %w", ret, err)
 			continue
 		}
 		agcommon.UpdateDeviceSubscriptionDetails(subsData)
@@ -199,10 +199,11 @@ func sendPluginInventoryUpdate(plugin agmodel.Plugin, startupData interface{}) e
 			serverName := plugin.IP
 			plugin.IP = addr
 			if _, err := sendPluginStartupRequest(plugin, startupData, serverName); err != nil {
-				ret = fmt.Errorf("%w: %w", ret, err)
+				ret = fmt.Errorf("%v: %w", ret, err)
 			}
 		}
 		return ret
+
 	}
 
 	if _, err := sendPluginStartupRequest(plugin, startupData, plugin.IP); err != nil {

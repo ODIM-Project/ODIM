@@ -360,9 +360,9 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
 **10. Resource Aggregator for ODIM deployment fails. What are some of the possible ways of addressing this issue?**
 
-   ​Resource Aggregator for ODIM deployment can fail due to multiple reasons. 
+   ​Resource Aggregator for ODIM deployment can fail due to multiple reasons. Perform the following tasks:
 
-1. Analyze and fix the errors first.
+1. Analyze the probable errors and fix them.
 
 2. Reset Resource Aggregator for ODIM deployment using the following command:
    `python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --ignore-errors`

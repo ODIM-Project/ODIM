@@ -6764,7 +6764,6 @@ To know the progress of this action, perform HTTP `GET` on the [task monitor](#v
 
 > **curl command**
 
-
 ```
 curl -i POST \
    -H "X-Auth-Token:{X-Auth-Token}" \

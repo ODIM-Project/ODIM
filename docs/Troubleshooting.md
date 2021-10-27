@@ -187,6 +187,7 @@ ansible_find_payload.zip/ansible/modules/files/find.py\", line 409, in main
 ------
 
 **11. I see the following error when I upgrade odimra-secret:**
+
 **`bruce@deploy:~/R4H60-11008/odim-controller/scripts$ python3 odimcontroller.
 py --config /home/${USER}/R4H60-11008/odim-controller/scripts/
 kube_deploy_nodes.yaml --upgrade odimra-secret
@@ -357,7 +358,7 @@ Navigate to the default log path `/var/log/<plugin>` or to the path specified in
 
 ------
 
-**10. Resource Aggregator for ODIM deployment fails. What could be the reason?**
+**10. Resource Aggregator for ODIM deployment fails. What are some of the possible ways of addressing this issue?**
 
    ​Resource Aggregator for ODIM deployment can fail due to multiple reasons. 
 

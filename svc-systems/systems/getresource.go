@@ -542,7 +542,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
-	log.Info("Entering the GetSystemResource with URL : ", req.URL)
+	log.Debug("Entering the GetSystemResource with URL : ", req.URL)
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,

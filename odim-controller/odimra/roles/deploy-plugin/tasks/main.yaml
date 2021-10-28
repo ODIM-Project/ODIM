@@ -19,6 +19,11 @@
 - name: Include user defined configurations
   include_vars: "{{ helm_config_file }}"
 
+- name: Cleanup existing plugin package on host nodes
+  file:
+    path: "{{ helm_charts_path }}/{{ release_name }}"
+    state: absent
+
 - name: Copy plugin package files to host nodes
   copy:
     src: "{{ odimPluginPath }}/{{ release_name }}"

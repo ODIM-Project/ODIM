@@ -17,13 +17,15 @@ package dphandler
 
 import (
 	"encoding/json"
-	iris "github.com/kataras/iris/v12"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"sync"
 	"time"
+
+	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+
 	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
@@ -53,6 +55,8 @@ func GetPluginStatus(ctx iris.Context) {
 		Version: pluginConfig.Data.FirmwareVersion,
 	}
 	resp.Status = dputilities.Status
+	elapsedTime := time.Since(dputilities.PluginStartTime)
+	resp.Status.Uptime = elapsedTime.String()
 	resp.Status.TimeStamp = time.Now().Format(time.RFC3339)
 	resp.EventMessageBus = dpresponse.EventMessageBus{
 		EmbType: pluginConfig.Data.MessageBusConf.EmbType,

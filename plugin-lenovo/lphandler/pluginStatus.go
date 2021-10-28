@@ -17,12 +17,13 @@ package lphandler
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	iris "github.com/kataras/iris/v12"
 	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -54,6 +55,8 @@ func GetPluginStatus(ctx iris.Context) {
 		Version: pluginConfig.Data.FirmwareVersion,
 	}
 	resp.Status = lputilities.Status
+	elapsedTime := time.Since(lputilities.PluginStartTime)
+	resp.Status.Uptime = elapsedTime.String()
 	resp.Status.TimeStamp = time.Now().Format(time.RFC3339)
 	resp.EventMessageBus = lpresponse.EventMessageBus{
 		EmbType: pluginConfig.Data.MessageBusConf.EmbType,

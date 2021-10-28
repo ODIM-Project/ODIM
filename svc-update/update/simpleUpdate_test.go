@@ -60,8 +60,8 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 		},
 	}
-	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "` + common.SettingsType + `","SupportedValues": ["OnStartUpdate"]}}`)
-	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"],"@Redfish.OperationApplyTimeSupport": {"@odata.type": "` + common.SettingsType + `","SupportedValues": ["OnStartUpdate"]}}`)
+	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
 	tests := []struct {
 		name string
 		args args

@@ -140,9 +140,9 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, server
 		RequestType:           "full",
 		ResyncEvtSubscription: resyncSubscription,
 	}
-	var batchedServersData []agmodel.Target
 	startIndex := 0
 	for startIndex < managedServersCount {
+		var batchedServersData []agmodel.Target
 		endIndex := startIndex + phc.PluginConfig.StartUpResouceBatchSize
 		if endIndex > managedServersCount {
 			endIndex = managedServersCount
@@ -183,6 +183,7 @@ func sharePluginInventory(plugin agmodel.Plugin, resyncSubscription bool, server
 			continue
 		}
 		agcommon.UpdateDeviceSubscriptionDetails(subsData)
+		batchedServersData = nil
 	}
 	return
 }

@@ -635,7 +635,6 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 // returns true if System ID entry is found in the DeviceLoad
 // returns false if no entry is found in the DeviceLoad for the requested URL and System ID
 func getDeviceLoadInfo(URL, systemID string) bool {
-	log.Info("--------------inside getDeviceLoadInfo-----------")
 	systemURL := "/redfish/v1/Systems/" + systemID
 	var resetFlag bool
 	if _, err := smodel.GetSystemResetInfo(URL); err == nil {
@@ -647,7 +646,6 @@ func getDeviceLoadInfo(URL, systemID string) bool {
 		resetFlag = false
 		for _, resourceName := range common.RediscoverResources {
 			if strings.Contains(URL, resourceName) {
-        		log.Info("==============reset started============", resourceName, URL)
 				resetFlag = true
 			}
 		}
@@ -754,7 +752,6 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response.RPC {
-	log.Info("------inside get systems--------")
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,

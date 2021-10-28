@@ -3,7 +3,7 @@ module github.com/ODIM-Project/ODIM/plugin-dell
 go 1.13
 
 require (
-	github.com/Joker/hpp v1.0.0 // indirect
+	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-00010101000000-000000000000
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201209154231-02ec46b038e5
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
 	github.com/fsnotify/fsnotify v1.4.7

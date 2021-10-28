@@ -22,6 +22,7 @@ func TestCommunicator(t *testing.T) {
 	type args struct {
 		bt               int
 		mqConfigFilePath string
+		pipe             string
 	}
 	tests := []struct {
 		name    string
@@ -33,7 +34,7 @@ func TestCommunicator(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Communicator(tt.args.bt, tt.args.mqConfigFilePath)
+			got, err := Communicator(tt.args.bt, tt.args.mqConfigFilePath, tt.args.pipe)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Communicator() error = %v, wantErr %v", err, tt.wantErr)
 				return

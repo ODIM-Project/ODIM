@@ -17,15 +17,16 @@
 package router
 
 import (
+	"net/http"
+	"net/url"
+	"strings"
+
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 //Router method to register API handlers.
@@ -299,6 +300,20 @@ func Router() *iris.Application {
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{rid}/StoragePools", system.GetSystemResource)
+	storage.Get("/{id2}/StoragePools/{rid}", system.GetSystemResource)
+	storage.Any("/{rid}/StoragePools", handle.SystemsMethodNotAllowed)
+	storage.Any("/{id2}/StoragePools/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{rid}/AllocatedVolumes", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{rid}/AllocatedVolumes", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)

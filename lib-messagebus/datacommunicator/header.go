@@ -21,6 +21,7 @@ package datacommunicator
 import (
 	"encoding/json"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,11 +38,11 @@ const (
 // Get - Would initiate blocking call to remote process to get response
 // Close - Would disconnect the connection with Middleware.
 type MQBus interface {
-	Distribute(pipe string, data interface{}) error
-	Accept(pipe string, fn MsgProcess) error
+	Distribute(data interface{}) error
+	Accept(fn MsgProcess) error
 	Get(pipe string, d interface{}) interface{}
-	Remove(pipe string) error
-	Close()
+	Remove() error
+	Close() error
 }
 
 // MsgProcess defines the functions for processing accepted messages. Any client
@@ -65,7 +66,7 @@ type Packet struct {
 // type would be stored as part of Connection Object "Packet".
 // TODO: We would be looking into Kafka Synchronous communication API for providing
 // support for Sync Communication Model in MessageBus
-func Communicator(bt int, messageQueueConfigPath string) (MQBus, error) {
+func Communicator(bt int, messageQueueConfigPath, pipe string) (MQBus, error) {
 
 	// Defining pointer for KAFKA Connection Objects Based on
 	// BrokerType value, Middleware Connection will be created. Also we would be
@@ -76,9 +77,8 @@ func Communicator(bt int, messageQueueConfigPath string) (MQBus, error) {
 	case KAFKA:
 		kp = new(KafkaPacket)
 		kp.BrokerType = bt
-		if e := KafkaConnect(kp, messageQueueConfigPath); e != nil {
-			return nil, e
-		}
+		kp.messageBusConfigFile = messageQueueConfigPath
+		kp.pipe = pipe
 		return kp, nil
 	default:
 		return nil, fmt.Errorf("Broker: \"Broker Type\" is not supported - %d", bt)

@@ -19,7 +19,7 @@ import (
 )
 
 func TestCreateJobQueue(t *testing.T) {
-	in, out := CreateJobQueue()
+	in, out := CreateJobQueue(1)
 	var currentData int
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -51,7 +51,7 @@ type counter struct {
 }
 
 func TestCreateJobQueueWithMultipleReadAndWrites(t *testing.T) {
-	in, out := CreateJobQueue()
+	in, out := CreateJobQueue(1)
 	var c counter
 	var readWG, writeWG sync.WaitGroup
 
@@ -73,7 +73,7 @@ func TestCreateJobQueueWithMultipleInstances(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			in, out := CreateJobQueue()
+			in, out := CreateJobQueue(1)
 			var (
 				c               counter
 				readWG, writeWG sync.WaitGroup

@@ -382,8 +382,13 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		}
 
 	}
-	target.PostBody = req.RequestBody
 
+	if string(req.RequestBody) == "null" {
+		target.PostBody = []byte{}
+	} else {
+		target.PostBody = req.RequestBody
+
+	}
 	contactRequest.HTTPMethodType = http.MethodDelete
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes/%s", requestData[1], req.StorageInstance, req.VolumeID)

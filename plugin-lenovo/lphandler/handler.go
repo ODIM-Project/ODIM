@@ -16,23 +16,32 @@
 package lphandler
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	"net/http"
 )
 
 // MethodNotAllowed holds builds response for the unallowed http operation on Lenovo plugin URLs and returns 405 error.
 func MethodNotAllowed(ctx iris.Context) {
 	ctx.StatusCode(http.StatusMethodNotAllowed)
+	var errorMessage string
+	if strings.EqualFold(ctx.Request().Method, "POST") {
+		errorMessage = "Use the CLI option to create the volume directly on the Lenovo server"
+	} else {
+		errorMessage = "Use the CLI option to delete the volume directly on the Lenovo server"
+	}
+
 	errArgs := &response.Args{
 		Code: response.GeneralError,
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ActionNotSupported,
 				MessageArgs:   []interface{}{ctx.Request().Method},
+				ErrorMessage:  errorMessage,
 			},
 		},
 	}
 	ctx.JSON(errArgs.CreateGenericErrorResponse())
-	return
 }

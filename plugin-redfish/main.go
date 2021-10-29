@@ -44,6 +44,10 @@ type TokenObject struct {
 var log = logrus.New()
 
 func main() {
+	// intializing the plugin start time
+	rfputilities.PluginStartTime = time.Now()
+	log.Info("Plugin Start time:", rfputilities.PluginStartTime.Format(time.RFC3339))
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
@@ -59,7 +63,8 @@ func main() {
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	rfphandler.In, rfphandler.Out = common.CreateJobQueue()
+	jobQueueSize := 10
+	rfphandler.In, rfphandler.Out = common.CreateJobQueue(jobQueueSize)
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
@@ -128,6 +133,14 @@ func routers() *iris.Application {
 		systems.Get("/{id}/Storage/{rid}/Volumes/{rid}", rfphandler.GetResource)
 		systems.Delete("/{id}/Storage/{id2}/Volumes/{rid}", rfphandler.DeleteVolume)
 		systems.Get("/{id}/Storage/{id2}/Drives/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{rid}/StoragePools", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{rid}/AllocatedVolumes", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", rfphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", rfphandler.GetResource)
+
 		systems.Get("/{id}/BootOptions", rfphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", rfphandler.GetResource)
 		systems.Get("/{id}/Processors", rfphandler.GetResource)
@@ -275,7 +288,6 @@ func eventsrouters() {
 // intializePluginStatus sets plugin status
 func intializePluginStatus() {
 	rfputilities.Status.Available = "yes"
-	rfputilities.Status.Uptime = time.Now().Format(time.RFC3339)
 }
 
 // sendStartupEvent is for sending startup event

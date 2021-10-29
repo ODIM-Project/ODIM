@@ -78,7 +78,7 @@
 - name: Create odimra group
   shell: |
     {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 &&
-    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) ||
+    ( {{ usrdel_bin_path }} {{ odim_owner_name }}; {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) ||
     {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }}
 
 - name: Create odimra user

@@ -17,7 +17,9 @@ package lphandler
 
 import (
 	"encoding/json"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpmodel"
+	"github.com/ODIM-Project/ODIM/plugin-lenovo/lpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-lenovo/lputilities"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
@@ -64,15 +66,28 @@ func SimpleUpdate(ctx iris.Context) {
 	log.Debug("Incoming request body in SimpleUpdate: ", requestBody)
 	delete(requestBody, "Targets")
 	urlList := strings.Split(uri, ".")
-	if requestBody["@Redfish.OperationApplyTimeSupport"] != nil && urlList[1] == "SimpleUpdate" {
+
+	var operationApplyTime string
+	if requestBody["@Redfish.OperationApplyTime"] != nil {
+		operationApplyTime = requestBody["@Redfish.OperationApplyTime"].(string)
+	}
+	if operationApplyTime == "OnStartUpdateRequest" && urlList[1] == "SimpleUpdate" {
 		body := `{"error":{"code": Base.1.4.Success,"message": "See @Message.ExtendedInfo for more information.","@Message.ExtendedInfo":[{"MessageId": "Base.1.4.Success"}]}}`
 		ctx.StatusCode(http.StatusOK)
 		ctx.WriteString(body)
 		return
+	} else if operationApplyTime != "" && urlList[1] == "SimpleUpdate" {
+		errMsg := "The @Redfish.OperationApplyTime property value supplied is not supported by Lenovo, Lenovo supports only OnStartUpdateRequest"
+		msgArgs := []string{operationApplyTime}
+		body, _ := createUpdateActionResponse(response.PropertyValueNotInList, errMsg, msgArgs)
+		log.Error(string(body))
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString(string(body))
+		return
 	}
 	if urlList[1] == "StartUpdate" {
 		uri = strings.Replace(uri, "StartUpdate", "SimpleUpdate", -1)
-		delete(requestBody, "@Redfish.OperationApplyTimeSupport")
+		delete(requestBody, "@Redfish.OperationApplyTime")
 	}
 
 	marshalBody, err := json.Marshal(requestBody)
@@ -120,4 +135,23 @@ func SimpleUpdate(ctx iris.Context) {
 	log.Debug("Device response body in SimpleUpdate: ", string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
+}
+
+// createUpdateActionResponse is used for creating a final response for update action
+func createUpdateActionResponse(messageID, message string, msgArgs []string) ([]byte, error) {
+	resp := lpresponse.ErrorResopnse{
+		Error: lpresponse.Error{
+			Code:    response.ExtendedInfo,
+			Message: "See @Message.ExtendedInfo for more information.",
+			MessageExtendedInfo: []lpresponse.MsgExtendedInfo{
+				lpresponse.MsgExtendedInfo{
+					MessageID:   messageID,
+					Message:     message,
+					MessageArgs: msgArgs,
+				},
+			},
+		},
+	}
+	body, err := json.Marshal(resp)
+	return body, err
 }

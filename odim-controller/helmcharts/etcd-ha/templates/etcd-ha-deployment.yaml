@@ -34,16 +34,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
-                operator: Exists
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: "instance"
-                  operator: In
-                  values: ["etcd2", "etcd3"]
-            topologyKey: "kubernetes.io/hostname"
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values: [ {{ index .Values.hostname 0 }} ]
       containers:
         - name: etcd1
           image: etcd:{{ .Values.odimra.etcdImageTag }}
@@ -145,16 +138,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
-                operator: Exists
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: "instance"
-                  operator: In
-                  values: ["etcd1", "etcd3"]
-            topologyKey: "kubernetes.io/hostname"
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values: [ {{ index .Values.hostname 1 }} ]
       containers:
         - name: etcd2
           image: etcd:{{ .Values.odimra.etcdImageTag }}
@@ -256,16 +242,9 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
-                operator: Exists
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: "instance"
-                  operator: In
-                  values: ["etcd1", "etcd2"]
-            topologyKey: "kubernetes.io/hostname"
+              - key: "kubernetes.io/hostname"
+                operator: In
+                values: [ {{ index .Values.hostname 2 }} ]
       containers:
         - name: etcd3
           image: etcd:{{ .Values.odimra.etcdImageTag }}

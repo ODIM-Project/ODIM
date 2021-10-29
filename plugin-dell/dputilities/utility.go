@@ -35,6 +35,8 @@ import (
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/pem"
+	"time"
+
 	"github.com/ODIM-Project/ODIM/plugin-dell/config"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-dell/dpresponse"
@@ -75,6 +77,9 @@ func GetPlainText(password []byte) ([]byte, error) {
 
 //Status holds the Status of plugin it will be intizaied during startup time
 var Status dpresponse.Status
+
+// PluginStartTime hold the time from which plugin started
+var PluginStartTime time.Time
 
 // TrackConfigFileChanges monitors the config changes using fsnotfiy
 func TrackConfigFileChanges(configFilePath string) {

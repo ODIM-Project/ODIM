@@ -44,6 +44,10 @@ type TokenObject struct {
 var log = logrus.New()
 
 func main() {
+	// intializing the plugin start time
+	rfputilities.PluginStartTime = time.Now()
+	log.Info("Plugin Start time:", rfputilities.PluginStartTime.Format(time.RFC3339))
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
@@ -284,7 +288,6 @@ func eventsrouters() {
 // intializePluginStatus sets plugin status
 func intializePluginStatus() {
 	rfputilities.Status.Available = "yes"
-	rfputilities.Status.Uptime = time.Now().Format(time.RFC3339)
 }
 
 // sendStartupEvent is for sending startup event

@@ -13,6 +13,7 @@
    - [Setting up the environment](#setting-up-the-environment)
    - [Pulling the Docker images of all the Kubernetes microservices](#pulling-the-docker-images-of-all-the-kubernetes-microservices)
    - [Building Docker images of all the services](#building-docker-images-of-all-the-services)
+   - [Updating additional package versions](#updating-additional-package-versions)
    - [Generating an encrypted node password](#generating-an-encrypted-node-password)
    - [Configuring log path for odim-controller](#log-path-for-odim-controller)
 4. [Deploying Resource Aggregator for ODIM and the plugins](#deploying-resource-aggregator-for-odim-and-the-plugins)
@@ -213,8 +214,9 @@ The following table lists the software components and their versions that are co
 1. [Set up the environment](#setting-up-the-environment)
 2. [Pull the Docker images of all the Kubernetes microservices](#Pulling-the-Docker-images-of-all-the-Kubernetes-microservices)
 3. [Build the Docker images of all the services](#building-docker-images-of-all-the-services)
-4. [Generate an encrypted node password using the odim-vault tool](#generating-an-encrypted-node-password)
-5. [Configure log path for odim-controller](#log-path-for-odim-controller)
+4. [Updating additional package versions](#updating-additional-package-versions)
+5. [Generate an encrypted node password using the odim-vault tool](#generating-an-encrypted-node-password)
+6. [Configure log path for odim-controller](#log-path-for-odim-controller)
 
 ## Setting up the environment
 
@@ -239,7 +241,7 @@ The following table lists the software components and their versions that are co
 
 3. Run the following commands to install packages such as Python, Java, Ansible, and others on the deployment node.
 
-   <blockquote>NOTE: If the current version of a package is outdated, run the following commands to know the latest available version(s) of that package and install the first version listed in the output. </blockquote>
+   <blockquote>NOTE: If the current version of a package is outdated, run the following command to know the latest available version(s) of that package and install the first version listed in the output. </blockquote>
 
    ​	`sudo apt-cache madison <package name>`
 
@@ -476,7 +478,72 @@ The following table lists the software components and their versions that are co
     
     <blockquote>
         NOTE: The 'kube_deploy_nodes.yaml' file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services. </blockquote>
-    
+
+
+
+## Updating additional package versions
+
+While deploying Resource Aggregator for ODIM, verify the versions of the following packages and update them if required:
+
+#### linux-headers
+
+1. Enter the following command:
+
+   ```
+   sudo apt-cache madison linux-headers-5.8.0-63-generic
+   ```
+
+   <blockquote>NOTE: If the above command fails with the error message, N: Unable to locate package linuxheaders-
+   5.8.0-63-generic, package version has changed. Proceed with further steps to find the latest
+   version.
+
+    </blockquote>
+
+2. Enter the following command:
+
+   ```
+   sudo apt-cache search --names-only "linux-headers-[0-9.-]*-generic" | tail -5 | sort -r
+   ```
+
+3. Enter the following command to verify if the first entry in the output list is present in the cache.
+
+   ```
+   sudo apt-cache madison <package_name>
+   ```
+
+   Example for `<package_name>` is `linux-headers-5.8.0-63-generic`
+
+4. In case of a version mismatch, update the latest version of `linux-header` package in:
+
+    `~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml`
+
+#### Keepalived
+
+1. Enter the following command:
+
+   ```
+   sudo apt-cache madison keepalived
+   ```
+
+2. Verify if the latest version is `keepalived=1:2.0.19-2`.
+
+3. In case of a version mismatch, update the latest version of the `Keepalived` package in:
+   `~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml`
+
+#### Nginx
+
+1. Enter the following command:
+
+   ```
+   sudo apt-cache madison nginx
+   ```
+
+2. Verify if the latest version is `nginx=1.18.0-0ubuntu1.2`.
+
+3. In case of a version mismatch, update the latest version of the `Nginx` package in:
+   `~/ODIM/odim-controller/odimra/group_vars/all/requirements.yaml`
+
+
 
 ## Generating an encrypted node password
 

@@ -158,7 +158,7 @@ The following diagram is a logical representation of each controller node in a K
 
 The northbound management and orchestration systems access the Resource Aggregator for ODIM services through a virtual IP address \(VIP\) configured on the Kubernetes cluster using Keepalived. Communication between Resource Aggregator for ODIM and the southbound infrastructure happens through the same VIP.
 
-Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx together help in implementing high availability of the Resource Aggregator for ODIM services on the cluster nodes for both northbound management applications and southbound infrastructure to access.
+Nginx acts as a reverse-proxy for the cluster nodes. Keepalived and Nginx together help in implementing HA of the Resource Aggregator for ODIM services on the cluster nodes for both northbound management applications and southbound infrastructure to access.
 
 ## Deployment considerations
 
@@ -398,8 +398,8 @@ The following table lists the software components and their versions that are co
 
    <blockquote> IMPORTANT: When deploying ODIMRA, update the 'kubernetesImagePath' parameter in 'kube_deploy_nodes.yaml' file with the path of the 'kubernetes_images' directory you choose in this step. The images are automatically installed on all cluster nodes after deployment. </blockquote>
 
-   <blockquote>
-       The 'kube_deploy_nodes.yaml' file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services. </blockquote>
+   <blockquote>The 'kube_deploy_nodes.yaml' file is the configuration file used by odim-controller to set up a Kubernetes cluster and to deploy the Resource Aggregator for ODIM services.</blockquote>
+   
    <blockquote>
        NOTE: Verify the permissions of the archived tar files of the Docker images; the privilege of all files must be 'user:docker'.</blockquote>
 
@@ -494,11 +494,8 @@ While deploying Resource Aggregator for ODIM, verify the versions of the followi
    ```
 
    <blockquote>NOTE: If the above command fails with the error message, N: Unable to locate package linuxheaders-
-   5.8.0-63-generic, package version has changed. Proceed with further steps to find the latest
-   version.
-
-    </blockquote>
-
+   5.8.0-63-generic, package version has changed. Proceed with further steps to find the latest version.</blockquote>
+   
 2. Enter the following command:
 
    ```
@@ -610,8 +607,6 @@ Resource Aggregator for ODIM uses the odim-vault tool to encrypt and decrypt pas
     scripts/nodePasswordFile
     ```
 
-
-
 ## Log path for odim-controller
 
 You can provide a desired file path for the odim-controller logs by setting ODIM_CONTROLLER_LOG_PATH environment variable. Upon the execution of odim-controller, the log file will then be stored as `{ODIM_CONTROLLER_LOG_PATH}/odim-controller.log`.
@@ -648,7 +643,7 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
       cd ~/ODIM/odim-controller/scripts
       ```
 
-   2. Copy content from the kube_deploy_nodes.yaml.tmpl file to the kube_deploy_nodes.yaml file by running the following command:
+   2. Copy content from the `kube_deploy_nodes.yaml.tmpl` file to the `kube_deploy_nodes.yaml` file by running the following command:
    
       ```
       cp kube_deploy_nodes.yaml.tmpl kube_deploy_nodes.yaml
@@ -758,17 +753,17 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
    
    4. Update the following mandatory parameters in the above configuration file:
    
-   - httpProxy (if your environment is behind a proxy)
+   - `httpProxy` (if your environment is behind a proxy)
    
-   - httpsProxy (if your environment is behind a proxy)
+   - `httpsProxy` (if your environment is behind a proxy)
    
-   - noProxy (if your environment is behind a proxy)
+   - `noProxy` (if your environment is behind a proxy)
    
-   - deploymentID
+   - `deploymentID`
    
-   - nodePasswordFilePath
+   - `nodePasswordFilePath`
    
-   - nodes (details of the single deployment node or the cluster nodes based on the type of your deployment)
+   - `nodes` (details of the single deployment node or the cluster nodes based on the type of your deployment)
    
      For three node deployment:
    
@@ -780,31 +775,33 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
    
      - Priority values of node 1, node 2 and node 3 (mandatory if haDeploymentEnabled is set to true)
    
-   - odimControllerSrcPath
+   - `odimControllerSrcPath`
    
-   - odimVaultKeyFilePath
+   - `odimVaultKeyFilePath`
    
-   - odimraImagePath
+   - `odimraImagePath`
    
-   - odimPluginPath
+   - `odimPluginPath`
    
-   - fqdn
+   - `fqdn`
    
-   - rootServiceUUID
+   - `rootServiceUUID`
    
-   - connectionMethodConf
+   - `connectionMethodConf`
    
-   - etcHostsEntries
+   - `etcHostsEntries`
    
-   - apiProxyPort (mandatory if haDeploymentEnabled is set to true)
+   - `apiProxyPort` (mandatory if haDeploymentEnabled is set to true)
    
-   - nginxLogPath (mandatory if haDeploymentEnabled is set to true)
+   - `nginxLogPath` (mandatory if haDeploymentEnabled is set to true)
    
-   - virtualRouterID (mandatory if haDeploymentEnabled is set to true)
+   - `virtualRouterID` (mandatory if haDeploymentEnabled is set to true)
    
-   - virtualIP (mandatory if haDeploymentEnabled is set to true)
+   - `virtualIP` (mandatory if haDeploymentEnabled is set to true)
    
    Other parameters can either be empty or have default values. Optionally, you can update them with values based on your requirements. 
+   
+   It is recommended to have a regular backup of the updated deployment configuration file.
    
    <blockquote>
         NOTE: All parameters in the `kube_deploy_nodes.yaml` file get sorted alphabetically after the successful deployment of Resource Aggregator for ODIM services.
@@ -973,11 +970,10 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
         --ignore-errors
         ```
 
-        <blockquote> NOTE: 
-        - Resetting deployment removes the virtual IP configured through Keepalived. After reset, restart the Keepalived service. <br/>
-        After resetting deployment, reset the odimCertsPath parameter to "" or to actual your certificate path in the kube_deploy_nodes.yaml file. </blockquote>
-
-        <blockquote>IMPORTANT: Save the RootServiceUUID in the kube_deploy_nodes.yaml file in the path ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml.
+        For a three-node cluster deployment, resetting deployment removes the virtual IP configured through Keepalived. After resetting the deployment, restart the Keepalived service. Also, ensure the parameters in the `kube_deploy_nodes.yaml `are not NULL. Update such parameters to `""` or as per your requirement.
+        **For example**: After resetting the deployment, update the odimCertsPath parameter to `""` or to your actual certificate path in the `kube_deploy_nodes.yaml` file. 
+        
+<blockquote>NOTE: Save the RootServiceUUID in the kube_deploy_nodes.yaml file in the path ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml.
             If the services are not successfully deployed and you want to reset the deployment, you can use the saved RootServiceUUID.</blockquote>	
 
 
@@ -1019,10 +1015,10 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
    
   - {port} is the API server port configured in Nginx. The default port is `30080`. If you have changed the default port, use that as the port.
 
-  The following JSON response is returned:
+     The following JSON response is returned:
 
-
-      {
+    ```
+    {
        "@odata.context":"/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
          	   "@odata.id":"/redfish/v1/",
          	   "@odata.type":"#ServiceRoot.v1_5_0.ServiceRoot",
@@ -1075,8 +1071,9 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
           	   "RedfishVersion":"1.11.1",
           	   "UUID":"0554d6ff-a7e7-4c94-80bd-da19125f95e5"
           	}
+    ```
 
- If you want to run curl commands on a different server, follow the instructions in [Running curl commands on a different server](#Running-curl-commands-on-a-different-server).
+    If you want to run curl commands on a different server, follow the instructions in [Running curl commands on a different server](#Running-curl-commands-on-a-different-server).
 
 
 5. Change the password of the default administrator account of Resource Aggregator for ODIM:
@@ -1229,11 +1226,9 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 6. Update the following parameters in the plugin configuration file: 
 
     - **odimUsername**: The username of the default administrator account of Resource Aggregator for ODIM.
+- **odimPassword**:  The encrypted password of the default administrator account of Resource Aggregator for ODIM. To generate the encrypted password, see step 3 of this procedure.
+    - **urPluginRootServiceUUID**: RootServiceUUID to be used by the URP service. Generate a new UUID by executing the command `uuidgen`.
 
-    - **odimPassword**:  The encrypted password of the default administrator account of Resource Aggregator for ODIM. To generate the encrypted password, see step 3 of this procedure.
-
-    - **urPluginRootServiceUUID**: RootServiceUUID to be used by the URP service.
-    
     Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
     
 7. Generate Helm package for URP on the deployment node.
@@ -1372,10 +1367,12 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 5. Update the following parameters in the plugin configuration file: 
 
    - **lbHost**: IP address of the cluster node where the Dell plugin will be installed for one node cluster configuration. For three node cluster configuration,  lbHost is the virtual IP address configured in Nginx and Keepalived.
+   
    - **lbPort**: Default port is 30084 for one node cluster configuration. For three node cluster configuration, lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin.
    
      <blockquote>Note: The lbport is used as proxy port for eventlistenernodeport, which is used for subscribing to events.</blockquote>
-   - **dellPluginRootServiceUUID**: RootServiceUUID to be used by the Dell plugin service.
+     
+   - **dellPluginRootServiceUUID**: RootServiceUUID to be used by the Dell plugin service. Generate a new UUID by executing the command `uuidgen`.
    
    Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
    
@@ -1474,9 +1471,9 @@ The plugin you want to add is successfully deployed.
 
     `https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources` 
 
-    -   `{odim_host}` is the virtual IP address of the Kubernetes cluster.
-
-    -   `{port}` is the API server port configured in Nginx. The default port is `30080`. If you have changed the default port, use that as the port.
+    -   `{odim_host}` is the virtual IP address of the Kubernetes cluster. 
+    For one-node odim deployment, `odim_host` is the IP address of the master node.
+    -   `{port}` is the API server port configured in Nginx. Default port is `30080`. If you have changed the default port, use that as the port.
 
     The following ports (except container ports) must be free:
     
@@ -1485,9 +1482,9 @@ The plugin you want to add is successfully deployed.
     | Container ports (access restricted only to the Kubernetes cluster network) | 45000 — API service port<br />45101- 45201 — Resource Aggregator for ODIM service ports<br />9082, 9092 — Kafka ports<br />6379 — Redis port<br />26379 — Redis Sentinel port<br />2181 — Zookeeper port<br>2379, 2380 — etcd ports |
     | API node port (for external access)                          | 30080                                                        |
     | Kafka node port (for external access)                        | 30092 for a one-node cluster configuration. 30092, 30093, and 30094 for a three-node cluster configuration |
-    | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
+    | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     | UR plugin port                                               | 45007 — Port to be used while adding UR plugin               |
-    | Dell plugin port<br />EventListenerNodePort<br />lbport      | 45005 — Port to be used while adding Dell plugin<br />30084 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. <br />For one-node cluster configuration, it is the same as EventListenerNodePort |
+    | Dell plugin port<br />EventListenerNodePort<br />lbport      | 45005 — Port to be used while adding Dell plugin<br />30084 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin. <br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     
     Provide a JSON request payload specifying:
     
@@ -2053,10 +2050,6 @@ NOTE: When you upgrade the Resource Aggregator for ODIM deployment, the new conf
 
         -   haDeploymentEnabled
 
-        -   hostIP
-
-        -   hostname
-
         -   kafkaConfPath
 
         -   kafkaDataPath
@@ -2080,9 +2073,9 @@ NOTE: When you upgrade the Resource Aggregator for ODIM deployment, the new conf
     4. Run the following command: 
 
         ```
-        python3 odim-controller.py --config \
+    python3 odim-controller.py --config \
         /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-        --upgrade odimra-config
+    --upgrade odimra-config
         ```
         
 # Appendix
@@ -2344,9 +2337,9 @@ The following table lists all the configuration parameters required by odim-cont
 |Parameter|Description|
 |---------|-----------|
 |deploymentID|A unique identifier to identify the Kubernetes cluster. Example: "threenodecluster".<br>It is required for the following operations:<br>-   Adding a node.<br>-   Deleting a node.<br>-   Resetting the Kubernetes cluster.<br>-   Deploying and removing the services of Resource Aggregator for ODIM.<br>|
-|httpProxy|HTTP Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can leave it empty.<br>|
-|httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can leave it empty.<br>|
-|noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can leave it empty.<br>|
+|httpProxy|HTTP Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
+|httpsProxy|HTTPS Proxy to be set in all the nodes for connecting to external network. If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
+|noProxy|List of IP addresses and FQDNs for which proxy must not be used. It must begin with `127.0.0.1,localhost,localhost.localdomain,10.96.0.0/12,` followed by the IP addresses of the cluster nodes.<br>If there is no proxy available in your environment, you can replace it with `""` (empty double quotation marks).<br>|
 |nodePasswordFilePath|The absolute path of the file containing the encoded password of the nodes \(encoded using the odim-vault tool\) - `/home/<username\>/ODIM/odim-controller/scripts/nodePasswordFile`<br>|
 |nodes:|List of hostnames, IP addresses, and usernames of the nodes that are part of the Kubernetes cluster you want to set up.<br> <blockquote>NOTE: For one-node cluster configuration, information of only the controller node is required.<br></blockquote>|
 |Node\_Hostname|Hostname of a cluster node. To know the hostname, run the following command on each node:<br>`hostname`|
@@ -2387,7 +2380,7 @@ The following table lists all the configuration parameters required by odim-cont
 |zookeeperDataPath|The path to persist Zookeeper data.|
 |zookeeperJKSPassword|The password of the ZooKeeper keystore.|
 |nginxLogPath|The path where Nginx logs are stored.|
-|virtualRouterID|A unique number acting as the virtual router ID. It must be in the range of 0 to 250. Ensure that it is same on all the cluster nodes, but different across deployments \(if there is more than one deployment\).<br/>|
+|virtualRouterID|A unique number acting as the virtual router ID. It must be in the range of 0 to 250. It is same on all the cluster nodes, however for every new deployment in same network, the virtual router ID value must be different.<br/>|
 |virtualIP|Any free Virtual IP address to be attached to the leader node of a cluster. It acts as the IP address of the cluster. Ensure that the chosen virtual IP address is not associated with any cluster node.<br/>The northbound client applications reach the resource aggregator API service through this virtual IP address.<br/>|
 |rootCACert|The path of the Resource Aggregator for ODIM root CA certificate. It gets updated automatically during deployment.<br>|
 |odimraKafkaClientCert|The path of the Kafka client certificate. It gets updated automatically during deployment.<br>|
@@ -2442,19 +2435,16 @@ To run curl commands on a different server, perform the following steps to provi
 
 The following table lists all the configuration parameters required to deploy a plugin service:
 
-| Parameter             | Description                                                  |
-| --------------------- | ------------------------------------------------------------ |
-| odimra                | List of configurations required for deploying the services of Resource Aggregator for ODIM and third-party services.<br> **NOTE**: Ensure that the values of the parameters listed under odimra are same as the ones specified in the `kube_deploy_nodes.yaml` file.<br> |
-| namespace             | Namespace to be used for creating the service pods of Resource Aggregator for ODIM. The default value is "odim". You can optionally change it to a different value.<br> |
-| groupID               | Group ID to be used for creating the odimra group. The default value is 2021. You can optionally change it to a different value.<br>**NOTE**: Ensure that the group id is not already in use on any of the nodes.<br> |
-| haDeploymentEnabled   | When set to true, it deploys third-party services as a three-instance cluster. By default, it is set to true. Before setting it to false, ensure that there are at least three nodes in the Kubernetes cluster.<br> |
-| eventListenerNodePort | The port used for listening to plugin events. Refer to the sample plugin yaml configuration file to view the sample port information.<br> |
-| RootServiceUUID       | RootServiceUUID to be used by the plugin service. To generate a UUID, run the following command:<br> `uuidgen`<br> Copy the output and paste it as the value of the plugin's rootServiceUUID.<br> |
-| username              | Username of the plugin.                                      |
-| password              | The encrypted password of the plugin.                        |
-| lbHost                | If there is only one cluster node, the lbHost is the IP address of the cluster node. If there is more than one cluster node \(haDeploymentEnabled is true\), lbHost is the virtual IP address configured in Nginx and Keepalived.<br> |
-| lbPort                | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node \(haDeploymentEnabled is true\), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
-| logPath               | The path where the plugin logs are stored. The default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin\_logs` |
+| Parameter                               | Description                                                  |
+| --------------------------------------- | ------------------------------------------------------------ |
+| urplugin<br />grfplugin<br />dellplugin | List of configurations required for deploying a plugin service. |
+| eventListenerNodePort                   | The port used for listening to plugin events. Refer to the sample plugin yaml configuration file to view the sample port information.<br> |
+| RootServiceUUID                         | RootServiceUUID to be used by the plugin service. To generate a UUID, run the following command:<br> `uuidgen`<br> Copy the output and paste it as the value of the plugin's rootServiceUUID.<br> |
+| username                                | Username of the plugin.                                      |
+| password                                | The encrypted password of the plugin.                        |
+| lbHost                                  | If there is only one cluster node, the lbHost is the IP address of the cluster node. If there is more than one cluster node \(haDeploymentEnabled is true\), lbHost is the virtual IP address configured in Nginx and Keepalived.<br> |
+| lbPort                                  | If it is a one-cluster configuration, the lbPort must be same as eventListenerNodePort. <br>If there is more than one cluster node \(haDeploymentEnabled is true\), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin. |
+| logPath                                 | The path where the plugin logs are stored. The default path is `/var/log/<plugin_name>_logs`<br>**Example**: `/var/log/grfplugin_logs` |
 
 ## Resource Aggregator for ODIM deployment names
 
@@ -2769,7 +2759,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
    - **lbPort**: Default port is 30081 for one node cluster configuration. For three node cluster configuration, \(haDeploymentEnabled is true\), lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin.
 
      <blockquote>Note: The lbport is used as proxy port for eventlistenernodeport, which is used for subscribing to events.</blockquote>
-   - **grfPluginrootServiceUUID**: RootServiceUUID to be used by the GRF plugin service.
+   - **grfPluginrootServiceUUID**: RootServiceUUID to be used by the GRF plugin service. Generate a new UUID by executing the command `uuidgen`.
 
    Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
 

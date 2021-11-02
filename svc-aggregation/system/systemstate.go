@@ -100,7 +100,7 @@ func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateS
 	}
 	computerSystemUUID := systemInfo["UUID"].(string)
 	searchForm := createServerSearchIndex(systemInfo, key, updateReq.SystemUUID)
-	if err := agmodel.UpdateIndex(searchForm, key, computerSystemUUID); err != nil {
+	if err := agmodel.UpdateIndex(searchForm, key, computerSystemUUID, target.ManagerAddress); err != nil {
 		return fmt.Errorf("error: updating server index failed with err %v", err)
 	}
 	return nil

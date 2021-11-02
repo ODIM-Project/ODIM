@@ -121,6 +121,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.HTTPMethodType = http.MethodGet
 	pluginContactRequest.CreateSubcription = e.CreateSubcription
 	pluginContactRequest.PublishEvent = e.PublishEvent
+	pluginContactRequest.BMCAddress = saveSystem.ManagerAddress
 
 	var h respHolder
 	h.TraversedLinks = make(map[string]bool)

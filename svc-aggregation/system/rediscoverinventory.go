@@ -18,9 +18,10 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -79,6 +80,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	req.GetPluginStatus = e.GetPluginStatus
 	req.Plugin = plugin
 	req.StatusPoll = true
+	req.BMCAddress = target.ManagerAddress
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		req.HTTPMethodType = http.MethodPost

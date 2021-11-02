@@ -431,13 +431,14 @@ func GetTarget(deviceUUID string) (*Target, error) {
 }
 
 //SaveIndex is used to create a
-func SaveIndex(searchForm map[string]interface{}, table, uuid string) error {
+func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
 	log.Info("Creating index")
 	searchForm["UUID"] = uuid
+	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.CreateIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to index the document: %v", err)
 	}
@@ -512,12 +513,15 @@ func DeleteManagersData(key string) *errors.Error {
 }
 
 //UpdateIndex is used for updating an existing index
-func UpdateIndex(searchForm map[string]interface{}, table, uuid string) error {
+func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	searchForm["UUID"] = uuid
+	if uuid != "" {
+		searchForm["UUID"] = uuid
+	}
+	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.UpdateResourceIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to update index: %v", err)
 	}

@@ -101,7 +101,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqBMC, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.11",
+		HostName: "100.0.0.15",
 		UserName: "admin",
 		Password: "password",
 		Links: &Links{

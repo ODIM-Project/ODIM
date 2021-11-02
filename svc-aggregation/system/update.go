@@ -83,7 +83,9 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 			return common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{updateRequest["HostName"].(string), "HostName"}, nil)
 
 		}
-		hostNameUpdated = true
+		if updateRequest["HostName"].(string) != aggregationSource.HostName {
+			hostNameUpdated = true
+		}
 	}
 	if _, ok := updateRequest["Password"]; !ok {
 		decryptedPasswordByte, err := e.DecryptPassword(aggregationSource.Password)

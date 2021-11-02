@@ -387,6 +387,12 @@ func deletefilteredkeys(key string) error {
 			return fmt.Errorf("error while deleting data: " + delErr.Error())
 		}
 	}
+	delErr = conn.Del("BMCAddress", key)
+	if delErr != nil {
+		if delErr.Error() != "no data with ID found" {
+			return fmt.Errorf("error while deleting data: " + delErr.Error())
+		}
+	}
 	return nil
 }
 

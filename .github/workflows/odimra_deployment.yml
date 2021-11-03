@@ -112,9 +112,9 @@ jobs:
         
         echo "[$(date)] -- INFO  -- build odim-vault binary"
         export GO111MODULE=off
+        echo "GO111MODULE : " $GO111MODULE
         go build -ldflags "-s -w" -o odim-vault odim-vault.go
         echo
-        export GO111MODULE=on
         
         echo "[$(date)] -- INFO  -- encrypt passwords"
         ./odim-vault -encode ${ODIM_CONTROLLER_PATH}/scripts/vault_pass

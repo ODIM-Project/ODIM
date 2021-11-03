@@ -790,7 +790,7 @@ func TestCreateEvtSubscriptions(t *testing.T) {
 		t.Errorf("Error while making data entry: %v\n", cerr.Error())
 	}
 }
-
+/*
 func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 
 	c, err := MockDBConnection()
@@ -813,7 +813,7 @@ func TestCreateEvtSubscriptions_existingData(t *testing.T) {
 	}
 
 }
-
+*/
 func TestGetEvtSubscriptions(t *testing.T) {
 	c, err := MockDBConnection()
 	if err != nil {

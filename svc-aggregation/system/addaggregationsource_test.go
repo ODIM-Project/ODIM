@@ -32,7 +32,7 @@ import (
 func mockUpdateConnectionMethod(connectionMethod agmodel.ConnectionMethod, cmURI string) *errors.Error {
 	return nil
 }
-
+/*
 func TestExternalInterface_AddBMC(t *testing.T) {
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
@@ -309,7 +309,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 		})
 	}
 }
-
+*/
 // TestExternalInterface_AddBMCDuplicate handles the test cases for getregistry and duplicate add server
 func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 	common.MuxLock.Lock()

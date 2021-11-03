@@ -60,8 +60,8 @@ jobs:
 
         echo "[$(date)] -- INFO  -- configure golang"   
         sudo rm -rf /usr/bin/go
-        wget -q https://dl.google.com/go/go1.13.7.linux-amd64.tar.gz -P /var/tmp
-        sudo tar -C /usr/local -xzf /var/tmp/go1.13.7.linux-amd64.tar.gz
+        wget -q https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
+        sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
         export PATH=$PATH:/usr/local/go/bin
         export GO111MODULE=on
         export GOROOT=/usr/local/go

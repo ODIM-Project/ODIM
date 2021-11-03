@@ -112,6 +112,7 @@ jobs:
         
         echo "[$(date)] -- INFO  -- build odim-vault binary"
         export GO111MODULE=off
+        go get golang.org/x/crypto/pbkdf2
         echo "GO111MODULE : " $GO111MODULE
         go build -ldflags "-s -w" -o odim-vault odim-vault.go
         echo

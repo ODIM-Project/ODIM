@@ -17,10 +17,11 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -82,7 +83,9 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 			return common.GeneralError(http.StatusBadRequest, response.PropertyValueFormatError, err.Error(), []interface{}{updateRequest["HostName"].(string), "HostName"}, nil)
 
 		}
-		hostNameUpdated = true
+		if updateRequest["HostName"].(string) != aggregationSource.HostName {
+			hostNameUpdated = true
+		}
 	}
 	if _, ok := updateRequest["Password"]; !ok {
 		decryptedPasswordByte, err := e.DecryptPassword(aggregationSource.Password)
@@ -95,6 +98,20 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	} else {
 		bytePassword := []byte(updateRequest["Password"].(string))
 		updateRequest["Password"] = bytePassword
+	}
+	if hostNameUpdated {
+		// check if the Requested Updated BMCAddress is already present
+		ipAddr := updateRequest["HostName"].(string)
+		indexList, err := agmodel.GetString("BMCAddress", ipAddr)
+		if err != nil {
+			errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", err.Error())
+			log.Println(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		if len(indexList) > 0 {
+			errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
+			return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, nil)
+		}
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/AggregationSources/")
 	links := aggregationSource.Links.(map[string]interface{})
@@ -405,7 +422,12 @@ func (e *ExternalInterface) updateBMCAggregationSource(aggregationSourceID, plug
 				log.Error(errMsg)
 				return common.GeneralError(http.StatusBadRequest, response.ResourceInUse, errMsg, nil, nil)
 			}
-
+			// updating the index of BMC address
+			err = agmodel.UpdateIndex(map[string]interface{}{}, oidKey, computeSystemUUID, updateRequest["HostName"].(string))
+			if err != nil {
+				errMsg := "error while trying updating index values: " + err.Error()
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+			}
 		}
 	}
 	// update the system

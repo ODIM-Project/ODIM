@@ -611,7 +611,7 @@ func TestSaveIndex_WithError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := SaveIndex(tt.args.searchForm, tt.args.table, tt.args.uuid)
+			err := SaveIndex(tt.args.searchForm, tt.args.table, tt.args.uuid, "test")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveIndex() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -797,7 +797,7 @@ func TestUpdateIndex(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := UpdateIndex(tt.args.searchForm, tt.args.table, tt.args.uuid); (err != nil) != tt.wantErr {
+			if err := UpdateIndex(tt.args.searchForm, tt.args.table, tt.args.uuid, "test"); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateIndex() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

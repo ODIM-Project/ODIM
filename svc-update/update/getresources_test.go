@@ -108,7 +108,7 @@ func mockGetExternalInterface() *ExternalInterface {
 
 func TestGetUpdateService(t *testing.T) {
 	successResponse := response.Response{
-		OdataType:    "#UpdateService.v1_8_1.UpdateService",
+		OdataType:    common.UpdateServiceType,
 		OdataID:      "/redfish/v1/UpdateService",
 		OdataContext: "/redfish/v1/$metadata#UpdateService.UpdateService",
 		ID:           "UpdateService",
@@ -153,10 +153,14 @@ func TestGetUpdateService(t *testing.T) {
 					},
 					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+							RedfishOperationApplyTimeSupport: uresponse.RedfishOperationApplyTimeSupport{
+								OdataType:       common.SettingsType,
+								SupportedValues: []string{"OnStartUpdateRequest"},
+							},
 						},
 						UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/StartUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
 						},
 					},
 				},
@@ -192,10 +196,14 @@ func TestGetUpdateService(t *testing.T) {
 					},
 					Actions: uresponse.Actions{
 						UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+							RedfishOperationApplyTimeSupport: uresponse.RedfishOperationApplyTimeSupport{
+								OdataType:       common.SettingsType,
+								SupportedValues: []string{"OnStartUpdateRequest"},
+							},
 						},
 						UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
-							Target: "/redfish/v1/UpdateService/Actions/StartUpdate",
+							Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
 						},
 					},
 				},

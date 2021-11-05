@@ -7,7 +7,7 @@
 - [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
-- [HTTP request methods, responses, and status codes](#http-request-methods--responses--and-status-codes)
+- [HTTP request methods, responses, and status codes](#http-request-methods-responses-and-status-codes)
 - [Authentication and authorization](#authentication-and-authorization)
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
   * [Role-based authorization](#role-based-authorization)
@@ -66,6 +66,13 @@
   * [Single Ethernet interface](#single-ethernet-interface)
   * [PCIeDevice](#pciedevice)
   * [Storage](#storage)
+  * [StoragePools](#StoragePools)
+    * [Collection of StoragePools](#StoragePools-collection)
+    * [Single StoragePool](#Single-StoragePool)
+    * [Collection of AllocatedVolumes](#AllocatedVolumes-Collection)
+    * [Single AllocatedVolume](#single-AllocatedVolume)
+    * [Collection of ProvidingDrives](#ProvidingDrives-Collection)
+    * [Single ProvidingDrive](#single-ProvidingDrive)
   * [Storage subsystem](#storage-subsystem)
   * [Drives](#drives)
     + [Single drive](#single-drive)
@@ -146,6 +153,7 @@
 - [Events](#events)
   * [Viewing the event service root](#viewing-the-event-service-root)
   * [Creating an event subscription](#creating-an-event-subscription)
+    + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
   * [Submitting a test event](#submitting-a-test-event)
   * [Event subscription use cases](#event-subscription-use-cases)
     + [Subscribing to resource addition notification](#subscribing-to-resource-addition-notification)
@@ -158,8 +166,17 @@
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
-
-
+- [Redfish Telemetry](#redfish-telemetry-service)
+  * [Viewing the telemetry service root](#viewing-the-telemetry-service-root)
+  * [Collection of metric definitions](#collection-of-metric-definitions)
+  * [Single metric definition](#single-metric-definition)
+  * [Collection of Metric Report Definitions](#collection-of-metric-report-definitions)
+  * [Single metric report definition](#single-metric-report-definition)
+  * [Collection of metric reports](#collection-of-metric-reports)
+  * [Single metric report](#single-metric-report)
+  * [Collection of Triggers](#collection-of-triggers)
+  * [Single Trigger](#single-trigger)
+  * [Updating a trigger](#updating-a-trigger)
 
 # Introduction 
 
@@ -219,7 +236,6 @@ The API layer sends user requests to the plugins through the aggregation, the ev
 
 - **Services layer**
 
-
 The services layer is where all the services are hosted. This layer implements service logic for all use cases
 through an extensible domain model (Redfish Data Model). Requests coming from the API layer and the
 responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
@@ -254,14 +270,11 @@ To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS
 browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line
 utility). You can also easily write simple REST clients for RESTful APIs using modern scripting languages.
 
-<aside class="notice">
+<blockquote>
 Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
 you will want to write your own scripting code to perform requests.
-</aside>
-
-
-This guide contains sample request and response payloads. For information on response payload parameters, refer to 
-[Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
+</blockquote>
+This guide contains sample request and response payloads. For information on response payload parameters, refer to [Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
 
 > **IMPORTANT:**
 The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
@@ -289,8 +302,6 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 - {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you
     have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port.
-	
-	
 >**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
 
@@ -315,17 +326,13 @@ For a complete list of curl flags, see information provided at [https://curl.hax
 
 >**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command before running a curl command.<br>
     ```
-    $ export no_proxy="127.0.0.1,localhost,{odimra_host}"
+    export no_proxy="127.0.0.1,localhost,{odimra_host}"
      ```
-
-
 
 **Including HTTP certificate**
 
 Without CA certificate, curl fails to verify that HTTP connections are secure and curl commands may fail with the SSL
 certificate problem. Provide the root CA certificate to curl for secure SSL communication.
-
-
 
 
 1. If you are running curl commands on the server where the resource aggregator is deployed, provide the `rootCA.crt` file as shown in the curl command:
@@ -417,6 +424,12 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|`GET` , `POST`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|`GET`, `DELETE`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
 |/redfish/v1/Systems?filter=\{searchKeys\}%20\{conditionKeys\}%20\{value/regEx\}|`GET`|
@@ -486,9 +499,17 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 | /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
 | /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
 
-
-
-
+| TelemetryService                                             |                |
+| ------------------------------------------------------------ | -------------- |
+| /redfish/v1/TelemetryService                                 | `GET`          |
+| /redfish/v1/TelemetryService/MetricDefinitions               | `GET`          |
+| /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionId} | `GET`          |
+| /redfish/v1//TelemetryService/MetricReportDefinitions        | `GET`,         |
+| /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionId} | `GET`          |
+| redfish/v1/TelemetryService/MetricReports                    | `GET`          |
+| /redfish/v1/TelemetryService/MetricReports/{MetricReportId}  | `GET`          |
+| /redfish/v1/TelemetryService/Triggers                        | `GET`          |
+| /redfish/v1/TelemetryService/Triggers/{TriggerId}            | `GET`, `PATCH` |
 
 |Task monitor||
 |-------|--------------------|
@@ -525,8 +546,6 @@ universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f
 ```curl
 curl -i GET 'https://{odimra_host}:{port}/redfish/v1'
 ```
-
-
 
 >**Sample response header**
 
@@ -568,6 +587,9 @@ Transfer-Encoding:chunked
    "Tasks": {
       "@odata.id": "/redfish/v1/TaskService"
    },
+   "TelemetryService": {
+      "@odata.id": "/redfish/v1/TelemetryService"
+   },
    "AggregationService": {
       "@odata.id": "/redfish/v1/AggregationService"
    },
@@ -599,7 +621,7 @@ Transfer-Encoding:chunked
 
 
 
-#  HTTP request methods, responses, and status codes
+#  HTTP request methods responses and status codes
 
 Following are the Redfish-defined HTTP methods that you can use to implement various actions:
 
@@ -672,7 +694,7 @@ To authenticate requests with the Redfish services, implement any one of the fol
      1. Generate a base64 encoded string of `{valid_username_of_odim_userAccount}:{valid_password_of_odim_userAccount}` using the following command:
 
          ```
-        $ echo -n '{username}:{password}' | base64 -w0
+        echo -n '{username}:{password}' | base64 -w0
         ```
 
         Initially, use the username and the password of the default administrator account. Later, you can create additional [user accounts](#user-accounts) and use their details to implement authentication.
@@ -701,10 +723,6 @@ To authenticate requests with the Redfish services, implement any one of the fol
     ```
 
       An `X-AUTH-TOKEN` is valid and a session is open only for 30 minutes, unless you continue to send requests to a Redfish service using this token. An idle session is automatically terminated after the time-out interval.
-
-
-
-
 
 ## Role-based authorization
 
@@ -779,8 +797,6 @@ This privilege is required to view any resource or a collection of resources exp
 Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
 
 
-
-
 # Sessions
 
 A session represents a window of user's login with a Redfish service and contains details about the user and the user activity. You can run multiple sessions simultaneously.
@@ -801,7 +817,7 @@ Resource Aggregator for ODIM offers Redfish `SessionService` interface for creat
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/SessionService|GET|`Login` |
-|/redfish/v1/SessionService/Sessions|POST, GET|`Login`,|
+|/redfish/v1/SessionService/Sessions|POST, GET|`Login`|
 |redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
 >**NOTE:**
@@ -850,10 +866,6 @@ curl -i GET \
 }
 ```
 
-
-
-
-
 ##  Creating a session
 
 |||
@@ -890,8 +902,6 @@ curl -i POST \
 "Password": "abc123"
 }
 ```
-
-
 
 
 
@@ -3376,8 +3386,14 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Bios|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|GET|`Login` |
-|/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
@@ -3457,10 +3473,6 @@ curl -i GET \
    "Members@odata.count":2
 }
 ```
-
-
-
-
 
 
 
@@ -4199,6 +4211,370 @@ curl -i GET \
 ```
 
 
+
+## StoragePools 
+
+The StoragePools schema represents storage pools, allocated volumes and drives.
+
+### StoragePools Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools` |
+| **Description**    | This operation returns a collection of StoragePool resource instances. |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools'
+
+```
+
+> **Sample response body**
+
+```
+{
+	"@odata.etag": "\"2a840a57e9592422136\"",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools",
+	"@odata.type": "#StoragePoolCollection.StoragePoolCollection",
+	"Description": "A collection of StoragePool resource instances.",
+	"Members": [{
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27"
+	}],
+	"Members@odata.count": 1,
+	"Name": "StoragePoolCollection"
+}
+```
+
+
+
+### Single StoragePool
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}` |
+| **Description**    | This operation represents a single StoragePool instance.     |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}'
+
+```
+
+> **Sample response body**
+
+```
+{
+	"@odata.etag": "\"7a55c980802224f456c\"",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27",
+	"@odata.type": "#StoragePool.v1_5_0.StoragePool",
+	"AllocatedVolumes": {
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes"
+	},
+	"Capacity": {
+		"Data": {
+			"AllocatedBytes": 998999326720,
+			"ConsumedBytes": 998999326720
+		},
+		"Metadata": {},
+		"Snapshot": {}
+	},
+	"CapacitySources": [{
+		"@odata.etag": "\"31ecba89b48925a6bf3\"",
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1",
+		"@odata.type": "#Capacity.v1_1_3.CapacitySource",
+		"Description": "The resource is used to represent a capacity for a Redfish implementation.",
+		"Id": "1",
+		"Name": "CapacitySources_1",
+		"ProvidingDrives": {
+			"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives"
+		}
+	}],
+	"CapacitySources@odata.count": 1,
+	"Description": "The resource is used to represent a storage pool for a Redfish implementation.",
+	"Id": "Pool_1_27",
+	"Name": "Pool_1_27",
+	"Status": {
+		"State": "Enabled"
+	},
+	"SupportedRAIDTypes": ["RAID0"]
+}
+```
+
+
+
+### AllocatedVolumes Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes` |
+| **Description**    | This operation returns a collection of volume resource instances. |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"2cbdffec21f02963c79\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes",
+   "@odata.type":"#VolumeCollection.VolumeCollection",
+   "Description":"A collection of volume resource instances.",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"VolumeCollection"
+}
+```
+
+
+
+### Single AllocatedVolume
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}` |
+| **Description**    | This operation represents a single volume instance.          |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"915af5f726a127f66c2\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27",
+   "@odata.type":"#Volume.v1_4_1.Volume",
+   "AccessCapabilities":[
+      
+   ],
+   "Actions":{
+      "#Volume.Initialize":{
+         "InitializeType@Redfish.AllowableValues":[
+            "Fast"
+         ],
+         "target":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27/Actions/Volume.Initialize",
+         "title":"Initialize"
+      }
+   },
+   "BlockSizeBytes":512,
+   "Capacity":{
+      "Data":{
+         
+      },
+      "Metadata":{
+         
+      },
+      "Snapshot":{
+         
+      }
+   },
+   "CapacityBytes":998999326720,
+   "Description":"This resource is used to represent a volume for a Redfish implementation.",
+   "DisplayName":"VD_1",
+   "Id":"27",
+   "Links":{
+      "Drives":[
+         {
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0"
+         }
+      ]
+   },
+   "Name":"VD_1",
+   "Oem":{
+      "Lenovo":{
+         "@odata.type":"#LenovoStorageVolume.v1_0_0.LenovoStorageVolume",
+         "AccessPolicy":"",
+         "Bootable":true,
+         "DriveCachePolicy":"",
+         "…"
+      }
+   },
+   "RAIDType":"RAID0",
+   "ReadCachePolicy":null,
+   "ReadCachePolicy@Redfish.AllowableValues":[
+      "Off",
+      "ReadAhead"
+   ],
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "StripSizeBytes":0,
+   "WriteCachePolicy":null,
+   "WriteCachePolicy@Redfish.AllowableValues":[
+      "WriteThrough",
+      "UnprotectedWriteBack",
+      "ProtectedWriteBack"
+   ]
+}
+```
+
+
+
+### ProvidingDrives Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives` |
+| **Description**    | This operation returns a collection of drives.               |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"252e43d3e5862ae3d30\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives",
+   "@odata.type":"#DriveCollection.DriveCollection",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"DriveCollection"
+}
+```
+
+
+
+### Single ProvidingDrive
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}` |
+| **Description**    | This operation represents a single drive instance.           |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}'
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"a81c2a4f4e972e18b6306\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0",
+   "@odata.type":"#Drive.v1_9_1.Drive",
+   "AssetTag":"",
+   "BlockSizeBytes":512,
+   "CapableSpeedGbs":6,
+   "CapacityBytes":1000204886016,
+   "Description":"This resource is used to represent a drive for a Redfish implementation.",
+   "EncryptionAbility":"None",
+   "EncryptionStatus":"Unencrypted",
+   "FailurePredicted":false,
+   "HotspareType":"None",
+   "Id":"Disk.0",
+   "Identifiers":[
+      {
+         "DurableName":"",
+         "DurableNameFormat":"UUID"
+      }
+   ],
+   "Links":{
+      "Chassis":{
+         "@odata.id":"/redfish/v1/Chassis/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1"
+      },
+      "PCIeFunctions":[
+         
+      ],
+      "Volumes":[
+         {
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Volumes/27"
+         }
+      ]
+   },
+   "Manufacturer":"Seagate",
+   "MediaType":"HDD",
+   "Model":"ST1000NX0423",
+   "Name":"1.00TB 7.2K 6Gbps SATA 2.5 HDD",
+   "NegotiatedSpeedGbs":6,
+   "Oem":{
+      "Lenovo":{
+         "@odata.type":"#LenovoDrive.v1_0_0.LenovoDrive",
+         "DriveStatus":"Online",
+         "Temperature":27
+      }
+   },
+   "PartNumber":"D7A01874",
+   "PhysicalLocation":{
+      "Info":"Slot 0",
+      "Info@Redfish.Deprecated":"The property is deprecated. Please use PartLocation instead.",
+      "InfoFormat":"Slot Number",
+      "InfoFormat@Redfish.Deprecated":"The property is deprecated. Please use PartLocation instead.",
+      "PartLocation":{
+         "LocationOrdinalValue":0,
+         "LocationType":"Bay",
+         "ServiceLabel":"Drive 0"
+      }
+   },
+   "PredictedMediaLifeLeftPercent":null,
+   "Protocol":"SATA",
+   "Revision":"LEK9",
+   "RotationSpeedRPM":7200,
+   "SKU":"00YK025",
+   "SerialNumber":"W473AMB3",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "StatusIndicator":null
+}
+```
 
 
 
@@ -5915,10 +6291,6 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 
 
-
-
-
-
 ## Changing the boot settings
 
 |||
@@ -6325,21 +6697,20 @@ curl -i GET \
 
 ```
 {
-   "@odata.context":"/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
-   "@odata.etag":"W/\"570254F2\"",
-   "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia",
+  "@odata.context":"/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
+   "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/",
    "@odata.type":"#VirtualMediaCollection.VirtualMediaCollection",
-   "Description":"iLO Virtual Media Services Settings",
+   "Description":"Virtual Media Services Settings",
+   "Name":"Virtual Media Services",
    "Members":[
       {
-         "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1"
+         "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/1/"
       },
       {
-         "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/2"
+         "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/2/"
       }
    ],
-   "Members@odata.count":2,
-   "Name":"Virtual Media Services"
+   "Members@odata.count":2
 }
 ```
 
@@ -6366,44 +6737,15 @@ curl -i GET \
 
 ```
 {
-   "@odata.context":"/redfish/v1/$metadata#VirtualMedia.VirtualMedia",
-   "@odata.etag":"W/\"7647E98E\"",
-   "@odata.id":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1",
-   "@odata.type":"#VirtualMedia.v1_2_0.VirtualMedia",
-   "Actions":{
-      "#VirtualMedia.EjectMedia":{
-         "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia"
-      },
-      "#VirtualMedia.InsertMedia":{
-         "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia"
-      }
-   },
-   "ConnectedVia":"URI",
-   "Description":"Virtual Removable Media",
-   "Id":"1",
-   "Image":"http://10.24.1.24/ISO/ubuntu-18.04.4-server-amd64.iso",
-   "ImageName":"ubuntu-18.04.4-server-amd64.iso",
-   "Inserted":true,
-   "MediaTypes":[
-      "Floppy",
-      "USBStick"
-   ],
-   "Name":"VirtualMedia",
-   "Oem":{
-      "Hpe":{
-         "@odata.context":"/redfish/v1/$metadata#HpeiLOVirtualMedia.HpeiLOVirtualMedia",
-         "@odata.type":"#HpeiLOVirtualMedia.v2_2_0.HpeiLOVirtualMedia",
-         "Actions":{
-            "#HpeiLOVirtualMedia.EjectVirtualMedia":{
-               "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/Oem/Hpe/HpeiLOVirtualMedia.EjectVirtualMedia""…"
-            },
-            "#HpeiLOVirtualMedia.InsertVirtualMedia":{
-               "target":"/redfish/v1/Managers/23e00bda-d244-4f35-a6ee-e815713c021a:1/VirtualMedia/1/Actions/Oem/Hpe/HpeiLOVirtualMedia.InsertVirtualMedia""…"
+    "error": {
+        "@Message.ExtendedInfo": [
+            {
+                "MessageId": "Base.1.4.Success"
             }
-         }
-      }
-   },
-   "WriteProtected":true
+        ],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
 }
 ```
 
@@ -6437,17 +6779,14 @@ curl -i POST \
 
 ```
 {
-    "Error": {
+    "error": {
         "@Message.ExtendedInfo": [
             {
-                "Message": "Successfully performed virtual media actions",
-                "MessageArgs": [
-                ],
-                "MessageId": "Base.1.6.1.Success"
+                "MessageId": "Base.1.4.Success"
             }
         ],
-        "Code": "Base.1.6.1.Success",
-        "Message": "See @Message.ExtendedInfo for more information."
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
     }
 }
  
@@ -6480,17 +6819,14 @@ curl -i POST \
 
 ```
 {
-    "Error": {
+    "error": {
         "@Message.ExtendedInfo": [
             {
-                "Message": "Successfully performed virtual media actions",
-                "MessageArgs": [
-                ],
-                "MessageId": "Base.1.6.1.Success"
+                "MessageId": "Base.1.4.Success"
             }
         ],
-        "Code": "Base.1.6.1.Success",
-        "Message": "See @Message.ExtendedInfo for more information."
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
     }
 }
  
@@ -7639,8 +7975,6 @@ curl -i GET \
 
 
 
-
-
 ## Collection of zones
 
 |||
@@ -8573,10 +8907,6 @@ curl -i -X PATCH \
 
 
 
-
-
-
-
 >**Sample request body** \(assigning links for a zone of endpoints\)
 
 ```
@@ -8755,29 +9085,9 @@ curl -i DELETE \
 ```
 curl -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspo'
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Tasks
@@ -8873,16 +9183,6 @@ Transfer-Encoding":chunked
 
 
 
-
-
-
-
-
-
-
-
-
-
 ## Viewing a collection of tasks
 
 |||
@@ -8929,10 +9229,6 @@ curl -i GET \
 ```
 
 
-
-
-
- 
 
 ## Viewing information about a specific task
 
@@ -8993,10 +9289,6 @@ curl -i GET \
 ```
 
 
-
-
-
- 
 
 
 ##  Viewing a task monitor
@@ -9092,12 +9384,6 @@ Content-Length:491 bytes
 
 
 
-
-
-
-
- 
-
 ## Deleting a task
 
 |||
@@ -9119,20 +9405,6 @@ curl -i DELETE \
  'https://{odimra_host}:{port}/redfish/v1/TaskService/Tasks/{TaskID}'
 
 ```
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
 
 
 
@@ -9314,15 +9586,7 @@ Transfer-Encoding:chunked
 
 
 
-
-
-
-
-
-
-
-
-## Creating an event subscription
+### Creating an event subscription
 
 |||
 |-----------|-----------|
@@ -9381,8 +9645,6 @@ curl -i POST \
 ```
 
 
-
-
 >**Sample request body**
 
 ```
@@ -9416,7 +9678,59 @@ curl -i POST \
 
 ```
 
- 
+###  Creating event subscription with eventformat type - MetricReport
+
+If `EventFormatType` is empty, default value will be `Event`.
+
+If `EventTypes` list is empty and `EventFormatType` is `MetricReport`, `EventTypes` will default to `[“MetrciReport”]`.
+
+If both values are empty, `EventFormatType` will default to `Event` and `EventTypes` will default to all supported values apart from `MetricReport`.
+
+>**curl command**
+
+```
+curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json; charset=utf-8" \
+   -d \
+
+'{
+  "Name": "ODIMRA_NBI_client ",
+  "Destination": "https://{Valid_IP_Address}:{Port}/EventListener ",
+  "EventTypes": ["MetricReport"],
+  "Context": "TelemetryDemo",
+  "Protocol": "Redfish",
+  "SubscriptionType": "RedfishEvent",
+  "EventFormatType": "MetricReport"
+ }' \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
+```
+
+>**Sample request body**
+
+```
+{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Name": "ODIMRA_NBI_client ",
+   "Destination": "https://{Valid_IP_Address}:{Port}/EventListener ",
+   "EventTypes": ["MetricReport"],
+   "Context": "TelemetryDemo",
+   "Protocol": "Redfish",
+   "SubscriptionType": "RedfishEvent",
+   "EventFormatType": "MetricReport"
+}
+
+```
 
 **Request parameters**
 
@@ -9455,12 +9769,14 @@ curl -i POST \
 |ResourceRemoved|A resource has been removed.|
 |ResourceUpdated|The value of this resource has been updated.|
 |StatusChange|The status of this resource has changed.|
+|MetricReport|Collects resource metrics.|
 
 **EventFormat type**
 
 |String|Description|
 |------|-----------|
 |Event|The subscription destination will receive JSON bodies of the Resource Type Event.|
+|MetricReport|Collects resource metrics.|
 
 **Subscription type**
 
@@ -9473,8 +9789,6 @@ curl -i POST \
 |String|Description|
 |------|-----------|
 |Redfish|The destination follows the Redfish specification for event notifications.|
-
-
 
  
 
@@ -9609,12 +9923,6 @@ curl -i POST \
  'https://{odimra_host}:{port}/redfish/v1/EventService/Actions/EventService.SubmitTestEvent'
 
 ```
-
-
-
-
-
-
 
 
 
@@ -9853,10 +10161,6 @@ To get notified of the task completion status, subscribe to `StatusChange` event
 
 
 
-
-
-
-
 ## Viewing a collection of event subscriptions
 
 |||
@@ -9960,10 +10264,6 @@ curl -i GET \
 ```
 
 
-
-
-
-
 ##  Deleting an event subscription
 
 |||
@@ -9999,10 +10299,6 @@ curl -i -X DELETE \
    "Severity":"OK"
 }
 ```
-
-
-
-
 
 
 
@@ -10151,8 +10447,6 @@ curl -i GET \
 
 
 
-
-
 ##  Viewing a single registry
 
 |||
@@ -10224,6 +10518,613 @@ curl -i GET \
 ```
 
 
+
+# Redfish Telemetry Service
+
+Telemetry refers to the metrics obtained from remote systems for analysis and monitoring. 
+The Redfish Telemetry model is designed to obtain characteristics of metrics, send specific metric reports periodically and specify triggers against metrics.
+
+Resource Aggregator for ODIM exposes the Redfish `TelemetryService` APIs to:
+
+- Define characteristics and details of one or more metrics (metadata)
+- Generate metric reports at regular intervals, specifying their content and timeframe
+- Transmit metric reports with metric readings and any metadata associated with the readings
+- Specify trigger thresholds for a list of metrics
+
+**Supported APIs**
+
+| API URI                                                      | Operation Applicable | Required privileges     |
+| ------------------------------------------------------------ | -------------------- | ----------------------- |
+| /redfish/v1/TelemetryService                                 | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricDefinitions               | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID} | GET                  | `Login`                 |
+| /redfish/v1//TelemetryService/MetricReportDefinitions        | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID} | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReports                   | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReports/{MetricReportID}  | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/Triggers                        | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/Triggers/{TriggerID}            | GET, PATCH           | `Login`,`ConfigureSelf` |
+
+>**NOTE:**
+>Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+
+## Viewing the telemetry service root
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService`                               |
+| **Description**    | This operation retrieves JSON schema representing the Redfish `TelemetryService` root. |
+| **Returns**        | Properties for the Redfish `TelemetryService` and links to its list of resources. |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.id":"/redfish/v1/TelemetryService",
+   "@odata.type":"#TelemetryService.v1_3_1.TelemetryService",
+   "Id":"TelemetryService",
+   "Name":"Telemetry Service",
+   "Status":{
+      "State":"Enabled",
+      "Health":"OK"
+   },
+   "ServiceEnabled":true,
+   "SupportedCollectionFunctions":[
+      "Average",
+      "Minimum",
+      "Maximum"
+   ],
+   "MetricDefinitions":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions"
+   },
+   "MetricReportDefinitions":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions"
+   },
+   "MetricReports":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReports"
+   },
+   "Triggers":{
+      "@odata.id":"/redfish/v1/TelemetryService/Triggers"
+   }
+}
+```
+
+## Collection of metric definitions
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricDefinitions`             |
+| **Description**    | This operation lists the metadata information for the metrics collection in Redfish implementation. |
+| **Returns**        | JSON schema containing the definition, metadata or the characteristics of the metrics collection |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricDefinitions/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
+    "@odata.etag": "W/\"1E796226\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions",
+    "@odata.type": "#MetricDefinitionCollection.MetricDefinitionCollection",
+    "Description": "Metric Definitions view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/MemoryBusUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/IOBusUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUICUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/JitterCount"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/AvgCPU0Freq"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPU0Power"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/AvgCPU1Freq"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPU1Power"
+        }
+    ],
+    "Members@odata.count": 9,
+    "Name": "Metric Definitions"
+}
+```
+
+## Single metric definition
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID}` |
+| **Description**    | This operation lists the metadata information for a metric in Redfish implementation. |
+| **Returns**        | JSON schema containing the definition, metadata or the characteristics of a metric |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
+    "@odata.etag": "W/\"AB720077\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
+    "@odata.type": "#MetricDefinition.v1_0_0.MetricDefinition",
+    "Calculable": "NonSummable",
+    "CalculationAlgorithm": "Average",
+    "Description": "Metric definition for CPU Utilization",
+    "Id": "CPUUtil",
+    "Implementation": "PhysicalSensor",
+    "IsLinear": true,
+    "MaxReadingRange": 100,
+    "MetricDataType": "Decimal",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil"
+    ],
+    "MetricType": "Numeric",
+    "MinReadingRange": 0,
+    "Name": "Metric definition for CPU Utilization",
+    "Units": "%",
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a:1",
+                "ba5cd083-b360-4994-bc30-12b450859b27:1"
+            ]
+        }
+    ]
+}
+```
+
+## Collection of Metric Report Definitions
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReportDefinitions`       |
+| **Description**    | This operation represents a set of metric properties of collected in multiple metric reports. |
+| **Returns**        | JSON schema defining the content and time of the metric reports |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReportDefinitions/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
+    "@odata.etag": "W/\"BFD5C070\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions",
+    "@odata.type": "#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
+    "Description": " MetricReportDefinitions view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom4"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/MemoryBusUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/MemoryBusUtilCustom2"
+        },
+    ],
+    "Members@odata.count": 6,
+    "Name": "MetricReportDefinitions"
+}
+```
+
+## Single metric report definition 
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID}` |
+| **Description**    | This operation represents metric properties of a single metric report. |
+| **Returns**        | JSON schema defining the content and periodicity of the metric report |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricReportDefinition.MetricReportDefinition",
+    "@odata.etag": "W/\"9A613B5C\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1",
+    "@odata.type": "#MetricReportDefinition.v1_0_0.MetricReportDefinition",
+    "Description": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
+    "Id": "CPUUtilCustom1",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil",
+        "SystemUsage/CPUUtil"
+    ],
+    "MetricReport": {
+        "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+    },
+    "MetricReportDefinitionType": "OnRequest",
+    "Metrics": [
+        {
+            "CollectionDuration": "PT20S",
+            "CollectionFunction": "Average",
+            "CollectionTimeScope": "Interval",
+            "MetricId": "CPUUtil"
+        }
+    ],
+    "Name": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a:1"
+            ]
+        }
+    ]
+}
+```
+
+## Collection of metric reports
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReports`                 |
+| **Description**    | This operation retrieves collection of reports with metric readings and any metadata associated with the readings. |
+| **Returns**        | Links of the metric reports.                                 |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReports/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
+    "@odata.etag": "W/\"BFD5C070\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReports",
+    "@odata.type": "#MetricReportCollection.MetricReportCollection",
+    "Description": " Metric Reports view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom4"
+        },        
+    ],
+    "Members@odata.count": 7,
+    "Name": "Metric Reports"
+}
+ 
+```
+
+## Single metric report 
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReports/{MetricReportID}` |
+| **Description**    | This operation retrieves a report with metric readings and any metadata associated with the readings. |
+| **Returns**        | Link to the metric report.                                   |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReports/{MetricReportID}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#MetricReport.MetricReport",
+   "@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2",
+   "@odata.type":"#MetricReport.v1_0_0.MetricReport",
+   "Description":"Metric report of CPU Utilization for 60 minutes with sensing interval of 20 seconds.",
+   "Id":"CPUUtilCustom2",
+   "MetricReportDefinition":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom2"
+   },
+   "MetricValues":[
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:05Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:25Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:45Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:47:05Z"
+      },
+      "Name":"Metric report of CPU Utilization for 60 minutes with sensing interval of 20 seconds."
+   }
+```
+
+<blockquote> NOTE:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. 
+This is an implementation choice in Resource Aggregator for ODIM, because Telemetry service is defined for a collection of BMCs and not for an individual BMC as per the DMTF Redfish specification.</blockquote>
+
+## Collection of triggers
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/Triggers`                      |
+| **Description**    | This operation retrieves the collection of triggers that apply to multiple metric properties. |
+| **Returns**        | Links to a collection of triggers                            |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#TriggersCollection.TriggersCollection",
+    "@odata.etag": "W/\"DA402EBA\"",
+    "@odata.id": "/redfish/v1/TelemetryService/Triggers",
+    "@odata.type": "#TriggersCollection.TriggersCollection",
+    "Description": " Triggers view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/MemoryBusUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/IOBusUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUICUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/JitterCountTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPU1PowerTriggers"
+        }
+    ],
+    "Members@odata.count": 7,
+    "Name": "Triggers"
+}
+```
+
+## Single trigger 
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/Triggers/{TriggersID}`         |
+| **Description**    | This endpoint retrieves a trigger that apply to the listed metrics. |
+| **Returns**        | Link of a single trigger                                     |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
+    "@odata.etag": "W/\"BFAAE441\"",
+    "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
+    "@odata.type": "#Triggers.v1_0_0.Triggers",
+    "Description": "Triggers for CPU Utilization",
+    "Id": "CPUUtilTriggers",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil"
+    ],
+    "MetricType": "Numeric",
+    "Name": "Triggers for CPU Utilization",
+    "NumericThresholds": {
+        "LowerCritical": {
+            "Activation": "Decreasing",
+            "DwellTime": "PT0S",
+            "Reading": 0
+        },
+        "UpperCritical": {
+            "Activation": "Increasing",
+            "DwellTime": "PT0S",
+            "Reading": 0
+        }
+    },
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "TriggerActions": [
+        "LogToLogService"
+    ],
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a:1",
+                "ba5cd083-b360-4994-bc30-12b450859b27:1"
+            ]
+        }
+    ]
+}
+```
+
+## Updating a trigger
+
+| **Method**         | `PATCH`                                              |
+| ------------------ | ---------------------------------------------------- |
+| **URI**            | `/redfish/v1/TelemetryService/Triggers/{TriggersID}` |
+| **Description**    | This operation updates triggers of each metric.      |
+| **Returns**        |                                                      |
+| **Response Code**  | `200 OK`                                             |
+| **Authentication** | No                                                   |
+
+
+>**curl command**
+
+```
+curl -i -X PATCH \
+   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "EventTriggers": ["Alert"]
+}' \
+ 'https://10.24.1.33:30080/redfish/v1/TelemetryService/Triggers/{TriggersID}'
+
+```
+
+
+>**Sample request body**
+
+```
+{
+  "EventTriggers": ["Alert"]
+}
+```
 
 
 

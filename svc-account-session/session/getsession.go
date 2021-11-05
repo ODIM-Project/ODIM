@@ -29,23 +29,24 @@ import (
 )
 
 //GetSessionUserName is a RPC handle to get the session username from the session Token
-func GetSessionUserName(req *sessionproto.SessionRequest, resp *sessionproto.SessionUserName) error {
+func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
+	var resp sessionproto.SessionUserName
 	resp.UserName = ""
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
 		errorMessage := "Unable to authorize session token: " + err.Error()
 		log.Error(errorMessage)
-		return err
+		return &resp, err
 	}
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
 		log.Error(errorMessage)
-		return errs
+		return &resp, errs
 	}
 	resp.UserName = currentSession.UserName
-	return nil
+	return &resp, nil
 }
 
 // GetSession is a method to get session
@@ -54,7 +55,7 @@ func GetSessionUserName(req *sessionproto.SessionRequest, resp *sessionproto.Ses
 // respond RPC response and error if there is.
 func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#Session.v1_2_1.Session",
+		OdataType: common.SessionType,
 		OdataID:   "/redfish/v1/SessionService/Sessions/" + req.SessionId,
 		ID:        req.SessionId,
 		Name:      "User Session",
@@ -263,7 +264,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 // respond RPC response and error if there are.
 func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
 		ID:        "Sessions",
 		Name:      "Session Service",

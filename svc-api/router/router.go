@@ -17,15 +17,16 @@
 package router
 
 import (
+	"net/http"
+	"net/url"
+	"strings"
+
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 //Router method to register API handlers.
@@ -136,6 +137,19 @@ func Router() *iris.Application {
 		GetFirmwareInventoryCollectionRPC: rpc.DoGetFirmwareInventoryCollection,
 		GetSoftwareInventoryRPC:           rpc.DoGetSoftwareInventory,
 		GetSoftwareInventoryCollectionRPC: rpc.DoGetSoftwareInventoryCollection,
+	}
+
+	telemetry := handle.TelemetryRPCs{
+		GetTelemetryServiceRPC:                 rpc.DoGetTelemetryService,
+		GetMetricDefinitionCollectionRPC:       rpc.DoGetMetricDefinitionCollection,
+		GetMetricReportDefinitionCollectionRPC: rpc.DoGetMetricReportDefinitionCollection,
+		GetMetricReportCollectionRPC:           rpc.DoGetMetricReportCollection,
+		GetTriggerCollectionRPC:                rpc.DoGetTriggerCollection,
+		GetMetricDefinitionRPC:                 rpc.DoGetMetricDefinition,
+		GetMetricReportDefinitionRPC:           rpc.DoGetMetricReportDefinition,
+		GetMetricReportRPC:                     rpc.DoGetMetricReport,
+		GetTriggerRPC:                          rpc.DoGetTrigger,
+		UpdateTriggerRPC:                       rpc.DoUpdateTrigger,
 	}
 
 	registryFile := handle.Registry{
@@ -286,6 +300,20 @@ func Router() *iris.Application {
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{rid}/StoragePools", system.GetSystemResource)
+	storage.Get("/{id2}/StoragePools/{rid}", system.GetSystemResource)
+	storage.Any("/{rid}/StoragePools", handle.SystemsMethodNotAllowed)
+	storage.Any("/{id2}/StoragePools/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{rid}/AllocatedVolumes", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{rid}/AllocatedVolumes", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)
@@ -495,5 +523,19 @@ func Router() *iris.Application {
 	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
 	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)
 	updateService.Get("/SoftwareInventory/{softwareInventory_id}", update.GetSoftwareInventory)
+
+	telemetryService := v1.Party("/TelemetryService", middleware.SessionDelMiddleware)
+	telemetryService.SetRegisterRule(iris.RouteSkip)
+	telemetryService.Get("/", telemetry.GetTelemetryService)
+	telemetryService.Get("/MetricDefinitions", telemetry.GetMetricDefinitionCollection)
+	telemetryService.Get("/MetricReportDefinitions", telemetry.GetMetricReportDefinitionCollection)
+	telemetryService.Get("/MetricReports", telemetry.GetMetricReportCollection)
+	telemetryService.Get("/Triggers", telemetry.GetTriggerCollection)
+	telemetryService.Get("/MetricDefinitions/{id}", telemetry.GetMetricDefinition)
+	telemetryService.Get("/MetricReportDefinitions/{id}", telemetry.GetMetricReportDefinition)
+	telemetryService.Get("/MetricReports/{id}", telemetry.GetMetricReport)
+	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
+	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
+
 	return router
 }

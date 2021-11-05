@@ -57,7 +57,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           createAccount.UserName,

@@ -15,19 +15,49 @@
 version: '2.4'
 
 services:
-  consul:
-    image: 'consul:1.6'
-    hostname: consul
-    restart: always
+  etcd:
+    build:
+      context: ./.
+      dockerfile: ./etcd/Dockerfile.etcd
+      args:
+          http_proxy: $http_proxy
+          https_proxy: $https_proxy
+    container_name: odim_etcd
+    image: odim_etcd:1.0
+    hostname: etcd
+    domainname: etcd
+    restart: on-failure
     ports:
-      - '8600:8600'
-      - '8500:8500'
-      - '8301:8301'
-      - '8302:8302'
-      - '8300:8300'
+      - '2379:2379'
+      - '2380:2380'
+    expose:
+      - '2379'
+      - '2380'
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    user: odimra
+    environment:
+      - MEMBER_NAME=etcd
+      - ENABLE_TLS=true
+      - DATA_DIR_PATH=/opt/etcd/data
+      - LISTEN_PEER_ADDR=https://0.0.0.0:2380
+      - LISTEN_CLIENT_ADDR=https://0.0.0.0:2379
+      - INITIAL_ADV_ADDR=https://etcd:2380
+      - INITIAL_CLUSTER="etcd=https://etcd:2380"
+      - INITIAL_CLUSTER_STATE=new
+      - INITIAL_CLUSTER_TOKEN=odim-etcd-cluster
+      - ADV_CLIENT_ADDR=https://etcd:2379
+      - CLIENT_CERT_FILE=/opt/etcd/conf/odimra_etcd_server.crt
+      - CLIENT_KEY_FILE=/opt/etcd/conf/odimra_etcd_server.key
+      - CA_FILE=/opt/etcd/conf/rootCA.crt
+      - SERVER_CERT_FILE=/opt/etcd/conf/odimra_etcd_server.crt
+      - SERVER_KEY_FILE=/opt/etcd/conf/odimra_etcd_server.key
     volumes:
-      - './Consul/data:/consul/data:rw'
-      - './Consul/config:/consul/config:rw'
+      - '/etc/etcd/data:/opt/etcd/data:rw'
+      - '/etc/etcd/conf/rootCA.crt:/opt/etcd/conf/rootCA.crt:ro'
+      - '/etc/etcd/conf/odimra_etcd_server.key:/opt/etcd/conf/odimra_etcd_server.key:ro'
+      - '/etc/etcd/conf/odimra_etcd_server.crt:/opt/etcd/conf/odimra_etcd_server.crt:ro'
+    command: bash -c "/opt/etcd/scripts/start_etcd.sh"
   redis:
     build:
       context: ./.
@@ -84,7 +114,6 @@ services:
       - '/etc/zookeeper/conf:/opt/zookeeper/conf:ro'
       - '/etc/zookeeper/data:/opt/zookeeper/data:rw'
     command: bash -c "/opt/zookeeper/scripts/start_zookeeper.sh"
-
   kafka:
     build:
       context: ./.
@@ -123,7 +152,6 @@ services:
       - '/etc/kafka/conf:/opt/kafka/conf:ro'
       - '/etc/kafka/data:/opt/kafka/data:rw'
     command: bash -c "/opt/kafka/scripts/start_kafka.sh"
-
   odimra:
     build:
       context: ./.
@@ -143,7 +171,7 @@ services:
     depends_on:
       - "kafka"
       - "redis"
-      - "consul"
+      - "etcd"
     ports:
       - '45000:45000'
     expose:
@@ -166,10 +194,10 @@ services:
       - '../build/odimra/systems.service:/etc/systemd/system/systems.service:rw'
       - '../build/odimra/task.service:/etc/systemd/system/task.service:rw'
       - '../build/odimra/fabrics.service:/etc/systemd/system/fabrics.service:rw'
+      - '../build/odimra/telemetry.service:/etc/systemd/system/telemetry.service:rw'
       - '../build/odimra/managers.service:/etc/systemd/system/managers.service:rw'
       - '../build/odimra/update.service:/etc/systemd/system/update.service:rw'
-    command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh" 
-
+    command: bash -c "cp -r /var/odimra_config/ /etc/ && /var/tmp/edit_config.sh && rm -rf /var/odimra_config/* && /bin/start_odimra.sh"
   grf_plugin:
     build:
       context: ./.
@@ -201,9 +229,7 @@ services:
       - '/etc/plugincert/odimra_kafka_client.key:/etc/plugin_certs/odimra_kafka_client.key:ro'
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
       - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw' 
-    command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh" 
-
-
+    command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh"
   urp:
     build:
       context: plugin-unmanaged-racks/.
@@ -279,3 +305,35 @@ services:
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/dell_plugin_certs/odimra_kafka_client.crt:ro'
       - '../build/DELLPlugin/dell_plugin.service:/etc/systemd/system/dell_plugin.service:rw' 
     command: bash -c "cp -r /var/dell_plugin_config/ /etc && /var/tmp/dell_plugin-edit_config.sh && rm -rf /var/dell_plugin_config/* && /bin/start_plugin.sh"
+  lenovo_plugin:
+    build:
+      context: ./.
+      dockerfile: LenovoPlugin/Dockerfile.lenovo_plugin
+      args:
+        http_proxy: $http_proxy
+        https_proxy: $https_proxy
+    hostname: lenovo_plugin
+    restart: always
+    privileged: true
+    environment:
+      - HOSTIP=$HOSTIP
+    image: lenovo-plugin:1.0
+    depends_on:
+      - "odimra"
+    ports:
+      - '45009:45009'
+      - '45010:45010'
+    expose:
+      - '45009'
+      - '45010'
+    volumes:
+      - '/var/log/LENOVO_PLUGIN:/var/log/lenovo_plugin_logs'
+      - '/etc/lenovo_plugin_config:/etc/lenovo_plugin_config:rw'
+      - '/sys/fs/cgroup:/sys/fs/cgroup:ro'
+      - '/etc/plugincert/rootCA.crt:/etc/lenovo_plugin_certs/rootCA.crt:ro'
+      - '/etc/plugincert/odimra_server.key:/etc/lenovo_plugin_certs/odimra_server.key:ro'
+      - '/etc/plugincert/odimra_server.crt:/etc/lenovo_plugin_certs/odimra_server.crt:ro'
+      - '/etc/plugincert/odimra_kafka_client.key:/etc/lenovo_plugin_certs/odimra_kafka_client.key:ro'
+      - '/etc/plugincert/odimra_kafka_client.crt:/etc/lenovo_plugin_certs/odimra_kafka_client.crt:ro'
+      - '../build/LenovoPlugin/lenovo_plugin.service:/etc/systemd/system/lenovo_plugin.service:rw'
+    command: bash -c "cp -r /var/lenovo_plugin_config/ /etc && /var/tmp/lenovo_plugin-edit_config.sh && rm -rf /var/lenovo_plugin_config/* && /bin/start_plugin.sh"

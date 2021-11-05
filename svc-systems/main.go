@@ -46,6 +46,8 @@ func main() {
 		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
@@ -74,7 +76,7 @@ func main() {
 
 	registerHandler()
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -83,7 +85,7 @@ func registerHandler() {
 	systemRPC := new(rpc.Systems)
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
 	systemRPC.EI = systems.GetExternalInterface()
-	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
+	systemsproto.RegisterSystemsServer(services.ODIMService.Server(), systemRPC)
 
 	pcf := plugin.NewClientFactory(config.Data.URLTranslation)
 	chassisRPC := rpc.NewChassisRPC(
@@ -95,5 +97,5 @@ func registerHandler() {
 		chassis.NewUpdateHandler(pcf),
 	)
 
-	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)
+	chassisproto.RegisterChassisServer(services.ODIMService.Server(), chassisRPC)
 }

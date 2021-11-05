@@ -14,7 +14,6 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -27,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	evt "github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.New()
@@ -40,6 +40,8 @@ func main() {
 	if err := config.SetConfiguration(); err != nil {
 		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
+
+	config.CollectCLArgs()
 
 	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
@@ -61,17 +63,19 @@ func main() {
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	consumer.In, consumer.Out = common.CreateJobQueue()
+	jobQueueSize := 10
+	consumer.In, consumer.Out = common.CreateJobQueue(jobQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
 	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 5)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue()
+	ctrlMsgProcQueueSize := 1
+	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue(ctrlMsgProcQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
-	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 5)
+	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
 
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
@@ -92,7 +96,7 @@ func main() {
 	go startUPInterface.SubscribePluginEMB()
 
 	// Run server
-	if err := services.Service.Run(); err != nil {
+	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -105,5 +109,5 @@ func registerHandler() {
 	events.CreateTaskRPC = services.CreateTask
 	events.UpdateTaskRPC = evt.UpdateTaskData
 	events.CreateChildTaskRPC = services.CreateChildTask
-	eventsproto.RegisterEventsHandler(services.Service.Server(), events)
+	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 }

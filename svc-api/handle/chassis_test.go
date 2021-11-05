@@ -17,13 +17,13 @@ package handle
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"testing"
-
+	errorResponse "github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
-
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
+	"net/http"
+	"testing"
 )
 
 func mockGetChassisResource(chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
@@ -208,12 +208,12 @@ func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
 		StatusCode: http.StatusBadRequest,
 		Body: []byte(`{
   "error": {
-    "code": "Base.1.6.1.GeneralError",
+    "code": "` + response.GeneralError + `",
     "message": "An error has occurred. See ExtendedInfo for more information.",
     "@Message.ExtendedInfo": [
       {
         "@odata.type": "#Message.v1_0_8.Message",
-        "MessageId": "Base.1.6.1.MalformedJSON",
+        "MessageId": "` + errorResponse.MalformedJSON + `",
         "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
         "Severity": "Critical",
         "Resolution": "Ensure that the request body is valid JSON and resubmit the request."

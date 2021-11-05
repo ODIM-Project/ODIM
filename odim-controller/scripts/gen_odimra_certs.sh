@@ -38,6 +38,14 @@ declare KAFKA_JTS_PATH
 declare ZOOKEEPER_JKS_PATH
 declare ZOOKEEPER_JTS_PATH
 declare ODIMRA_NAMESPACE
+declare ODIMRA_ETCD_SERVER_CSR_PATH
+declare ODIMRA_ETCD_SERVER_CRT_PATH
+declare ODIMRA_ETCD_SERVER_KEY_PATH
+declare ODIMRA_HA_DEPLOYMENT
+declare ODIMRA_VIRTUAL_IP
+declare NGINX_SERVER_CSR_PATH
+declare NGINX_SERVER_CRT_PATH
+declare NGINX_SERVER_KEY_PATH
 
 OPENSSL_BIN_PATH="/usr/bin/openssl"
 KEYTOOL_BIN_PATH="/usr/bin/keytool"
@@ -500,6 +508,106 @@ HERE
 	chmod 0600 ${ZOOKEEPER_JKS_PATH} ${ZOOKEEPER_JTS_PATH}
 }
 
+# generate_nginx_certs is for generating certificate
+# and private key required for nginx server
+generate_nginx_certs()
+{
+	# check HA deployment is enabled
+	if [[ ${ODIMRA_HA_DEPLOYMENT,,} == false ]]; then
+		echo "[$(date)] -- INFO  -- HA deployment not enabled, not generating cert and key required for nginx"
+		return
+	fi
+
+	# check if cert and key exists and is not empty
+	if [[ -s ${NGINX_SERVER_KEY_PATH} ]] && [[ -s ${NGINX_SERVER_CRT_PATH} ]]; then
+		echo "[$(date)] -- INFO  -- nginx server crt and key already exists"
+		# verify crt was signed by the rootCA present
+		${OPENSSL_BIN_PATH} verify -CAfile ${ODIMRA_ROOTCA_CRT_PATH} ${NGINX_SERVER_CRT_PATH} > /dev/null
+		eval_cmd_exec $? "${NGINX_SERVER_CRT_PATH} is not signed by ${ODIMRA_ROOTCA_CRT_PATH}"
+		return
+	fi
+
+	# check if rootCA key was made available, if it was not generated this script.
+	if ${ROOT_CA_KEY_NOT_PROVIDED}; then
+		echo "[$(date)] -- ERROR -- rootCA key was not provided, nginx server crt generation not possible"
+		exit 1
+	fi
+
+	# generate private key
+	${OPENSSL_BIN_PATH} genrsa -out ${NGINX_SERVER_KEY_PATH} ${KEY_LENGTH}
+	eval_cmd_exec $? "${NGINX_SERVER_KEY_PATH} generation failed"
+
+	#generate CSR
+	${OPENSSL_BIN_PATH} req -new -key ${NGINX_SERVER_KEY_PATH} -out ${NGINX_SERVER_CSR_PATH} -config <(cat <<EOF
+[req]
+default_bits = ${KEY_LENGTH}
+encrypt_key  = no
+default_md   = sha512
+prompt       = no
+utf8         = yes
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[req_distinguished_name]
+C  = ${CERT_COUNTRY_NAME}
+ST = ${CERT_STATE_NAME}
+L  = ${CERT_LOCALITY_NAME}
+O  = ${CERT_ORGANIZATION_NAME}
+OU = ${CERT_ORGANIZATION_UNIT_NAME}
+CN = ODIMRA_PROXY_CRT
+
+[v3_req]
+subjectKeyIdentifier = hash
+keyUsage             = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage     = clientAuth, serverAuth
+subjectAltName       = @alt_names
+
+[alt_names]
+DNS.0 = odimra.proxy.net
+IP.0 = ${ODIMRA_VIRTUAL_IP}
+EOF
+)
+	eval_cmd_exec $? "${NGINX_SERVER_CSR_PATH} generation failed"
+
+	# obtain certificate
+	${OPENSSL_BIN_PATH} x509 -req -days ${CERT_VALIDITY_PERIOD} -in ${NGINX_SERVER_CSR_PATH} -CA ${ODIMRA_ROOTCA_CRT_PATH} -CAkey ${ODIMRA_ROOTCA_KEY_PATH} -CAcreateserial -out ${NGINX_SERVER_CRT_PATH} -extensions v3_req -extfile <( cat <<EOF
+[req]
+default_bits = ${KEY_LENGTH}
+encrypt_key  = no
+default_md   = sha512
+prompt       = no
+utf8         = yes
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[req_distinguished_name]
+C  = ${CERT_COUNTRY_NAME}
+ST = ${CERT_STATE_NAME}
+L  = ${CERT_LOCALITY_NAME}
+O  = ${CERT_ORGANIZATION_NAME}
+OU = ${CERT_ORGANIZATION_UNIT_NAME}
+CN = ODIMRA_PROXY_CRT
+
+[v3_req]
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always,issuer:always
+keyUsage                = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage        = clientAuth, serverAuth
+subjectAltName          = @alt_names
+
+[alt_names]
+DNS.0 = odimra.proxy.net
+IP.0 = ${ODIMRA_VIRTUAL_IP}
+EOF
+)
+	eval_cmd_exec $? "${NGINX_SERVER_CRT_PATH} generation failed"
+
+	# remove temp files
+	rm -f ${NGINX_SERVER_CSR_PATH} ${ODIMRA_CERT_DIR}/rootCA.srl
+
+	chmod 0600 ${NGINX_SERVER_KEY_PATH} ${NGINX_SERVER_CRT_PATH}
+}
+
 # read_config_value parses the config file
 # and fetches the value of the parameter passed
 read_config_value()
@@ -577,6 +685,8 @@ read_config_file()
 	KAFKA_JKS_PASSWORD=$(read_config_value "kafkaJKSPassword")
 	ZOOKEEPER_JKS_PASSWORD=$(read_config_value "zookeeperJKSPassword")
 	ODIMRA_NAMESPACE=$(read_config_value "namespace")
+	ODIMRA_HA_DEPLOYMENT=$(read_config_value "haDeploymentEnabled")
+	ODIMRA_VIRTUAL_IP=$(read_config_value "virtualIP")
 
 	parse_cert_san
 
@@ -595,6 +705,12 @@ read_config_file()
 	KAFKA_JTS_PATH=${ODIMRA_CERT_DIR}/kafka.truststore.jks
 	ZOOKEEPER_JKS_PATH=${ODIMRA_CERT_DIR}/zookeeper.keystore.jks
 	ZOOKEEPER_JTS_PATH=${ODIMRA_CERT_DIR}/zookeeper.truststore.jks
+	ODIMRA_ETCD_SERVER_CSR_PATH=${ODIMRA_CERT_DIR}/odimra_etcd_server.csr
+	ODIMRA_ETCD_SERVER_CRT_PATH=${ODIMRA_CERT_DIR}/odimra_etcd_server.crt
+	ODIMRA_ETCD_SERVER_KEY_PATH=${ODIMRA_CERT_DIR}/odimra_etcd_server.key
+	NGINX_SERVER_CSR_PATH=${ODIMRA_CERT_DIR}/nginx_server.csr
+	NGINX_SERVER_CRT_PATH=${ODIMRA_CERT_DIR}/nginx_server.crt
+	NGINX_SERVER_KEY_PATH=${ODIMRA_CERT_DIR}/nginx_server.key
 }
 
 # validate_config_params is for validating
@@ -619,11 +735,81 @@ validate_config_params()
 		echo "[$(date)] -- ERROR -- mandatory param namespace cannot be empty"
 		((count++))
 	fi
+	if [[ -z ${ODIMRA_HA_DEPLOYMENT} ]]; then
+		echo "[$(date)] -- INFO  -- haDeploymentEnabled param not found or value not assigned, default value considered"
+		ODIMRA_HA_DEPLOYMENT=false
+	fi
+	if [[ ${ODIMRA_HA_DEPLOYMENT,,} == true ]] && [[ -z ${ODIMRA_VIRTUAL_IP} ]]; then
+		echo "[$(date)] -- ERROR -- mandatory param virtualIP cannot be empty"
+		((count++))
+	fi
 
 	if [[ $count -ne 0 ]]; then
 		echo "[$(date)] -- ERROR -- $count parameter(s) have invalid value configured, exiting"
 		exit 1
 	fi
+}
+
+generate_etcd_certs()
+{
+	# check if cert and key exists and is not empty
+	if [[ -s ${ODIMRA_ETCD_SERVER_KEY_PATH} ]] && [[ -s ${ODIMRA_ETCD_SERVER_CRT_PATH} ]]; then
+		echo "[$(date)] -- INFO  -- odimra etcd server crt and key already exists"
+		# verify crt was signed by the rootCA present
+		${OPENSSL_BIN_PATH} verify -CAfile ${ODIMRA_ROOTCA_CRT_PATH} ${ODIMRA_ETCD_SERVER_CRT_PATH} > /dev/null
+		eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_CRT_PATH} is not signed by ${ODIMRA_ROOTCA_CRT_PATH}"
+		return
+	fi
+
+	# check if rootCA key was made available, if it was not generated by this script.
+	if ${ROOT_CA_KEY_NOT_PROVIDED}; then
+		echo "[$(date)] -- ERROR -- rootCA key was not provided, odim etcd server crt generation not possible"
+		exit 1
+	fi
+
+	#generate etcd private key
+	${OPENSSL_BIN_PATH} genrsa -out ${ODIMRA_ETCD_SERVER_KEY_PATH} ${KEY_LENGTH}
+	eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_KEY_PATH} generation failed"
+
+	#generate etcd csr
+	${OPENSSL_BIN_PATH} req -new -sha512 -key ${ODIMRA_ETCD_SERVER_KEY_PATH} -subj "/C=${CERT_COUNTRY_NAME}/ST=${CERT_STATE_NAME}/L=${CERT_LOCALITY_NAME}/O=${CERT_ORGANIZATION_NAME}/OU=${CERT_ORGANIZATION_UNIT_NAME}/CN=etcd" -config <(cat <<EOF
+[ req ]
+prompt=no
+distinguished_name=subject
+req_extensions=req_ext
+[ subject ]
+commonName=etcd
+[ req_ext ]
+extendedKeyUsage=serverAuth, clientAuth
+basicConstraints=critical,CA:false
+keyUsage=nonRepudiation, digitalSignature, keyEncipherment
+EOF
+) -out ${ODIMRA_ETCD_SERVER_CSR_PATH}
+	eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_CSR_PATH} generation failed"
+
+	#sign and gen etcd certificate
+	${OPENSSL_BIN_PATH} x509 -req -extensions server_crt -extfile <( cat <<EOF
+[server_crt]
+basicConstraints=CA:FALSE
+keyUsage=nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage=serverAuth, clientAuth
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid,issuer
+subjectAltName=@alternate_names
+[ alternate_names ]
+DNS.0 = etcd
+DNS.1 = etcd1
+DNS.2 = etcd2
+DNS.3 = etcd3
+DNS.4 = etcd1.etcd.${ODIMRA_NAMESPACE}.svc.cluster.local
+DNS.5 = etcd2.etcd.${ODIMRA_NAMESPACE}.svc.cluster.local
+DNS.6 = etcd3.etcd.${ODIMRA_NAMESPACE}.svc.cluster.local
+EOF
+) -in  ${ODIMRA_ETCD_SERVER_CSR_PATH} -CA  ${ODIMRA_ROOTCA_CRT_PATH} -CAkey  ${ODIMRA_ROOTCA_KEY_PATH}  -CAcreateserial -out ${ODIMRA_ETCD_SERVER_CRT_PATH} -days ${CERT_VALIDITY_PERIOD} -sha512
+	eval_cmd_exec $? "${ODIMRA_ETCD_SERVER_CRT_PATH} generation failed"
+
+	# clean up temp files generated
+	rm -f ${ODIMRA_ETCD_SERVER_CSR_PATH} ${ODIMRA_CERT_DIR}/rootCA.srl
 }
 
 # generate_certs is for generating the
@@ -636,6 +822,8 @@ generate_certs()
 	generate_odim_kafka_client_certs
 	generate_kafka_certs
 	generate_zookeeper_certs
+	generate_etcd_certs
+	generate_nginx_certs
 
 	#create a temp file, to indicate certs were generated by this script
 	touch ${ODIMRA_CERT_DIR}/.gen_odimra_certs.ok

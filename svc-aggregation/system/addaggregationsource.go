@@ -18,8 +18,9 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -82,7 +83,16 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	}
 
 	ipAddr := getKeyFromManagerAddress(addResourceRequest.ManagerAddress)
-
+	indexList, err := agmodel.GetString("BMCAddress", ipAddr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+	if len(indexList) > 0 {
+		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)
+	}
 	exist, dErr := e.CheckActiveRequest(ipAddr)
 	if dErr != nil {
 		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
@@ -105,7 +115,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
-	err := e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
+	err = e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
 		log.Println(errMsg)
@@ -140,11 +150,12 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	// else return the response
 	statusResp, statusCode, queueList := checkStatus(pluginContactRequest, addResourceRequest, cmVariants, taskInfo)
 	if statusCode == http.StatusOK {
+
 		// check if AggregationSource has any values, if its there means its managing the bmcs
 		if len(connectionMethod.Links.AggregationSources) > 0 {
 			errMsg := "Cant proceed to add aggregation source, since connection method is already managing other aggregation sources"
 			log.Error(errMsg)
-			return common.GeneralError(http.StatusNotAcceptable, response.InternalError, errMsg, nil, taskInfo)
+			return common.GeneralError(http.StatusConflict, response.ResourceInUse, errMsg, nil, taskInfo)
 		}
 		resp, aggregationSourceUUID, cipherText = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest, queueList, cmVariants)
 	} else if statusCode == http.StatusNotFound {

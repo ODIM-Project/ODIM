@@ -184,7 +184,7 @@ func GetPluginData(pluginID string) (Plugin, *errors.Error) {
 
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		return plugin, err
+		return plugin, errors.PackError(err.ErrNo(), "error while trying to connect to DB: ", err.Error())
 	}
 
 	plugindata, err := conn.Read("Plugin", pluginID)
@@ -387,6 +387,12 @@ func deletefilteredkeys(key string) error {
 			return fmt.Errorf("error while deleting data: " + delErr.Error())
 		}
 	}
+	delErr = conn.Del("BMCAddress", key)
+	if delErr != nil {
+		if delErr.Error() != "no data with ID found" {
+			return fmt.Errorf("error while deleting data: " + delErr.Error())
+		}
+	}
 	return nil
 }
 
@@ -431,13 +437,14 @@ func GetTarget(deviceUUID string) (*Target, error) {
 }
 
 //SaveIndex is used to create a
-func SaveIndex(searchForm map[string]interface{}, table, uuid string) error {
+func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
 	log.Info("Creating index")
 	searchForm["UUID"] = uuid
+	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.CreateIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to index the document: %v", err)
 	}
@@ -512,12 +519,15 @@ func DeleteManagersData(key string) *errors.Error {
 }
 
 //UpdateIndex is used for updating an existing index
-func UpdateIndex(searchForm map[string]interface{}, table, uuid string) error {
+func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	searchForm["UUID"] = uuid
+	if uuid != "" {
+		searchForm["UUID"] = uuid
+	}
+	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.UpdateResourceIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to update index: %v", err)
 	}
@@ -1073,6 +1083,37 @@ func UpdateDeviceSubscription(devSubscription common.DeviceSubscription) error {
 	}
 	if err := conn.UpdateDeviceSubscription(common.DeviceSubscriptionIndex, devSubscription.EventHostIP, devSubscription.Location, devSubscription.OriginResources); err != nil {
 		return fmt.Errorf("error while trying to update subscription of device %v", err.Error())
+	}
+	return nil
+}
+
+// CheckMetricRequest will check the DB to see whether there are any active requests for the given key
+// It will return true if there is an active request or false if not
+// It will also through an error if any DB connection issues arise
+func CheckMetricRequest(key string) (bool, *errors.Error) {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return false, errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	_, err = conn.Read("ActiveMetricRequest", key)
+	if err != nil {
+		if errors.DBKeyNotFound == err.ErrNo() {
+			return false, nil
+		}
+		return false, errors.PackError(err.ErrNo(), "error: while trying to fetch active connection details: ", err.Error())
+	}
+	return true, nil
+}
+
+// DeleteMetricRequest deletes the active request key from the DB, return error if any
+func DeleteMetricRequest(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to create connection with DB: ", err.Error())
+	}
+	err = conn.Delete("ActiveMetricRequest", key)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error: while trying to delete active connection details: ", err.Error())
 	}
 	return nil
 }

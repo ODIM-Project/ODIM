@@ -88,7 +88,7 @@ func TestCreateSession(t *testing.T) {
 		return
 	}
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService/Sessions",
 		ID:        "Sessions",
 		Name:      "Session Service",

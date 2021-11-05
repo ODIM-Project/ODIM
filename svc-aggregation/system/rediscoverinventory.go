@@ -18,9 +18,10 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -79,6 +80,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 	req.GetPluginStatus = e.GetPluginStatus
 	req.Plugin = plugin
 	req.StatusPoll = true
+	req.BMCAddress = target.ManagerAddress
 	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		req.HTTPMethodType = http.MethodPost
@@ -100,33 +102,32 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 		}
 
 	}
-	// check whether delete operation for the system is intiated
-	udaptedSystemURI := strings.Replace(systemURL, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+deviceUUID+":", -1)
+	// check whether delete operation for the system is initiated
 	if strings.Contains(systemURL, "/Storage") {
-		udaptedSystemURI = strings.Replace(udaptedSystemURI, "/Storage", "", -1)
+		systemURL = strings.Replace(systemURL, "/Storage", "", -1)
 	}
-	systemOperation, dbErr := agmodel.GetSystemOperationInfo(udaptedSystemURI)
+	systemOperation, dbErr := agmodel.GetSystemOperationInfo(systemURL)
 	if dbErr != nil && errors.DBKeyNotFound != dbErr.ErrNo() {
-		log.Error("Rediscovery for system: " + udaptedSystemURI + " can't be processed " + dbErr.Error())
+		log.Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
 	}
 	if systemOperation.Operation == "Delete" {
-		log.Error("Rediscovery for system: " + udaptedSystemURI + " can't be processed," +
+		log.Error("Rediscovery for system: " + systemURL + " can't be processed," +
 			systemOperation.Operation + " operation is under progress")
 		return
 	}
 
 	// Add system operation info to db to block the  delete  request for respective system
 	systemOperation.Operation = "InventoryRediscovery"
-	dbErr = systemOperation.AddSystemOperationInfo(udaptedSystemURI)
+	dbErr = systemOperation.AddSystemOperationInfo(systemURL)
 	if dbErr != nil {
-		log.Error("Rediscovery for system: " + udaptedSystemURI + " can't be processed " + dbErr.Error())
+		log.Error("Rediscovery for system: " + systemURL + " can't be processed " + dbErr.Error())
 		return
 	}
 	defer func() {
-		agmodel.DeleteSystemOperationInfo(udaptedSystemURI)
-		agmodel.DeleteSystemResetInfo(udaptedSystemURI)
-		deleteResourceResetInfo(udaptedSystemURI)
+		agmodel.DeleteSystemOperationInfo(systemURL)
+		agmodel.DeleteSystemResetInfo(systemURL)
+		deleteResourceResetInfo(systemURL)
 	}()
 
 	deleteSubordinateResource(deviceUUID)

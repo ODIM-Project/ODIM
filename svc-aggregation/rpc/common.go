@@ -61,6 +61,11 @@ func GetAggregator() *Aggregator {
 			GenericSave:              agmodel.GenericSave,
 			CheckActiveRequest:       agmodel.CheckActiveRequest,
 			DeleteActiveRequest:      agmodel.DeleteActiveRequest,
+			GetAllMatchingDetails:    agmodel.GetAllMatchingDetails,
+			CheckMetricRequest:       agmodel.CheckMetricRequest,
+			DeleteMetricRequest:      agmodel.DeleteMetricRequest,
+			GetResource:              agmodel.GetResource,
+			Delete:                   agmodel.Delete,
 		},
 	}
 }
@@ -77,7 +82,7 @@ func generateResponse(rpcResp response.RPC, aggResp *aggregatorproto.AggregatorR
 
 func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2.Task",
+		OdataType:    common.TaskType,
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

@@ -7,3 +7,5 @@ odimra:
   odimraRSAPrivateKey:
   odimraKafkaClientCert:
   odimraKafkaClientKey:
+  odimraEtcdServerCert:
+  odimraEtcdServerKey:

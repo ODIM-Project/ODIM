@@ -1,0 +1,77 @@
+---
+- set_fact:
+    proxy_env:
+      http_proxy: "{{ httpProxy | default('') }}"
+      https_proxy: "{{ httpsProxy | default('') }}"
+      no_proxy: "{{ noProxy | default('') }}"
+
+- name: Install packages required for keepalived configuration
+  apt:
+    pkg: "{{ keepalived_dep_pkgs }}"
+    force_apt_get: yes
+  environment: "{{ proxy_env }}"
+
+- name: Create directories required by keepalived service
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+    recurse: yes
+  loop:
+    - /opt/keepalived/bin
+    - /opt/keepalived/logs
+
+- name: Copy keepalived action script
+  copy:
+    src: "roles/configure-keepalived/templates/action_script.sh.j2"
+    dest: /opt/keepalived/bin/action_script.sh
+    owner: root
+    group: root
+    mode: 0500
+
+- set_fact:
+    cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+- name: Get interface name of {{ cur_host_ip }}({{ inventory_hostname }})
+  shell: netstat -ie | grep -B1 "{{ cur_host_ip }}" | head -n1 | awk '{print $1}' | cut -d':' -f1
+  register: interface
+
+- set_fact: 
+    interfaceName: "{{ interface.stdout }}"
+
+- name: Install keepalived packages
+  apt:
+    pkg: "{{ keepalived_pkgs }}"
+    force_apt_get: yes
+  environment: "{{ proxy_env }}"
+
+- name: Copy keepalived configuration file
+  template:
+    src: "roles/configure-keepalived/templates/keepalived.conf.j2"
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - routerID: "{{ inventory_hostname | mandatory }}"
+      interfaceName: "{{ interfaceName | mandatory }}"
+      virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
+      priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
+      virtualIP: "{{ odimra.virtualIP | mandatory }}"
+
+- name: Enable keepalived systemd service
+  systemd:
+    name: keepalived
+    enabled: yes
+    masked: no
+
+- name: Start keepalived service
+  systemd:
+    name: keepalived
+    state: restarted
+    daemon_reload: yes
+
+- name: Check status of keepalived service
+  command: systemctl is-active keepalived

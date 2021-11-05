@@ -21,11 +21,11 @@ import (
 	"encoding/base64"
 	"flag"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
-	"log"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -196,7 +196,7 @@ func decryptFileData(fpath, keyFilePath string) {
 	// read next bytes of data of length aesGCM.NonceSize()
 	// from 32nd byte to get the nonce value.
 	nonceEndPos := 32 + aesGCM.NonceSize()
-	nonce := cipherData[32 : nonceEndPos]
+	nonce := cipherData[32:nonceEndPos]
 
 	// decrypt the remaining content of the file
 	plaintext, err := aesGCM.Open(nil, nonce, cipherData[nonceEndPos:], nil)

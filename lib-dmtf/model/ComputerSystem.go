@@ -416,35 +416,35 @@ URIs:
 /redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}
 */
 type PCIeDevice struct {
-	Oid             string        `json:"@odata.id"`
-	Ocontext        string        `json:"@odata.context,omitempty"`
-	Oetag           string        `json:"@odata.etag,omitempty"`
-	Otype           string        `json:"@odata.type,omitempty"`
-	Description     string        `json:"description,omitempty"`
-	ID              string        `json:"Id,omitempty"`
-	Name            string        `json:"Name,omitempty"`
-	Oem             Oem           `json:"Oem,omitempty"`
-	Assembly        Assembly      `json:"Assembly,omitempty"`
-	AssetTag        string        `json:"AssetTag,omitempty"`
-	DeviceType      string        `json:"DeviceType,omitempty"` //enum
-	FirmwareVersion string        `json:"FirmwareVersion,omitempty"`
-	Links           Links         `json:"Links,omitempty"`
-	Manufacturer    string        `json:"Manufacturer,omitempty"`
-	Model           string        `json:"Model,omitempty"`
-	PartNumber      string        `json:"PartNumber,omitempty"`
-	PCIeInterface   PCIeInterface `json:"PCIeInterface,omitempty"`
-	SerialNumber    string        `json:"SerialNumber,omitempty"`
-	SKU             string        `json:"SKU,omitempty"`
-	Status          Status        `json:"Status,omitempty"`
+	Oid             string         `json:"@odata.id"`
+	Ocontext        string         `json:"@odata.context,omitempty"`
+	Oetag           string         `json:"@odata.etag,omitempty"`
+	Otype           string         `json:"@odata.type"`
+	Description     string         `json:"description,omitempty"`
+	ID              string         `json:"Id"`
+	Name            string         `json:"Name"`
+	Oem             Oem            `json:"Oem,omitempty"`
+	Assembly        *Assembly      `json:"Assembly,omitempty"`
+	AssetTag        string         `json:"AssetTag,omitempty"`
+	DeviceType      string         `json:"DeviceType,omitempty"` //enum
+	FirmwareVersion string         `json:"FirmwareVersion,omitempty"`
+	Links           *Links         `json:"Links,omitempty"`
+	Manufacturer    string         `json:"Manufacturer,omitempty"`
+	Model           string         `json:"Model,omitempty"`
+	PartNumber      string         `json:"PartNumber,omitempty"`
+	PCIeInterface   *PCIeInterface `json:"PCIeInterface,omitempty"`
+	SerialNumber    string         `json:"SerialNumber,omitempty"`
+	SKU             string         `json:"SKU,omitempty"`
+	Status          *Status        `json:"Status,omitempty"`
 }
 
 //PCIeInterface in place object
 type PCIeInterface struct {
-	LanesInUse  int    `json:"LanesInUse"`
-	MaxLanes    int    `json:"MaxLanes"`
-	MaxPCIeType string `json:"MaxPCIeType"` //enum
-	Oem         Oem    `json:"Oem"`
-	PCIeType    string `json:"PCIeType"` //enum
+	LanesInUse  int    `json:"LanesInUse,omitempty"`
+	MaxLanes    int    `json:"MaxLanes,omitempty"`
+	MaxPCIeType string `json:"MaxPCIeType,omitempty"` //enum
+	Oem         Oem    `json:"Oem,omitempty"`
+	PCIeType    string `json:"PCIeType,omitempty"` //enum
 }
 
 /*

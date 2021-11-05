@@ -72,86 +72,39 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 	}
 	// To discover the services we need registry
 	//Get Service options to retrive the Registry from it.
-	options := srv.Service.Options()
-	reg := options.Registry
-	for _, microService := range microServices {
+	for microService := range srv.GetEnabledServiceList() {
 		servicePath := "/redfish/v1/" + microService
 		switch microService {
 		case "AccountService":
-			serviceNodes, err := reg.GetService(srv.AccountSession)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.AccountService = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.AccountService = &models.Service{OdataID: servicePath}
 		case "EventService":
-			serviceNodes, err := reg.GetService(srv.Events)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.EventService = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.EventService = &models.Service{OdataID: servicePath}
 		case "SessionService":
-			serviceNodes, err := reg.GetService(srv.AccountSession)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.SessionService = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.SessionService = &models.Service{OdataID: servicePath}
 		case "JSONSchemas":
 			serviceRoot.JSONSchemas = &models.Service{OdataID: servicePath}
 		case "Systems":
-			serviceNodes, err := reg.GetService(srv.Systems)
-
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.Systems = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.Systems = &models.Service{OdataID: servicePath}
 		case "Chassis":
-			serviceNodes, err := reg.GetService(srv.Systems)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.Chassis = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.Chassis = &models.Service{OdataID: servicePath}
+
 		case "TaskService":
-			serviceNodes, err := reg.GetService(srv.Tasks)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.Tasks = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.Tasks = &models.Service{OdataID: servicePath}
+
 		case "AggregationService":
-			serviceNodes, err := reg.GetService(srv.Aggregator)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.AggregationService = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.AggregationService = &models.Service{OdataID: servicePath}
 		case "Fabrics":
-			serviceNodes, err := reg.GetService(srv.Fabrics)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.Fabrics = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.Fabrics = &models.Service{OdataID: servicePath}
 
 		case "Managers":
-			serviceNodes, err := reg.GetService(srv.Managers)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.Managers = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.Managers = &models.Service{OdataID: servicePath}
 
 		case "UpdateService":
-			serviceNodes, err := reg.GetService(srv.Update)
-			if err == nil {
-				if len(serviceNodes) != 0 {
-					serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
-				}
-			}
+			serviceRoot.UpdateService = &models.Service{OdataID: servicePath}
+
+		case "TelemetryService":
+			serviceRoot.TelemetryService = &models.Service{OdataID: servicePath}
+
 		}
 	}
 
@@ -2142,6 +2095,7 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Session.v1_1_3"},
 					models.Include{Namespace: "Session.v1_2_0"},
 					models.Include{Namespace: "Session.v1_2_1"},
+					models.Include{Namespace: "Session.v1_3_0"},
 				},
 			},
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/SessionCollection_v1.xml",
@@ -2640,7 +2594,6 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "Zone.v1_6_1"},
 				},
 			},
-
 			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/ZoneCollection_v1.xml",
 				TopInclude: []models.Include{
 					models.Include{Namespace: "ZoneCollection"},
@@ -2737,6 +2690,149 @@ func GetMetadata(ctx iris.Context) {
 					models.Include{Namespace: "LogServiceCollection"},
 				},
 			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TelemetryService_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "TelemetryService"},
+					models.Include{Namespace: "TelemetryService.v1_0_0"},
+					models.Include{Namespace: "TelemetryService.v1_0_1"},
+					models.Include{Namespace: "TelemetryService.v1_0_2"},
+					models.Include{Namespace: "TelemetryService.v1_0_3"},
+					models.Include{Namespace: "TelemetryService.v1_0_4"},
+					models.Include{Namespace: "TelemetryService.v1_0_5"},
+					models.Include{Namespace: "TelemetryService.v1_1_0"},
+					models.Include{Namespace: "TelemetryService.v1_1_1"},
+					models.Include{Namespace: "TelemetryService.v1_1_2"},
+					models.Include{Namespace: "TelemetryService.v1_1_3"},
+					models.Include{Namespace: "TelemetryService.v1_1_4"},
+					models.Include{Namespace: "TelemetryService.v1_1_5"},
+					models.Include{Namespace: "TelemetryService.v1_2_0"},
+					models.Include{Namespace: "TelemetryService.v1_2_1"},
+					models.Include{Namespace: "TelemetryService.v1_2_2"},
+					models.Include{Namespace: "TelemetryService.v1_2_3"},
+					models.Include{Namespace: "TelemetryService.v1_3_0"},
+					models.Include{Namespace: "TelemetryService.v1_3_1"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/TriggersCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "TriggersCollection"},
+				},
+			},
+
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/Triggers_v1.xml",
+
+				TopInclude: []models.Include{
+					models.Include{Namespace: "Triggers"},
+					models.Include{Namespace: "Triggers.v1_0_0"},
+					models.Include{Namespace: "Triggers.v1_0_1"},
+					models.Include{Namespace: "Triggers.v1_0_2"},
+					models.Include{Namespace: "Triggers.v1_0_3"},
+					models.Include{Namespace: "Triggers.v1_0_4"},
+					models.Include{Namespace: "Triggers.v1_0_5"},
+					models.Include{Namespace: "Triggers.v1_0_6"},
+					models.Include{Namespace: "Triggers.v1_1_0"},
+					models.Include{Namespace: "Triggers.v1_1_1"},
+					models.Include{Namespace: "Triggers.v1_1_2"},
+					models.Include{Namespace: "Triggers.v1_1_3"},
+					models.Include{Namespace: "Triggers.v1_1_4"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricDefinitionCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "MetricDefinitionCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricDefinition_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "MetricDefinition"},
+					models.Include{Namespace: "MetricDefinition.v1_0_0"},
+					models.Include{Namespace: "MetricDefinition.v1_0_1"},
+					models.Include{Namespace: "MetricDefinition.v1_0_2"},
+					models.Include{Namespace: "MetricDefinition.v1_0_3"},
+					models.Include{Namespace: "MetricDefinition.v1_0_4"},
+					models.Include{Namespace: "MetricDefinition.v1_0_5"},
+					models.Include{Namespace: "MetricDefinition.v1_0_6"},
+					models.Include{Namespace: "MetricDefinition.v1_0_7"},
+					models.Include{Namespace: "MetricDefinition.v1_1_0"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReportDefinitionCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "MetricReportDefinitionCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReportDefinition_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "MetricReportDefinition"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_0"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_1"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_2"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_3"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_4"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_5"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_6"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_7"},
+					models.Include{Namespace: "MetricReportDefinition.v1_0_8"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_0"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_1"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_2"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_3"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_4"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_5"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_6"},
+					models.Include{Namespace: "MetricReportDefinition.v1_1_7"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_0"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_1"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_2"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_3"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_4"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_5"},
+					models.Include{Namespace: "MetricReportDefinition.v1_2_6"},
+					models.Include{Namespace: "MetricReportDefinition.v1_3_0"},
+					models.Include{Namespace: "MetricReportDefinition.v1_3_1"},
+					models.Include{Namespace: "MetricReportDefinition.v1_3_2"},
+					models.Include{Namespace: "MetricReportDefinition.v1_3_3"},
+					models.Include{Namespace: "MetricReportDefinition.v1_3_4"},
+					models.Include{Namespace: "MetricReportDefinition.v1_3_5"},
+					models.Include{Namespace: "MetricReportDefinition.v1_4_0"},
+					models.Include{Namespace: "MetricReportDefinition.v1_4_1"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReportCollection_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "MetricReportCollection"},
+				},
+			},
+			models.Reference{URI: "http://redfish.dmtf.org/schemas/v1/MetricReport_v1.xml",
+				TopInclude: []models.Include{
+					models.Include{Namespace: "MetricReport"},
+					models.Include{Namespace: "MetricReport.v1_0_0"},
+
+					models.Include{Namespace: "MetricReport.v1_0_1"},
+					models.Include{Namespace: "MetricReport.v1_0_2"},
+					models.Include{Namespace: "MetricReport.v1_0_3"},
+					models.Include{Namespace: "MetricReport.v1_0_4"},
+					models.Include{Namespace: "MetricReport.v1_0_5"},
+					models.Include{Namespace: "MetricReport.v1_0_6"},
+					models.Include{Namespace: "MetricReport.v1_0_7"},
+					models.Include{Namespace: "MetricReport.v1_1_0"},
+					models.Include{Namespace: "MetricReport.v1_1_1"},
+					models.Include{Namespace: "MetricReport.v1_1_2"},
+					models.Include{Namespace: "MetricReport.v1_1_3"},
+					models.Include{Namespace: "MetricReport.v1_1_4"},
+					models.Include{Namespace: "MetricReport.v1_1_5"},
+					models.Include{Namespace: "MetricReport.v1_1_6"},
+					models.Include{Namespace: "MetricReport.v1_2_1"},
+					models.Include{Namespace: "MetricReport.v1_2_2"},
+					models.Include{Namespace: "MetricReport.v1_2_3"},
+					models.Include{Namespace: "MetricReport.v1_2_4"},
+					models.Include{Namespace: "MetricReport.v1_3_1"},
+					models.Include{Namespace: "MetricReport.v1_3_2"},
+					models.Include{Namespace: "MetricReport.v1_3_4"},
+					models.Include{Namespace: "MetricReport.v1_4_1"},
+					models.Include{Namespace: "MetricReport.v1_4_2"},
+				},
+			},
 		},
 	}
 	ctx.Gzip(true)
@@ -2820,7 +2916,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	}
 	regCollectionResp := response.ListResponse{
 		OdataContext: "/redfish/v1/$metadata#MessageRegistryFileCollection.MessageRegistryFileCollection",
-		OdataID:      "/redfish/v1/Registries/",
+		OdataID:      "/redfish/v1/Registries",
 		OdataType:    "#MessageRegistryFileCollection.MessageRegistryFileCollection",
 		Name:         "Registry File Repository",
 		Description:  "Registry Repository",

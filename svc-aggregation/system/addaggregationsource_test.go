@@ -70,16 +70,6 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 	})
-	reqPluginID, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
-		UserName: "admin",
-		Password: "password",
-		Links: &Links{
-			ConnectionMethod: &ConnectionMethod{
-				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
-			},
-		},
-	})
 	reqSuccessXAuth, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.2",
 		UserName: "admin",
@@ -91,7 +81,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceBasicAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
+		HostName: "100.0.0.12",
 		UserName: "admin1",
 		Password: "incorrectPassword",
 		Links: &Links{
@@ -101,12 +91,22 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceXAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.2",
+		HostName: "100.0.0.13",
 		UserName: "username",
 		Password: "password",
 		Links: &Links{
 			ConnectionMethod: &ConnectionMethod{
 				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7551386e-b9d7-4233-a963-3841adc69e17",
+			},
+		},
+	})
+	reqBMC, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.15",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
 			},
 		},
 	})
@@ -184,7 +184,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 				taskID: "123",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  reqPluginID,
+					RequestBody:  reqBMC,
 				},
 			},
 			want: response.RPC{
@@ -863,6 +863,27 @@ func mockDeleteActiveRequest(managerAddress string) *errors.Error {
 	return nil
 }
 
+func mockCheckMetricRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteMetricRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
+}
+
+func mockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	return []string{
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUICUtilCustom1",
+		"Triggers:/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers",
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3",
+	}, nil
+}
+
+func mockDelete(table, key string, dbtype common.DbType) *errors.Error {
+	return nil
+}
+
 func getMockExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		ContactClient:           mockContactClient,
@@ -886,5 +907,10 @@ func getMockExternalInterface() *ExternalInterface {
 		DeleteSystem:            deleteSystemforTest,
 		DeleteEventSubscription: mockDeleteSubscription,
 		EventNotification:       mockEventNotification,
+		GetAllMatchingDetails:   mockGetAllMatchingDetails,
+		CheckMetricRequest:      mockCheckMetricRequest,
+		DeleteMetricRequest:     mockDeleteMetricRequest,
+		GetResource:             mockGetResource,
+		Delete:                  mockDelete,
 	}
 }

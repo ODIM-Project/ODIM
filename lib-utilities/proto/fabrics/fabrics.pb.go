@@ -4,8 +4,12 @@
 package fabrics
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -226,4 +230,192 @@ var fileDescriptor_981af76bf6761e72 = []byte{
 	0x33, 0x59, 0x8b, 0x50, 0xd3, 0xf7, 0x3f, 0x3d, 0x85, 0xea, 0xfe, 0x62, 0xd8, 0xf6, 0x8f, 0xaf,
 	0xf7, 0x85, 0xdb, 0x0d, 0xad, 0xe8, 0x07, 0x6e, 0xd3, 0x72, 0xfa, 0x9f, 0x0e, 0x3e, 0x02, 0x00,
 	0x00, 0xff, 0xff, 0x7d, 0x5c, 0x07, 0x82, 0xb8, 0x02, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// FabricsClient is the client API for Fabrics service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type FabricsClient interface {
+	GetFabricResource(ctx context.Context, in *FabricRequest, opts ...grpc.CallOption) (*FabricResponse, error)
+	UpdateFabricResource(ctx context.Context, in *FabricRequest, opts ...grpc.CallOption) (*FabricResponse, error)
+	AddFabric(ctx context.Context, in *AddFabricRequest, opts ...grpc.CallOption) (*FabricResponse, error)
+	DeleteFabricResource(ctx context.Context, in *FabricRequest, opts ...grpc.CallOption) (*FabricResponse, error)
+}
+
+type fabricsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewFabricsClient(cc *grpc.ClientConn) FabricsClient {
+	return &fabricsClient{cc}
+}
+
+func (c *fabricsClient) GetFabricResource(ctx context.Context, in *FabricRequest, opts ...grpc.CallOption) (*FabricResponse, error) {
+	out := new(FabricResponse)
+	err := c.cc.Invoke(ctx, "/Fabrics/GetFabricResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fabricsClient) UpdateFabricResource(ctx context.Context, in *FabricRequest, opts ...grpc.CallOption) (*FabricResponse, error) {
+	out := new(FabricResponse)
+	err := c.cc.Invoke(ctx, "/Fabrics/UpdateFabricResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fabricsClient) AddFabric(ctx context.Context, in *AddFabricRequest, opts ...grpc.CallOption) (*FabricResponse, error) {
+	out := new(FabricResponse)
+	err := c.cc.Invoke(ctx, "/Fabrics/AddFabric", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fabricsClient) DeleteFabricResource(ctx context.Context, in *FabricRequest, opts ...grpc.CallOption) (*FabricResponse, error) {
+	out := new(FabricResponse)
+	err := c.cc.Invoke(ctx, "/Fabrics/DeleteFabricResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// FabricsServer is the server API for Fabrics service.
+type FabricsServer interface {
+	GetFabricResource(context.Context, *FabricRequest) (*FabricResponse, error)
+	UpdateFabricResource(context.Context, *FabricRequest) (*FabricResponse, error)
+	AddFabric(context.Context, *AddFabricRequest) (*FabricResponse, error)
+	DeleteFabricResource(context.Context, *FabricRequest) (*FabricResponse, error)
+}
+
+// UnimplementedFabricsServer can be embedded to have forward compatible implementations.
+type UnimplementedFabricsServer struct {
+}
+
+func (*UnimplementedFabricsServer) GetFabricResource(ctx context.Context, req *FabricRequest) (*FabricResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFabricResource not implemented")
+}
+func (*UnimplementedFabricsServer) UpdateFabricResource(ctx context.Context, req *FabricRequest) (*FabricResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFabricResource not implemented")
+}
+func (*UnimplementedFabricsServer) AddFabric(ctx context.Context, req *AddFabricRequest) (*FabricResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddFabric not implemented")
+}
+func (*UnimplementedFabricsServer) DeleteFabricResource(ctx context.Context, req *FabricRequest) (*FabricResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFabricResource not implemented")
+}
+
+func RegisterFabricsServer(s *grpc.Server, srv FabricsServer) {
+	s.RegisterService(&_Fabrics_serviceDesc, srv)
+}
+
+func _Fabrics_GetFabricResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FabricRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FabricsServer).GetFabricResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Fabrics/GetFabricResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FabricsServer).GetFabricResource(ctx, req.(*FabricRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Fabrics_UpdateFabricResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FabricRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FabricsServer).UpdateFabricResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Fabrics/UpdateFabricResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FabricsServer).UpdateFabricResource(ctx, req.(*FabricRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Fabrics_AddFabric_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddFabricRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FabricsServer).AddFabric(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Fabrics/AddFabric",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FabricsServer).AddFabric(ctx, req.(*AddFabricRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Fabrics_DeleteFabricResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FabricRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FabricsServer).DeleteFabricResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Fabrics/DeleteFabricResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FabricsServer).DeleteFabricResource(ctx, req.(*FabricRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Fabrics_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "Fabrics",
+	HandlerType: (*FabricsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetFabricResource",
+			Handler:    _Fabrics_GetFabricResource_Handler,
+		},
+		{
+			MethodName: "UpdateFabricResource",
+			Handler:    _Fabrics_UpdateFabricResource_Handler,
+		},
+		{
+			MethodName: "AddFabric",
+			Handler:    _Fabrics_AddFabric_Handler,
+		},
+		{
+			MethodName: "DeleteFabricResource",
+			Handler:    _Fabrics_DeleteFabricResource_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "fabrics.proto",
 }

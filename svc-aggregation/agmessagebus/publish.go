@@ -27,13 +27,12 @@ import (
 
 //Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(systemID, eventType, collectionType string) {
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, common.InterCommMsgQueueName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 
-	defer k.Close()
 	var event = common.Event{
 		EventID:   uuid.NewV4().String(),
 		MessageID: "ResourceEvent.1.0.3." + eventType,
@@ -46,7 +45,7 @@ func Publish(systemID, eventType, collectionType string) {
 	var messageData = common.MessageData{
 		Name:      "Resource Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
-		OdataType: "#Event.v1_4_0.Event",
+		OdataType: common.EventType,
 		Events:    events,
 	}
 	data, _ := json.Marshal(messageData)
@@ -55,7 +54,7 @@ func Publish(systemID, eventType, collectionType string) {
 		Request: data,
 	}
 
-	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
+	if err := k.Distribute(mbevent); err != nil {
 		log.Error("Unable Publish events to kafka" + err.Error())
 		return
 	}
@@ -65,12 +64,11 @@ func Publish(systemID, eventType, collectionType string) {
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
 func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
-	conn, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	conn, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, common.InterCommMsgQueueName)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
 	}
 
-	defer conn.Close()
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal data: %s", err.Error())
@@ -79,7 +77,7 @@ func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
 		MessageType: msgType,
 		Data:        data,
 	}
-	if err := conn.Distribute(common.InterCommMsgQueueName, ctrlMsg); err != nil {
+	if err := conn.Distribute(ctrlMsg); err != nil {
 		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
 	}
 	return nil

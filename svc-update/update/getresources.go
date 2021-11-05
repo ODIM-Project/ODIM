@@ -41,7 +41,7 @@ import (
 // error will be passed back.
 func (e *ExternalInterface) GetUpdateService() response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#UpdateService.v1_8_1.UpdateService",
+		OdataType:    common.UpdateServiceType,
 		OdataID:      "/redfish/v1/UpdateService",
 		OdataContext: "/redfish/v1/$metadata#UpdateService.UpdateService",
 		ID:           "UpdateService",
@@ -93,10 +93,14 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 		},
 		Actions: uresponse.Actions{
 			UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
-				Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
+				Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+				RedfishOperationApplyTimeSupport: uresponse.RedfishOperationApplyTimeSupport{
+					OdataType:       common.SettingsType,
+					SupportedValues: []string{"OnStartUpdateRequest"},
+				},
 			},
 			UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
-				Target: "/redfish/v1/UpdateService/Actions/StartUpdate",
+				Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
 			},
 		},
 	}

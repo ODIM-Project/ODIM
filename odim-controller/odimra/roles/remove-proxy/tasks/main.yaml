@@ -1,0 +1,34 @@
+---
+- name: Stop nginx service
+  systemd:
+    name: nginx
+    state: stopped
+  ignore_errors: true
+
+- name: Remove nginx and dependent packages
+  apt:
+    pkg:
+    - nginx
+    - nginx-common
+    - nginx-core
+    force_apt_get: yes
+    autoremove: yes
+    purge: yes
+    state: absent
+
+- name: Clean up nginx data
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/www/html
+    - /opt/nginx
+    - "{{ odimra.nginxLogPath }}"
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Remove unused packages from the cache
+  apt:
+    autoclean: yes

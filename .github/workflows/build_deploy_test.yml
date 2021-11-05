@@ -21,7 +21,7 @@ on:
 jobs:
 
   build:
-    name: Deploy
+    name: Docker_Deploy
     runs-on: ubuntu-18.04
 
     steps:

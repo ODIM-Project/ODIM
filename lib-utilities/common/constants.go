@@ -145,6 +145,14 @@ const (
 	TelemetryServiceType = "#TelemetryService.v1_3_1.TelemetryService"
 )
 
+// RediscoverResources contains to get only these resource from the device when
+// reset flag is set when device is restarted.
+var RediscoverResources = []string{
+	"Bios",
+	"BootOptions",
+	"Storage",
+}
+
 // SystemResource contains the Resource name and table name
 // this map is basically to fetch the table name against the system resource name,
 // so it will be usefull to store the resource data into the particular database table

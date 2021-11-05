@@ -251,7 +251,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		if host == "https://100.0.0.4:9091" {
 			body = "incorrectResponse"
 		}
-		if host == "https://100.0.0.1:" || host == "https://100.0.0.2:" {
+		if host == "https://100.0.0.1:" || host == "https://100.0.0.2:" || host == "https://100.0.0.12:" || host == "https://100.0.0.13:" || host == "https://100.0.0.15:" {
 			body = "not found"
 			return &http.Response{
 				StatusCode: http.StatusNotFound,

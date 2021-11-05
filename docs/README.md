@@ -66,6 +66,13 @@
   * [Single Ethernet interface](#single-ethernet-interface)
   * [PCIeDevice](#pciedevice)
   * [Storage](#storage)
+  * [StoragePools](#StoragePools)
+    * [Collection of StoragePools](#StoragePools-collection)
+    * [Single StoragePool](#Single-StoragePool)
+    * [Collection of AllocatedVolumes](#AllocatedVolumes-Collection)
+    * [Single AllocatedVolume](#single-AllocatedVolume)
+    * [Collection of ProvidingDrives](#ProvidingDrives-Collection)
+    * [Single ProvidingDrive](#single-ProvidingDrive)
   * [Storage subsystem](#storage-subsystem)
   * [Drives](#drives)
     + [Single drive](#single-drive)
@@ -228,7 +235,6 @@ DMTF's Redfish® specifications (Schema 2020.3 and Specification 1.11.1).
 The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 - **Services layer**
-
 
 The services layer is where all the services are hosted. This layer implements service logic for all use cases
 through an extensible domain model (Redfish Data Model). Requests coming from the API layer and the
@@ -418,6 +424,12 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|`GET` , `POST`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|`GET`, `DELETE`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
 |/redfish/v1/Systems?filter=\{searchKeys\}%20\{conditionKeys\}%20\{value/regEx\}|`GET`|
@@ -3376,8 +3388,14 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Bios|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|GET|`Login` |
-|/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
@@ -3457,10 +3475,6 @@ curl -i GET \
    "Members@odata.count":2
 }
 ```
-
-
-
-
 
 
 
@@ -4199,6 +4213,370 @@ curl -i GET \
 ```
 
 
+
+## StoragePools 
+
+The StoragePools schema represents storage pools, allocated volumes and drives.
+
+### StoragePools Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools` |
+| **Description**    | This operation returns a collection of StoragePool resource instances. |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools'
+
+```
+
+> **Sample response body**
+
+```
+{
+	"@odata.etag": "\"2a840a57e9592422136\"",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools",
+	"@odata.type": "#StoragePoolCollection.StoragePoolCollection",
+	"Description": "A collection of StoragePool resource instances.",
+	"Members": [{
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27"
+	}],
+	"Members@odata.count": 1,
+	"Name": "StoragePoolCollection"
+}
+```
+
+
+
+### Single StoragePool
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}` |
+| **Description**    | This operation represents a single StoragePool instance.     |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}'
+
+```
+
+> **Sample response body**
+
+```
+{
+	"@odata.etag": "\"7a55c980802224f456c\"",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27",
+	"@odata.type": "#StoragePool.v1_5_0.StoragePool",
+	"AllocatedVolumes": {
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes"
+	},
+	"Capacity": {
+		"Data": {
+			"AllocatedBytes": 998999326720,
+			"ConsumedBytes": 998999326720
+		},
+		"Metadata": {},
+		"Snapshot": {}
+	},
+	"CapacitySources": [{
+		"@odata.etag": "\"31ecba89b48925a6bf3\"",
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1",
+		"@odata.type": "#Capacity.v1_1_3.CapacitySource",
+		"Description": "The resource is used to represent a capacity for a Redfish implementation.",
+		"Id": "1",
+		"Name": "CapacitySources_1",
+		"ProvidingDrives": {
+			"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives"
+		}
+	}],
+	"CapacitySources@odata.count": 1,
+	"Description": "The resource is used to represent a storage pool for a Redfish implementation.",
+	"Id": "Pool_1_27",
+	"Name": "Pool_1_27",
+	"Status": {
+		"State": "Enabled"
+	},
+	"SupportedRAIDTypes": ["RAID0"]
+}
+```
+
+
+
+### AllocatedVolumes Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes` |
+| **Description**    | This operation returns a collection of volume resource instances. |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"2cbdffec21f02963c79\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes",
+   "@odata.type":"#VolumeCollection.VolumeCollection",
+   "Description":"A collection of volume resource instances.",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"VolumeCollection"
+}
+```
+
+
+
+### Single AllocatedVolume
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}` |
+| **Description**    | This operation represents a single volume instance.          |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"915af5f726a127f66c2\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27",
+   "@odata.type":"#Volume.v1_4_1.Volume",
+   "AccessCapabilities":[
+      
+   ],
+   "Actions":{
+      "#Volume.Initialize":{
+         "InitializeType@Redfish.AllowableValues":[
+            "Fast"
+         ],
+         "target":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27/Actions/Volume.Initialize",
+         "title":"Initialize"
+      }
+   },
+   "BlockSizeBytes":512,
+   "Capacity":{
+      "Data":{
+         
+      },
+      "Metadata":{
+         
+      },
+      "Snapshot":{
+         
+      }
+   },
+   "CapacityBytes":998999326720,
+   "Description":"This resource is used to represent a volume for a Redfish implementation.",
+   "DisplayName":"VD_1",
+   "Id":"27",
+   "Links":{
+      "Drives":[
+         {
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0"
+         }
+      ]
+   },
+   "Name":"VD_1",
+   "Oem":{
+      "Lenovo":{
+         "@odata.type":"#LenovoStorageVolume.v1_0_0.LenovoStorageVolume",
+         "AccessPolicy":"",
+         "Bootable":true,
+         "DriveCachePolicy":"",
+         "…"
+      }
+   },
+   "RAIDType":"RAID0",
+   "ReadCachePolicy":null,
+   "ReadCachePolicy@Redfish.AllowableValues":[
+      "Off",
+      "ReadAhead"
+   ],
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "StripSizeBytes":0,
+   "WriteCachePolicy":null,
+   "WriteCachePolicy@Redfish.AllowableValues":[
+      "WriteThrough",
+      "UnprotectedWriteBack",
+      "ProtectedWriteBack"
+   ]
+}
+```
+
+
+
+### ProvidingDrives Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives` |
+| **Description**    | This operation returns a collection of drives.               |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"252e43d3e5862ae3d30\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives",
+   "@odata.type":"#DriveCollection.DriveCollection",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"DriveCollection"
+}
+```
+
+
+
+### Single ProvidingDrive
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}` |
+| **Description**    | This operation represents a single drive instance.           |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}'
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"a81c2a4f4e972e18b6306\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0",
+   "@odata.type":"#Drive.v1_9_1.Drive",
+   "AssetTag":"",
+   "BlockSizeBytes":512,
+   "CapableSpeedGbs":6,
+   "CapacityBytes":1000204886016,
+   "Description":"This resource is used to represent a drive for a Redfish implementation.",
+   "EncryptionAbility":"None",
+   "EncryptionStatus":"Unencrypted",
+   "FailurePredicted":false,
+   "HotspareType":"None",
+   "Id":"Disk.0",
+   "Identifiers":[
+      {
+         "DurableName":"",
+         "DurableNameFormat":"UUID"
+      }
+   ],
+   "Links":{
+      "Chassis":{
+         "@odata.id":"/redfish/v1/Chassis/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1"
+      },
+      "PCIeFunctions":[
+         
+      ],
+      "Volumes":[
+         {
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Volumes/27"
+         }
+      ]
+   },
+   "Manufacturer":"Seagate",
+   "MediaType":"HDD",
+   "Model":"ST1000NX0423",
+   "Name":"1.00TB 7.2K 6Gbps SATA 2.5 HDD",
+   "NegotiatedSpeedGbs":6,
+   "Oem":{
+      "Lenovo":{
+         "@odata.type":"#LenovoDrive.v1_0_0.LenovoDrive",
+         "DriveStatus":"Online",
+         "Temperature":27
+      }
+   },
+   "PartNumber":"D7A01874",
+   "PhysicalLocation":{
+      "Info":"Slot 0",
+      "Info@Redfish.Deprecated":"The property is deprecated. Please use PartLocation instead.",
+      "InfoFormat":"Slot Number",
+      "InfoFormat@Redfish.Deprecated":"The property is deprecated. Please use PartLocation instead.",
+      "PartLocation":{
+         "LocationOrdinalValue":0,
+         "LocationType":"Bay",
+         "ServiceLabel":"Drive 0"
+      }
+   },
+   "PredictedMediaLifeLeftPercent":null,
+   "Protocol":"SATA",
+   "Revision":"LEK9",
+   "RotationSpeedRPM":7200,
+   "SKU":"00YK025",
+   "SerialNumber":"W473AMB3",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "StatusIndicator":null
+}
+```
 
 
 

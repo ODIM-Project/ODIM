@@ -70,16 +70,6 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 	})
-	reqPluginID, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
-		UserName: "admin",
-		Password: "password",
-		Links: &Links{
-			ConnectionMethod: &ConnectionMethod{
-				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
-			},
-		},
-	})
 	reqSuccessXAuth, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.2",
 		UserName: "admin",
@@ -91,7 +81,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceBasicAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
+		HostName: "100.0.0.12",
 		UserName: "admin1",
 		Password: "incorrectPassword",
 		Links: &Links{
@@ -101,12 +91,22 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceXAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.2",
+		HostName: "100.0.0.13",
 		UserName: "username",
 		Password: "password",
 		Links: &Links{
 			ConnectionMethod: &ConnectionMethod{
 				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7551386e-b9d7-4233-a963-3841adc69e17",
+			},
+		},
+	})
+	reqBMC, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.15",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
 			},
 		},
 	})
@@ -184,7 +184,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 				taskID: "123",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  reqPluginID,
+					RequestBody:  reqBMC,
 				},
 			},
 			want: response.RPC{

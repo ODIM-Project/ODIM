@@ -35,7 +35,7 @@ func getTestCounter() int {
 }
 
 func TestRunReadWorkers(t *testing.T) {
-	in, out := CreateJobQueue()
+	in, out := CreateJobQueue(1)
 	defer close(in)
 
 	RunReadWorkers(out, process, 5)
@@ -78,7 +78,7 @@ func (d *data) getData() int {
 }
 
 func TestRunWriteWorkers(t *testing.T) {
-	in, out := CreateJobQueue()
+	in, out := CreateJobQueue(1)
 	var dt data
 	var currentData int
 	var wg sync.WaitGroup

@@ -14,10 +14,11 @@
 package main
 
 import (
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -42,6 +43,10 @@ type TokenObject struct {
 var log = logrus.New()
 
 func main() {
+	// intializing the plugin start time
+	lputilities.PluginStartTime = time.Now()
+	log.Info("Plugin Start time:", lputilities.PluginStartTime.Format(time.RFC3339))
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
@@ -57,7 +62,8 @@ func main() {
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	lphandler.In, lphandler.Out = common.CreateJobQueue()
+	jobQueueSize := 10
+	lphandler.In, lphandler.Out = common.CreateJobQueue(jobQueueSize)
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
@@ -123,6 +129,14 @@ func routers() *iris.Application {
 		systems.Post("/{id}/Storage/{rid}/Volumes", lphandler.MethodNotAllowed)
 		systems.Delete("/{id}/Storage/{id2}/Volumes/{rid}", lphandler.MethodNotAllowed)
 		systems.Get("/{id}/Storage/{id2}/Drives/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{rid}/StoragePools", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{rid}/AllocatedVolumes", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", lphandler.GetResource)
+		systems.Get("/{id}/Storage/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", lphandler.GetResource)
+
 		systems.Get("/{id}/BootOptions", lphandler.GetResource)
 		systems.Get("/{id}/BootOptions/{rid}", lphandler.GetResource)
 		systems.Get("/{id}/Processors", lphandler.GetResource)
@@ -262,6 +276,4 @@ func eventsrouters() {
 // intializePluginStatus sets plugin status
 func intializePluginStatus() {
 	lputilities.Status.Available = "yes"
-	lputilities.Status.Uptime = time.Now().Format(time.RFC3339)
-
 }

@@ -636,13 +636,21 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 // returns false if no entry is found in the DeviceLoad for the requested URL and System ID
 func getDeviceLoadInfo(URL, systemID string) bool {
 	systemURL := "/redfish/v1/Systems/" + systemID
+	var resetFlag bool
 	if _, err := smodel.GetSystemResetInfo(URL); err == nil {
-		return true
+		resetFlag = true
 	} else if _, err := smodel.GetSystemResetInfo(systemURL); err == nil {
-		return true
-	} else {
-		return false
+		resetFlag = true
 	}
+	if resetFlag {
+		resetFlag = false
+		for _, resourceName := range common.RediscoverResources {
+			if strings.Contains(URL, resourceName) {
+				resetFlag = true
+			}
+		}
+	}
+	return resetFlag
 }
 
 // rediscoverSystemInventory will be triggered when ever the a valid storage URI or underneath URI's

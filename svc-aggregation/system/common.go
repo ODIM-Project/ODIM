@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -28,6 +27,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -125,6 +126,7 @@ type getResourceRequest struct {
 	UpdateFlag        bool
 	TargetURI         string
 	UpdateTask        func(common.TaskData) error
+	BMCAddress        string
 }
 
 type respHolder struct {
@@ -670,9 +672,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {
-		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
@@ -762,7 +764,7 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	searchForm := createServerSearchIndex(computeSystem, systemURI, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID, req.BMCAddress)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()

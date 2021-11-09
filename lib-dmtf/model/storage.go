@@ -157,7 +157,7 @@ type Drive struct {
 	Assembly                      *Link              `json:"Assembly,omitempty"`
 	AssetTag                      string             `json:"AssetTag,omitempty"`
 	BlockSizeBytes                int                `json:"BlockSizeBytes,omitempty"`
-	CapableSpeedGbs               int                `json:"CapableSpeedGbs,omitempty"`
+	CapableSpeedGbs               float32            `json:"CapableSpeedGbs,omitempty"`
 	CapacityBytes                 int                `json:"CapacityBytes,omitempty"`
 	Description                   string             `json:"Description,omitempty"`
 	EncryptionAbility             string             `json:"EncryptionAbility,omitempty"`
@@ -175,16 +175,16 @@ type Drive struct {
 	Model                         string             `json:"Model,omitempty"`
 	Multipath                     bool               `json:"Multipath,omitempty"`
 	Name                          string             `json:"Name"`
-	NegotiatedSpeedGbs            int                `json:"NegotiatedSpeedGbs,omitempty"`
+	NegotiatedSpeedGbs            float32            `json:"NegotiatedSpeedGbs,omitempty"`
 	Oem                           *Oem               `json:"Oem,omitempty"`
 	Operations                    []*DriveOperations `json:"Operations,omitempty"`
 	PartNumber                    string             `json:"PartNumber,omitempty"`
 	PhysicalLocation              *PhysicalLocation  `json:"PhysicalLocation,omitempty"`
-	PredictedMediaLifeLeftPercent int                `json:"PredictedMediaLifeLeftPercent,omitempty"`
+	PredictedMediaLifeLeftPercent float32            `json:"PredictedMediaLifeLeftPercent,omitempty"`
 	Protocol                      string             `json:"Protocol,omitempty"`
 	ReadyToRemove                 bool               `json:"ReadyToRemove,omitempty"`
 	Revision                      string             `json:"Revision,omitempty"`
-	RotationSpeedRPM              int                `json:"RotationSpeedRPM,omitempty"`
+	RotationSpeedRPM              float32            `json:"RotationSpeedRPM,omitempty"`
 	SKU                           string             `json:"SKU,omitempty"`
 	SerialNumber                  string             `json:"SerialNumber,omitempty"`
 	Status                        *StorageStatus     `json:"Status,omitempty"`

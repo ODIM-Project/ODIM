@@ -45,11 +45,11 @@ import (
 )
 
 func deleteComputeforTest(index int, key string) *errors.Error {
-	if key == "/redfish/v1/Systems/del-comp-internal-err:1" {
+	if key == "/redfish/v1/Systems/del-comp-internal-err.1" {
 		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
 	}
-	if key != "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/Systems/" &&
-		key != "/redfish/v1/Systems/del-sys-internal-err:1" && key != "/redfish/v1/Systems/sys-not-found:1" {
+	if key != "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1" && key != "/redfish/v1/Systems/" &&
+		key != "/redfish/v1/Systems/del-sys-internal-err.1" && key != "/redfish/v1/Systems/sys-not-found.1" {
 		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
 	}
 	return nil
@@ -66,7 +66,7 @@ func deleteSystemforTest(key string) *errors.Error {
 }
 
 func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
-	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1" {
+	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
 	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode:1" {
 		return &eventsproto.EventSubResponse{
@@ -109,7 +109,7 @@ func mockSystemOperationInfo() *errors.Error {
 	systemOperation := agmodel.SystemOperation{
 		Operation: "InventoryRediscovery ",
 	}
-	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
 }
 
 func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
@@ -162,7 +162,7 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		PluginID:       "GRF_v1.0.0",
 	}
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device)
-	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
 
 	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
 	if err != nil {
@@ -409,8 +409,8 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device1)
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db832", device2)
-	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
-	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1")
 
 	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
 	if err != nil {

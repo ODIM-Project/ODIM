@@ -909,7 +909,7 @@ func TestCreateDeviceSubscription(t *testing.T) {
 		t.Fatal(err)
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid:1"}
+	originResources := []string{"/redfish/v1/Systems/uuid.1"}
 	hostIP := "10.24.0.1"
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -928,7 +928,7 @@ func TestCreateDeviceSubscription_existingData(t *testing.T) {
 		t.Fatal(err)
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid:1"}
+	originResources := []string{"/redfish/v1/Systems/uuid.1"}
 	hostIP := "10.24.0.1"
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -950,7 +950,7 @@ func TestGetDeviceSubscription(t *testing.T) {
 		t.Fatal(err)
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid:1"}
+	originResources := []string{"/redfish/v1/Systems/uuid.1"}
 	hostIP := "10.24.0.1"
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {
@@ -990,7 +990,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 		t.Fatal(err)
 	}
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid:1"}
+	originResources := []string{"/redfish/v1/Systems/uuid.1"}
 	hostIP := "10.24.0.1"
 	if cerr := c.CreateDeviceSubscriptionIndex("DeviceSubscription", hostIP, location, originResources); cerr != nil {
 		t.Errorf("Error while making data entry: %v\n", cerr.Error())
@@ -1019,7 +1019,7 @@ func TestUpdateDeviceSubscriptions(t *testing.T) {
 	}
 
 	location := "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123"
-	originResources := []string{"/redfish/v1/Systems/uuid:1"}
+	originResources := []string{"/redfish/v1/Systems/uuid.1"}
 	hostIP := "10.24.0.1"
 	defer func() {
 		if derr := c.DeleteDeviceSubscription("DeviceSubscription", hostIP); derr != nil {

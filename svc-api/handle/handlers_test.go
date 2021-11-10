@@ -142,7 +142,7 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}/Volumes/{rid2}", SystemsMethodNotAllowed)
 
 	e := httptest.New(t, router)
-	systemID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
+	systemID := "74116e00-0a4a-53e6-a959-e6a7465d6358.1"
 	rID := "1"
 
 	//Check for status code 405 for http methods which are not allowed on systems URLs
@@ -232,7 +232,7 @@ func TestMethodNotAllowedForLogServices(t *testing.T) {
 	e := httptest.New(t, router)
 
 	for _, module := range []string{"/redfish/v1/Systems", "/redfish/v1/Managers"} {
-		uri := module + "/23256e00-0a4a-53e6-a959-e6a7465d2325:1/LogServices"
+		uri := module + "/23256e00-0a4a-53e6-a959-e6a7465d2325.1/LogServices"
 		func(uri string) {
 			uriForRid := uri + "/1"
 			uriForEntries := uriForRid + "/Entries"
@@ -448,7 +448,7 @@ func TestChassisMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Chassis/{id}/Sensors/{rid}", ChassisMethodNotAllowed)
 
 	e := httptest.New(t, router)
-	chassisID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
+	chassisID := "74116e00-0a4a-53e6-a959-e6a7465d6358.1"
 	rID := "1"
 	//Check for status code 405 for http methods which are not allowed on systems URLs
 	e.POST("/redfish/v1/Chassis").Expect().Status(http.StatusMethodNotAllowed)

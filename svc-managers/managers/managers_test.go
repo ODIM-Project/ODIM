@@ -72,8 +72,8 @@ func TestGetManager(t *testing.T) {
 
 func TestGetManagerWithDeviceAbsent(t *testing.T) {
 	req := &managersproto.ManagerRequest{
-		ManagerID: "noDeviceManager:1",
-		URL:       "/redfish/v1/Managers/deviceAbsent:1",
+		ManagerID: "noDeviceManager.1",
+		URL:       "/redfish/v1/Managers/deviceAbsent.1",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
@@ -89,8 +89,8 @@ func TestGetManagerWithDeviceAbsent(t *testing.T) {
 
 func TestGetManagerwithInvalidURL(t *testing.T) {
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid:1",
-		URL:       "/redfish/v1/Managers/invalidURL:1",
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/invalidURL.1",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
@@ -100,8 +100,8 @@ func TestGetManagerwithInvalidURL(t *testing.T) {
 
 func TestGetManagerwithValidURL(t *testing.T) {
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid:1",
-		URL:       "/redfish/v1/Managers/uuid:1",
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagers(req)
@@ -133,33 +133,33 @@ func TestGetManagerResourcewithBadManagerID(t *testing.T) {
 func TestGetManagerResourcewithValidURL(t *testing.T) {
 	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid:1",
-		URL:       "/redfish/v1/Managers/uuid:1/EthernetInterfaces",
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/EthernetInterfaces",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = &managersproto.ManagerRequest{
-		ManagerID:  "uuid:1",
+		ManagerID:  "uuid.1",
 		ResourceID: "1",
-		URL:        "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1",
+		URL:        "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1",
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = &managersproto.ManagerRequest{
-		ManagerID:  "uuid:1",
+		ManagerID:  "uuid.1",
 		ResourceID: "1",
-		URL:        "/redfish/v1/Managers/uuid:1/VirtualMedia",
+		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia",
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = &managersproto.ManagerRequest{
-		ManagerID:  "uuid:1",
+		ManagerID:  "uuid.1",
 		ResourceID: "1",
-		URL:        "/redfish/v1/Managers/uuid:1/VirtualMedia/1",
+		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1",
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
@@ -168,24 +168,24 @@ func TestGetManagerResourcewithValidURL(t *testing.T) {
 func TestGetManagerResourcewithInvalidURL(t *testing.T) {
 	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
-		ManagerID: "uuid1:1",
-		URL:       "/redfish/v1/Managers/uuid1:1/Ethernet",
+		ManagerID: "uuid1.1",
+		URL:       "/redfish/v1/Managers/uuid1.1/Ethernet",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
 
 	req = &managersproto.ManagerRequest{
-		ManagerID: "uuid1:1",
-		URL:       "/redfish/v1/Managers/uuid1:1/Virtual",
+		ManagerID: "uuid1.1",
+		URL:       "/redfish/v1/Managers/uuid1.1/Virtual",
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
 
 	req = &managersproto.ManagerRequest{
-		ManagerID:  "uuid1:1",
+		ManagerID:  "uuid1.1",
 		ResourceID: "4",
-		URL:        "/redfish/v1/Managers/uuid1:1/VirtualMedia/4",
+		URL:        "/redfish/v1/Managers/uuid1.1/VirtualMedia/4",
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
@@ -250,9 +250,9 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 
 	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
-		ManagerID:  "uuid:1",
+		ManagerID:  "uuid.1",
 		ResourceID: "1",
-		URL:        "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 		RequestBody: []byte(`{"Image":"http://10.1.1.1/ISO",
 							"WriteProtected":true,
 							"Inserted":true}`),
@@ -262,9 +262,9 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = &managersproto.ManagerRequest{
-		ManagerID:  "uuid1:1",
+		ManagerID:  "uuid1.1",
 		ResourceID: "1",
-		URL:        "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
 	}
 	response = e.VirtualMediaActions(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")

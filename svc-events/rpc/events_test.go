@@ -78,8 +78,8 @@ func storeTestEventDetails(t *testing.T) {
 			EventTypes:           []string{"Alert"},
 			MessageIds:           []string{"IndicatorChanged"},
 			ResourceTypes:        []string{"#Event"},
-			OriginResource:       "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			OriginResource:       "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 			Hosts:                []string{"10.4.1.2"},
 			SubordinateResources: true,
 		},
@@ -93,7 +93,7 @@ func storeTestEventDetails(t *testing.T) {
 	var updatedDeviceSubscription = evmodel.DeviceSubscription{
 		Location:        "https://10.24.1.2/EventService/Subscriptions/1",
 		EventHostIP:     "10.4.1.2",
-		OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+		OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 	}
 	err := evmodel.SaveDeviceSubscription(updatedDeviceSubscription)
 	if err != nil {
@@ -195,7 +195,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
 		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		},
 	}
 	postBody, _ := json.Marshal(&SubscriptionReq)
@@ -253,7 +253,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		"Severity":          "OK",
 		"Message":           "IndicatorChanged",
 		"MessageId":         "IndicatorChanged",
-		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 
 	message, err := json.Marshal(event)
@@ -393,7 +393,7 @@ func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 	// Positive test cases
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
-		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 
 	resp, err := events.DeleteEventSubscription(ctx, req)

@@ -314,7 +314,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	// Split the key by : (uuid:1) so we will get [uuid 1]
+	// Split the key by : (uuid.1) so we will get [uuid 1]
 	k := strings.SplitN(key[index+1:], ".", 2)
 	if len(k) < 2 {
 		errMsg := fmt.Sprintf("key %v doesn't have system details", key)

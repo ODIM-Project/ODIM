@@ -92,7 +92,7 @@ func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, erro
 	if table == "Plugin" {
 		return []string{"ILO", "GRF"}, nil
 	}
-	return []string{"/redfish/v1/TelemetryService/Triggers/uuid:1"}, nil
+	return []string{"/redfish/v1/TelemetryService/Triggers/uuid.1"}, nil
 }
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {

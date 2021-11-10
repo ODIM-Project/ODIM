@@ -811,8 +811,8 @@ func TestExternalInterface_SetDefaultBootOrderElementsOfAggregate(t *testing.T) 
 		DeviceUUID:     "c14d91b5-3333-48bb-a7b7-75f74a137d48",
 		PluginID:       "GRF",
 	}
-	mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1")
 	mockPluginData(t, "GRF")
 	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device2)
 	mockDeviceData("6d4a0a66-7efa-578e-83cf-44dc68d2874e", device1)

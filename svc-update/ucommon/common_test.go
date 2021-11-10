@@ -132,7 +132,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	config.SetUpMockConfig(t)
 	i := mockInterface()
 	var req = ResourceInfoRequest{
-		URL:            "/redfish/v1/UpdateService/FirmwareInventory/uuid:1",
+		URL:            "/redfish/v1/UpdateService/FirmwareInventory/uuid.1",
 		UUID:           "uuid",
 		SystemID:       "1",
 		ContactClient:  mockContactClient,

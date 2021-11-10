@@ -68,7 +68,7 @@ func deleteSystemforTest(key string) *errors.Error {
 func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
 	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
-	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode:1" {
+	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode.1" {
 		return &eventsproto.EventSubResponse{
 			StatusCode: http.StatusCreated,
 		}, nil

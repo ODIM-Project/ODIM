@@ -315,7 +315,7 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 	var computeData, inventoryData []string
 	editedKeyList := strings.Split(key, "/")
 	editedKey := editedKeyList[len(editedKeyList)-1]
-	systemID := strings.Split(editedKey, ":")[0]
+	systemID := strings.Split(editedKey, ".")[0]
 	if computeData, err = connPool.GetAllMatchingDetails("ComputerSystem", systemID); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to get ComputerSystem details: ", err.Error())
 	}

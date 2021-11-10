@@ -323,7 +323,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
-			key = append(key, DeviceUUID+":"+id)
+			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
 		key = append(key, id)
@@ -714,7 +714,7 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 
 	// Read system data from DB
 	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
-	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+":", -1)
+	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
 	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
 	if dbErr != nil {
 		log.Error("error while getting the systems data" + dbErr.Error())
@@ -930,8 +930,8 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	oidKey := req.OID
 	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
-		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
-		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+".", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+".", -1)
 	} else {
 		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
 	}
@@ -1093,7 +1093,7 @@ func updateManagerName(data []byte, pluginID string) []byte {
 func getFirmwareVersion(oid, deviceUUID string) string {
 	strArray := strings.Split(oid, "/")
 	id := strArray[len(strArray)-1]
-	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+":", -1)
+	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+".", -1)
 	key = strings.Replace(key, "Systems", "Managers", -1)
 	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if dberr != nil {
@@ -1175,7 +1175,7 @@ func getIDsFromURI(uri string) (string, string, error) {
 		uri = uri[:len(uri)-1]
 	}
 	uriParts := strings.Split(uri, "/")
-	ids := strings.Split(uriParts[len(uriParts)-1], ":")
+	ids := strings.SplitN(uriParts[len(uriParts)-1], ".", 2)
 	if len(ids) != 2 {
 		return "", "", fmt.Errorf("error: no system id is found in %v", uri)
 	}
@@ -1195,14 +1195,14 @@ func (e *ExternalInterface) rollbackInMemory(resourceURI string) {
 func updateResourceDataWithUUID(resourceData, uuid string) string {
 	//replacing the uuid while saving the data
 	//to replace the id of system
-	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+":", -1)
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+":", -1)
+	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+".", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+".", -1)
 	// to replace the id in managers
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+".", -1)
 	// to replace id in chassis
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+".", -1)
 
-	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+".", -1)
 
 }
 

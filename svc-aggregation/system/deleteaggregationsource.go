@@ -56,7 +56,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
-	requestData := strings.Split(req.URL, ":")
+	requestData := strings.SplitN(req.URL, ".", 2)
 	resource := requestData[0]
 	uuid := resource[strings.LastIndexByte(resource, '/')+1:]
 	target, terr := agmodel.GetTarget(uuid)
@@ -299,7 +299,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
-	keys := strings.Split(key[index+1:], ":")
+	keys := strings.SplitN(key[index+1:], ".", 2)
 	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", keys[0], common.InMemory)
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
@@ -315,7 +315,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	}
 
 	// Split the key by : (uuid:1) so we will get [uuid 1]
-	k := strings.Split(key[index+1:], ":")
+	k := strings.SplitN(key[index+1:], ".", 2)
 	if len(k) < 2 {
 		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
 		log.Error(errMsg)
@@ -361,7 +361,7 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 		return
 	}
 	for _, oid := range telemetryList {
-		oID := strings.Split(oid, ":")
+		oID := strings.SplitN(oid, ".", 2)
 		if !strings.Contains(oid, "MetricReports") && !strings.Contains(oid, "Collection") {
 			odataID := oID[1]
 			resourceData := make(map[string]interface{})

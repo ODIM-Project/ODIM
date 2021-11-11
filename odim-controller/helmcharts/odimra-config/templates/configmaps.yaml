@@ -9,7 +9,6 @@ data:
     {
     	"RootServiceUUID": {{ .Values.odimra.rootServiceUUID | quote }},
     	"LocalhostFQDN": {{ .Values.odimra.fqdn | quote }},
-    	"MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
     	"SearchAndFilterSchemaPath": "/etc/odimra_schema/schema.json",
     	"RegistryStorePath": "/etc/registrystore",
     	"KeyCertConf": {
@@ -25,6 +24,11 @@ data:
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
     	},
+       "MessageBusConf": {
+         "MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
+         "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
+         "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote }},
+      },
     	"DBConf": {
                 "Protocol": "tcp",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}

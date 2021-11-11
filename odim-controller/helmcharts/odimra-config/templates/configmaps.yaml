@@ -30,13 +30,13 @@ data:
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "InMemoryHost": "redis-inmemory",
                 "OnDiskHost": "redis-ondisk",
-                "InMemoryMasterSet": "mymaster",
-                "OnDiskMasterSet": "mymaster",
+                "InMemoryPrimarySet": "redisSentinel",
+                "OnDiskPrimarySet": "redisSentinel",
                 {{ else }}
                 "InMemoryHost": "redis-ha-inmemory",
                 "OnDiskHost": "redis-ha-ondisk",
-                "InMemoryMasterSet": "primaryset",
-                "OnDiskMasterSet": "primaryset",
+                "InMemoryPrimarySet": "primaryset",
+                "OnDiskPrimarySet": "primaryset",
                 {{ end }}
                 "InMemoryPort": "6379",
                 "OnDiskPort": "6379",

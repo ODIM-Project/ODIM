@@ -46,7 +46,6 @@ func TestSetConfiguration(t *testing.T) {
 	var sampleConfig = `{
         "RootServiceUUID": "a9762fb2-b9dd-4ce8-818a-af6833ba19f6",
         "LocalhostFQDN": "test.odim.local",
-        "MessageQueueConfigFilePath": "/tmp/testFile.dat",
         "SearchAndFilterSchemaPath": "/tmp/testFile.dat",
         "RegistryStorePath": "/tmp",
         "KeyCertConf": {
@@ -71,6 +70,11 @@ func TestSetConfiguration(t *testing.T) {
                 "MaxIdleConns": 10,
                 "MaxActiveConns": 120
         },
+       	"MessageBusConf": {
+      			"MessageQueueConfigFilePath": "/tmp/testFile.dat",
+      			"MessageBusType": "Kafka",
+      			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	      },
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
@@ -223,10 +227,6 @@ func TestValidateConfigurationGroup1(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "Invalid value for MessageQueueConfigFilePath",
-			wantErr: true,
-		},
-		{
 			name:    "Invalid value for SearchAndFilterSchemaPath",
 			wantErr: true,
 		},
@@ -259,16 +259,14 @@ func TestValidateConfigurationGroup1(t *testing.T) {
 			Data.SouthBoundRequestTimeoutInSecs = 10
 			Data.LocalhostFQDN = "test.odim.local"
 		case 3:
-			Data.MessageQueueConfigFilePath = sampleFileForTest
-		case 4:
 			Data.SearchAndFilterSchemaPath = sampleFileForTest
-		case 5:
+		case 4:
 			Data.RegistryStorePath = cwdDir
-		case 6:
+		case 5:
 			Data.EnabledServices = []string{"API"}
-		case 7:
+		case 6:
 			Data.SupportedPluginTypes = []string{"plugin"}
-		case 8:
+		case 7:
 			Data.DBConf = &DBConf{
 				Protocol: "tcp",
 			}
@@ -330,6 +328,18 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			name:    "Invalid value for RSAPrivateKeyPath",
 			wantErr: true,
 		},
+		{
+			name:    "Invalid value for MessageQueueConfigFilePath",
+			wantErr: true,
+		},
+		{
+			name:    "Invalid value for MessageBusType",
+			wantErr: true,
+		},
+		{
+			name:    "Invalid value for MessageBusQueue",
+			wantErr: true,
+		},
 	}
 	for num, tt := range tests {
 		switch num {
@@ -356,6 +366,14 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			Data.KeyCertConf.RSAPublicKeyPath = sampleFileForTest
 		case 9:
 			Data.KeyCertConf.RSAPrivateKeyPath = sampleFileForTest
+		case 10:
+			Data.MessageBusConf = &MessageBusConf{
+				MessageQueueConfigFilePath: sampleFileForTest,
+			}
+		case 11:
+			Data.MessageBusConf.MessageBusType = "kafka"
+		case 12:
+			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {

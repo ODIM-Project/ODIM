@@ -27,7 +27,7 @@ import (
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
 func Publish(taskURI string, messageID string, eventType string) {
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath, common.InterCommMsgQueueName)
+	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath, config.Data.MessageBusConf.MessageBusType)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

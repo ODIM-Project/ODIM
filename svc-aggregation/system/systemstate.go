@@ -28,7 +28,7 @@ import (
 //and also the server search index, if required.
 func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateSystemStateRequest) error {
 
-	key := fmt.Sprintf("%s/%s:%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemUUID, updateReq.SystemID)
+	key := fmt.Sprintf("%s/%s.%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemUUID, updateReq.SystemID)
 
 	// Getting the device info
 	target, err := agmodel.GetTarget(updateReq.SystemUUID)

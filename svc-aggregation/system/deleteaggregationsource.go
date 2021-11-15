@@ -361,7 +361,7 @@ func (e *ExternalInterface) deleteWildCardValues(systemID string) {
 		return
 	}
 	for _, oid := range telemetryList {
-		oID := strings.SplitN(oid, ".", 2)
+		oID := strings.Split(oid, ":")
 		if !strings.Contains(oid, "MetricReports") && !strings.Contains(oid, "Collection") {
 			odataID := oID[1]
 			resourceData := make(map[string]interface{})

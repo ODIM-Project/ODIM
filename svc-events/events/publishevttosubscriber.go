@@ -253,13 +253,13 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 func formatEvent(event, originResource, hostIP string) (string, string) {
 	uuid, _ := getUUID(originResource)
 	if !strings.Contains(hostIP, "Collection") {
-		str := "/redfish/v1/Systems/" + uuid + ":"
+		str := "/redfish/v1/Systems/" + uuid + "."
 		event = strings.Replace(event, "/redfish/v1/Systems/", str, -1)
-		str = "/redfish/v1/systems/" + uuid + ":"
+		str = "/redfish/v1/systems/" + uuid + "."
 		event = strings.Replace(event, "/redfish/v1/systems/", str, -1)
-		str = "/redfish/v1/Chassis/" + uuid + ":"
+		str = "/redfish/v1/Chassis/" + uuid + "."
 		event = strings.Replace(event, "/redfish/v1/Chassis/", str, -1)
-		str = "/redfish/v1/Managers/" + uuid + ":"
+		str = "/redfish/v1/Managers/" + uuid + "."
 		event = strings.Replace(event, "/redfish/v1/Managers/", str, -1)
 	}
 	return event, uuid

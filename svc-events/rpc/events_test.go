@@ -365,7 +365,7 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 	resp, err := events.DeleteEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusNotFound.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
 
 	req.EventSubscriptionID = "81de0110"
 

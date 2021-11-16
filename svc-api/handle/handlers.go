@@ -3319,10 +3319,7 @@ func LogEntry(ctx iris.Context) {
 
 	// getting the request body
 	var req map[string]interface{}
-	err = ctx.ReadJSON(&req)
-	if err != nil {
-		log.Error("while reading request body", err.Error())
-	}
+	ctx.ReadJSON(&req)
 	var reqBody []byte
 	if len(req) > 0 {
 		req["Password"] = "null"

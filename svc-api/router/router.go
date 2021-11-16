@@ -159,6 +159,7 @@ func Router() *iris.Application {
 	serviceRoot := handle.InitServiceRoot()
 
 	router := iris.New()
+	router.Done(handle.LogEntry)
 
 	// Parses the URL and performs URL decoding for path
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

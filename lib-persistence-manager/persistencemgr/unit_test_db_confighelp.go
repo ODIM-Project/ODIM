@@ -41,8 +41,8 @@ func GetMockDBConfig() (*Config, *errors.Error) {
 		RedisHAEnabled:       false,
 		InMemorySentinelPort: "26379",
 		OnDiskSentinelPort:   "26379",
-		InMemoryPrimarySet:   "mymaster",
-		OnDiskPrimarySet:     "mymaster",
+		InMemoryPrimarySet:   "redisSentinel",
+		OnDiskPrimarySet:     "redisSentinel",
 		MaxIdleConns:         config.DefaultDBMaxIdleConns,
 		MaxActiveConns:       config.DefaultDBMaxActiveConns,
 	}

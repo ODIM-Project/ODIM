@@ -44,7 +44,7 @@ install_pypkgs()
 
 install_go()
 {
-	ODIMRA_GO_VERSION="go1.13.7"
+	ODIMRA_GO_VERSION="go1.17.2"
 	go_bin_path=$(which go 2>&1)
 	if [[ $? -ne 0 ]]; then
 		echo "[$(date)] -- INFO  -- installing and configuring ${ODIMRA_GO_VERSION}"

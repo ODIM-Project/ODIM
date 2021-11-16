@@ -361,7 +361,7 @@ The URL encoding mechanism translates the characters in the URLs to a representa
 
 Resource Aggregator for ODIM supports all standard URL encoded characters for all the APIs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in its path are internally translated and sent to the web browsers. In other words, if you replace a character in a URL with its standard encoding notation, Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browser and sends responses.
 
-**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1`, if you replace the colon character `:` with its encoding notation `%3A`, or the `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
+**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
 
 <blockquote>Tip: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.</blockquote>
 
@@ -504,7 +504,7 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 | /redfish/v1/TelemetryService                                 | `GET`          |
 | /redfish/v1/TelemetryService/MetricDefinitions               | `GET`          |
 | /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionId} | `GET`          |
-| /redfish/v1//TelemetryService/MetricReportDefinitions        | `GET`,         |
+| /redfish/v1/TelemetryService/MetricReportDefinitions         | `GET`,         |
 | /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionId} | `GET`          |
 | redfish/v1/TelemetryService/MetricReports                    | `GET`          |
 | /redfish/v1/TelemetryService/MetricReports/{MetricReportId}  | `GET`          |
@@ -2126,6 +2126,8 @@ To know the progress of this operation, perform HTTP `GET` on the task monitor r
 When the task is successfully complete, you will receive aggregation source Id of the added BMC. Save it as it is required to identify it in the resource inventory later.
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
+
+<blockquote>NOTE: Along with the UUID of the server, check the BMC address to ensure the server isn't already present.</blockquote>
 
 To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [Collection of computer systems](#collection-of-computer-systems).
 
@@ -4816,7 +4818,7 @@ curl -i -X POST \
       }
    ],
    "@Redfish.OperationApplyTime":"OnReset"
-}}' \
+}' \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
 
 
@@ -4837,7 +4839,7 @@ curl -i -X POST \
       }
    ],
    "@Redfish.OperationApplyTime":"OnReset"
-}}
+}
 ```
 
 **Request parameters** 
@@ -6891,32 +6893,38 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#UpdateService.v1_8_1.UpdateService",
-   "@odata.id":"/redfish/v1/UpdateService",
-   "@odata.context":"/redfish/v1/$metadata#UpdateService.UpdateService",
-   "Id":"UpdateService",
-   "Name":"Update Service",
-   "Status":{
-      "State":"Enabled",
-      "Health":"OK",
-      "HealthRollup":"OK"
-   },
-   "ServiceEnabled":true,
-   "HttpPushUri":"",
-   "FirmwareInventory":{
-      "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory"
-   },
-   "SoftwareInventory":{
-      "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory"
-   },
-   "Action":{
-      "#UpdateService.SimpleUpdate":{
-         "target":"/redfish/v1/UpdateService/Actions/SimpleUpdate"
-      },
-      "#UpdateService.StartUpdate":{
-         "target":"/redfish/v1/UpdateService/Actions/StartUpdate"
-      }
-   }
+    "@odata.type": "#UpdateService.v1_9_0.UpdateService",
+    "@odata.id": "/redfish/v1/UpdateService",
+    "@odata.context": "/redfish/v1/$metadata#UpdateService.UpdateService",
+    "Id": "UpdateService",
+    "Name": "Update Service",
+    "Status": {
+        "State": "Enabled",
+        "Health": "OK",
+        "HealthRollup": "OK"
+    },
+    "ServiceEnabled": true,
+    "HttpPushUri": "",
+    "FirmwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory"
+    },
+    "SoftwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/SoftwareInventory"
+    },
+    "Actions": {
+        "#UpdateService.SimpleUpdate": {
+            "target": "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+            "@Redfish.OperationApplyTimeSupport": {
+                "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
+                "SupportedValues": [
+                    "OnStartUpdateRequest"
+                ]
+            }
+        },
+        "#UpdateService.StartUpdate": {
+            "target": "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate"
+        }
+    }
 }
 ```
 
@@ -7129,10 +7137,10 @@ curl -i GET \
 |<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
-
 **Usage information** 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
+> **curl command**
 
 ```
 curl -i POST \
@@ -7143,10 +7151,11 @@ curl -i POST \
 "ImageURI": "<URI_of_the_firmware_image>",
 "Password": "<password>",
 "Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
+"@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 "TransferProtocol": "",
 "Username": "<username>"
 }' \
- 'https://{odim_host}:{port}/redfish/v1/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
+ 'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
 
 
 ```
@@ -7158,7 +7167,7 @@ curl -i POST \
 ```
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
-  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
+  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"]
 }
 ```
 
@@ -7168,10 +7177,7 @@ curl -i POST \
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
   "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
-  "@Redfish.OperationApplyTimeSupport": {
-            "@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport",
-              "SupportedValues": ["OnStartUpdate"]
-            }
+  "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 }
 ```
 
@@ -7266,9 +7272,7 @@ To know the progress of this action, perform HTTP `GET` on the [task monitor](#v
 curl -i POST \
    -H "X-Auth-Token:{X-Auth-Token}" \
    -H "Content-Type:application/json" \
- 'https://{odim_host}:{port}/redfish/v1/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate'
-
-
+ 'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate'
 ```
 
 > Sample request body
@@ -7424,14 +7428,6 @@ curl -i GET \
 
 
 
-
-
-
-
-
-
-
-
 ## Single fabric
 
 |||
@@ -7460,7 +7456,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5",
-   "@odata.type":"#Fabric.v1_0_4.Fabric",
+   "@odata.type":"#Fabric.v1_0_5.Fabric",
    "AddressPools":{ 
       "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/AddressPools"
    },
@@ -7639,10 +7635,6 @@ curl -i GET \
 
 
 
-
-
-
-
 ## Single port
 
 |||
@@ -7669,7 +7661,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0/Ports/80b5f999-25e9-4b37-992c-de2f065ee0e3",
-   "@odata.type":"#Port.v1_1_3.Port",
+   "@odata.type":"#Port.v1_3_0.Port",
    "CurrentSpeedGbps":0,
    "Description":"single port",
    "Id":"80b5f999-25e9-4b37-992c-de2f065ee0e3",
@@ -7771,7 +7763,7 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.8.0",
+	"RedfishVersion": "1.0.4",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	
@@ -7937,7 +7929,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
-   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "@odata.type":"#Endpoint.v1_5_0.Endpoint",
    "Description":"NK Endpoint Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
@@ -8061,7 +8053,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/f310bf40-5163-4cbf-be5b-ac574fe87863",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_5_0.Zone",
    "DefaultRoutingEnabled":false,
    "Description":"",
    "Id":"f310bf40-5163-4cbf-be5b-ac574fe87863",
@@ -8208,7 +8200,7 @@ Transfer-Encoding:chunked
 ```
 {
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
-  "@odata.type": "#AddressPool.vxx.AddressPool",
+  "@odata.type": "#AddressPool.v1_1_0.AddressPool",
   "BgpEvpn": {
     "AnycastGatewayIPAddress": "10.18.102.1",
     "AnycastGatewayMACAddress": "",
@@ -8401,7 +8393,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d",
-   "@odata.type":"#AddressPool.vxx.AddressPool",
+   "@odata.type":"#AddressPool.v1_1_0.AddressPool",
    "BgpEvpn":{
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
@@ -8542,7 +8534,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_5_0.Zone",
    "Description":"",
    "Id":"a2dc8760-ea05-4cab-8f95-866c1c380f98",
    "Links":{
@@ -8684,7 +8676,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
-   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "@odata.type":"#Endpoint.v1_5_0.Endpoint",
    "Description":"Host 2 Endpoint 1 Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
@@ -8841,7 +8833,7 @@ Transfer-Encoding: chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_5_0.Zone",
    "Description":"",
    "Id":"06d344bb-cce1-4b0c-8414-6f6df1ea373f",
    "Links":{
@@ -9279,7 +9271,7 @@ curl -i GET \
          "OData-Version: 4.0"
       ],
       "HttpOperation":"POST",
-      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\"}},\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
+      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\",\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
       "TargetUri":"/redfish/v1/AggregationService/AggregationSources"
    },
    "Messages":[
@@ -10538,7 +10530,7 @@ Resource Aggregator for ODIM exposes the Redfish `TelemetryService` APIs to:
 | /redfish/v1/TelemetryService                                 | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/MetricDefinitions               | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID} | GET                  | `Login`                 |
-| /redfish/v1//TelemetryService/MetricReportDefinitions        | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReportDefinitions         | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID} | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/MetricReports                   | GET                  | `Login`                 |
 | /redfish/v1/TelemetryService/MetricReports/{MetricReportID}  | GET                  | `Login`                 |

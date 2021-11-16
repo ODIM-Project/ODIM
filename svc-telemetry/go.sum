@@ -37,6 +37,10 @@ github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20201201072448-9772421f1b55 h1:Eol8
 github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20201201072448-9772421f1b55/go.mod h1:WQrgd046QIKGiWylcLkKm/a5Lom4Jh0QpM2CehcMhic=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55 h1:RYWYzKAXBhqyy97NdguIQNA5z3XQVyHwXFi6KNyuhgA=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55/go.mod h1:gxcTX5NCbmKYHweBnALpVA0hytBWvQ9esKGS2WnkBFk=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20210901061202-f84c396a018e h1:UAnrbeXlPk7weeldMf4WC0s43cgG9uGv5aEhzXs7R+s=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20210901061202-f84c396a018e/go.mod h1:h25kqABECab638ZEH7oa+/H7k0TzYmmeMyg21OhbJdI=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20211111141753-7be55f503f6d h1:5lMFM6kOlAg9P1Nnm1oNW2wKeS2CoBWAfZP1j+yDDlM=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20211111141753-7be55f503f6d/go.mod h1:h25kqABECab638ZEH7oa+/H7k0TzYmmeMyg21OhbJdI=
 github.com/ODIM-Project/ODIM/svc-update v0.0.0-20210201172557-4fa2adafe1e3 h1:rInxEqp04+juVRkYc9jUuyeVfjFVRRb07Jc7Y2n8Aps=
 github.com/ODIM-Project/ODIM/svc-update v0.0.0-20210201172557-4fa2adafe1e3/go.mod h1:hOKmCnGw5TEvjPDaJUr8W2VLGqmeV48ZEyxHCSVuxWQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

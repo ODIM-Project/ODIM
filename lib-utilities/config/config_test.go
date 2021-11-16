@@ -72,7 +72,7 @@ func TestSetConfiguration(t *testing.T) {
         },
        	"MessageBusConf": {
       			"MessageQueueConfigFilePath": "/tmp/testFile.dat",
-      			"MessageBusType": "Kafka",
+	          "MessageBusType": "kafka",
       			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	      },
         "FirmwareVersion": "1.0",

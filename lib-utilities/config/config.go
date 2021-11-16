@@ -284,6 +284,12 @@ func checkMessageBusConf() error {
 	if Data.MessageBusConf.MessageBusType == "" {
 		return fmt.Errorf("error: no value configured for MessageBusType")
 	}
+	if Data.MessageBusConf.MessageBusType == "" {
+		return fmt.Errorf("error: no value configured for MessageBusType")
+	}
+	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
+		return fmt.Errorf("error: invalid value configured for MessageBusType")
+	}
 	return nil
 }
 

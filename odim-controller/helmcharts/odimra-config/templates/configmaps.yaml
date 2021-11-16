@@ -27,8 +27,8 @@ data:
        "MessageBusConf": {
          "MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
          "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
-         "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote }},
-      },
+      	 "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote | toStrings }}
+	},
     	"DBConf": {
                 "Protocol": "tcp",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}

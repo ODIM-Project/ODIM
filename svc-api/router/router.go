@@ -596,7 +596,7 @@ func logEntry(reqBody map[string]interface{}, ctx iris.Context) {
 	//setting operation status flag based on the response code
 	operationStatus := false
 	respStatusCode := ctx.GetStatusCode()
-	successStatusCodes := []int{200, 201, 202, 204}
+	successStatusCodes := []int{http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent}
 	for _, statusCode := range successStatusCodes {
 		if statusCode == respStatusCode {
 			operationStatus = true

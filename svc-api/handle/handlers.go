@@ -35,6 +35,7 @@ import (
 
 //GetVersion is an API handler method, which build the response body and headers for /redfish API
 func GetVersion(ctx iris.Context) {
+	defer ctx.Next()
 	Version := models.Version{
 		V1: "/redfish/v1/",
 	}
@@ -113,6 +114,7 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 
 //GetServiceRoot builds response body and headers for /redfish/v1
 func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
+	defer ctx.Next()
 	services := config.Data.EnabledServices
 	uuid := config.Data.RootServiceUUID
 	serviceRoot := s.getService(services, uuid)
@@ -129,6 +131,7 @@ func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
 
 //GetOdata builds response body and headers for /redfish/v1/odata
 func GetOdata(ctx iris.Context) {
+	defer ctx.Next()
 	Odata := models.Odata{
 		RedfishCopyright: "Copyright © 2014-2015 Distributed Management Task Force, Inc. (DMTF). All rights reserved.",
 		OdataContext:     "/redfish/v1/$metadata",
@@ -161,6 +164,7 @@ func GetOdata(ctx iris.Context) {
 
 //GetMetadata build response body and headers for the GET operation on /redfish/v1/$metadata
 func GetMetadata(ctx iris.Context) {
+	defer ctx.Next()
 	Metadata := models.Metadata{
 		Version:   "4.0",
 		Xmlnsedmx: "http://docs.oasis-open.org/odata/ns/edmx",
@@ -2856,7 +2860,7 @@ type Registry struct {
 
 //GetRegistryFileCollection is show available collection of registry files.
 func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
-
+	defer ctx.Next()
 	// Authorize the request here
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
@@ -2929,6 +2933,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 
 //GetMessageRegistryFileID this is for giving deatiled information about the file and its locations.
 func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
+	defer ctx.Next()
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	regFileID := ctx.Params().Get("id")
 	if strings.Contains(regFileID, ".json") {
@@ -3032,6 +3037,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 //GetMessageRegistryFile this is to retreve the message registry file itself.
 func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
+	defer ctx.Next()
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	regFileID := ctx.Params().Get("id")
 	if strings.HasPrefix(regFileID, "#") {
@@ -3119,6 +3125,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 
 // fillMethodNotAllowedErrorResponse fills the status code and status message for MethodNotAllowed responses
 func fillMethodNotAllowedErrorResponse(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.StatusCode(http.StatusMethodNotAllowed)
 	errArgs := &errResponse.Args{
 		Code: errResponse.GeneralError,
@@ -3135,6 +3142,7 @@ func fillMethodNotAllowedErrorResponse(ctx iris.Context) {
 
 // AsMethodNotAllowed holds Method to throw 405 Method not allowed on Account Service URLs
 func AsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3142,6 +3150,7 @@ func AsMethodNotAllowed(ctx iris.Context) {
 
 // SsMethodNotAllowed holds builds reponse for the unallowed http operation on Session Service URLs and returns 405 error.
 func SsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3149,6 +3158,7 @@ func SsMethodNotAllowed(ctx iris.Context) {
 
 // SystemsMethodNotAllowed holds builds reponse for the unallowed http operation on Systems URLs and returns 405 error.
 func SystemsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	url := ctx.Request().URL
 	path := url.Path
 	systemID := ctx.Params().Get("id")
@@ -3182,6 +3192,7 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
 func ManagersMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	url := ctx.Request().URL
 	path := url.Path
 	systemID := ctx.Params().Get("id")
@@ -3203,6 +3214,7 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 
 // TsMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
 func TsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3210,6 +3222,7 @@ func TsMethodNotAllowed(ctx iris.Context) {
 
 // ChassisMethodNotAllowed holds builds reponse for the unallowed http operation on Chassis URLs and returns 405 error.
 func ChassisMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3217,6 +3230,7 @@ func ChassisMethodNotAllowed(ctx iris.Context) {
 
 // RegMethodNotAllowed holds builds reponse for the unallowed http operation on Registries URLs and returns 405 error.
 func RegMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3224,6 +3238,7 @@ func RegMethodNotAllowed(ctx iris.Context) {
 
 // EvtMethodNotAllowed holds builds reponse for the unallowed http operation on Events URLs and returns 405 error.
 func EvtMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	url := ctx.Request().URL
 	path := url.Path
 
@@ -3242,6 +3257,7 @@ func EvtMethodNotAllowed(ctx iris.Context) {
 
 // AggMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregation Service URLs and returns 405 error.
 func AggMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3249,6 +3265,7 @@ func AggMethodNotAllowed(ctx iris.Context) {
 
 // FabricsMethodNotAllowed holds builds reponse for the unallowed http operation on Fabrics URLs and returns 405 error.
 func FabricsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
@@ -3256,6 +3273,7 @@ func FabricsMethodNotAllowed(ctx iris.Context) {
 
 // AggregateMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregate URLs and returns 405 error.
 func AggregateMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
 	url := ctx.Request().URL
 	path := url.Path
 	aggregateID := ctx.Params().Get("id")

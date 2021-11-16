@@ -17,12 +17,13 @@ package handle
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 // RoleRPCs defines all the RPC methods in role
@@ -39,6 +40,7 @@ type RoleRPCs struct {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
+	defer ctx.Next()
 	req := roleproto.GetRoleRequest{SessionToken: ctx.Request().Header.Get("X-Auth-Token")}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -70,6 +72,7 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) CreateRole(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	//Read Body from Request
 	err := ctx.ReadJSON(&req)
@@ -120,6 +123,7 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) GetRole(ctx iris.Context) {
+	defer ctx.Next()
 	req := roleproto.GetRoleRequest{SessionToken: ctx.Request().Header.Get("X-Auth-Token")}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -152,6 +156,7 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
+	defer ctx.Next()
 
 	var req roleproto.UpdateRoleRequest
 
@@ -195,6 +200,7 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 
 // DeleteRole ...
 func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
+	defer ctx.Next()
 
 	var req roleproto.DeleteRoleRequest
 

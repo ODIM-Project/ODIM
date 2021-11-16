@@ -162,7 +162,7 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 		"OData-Version":     "4.0",
 	}
 
-	requestData := strings.Split(req.ResourceID, ":")
+	requestData := strings.Split(req.ResourceID, ".")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.ResourceID}, nil)
@@ -255,7 +255,7 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 		"OData-Version":     "4.0",
 	}
 
-	requestData := strings.Split(req.ResourceID, ":")
+	requestData := strings.Split(req.ResourceID, ".")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.ResourceID}, nil)

@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -37,6 +38,7 @@ type ManagersRPCs struct {
 
 //GetManagersCollection fetches all managers
 func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -65,6 +67,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 
 //GetManager fetches computer managers details
 func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ManagerID:    ctx.Params().Get("id"),
@@ -98,6 +101,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ManagerID:    ctx.Params().Get("id"),
@@ -132,6 +136,7 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
+	defer ctx.Next()
 	var reqIn interface{}
 	err := ctx.ReadJSON(&reqIn)
 	if err != nil {
@@ -187,6 +192,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ManagerID:    ctx.Params().Get("id"),

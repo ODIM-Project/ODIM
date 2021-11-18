@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
@@ -39,6 +40,7 @@ type UpdateRPCs struct {
 
 // GetUpdateService is the handler for getting UpdateService details
 func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
+	defer ctx.Next()
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -68,6 +70,7 @@ func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
 
 //GetFirmwareInventoryCollection is a handler for firmware inventory collection
 func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -97,6 +100,7 @@ func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
 
 // GetSoftwareInventoryCollection is a handler for software inventory collection
 func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -126,6 +130,7 @@ func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
 
 // GetFirmwareInventory is a handler for firmware inventory
 func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
+	defer ctx.Next()
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ResourceID:   ctx.Params().Get("firmwareInventory_id"),
@@ -157,6 +162,7 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 
 // GetSoftwareInventory is a handler for firmware inventory
 func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
+	defer ctx.Next()
 	req := updateproto.UpdateRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ResourceID:   ctx.Params().Get("softwareInventory_id"),
@@ -188,6 +194,7 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 
 //SimpleUpdate is a handler for simple update action
 func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -230,6 +237,7 @@ func (a *UpdateRPCs) SimpleUpdate(ctx iris.Context) {
 
 //StartUpdate is a handler for start update action
 func (a *UpdateRPCs) StartUpdate(ctx iris.Context) {
+	defer ctx.Next()
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"

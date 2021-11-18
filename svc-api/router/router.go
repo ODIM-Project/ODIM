@@ -17,6 +17,9 @@
 package router
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -160,7 +163,9 @@ func Router() *iris.Application {
 
 	router := iris.New()
 
+	var reqBody map[string]interface{}
 	// Parses the URL and performs URL decoding for path
+	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
@@ -172,9 +177,28 @@ func Router() *iris.Application {
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
 		r.RequestURI = path
 		r.URL.Path = parsedURI.Path
+
+		// getting the request body for audit logs
+		if r.Body != nil {
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				log.Error("while reading request body ", err.Error())
+			}
+			r.Body = ioutil.NopCloser(bytes.NewReader(body))
+
+			if len(body) > 0 {
+				err = json.Unmarshal(body, &reqBody)
+				if err != nil {
+					log.Error("while unmarshalling request body", err.Error())
+				}
+			}
+		}
 		next(w, r)
 	})
-
+	router.Done(func(ctx iris.Context) {
+		logEntry(reqBody, ctx)
+		reqBody = make(map[string]interface{})
+	})
 	taskmon := router.Party("/taskmon")
 	taskmon.SetRegisterRule(iris.RouteSkip)
 	taskmon.Get("/{TaskID}", ts.GetTaskMonitor)
@@ -538,4 +562,76 @@ func Router() *iris.Application {
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
 
 	return router
+}
+
+// logEntry is used for generated audit logs for each request
+// this function logs an info for successfull operation and error for failure operation
+// properties logged are time, loglevel, username, host, resource, requestbody, responsecode and message
+func logEntry(reqBody map[string]interface{}, ctx iris.Context) {
+	var err error
+	// getting the session details
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	sessionUserName := ""
+	if sessionToken != "" {
+		sessionUserName, err = srv.GetSessionUserName(sessionToken)
+		if err != nil {
+			errMsg := "while trying to authenticate session: " + err.Error()
+			log.Error(errMsg)
+			return
+		}
+	}
+	// getting the request URI, host and method from context
+	rawURI := ctx.Request().RequestURI
+	host := ctx.Request().Host
+	method := ctx.Request().Method
+	var jsonStr []byte
+	if len(reqBody) > 0 {
+		reqBody["Password"] = "null"
+		jsonStr, err = json.Marshal(reqBody)
+		if err != nil {
+			log.Error("while marshalling request body", err.Error())
+		}
+	}
+
+	//setting operation status flag based on the response code
+	operationStatus := false
+	respStatusCode := ctx.GetStatusCode()
+	successStatusCodes := []int{http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent}
+	for _, statusCode := range successStatusCodes {
+		if statusCode == respStatusCode {
+			operationStatus = true
+			break
+		}
+	}
+
+	// adding null if no credentials are supplied while requesting
+	if sessionUserName == "" {
+		sessionUserName = "null"
+	}
+	// adding null to requestbody property if no payload is sent
+	reqStr := string(jsonStr)
+	if reqStr == "" {
+		reqStr = "null"
+	}
+
+	//based on the operation status i.e. operation is success or failed logging
+	message := method + " operation failed"
+	if operationStatus {
+		message = method + " operation successful"
+		log.WithFields(log.Fields{
+			"User":         sessionUserName,
+			"Host":         host,
+			"Resource":     rawURI,
+			"RequestBody":  reqStr,
+			"ResponseCode": respStatusCode,
+		}).Info(message)
+	} else {
+		log.WithFields(log.Fields{
+			"User":         sessionUserName,
+			"Host":         host,
+			"Resource":     rawURI,
+			"RequestBody":  reqStr,
+			"ResponseCode": respStatusCode,
+		}).Error(message)
+	}
 }

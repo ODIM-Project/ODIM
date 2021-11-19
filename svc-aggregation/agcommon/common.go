@@ -153,7 +153,7 @@ func (e *DBInterface) AddConnectionMethods(connectionMethodConf []config.Connect
 			log.Error("Connection Method ID: " + connectionMethodID + " with connection method type " +
 				connectionMethodData.ConnectionMethodType + " and connection method variant " +
 				connectionMethodData.ConnectionMethodVariant + " managing " +
-				string(len(connectionMethodData.Links.AggregationSources)) + " aggregation sources it can't be removed")
+				string(rune(len(connectionMethodData.Links.AggregationSources))) + " aggregation sources it can't be removed")
 
 		} else {
 			log.Info("Removing connection method id "+connectionMethodID+

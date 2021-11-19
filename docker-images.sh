@@ -30,6 +30,7 @@ declare -A images_list=(\
 		["telemetry"]="1.0"\
 		["update"]="2.0" \
 		["zookeeper"]="1.0" \
+		["csplugin"]="2.0" \
 		)
 
 eval_cmd_exec()

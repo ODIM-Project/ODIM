@@ -1,0 +1,27 @@
+FROM odim:2.0 as build-stage
+
+FROM cs:2.0 as build-stage-cs
+
+FROM ubuntu:18.04
+
+ARG ODIMRA_USER_ID
+ARG ODIMRA_GROUP_ID
+
+
+RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(date)] -- ERROR -- ODIMRA_USER_ID or ODIMRA_GROUP_ID is not set\n"; exit 1; fi \
+    && groupadd -r -g $ODIMRA_GROUP_ID odimra \
+    && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra \
+    && mkdir -p /etc/csplugin_config && chown odimra:odimra /etc/csplugin_config 
+
+RUN apt update -y && apt-get install redis-tools -y && apt-get install python3 -y
+
+COPY install/Docker/dockerfiles/scripts/start_composition_service.sh /bin/
+RUN chmod 755 /bin/start_composition_service.sh
+
+COPY  --from=build-stage-cs /ODIM/svc-composition-service/app/dist/svc-composition-service /bin/
+
+COPY --chown=root:odimra --from=build-stage /ODIM/add-hosts /bin/
+
+RUN chmod 4550 /bin/add-hosts
+USER odimra:odimra
+ENTRYPOINT ["/bin/start_composition_service.sh"]

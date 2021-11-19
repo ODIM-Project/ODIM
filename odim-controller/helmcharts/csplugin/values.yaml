@@ -1,0 +1,14 @@
+odimra:
+  namespace: odim
+  groupID:
+  haDeploymentEnabled: false
+csplugin:
+  imageTag: "2.0"
+  csPluginRootServiceUUID:
+  username: admin
+  password: Od!m12$4
+  host: csplugin
+  odimUsername:
+  odimPassword:
+  sentinelMasterName: primaryset
+  logPath: /var/log/csplugin_logs/

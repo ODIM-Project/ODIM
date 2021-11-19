@@ -10,16 +10,16 @@ service Composition {
 }
 
 message GetCompositionServiceRequest {
-	string SessionToken=1;
-    string RequestParam=2;
+	string sessionToken=1;
+    string requestParam=2;
     string URL=3;
 }
 
 message GetCompositionResourceRequest {
-    string SessionToken=1;
-    string RequestParam=2;
+    string sessionToken=1;
+    string requestParam=2;
     string URL=3;
-    string ResourceID=4;
+    string resourceID=4;
 }
 
 message CreateCompositionResourceRequest{
@@ -34,14 +34,14 @@ message DeleteCompositionResourceRequest{
 }
 
 message ComposeRequest {
-    string SessionToken=1;
+    string sessionToken=1;
 	string URL = 2;
     bytes RequestBody = 3;
 } 
 
 message CompositionServiceResponse {
-	int32 StatusCode = 1;
-    string StatusMessage = 2;
-    map<string,string> Header=3;
-    bytes Body = 4;  
+	int32 statusCode = 1;
+    string statusMessage = 2;
+    map<string,string> header=3;
+    bytes body = 4;  
 }

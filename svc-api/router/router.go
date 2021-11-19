@@ -155,6 +155,17 @@ func Router() *iris.Application {
 		UpdateTriggerRPC:                       rpc.DoUpdateTrigger,
 	}
 
+	cs := handle.CompositionServiceRPCs{
+		GetCompositionServiceRPC:      rpc.GetCompositionService,
+		GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
+		GetResourceBlockRPC:           rpc.GetResourceBlock,
+		GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
+		GetResourceZoneRPC:            rpc.GetResourceZone,
+		CreateResourceZoneRPC:         rpc.CreateResourceZone,
+		DeleteResourceZoneRPC:         rpc.DeleteResourceZone,
+		ComposeRPC:                    rpc.Compose,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -560,6 +571,18 @@ func Router() *iris.Application {
 	telemetryService.Get("/MetricReports/{id}", telemetry.GetMetricReport)
 	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
+
+	// composition service
+	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)
+	compositionService.SetRegisterRule(iris.RouteSkip)
+	compositionService.Get("/", cs.GetCompositionService)
+	compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
+	compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
+	compositionService.Get("/ResourceZones", cs.GetResourceZone)
+	compositionService.Get("/ResourceZones/{id}", cs.GetResourceBlock)
+	compositionService.Post("/ResourceZones", cs.CreateResourceZone)
+	compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
+	compositionService.Post("/redfish/v1/CompositionService/Actions/CompositionService.Compose", cs.Compose)
 
 	return router
 }

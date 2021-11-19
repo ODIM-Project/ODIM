@@ -49,6 +49,10 @@ eval_cmd_exec()
 # base image for building ODIMRA services image
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.odim -t odim:2.0 ." "odim"
 
+# base image for building composition service Image
+
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.cs -t cs:2.0 ." "cs"
+
 # third party docker images
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.etcd -t etcd:1.16 ." "etcd"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.redis -t redis:2.0 ." "redis"
@@ -71,4 +75,6 @@ eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.up
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t urplugin:2.0 ." "urplugin"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.grfplugin -t grfplugin:2.0 ." "grfplugin"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.dellplugin -t dellplugin:1.0 ." "dellplugin"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.lenovoplugin -t lenovoplugin:1.0 ." "lenovoplugin"
+
+# composition service images
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.compositionService -t csplugin:2.0 ." "csplugin"

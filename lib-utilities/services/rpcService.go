@@ -364,6 +364,14 @@ func GetEnabledServiceList() map[string]bool {
 			if err == nil && len(resp.Kvs) > 0 {
 				data[microService] = true
 			}
+
+		case "CompositionService":
+			log.Infof("In GetEnabledServiceList Composition service")
+			resp, err := kv.Get(context.TODO(), CompositionService, clientv3.WithPrefix())
+			log.Infof("resp %v", resp)
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 		}
 	}
 	return data

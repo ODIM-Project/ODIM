@@ -282,10 +282,8 @@ func checkMessageBusConf() error {
 		return fmt.Errorf("error: MessageBusConf is not provided")
 	}
 	if Data.MessageBusConf.MessageBusType == "" {
-		return fmt.Errorf("error: no value configured for MessageBusType")
-	}
-	if Data.MessageBusConf.MessageBusType == "" {
-		return fmt.Errorf("error: no value configured for MessageBusType")
+		log.Warn("No value set for MessageBusType, setting default value")
+		Data.MessageBusConf.MessageBusType = "Kafka"
 	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
 		return fmt.Errorf("error: invalid value configured for MessageBusType")

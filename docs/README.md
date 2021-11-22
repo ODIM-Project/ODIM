@@ -2691,7 +2691,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }

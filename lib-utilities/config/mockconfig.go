@@ -181,7 +181,7 @@ func SetUpMockConfig(t *testing.T) error {
 		MaxActiveConns: 120,
 	}
 	Data.MessageBusConf = &MessageBusConf{
-		MessageBusType:  "kafka",
+		MessageBusType:  "Kafka",
 		MessageBusQueue: []string{"redfish-topic"},
 	}
 	Data.KeyCertConf = &KeyCertConf{

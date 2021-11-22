@@ -72,7 +72,7 @@ func TestSetConfiguration(t *testing.T) {
         },
        	"MessageBusConf": {
       			"MessageQueueConfigFilePath": "/tmp/testFile.dat",
-	          "MessageBusType": "kafka",
+	                "MessageBusType": "Kafka",
       			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	      },
         "FirmwareVersion": "1.0",
@@ -371,7 +371,7 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 				MessageQueueConfigFilePath: sampleFileForTest,
 			}
 		case 11:
-			Data.MessageBusConf.MessageBusType = "kafka"
+			Data.MessageBusConf.MessageBusType = "Kafka"
 		case 12:
 			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
 		}

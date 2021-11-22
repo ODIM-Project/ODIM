@@ -199,7 +199,7 @@ ODIMRA framework comprises the following two components.
 
   The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. HPE Resource Aggregator for ODIM supports:
   
-  - Generic Redfish plugin for ODIM (GRF): Generic Redfish plugin that can be used as a plugin for any Redfishcompliant device.
+  - Generic Redfish plugin for ODIM (GRF): Generic Redfish plugin that can be used as a plugin for any Redfish-compliant device.
   - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks. 
     - Integration of additional third-party plugins.  	
 
@@ -330,7 +330,7 @@ The URL encoding mechanism translates the characters in the URLs to a representa
 
 Resource Aggregator for ODIM supports all standard URL encoded characters for all the APIs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in its path are internally translated and sent to the web browsers. In other words, if you replace a character in a URL with its standard encoding notation, Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browser and sends responses.
 
-**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
+**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
 
 <blockquote>Tip: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.</blockquote>
 
@@ -473,7 +473,7 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 | /redfish/v1/TelemetryService                                 | `GET`          |
 | /redfish/v1/TelemetryService/MetricDefinitions               | `GET`          |
 | /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionId} | `GET`          |
-| /redfish/v1/TelemetryService/MetricReportDefinitions         | `GET`,         |
+| /redfish/v1/TelemetryService/MetricReportDefinitions         | `GET`          |
 | /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionId} | `GET`          |
 | redfish/v1/TelemetryService/MetricReports                    | `GET`          |
 | /redfish/v1/TelemetryService/MetricReports/{MetricReportId}  | `GET`          |
@@ -493,8 +493,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 
 >**NOTE:**
 `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM.
-It is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
-universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1*.
+It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
+universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
 
 
 ## Viewing the list of supported Redfish services
@@ -717,9 +717,9 @@ With Resource Aggregator for ODIM, there are two kinds of defined roles:
 
     User-defined roles are the custom roles that you can create and assign to a user. The privileges of a user-defined role are configurable—you can choose a privilege or a set of privileges to assign to this role at the time of role creation.
 
-
 <blockquote>
 NOTE:
+
 
 -   Redfish predefined roles cannot be modified.
 

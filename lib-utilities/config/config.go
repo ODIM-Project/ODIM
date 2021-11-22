@@ -285,6 +285,15 @@ func checkMessageBusConf() error {
 		log.Warn("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.MessageBusType = "Kafka"
 	}
+	if Data.MessageBusConf.MessageBusType == "Kafka" {
+		if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+			return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
+		}
+		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
+			log.Warn("No value set for MessageBusQueue, setting default value")
+			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+		}
+	}
 	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
 		return fmt.Errorf("error: invalid value configured for MessageBusType")
 	}

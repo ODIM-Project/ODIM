@@ -138,6 +138,7 @@ jobs:
         s#username:\s*<Node1_Username>#username: ${USER}#; s#.*fqdn.*#  fqdn: \"${FQDN}\"#; \
         s#.*groupID.*#  groupID: ${ODIMRA_GROUP_ID}#; s#.*userID.*#  userID: ${ODIMRA_USER_ID}#; \
         s#.*rootServiceUUID.*#  rootServiceUUID: ${rootServiceUUID}#; s#.*haDeploymentEnabled.*#  haDeploymentEnabled: false#; \
+        s#.*messageBusType.*#  messageBusType: "Kafka"#; \
         s#.*odimraServerCertFQDNSan.*#  odimraServerCertFQDNSan: \"\"#; s#.*odimraServerCertIPSan.*#  odimraServerCertIPSan: \"\"#; \
         s#.*odimraKafkaClientCertFQDNSan.*#  odimraKafkaClientCertFQDNSan: \"\"#; \
         s#.*odimraKafkaClientCertIPSan.*#  odimraKafkaClientCertIPSan: \"\"#; \

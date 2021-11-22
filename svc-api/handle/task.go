@@ -16,8 +16,9 @@
 package handle
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
@@ -40,6 +41,7 @@ type TaskRPCs struct {
 // It takes iris context and extract auth token and TaskID from the context
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -66,6 +68,7 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 // It takes iris context and extract auth token and TaskID from the context
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -92,6 +95,7 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 // It takes iris context and extract auth token and TaskID from the context
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -118,6 +122,7 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 // It takes iris context and extract auth token, TaskID and subTasks from the context
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SubTaskID:    ctx.Params().Get("subTaskID"),
@@ -145,6 +150,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 // It takes iris context and extract auth token and TaskID from the context
 // Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		TaskID:       ctx.Params().Get("TaskID"),
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -171,6 +177,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 //It takes iris context and extract auth token from the context
 //Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -204,6 +211,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 //It takes iris context and extract auth token from the context
 //Create a request object in task proto request format and pass it to rpc call
 func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
+	defer ctx.Next()
 	req := &taskproto.GetTaskRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}

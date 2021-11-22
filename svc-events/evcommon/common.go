@@ -18,7 +18,6 @@ package evcommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -26,6 +25,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -42,6 +43,9 @@ const (
 
 	// DeliveryRetryIntervalSeconds is of retry interval in seconds for event posting
 	DeliveryRetryIntervalSeconds = 60
+
+	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
+	SaveUndeliveredEventsFlag = false
 )
 
 //StartUpInteraface Holds the function pointer of  external interface functions

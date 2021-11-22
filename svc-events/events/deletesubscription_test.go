@@ -179,7 +179,7 @@ func mockTargetandPlugin(t *testing.T) error {
 }
 
 var (
-	hostCA    = []byte(`-----BEGIN CERTIFICATE-----
+	hostCA = []byte(`-----BEGIN CERTIFICATE-----
 MIIGLzCCBBegAwIBAgIUWxsjs12pFXWyV3ncdNN0OxjLsgUwDQYJKoZIhvcNAQEN
 BQAwUjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRMwEQYDVQQHDApDYWxpZm9y
 bmlhMQ8wDQYDVQQKDAZPRElNUkExEDAOBgNVBAMMB1Jvb3QgQ0EwHhcNMjExMDI2

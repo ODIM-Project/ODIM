@@ -44,7 +44,7 @@ data:
     		"LBPort": {{ .Values.grfplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                "MessageQueueConfigFilePath": "/etc/iloplugin_config/platformconfig.toml",
+                "MessageQueueConfigFilePath": "/etc/grfplugin_config/platformconfig.toml",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "MessageBusAddress": "redis-inmemory",
                 "HASet": "",
@@ -53,7 +53,7 @@ data:
                 "HASet": "redisSentinel",
                 {{ end }}
                 "MessageBusPort": 6379,
-                "MessageBusType": {{ .Values.iloplugin.messageBusType | quote }},
+                "MessageBusType": {{ .Values.grfplugin.messageBusType | quote }},
                 "MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
         },
     	"URLTranslation": {

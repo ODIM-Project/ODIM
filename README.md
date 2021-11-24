@@ -2161,10 +2161,10 @@ Ensure that all the nodes \(deployment node and cluster nodes\) are in the same 
 Run the following commands:
 
 1. ```
-    wget https://dl.google.com/go/go1.13.7.linux-amd64.tar.gz -P /var/tmp
+    wget https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
    ```
 1. ```
-    sudo tar -C /usr/local -xzf /var/tmp/go1.13.7.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
    ```
 1. ```
     export PATH=$PATH:/usr/local/go/bin
@@ -3284,7 +3284,7 @@ These checks run in parallel and take approximately 9 minutes to complete.
 
 1. build_unittest.yml
    - Brings up a Ubuntu 18.04 VM hosted on GitHub infrastructure with preinstalled packages mentioned in the link: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
-   - Installs Go 1.13.8 package
+   - Installs Go 1.17.2 package
    - Installs and configures Redis 5.0.8 with two instances running on ports 6379 and 6380
    - Checks out the PR code into the Go module directory
    - Builds/compiles the code

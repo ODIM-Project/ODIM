@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
@@ -38,6 +39,7 @@ type EventsRPCs struct {
 
 // GetEventService is the handler to get the Event Service details.
 func (e *EventsRPCs) GetEventService(ctx iris.Context) {
+	defer ctx.Next()
 	req := eventsproto.EventSubRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -65,6 +67,7 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 
 // CreateEventSubscription is the handler for creating event subscription
 func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
+	defer ctx.Next()
 	var req eventsproto.EventSubRequest
 	// Read Post Body from Request
 	var SubscriptionReq interface{}
@@ -106,6 +109,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 
 // SubmitTestEvent is the handler to submit test event
 func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
+	defer ctx.Next()
 	var req eventsproto.EventSubRequest
 	// Read Post Body from Request
 	var SubmitTestEventReq interface{}
@@ -147,6 +151,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 
 // GetEventSubscription is the handler for getting event subscription
 func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
+	defer ctx.Next()
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
@@ -176,6 +181,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 
 // DeleteEventSubscription is the handler for getting event subscription
 func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
+	defer ctx.Next()
 	var req eventsproto.EventRequest
 	req.EventSubscriptionID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
@@ -205,6 +211,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 
 // GetEventSubscriptionsCollection is the handler for getting event subscriptions collection
 func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
+	defer ctx.Next()
 	var req eventsproto.EventRequest
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
 

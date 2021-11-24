@@ -39,6 +39,7 @@ type ChassisRPCs struct {
 
 //CreateChassis creates a new chassis
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
+	defer ctx.Next()
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
@@ -81,6 +82,7 @@ func writeResponse(ctx iris.Context, headers map[string]string, status int32, bo
 
 //GetChassisCollection fetches all Chassis
 func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI}
@@ -112,6 +114,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -145,6 +148,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -173,6 +177,7 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 
 //UpdateChassis updates an existing chassis
 func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
+	defer ctx.Next()
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
@@ -203,6 +208,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 
 //DeleteChassis deletes a chassis
 func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
+	defer ctx.Next()
 	rpcResp, rpcErr := chassis.DeleteChassisRPC(chassisproto.DeleteChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,

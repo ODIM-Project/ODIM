@@ -44,7 +44,7 @@ func setRegexFlag(val string) bool {
 	var re = regexp.MustCompile(`(?m)[\[\]!@#$%^&*(),.?":{}|<>]`)
 
 	for i, match := range re.FindAllString(val, -1) {
-		log.Info("Matched entry no.: " + string(i) + " match=" + match)
+		log.Info("Matched entry no.: " + string(rune(i)) + " match=" + match)
 		return true
 	}
 	return false

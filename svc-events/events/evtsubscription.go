@@ -1447,7 +1447,7 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 		}
 	}
 
-	log.Error("Subscription Response Status Code" + string(response.StatusCode))
+	log.Error("Subscription Response Status Code" + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {

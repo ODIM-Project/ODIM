@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
@@ -41,6 +42,7 @@ type SystemRPCs struct {
 
 //GetSystemsCollection fetches all systems
 func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -70,6 +72,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 
 //GetSystem fetches computer system details
 func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
+	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -104,6 +107,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
+	defer ctx.Next()
 	req := systemsproto.GetSystemsRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -135,6 +139,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 
 //ComputerSystemReset resets the indivitual computer systems
 func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -183,6 +188,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
+	defer ctx.Next()
 	var req systemsproto.DefaultBootOrderRequest
 	req.SystemID = ctx.Params().Get("id")
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
@@ -213,6 +219,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -266,6 +273,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -319,6 +327,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -373,6 +382,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 // from iris context will get the request and check sessiontoken
 // and do rpc call and send response back
 func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	ctx.ReadJSON(&req)
 	request, err := json.Marshal(req)

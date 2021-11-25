@@ -16,8 +16,9 @@
 package handle
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	telemetryproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
@@ -41,6 +42,7 @@ type TelemetryRPCs struct {
 
 // GetTelemetryService is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -70,6 +72,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 
 // GetMetricDefinitionCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -100,6 +103,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 
 // GetMetricReportDefinitionCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -130,6 +134,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 
 // GetMetricReportCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -160,6 +165,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 
 // GetTriggerCollection is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -190,6 +196,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 
 // GetMetricDefinition is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -220,6 +227,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 
 // GetMetricReportDefinition is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -250,6 +258,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 
 // GetMetricReport is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -280,6 +289,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 
 // GetTrigger is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -310,6 +320,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 
 // UpdateTrigger is the handler for getting TelemetryService details
 func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
+	defer ctx.Next()
 	req := telemetryproto.TelemetryRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}

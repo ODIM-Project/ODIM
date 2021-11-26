@@ -132,8 +132,8 @@ data:
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],
       "EventConf": {
-				"DeliveryRetryAttempts" : 3,
-				"DeliveryRetryIntervalSeconds" : 60,
-				"RetentionEventsInMinutes" : 10
-			}
+                 "DeliveryRetryAttempts" : 3,
+                 "DeliveryRetryIntervalSeconds" : 60,
+                 "RetentionEventsInMinutes" : 10
+      }
     }

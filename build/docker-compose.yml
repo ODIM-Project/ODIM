@@ -228,7 +228,7 @@ services:
       - '/etc/plugincert/odimra_server.crt:/etc/plugin_certs/odimra_server.crt:ro'
       - '/etc/plugincert/odimra_kafka_client.key:/etc/plugin_certs/odimra_kafka_client.key:ro'
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/plugin_certs/odimra_kafka_client.crt:ro'
-      - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw' 
+      - '../build/RFPlugin/grf_plugin.service:/etc/systemd/system/grf_plugin.service:rw'
     command: bash -c "cp -r /var/plugin_config/ /etc && /var/tmp/edit_config.sh && rm -rf /var/plugin_config/* && /bin/start_plugin.sh"
   urp:
     build:
@@ -303,7 +303,7 @@ services:
       - '/etc/plugincert/odimra_server.crt:/etc/dell_plugin_certs/odimra_server.crt:ro'
       - '/etc/plugincert/odimra_kafka_client.key:/etc/dell_plugin_certs/odimra_kafka_client.key:ro'
       - '/etc/plugincert/odimra_kafka_client.crt:/etc/dell_plugin_certs/odimra_kafka_client.crt:ro'
-      - '../build/DELLPlugin/dell_plugin.service:/etc/systemd/system/dell_plugin.service:rw' 
+      - '../build/DELLPlugin/dell_plugin.service:/etc/systemd/system/dell_plugin.service:rw'
     command: bash -c "cp -r /var/dell_plugin_config/ /etc && /var/tmp/dell_plugin-edit_config.sh && rm -rf /var/dell_plugin_config/* && /bin/start_plugin.sh"
   lenovo_plugin:
     build:

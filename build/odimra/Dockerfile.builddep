@@ -13,7 +13,7 @@
 # under the License.
 
 # Starting from the latest Golang image
-FROM golang:1.13.8
+FROM golang:1.17.2
 
 WORKDIR /odimra/
 

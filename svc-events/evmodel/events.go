@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
@@ -43,6 +45,9 @@ const (
 	// DeviceSubscriptionIndex is a index name which required for indexing
 	// subscription of device
 	DeviceSubscriptionIndex = common.DeviceSubscriptionIndex
+
+	// UndeliveredEvents holds table for UndeliveredEvent
+	UndeliveredEvents = "UndeliveredEvents"
 )
 
 // OdataIDLink containes link to a resource
@@ -465,4 +470,18 @@ func GetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]strin
 		return []string{}, err
 	}
 	return conn.GetAllMatchingDetails(table, pattern)
+}
+
+// SaveUndeliveredEvents accepts the undelivered event and destination with unique eventid and saves it
+func SaveUndeliveredEvents(key string, event []byte) error {
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		log.Error("While trying to get DB Connection : " + err.Error())
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+	if err = connPool.AddResourceData(UndeliveredEvents, key, string(event)); err != nil {
+		log.Error(" while trying to add Undelivered Events to DB: " + err.Error())
+		return fmt.Errorf("error while trying to add Undelivered Events to DB: %v", err.Error())
+	}
+	return nil
 }

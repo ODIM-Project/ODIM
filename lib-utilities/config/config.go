@@ -154,9 +154,9 @@ type ConnectionMethodConf struct {
 
 // EventConf stores all inforamtion related to event delivery configurations
 type EventConf struct {
-	DeliveryRetryAttempts        int `json:"DeliveryRetryAttempts"`        // holds value of retrying event posting to destination
-	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
-	RetentionEventsInMinutes     int `json:"RetentionEventsInMinutes"`     // holds value of how long we can retain the events
+	DeliveryRetryAttempts                 int `json:"DeliveryRetryAttempts"`                 // holds value of retrying event posting to destination
+	DeliveryRetryIntervalSeconds          int `json:"DeliveryRetryIntervalSeconds"`          // holds value of retrying events posting in interval
+	RetentionOfUndeliveredEventsInMinutes int `json:"RetentionOfUndeliveredEventsInMinutes"` // holds value of how long we can retain the events
 }
 
 // SetConfiguration will extract the config data from file
@@ -559,9 +559,9 @@ func checkEventConf() {
 		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
 	}
 	if SaveUndeliveredEventsFlag {
-		if Data.EventConf.RetentionEventsInMinutes <= 0 {
+		if Data.EventConf.RetentionOfUndeliveredEventsInMinutes <= 0 {
 			log.Warn("No value found for RetentionEventsInMinutes, setting default value")
-			Data.EventConf.RetentionEventsInMinutes = DefaultRetentionEventsInMinutes
+			Data.EventConf.RetentionOfUndeliveredEventsInMinutes = DefaultRetentionOfUndeliveredEventsInMinutes
 		}
 	}
 }

@@ -132,6 +132,6 @@
   "EventConf": {
 		"DeliveryRetryAttempts" : 3,
 		"DeliveryRetryIntervalSeconds" : 60,
-		"RetentionEventsInMinutes" : 10
+		"RetentionOfUndeliveredEventsInMinutes" : 10
   }
 }

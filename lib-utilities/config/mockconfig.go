@@ -328,6 +328,11 @@ func SetUpMockConfig(t *testing.T) error {
 			ConnectionMethodVariant: "Storage:BasicAuth:STG:1.0.0",
 		},
 	}
+	Data.EventConf = &EventConf{
+		DeliveryRetryAttempts:                 1,
+		DeliveryRetryIntervalSeconds:          1,
+		RetentionOfUndeliveredEventsInMinutes: 1,
+	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion)
 	SetTLSMaxVersion(Data.TLSConf.MaxVersion)

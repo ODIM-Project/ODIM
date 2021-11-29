@@ -482,3 +482,37 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 	}
 	os.Remove(sampleFileForTest)
 }
+
+func TestValidateConfigurationForEventConf(t *testing.T) {
+	sampleFileForTest := filepath.Join(cwdDir, sampleFileName)
+	createFile(t, sampleFileForTest, sampleFileContent)
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "Empty event conf",
+			wantErr: false,
+		},
+		{
+			name:    "Zero value configured, setting to default",
+			wantErr: false,
+		},
+	}
+	for num, tt := range tests {
+		switch num {
+		case 0:
+			Data.EventConf = &EventConf{}
+		case 1:
+			Data.EventConf.DeliveryRetryAttempts = 0
+			Data.EventConf.DeliveryRetryIntervalSeconds = 0
+			Data.EventConf.RetentionOfUndeliveredEventsInMinutes = 0
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+				t.Errorf("TestValidateConfigurationGroup3() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+	os.Remove(sampleFileForTest)
+}

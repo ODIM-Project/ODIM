@@ -201,6 +201,9 @@ func ValidateConfiguration() error {
 	if err = checkConnectionMethodConf(); err != nil {
 		return err
 	}
+	if err = checkEventConf(); err != nil {
+		return err
+	}
 	checkAuthConf()
 	checkAddComputeSkipResources()
 	checkURLTranslation()
@@ -540,7 +543,7 @@ func checkConnectionMethodConf() error {
 	return err
 }
 
-func checkEventConf() {
+func checkEventConf() error {
 	if Data.EventConf == nil {
 		log.Warn("EventConf not provided, setting default value")
 		Data.EventConf = &EventConf{
@@ -548,7 +551,7 @@ func checkEventConf() {
 			DeliveryRetryIntervalSeconds:          DefaultDeliveryRetryIntervalSeconds,
 			RetentionOfUndeliveredEventsInMinutes: DefaultRetentionOfUndeliveredEventsInMinutes,
 		}
-		return
+		return nil
 	}
 	if Data.EventConf.DeliveryRetryAttempts <= 0 {
 		log.Warn("No value found for DeliveryRetryAttempts, setting default value")
@@ -559,9 +562,14 @@ func checkEventConf() {
 		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
 	}
 	if SaveUndeliveredEventsFlag {
+		reattempt := Data.EventConf.DeliveryRetryAttempts * Data.EventConf.DeliveryRetryIntervalSeconds
+		if reattempt < (Data.EventConf.RetentionOfUndeliveredEventsInMinutes / 60) {
+			return fmt.Errorf("configured value can't be less than the delivery attempt values")
+		}
 		if Data.EventConf.RetentionOfUndeliveredEventsInMinutes <= 0 {
 			log.Warn("No value found for RetentionEventsInMinutes, setting default value")
 			Data.EventConf.RetentionOfUndeliveredEventsInMinutes = DefaultRetentionOfUndeliveredEventsInMinutes
 		}
 	}
+	return nil
 }

@@ -147,7 +147,12 @@ func TestSetConfiguration(t *testing.T) {
 				"ConnectionMethodType":"Redfish",
 				"ConnectionMethodVariant":"Storage:STG_v1.0.0"
 			}
-		]
+		],
+    "EventConf": {
+  		"DeliveryRetryAttempts" : 1,
+  		"DeliveryRetryIntervalSeconds" : 1,
+  		"RetentionOfUndeliveredEventsInMinutes" : 1
+    }
 }`
 
 	tests := []struct {
@@ -504,13 +509,15 @@ func TestValidateConfigurationForEventConf(t *testing.T) {
 		case 0:
 			Data.EventConf = &EventConf{}
 		case 1:
-			Data.EventConf.DeliveryRetryAttempts = 0
-			Data.EventConf.DeliveryRetryIntervalSeconds = 0
-			Data.EventConf.RetentionOfUndeliveredEventsInMinutes = 0
+			Data.EventConf = &EventConf{
+				DeliveryRetryAttempts:                 0,
+				DeliveryRetryIntervalSeconds:          0,
+				RetentionOfUndeliveredEventsInMinutes: 0,
+			}
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
-				t.Errorf("TestValidateConfigurationGroup3() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("TestValidateConfigurationForEventConf()  = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

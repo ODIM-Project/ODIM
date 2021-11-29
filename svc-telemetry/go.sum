@@ -20,6 +20,14 @@ github.com/Joker/hpp v1.0.0/go.mod h1:8x5n+M1Hp5hC0g8okX3sR3vFQwynaX/UgSOM9MeBKz
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55 h1:RYWYzKAXBhqyy97NdguIQNA5z3XQVyHwXFi6KNyuhgA=
 github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55/go.mod h1:gxcTX5NCbmKYHweBnALpVA0hytBWvQ9esKGS2WnkBFk=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20210901061202-f84c396a018e h1:UAnrbeXlPk7weeldMf4WC0s43cgG9uGv5aEhzXs7R+s=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20210901061202-f84c396a018e/go.mod h1:h25kqABECab638ZEH7oa+/H7k0TzYmmeMyg21OhbJdI=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20211111141753-7be55f503f6d h1:5lMFM6kOlAg9P1Nnm1oNW2wKeS2CoBWAfZP1j+yDDlM=
+github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20211111141753-7be55f503f6d/go.mod h1:h25kqABECab638ZEH7oa+/H7k0TzYmmeMyg21OhbJdI=
+github.com/ODIM-Project/ODIM/svc-update v0.0.0-20210201172557-4fa2adafe1e3 h1:rInxEqp04+juVRkYc9jUuyeVfjFVRRb07Jc7Y2n8Aps=
+github.com/ODIM-Project/ODIM/svc-update v0.0.0-20210201172557-4fa2adafe1e3/go.mod h1:hOKmCnGw5TEvjPDaJUr8W2VLGqmeV48ZEyxHCSVuxWQ=
+github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
+github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87/go.mod h1:iGLljf5n9GjT6kc0HBvyI1nOKnGQbNB66VzSNbK5iks=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 h1:WDC6ySpJzbxGWFh4aMxFFC28wwGp5pEuoTtvA4q/qQ4=

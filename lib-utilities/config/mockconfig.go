@@ -239,6 +239,10 @@ func SetUpMockConfig(t *testing.T) error {
 		MaxIdleConns:   10,
 		MaxActiveConns: 120,
 	}
+	Data.MessageBusConf = &MessageBusConf{
+		MessageBusType:  "Kafka",
+		MessageBusQueue: []string{"redfish-topic"},
+	}
 	Data.KeyCertConf = &KeyCertConf{
 		RootCACertificate: hostCA,
 		RPCPrivateKey:     hostPrivKey,

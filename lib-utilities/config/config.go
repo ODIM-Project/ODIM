@@ -564,7 +564,7 @@ func checkEventConf() error {
 	if SaveUndeliveredEventsFlag {
 		reattempt := Data.EventConf.DeliveryRetryAttempts * Data.EventConf.DeliveryRetryIntervalSeconds
 		if reattempt < (Data.EventConf.RetentionOfUndeliveredEventsInMinutes / 60) {
-			return fmt.Errorf("configured value can't be less than the delivery attempt values")
+			return fmt.Errorf("RetentionOfUndeliveredEventsInMinutes value can't be less than the delivery attempt values")
 		}
 		if Data.EventConf.RetentionOfUndeliveredEventsInMinutes <= 0 {
 			log.Warn("No value found for RetentionEventsInMinutes, setting default value")

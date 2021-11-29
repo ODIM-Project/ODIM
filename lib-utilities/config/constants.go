@@ -27,6 +27,9 @@ const (
 	Server Host = iota
 	// Client is for defining application type is Client
 	Client
+
+	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
+	SaveUndeliveredEventsFlag = false
 )
 
 const (
@@ -90,6 +93,12 @@ const (
 	DefaultTLSMaxVersion = tls.VersionTLS12
 	// DefaultTLSServerVerify - indicator for performing server validation
 	DefaultTLSServerVerify = true
+	// DefaultDeliveryRetryAttempts - default DeliveryRetryAttempts value
+	DefaultDeliveryRetryAttempts = 3
+	// DefaultDeliveryRetryIntervalSeconds - default DeliveryRetryIntervalSeconds value
+	DefaultDeliveryRetryIntervalSeconds = 60
+	// DefaultRetentionOfUndeliveredEventsInMinutes - default RetentionOfUndeliveredEventsInMinutes value
+	DefaultRetentionOfUndeliveredEventsInMinutes = 10
 )
 
 var (

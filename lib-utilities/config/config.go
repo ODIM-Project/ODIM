@@ -51,6 +51,7 @@ type configModel struct {
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
+	EventConf                      *EventConf               `json:"EventConf"`
 }
 
 // DBConf holds all DB related configurations
@@ -151,6 +152,13 @@ type ConnectionMethodConf struct {
 	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
 }
 
+// EventConf stores all inforamtion related to event delivery configurations
+type EventConf struct {
+	DeliveryRetryAttempts                 int `json:"DeliveryRetryAttempts"`                 // holds value of retrying event posting to destination
+	DeliveryRetryIntervalSeconds          int `json:"DeliveryRetryIntervalSeconds"`          // holds value of retrying events posting in interval
+	RetentionOfUndeliveredEventsInMinutes int `json:"RetentionOfUndeliveredEventsInMinutes"` // holds value of how long we can retain the events
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -191,6 +199,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkConnectionMethodConf(); err != nil {
+		return err
+	}
+	if err = checkEventConf(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -530,4 +541,35 @@ func checkConnectionMethodConf() error {
 		return fmt.Errorf("error: ConnectionMethodConf is not provided")
 	}
 	return err
+}
+
+func checkEventConf() error {
+	if Data.EventConf == nil {
+		log.Warn("EventConf not provided, setting default value")
+		Data.EventConf = &EventConf{
+			DeliveryRetryAttempts:                 DefaultDeliveryRetryAttempts,
+			DeliveryRetryIntervalSeconds:          DefaultDeliveryRetryIntervalSeconds,
+			RetentionOfUndeliveredEventsInMinutes: DefaultRetentionOfUndeliveredEventsInMinutes,
+		}
+		return nil
+	}
+	if Data.EventConf.DeliveryRetryAttempts <= 0 {
+		log.Warn("No value found for DeliveryRetryAttempts, setting default value")
+		Data.EventConf.DeliveryRetryAttempts = DefaultDeliveryRetryAttempts
+	}
+	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
+		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
+		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
+	}
+	if SaveUndeliveredEventsFlag {
+		reattempt := Data.EventConf.DeliveryRetryAttempts * Data.EventConf.DeliveryRetryIntervalSeconds
+		if reattempt < (Data.EventConf.RetentionOfUndeliveredEventsInMinutes / 60) {
+			return fmt.Errorf("RetentionOfUndeliveredEventsInMinutes value can't be less than the delivery attempt values")
+		}
+		if Data.EventConf.RetentionOfUndeliveredEventsInMinutes <= 0 {
+			log.Warn("No value found for RetentionEventsInMinutes, setting default value")
+			Data.EventConf.RetentionOfUndeliveredEventsInMinutes = DefaultRetentionOfUndeliveredEventsInMinutes
+		}
+	}
+	return nil
 }

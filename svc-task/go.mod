@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.0
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
 	github.com/satori/go.uuid v1.2.0
 	github.com/satori/uuid v1.2.0
@@ -72,7 +72,7 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200825200019-8632dd797987 // indirect
 	google.golang.org/grpc v1.41.0 // indirect
-	google.golang.org/protobuf v1.26.0-rc.1 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.51.1 // indirect

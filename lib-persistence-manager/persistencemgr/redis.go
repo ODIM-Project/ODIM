@@ -174,7 +174,7 @@ func getInMemoryDBConfig() *Config {
 		Protocol:     config.Data.DBConf.Protocol,
 		Host:         config.Data.DBConf.InMemoryHost,
 		SentinelPort: config.Data.DBConf.InMemorySentinelPort,
-		MasterSet:    config.Data.DBConf.InMemoryMasterSet,
+		MasterSet:    config.Data.DBConf.InMemoryPrimarySet,
 	}
 }
 
@@ -184,7 +184,7 @@ func getOnDiskDBConfig() *Config {
 		Protocol:     config.Data.DBConf.Protocol,
 		Host:         config.Data.DBConf.OnDiskHost,
 		SentinelPort: config.Data.DBConf.OnDiskSentinelPort,
-		MasterSet:    config.Data.DBConf.OnDiskMasterSet,
+		MasterSet:    config.Data.DBConf.OnDiskPrimarySet,
 	}
 }
 

@@ -151,3 +151,9 @@ var (
 		"TLS_1.2": tls.VersionTLS12,
 	}
 )
+
+// AllowedMessageBusTypes is for checking for message types are allowed
+var AllowedMessageBusTypes = map[string]bool{
+	"Kafka":       true,
+	"RedisStream": true,
+}

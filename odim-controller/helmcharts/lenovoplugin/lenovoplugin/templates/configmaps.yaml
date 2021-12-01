@@ -49,7 +49,7 @@ data:
                 "MessageBusAddress": "redis-inmemory",
                 "HASet": "",
                 {{ else }}
-		"MessageBusAddress": "redis-ha-inmemory",
+                "MessageBusAddress": "redis-ha-inmemory",
                 "HASet": "redisSentinel",
                 {{ end }}
                 "MessageBusPort": 6379,

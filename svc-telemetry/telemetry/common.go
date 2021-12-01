@@ -28,11 +28,6 @@ import (
 
 var header = map[string]string{
 	"Allow":             `GET`,
-	"Cache-Control":     "no-cache",
-	"Connection":        "keep-alive",
-	"Content-type":      "application/json; charset=utf-8",
-	"Transfer-Encoding": "chunked",
-	"OData-Version":     "4.0",
 }
 
 // ExternalInterface struct holds the structs to which hold function pointers to outboud calls

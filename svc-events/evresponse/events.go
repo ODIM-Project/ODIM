@@ -144,11 +144,6 @@ func (r *MutexLock) ReadResponse(subscriptionID string) (response.RPC, []string)
 		// Sucessfully created subscription
 		rpcResponse.StatusCode = int32(resp.StatusCode)
 		rpcResponse.Header = map[string]string{
-			"Cache-Control":     "no-cache",
-			"Connection":        "keep-alive",
-			"Content-type":      "application/json; charset=utf-8",
-			"Transfer-Encoding": "chunked",
-			"OData-Version":     "4.0",
 			"Location":          "/redfish/v1/EventService/Subscriptions/" + subscriptionID, // TODO make it dynamic
 		}
 		rpcResponse.Body = resp.Response

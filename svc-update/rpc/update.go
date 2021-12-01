@@ -134,7 +134,6 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}
@@ -194,7 +193,6 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}

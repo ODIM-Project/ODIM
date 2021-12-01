@@ -57,13 +57,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	// Fill the response header first
 	resp.Header = map[string]string{
 		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
-		"Connection":        "Keep-alive",
 		"Link":              "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
 	}
 	// Validate the token, if user has Login privelege then proceed.
 	//Else send 401 Unautherised
@@ -198,9 +192,6 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error   headers
-		}
 		log.Error(errorMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -215,7 +206,6 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	// Return 202 accepted
 	resp.StatusCode = http.StatusAccepted
 	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
 		"Location":     "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted

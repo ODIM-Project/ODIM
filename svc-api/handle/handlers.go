@@ -39,7 +39,7 @@ func GetVersion(ctx iris.Context) {
 	Version := models.Version{
 		V1: "/redfish/v1/",
 	}
-	SetResponseHeaders(ctx, nil)
+	common.SetResponseHeader(ctx, nil)
 	ctx.JSON(Version)
 }
 
@@ -121,11 +121,9 @@ func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
 
 	var headers = map[string]string{
 		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
 		"Link":              "</redfish/v1/SchemaStore/en/ServiceRoot.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
 	}
-	SetResponseHeaders(ctx, headers)
+	common.SetResponseHeader(ctx, headers)
 	ctx.JSON(serviceRoot)
 }
 
@@ -155,10 +153,8 @@ func GetOdata(ctx iris.Context) {
 	ctx.Gzip(true)
 	var odataheaders = map[string]string{
 		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
 	}
-	SetResponseHeaders(ctx, odataheaders)
+	common.SetResponseHeader(ctx, odataheaders)
 	ctx.JSON(Odata)
 }
 
@@ -2843,12 +2839,10 @@ func GetMetadata(ctx iris.Context) {
 
 	var headers = map[string]string{
 		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
 		"Content-type":      "application/xml; charset=utf-8",
 	}
 	xmlData, _ := xml.Marshal(Metadata)
-	SetResponseHeaders(ctx, headers)
+	common.SetResponseHeader(ctx, headers)
 	ctx.Write(xmlData)
 
 }
@@ -2875,7 +2869,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
-		SetResponseHeaders(ctx, authResp.Header)
+		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
 		return
 	}
@@ -2883,9 +2877,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	//Get the Registrystore location
 	var headers = map[string]string{
 		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
 		"Link":              "</redfish/v1/SchemaStore/en/MessageRegistryFileCollection.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
 	}
 	// Get all available file names in the registry store directory in a list
 	registryStore := config.Data.RegistryStorePath
@@ -2927,7 +2919,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		MembersCount: len(listMembers),
 		Members:      listMembers,
 	}
-	SetResponseHeaders(ctx, headers)
+	common.SetResponseHeader(ctx, headers)
 	ctx.JSON(regCollectionResp)
 }
 
@@ -2963,16 +2955,13 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
-		SetResponseHeaders(ctx, authResp.Header)
+		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
 		return
 	}
 	var headers = map[string]string{
 		"Allow":             "GET",
-		"Content-type":      "application/json; charset=utf-8", //   TODO: add all error headers
-		"Cache-Control":     "no-cache",
 		"Link":              "</redfish/v1/SchemaStore/en/MessageRegistryFile.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
 	}
 	//Get the Registrystore location
 	registryStore := config.Data.RegistryStorePath
@@ -3003,10 +2992,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	if locationURI == "" {
 		errorMessage := "error: resource not found"
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
-		SetResponseHeaders(ctx, responseHeader)
+		common.SetResponseHeader(ctx, nil)
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 		ctx.StatusCode(http.StatusNotFound) // TODO: add error      headers
@@ -3031,7 +3017,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		},
 		},
 	}
-	SetResponseHeaders(ctx, headers)
+	common.SetResponseHeader(ctx, headers)
 	ctx.JSON(resp)
 }
 
@@ -3052,13 +3038,10 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
-		SetResponseHeaders(ctx, responseHeader)
+		common.SetResponseHeader(ctx, nil)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -3066,15 +3049,12 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authorize token")
 		ctx.StatusCode(int(authResp.StatusCode))
-		SetResponseHeaders(ctx, authResp.Header)
+		common.SetResponseHeader(ctx, authResp.Header)
 		ctx.JSON(authResp.Body)
 		return
 	}
 	var headers = map[string]string{
 		"Allow":             "GET",
-		"Content-type":      "application/json; charset=utf-8", //   TODO: add all error headers
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
 	}
 	//Get the Registrystore location
 
@@ -3090,13 +3070,10 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 			// file Not found, send 404 error
 			log.Error("got error while retreiving fom DB")
 			errorMessage := "error: Resource not found"
-			responseHeader := map[string]string{
-				"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-			}
 			log.Error(errorMessage)
 			response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
 			ctx.StatusCode(http.StatusNotFound) // TODO: add error      headers
-			SetResponseHeaders(ctx, responseHeader)
+			common.SetResponseHeader(ctx, nil)
 			ctx.JSON(&response.Body)
 			return
 		}
@@ -3108,17 +3085,14 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		//return fmt.Errorf("error while trying to unmarshal the config data: %v", err)
 		log.Error(err.Error())
 		errorMessage := "error: Resource not found"
-		responseHeader := map[string]string{
-			"Content-type": "application/json; charset=utf-8", //   TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
-		SetResponseHeaders(ctx, responseHeader)
+		common.SetResponseHeader(ctx, nil)
 		ctx.JSON(&response.Body)
 		return
 	}
-	SetResponseHeaders(ctx, headers)
+	common.SetResponseHeader(ctx, headers)
 	ctx.JSON(data)
 
 }

@@ -130,11 +130,8 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	resp.StatusCode = http.StatusCreated
 	resp.StatusMessage = response.Created
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
 		"Link":              "</redfish/v1/SessionService/Sessions/" + sess.ID + "/>; rel=self",
-		"Transfer-Encoding": "chunked",
 		"X-Auth-Token":      sess.Token,
-		"Content-type":      "application/json; charset=utf-8",
 	}
 
 	commonResponse.ID = sess.ID

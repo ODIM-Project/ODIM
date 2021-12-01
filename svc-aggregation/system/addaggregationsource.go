@@ -109,7 +109,6 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 			Message: errMsg,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
@@ -196,13 +195,8 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		Name:         "Aggregation Source",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
 		"Link":              "<" + aggregationSourceURI + "/>; rel=describedby",
 		"Location":          aggregationSourceURI,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	commonResponse.Message = ""

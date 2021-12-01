@@ -47,11 +47,6 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	requestData := strings.Split(req.RequestParam, ":")

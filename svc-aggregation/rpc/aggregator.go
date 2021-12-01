@@ -41,14 +41,8 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	// Fill the response header first
 	resp.Header = map[string]string{
 		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
-		"Connection":        "Keep-alive",
 		"Date":              time.Now().Format(http.TimeFormat),
 		"Link":              "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
 	}
 	// Validate the token, if user has Login priielege then proceed.
 	//Else send 401 Unauthorised
@@ -166,7 +160,6 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}
@@ -260,7 +253,6 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}
@@ -362,7 +354,6 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}
@@ -526,7 +517,6 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}
@@ -761,7 +751,6 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}
@@ -854,7 +843,6 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
 			"Location":     "/taskmon/" + taskID,
 		},
 	}

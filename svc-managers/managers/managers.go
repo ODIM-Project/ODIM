@@ -39,11 +39,6 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	managers := mgrresponse.ManagersCollection{
 		OdataContext: "/redfish/v1/$metadata#ManagerCollection.ManagerCollection",
@@ -75,11 +70,6 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	if req.ManagerID == config.Data.RootServiceUUID {
@@ -217,11 +207,6 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	requestData := strings.Split(req.ManagerID, ":")
@@ -405,20 +390,17 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	}
 	req.OID = reqURI
 	var errorMessage = "unable to get the details " + reqURI + ": "
-	var header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	body, _, getResponse, err := mgrcommon.ContactPlugin(req, errorMessage)
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
 			if body, _, getResponse, err = mgrcommon.RetryManagersOperation(req, errorMessage); err != nil {
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal(body, &resp.Body)
-				resp.Header = header
 				return resp
 			}
 		} else {
 			resp.StatusCode = getResponse.StatusCode
 			json.Unmarshal(body, &resp.Body)
-			resp.Header = header
 			return resp
 		}
 	}
@@ -443,11 +425,6 @@ func fillResponse(body []byte) response.RPC {
 	resp.Body = respData
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

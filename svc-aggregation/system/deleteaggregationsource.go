@@ -134,14 +134,6 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	resp = response.RPC{
 		StatusCode:    http.StatusNoContent,
 		StatusMessage: response.ResourceRemoved,
-		Header: map[string]string{
-			"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
-			"Cache-Control":     "no-cache",
-			"Connection":        "keep-alive",
-			"Transfer-Encoding": "chunked",
-			"OData-Version":     "4.0",
-			"X-Frame-Options":   "sameorigin",
-		},
 	}
 	return resp
 }
@@ -243,11 +235,6 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	e.EventNotification(oid, "ResourceRemoved", "ManagerCollection")
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 
@@ -337,11 +324,6 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}
 	e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 	args := response.Args{

@@ -184,12 +184,7 @@ func (p *PluginContact) DeleteEventSubscriptionsDetails(req *eventsproto.EventRe
 		return authResp
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"allow":             "POST,GET,DELETE",
+		"Allow":             "POST,GET,DELETE",
 	}
 
 	subscriptionDetails, err := evmodel.GetEvtSubscriptions(req.EventSubscriptionID)

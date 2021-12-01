@@ -64,12 +64,7 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 
 	resp.Header = map[string]string{
 		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
-		"Content-type":  "application/json; charset=utf-8",
 		"Link": "	</redfish/v1/SchemaStore/en/UpdateService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -115,11 +110,6 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	firmwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
@@ -155,11 +145,6 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	requestData := strings.Split(req.ResourceID, ":")
@@ -208,11 +193,6 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	softwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
@@ -248,11 +228,6 @@ func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest)
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	requestData := strings.Split(req.ResourceID, ":")

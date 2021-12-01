@@ -85,7 +85,6 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
 		}
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -93,7 +92,6 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -102,7 +100,6 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	if errs != nil {
 		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -118,11 +115,8 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				resp.StatusCode = http.StatusOK
 				resp.StatusMessage = response.Success
 				resp.Header = map[string]string{
-					"Cache-Control":     "no-cache",
 					"Link":              "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
-					"Transfer-Encoding": "chunked",
 					"X-Auth-Token":      token,
-					"Content-type":      "application/json; charset=utf-8",
 				}
 
 				respBody := asresponse.Session{
@@ -139,7 +133,6 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = getHeader()
 			log.Error(errorMessage)
 			return resp
 		}
@@ -153,7 +146,6 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	errorArgs[0].StatusMessage = resp.StatusMessage
 	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
-	resp.Header = getHeader()
 	return resp
 }
 
@@ -194,7 +186,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
 		}
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -203,7 +194,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -215,7 +205,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -224,7 +213,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	if errs != nil {
 		errorMessage := "Unable to get all session keys in delete session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -253,7 +241,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	resp.Header = getHeader()
 	resp.Body = respBody
 	return resp
 }
@@ -303,12 +290,7 @@ func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 	}
 	resp.Header = map[string]string{
 		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
 		"Link": "	</redfish/v1/SchemaStore/en/SessionService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
 	}
 
 	resp.Body = sessionService

@@ -63,9 +63,6 @@ func (f *FabricRPCs) GetFabricCollection(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -101,9 +98,6 @@ func (f *FabricRPCs) GetFabric(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -139,9 +133,6 @@ func (f *FabricRPCs) GetFabricSwitchCollection(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -177,9 +168,6 @@ func (f *FabricRPCs) GetFabricSwitch(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -215,9 +203,6 @@ func (f *FabricRPCs) GetSwitchPortCollection(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -253,9 +238,6 @@ func (f *FabricRPCs) GetSwitchPort(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET", "PATCH"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -291,9 +273,6 @@ func (f *FabricRPCs) GetFabricZoneCollection(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET", "POST"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -329,9 +308,6 @@ func (f *FabricRPCs) GetFabricZone(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET", "PUT", "PATCH", "DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -367,9 +343,6 @@ func (f *FabricRPCs) GetFabricEndPointCollection(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET", "POST"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -405,9 +378,6 @@ func (f *FabricRPCs) GetFabricEndPoints(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET", "PUT", "PATCH", "DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -443,9 +413,6 @@ func (f *FabricRPCs) GetFabricAddressPoolCollection(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET",  "POST"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
@@ -481,9 +448,6 @@ func (f *FabricRPCs) GetFabricAddressPool(ctx iris.Context) {
 	}
 	resp.Header = map[string]string{
 		"Allow":             `"GET", "PUT", "PATCH", "DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))

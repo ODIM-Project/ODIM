@@ -39,12 +39,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	var rsp taskproto.TaskResponse
 	rsp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
 		"Date":              time.Now().Format(http.TimeFormat),
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)

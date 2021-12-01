@@ -17,6 +17,7 @@ package common
 
 import (
 	iris "github.com/kataras/iris/v12"
+	"fmt"
 )
 
 // SetResponseHeader will add the params to the response header
@@ -24,7 +25,12 @@ func SetResponseHeader(ctx iris.Context, params map[string]string) {
 	ctx.ResponseWriter().Header().Set("Connection", "keep-alive")
 	ctx.ResponseWriter().Header().Set("OData-Version", "4.0")
 	ctx.ResponseWriter().Header().Set("X-Frame-Options", "sameorigin")
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options","nosniff")
+	ctx.ResponseWriter().Header().Set("Content-type","application/json; charset=utf-8")
+	ctx.ResponseWriter().Header().Set("Cache-Control","no-cache")
+	ctx.ResponseWriter().Header().Set("Transfer-Encoding","chunked")
 	for key, value := range params {
+	    fmt.Println(key,value)
 		ctx.ResponseWriter().Header().Set(key, value)
 	}
 }

@@ -160,11 +160,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
-	}
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -397,7 +393,6 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
 	}
 
@@ -409,9 +404,6 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-	}
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
 	}
 
 	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo

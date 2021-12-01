@@ -154,11 +154,6 @@ func rewrite(source response.RPC, target *chassisproto.GetChassisResponse) *chas
 func addDefaultHeaders(target *chassisproto.GetChassisResponse) {
 	target.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 }
 

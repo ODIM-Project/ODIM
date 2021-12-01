@@ -64,6 +64,9 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		Name:         "Account Service",
 	}
 	var resp response.RPC
+	resp.Header = map[string]string{
+        "Allow": "GET, POST",
+    }
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
@@ -100,9 +103,6 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -123,9 +123,6 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -150,9 +147,6 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp, err
 
@@ -183,10 +177,6 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -195,13 +185,8 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	resp.StatusMessage = response.Created
 
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
 		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
 		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)

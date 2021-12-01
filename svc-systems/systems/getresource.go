@@ -546,11 +546,6 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	// Splitting the SystemID to get UUID
 	requestData := strings.Split(req.RequestParam, ":")
@@ -700,11 +695,6 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	paramStr := strings.SplitN(req.URL, "?", 2)
 	if len(paramStr) > 1 {
@@ -755,11 +745,6 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 
 	requestData := strings.Split(req.RequestParam, ":")

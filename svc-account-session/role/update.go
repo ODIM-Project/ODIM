@@ -40,11 +40,6 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 	var resp response.RPC
 	resp.Header = map[string]string{
 		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	var updateReq asmodel.Role
 	json.Unmarshal(req.UpdateRequest, &updateReq)

@@ -336,7 +336,7 @@ func postEvent(destination, eventUniqueID string, event []byte) {
 	req.Close = true
 	req.Header.Set("Content-Type", "application/json")
 	var resp *http.Response
-	count := evcommon.DeliveryRetryAttempts + 1
+	count := config.Data.EventConf.DeliveryRetryAttempts + 1
 	for i := 0; i < count; i++ {
 		config.TLSConfMutex.RLock()
 		resp, err = httpClient.Do(req)
@@ -346,17 +346,16 @@ func postEvent(destination, eventUniqueID string, event []byte) {
 			log.Printf("event post response: %v", resp)
 			return
 		}
+		if config.SaveUndeliveredEventsFlag {
+			err = evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
+			if err != nil {
+				log.Error("error while saving undelivered event: ", err.Error())
+			}
+		}
 		log.Println("Retrying event posting")
-		time.Sleep(time.Second * evcommon.DeliveryRetryIntervalSeconds)
+		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
-
-	if evcommon.SaveUndeliveredEventsFlag {
-		err = evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
-		if err != nil {
-			log.Error("error while saving undelivered event: ", err.Error())
-		}
-	}
 	return
 }
 

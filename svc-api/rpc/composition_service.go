@@ -128,3 +128,33 @@ func Compose(req compositionserviceproto.ComposeRequest) (*compositionservicepro
 	}
 	return resp, nil
 }
+
+func GetActivePool(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
+	fmt.Errorf("In rpc.GetCompositionService")
+	conn, err := services.ODIMService.Client(services.CompositionService)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	csService := compositionserviceproto.NewCompositionClient(conn)
+	resp, err := csService.GetCompositionResource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+func GetFreePool(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
+	fmt.Errorf("In rpc.GetCompositionService")
+	conn, err := services.ODIMService.Client(services.CompositionService)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	csService := compositionserviceproto.NewCompositionClient(conn)
+	resp, err := csService.GetCompositionResource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}

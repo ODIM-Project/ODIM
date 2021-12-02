@@ -7,6 +7,7 @@ import proto.composition_service_pb2 as pb2
 import proto.composition_service_pb2_grpc as pb2_grpc
 from rest.resource_zones import ResourceZones
 from rest.resource_blocks import ResourceBlocks
+from rest.pool import ResourcePool
 from rest.composition_service import CompositonService
 
 
@@ -17,13 +18,14 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         self.cs = CompositonService()
         self.resourcezone = ResourceZones()
         self.resourceblock = ResourceBlocks()
+        self.pool = ResourcePool()
 
     def __str__(self):
         return self.__class__.__name__
 
     def GetCompositionService(self, request: pb2.GetCompositionServiceRequest, context: grpc.ServicerContext) -> pb2.CompositionServiceResponse:
         response, code = self.cs.get_cs()
-        return pb2.CompositionServiceResponse(statusCode=code, body=bytes(json.dumps(response)))
+        return pb2.CompositionServiceResponse(statusCode=code, body=bytes(json.dumps(response), 'utf-8'))
         # return pb2.CompositionServiceResponse(statusCode=code, body=response)
 
     def GetCompositionResource(self, request: pb2.GetCompositionResourceRequest, context: grpc.ServicerContext) -> pb2.CompositionServiceResponse:
@@ -49,8 +51,11 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                         request.URL)
                 # ResourceZones Collection
                 elif segments[-1] == "ResourceZones":
-                    response, code = self.resourcezone.get_resource_zone_collection(
-                        request.URL)
+                    response, code = self.resourcezone.get_resource_zone_collection(request.URL)
+                elif segments[-1] == "ActivePool":
+                    response, code = self.pool.get_active_pool_collection(request.URL)
+                elif segments[-1] == "FreePool":
+                    response, code = self.pool.get_free_pool_collection(request.URL)
 
         return pb2.CompositionServiceResponse(statusCode=code, body=bytes(json.dumps(response), 'utf-8'))
 
@@ -94,6 +99,6 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         try:
             response, code = self.cs.compose_action(
                 json.loads(str(request.RequestBody.decode("utf-8"))))
-            return pb2.CompositionServiceResponse(StatusCode=code, Body=bytes(json.dumps(response), 'utf-8'))
+            return pb2.CompositionServiceResponse(statusCode=code, body=bytes(json.dumps(response), 'utf-8'))
         except Exception as err:
             logging.error("Compose Error: {}".format(err))

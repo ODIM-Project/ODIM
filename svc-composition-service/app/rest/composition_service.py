@@ -116,15 +116,15 @@ class CompositonService():
                 if "ComputerSystem" in rs_block["ResourceBlockType"]:
 
                     system_data = self.redis.get("ComputerSystem:{uri}".format(
-                        uri=rs_block["ComputerSystem"]["@odata.id"]))
+                        uri=rs_block["ComputerSystems"][0]["@odata.id"]))
                     if system_data is None:
                         logging.error("The ComputerSystem {sys_id} from Resource Block {id} is not found valid".format(
-                            sys_id=rs_block["ComputerSystem"]["@odata.id"], id=block_uri["@odata.id"]))
+                            sys_id=rs_block["ComputerSystems"][0]["@odata.id"], id=block_uri["@odata.id"]))
                         res = {"Error": "Get ComputerSystem is failed"}
                         code = HTTPStatus.BAD_REQUEST
                         return
 
-                    system_data = json.loads(system_data)
+                    system_data = json.loads(json.loads(system_data))
                     res["Id"] = "composed-{}".format(system_data["Id"])
                     res["@odata.id"] = system_data["@odata.id"].replace(
                         system_data["Id"], res["Id"])
@@ -161,17 +161,17 @@ class CompositonService():
                     rb_uri=block_uri["@odata.id"]))
                 if (rs_block.get("Links") is None) or (rs_block["Links"].get("ComputerSystems") is None):
                     rs_block["Links"] = {"ComputerSystems": []}
-                rs_block["Links"]["ComputerSystems"].append(
-                    {"@odata.id": res["@odata.id"]})
-                pipe.set("ResourceBlocks:{rb_uri}".format(
-                    rb_uri=block_uri["@odata.id"]), json.dumps(rs_block))
-
+                rs_block["Links"]["ComputerSystems"].append({"@odata.id": res["@odata.id"]})
+                pipe.set("ResourceBlocks:{rb_uri}".format(rb_uri=block_uri["@odata.id"]), json.dumps(rs_block))
+                pipe.srem("FreePool", block_uri["@odata.id"])
+                pipe.sadd("ActivePool", block_uri["@odata.id"])
+            
             res["SystemType"] = "Composed"
             system_data["SystemType"] = "Composed"
             system_data["Id"] = res["Id"]
             system_data["@odata.id"] = res["@odata.id"]
             pipe.set("ComputerSystem:{compose_uri}".format(
-                compose_uri=res["@odata.id"]), json.dumps(system_data))
+                compose_uri=res["@odata.id"]), json.dumps(json.dumps(system_data)))
             pipe.execute()
             logging.info(
                 "Compose System {id} is created successfully".format(id=res["Id"]))
@@ -202,7 +202,7 @@ class CompositonService():
                 code = HTTPStatus.BAD_REQUEST
                 return
 
-            logging.debug("DecomposeSystem request body: {req}".format(req))
+            logging.debug("DecomposeSystem request body: {req}".format(req=req))
 
             for system_id in req["Links"]["ComputerSystems"]:
                 system_data = self.redis.get(
@@ -212,9 +212,13 @@ class CompositonService():
                         sys_id=system_id["@odata.id"].split('/')[-1])}
                     code = HTTPStatus.BAD_REQUEST
                     return
-                system_data = json.loads(system_data)
-                logging.debug("ComposeSystem data: {sys_data}".format(
-                    sys_data=system_data))
+                system_data = json.loads(json.loads(system_data))
+                if not (system_data.get("SystemType") == "Composed"):
+                    logging.error("The system {sys} provided in links is not a Composed system.".format(sys=system_id["@odata.id"]))
+                    res = {"Error": "The system {sys} provided in links is not a Composed system. Please provide composed systems for decompose".format(sys=system_id["@odata.id"])}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
+                logging.debug("ComposeSystem data: {sys_data}".format(sys_data=system_data))
 
                 for property, value in system_data["Links"].items():
                     if property == "ResourceBlocks":
@@ -241,10 +245,10 @@ class CompositonService():
                                             break
 
                                     if done:
-                                        pipe.set("{resource}:{resource_uri}".format(
-                                            resource=property, resource_uri=obj["@odata.id"]), json.dumps(resource_data))
-                                        logging.info("{resource}:{resource_uri} is updateded".format(
-                                            resource=property, resource_uri=obj["@odata.id"]))
+                                        pipe.set("{resource}:{resource_uri}".format(resource=property,resource_uri=obj["@odata.id"]), json.dumps(resource_data))
+                                        pipe.srem("ActivePool", obj["@odata.id"])
+                                        pipe.sadd("FreePool", obj["@odata.id"])
+                                        logging.info("{resource}:{resource_uri} is updateded".format(resource=property,resource_uri=obj["@odata.id"]))
                                     else:
                                         logging.info("{resource}:{resource_uri} updated is failed".format(
                                             resource=property, resource_uri=obj["@odata.id"]))

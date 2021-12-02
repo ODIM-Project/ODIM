@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import composition_service_pb2 as composition__service__pb2
+import proto.composition_service_pb2 as composition__service__pb2
 
 
 class CompositionStub(object):

@@ -26,6 +26,8 @@ type CompositionServiceRPCs struct {
 	CreateResourceZoneRPC         func(req compositionserviceproto.CreateCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	DeleteResourceZoneRPC         func(req compositionserviceproto.DeleteCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	ComposeRPC                    func(req compositionserviceproto.ComposeRequest) (*compositionserviceproto.CompositionServiceResponse, error)
+	GetActivePoolRPC              func(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
+	GetFreePoolRPC                func(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 }
 
 //GetCompositionService fetches all composition service
@@ -325,4 +327,54 @@ func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 	ctx.StatusCode(int(resp.StatusCode))
 	json.Unmarshal(resp.Body, &res)
 	ctx.JSON(res)
+}
+
+func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
+	var response interface{}
+	req := compositionserviceproto.GetCompositionResourceRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(iris.Map{"error": "no X-Auth-Token found in request header"})
+		return
+	}
+	
+	resp, err := cs.GetActivePoolRPC(req)
+	if err != nil {
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(iris.Map{"error": "GRPC error" + err.Error()})
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	json.Unmarshal(resp.Body, &response)
+	ctx.JSON(response)
+}
+
+func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
+	var response interface{}
+	req := compositionserviceproto.GetCompositionResourceRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.JSON(iris.Map{"error": "no X-Auth-Token found in request header"})
+		return
+	}
+	
+	resp, err := cs.GetFreePoolRPC(req)
+	if err != nil {
+		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(iris.Map{"error": "GRPC error" + err.Error()})
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	json.Unmarshal(resp.Body, &response)
+	ctx.JSON(response)
 }

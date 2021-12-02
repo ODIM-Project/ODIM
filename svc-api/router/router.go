@@ -164,6 +164,8 @@ func Router() *iris.Application {
 		CreateResourceZoneRPC:         rpc.CreateResourceZone,
 		DeleteResourceZoneRPC:         rpc.DeleteResourceZone,
 		ComposeRPC:                    rpc.Compose,
+		GetActivePoolRPC:              rpc.GetActivePool,
+		GetFreePoolRPC:                rpc.GetFreePool,
 	}
 
 	registryFile := handle.Registry{
@@ -582,7 +584,9 @@ func Router() *iris.Application {
 	compositionService.Get("/ResourceZones/{id}", cs.GetResourceBlock)
 	compositionService.Post("/ResourceZones", cs.CreateResourceZone)
 	compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
-	compositionService.Post("/redfish/v1/CompositionService/Actions/CompositionService.Compose", cs.Compose)
+	compositionService.Post("/Actions/CompositionService.Compose", cs.Compose)
+	compositionService.Get("/ActivePool", cs.GetActivePool)
+	compositionService.Get("/FreePool", cs.GetFreePool)
 
 	return router
 }

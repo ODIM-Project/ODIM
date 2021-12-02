@@ -29,7 +29,7 @@ RESOURCE_BLOCK_TEMP = {
         "NumberOfCompositions": 0
     },
     "Client": None,
-    "Pool": "Free"
+    "PoolType": "Free"
 }
 
 RESOURCE_ZONE_TEMP = {

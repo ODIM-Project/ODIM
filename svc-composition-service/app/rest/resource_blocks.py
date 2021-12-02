@@ -1,8 +1,5 @@
-from http import HTTPStatus
 import logging
-import requests
 import json
-import random
 from db.persistant import RedisClient
 from utilities.client import Client
 from config import constants
@@ -11,7 +8,7 @@ import copy
 import uuid
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
+from http import HTTPStatus
 
 class ResourceBlocks():
 
@@ -24,6 +21,14 @@ class ResourceBlocks():
         logging.info("Initialize Resource Blocks")
 
         try:
+      
+            sys_urls = []
+            rb_computer_keys = self.redis.keys("ResourceBlocks-ComputerSystem:*")
+            if rb_computer_keys:
+                for key in rb_computer_keys:
+                    sys_uri = self.redis.get(key)
+                    if sys_uri:
+                        sys_urls.append(sys_uri)
             # get systems collection data
             response = self.client.process_get_request(constants.SYSTEMS_URL)
             if response and response.get("Members"):
@@ -31,6 +36,8 @@ class ResourceBlocks():
                     if member.get("@odata.id"):
                         # total_systems.append(member["@odata.id"])
                         system_uri = member["@odata.id"]
+                        if system_uri in sys_urls:
+                            continue
                         # get systems data from systems
                         system_res = self.client.process_get_request(
                             system_uri)
@@ -69,6 +76,8 @@ class ResourceBlocks():
 
             self.redis.set("{block_system}:{block_url}".format(
                 block_system="ResourceBlocks-ComputerSystem", block_url=data['@odata.id']), system_data['@odata.id'])
+            
+            self.redis.sadd("FreePool", data['@odata.id'])
 
             res = {"id": data['id']}
             logging.debug(

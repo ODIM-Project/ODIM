@@ -48,6 +48,14 @@ class RedisClient():
         except Exception as err:
             logging.error(
                 "unable to set key {key} in redis db. Error:{e}".format(key=key, e=err))
+   
+    def sadd(self, key, value):
+        try:
+            if self.connection:
+                self.connection.sadd(key, value)
+        except Exception as err:
+            logging.error(
+                "unable to sadd key {key} in redis db. Error:{e}".format(key=key, e=err))
 
     def get(self, key):
         try:
@@ -58,6 +66,14 @@ class RedisClient():
         except Exception as err:
             logging.error(
                 "unable to get key {key} in redis db. Error:{e}".format(key=key, e=err))
+    
+    def smembers(self, key):
+        try:
+            if self.connection:
+                value = self.connection.smembers(key)
+        except Exception as err:
+            logging.error(
+                "unable to smembers key {key} in redis db. Error:{e}".format(key=key, e=err))
 
     def keys(self, pattern=None):
         decoded_keys = []
@@ -90,3 +106,14 @@ class RedisClient():
                 "unable to exists keys {keys} in redis db. Error:{e}".format(key=keys, e=err))
         finally:
             return exists
+
+    def pipeline(self):
+        pipe = None
+        try:
+            if self.connection:
+                pipe =  self.connection.pipeline()
+        except Exception as err:
+            logging.error(
+                "Unable to create a pipeline in redis db. Error: {e}".format(e=err))
+        finally:
+            return pipe

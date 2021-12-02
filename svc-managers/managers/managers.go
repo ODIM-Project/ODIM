@@ -85,7 +85,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		resp.Body = manager
 	} else {
 
-		requestData := strings.Split(req.ManagerID, ":")
+		requestData := strings.SplitN(req.ManagerID, ".", 2)
 		if len(requestData) <= 1 {
 			resp = e.getPluginManagerResoure(requestData[0], req.URL)
 			return resp
@@ -209,7 +209,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 		"Allow":             `"GET"`,
 	}
 
-	requestData := strings.Split(req.ManagerID, ":")
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	if len(requestData) <= 1 {
 		resp = e.getPluginManagerResoure(requestData[0], req.URL)
 		return resp
@@ -297,7 +297,7 @@ func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerReques
 		}
 	}
 	// splitting managerID to get uuid
-	requestData := strings.Split(req.ManagerID, ":")
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
 	resp = e.deviceCommunication(req.URL, uuid, requestData[1], http.MethodPost, requestBody)
 

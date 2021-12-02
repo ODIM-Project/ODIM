@@ -548,7 +548,7 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 		"Allow":             `"GET"`,
 	}
 	// Splitting the SystemID to get UUID
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -747,7 +747,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 		"Allow":             `"GET"`,
 	}
 
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -782,7 +782,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
 	}
-	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`:`, -1)
+	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	resp.Body = resource

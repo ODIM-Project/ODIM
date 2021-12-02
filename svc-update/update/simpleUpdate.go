@@ -193,7 +193,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 			return
 		}
 	}
-	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+":", "", -1)
+	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+".", "", -1)
 	//replacing the reruest url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
@@ -280,8 +280,8 @@ func sortTargetList(Targets []string) (map[string][]string, error) {
 		requestData := strings.Split(individualTarget, "/")
 		var requestTarget []string
 		for _, data := range requestData {
-			if strings.Contains(data, ":") {
-				requestTarget = strings.Split(data, ":")
+			if strings.Contains(data, ".") {
+				requestTarget = strings.SplitN(data, ".", 2)
 			}
 		}
 		if len(requestTarget) != 2 || requestTarget[1] == "" {

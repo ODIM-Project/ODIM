@@ -48,7 +48,7 @@ func mockUpdateTask(task common.TaskData) error {
 }
 
 func TestSimpleUpdate(t *testing.T) {
-	errMsg := []string{"/redfish/v1/Systems/uuid:/target1"}
+	errMsg := []string{"/redfish/v1/Systems/uuid./target1"}
 	errArg1 := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -60,8 +60,8 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 		},
 	}
-	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
-	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid:1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid./target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
 	tests := []struct {
 		name string
 		args args

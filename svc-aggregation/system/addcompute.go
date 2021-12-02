@@ -262,14 +262,14 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	saveSystem.Password = ciphertext
-	aggregationSourceID := saveSystem.DeviceUUID + ":" + computeSystemID
+	aggregationSourceID := saveSystem.DeviceUUID + "." + computeSystemID
 	if err := saveSystem.Create(saveSystem.DeviceUUID); err != nil {
 		go e.rollbackInMemory(resourceURI)
 		errMsg := "error while trying to add compute: " + err.Error()
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
-	aggSourceIDChassisAndManager := saveSystem.DeviceUUID + ":"
+	aggSourceIDChassisAndManager := saveSystem.DeviceUUID + "."
 	chassisList, _ := agmodel.GetAllMatchingDetails("Chassis", aggSourceIDChassisAndManager, common.InMemory)
 	managersList, _ := agmodel.GetAllMatchingDetails("Managers", aggSourceIDChassisAndManager, common.InMemory)
 	urlList := h.SystemURL
@@ -283,7 +283,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	pluginContactRequest.PublishEvent(chassisList, "ChassisCollection")
 	pluginContactRequest.PublishEvent(managersList, "ManagerCollection")
 
-	h.PluginResponse = strings.Replace(h.PluginResponse, `/redfish/v1/Systems/`, `/redfish/v1/Systems/`+saveSystem.DeviceUUID+`:`, -1)
+	h.PluginResponse = strings.Replace(h.PluginResponse, `/redfish/v1/Systems/`, `/redfish/v1/Systems/`+saveSystem.DeviceUUID+`.`, -1)
 	var list agresponse.List
 	err = json.Unmarshal([]byte(h.PluginResponse), &list)
 	if err != nil {

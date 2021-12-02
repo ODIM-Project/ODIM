@@ -1084,7 +1084,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 // GetUUID fetches the UUID from the Origin Resource
 func getUUID(origin string) (string, error) {
 	var uuid string
-	requestData := strings.Split(origin, ":")
+	requestData := strings.SplitN(origin, ".", 2)
 	if len(requestData) <= 1 {
 		return "", fmt.Errorf("error: SystemUUID not found")
 	}

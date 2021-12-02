@@ -43,7 +43,7 @@ func storeTestEventDetails(t *testing.T) {
 			EventTypes:           []string{"Alert"},
 			MessageIds:           []string{"IndicatorChanged"},
 			ResourceTypes:        []string{"ComputerSystem"},
-			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 			Hosts:                []string{"10.4.1.2"},
 			SubordinateResources: true,
 		},
@@ -57,7 +57,7 @@ func storeTestEventDetails(t *testing.T) {
 			EventTypes:           []string{"Alert", "StatusChange"},
 			MessageIds:           []string{"IndicatorChanged", "StateChanged"},
 			ResourceTypes:        []string{"ComputerSystem"},
-			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da:1"},
+			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 			Hosts:                []string{"10.4.1.2", "10.4.1.3"},
 			SubordinateResources: true,
 		},
@@ -72,7 +72,7 @@ func storeTestEventDetails(t *testing.T) {
 			EventTypes:           []string{"Alert"},
 			MessageIds:           []string{},
 			ResourceTypes:        []string{},
-			OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da:1"},
+			OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 			Hosts:                []string{"10.4.1.3"},
 			SubordinateResources: false,
 		},
@@ -142,7 +142,7 @@ func storeTestEventDetails(t *testing.T) {
 			EventTypes:           []string{"Alert"},
 			MessageIds:           []string{"IndicatorChanged"},
 			ResourceTypes:        []string{"ComputerSystem"},
-			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 			Hosts:                []string{"10.4.1.2"},
 			SubordinateResources: true,
 		},
@@ -158,12 +158,12 @@ func storeTestEventDetails(t *testing.T) {
 		{
 			Location:        "https://10.24.1.2/EventService/Subscriptions/1",
 			EventHostIP:     "10.4.1.2",
-			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		},
 		{
 			Location:        "https://10.24.1.3/EventService/Subscriptions/1",
 			EventHostIP:     "10.4.1.3",
-			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da:1"},
+			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		},
 		{
 			Location:        "/ODIM/v1/Subscriptions/12345",
@@ -183,7 +183,7 @@ func storeTestEventDetails(t *testing.T) {
 		{
 			Location:        "https://10.24.1.9/EventService/Subscriptions/1",
 			EventHostIP:     "10.4.1.9",
-			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea:1"},
+			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea.1"},
 		},
 	}
 	for _, devSub := range devSubArr {

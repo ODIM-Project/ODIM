@@ -49,7 +49,7 @@ func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) 
 		"Allow":             `"GET"`,
 	}
 
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.RequestParam}, nil), nil

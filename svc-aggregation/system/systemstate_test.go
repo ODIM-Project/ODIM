@@ -73,8 +73,8 @@ func TestExternalInterface_UpdateSystemState(t *testing.T) {
 	mockDeviceData("xauth-plugin", device4)
 	mockDeviceData("xauth-plugin-fail", device5)
 	mockDeviceData("no-system-data", device1)
-	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
-	mockSystemData("/redfish/v1/Systems/xauth-plugin:1")
+	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1")
+	mockSystemData("/redfish/v1/Systems/xauth-plugin.1")
 	pluginContact := ExternalInterface{
 		ContactClient:   mockContactClient,
 		Auth:            mockIsAuthorized,

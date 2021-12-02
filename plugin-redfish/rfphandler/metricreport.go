@@ -129,8 +129,8 @@ func (e *ExternalInterface) getMetricReportInfo(uri string, device rfpmodel.Devi
 				}
 			}
 			metricProperty := rfpmodel.MetricPropertyData[metricID]
-			metricProperty = strings.Replace(metricProperty, "/Systems/", "/Systems/"+device.SystemID+":", -1)
-			metricProperty = strings.Replace(metricProperty, "/Chassis/", "/Chassis/"+device.SystemID+":", -1)
+			metricProperty = strings.Replace(metricProperty, "/Systems/", "/Systems/"+device.SystemID+".", -1)
+			metricProperty = strings.Replace(metricProperty, "/Chassis/", "/Chassis/"+device.SystemID+".", -1)
 			metricVal.MetricProperty = metricProperty
 			respMetricValue = append(respMetricValue, metricVal)
 		}

@@ -240,9 +240,9 @@ func TestGetSystemByUUID(t *testing.T) {
 	}()
 	body := `{"Id":"1","Status":{"State":"Enabled"}}`
 	table := "ComputerSystem"
-	key := "/redfish/v1/Systems/uuid:1"
+	key := "/redfish/v1/Systems/uuid.1"
 	GenericSave([]byte(body), table, key)
-	data, _ := GetSystemByUUID("/redfish/v1/Systems/uuid:1")
+	data, _ := GetSystemByUUID("/redfish/v1/Systems/uuid.1")
 	assert.Equal(t, data, body, "should be same")
 	_, err := GetSystemByUUID("/redfish/v1/Systems/uuid")
 	assert.NotNil(t, err, "There should be an error")
@@ -300,7 +300,7 @@ func TestGenericSave(t *testing.T) {
 
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
+	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
@@ -324,7 +324,7 @@ func TestGetAllkeysFromTable(t *testing.T) {
 
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
+	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
@@ -346,7 +346,7 @@ func TestGetResourceNegativeTestCases(t *testing.T) {
 	}()
 	// without db configuration
 	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
+	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 
 	_, err := GetResource(table, key)
 	assert.NotNil(t, err, "There should be an error")
@@ -354,7 +354,7 @@ func TestGetResourceNegativeTestCases(t *testing.T) {
 	// if key not present
 	config.SetUpMockConfig(t)
 	table = "Ethernet"
-	key = "/redfish/v1/Managers/uuid:1/Ethernets/1"
+	key = "/redfish/v1/Managers/uuid.1/Ethernets/1"
 
 	_, err = GetResource(table, key)
 	assert.NotNil(t, err, "There should be an error")
@@ -373,18 +373,18 @@ func TestGetStorageList(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	err := mockSystemIndex("uuid:1")
+	err := mockSystemIndex("uuid.1")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 	list, err := GetStorageList("Storage/Drives/Capacity", "le", 40, false)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, len(list), 1, "Length should be equal")
-	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid:1", "system uri should be same")
+	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid.1", "system uri should be same")
 	list, err = GetStorageList("Storage/Drives/Capacity", "eq", 40, false)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, len(list), 1, "Length should be equal")
-	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid:1", "system uri should be same")
+	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid.1", "system uri should be same")
 
 }
 
@@ -400,14 +400,14 @@ func TestGetString(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	err := mockSystemIndex("uuid:1")
+	err := mockSystemIndex("uuid.1")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 	list, err := GetString("ProcessorSummary/Model", "Intel", false)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, len(list), 1, "Length should be equal")
-	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid:1", "system uri should be same")
+	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid.1", "system uri should be same")
 }
 
 func TestGetRange(t *testing.T) {
@@ -422,14 +422,14 @@ func TestGetRange(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	err := mockSystemIndex("uuid:1")
+	err := mockSystemIndex("uuid.1")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 	list, err := GetRange("ProcessorSummary/Count", 2, 2, false)
 	assert.Nil(t, err, "There should be no error")
 	assert.Equal(t, len(list), 1, "Length should be equal")
-	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid:1", "system uri should be same")
+	assert.Equal(t, list[0], "/redfish/v1/Systems/uuid.1", "system uri should be same")
 }
 
 func TestSystemReset(t *testing.T) {
@@ -445,7 +445,7 @@ func TestSystemReset(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	systemURI := "/redfish/v1/System/uuid:1"
+	systemURI := "/redfish/v1/System/uuid.1"
 	err := AddSystemResetInfo(systemURI, "ForceRestart")
 	assert.Nil(t, err, "err should be nil")
 
@@ -463,7 +463,7 @@ func TestDeleteVolume(t *testing.T) {
 	defer func() {
 		common.TruncateDB(common.InMemory)
 	}()
-	mockData(t, common.InMemory, "Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/1", "")
+	mockData(t, common.InMemory, "Volumes", "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1", "")
 	tests := []struct {
 		name string
 		key  string
@@ -471,13 +471,13 @@ func TestDeleteVolume(t *testing.T) {
 	}{
 		{
 			name: "Positive case",
-			key:  "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/1",
+			key:  "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/1",
 			want: nil,
 		},
 		{
 			name: "not found",
-			key:  "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/2",
-			want: errors.PackError(errors.DBKeyNotFound, "error while trying to get voulme details: no data with the with key /redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1/Storage/1/Volume/2 found"),
+			key:  "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/2",
+			want: errors.PackError(errors.DBKeyNotFound, "error while trying to get voulme details: no data with the with key /redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1/Storage/1/Volume/2 found"),
 		},
 	}
 	for _, tt := range tests {

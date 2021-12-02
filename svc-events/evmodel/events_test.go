@@ -169,7 +169,7 @@ func TestGetResource(t *testing.T) {
 	}()
 	var reqData = `{"@odata.id":"/redfish/v1/Systems/1"}`
 	table := "ComputerSystem"
-	key := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"
+	key := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	mockSystemResourceData([]byte(reqData), table, key)
 
 	resp, err := GetResource(table, key)
@@ -315,7 +315,7 @@ func TestGetAllKeysFromTable(t *testing.T) {
 	}()
 	var reqData = `{"@odata.id":"/redfish/v1/Systems/1"}`
 	table := "ComputerSystem"
-	key := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"
+	key := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	mockSystemResourceData([]byte(reqData), table, key)
 
 	resp, err := GetAllKeysFromTable(table)
@@ -436,7 +436,7 @@ func TestSaveDeviceSubscription(t *testing.T) {
 	var devSubscription = DeviceSubscription{
 		EventHostIP:     "10.24.0.1",
 		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
 		t.Errorf("Error while making save device suscription: %v\n", cerr.Error())
@@ -455,7 +455,7 @@ func TestSaveDeviceSubscription_existing_subscription(t *testing.T) {
 	var devSubscription = DeviceSubscription{
 		EventHostIP:     "10.24.0.1",
 		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
@@ -478,7 +478,7 @@ func TestGetDeviceSubscriptions(t *testing.T) {
 	var devSubscription = DeviceSubscription{
 		EventHostIP:     "10.24.0.1",
 		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
@@ -508,7 +508,7 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 	var devSubscription = DeviceSubscription{
 		EventHostIP:     "10.24.0.1",
 		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
@@ -531,7 +531,7 @@ func TestUpdateDeviceSubscriptionLocation(t *testing.T) {
 	var devSubscription = DeviceSubscription{
 		EventHostIP:     "10.24.0.1",
 		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
@@ -568,7 +568,7 @@ func TestSaveEventSubscription(t *testing.T) {
 		Destination:     "https://10.24.1.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions : %v\n", cerr.Error())
@@ -588,7 +588,7 @@ func TestSaveEventSubscription_existingData(t *testing.T) {
 		Destination:     "https://10.24.1.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -612,13 +612,13 @@ func TestGetEvtSubscriptions(t *testing.T) {
 		Destination:     "https://10.24.1.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
 	}
 
-	evtSub, err := GetEvtSubscriptions("/redfish/v1/Systems/uuid:1")
+	evtSub, err := GetEvtSubscriptions("/redfish/v1/Systems/uuid.1")
 	if err != nil {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
@@ -648,7 +648,7 @@ func TestDeleteEvtSubscription(t *testing.T) {
 		Destination:     "https://10.24.1.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
@@ -657,7 +657,7 @@ func TestDeleteEvtSubscription(t *testing.T) {
 	if err := DeleteEvtSubscription(sub.SubscriptionID); err != nil {
 		t.Errorf("Error while deleting event subscriptions: %v\n", err.Error())
 	}
-	evtSub, _ := GetEvtSubscriptions("/redfish/v1/Systems/uuid:1")
+	evtSub, _ := GetEvtSubscriptions("/redfish/v1/Systems/uuid.1")
 	assert.Equal(t, 0, len(evtSub), "there should be no data")
 }
 
@@ -675,7 +675,7 @@ func TestUpdateEvtSubscription(t *testing.T) {
 		Destination:     "https://10.24.1.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
-		OriginResources: []string{"/redfish/v1/Systems/uuid:1"},
+		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveEventSubscription(sub); cerr != nil {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())

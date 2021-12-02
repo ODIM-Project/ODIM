@@ -137,13 +137,13 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	mockDeviceData("2aca8daa-9c20-4a5b-9203-469a24f452c8", device5)
 	mockDeviceData("9dd6e488-31b2-475a-9304-d5f193a6a7cd", device6)
 
-	mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
-	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
-	mockSystemData("/redfish/v1/Systems/s83405033-67da-5fd6-ab82-458292935:1")
-	mockSystemData("/redfish/v1/Systems/123443cf-f1e3-5318-92d9-2d6737d65678:1")
-	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1")
-	mockSystemData("/redfish/v1/Systems/2aca8daa-9c20-4a5b-9203-469a24f452c8:1")
-	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1")
+	mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1")
+	mockSystemData("/redfish/v1/Systems/s83405033-67da-5fd6-ab82-458292935.1")
+	mockSystemData("/redfish/v1/Systems/123443cf-f1e3-5318-92d9-2d6737d65678.1")
+	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
+	mockSystemData("/redfish/v1/Systems/2aca8daa-9c20-4a5b-9203-469a24f452c8.1")
+	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1")
 
 	type args struct {
 		taskID, sessionUserName string
@@ -152,20 +152,20 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	positiveReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 			},
 			{
-				OdataID: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+				OdataID: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1",
 			},
 		},
 	})
 	invalidUUIDReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 			},
 			{
-				OdataID: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+				OdataID: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 			},
 		},
 	})
@@ -173,7 +173,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	invalidSystemReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				OdataID: "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 			},
 			{
 				OdataID: "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
@@ -184,7 +184,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	noUUIDInDBReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/s83405033-67da-5fd6-ab82-458292935:1",
+				OdataID: "/redfish/v1/Systems/s83405033-67da-5fd6-ab82-458292935.1",
 			},
 		},
 	})
@@ -192,7 +192,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	decryptionFailReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/123443cf-f1e3-5318-92d9-2d6737d65678:1",
+				OdataID: "/redfish/v1/Systems/123443cf-f1e3-5318-92d9-2d6737d65678.1",
 			},
 		},
 	})
@@ -200,7 +200,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	unknownPluginReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1",
+				OdataID: "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1",
 			},
 		},
 	})
@@ -208,7 +208,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	positiveXAuthPluginReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/2aca8daa-9c20-4a5b-9203-469a24f452c8:1",
+				OdataID: "/redfish/v1/Systems/2aca8daa-9c20-4a5b-9203-469a24f452c8.1",
 			},
 		},
 	})
@@ -216,7 +216,7 @@ func TestPluginContact_SetDefaultBootOrderSystems(t *testing.T) {
 	XAuthPluginFailedReqData, _ := json.Marshal(AggregationSetDefaultBootOrderRequest{
 		Systems: []OdataID{
 			{
-				OdataID: "/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1",
+				OdataID: "/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1",
 			},
 		},
 	})

@@ -65,7 +65,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#SessionService.v1_1_6.SessionService",
+   "@odata.type":"#SessionService.v1_1_8.SessionService",
    "@odata.id":"/redfish/v1/SessionService",
    "Id":"Sessions",
    "Name":"Session Service",
@@ -156,7 +156,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-	"@odata.type": "#SessionService.v1_1_6.SessionService",
+	"@odata.type": "#SessionService.v1_1_8.SessionService",
 	"@odata.id": "/redfish/v1/SessionService/Sessions/1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",

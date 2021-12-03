@@ -76,7 +76,7 @@ Transfer-Encoding:chunked
    "@odata.context":"/redfish/v1/$metadata#EventService.EventService",
    "Id":"EventService",
    "@odata.id":"/redfish/v1/EventService",
-   "@odata.type":"#EventService.v1_7_0.EventService",
+   "@odata.type":"#EventService.v1_7_2.EventService",
    "Name":"EventService",
    "Description":"EventService",
    "Actions":{
@@ -565,7 +565,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_6_1.Event ",
+   "@odata.type":"#Event.v1_7_0.Event ",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",
@@ -814,7 +814,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_10_1.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "@odata.context":"/redfish/v1/$metadata#EventDestination.EventDestination",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
@@ -869,7 +869,7 @@ curl -i -X DELETE \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_10_1.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",

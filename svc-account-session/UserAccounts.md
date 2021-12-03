@@ -83,7 +83,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_9_0.AccountService",
+   "@odata.type":"#AccountService.v1_10_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",

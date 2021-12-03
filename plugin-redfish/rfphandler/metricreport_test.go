@@ -66,7 +66,7 @@ func getMetricReportMock(uri string, device *rfputilities.RedfishDevice) (int, [
 				"@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
 				"@odata.etag": "W/\"AB720077\"",
 				"@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
-				"@odata.type": "#MetricDefinition.v1_0_0.MetricDefinition",
+				"@odata.type": "#MetricDefinition.v1_2_0.MetricDefinition",
 				"Id": "CPUUtil",
 				"Calculable": "NonSummable",
 				"CalculationAlgorithm": "Average",

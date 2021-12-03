@@ -1,7 +1,7 @@
 {
     "@Redfish.Copyright": "Copyright 2014-2019 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_3_1.MessageRegistry",
+    "@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
     "Id": "ResourceEvent.1.0.2",
     "Name": "Resource Event Message Registry",
     "Language": "en",

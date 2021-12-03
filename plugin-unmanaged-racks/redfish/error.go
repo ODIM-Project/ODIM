@@ -129,7 +129,7 @@ func (e *CommonError) AddExtendedInfo(ei MsgExtendedInfo) *CommonError {
 // NewMalformedJSONMsg constructs instance of MsgExtendedInfo representing `MalformedJSON` error message
 func NewMalformedJSONMsg(errMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:  "#Message.v1_0_8.Message",
+		OdataType:  "#Message.v1_1_2.Message",
 		MessageID:  MalformedJSON,
 		Message:    "The request body submitted was malformed JSON and could not be parsed by the receiving service: " + errMsg,
 		Severity:   "Critical",
@@ -140,7 +140,7 @@ func NewMalformedJSONMsg(errMsg string) MsgExtendedInfo {
 // NewPropertyMissingMsg constructs instance of MsgExtendedInfo representing `PropertyMissing` error message
 func NewPropertyMissingMsg(missingProperty, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:   "#Message.v1_0_8.Message",
+		OdataType:   "#Message.v1_1_2.Message",
 		MessageID:   PropertyMissing,
 		Message:     fmt.Sprintf("The property %v is a required property and must be included in the request: %s", missingProperty, errorMsg),
 		Severity:    "Warning",
@@ -152,7 +152,7 @@ func NewPropertyMissingMsg(missingProperty, errorMsg string) MsgExtendedInfo {
 // NewPropertyValueNotInListMsg constructs instance of MsgExtendedInfo representing `PropertyValueNotInList` error message
 func NewPropertyValueNotInListMsg(currentValue, propertyName, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:   "#Message.v1_0_8.Message",
+		OdataType:   "#Message.v1_1_2.Message",
 		MessageID:   PropertyValueNotInList,
 		Message:     fmt.Sprintf("The value %v for the property %v is not in the list of acceptable values. %v", currentValue, propertyName, errorMsg),
 		Severity:    "Warning",
@@ -164,7 +164,7 @@ func NewPropertyValueNotInListMsg(currentValue, propertyName, errorMsg string) M
 // NewPropertyValueConflictMsg constructs instance of MsgExtendedInfo representing `PropertyValueConflict` error message
 func NewPropertyValueConflictMsg(propertyName, conflictingPropertyName, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:   "#Message.v1_0_8.Message",
+		OdataType:   "#Message.v1_1_2.Message",
 		MessageID:   PropertyValueConflict,
 		Message:     fmt.Sprintf("The property '%v' could not be written because its value would conflict with the value of the '%v' property: %v", propertyName, conflictingPropertyName, errorMsg),
 		Severity:    "Warning",
@@ -176,7 +176,7 @@ func NewPropertyValueConflictMsg(propertyName, conflictingPropertyName, errorMsg
 // NewResourceNotFoundMsg constructs instance of MsgExtendedInfo representing `ResourceNotFound` error message
 func NewResourceNotFoundMsg(resourceType, resourceName, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:   "#Message.v1_0_8.Message",
+		OdataType:   "#Message.v1_1_2.Message",
 		MessageID:   ResourceNotFound,
 		Message:     fmt.Sprintf("The requested resource of type %v named %v was not found: %v", resourceType, resourceName, errorMsg),
 		Severity:    "Critical",
@@ -188,7 +188,7 @@ func NewResourceNotFoundMsg(resourceType, resourceName, errorMsg string) MsgExte
 // NewResourceInUseMsg constructs instance of MsgExtendedInfo representing `ResourceInUse` error message
 func NewResourceInUseMsg(errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:  "#Message.v1_0_8.Message",
+		OdataType:  "#Message.v1_1_2.Message",
 		MessageID:  ResourceInUse,
 		Message:    "The change to the requested resource failed because the resource is in use or in transition: " + errorMsg,
 		Severity:   "Warning",
@@ -199,7 +199,7 @@ func NewResourceInUseMsg(errorMsg string) MsgExtendedInfo {
 // NewResourceAlreadyExistsMsg constructs instance of MsgExtendedInfo representing `ResourceAlreadyExists` error message
 func NewResourceAlreadyExistsMsg(resourceType, propertyName, propertyValue, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:   "#Message.v1_0_8.Message",
+		OdataType:   "#Message.v1_1_2.Message",
 		MessageID:   ResourceAlreadyExists,
 		Message:     fmt.Sprintf("The requested resource of type %v with the property %v with the value %v already exists. %v", resourceType, propertyName, propertyValue, errorMsg),
 		Severity:    "Critical",
@@ -211,7 +211,7 @@ func NewResourceAlreadyExistsMsg(resourceType, propertyName, propertyValue, erro
 // NewResourceAtURIUnauthorizedMsg constructs instance of MsgExtendedInfo representing `ResourceAtURIUnauthorized` error message
 func NewResourceAtURIUnauthorizedMsg(uri, errorMsg string) MsgExtendedInfo {
 	return MsgExtendedInfo{
-		OdataType:   "#Message.v1_0_8.Message",
+		OdataType:   "#Message.v1_1_2.Message",
 		MessageID:   ResourceAtURIUnauthorized,
 		Message:     fmt.Sprintf("While accessing the resource at %v, the service received an authorization error. %v", uri, errorMsg),
 		Severity:    "Critical",

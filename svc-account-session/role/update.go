@@ -38,9 +38,6 @@ import (
 // status code, status message, headers and body.
 func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-	}
 	var updateReq asmodel.Role
 	json.Unmarshal(req.UpdateRequest, &updateReq)
 

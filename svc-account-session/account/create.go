@@ -64,9 +64,6 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		Name:         "Account Service",
 	}
 	var resp response.RPC
-	resp.Header = map[string]string{
-        "Allow": "GET, POST",
-    }
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)

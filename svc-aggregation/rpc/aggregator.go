@@ -40,7 +40,6 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	resp := &aggregatorproto.AggregatorResponse{}
 	// Fill the response header first
 	resp.Header = map[string]string{
-		"Allow":             "GET",
 		"Date":              time.Now().Format(http.TimeFormat),
 		"Link":              "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
 	}

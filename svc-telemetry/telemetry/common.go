@@ -26,10 +26,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-telemetry/tmodel"
 )
 
-var header = map[string]string{
-	"Allow":             `GET`,
-}
-
 // ExternalInterface struct holds the structs to which hold function pointers to outboud calls
 type ExternalInterface struct {
 	External External

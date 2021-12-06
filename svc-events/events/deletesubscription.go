@@ -183,9 +183,6 @@ func (p *PluginContact) DeleteEventSubscriptionsDetails(req *eventsproto.EventRe
 		log.Error("error while trying to authenticate session: status code: " + string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		return authResp
 	}
-	resp.Header = map[string]string{
-		"Allow":             "POST,GET,DELETE",
-	}
 
 	subscriptionDetails, err := evmodel.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {

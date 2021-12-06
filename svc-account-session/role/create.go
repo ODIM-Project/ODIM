@@ -55,9 +55,6 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 		Name:      "User Role",
 	}
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-	}
 
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createRoleReq)

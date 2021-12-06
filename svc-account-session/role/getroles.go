@@ -43,9 +43,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 		ID:        req.Id,
 	}
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-	}
+
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
@@ -124,9 +122,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 		OdataID:   "/redfish/v1/AccountService/Roles",
 		Name:      "Roles Collection",
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-	}
+
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {

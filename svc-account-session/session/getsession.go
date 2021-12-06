@@ -289,7 +289,6 @@ func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 		},
 	}
 	resp.Header = map[string]string{
-		"Allow":         "GET",
 		"Link": "	</redfish/v1/SchemaStore/en/SessionService.json>; rel=describedby",
 	}
 

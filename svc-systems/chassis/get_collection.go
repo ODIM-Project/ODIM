@@ -142,8 +142,5 @@ func (u unmanagedChassisProvider) read() ([]dmtf.Link, *response.RPC) {
 func initializeRPCResponse(target *response.RPC, body interface{}) {
 	target.StatusMessage = response.Success
 	target.Body = body
-	target.Header = map[string]string{
-		"Allow":             `"GET"`,
-	}
 	target.StatusCode = http.StatusOK
 }

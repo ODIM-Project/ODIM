@@ -138,9 +138,7 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 		ID:           data[1],
 		Name:         "Aggregation Source",
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-	}
+
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""
 	commonResponse.MessageID = ""

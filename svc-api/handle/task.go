@@ -84,6 +84,8 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -111,6 +113,8 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -139,6 +143,8 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -166,6 +172,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -200,6 +207,8 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -226,6 +235,8 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)

@@ -65,6 +65,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -153,6 +154,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -190,6 +192,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

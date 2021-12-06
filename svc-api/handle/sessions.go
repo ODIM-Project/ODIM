@@ -134,7 +134,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 	if resp.StatusCode == http.StatusOK {
 		resp.Header["Location"] = ctx.Request().Host + "/redfish/v1/SessionService/Sessions/" + sessionID
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -158,6 +158,8 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -175,6 +177,7 @@ func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

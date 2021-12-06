@@ -449,9 +449,6 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		},
 	}
 	respPtr.Body = args.CreateGenericErrorResponse()
-	respPtr.Header = map[string]string{
-		"Allow":             "POST,GET,DELETE",
-	}
 }
 
 // GenEventErrorResponse generates the error response in event service

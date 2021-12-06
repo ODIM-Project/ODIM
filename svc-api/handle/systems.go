@@ -64,7 +64,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -97,6 +97,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -132,6 +133,17 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		return
 	}
 
+    storageId := ctx.Params().Get("id2")
+    switch req.URL {
+	case "/redfish/v1/Systems/"+req.RequestParam+"/Bios/Settings":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
+	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes"+req.ResourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	default:
+	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

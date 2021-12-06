@@ -62,7 +62,6 @@ func (e *ExternalInterface) GetTelemetryService() response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":         "GET",
 		"Link": "	</redfish/v1/SchemaStore/en/TelemetryService.json>; rel=describedby",
 	}
 

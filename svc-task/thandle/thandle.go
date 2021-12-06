@@ -259,7 +259,6 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 }
 func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 	rsp.Header = map[string]string{
-		"Allow":             `"GET"`,
 		"Date":              time.Now().Format(http.TimeFormat),
 	}
 

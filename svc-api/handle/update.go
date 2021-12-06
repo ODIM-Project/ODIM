@@ -62,6 +62,7 @@ func (a *UpdateRPCs) GetUpdateService(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -91,7 +92,7 @@ func (a *UpdateRPCs) GetFirmwareInventoryCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -121,7 +122,7 @@ func (a *UpdateRPCs) GetSoftwareInventoryCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -153,7 +154,7 @@ func (a *UpdateRPCs) GetFirmwareInventory(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -185,7 +186,7 @@ func (a *UpdateRPCs) GetSoftwareInventory(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

@@ -86,7 +86,6 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "POST", "HEAD"`,
 		"Link":              "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
 	}
 
@@ -175,7 +174,6 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "POST", "HEAD"`,
 		"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 	}
 
@@ -228,7 +226,6 @@ func GetAccountService() response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":         "GET",
 		"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
 	}
 

@@ -89,9 +89,6 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-	}
 	log.Info("Fabric Added")
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

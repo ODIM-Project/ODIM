@@ -60,6 +60,7 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -173,7 +174,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 		ctx.JSON(&response)
 		return
 	}
-
+    ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -233,6 +234,7 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 		return
 	}
 
+    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

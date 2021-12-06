@@ -39,6 +39,7 @@ func GetVersion(ctx iris.Context) {
 	Version := models.Version{
 		V1: "/redfish/v1/",
 	}
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, nil)
 	ctx.JSON(Version)
 }
@@ -3110,6 +3111,7 @@ func fillMethodNotAllowedErrorResponse(ctx iris.Context) {
 			},
 		},
 	}
+	common.SetResponseHeader(ctx, nil)
 	ctx.JSON(errArgs.CreateGenericErrorResponse())
 	return
 }
@@ -3117,7 +3119,19 @@ func fillMethodNotAllowedErrorResponse(ctx iris.Context) {
 // AsMethodNotAllowed holds Method to throw 405 Method not allowed on Account Service URLs
 func AsMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
-	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	url := ctx.Request().URL
+	path := url.Path
+	id := ctx.Params().Get("id")
+	switch path {
+	case "/redfish/v1/AccountService":
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/AccountService/Accounts":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/AccountService/Accounts/"+id:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
@@ -3125,7 +3139,19 @@ func AsMethodNotAllowed(ctx iris.Context) {
 // SsMethodNotAllowed holds builds reponse for the unallowed http operation on Session Service URLs and returns 405 error.
 func SsMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
-	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	url := ctx.Request().URL
+	path := url.Path
+	id := ctx.Params().Get("sessionID")
+	switch path {
+	case "/redfish/v1/SessionService":
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/SessionService/Sessions":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/SessionService/Sessions/"+id:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
@@ -3178,6 +3204,10 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "")
 	case "/redfish/v1/Managers/" + systemID + "/LogServices/" + subID + "Actions/LogService.ClearLog":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Managers/"+systemID+"/VirtualMedia/"+subID+"/Actions/VirtualMedia.EjectMedia":
+	    ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Managers/"+systemID+"/VirtualMedia/"+subID+"/Actions/VirtualMedia.InsertMedia":
+	    ctx.ResponseWriter().Header().Set("Allow", "POST")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
@@ -3232,7 +3262,27 @@ func EvtMethodNotAllowed(ctx iris.Context) {
 // AggMethodNotAllowed holds builds reponse for the unallowed http operation on Aggregation Service URLs and returns 405 error.
 func AggMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
-	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	url := ctx.Request().URL
+	path := url.Path
+	id := ctx.Params().Get("id")
+	switch path {
+	case "/redfish/v1/AggregationService":
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/Actions/AggregationService.Reset":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/AggregationService/AggregationSources":
+	    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/AggregationService/AggregationSources/"+id:
+	    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	case "/redfish/v1/AggregationService/ConnectionMethods":
+	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/AggregationService/ConnectionMethods/"+id:
+	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	default:
+	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return
 }
@@ -3265,6 +3315,30 @@ func AggregateMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	case "/redfish/v1/AggregationService/Aggregates/" + aggregateID + "Actions/Aggregate.SetDefaultBootOrder/":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	}
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// SRMethodNotAllowed holds builds response for the unallowed http operation on service root URLs and returns 405 error.
+func SRMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// RoleMethodNotAllowed holds builds response for the unallowed http operation on Role URLs and returns 405 error.
+func RoleMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	path := url.Path
+	id := ctx.Params().Get("id")
+	switch path {
+	case "/redfish/v1/Roles":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/Roles/" + id:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return

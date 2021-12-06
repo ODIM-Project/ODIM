@@ -56,7 +56,6 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 
 	// Fill the response header first
 	resp.Header = map[string]string{
-		"Allow":             "GET",
 		"Link":              "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
 	}
 	// Validate the token, if user has Login privelege then proceed.

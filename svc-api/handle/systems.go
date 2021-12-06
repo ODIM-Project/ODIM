@@ -139,7 +139,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes"+req.ResourceID:
+	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes/"+req.ResourceID:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:
 	    ctx.ResponseWriter().Header().Set("Allow", "GET")

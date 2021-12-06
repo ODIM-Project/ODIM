@@ -3173,8 +3173,8 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "")
 	case "/redfish/v1/Systems/" + systemID + "/LogServices/" + subID + "Actions/LogService.ClearLog":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
-	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes/":
-		ctx.ResponseWriter().Header().Set("Allow", "POST, GET")
+	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	case "/redfish/v1/Systems/" + systemID + "/Storage/" + storageid + "/Volumes/" + resourceID:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:

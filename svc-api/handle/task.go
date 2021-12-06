@@ -194,6 +194,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	response, err := task.TaskCollectionRPC(req)

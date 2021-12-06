@@ -52,6 +52,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -62,6 +63,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -87,6 +89,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -98,6 +101,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -116,6 +120,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -141,6 +146,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -151,6 +157,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -179,6 +186,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -189,6 +197,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -215,6 +224,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -227,6 +237,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -246,6 +257,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -273,6 +285,7 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -283,6 +296,7 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

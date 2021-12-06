@@ -2864,6 +2864,7 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -2950,6 +2951,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})

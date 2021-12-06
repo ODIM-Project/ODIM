@@ -53,6 +53,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.GetSystemsCollectionRPC(req)
@@ -62,6 +63,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -85,6 +87,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.GetSystemRPC(req)
@@ -94,6 +97,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -121,6 +125,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.GetSystemResourceRPC(req)
@@ -130,6 +135,7 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -160,6 +166,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	systemID := ctx.Params().Get("id")
@@ -170,6 +177,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -188,6 +196,7 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -210,6 +219,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.SetDefaultBootOrderRPC(req)
@@ -219,6 +229,7 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -240,6 +251,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(req)
@@ -249,6 +261,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -259,6 +272,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	biosRequest := systemsproto.BiosSettingsRequest{
@@ -273,6 +287,7 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -294,6 +309,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(req)
@@ -303,6 +319,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -313,6 +330,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	bootOrderRequest := systemsproto.BootOrderSettingsRequest{
@@ -327,6 +345,7 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -348,6 +367,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(req)
@@ -357,6 +377,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -367,6 +388,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	volRequest := systemsproto.VolumeRequest{
@@ -382,6 +404,7 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -404,6 +427,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -414,6 +438,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	volRequest := systemsproto.VolumeRequest{
@@ -430,6 +455,7 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

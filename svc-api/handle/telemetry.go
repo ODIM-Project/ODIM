@@ -52,6 +52,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetTelemetryServiceRPC(req)
@@ -61,6 +62,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -84,6 +86,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetMetricDefinitionCollectionRPC(req)
@@ -93,6 +96,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -116,6 +120,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetMetricReportDefinitionCollectionRPC(req)
@@ -125,6 +130,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -148,6 +154,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetMetricReportCollectionRPC(req)
@@ -157,6 +164,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -180,6 +188,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetTriggerCollectionRPC(req)
@@ -189,6 +198,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -212,6 +222,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetMetricDefinitionRPC(req)
@@ -221,6 +232,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -243,6 +255,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetMetricReportDefinitionRPC(req)
@@ -252,6 +265,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -274,6 +288,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetMetricReportRPC(req)
@@ -283,6 +298,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -305,6 +321,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.GetTriggerRPC(req)
@@ -314,6 +331,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
@@ -335,6 +353,7 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := a.UpdateTriggerRPC(req)
@@ -344,6 +363,7 @@ func (a *TelemetryRPCs) UpdateTrigger(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

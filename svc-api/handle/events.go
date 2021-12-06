@@ -49,6 +49,7 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := e.GetEventServiceRPC(req)
@@ -57,6 +58,7 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -79,6 +81,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -90,6 +93,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	req.PostBody, _ = json.Marshal(&SubscriptionReq)
@@ -100,6 +104,7 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -121,6 +126,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -132,6 +138,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	req.PostBody, _ = json.Marshal(&SubmitTestEventReq)
@@ -142,6 +149,7 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -163,6 +171,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -172,6 +181,7 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
@@ -193,6 +203,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -202,6 +213,7 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -222,6 +234,7 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -231,6 +244,7 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

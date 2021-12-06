@@ -48,6 +48,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := mgr.GetManagersCollectionRPC(req)
@@ -57,6 +58,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -79,6 +81,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := mgr.GetManagersRPC(req)
@@ -88,6 +91,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -114,6 +118,7 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := mgr.GetManagersResourceRPC(req)
@@ -123,6 +128,7 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -145,6 +151,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(reqIn)
@@ -154,6 +161,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -170,6 +178,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := mgr.VirtualMediaInsertRPC(req)
@@ -179,6 +188,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -205,6 +215,7 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := mgr.VirtualMediaEjectRPC(req)
@@ -214,6 +225,7 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

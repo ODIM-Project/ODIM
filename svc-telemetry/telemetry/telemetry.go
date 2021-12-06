@@ -99,7 +99,6 @@ func (e *ExternalInterface) GetTelemetryService() response.RPC {
 // resources from the added BMC's
 func (e *ExternalInterface) GetMetricDefinitionCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	data, err := e.DB.GetResource("MetricDefinitionsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
@@ -128,7 +127,6 @@ func (e *ExternalInterface) GetMetricDefinitionCollection(req *teleproto.Telemet
 // resources from the added BMC's
 func (e *ExternalInterface) GetMetricReportDefinitionCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	data, err := e.DB.GetResource("MetricReportDefinitionsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
@@ -157,7 +155,6 @@ func (e *ExternalInterface) GetMetricReportDefinitionCollection(req *teleproto.T
 // resources from the added BMC's
 func (e *ExternalInterface) GetMetricReportCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	data, err := e.DB.GetResource("MetricReportsCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
@@ -186,7 +183,6 @@ func (e *ExternalInterface) GetMetricReportCollection(req *teleproto.TelemetryRe
 // resources from the added BMC's
 func (e *ExternalInterface) GetTriggerCollection(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	data, err := e.DB.GetResource("TriggersCollection", req.URL, common.InMemory)
 	if err != nil {
 		// return empty collection response
@@ -214,7 +210,6 @@ func (e *ExternalInterface) GetTriggerCollection(req *teleproto.TelemetryRequest
 // GetMetricReportDefinition ...
 func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	data, gerr := e.DB.GetResource("MetricReportDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
 		log.Warn("Unable to get MetricReportDefinition details : " + gerr.Error())
@@ -237,7 +232,6 @@ func (e *ExternalInterface) GetMetricReportDefinition(req *teleproto.TelemetryRe
 // GetMetricReport is for to get metric report from southbound resource
 func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	var getDeviceInfoRequest = tcommon.ResourceInfoRequest{
 		URL:                 req.URL,
 		ContactClient:       e.External.ContactClient,
@@ -266,7 +260,6 @@ func (e *ExternalInterface) GetMetricReport(req *teleproto.TelemetryRequest) res
 // GetMetricDefinition ...
 func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = header
 	data, gerr := e.DB.GetResource("MetricDefinitions", req.URL, common.InMemory)
 	if gerr != nil {
 		log.Warn("Unable to get MetricDefinition details : " + gerr.Error())
@@ -289,8 +282,6 @@ func (e *ExternalInterface) GetMetricDefinition(req *teleproto.TelemetryRequest)
 // GetTrigger ...
 func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	header["Allow"] = `GET, PATCH`
-	resp.Header = header
 	data, gerr := e.DB.GetResource("Triggers", req.URL, common.InMemory)
 	if gerr != nil {
 		log.Warn("Unable to get Triggers details `: " + gerr.Error())
@@ -313,8 +304,6 @@ func (e *ExternalInterface) GetTrigger(req *teleproto.TelemetryRequest) response
 // UpdateTrigger ...
 func (e *ExternalInterface) UpdateTrigger(req *teleproto.TelemetryRequest) response.RPC {
 	var resp response.RPC
-	header["Allow"] = `GET, PATCH`
-	resp.Header = header
 	// Todo: code for update operation
 	return resp
 }

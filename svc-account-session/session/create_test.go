@@ -169,9 +169,6 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: errArgUnauth.CreateGenericErrorResponse(),
 			},
 		},
@@ -185,9 +182,6 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: errArgUnauth1.CreateGenericErrorResponse(),
 			},
 		},
@@ -201,9 +195,6 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: errArg2.CreateGenericErrorResponse(),
 			},
 		},

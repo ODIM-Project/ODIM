@@ -45,14 +45,6 @@ func Test_GetCollectionHandler_WhenMultipleSourcesAreAvailable(t *testing.T) {
 	require.EqualValues(t, http.StatusOK, r.StatusCode)
 	require.IsType(t, sresponse.NewChassisCollection(), r.Body)
 	require.Equal(t, []dmtfmodel.Link{{Oid: "1"}, {Oid: "3"}, {Oid: "2"}, {Oid: "4"}, {Oid: "5"}}, r.Body.(sresponse.Collection).Members)
-	require.Equal(t, map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}, r.Header)
 }
 
 func Test_GetCollectionHandler_WhenCollectionSourcesCannotBeDetermined(t *testing.T) {

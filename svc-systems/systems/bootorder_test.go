@@ -162,7 +162,6 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 		}, {
@@ -174,9 +173,6 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: errArg1.CreateGenericErrorResponse(),
 			},
 		},
@@ -189,7 +185,6 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
 				StatusMessage: response.InternalError,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 		},
@@ -202,13 +197,6 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		},
@@ -338,9 +326,6 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: errArg1.CreateGenericErrorResponse(),
 			},
 		}, {
@@ -354,7 +339,6 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 		},
@@ -369,7 +353,6 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
 				StatusMessage: response.InternalError,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 		},
@@ -384,9 +367,6 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: map[string]interface{}{"@odata.id": "/redfish/v1/Systems/1/Bios/Settings"},
 			},
 		},
@@ -547,9 +527,6 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: errArg1.CreateGenericErrorResponse(),
 			},
 		}, {
@@ -563,7 +540,6 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 		},
@@ -578,7 +554,6 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
 				StatusMessage: response.InternalError,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 		},
@@ -593,13 +568,6 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				Body: map[string]interface{}{"@odata.id": "/redfish/v1/Systems/1"},
 			},
 		},

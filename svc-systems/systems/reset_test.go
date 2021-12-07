@@ -240,7 +240,6 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
 				StatusMessage: response.InternalError,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 		},
@@ -257,13 +256,6 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		},

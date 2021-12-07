@@ -160,9 +160,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		}, {
@@ -178,9 +175,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				Body: map[string]interface{}{"MessageId": response.Success},
 			},
 		}, {

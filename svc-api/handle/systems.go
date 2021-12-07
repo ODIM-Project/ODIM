@@ -51,9 +51,9 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized) 
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.GetSystemsCollectionRPC(req)
@@ -61,9 +61,9 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -85,9 +85,9 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.GetSystemRPC(req)
@@ -95,9 +95,9 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -123,9 +123,9 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.GetSystemResourceRPC(req)
@@ -133,9 +133,9 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -164,9 +164,9 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	systemID := ctx.Params().Get("id")
@@ -175,9 +175,9 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -194,9 +194,9 @@ func (sys *SystemRPCs) ComputerSystemReset(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -217,9 +217,9 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := sys.SetDefaultBootOrderRPC(req)
@@ -227,9 +227,9 @@ func (sys *SystemRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -249,9 +249,9 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(req)
@@ -259,9 +259,9 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -270,9 +270,9 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	biosRequest := systemsproto.BiosSettingsRequest{
@@ -285,9 +285,9 @@ func (sys *SystemRPCs) ChangeBiosSettings(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -307,9 +307,9 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the system reset request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(req)
@@ -317,9 +317,9 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -328,9 +328,9 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	bootOrderRequest := systemsproto.BootOrderSettingsRequest{
@@ -343,9 +343,9 @@ func (sys *SystemRPCs) ChangeBootOrderSettings(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -365,9 +365,9 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the create volume request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	request, err := json.Marshal(req)
@@ -375,9 +375,9 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -386,9 +386,9 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	volRequest := systemsproto.VolumeRequest{
@@ -402,9 +402,9 @@ func (sys *SystemRPCs) CreateVolume(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -425,9 +425,9 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -436,9 +436,9 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	volRequest := systemsproto.VolumeRequest{
@@ -453,9 +453,9 @@ func (sys *SystemRPCs) DeleteVolume(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

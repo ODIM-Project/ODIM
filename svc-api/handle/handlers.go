@@ -2862,9 +2862,9 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -2949,9 +2949,9 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	authResp := r.Auth(sessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -2995,10 +2995,10 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 	}
 	if locationURI == "" {
 		errorMessage := "error: resource not found"
-		common.SetResponseHeader(ctx, nil)
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
-		ctx.StatusCode(http.StatusNotFound) // TODO: add error      headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusNotFound)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -3043,8 +3043,8 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error      headers
-		common.SetResponseHeader(ctx, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -3075,8 +3075,8 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 			errorMessage := "error: Resource not found"
 			log.Error(errorMessage)
 			response := common.GeneralError(http.StatusNotFound, errResponse.ResourceNotFound, errorMessage, []interface{}{"RegistryFile", regFileID}, nil)
-			ctx.StatusCode(http.StatusNotFound) // TODO: add error      headers
-			common.SetResponseHeader(ctx, nil)
+			common.SetResponseHeader(ctx, response.Header)
+			ctx.StatusCode(http.StatusNotFound)
 			ctx.JSON(&response.Body)
 			return
 		}
@@ -3090,8 +3090,8 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		errorMessage := "error: Resource not found"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
-		common.SetResponseHeader(ctx, nil)
 		ctx.JSON(&response.Body)
 		return
 	}

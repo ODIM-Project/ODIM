@@ -20,6 +20,17 @@ import (
 	"net/http"
 )
 
+// commonHeaders holds the common response headers
+var commonHeaders = map[string]string{
+    "Connection": "keep-alive",
+	"OData-Version": "4.0",
+	"X-Frame-Options": "sameorigin",
+	"X-Content-Type-Options":"nosniff",
+	"Content-type":"application/json; charset=utf-8",
+	"Cache-Control":"no-cache",
+	"Transfer-Encoding":"chunked",
+}
+
 // SetResponseHeader will add the params to the response header
 func SetResponseHeader(ctx iris.Context, params map[string]string) {
     SetCommonHeaders(ctx.ResponseWriter())
@@ -30,11 +41,7 @@ func SetResponseHeader(ctx iris.Context, params map[string]string) {
 
 // SetCommonHeaders will add the common headers to the response writer
 func SetCommonHeaders(w http.ResponseWriter){
-    w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("OData-Version", "4.0")
-	w.Header().Set("X-Frame-Options", "sameorigin")
-	w.Header().Set("X-Content-Type-Options","nosniff")
-	w.Header().Set("Content-type","application/json; charset=utf-8")
-	w.Header().Set("Cache-Control","no-cache")
-	w.Header().Set("Transfer-Encoding","chunked")
+	for key, value := range commonHeaders {
+		w.Header().Set(key, value)
+	}
 }

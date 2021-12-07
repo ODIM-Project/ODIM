@@ -47,18 +47,18 @@ func (e *EventsRPCs) GetEventService(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	resp, err := e.GetEventServiceRPC(req)
 	if err != nil {
 		log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -79,9 +79,9 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the event subscription request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -91,9 +91,9 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	req.PostBody, _ = json.Marshal(&SubscriptionReq)
@@ -102,9 +102,9 @@ func (e *EventsRPCs) CreateEventSubscription(ctx iris.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -124,9 +124,9 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the SubmitTestEvent request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -136,9 +136,9 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	req.PostBody, _ = json.Marshal(&SubmitTestEventReq)
@@ -147,9 +147,9 @@ func (e *EventsRPCs) SubmitTestEvent(ctx iris.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -169,9 +169,9 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -179,9 +179,9 @@ func (e *EventsRPCs) GetEventSubscription(ctx iris.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
     ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
@@ -201,9 +201,9 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -211,9 +211,9 @@ func (e *EventsRPCs) DeleteEventSubscription(ctx iris.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -232,9 +232,9 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 
@@ -242,9 +242,9 @@ func (e *EventsRPCs) GetEventSubscriptionsCollection(ctx iris.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
-		common.SetResponseHeader(ctx, nil)
 		return
 	}
 

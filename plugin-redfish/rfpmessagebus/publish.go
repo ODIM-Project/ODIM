@@ -98,11 +98,11 @@ func formatMetricReportEventRequest(eventRequest common.Events) (common.Events, 
 	}
 
 	// to replace id in system
-	updatedData := strings.Replace(string(eventRequest.Request), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+systemUUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+systemUUID+":", -1)
+	updatedData := strings.Replace(string(eventRequest.Request), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+systemUUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+systemUUID+".", -1)
 	// to replace id in chassis
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+systemUUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+systemUUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+systemUUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+systemUUID+".", -1)
 
 	event.Request, _ = json.Marshal(updatedData)
 	event.IP = eventRequest.IP

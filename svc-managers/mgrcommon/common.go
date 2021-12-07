@@ -127,7 +127,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 		"PostBody":       req.RequestBody,
 	}
 	//replace the uuid:id with the manager id
-	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = req.HTTPMethod
 	//target.PostBody = req.RequestBody
 	body, _, getResp, err := ContactPlugin(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
@@ -189,7 +189,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		"Password":       decryptedPasswordByte,
 	}
 	//replace the uuid:system id with the system to the @odata.id from request url
-	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
 	body, _, getResp, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
@@ -201,12 +201,12 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 			return "", fmt.Errorf("error while trying to get data from plugin: %v", err)
 		}
 	}
-	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+":", -1)
+	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+".", -1)
 	// to replace the id in managers
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+".", -1)
 	// to replace id in chassis
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+".", -1)
 
 	return updatedData, nil
 }

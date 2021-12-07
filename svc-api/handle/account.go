@@ -17,12 +17,13 @@ package handle
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 // AccountRPCs defines all the RPC methods in account service
@@ -40,6 +41,7 @@ type AccountRPCs struct {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
+	defer ctx.Next()
 	req := accountproto.AccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -74,6 +76,7 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 
 	err := ctx.ReadJSON(&req)
@@ -126,6 +129,7 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
+	defer ctx.Next()
 	req := accountproto.AccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
@@ -161,6 +165,7 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) GetAccount(ctx iris.Context) {
+	defer ctx.Next()
 	req := accountproto.GetAccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),
@@ -197,6 +202,7 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 
 	err := ctx.ReadJSON(&req)
@@ -252,6 +258,7 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
+	defer ctx.Next()
 	req := accountproto.DeleteAccountRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		AccountID:    ctx.Params().Get("id"),

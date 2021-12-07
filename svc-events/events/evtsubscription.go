@@ -1098,7 +1098,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 // GetUUID fetches the UUID from the Origin Resource
 func getUUID(origin string) (string, error) {
 	var uuid string
-	requestData := strings.Split(origin, ":")
+	requestData := strings.SplitN(origin, ".", 2)
 	if len(requestData) <= 1 {
 		return "", fmt.Errorf("error: SystemUUID not found")
 	}
@@ -1447,7 +1447,7 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 		}
 	}
 
-	log.Error("Subscription Response Status Code" + string(response.StatusCode))
+	log.Error("Subscription Response Status Code" + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {

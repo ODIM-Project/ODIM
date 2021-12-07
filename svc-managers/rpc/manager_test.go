@@ -49,7 +49,7 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 	managerData["Status"] = `{"State":"Enabled"}}`
 	managerData["Name"] = "somePlugin"
 	switch url {
-	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL:1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
+	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL.1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	case "/redfish/v1/Managers/noDevice":
 		managerData["ManagerType"] = "Service"
@@ -109,31 +109,31 @@ func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
 }
 
 func mockUpdateData(key string, updateData map[string]interface{}, table string) error {
-	if key == "/redfish/v1/Managers/uuid:1/VirtualMedia/1" {
+	if key == "/redfish/v1/Managers/uuid.1/VirtualMedia/1" {
 		return nil
-	} else if key == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
+	} else if key == "/redfish/v1/Managers/uuid1.1/VirtualMedia/4" {
 		return errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return nil
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
-	if key == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+	if key == "/redfish/v1/Managers/uuid1.1/Ethernet" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-	} else if key == "/redfish/v1/Managers/uuid1:1/Virtual" {
+	} else if key == "/redfish/v1/Managers/uuid1.1/Virtual" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
-	} else if key == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
+	} else if key == "/redfish/v1/Managers/uuid1.1/VirtualMedia/4" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
 }
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
-	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Ethernet" {
 		return "", fmt.Errorf("error")
-	} else if req.URL == "/redfish/v1/Managers/uuid1:1/Virtual" {
+	} else if req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
 		return "", fmt.Errorf("error")
-	} else if req.URL == "/redfish/v1/Managers/uuid1:1/VirtualMedia/4" {
+	} else if req.URL == "/redfish/v1/Managers/uuid1.1/VirtualMedia/4" {
 		return "", fmt.Errorf("error")
 	}
 	manager := mgrmodel.Manager{
@@ -148,7 +148,7 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
 	var resp response.RPC
 	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
-	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Virtual" {
+	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
 		resp.StatusCode = http.StatusNotFound
 		resp.StatusMessage = response.ResourceNotFound
 		return resp
@@ -186,7 +186,7 @@ func mockGetExternalInterface() *managers.ExternalInterface {
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
-	return []string{"/redfish/v1/Managers/uuid:1"}, nil
+	return []string{"/redfish/v1/Managers/uuid.1"}, nil
 }
 
 func TestGetManagerCollection(t *testing.T) {
@@ -281,7 +281,7 @@ func TestGetManagerResourcewithInValidtoken(t *testing.T) {
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
 	req := &managersproto.ManagerRequest{
-		ManagerID:    "uuid:1",
+		ManagerID:    "uuid.1",
 		SessionToken: "InvalidToken",
 	}
 	resp, _ := mgr.GetManagersResource(ctx, req)
@@ -295,9 +295,9 @@ func TestGetManagerResourcewithValidtoken(t *testing.T) {
 	mgr.EI = mockGetExternalInterface()
 
 	req := &managersproto.ManagerRequest{
-		ManagerID:    "uuid:1",
+		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
-		URL:          "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1",
+		URL:          "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1",
 		ResourceID:   "1",
 	}
 	resp, err := mgr.GetManagersResource(ctx, req)
@@ -311,9 +311,9 @@ func TestVirtualMediaEject(t *testing.T) {
 	mgr.IsAuthorizedRPC = mockIsAuthorized
 	mgr.EI = mockGetExternalInterface()
 	req := &managersproto.ManagerRequest{
-		ManagerID:    "uuid:1",
+		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
-		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+		URL:          "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
 		ResourceID:   "1",
 	}
 	var resp = &managersproto.ManagerResponse{}
@@ -324,10 +324,10 @@ func TestVirtualMediaEject(t *testing.T) {
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
-		ManagerID:    "uuid:1",
+		ManagerID:    "uuid.1",
 		SessionToken: "InvalidToken",
 		ResourceID:   "1",
-		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		URL:          "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 	}
 	resp = &managersproto.ManagerResponse{}
 	resp, _ = mgr.VirtualMediaEject(ctx, req)
@@ -342,9 +342,9 @@ func TestVirtualMediaInsert(t *testing.T) {
 	mgr.EI = mockGetExternalInterface()
 
 	req := &managersproto.ManagerRequest{
-		ManagerID:    "uuid:1",
+		ManagerID:    "uuid.1",
 		SessionToken: "validToken",
-		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		URL:          "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 		ResourceID:   "1",
 		RequestBody: []byte(`{"Image":"http://10.1.0.1/ISO/ubuntu-18.04.4-server-amd64.iso",
 										"Inserted":true,
@@ -358,10 +358,10 @@ func TestVirtualMediaInsert(t *testing.T) {
 
 	// Invalid
 	req = &managersproto.ManagerRequest{
-		ManagerID:    "uuid:1",
+		ManagerID:    "uuid.1",
 		SessionToken: "InvalidToken",
 		ResourceID:   "1",
-		URL:          "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		URL:          "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 		RequestBody:  []byte(`{"Image":"http://10.1.0.1/ISO/ubuntu-18.04.4-server-amd64.iso"}`),
 	}
 	resp = &managersproto.ManagerResponse{}

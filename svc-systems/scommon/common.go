@@ -123,7 +123,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 		"Password":       decryptedPasswordByte,
 	}
 	//replace the uuid:system id with the system to the @odata.id from request url
-	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+ "." +req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
 	body, _, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
@@ -142,12 +142,12 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	 */
 	//replacing the uuid while saving the data
 	//to replace the id of system
-	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+":", -1)
+	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+".", -1)
 	// to replace the id in managers
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+".", -1)
 	// to replace id in chassis
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+".", -1)
 
 	if saveRequired && checkRetrievalInfo(contactRequest.OID) {
 		oidKey = keyFormation(contactRequest.OID, req.SystemID, req.UUID)
@@ -179,7 +179,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis")) {
-			key = append(key, DeviceUUID+":"+id)
+			key = append(key, DeviceUUID + "." + id)
 			continue
 		}
 		key = append(key, id)
@@ -227,7 +227,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 	log.Info("Response" + string(body))
-	log.Info("response.StatusCode" + string(response.StatusCode))
+	log.Info("response.StatusCode" + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)

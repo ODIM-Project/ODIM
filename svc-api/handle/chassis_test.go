@@ -44,7 +44,7 @@ func TestChassisRPCs_GetChassisResource(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
 }
 func TestChassisRPCs_GetChassisResourceWithRPCError(t *testing.T) {
@@ -56,7 +56,7 @@ func TestChassisRPCs_GetChassisResourceWithRPCError(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -69,7 +69,7 @@ func TestChassisRPCs_GetChassisResourceWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).Expect().Status(http.StatusUnauthorized)
 }
 

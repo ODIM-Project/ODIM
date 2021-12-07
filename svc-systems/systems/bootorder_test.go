@@ -131,11 +131,11 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
+	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1")
+	err = mockSystemData("/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -157,7 +157,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			name: "invalid uuid",
 			p:    &pluginContact,
 			args: args{
-				systemID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+				systemID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
@@ -184,7 +184,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			name: "if plugin id doesn't there in db",
 			p:    &pluginContact,
 			args: args{
-				systemID: "7ff3bd97-c41c-5de0-937d-85d390691b73:1",
+				systemID: "7ff3bd97-c41c-5de0-937d-85d390691b73.1",
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
@@ -197,7 +197,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			name: "Valid Request",
 			p:    &pluginContact,
 			args: args{
-				systemID: "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				systemID: "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
@@ -267,11 +267,11 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
+	err = mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1")
+	err = mockSystemData("/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -279,7 +279,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
+	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -347,7 +347,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			name: "invalid uuid",
 			p:    &pluginContact,
 			req: &systemsproto.BiosSettingsRequest{
-				SystemID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+				SystemID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 				RequestBody:  request,
 				SessionToken: "token",
 			},
@@ -362,7 +362,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			name: "if plugin id doesn't there in db",
 			p:    &pluginContact,
 			req: &systemsproto.BiosSettingsRequest{
-				SystemID:     "7ff3bd97-c41c-5de0-937d-85d390691b73:1",
+				SystemID:     "7ff3bd97-c41c-5de0-937d-85d390691b73.1",
 				RequestBody:  request,
 				SessionToken: "token",
 			},
@@ -377,7 +377,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			name: "Valid Request",
 			p:    &pluginContact,
 			req: &systemsproto.BiosSettingsRequest{
-				SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 				RequestBody:  request,
 				SessionToken: "token",
 			},
@@ -484,11 +484,11 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1")
+	err = mockSystemData("/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
+	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -556,7 +556,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			name: "invalid uuid",
 			p:    &pluginContact,
 			req: &systemsproto.BootOrderSettingsRequest{
-				SystemID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+				SystemID:     "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 				RequestBody:  request,
 				SessionToken: "token",
 			},
@@ -571,7 +571,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			name: "if plugin id doesn't there in db",
 			p:    &pluginContact,
 			req: &systemsproto.BootOrderSettingsRequest{
-				SystemID:     "7ff3bd97-c41c-5de0-937d-85d390691b73:1",
+				SystemID:     "7ff3bd97-c41c-5de0-937d-85d390691b73.1",
 				RequestBody:  request,
 				SessionToken: "token",
 			},
@@ -586,7 +586,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			name: "Valid Request",
 			p:    &pluginContact,
 			req: &systemsproto.BootOrderSettingsRequest{
-				SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				SystemID:     "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 				RequestBody:  request,
 				SessionToken: "token",
 			},

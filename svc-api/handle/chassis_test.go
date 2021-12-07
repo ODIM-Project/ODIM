@@ -145,6 +145,9 @@ func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
 		"Odata-Version":   {"4.0"},
 		"X-Frame-Options": {"sameorigin"},
 		"Content-Type":    {"application/json; charset=utf-8"},
+		"X-Content-Type-Options":{"nosniff"},
+	    "Cache-Control":{"no-cache"},
+	    "Transfer-Encoding":{"chunked"},
 	})
 }
 
@@ -169,6 +172,9 @@ func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
 		"Odata-Version":   {"4.0"},
 		"X-Frame-Options": {"sameorigin"},
 		"Content-Type":    {"application/json; charset=utf-8"},
+		"X-Content-Type-Options":{"nosniff"},
+	    "Cache-Control":{"no-cache"},
+	    "Transfer-Encoding":{"chunked"},
 	})
 }
 
@@ -200,6 +206,10 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 		"Connection":      {"keep-alive"},
 		"Odata-Version":   {"4.0"},
 		"X-Frame-Options": {"sameorigin"},
+		"Content-Type":    {"application/json; charset=utf-8"},
+		"X-Content-Type-Options":{"nosniff"},
+	    "Cache-Control":{"no-cache"},
+	    "Transfer-Encoding":{"chunked"},
 		"Location":        {"/redfish/odim/blebleble"},
 	})
 }

@@ -106,7 +106,7 @@ curl -i GET \
    ],
    "Members@odata.count":1,
    "Name":"Fabric Collection",
-   "RedfishVersion":"1.8.0",
+   "RedfishVersion":"1.14.0",
    "@odata.type":"#FabricCollection.FabricCollection"
 }
 ```
@@ -461,7 +461,7 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.8.0",
+	"RedfishVersion": "1.14.0",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	

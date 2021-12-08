@@ -54,6 +54,21 @@ func GetResourceBlock(req compositionserviceproto.GetCompositionResourceRequest)
 	return resp, nil
 }
 
+// DeleteResourceBlock will do the rpc call to Delete Resource Block
+func DeleteResourceBlock(req compositionserviceproto.DeleteCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
+	conn, err := services.ODIMService.Client(services.CompositionService)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	csService := compositionserviceproto.NewCompositionClient(conn)
+	resp, err := csService.DeleteCompositionResource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}
+
 // GetResourceZoneCollection will do the rpc call to get Resource Zone Collection
 func GetResourceZoneCollection(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
 	conn, err := services.ODIMService.Client(services.CompositionService)
@@ -145,6 +160,21 @@ func GetActivePool(req compositionserviceproto.GetCompositionResourceRequest) (*
 }
 
 func GetFreePool(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
+	fmt.Errorf("In rpc.GetCompositionService")
+	conn, err := services.ODIMService.Client(services.CompositionService)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	csService := compositionserviceproto.NewCompositionClient(conn)
+	resp, err := csService.GetCompositionResource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}
+
+func GetCompositionReservations(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
 	fmt.Errorf("In rpc.GetCompositionService")
 	conn, err := services.ODIMService.Client(services.CompositionService)
 	if err != nil {

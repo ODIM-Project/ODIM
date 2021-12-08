@@ -198,7 +198,7 @@ class ResourceZones():
                 code = HTTPStatus.NOT_FOUND
                 return
 
-            data = json.loads(str(data))
+            data = json.loads(data)
             logging.debug("ResourceZone data: {data}".format(data=data))
 
             for property, value in data['Links'].items():
@@ -234,11 +234,12 @@ class ResourceZones():
 
             pipe.delete("ResourceZones:{zone_uri}".format(zone_uri=url))
             pipe.delete("{zone_block}:{zone_url}".format(
-                zone_block="ResourceZones-ResourceBlock", zone_url=data['@odata.id']))
+                zone_block="ResourceZone-ResourceBlock", zone_url=data['@odata.id']))
             logging.info("{resource}:{resource_uri} is deleted".format(
                 resource="ResourceZones", resource_uri=url))
 
             pipe.execute()
+            res = {"Id": data["Id"]}
             code = HTTPStatus.OK
 
         except Exception as err:

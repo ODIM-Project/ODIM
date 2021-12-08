@@ -68,12 +68,17 @@ class RedisClient():
                 "unable to get key {key} in redis db. Error:{e}".format(key=key, e=err))
     
     def smembers(self, key):
+        decoded_value = []
         try:
             if self.connection:
                 value = self.connection.smembers(key)
+                for mem in value:
+                    decoded_value.append(mem.decode('utf-8'))
         except Exception as err:
             logging.error(
                 "unable to smembers key {key} in redis db. Error:{e}".format(key=key, e=err))
+        finally:
+            return decoded_value
 
     def keys(self, pattern=None):
         decoded_keys = []
@@ -95,6 +100,14 @@ class RedisClient():
         except Exception as err:
             logging.error(
                 "unable to delete keys {keys} in redis db. Error:{e}".format(key=keys, e=err))
+
+    def srem(self, key, *value):
+        try:
+            if self.connection:
+                self.connection.srem(key, *value)
+        except Exception as err:
+            logging.error(
+                "unable to delete keys {keys} in redis db. Error:{e}".format(key=key, e=err))
 
     def exists(self, *keys):
         exists = 0

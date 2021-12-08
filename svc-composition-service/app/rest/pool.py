@@ -5,7 +5,6 @@ from http import HTTPStatus
 class ResourcePool():
     def __init__(self):
         self.redis = RedisClient()
-        pass
 
     def get_free_pool_collection(self, url):
         
@@ -22,7 +21,6 @@ class ResourcePool():
             }
            
             fp_data = self.redis.smembers("FreePool")
-            print("FreePool data: {}".format(fp_data))
             if fp_data:
                 for fp in fp_data:
                     res["Members"].append({"@odata.id": "{uri}".format(uri=fp)})
@@ -30,7 +28,7 @@ class ResourcePool():
                 res["Members@odata.count"] = len(fp_data)
 
             code = HTTPStatus.OK
-            logging.debug("FreePool collection: {rb_collection}".format(rb_collection=res))
+            logging.debug("FreePool collection: {fp_collection}".format(fp_collection=res))
 
         except Exception as err:
             logging.error(
@@ -64,7 +62,7 @@ class ResourcePool():
                 res["Members@odata.count"] = len(ap_data)
 
             code = HTTPStatus.OK
-            logging.debug("ActivePool collection: {rb_collection}".format(rb_collection=res))
+            logging.debug("ActivePool collection: {ap_collection}".format(ap_collection=res))
 
         except Exception as err:
             logging.error(

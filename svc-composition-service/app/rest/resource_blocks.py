@@ -63,9 +63,9 @@ class ResourceBlocks():
                 data['Status']['State'] = system_data['Status'].get('State')
                 data['Status']['Health'] = system_data['Status'].get('Health')
 
-            data['id'] = str(uuid.uuid1())
+            data['Id'] = str(uuid.uuid1())
             data['@odata.id'] = "{url}/{id}".format(
-                url=data['@odata.id'], id=data['id'])
+                url=data['@odata.id'], id=data['Id'])
 
             data['ComputerSystems'] = [
                 {'@odata.id': system_data['@odata.id']}
@@ -79,7 +79,7 @@ class ResourceBlocks():
             
             self.redis.sadd("FreePool", data['@odata.id'])
 
-            res = {"id": data['id']}
+            res = {"Id": data['Id']}
             logging.debug(
                 "New ResourceBlock data: {rb_data}".format(rb_data=data))
         except Exception as err:
@@ -141,6 +141,59 @@ class ResourceBlocks():
             res = json.loads(data)
             code = HTTPStatus.OK
             logging.debug("Get Resource Block: {rb_data}".format(rb_data=res))
+
+        except Exception as err:
+            logging.error(
+                "Unable to get Resource Block. Error: {e}".format(e=err))
+            res = {
+                "Error": "Unable to get Resource Block. Error: {e}".format(e=err)
+            }
+            code = HTTPStatus.INTERNAL_SERVER_ERROR
+        finally:
+            return res, code
+
+    def delete_resource_block(self, url):
+        res = {}
+        code = HTTPStatus.OK
+        if url is None:
+            return res, HTTPStatus.NOT_FOUND
+
+        try:
+            data = self.redis.get(
+                "ResourceBlocks:{block_uri}".format(block_uri=url))
+            if not data:
+                res["Error"] = "The URI {uri} is not found".format(uri=url)
+                code = HTTPStatus.NOT_FOUND
+                return
+            rb_data = json.loads(data)
+
+            if rb_data["CompositionStatus"]["CompositionState"] == "Composed":
+                logging.error("The resource block {rb_id} delete is failed. The resource block is comoposed with system {sys_id}".format(
+                    rb_id=rb_data["Id"], sys_id=rb_data["Links"]["ComputerSystems"][0]["@odata.id"]))
+                res = {"Error": "The resouce block {rb_id} delete is failed because the resource is in 'composed' state".format(
+                    rb_id=rb_data["Id"])}
+                code = HTTPStatus.CONFLICT
+                return
+
+            if rb_data.get("Links") or rb_data["Links"].get("Zones"):
+                if len(rb_data["Links"]["Zones"]):
+                    logging.error("The resource block {rb_id} delete is failed. The resource block is linked with resource zone".format(
+                        rb_id=rb_data["Id"]))
+                    res = {"Error": "The resource block {rb_id} delete is failed because the resource is liked with resource zone".format(
+                        rb_id=rb_data["Id"])}
+                    code = HTTPStatus.CONFLICT
+                    return
+            
+            if rb_data["Pool"] == "Active":
+                self.redis.srem("ActivePool", rb_data["@odata.id"])
+            elif rb_data["Pool"] == "Free":
+                self.redis.srem("FreePool", rb_data["@odata.id"])
+            
+            self.redis.delete("ResourceBlocks:{block_uri}".format(block_uri=rb_data["@odata.id"]))
+            self.redis.delete("ResourceBlocks-ComputerSystem:{block_uri}".format(block_uri=rb_data["@odata.id"]))
+            logging.info("The Resource Block {rb_uri} is deleted successfully".format(rb_uri=rb_data["@odata.id"]))
+            res = {"Id": rb_data["Id"]}
+            code = HTTPStatus.OK
 
         except Exception as err:
             logging.error(

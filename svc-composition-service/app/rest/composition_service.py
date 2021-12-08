@@ -40,6 +40,11 @@ class CompositonService():
             "FreePool": {
                 "@odata.id": "/redfish/v1/CompositionService/FreePool"
             },
+            "Actions":{
+                "#CompositionService.Compose": {
+                    "target": "/redfish/v1/CompostionService/Actions/CompositionService.Compose",
+                }
+            },
             "ReservationDuration": None,
             "Oem": {}
         }
@@ -115,8 +120,7 @@ class CompositonService():
 
                 if "ComputerSystem" in rs_block["ResourceBlockType"]:
 
-                    system_data = self.redis.get("ComputerSystem:{uri}".format(
-                        uri=rs_block["ComputerSystems"][0]["@odata.id"]))
+                    system_data = self.client.process_get_request(rs_block["ComputerSystems"][0]["@odata.id"])
                     if system_data is None:
                         logging.error("The ComputerSystem {sys_id} from Resource Block {id} is not found valid".format(
                             sys_id=rs_block["ComputerSystems"][0]["@odata.id"], id=block_uri["@odata.id"]))
@@ -124,7 +128,6 @@ class CompositonService():
                         code = HTTPStatus.BAD_REQUEST
                         return
 
-                    system_data = json.loads(json.loads(system_data))
                     res["Id"] = "composed-{}".format(system_data["Id"])
                     res["@odata.id"] = system_data["@odata.id"].replace(
                         system_data["Id"], res["Id"])
@@ -142,12 +145,24 @@ class CompositonService():
                     system_data["Links"]["ResourceBlocks"].append(
                         {"@odata.id": rs_block["@odata.id"]})
 
-                if (not res.get("Links")) or (not res["Links"].get("ResourceBlocks")):
+                if not res.get("Links"):
                     res["Links"] = {"ResourceBlocks": []}
+                elif not res["Links"].get("ResourceBlocks"):
+                    res["Links"]["ResourceBlocks"] = []
                 res["Links"]["ResourceBlocks"].append(
                     {"@odata.id": rs_block["@odata.id"]})
 
-                if (rs_block["PoolType"] != "Free") or (rs_block["CompositionStatus"]["CompositionState"] == "Composed"):
+                if (rs_block["CompositionStatus"]["MaxCompositions"] <= rs_block["CompositionStatus"]["NumberOfCompositions"]):
+                    logging.error("NumberOfCompositions are excided to MaxCompositions for this Resource Block {id}".format(
+                        rs_block["Id"]))
+                    res = {"Error": "NumberOfCompositions are excided to MaxCompositions for this Resource Block {id}".format(
+                        rs_block["Id"])}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
+
+                rs_block["CompositionStatus"]["NumberOfCompositions"] += 1
+
+                if (rs_block["Pool"] != "Free") or (rs_block["CompositionStatus"]["CompositionState"] == "Composed"):
                     logging.error("The Resource Block {rb_uri} is already used by other composed system".format(
                         rb_uri=block_uri["@odata.id"]))
                     res = {"Error": "The Resource Block {rb_uri} is already used by other composed system".format(
@@ -155,11 +170,15 @@ class CompositonService():
                     code = HTTPStatus.BAD_REQUEST
                     return
 
-                rs_block["PoolType"] = "Active"
+                rs_block["Pool"] = "Active"
                 rs_block["CompositionStatus"]["CompositionState"] = "Composed"
-                logging.info("The properties 'PoolType' and 'CompositionState' of Resource Block {rb_uri}".format(
+                logging.info("The properties 'Pool' and 'CompositionState' of Resource Block {rb_uri}".format(
                     rb_uri=block_uri["@odata.id"]))
-                if (rs_block.get("Links") is None) or (rs_block["Links"].get("ComputerSystems") is None):
+                
+                if rs_block.get("Links") is not None:
+                    if rs_block["Links"].get("ComputerSystems") is None:
+                        rs_block["Links"]["ComputerSystems"] = []
+                else:
                     rs_block["Links"] = {"ComputerSystems": []}
                 rs_block["Links"]["ComputerSystems"].append({"@odata.id": res["@odata.id"]})
                 pipe.set("ResourceBlocks:{rb_uri}".format(rb_uri=block_uri["@odata.id"]), json.dumps(rs_block))
@@ -239,8 +258,10 @@ class CompositonService():
                                                 uri=obj["@odata.id"]))
                                             resource_data["Links"]["ComputerSystems"].remove(
                                                 sys_id)
-                                            resource_data["PoolType"] = "Free"
+                                            resource_data["Pool"] = "Free"
                                             resource_data["CompositionStatus"]["CompositionState"] = "Unused"
+                                            if resource_data["CompositionStatus"]["NumberOfCompositions"] > 0:
+                                                resource_data["CompositionStatus"]["NumberOfCompositions"] -= 1
                                             done = True
                                             break
 
@@ -276,4 +297,38 @@ class CompositonService():
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
             pipe.reset()
+            return res, code
+
+    def get_composition_reservations_collection(self, url):
+        
+        res = {}
+        code = HTTPStatus.OK
+        try:
+            
+            res = {
+                "@odata.type": "#CompositionReservationsCollection.CompositionReservationsCollection",
+                "Name": "Composition Reservations Collection",
+                "Members@odata.count": 0,
+                "Members": [],
+                "@odata.id": url
+            }
+           
+            cr_data = self.redis.keys("CompositionReservations:*")
+            if cr_data:
+                for cr in cr_data:
+                    res["Members"].append({"@odata.id": "{uri}".format(uri=cr)})
+
+                res["Members@odata.count"] = len(cr_data)
+
+            code = HTTPStatus.OK
+            logging.debug("CompositionReservations collection: {cr_collection}".format(cr_collection=res))
+
+        except Exception as err:
+            logging.error(
+                "Unable to get Composition Reservations Collection. Error: {e}".format(e=err))
+            res = {
+                "error": "Unable to get Composition Reservations Collection. Error: {e}".format(e=err)
+            }
+            code = HTTPStatus.INTERNAL_SERVER_ERROR
+        finally:
             return res, code

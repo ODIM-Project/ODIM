@@ -159,6 +159,7 @@ func Router() *iris.Application {
 		GetCompositionServiceRPC:      rpc.GetCompositionService,
 		GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
 		GetResourceBlockRPC:           rpc.GetResourceBlock,
+		DeleteResourceBlockRPC:        rpc.DeleteResourceBlock,
 		GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
 		GetResourceZoneRPC:            rpc.GetResourceZone,
 		CreateResourceZoneRPC:         rpc.CreateResourceZone,
@@ -166,6 +167,7 @@ func Router() *iris.Application {
 		ComposeRPC:                    rpc.Compose,
 		GetActivePoolRPC:              rpc.GetActivePool,
 		GetFreePoolRPC:                rpc.GetFreePool,
+		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
 	}
 
 	registryFile := handle.Registry{
@@ -580,13 +582,15 @@ func Router() *iris.Application {
 	compositionService.Get("/", cs.GetCompositionService)
 	compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
 	compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
-	compositionService.Get("/ResourceZones", cs.GetResourceZone)
-	compositionService.Get("/ResourceZones/{id}", cs.GetResourceBlock)
+	compositionService.Delete("/ResourceBlocks/{id}", cs.DeleteResourceBlock)
+	compositionService.Get("/ResourceZones", cs.GetResourceZoneCollection)
+	compositionService.Get("/ResourceZones/{id}", cs.GetResourceZone)
 	compositionService.Post("/ResourceZones", cs.CreateResourceZone)
 	compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
 	compositionService.Post("/Actions/CompositionService.Compose", cs.Compose)
 	compositionService.Get("/ActivePool", cs.GetActivePool)
 	compositionService.Get("/FreePool", cs.GetFreePool)
+	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
 
 	return router
 }

@@ -1,0 +1,23 @@
+{
+    "@Redfish.Copyright": "Copyright 2021 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "HeartbeatEvent.1.0.0",
+    "Name": "Heartbeat Event Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages to use for periodic heartbeat, also known as 'keep alive', events.",
+    "RegistryPrefix": "HeartbeatEvent",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "RedfishServiceFunctional": {
+            "Description": "An event sent periodically upon request to indicates that the Redfish service is functional.",
+            "LongDescription": "This message shall be used to indicate that the Redfish service is functional.  This message shall only be sent if specifically requested by an event destination during the creation of a subscription using the `SendHeartbeatMinutes` property.",
+            "Message": "Redfish service is functional.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 0,
+            "Resolution": "None."
+        }
+    }
+}

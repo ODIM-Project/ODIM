@@ -1,7 +1,7 @@
 {
     "@Redfish.Copyright": "Copyright 2014-2018 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
+    "@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
     "Id": "Base.1.4.0",
     "Name": "Base Message Registry",
     "Language": "en",

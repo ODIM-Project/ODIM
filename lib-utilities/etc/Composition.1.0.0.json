@@ -1,7 +1,7 @@
 {
     "@Redfish.Copyright": "Copyright 2019 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
+    "@odata.type": "#MessageRegistry.v1_3_1.MessageRegistry",
     "Id": "Composition.1.0.0",
     "Name": "Composition Message Registry",
     "Language": "en",

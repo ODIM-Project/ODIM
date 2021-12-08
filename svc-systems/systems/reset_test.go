@@ -256,7 +256,7 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body: map[string]interface{}{"MessageId": response.Success},
+				Body:          map[string]interface{}{"MessageId": response.Success},
 			},
 		},
 	}

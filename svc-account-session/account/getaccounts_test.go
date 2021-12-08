@@ -87,7 +87,7 @@ func TestGetAllAccounts(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
 				},
 				Body: asresponse.List{
 					Response:     successResponse,
@@ -113,7 +113,7 @@ func TestGetAllAccounts(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -191,7 +191,7 @@ func TestGetAccount(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -219,7 +219,7 @@ func TestGetAccount(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -246,7 +246,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -263,7 +263,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -280,7 +280,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 		},
 	}

@@ -259,7 +259,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 }
 func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 	rsp.Header = map[string]string{
-		"Date":              time.Now().Format(http.TimeFormat),
+		"Date": time.Now().Format(http.TimeFormat),
 	}
 
 }

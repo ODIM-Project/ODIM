@@ -40,8 +40,8 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	resp := &aggregatorproto.AggregatorResponse{}
 	// Fill the response header first
 	resp.Header = map[string]string{
-		"Date":              time.Now().Format(http.TimeFormat),
-		"Link":              "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
+		"Date": time.Now().Format(http.TimeFormat),
+		"Link": "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
 	}
 	// Validate the token, if user has Login priielege then proceed.
 	//Else send 401 Unauthorised
@@ -159,7 +159,7 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
@@ -252,7 +252,7 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
@@ -353,7 +353,7 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
@@ -516,7 +516,7 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
@@ -750,7 +750,7 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
@@ -842,7 +842,7 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)

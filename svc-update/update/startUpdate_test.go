@@ -45,7 +45,7 @@ func TestStartUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body: body,
+				Body:          body,
 			},
 		},
 	}

@@ -100,8 +100,8 @@ func TestGetMetadata(t *testing.T) {
 
 //TestAsMethodNotAllowed is unittest method for AsMethodNotAllowed func.
 func TestAsMethodNotAllowed(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/AccountService", AsMethodNotAllowed)
@@ -116,7 +116,7 @@ func TestAsMethodNotAllowed(t *testing.T) {
 //TestSsMethodNotAllowed is unittest method for SsMethodNotAllowed func.
 func TestSsMethodNotAllowed(t *testing.T) {
 	header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	defer delete(header, "Allow")
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/SessionService", SsMethodNotAllowed)

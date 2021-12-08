@@ -38,7 +38,7 @@ import (
 func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	rsp.Header = map[string]string{
-		"Date":              time.Now().Format(http.TimeFormat),
+		"Date": time.Now().Format(http.TimeFormat),
 	}
 	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)

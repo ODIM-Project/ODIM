@@ -91,7 +91,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized) 
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -106,7 +106,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -143,7 +143,7 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

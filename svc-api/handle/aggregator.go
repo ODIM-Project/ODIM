@@ -75,7 +75,7 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -283,7 +283,7 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -312,10 +312,10 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)		
+		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -481,7 +481,7 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -513,7 +513,7 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -768,7 +768,7 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -801,7 +801,7 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

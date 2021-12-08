@@ -141,13 +141,13 @@ func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
 	resp.Status(http.StatusBadRequest)
 	resp.JSON().Schema(redfishErrorSchema)
 	resp.Headers().Equal(map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Content-Type":    {"application/json; charset=utf-8"},
-		"X-Content-Type-Options":{"nosniff"},
-	    "Cache-Control":{"no-cache"},
-	    "Transfer-Encoding":{"chunked"},
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache"},
+		"Transfer-Encoding":      {"chunked"},
 	})
 }
 
@@ -168,13 +168,13 @@ func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
 	resp.Status(http.StatusInternalServerError)
 	resp.JSON().Schema(redfishErrorSchema)
 	resp.Headers().Equal(map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Content-Type":    {"application/json; charset=utf-8"},
-		"X-Content-Type-Options":{"nosniff"},
-	    "Cache-Control":{"no-cache"},
-	    "Transfer-Encoding":{"chunked"},
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache"},
+		"Transfer-Encoding":      {"chunked"},
 	})
 }
 
@@ -203,14 +203,14 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 	resp.Status(http.StatusOK)
 	resp.Body().Contains(string(expectedRPCResponse.Body))
 	resp.Headers().Equal(map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Content-Type":    {"application/json; charset=utf-8"},
-		"X-Content-Type-Options":{"nosniff"},
-	    "Cache-Control":{"no-cache"},
-	    "Transfer-Encoding":{"chunked"},
-		"Location":        {"/redfish/odim/blebleble"},
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache"},
+		"Transfer-Encoding":      {"chunked"},
+		"Location":               {"/redfish/odim/blebleble"},
 	})
 }
 func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {

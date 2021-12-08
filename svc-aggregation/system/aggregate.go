@@ -88,8 +88,8 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		Name:         "Aggregate",
 	}
 	resp.Header = map[string]string{
-		"Link":              "<" + aggregateURI + "/>; rel=describedby",
-		"Location":          aggregateURI,
+		"Link":     "<" + aggregateURI + "/>; rel=describedby",
+		"Location": aggregateURI,
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	resp.Body = agresponse.AggregateResponse{
@@ -285,7 +285,7 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		Name:         "Aggregate",
 	}
 	resp.Header = map[string]string{
-		"Link":              "<" + aggregateURL + "/>; rel=describedby",
+		"Link": "<" + aggregateURL + "/>; rel=describedby",
 	}
 	aggregate, _ = agmodel.GetAggregate(aggregateURL)
 	commonResponse.CreateGenericResponse(response.Success)
@@ -360,7 +360,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		Name:         "Aggregate",
 	}
 	resp.Header = map[string]string{
-		"Link":              "<" + aggregateURL + "/>; rel=describedby",
+		"Link": "<" + aggregateURL + "/>; rel=describedby",
 	}
 	aggregate, _ = agmodel.GetAggregate(aggregateURL)
 	commonResponse.CreateGenericResponse(response.Success)
@@ -656,7 +656,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 		Message: "Request completed successfully.",
 	}
 	resp.Header = map[string]string{
-		"Location":          element,
+		"Location": element,
 	}
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100

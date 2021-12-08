@@ -258,8 +258,8 @@ func TestCreate(t *testing.T) {
 				StatusCode:    http.StatusCreated,
 				StatusMessage: response.Created,
 				Header: map[string]string{
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser",
+					"Link":     "</redfish/v1/AccountService/Accounts/testUser/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/testUser",
 				},
 				Body: asresponse.Account{
 					Response:     successResponse,
@@ -290,7 +290,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArgum.CreateGenericErrorResponse(),
+				Body:          errArgum.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -309,7 +309,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusConflict,
 				StatusMessage: response.ResourceAlreadyExists,
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -328,7 +328,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -347,7 +347,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -366,7 +366,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -385,7 +385,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg2.CreateGenericErrorResponse(),
+				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -404,7 +404,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg3.CreateGenericErrorResponse(),
+				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -423,7 +423,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg4.CreateGenericErrorResponse(),
+				Body:          errArg4.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -442,7 +442,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg5.CreateGenericErrorResponse(),
+				Body:          errArg5.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -461,7 +461,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg6.CreateGenericErrorResponse(),
+				Body:          errArg6.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -480,7 +480,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Body: errArg7.CreateGenericErrorResponse(),
+				Body:          errArg7.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},

@@ -63,7 +63,7 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -153,7 +153,7 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

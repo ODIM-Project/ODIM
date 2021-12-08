@@ -142,8 +142,8 @@ func mockGetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse,
 }
 
 func TestGetTaskStatus_ValidTaskID(t *testing.T) {
-    header["Allow"] = []string{"GET, DELETE"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET, DELETE"}
+	defer delete(header, "Allow")
 	var task TaskRPCs
 	task.GetTaskRPC = mockGetTaskStatus
 	mockApp := iris.New()

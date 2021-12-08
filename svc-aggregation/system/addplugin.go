@@ -206,7 +206,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 	}
 	resp.Header = map[string]string{
-		"Location":     listMembers[0].OdataID,
+		"Location": listMembers[0].OdataID,
 	}
 	var managersList = make([]string, 0)
 	for i := 0; i < len(listMembers); i++ {

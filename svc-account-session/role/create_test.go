@@ -206,7 +206,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -224,7 +224,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -242,7 +242,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Body: errArgsInvalid.CreateGenericErrorResponse(),
+				Body:          errArgsInvalid.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -260,7 +260,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Body: errArgsMiss.CreateGenericErrorResponse(),
+				Body:          errArgsMiss.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -277,7 +277,7 @@ func TestCreate(t *testing.T) {
 			}, want: response.RPC{
 				StatusCode:    http.StatusConflict,
 				StatusMessage: response.GeneralError,
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -294,7 +294,7 @@ func TestCreate(t *testing.T) {
 			}, want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArgsInvalidRole.CreateGenericErrorResponse(),
+				Body:          errArgsInvalidRole.CreateGenericErrorResponse(),
 			},
 		},
 	}

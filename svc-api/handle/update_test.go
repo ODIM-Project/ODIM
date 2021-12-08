@@ -99,8 +99,8 @@ func mockStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse
 }
 
 func TestGetUpdateService(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a UpdateRPCs
 	a.GetUpdateServiceRPC = testGetUpdateService
 	testApp := iris.New()
@@ -137,8 +137,8 @@ func TestGetFirmwareInventoryCollection(t *testing.T) {
 }
 
 func TestGetSoftwareInventoryCollection(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a UpdateRPCs
 	a.GetSoftwareInventoryCollectionRPC = testGetUpdateService
 	testApp := iris.New()
@@ -157,8 +157,8 @@ func TestGetSoftwareInventoryCollection(t *testing.T) {
 }
 
 func TestGetFirmwareInventory(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a UpdateRPCs
 	a.GetFirmwareInventoryRPC = mockGetInventory
 	mockApp := iris.New()
@@ -173,7 +173,7 @@ func TestGetFirmwareInventory(t *testing.T) {
 
 func TestGetSoftwareInventory(t *testing.T) {
 	header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	defer delete(header, "Allow")
 	var a UpdateRPCs
 	a.GetSoftwareInventoryRPC = mockGetInventory
 	mockApp := iris.New()

@@ -52,7 +52,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized) 
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -66,7 +66,7 @@ func (sys *SystemRPCs) GetSystemsCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -101,7 +101,7 @@ func (sys *SystemRPCs) GetSystem(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -139,16 +139,16 @@ func (sys *SystemRPCs) GetSystemResource(ctx iris.Context) {
 		return
 	}
 
-    storageId := ctx.Params().Get("id2")
-    switch req.URL {
-	case "/redfish/v1/Systems/"+req.RequestParam+"/Bios/Settings":
+	storageID := ctx.Params().Get("id2")
+	switch req.URL {
+	case "/redfish/v1/Systems/" + req.RequestParam + "/Bios/Settings":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
-	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes":
+	case "/redfish/v1/Systems/" + req.RequestParam + "/Storage/" + storageID + "/Volumes":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/Systems/"+req.RequestParam+"/Storage/"+storageId+"/Volumes/"+req.ResourceID:
+	case "/redfish/v1/Systems/" + req.RequestParam + "/Storage/" + storageID + "/Volumes/" + req.ResourceID:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:
-	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))

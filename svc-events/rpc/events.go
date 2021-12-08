@@ -56,7 +56,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 
 	// Fill the response header first
 	resp.Header = map[string]string{
-		"Link":              "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
+		"Link": "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
 	}
 	// Validate the token, if user has Login privelege then proceed.
 	//Else send 401 Unautherised
@@ -205,7 +205,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	// Return 202 accepted
 	resp.StatusCode = http.StatusAccepted
 	resp.Header = map[string]string{
-		"Location":     "/taskmon/" + taskID,
+		"Location": "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted
 	generateTaskRespone(taskID, taskURI, &resp)

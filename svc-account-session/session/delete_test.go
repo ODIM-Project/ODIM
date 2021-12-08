@@ -121,7 +121,7 @@ func TestDeleteSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Body: errArgUnauth.CreateGenericErrorResponse(),
+				Body:          errArgUnauth.CreateGenericErrorResponse(),
 			},
 		},
 		{

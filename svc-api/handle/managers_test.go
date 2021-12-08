@@ -188,7 +188,7 @@ func mockVirtualMediaEjectRequest(req managersproto.ManagerRequest) (*managerspr
 }
 func TestGetManager_ValidManagerID(t *testing.T) {
 	header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	defer delete(header, "Allow")
 	var mgr ManagersRPCs
 	mgr.GetManagersRPC = mockGetManagersRequest
 	mockApp := iris.New()

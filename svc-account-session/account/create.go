@@ -182,8 +182,8 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	resp.StatusMessage = response.Created
 
 	resp.Header = map[string]string{
-		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
-		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName,
+		"Link":     "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
+		"Location": "/redfish/v1/AccountService/Accounts/" + user.UserName,
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)

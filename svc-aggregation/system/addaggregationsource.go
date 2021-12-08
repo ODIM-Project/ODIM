@@ -195,8 +195,8 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		Name:         "Aggregation Source",
 	}
 	resp.Header = map[string]string{
-		"Link":              "<" + aggregationSourceURI + "/>; rel=describedby",
-		"Location":          aggregationSourceURI,
+		"Link":     "<" + aggregationSourceURI + "/>; rel=describedby",
+		"Location": aggregationSourceURI,
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	commonResponse.Message = ""

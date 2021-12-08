@@ -80,7 +80,7 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -109,7 +109,7 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -139,7 +139,7 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -168,7 +168,7 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -192,7 +192,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) 
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		common.SetResponseHeader(ctx, nil)
 		return
@@ -204,7 +204,7 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -232,7 +232,7 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}

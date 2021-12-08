@@ -291,7 +291,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 
 	resp.Header = map[string]string{
-		"Location":     resourceURI,
+		"Location": resourceURI,
 	}
 	log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)

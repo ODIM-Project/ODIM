@@ -66,7 +66,7 @@ func (a *TelemetryRPCs) GetTelemetryService(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -100,7 +100,7 @@ func (a *TelemetryRPCs) GetMetricDefinitionCollection(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -134,7 +134,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinitionCollection(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -168,7 +168,7 @@ func (a *TelemetryRPCs) GetMetricReportCollection(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -202,7 +202,7 @@ func (a *TelemetryRPCs) GetTriggerCollection(ctx iris.Context) {
 		return
 	}
 
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -235,7 +235,7 @@ func (a *TelemetryRPCs) GetMetricDefinition(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -268,7 +268,7 @@ func (a *TelemetryRPCs) GetMetricReportDefinition(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -301,7 +301,7 @@ func (a *TelemetryRPCs) GetMetricReport(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -334,7 +334,7 @@ func (a *TelemetryRPCs) GetTrigger(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

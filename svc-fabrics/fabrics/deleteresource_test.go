@@ -102,7 +102,7 @@ func TestFabrics_DeleteFabricResource(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+					"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 				},
 			},
 		}, {
@@ -194,7 +194,7 @@ func TestFabrics_DeleteFabricResourceWithNoValidSession(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+					"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 				},
 			},
 		},

@@ -204,7 +204,7 @@ func TestFabrics_GetFabricResource(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+					"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 				},
 				Body: map[string]interface{}{
 					"@odata.id": "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
@@ -298,7 +298,7 @@ func TestFabrics_GetFabricResourceWithNoValidSession(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+					"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 				},
 				Body: map[string]interface{}{
 					"@odata.id": "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",

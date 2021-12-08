@@ -115,8 +115,8 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				resp.StatusCode = http.StatusOK
 				resp.StatusMessage = response.Success
 				resp.Header = map[string]string{
-					"Link":              "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
-					"X-Auth-Token":      token,
+					"Link":         "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
+					"X-Auth-Token": token,
 				}
 
 				respBody := asresponse.Session{

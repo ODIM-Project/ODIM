@@ -265,8 +265,8 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	resp.StatusMessage = response.AccountModified
 
 	resp.Header = map[string]string{
-		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
-		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName,
+		"Link":     "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
+		"Location": "/redfish/v1/AccountService/Accounts/" + user.UserName,
 	}
 	if requestUser.RoleID != "" {
 		user.RoleID = requestUser.RoleID

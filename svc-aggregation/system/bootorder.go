@@ -254,7 +254,7 @@ func (e *ExternalInterface) collectAndSetDefaultOrder(taskID, serverURI, reqJSON
 		Message: "Request completed successfully.",
 	}
 	resp.Header = map[string]string{
-		"Location":          serverURI,
+		"Location": serverURI,
 	}
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100

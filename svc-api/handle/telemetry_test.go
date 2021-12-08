@@ -43,8 +43,8 @@ func testTelemetryService(req teleproto.TelemetryRequest) (*teleproto.TelemetryR
 }
 
 func TestGetTelemetryService(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a TelemetryRPCs
 	a.GetTelemetryServiceRPC = testTelemetryService
 	testApp := iris.New()
@@ -81,8 +81,8 @@ func TestGetMetricDefinitionCollection(t *testing.T) {
 }
 
 func TestGetMetricReportDefinitionCollection(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a TelemetryRPCs
 	a.GetMetricReportDefinitionCollectionRPC = testTelemetryService
 	testApp := iris.New()
@@ -102,7 +102,7 @@ func TestGetMetricReportDefinitionCollection(t *testing.T) {
 
 func TestGetMetricReportCollection(t *testing.T) {
 	header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	defer delete(header, "Allow")
 	var a TelemetryRPCs
 	a.GetMetricReportCollectionRPC = testTelemetryService
 	testApp := iris.New()
@@ -139,8 +139,8 @@ func TestGetTriggerCollection(t *testing.T) {
 }
 
 func TestGetMetricDefinition(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a TelemetryRPCs
 	a.GetMetricDefinitionRPC = testTelemetryService
 	testApp := iris.New()
@@ -177,8 +177,8 @@ func TestGetMetricReportDefinition(t *testing.T) {
 }
 
 func TestGetMetricReport(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a TelemetryRPCs
 	a.GetMetricReportRPC = testTelemetryService
 	testApp := iris.New()

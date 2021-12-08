@@ -68,8 +68,8 @@ func mockDeleteRoleRPC(roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, er
 }
 
 func TestRoleRPCs_GetAllRoles(t *testing.T) {
-    header["Allow"] = []string{"GET, POST"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET, POST"}
+	defer delete(header, "Allow")
 	var r RoleRPCs
 	r.GetAllRolesRPC = mockGetAllRolesRPC
 	mockApp := iris.New()
@@ -151,8 +151,8 @@ func TestRoleRPCs_CreateRoleWithRPCError(t *testing.T) {
 }
 
 func TestRoleRPCs_GetRole(t *testing.T) {
-    header["Allow"] = []string{"GET, PATCH, DELETE"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET, PATCH, DELETE"}
+	defer delete(header, "Allow")
 	var r RoleRPCs
 	r.GetRoleRPC = mockGetRoleRPC
 	mockApp := iris.New()

@@ -49,7 +49,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 		log.Printf(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest) 
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -68,7 +68,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -95,7 +95,7 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized) 
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response)
 		return
 	}
@@ -106,7 +106,7 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -131,7 +131,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -139,7 +139,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 	if resp.StatusCode == http.StatusOK {
 		resp.Header["Location"] = ctx.Request().Host + "/redfish/v1/SessionService/Sessions/" + sessionID
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -160,7 +160,7 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -180,7 +180,7 @@ func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError) 
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}

@@ -121,8 +121,8 @@ func (s *ServiceRoot) GetServiceRoot(ctx iris.Context) {
 	serviceRoot := s.getService(services, uuid)
 
 	var headers = map[string]string{
-		"Allow":             "GET",
-		"Link":              "</redfish/v1/SchemaStore/en/ServiceRoot.json/>; rel=describedby",
+		"Allow": "GET",
+		"Link":  "</redfish/v1/SchemaStore/en/ServiceRoot.json/>; rel=describedby",
 	}
 	common.SetResponseHeader(ctx, headers)
 	ctx.JSON(serviceRoot)
@@ -153,7 +153,7 @@ func GetOdata(ctx iris.Context) {
 	}
 	ctx.Gzip(true)
 	var odataheaders = map[string]string{
-		"Allow":             "GET",
+		"Allow": "GET",
 	}
 	common.SetResponseHeader(ctx, odataheaders)
 	ctx.JSON(Odata)
@@ -2839,8 +2839,8 @@ func GetMetadata(ctx iris.Context) {
 	ctx.Gzip(true)
 
 	var headers = map[string]string{
-		"Allow":             "GET",
-		"Content-type":      "application/xml; charset=utf-8",
+		"Allow":        "GET",
+		"Content-type": "application/xml; charset=utf-8",
 	}
 	xmlData, _ := xml.Marshal(Metadata)
 	common.SetResponseHeader(ctx, headers)
@@ -2878,8 +2878,8 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 
 	//Get the Registrystore location
 	var headers = map[string]string{
-		"Allow":             "GET",
-		"Link":              "</redfish/v1/SchemaStore/en/MessageRegistryFileCollection.json/>; rel=describedby",
+		"Allow": "GET",
+		"Link":  "</redfish/v1/SchemaStore/en/MessageRegistryFileCollection.json/>; rel=describedby",
 	}
 	// Get all available file names in the registry store directory in a list
 	registryStore := config.Data.RegistryStorePath
@@ -2963,8 +2963,8 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 		return
 	}
 	var headers = map[string]string{
-		"Allow":             "GET",
-		"Link":              "</redfish/v1/SchemaStore/en/MessageRegistryFile.json/>; rel=describedby",
+		"Allow": "GET",
+		"Link":  "</redfish/v1/SchemaStore/en/MessageRegistryFile.json/>; rel=describedby",
 	}
 	//Get the Registrystore location
 	registryStore := config.Data.RegistryStorePath
@@ -3057,7 +3057,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 		return
 	}
 	var headers = map[string]string{
-		"Allow":             "GET",
+		"Allow": "GET",
 	}
 	//Get the Registrystore location
 
@@ -3129,7 +3129,7 @@ func AsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	case "/redfish/v1/AccountService/Accounts":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/AccountService/Accounts/"+id:
+	case "/redfish/v1/AccountService/Accounts/" + id:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -3149,7 +3149,7 @@ func SsMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	case "/redfish/v1/SessionService/Sessions":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/SessionService/Sessions/"+id:
+	case "/redfish/v1/SessionService/Sessions/" + id:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -3206,10 +3206,10 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 		ctx.ResponseWriter().Header().Set("Allow", "")
 	case "/redfish/v1/Managers/" + systemID + "/LogServices/" + subID + "Actions/LogService.ClearLog":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
-	case "/redfish/v1/Managers/"+systemID+"/VirtualMedia/"+subID+"/Actions/VirtualMedia.EjectMedia":
-	    ctx.ResponseWriter().Header().Set("Allow", "POST")
-	case "/redfish/v1/Managers/"+systemID+"/VirtualMedia/"+subID+"/Actions/VirtualMedia.InsertMedia":
-	    ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Managers/" + systemID + "/VirtualMedia/" + subID + "/Actions/VirtualMedia.EjectMedia":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
+	case "/redfish/v1/Managers/" + systemID + "/VirtualMedia/" + subID + "/Actions/VirtualMedia.InsertMedia":
+		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
@@ -3275,15 +3275,15 @@ func AggMethodNotAllowed(ctx iris.Context) {
 	case "/redfish/v1/AggregationService/Actions/AggregationService.Reset":
 		ctx.ResponseWriter().Header().Set("Allow", "POST")
 	case "/redfish/v1/AggregationService/AggregationSources":
-	    ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/AggregationService/AggregationSources/"+id:
-	    ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/AggregationService/AggregationSources/" + id:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	case "/redfish/v1/AggregationService/ConnectionMethods":
-	    ctx.ResponseWriter().Header().Set("Allow", "GET")
-	case "/redfish/v1/AggregationService/ConnectionMethods/"+id:
-	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	case "/redfish/v1/AggregationService/ConnectionMethods/" + id:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	default:
-	    ctx.ResponseWriter().Header().Set("Allow", "GET")
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
 	}
 	fillMethodNotAllowedErrorResponse(ctx)
 	return

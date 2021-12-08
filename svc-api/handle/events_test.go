@@ -103,8 +103,8 @@ func mockGetEventSubscriptionRPC(req eventsproto.EventRequest) (*eventsproto.Eve
 }
 
 func TestGetEventServiceRPC(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var event EventsRPCs
 	event.GetEventServiceRPC = mockGetEventServiceRPC
 	mockApp := iris.New()

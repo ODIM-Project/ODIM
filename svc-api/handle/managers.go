@@ -61,7 +61,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -94,7 +94,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -131,7 +131,7 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-    ctx.ResponseWriter().Header().Set("Allow", "GET")
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

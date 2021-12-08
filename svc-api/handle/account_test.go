@@ -24,14 +24,14 @@ import (
 )
 
 var header = map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Content-Type":    {"application/json; charset=utf-8"},
-		"X-Content-Type-Options":{"nosniff"},
-	    "Cache-Control":{"no-cache"},
-	    "Transfer-Encoding":{"chunked"},
-	}
+	"Connection":             {"keep-alive"},
+	"Odata-Version":          {"4.0"},
+	"X-Frame-Options":        {"sameorigin"},
+	"Content-Type":           {"application/json; charset=utf-8"},
+	"X-Content-Type-Options": {"nosniff"},
+	"Cache-Control":          {"no-cache"},
+	"Transfer-Encoding":      {"chunked"},
+}
 
 func mockGetAccountServiceRPC(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
@@ -89,7 +89,7 @@ func mockDeleteAccountRPC(req accountproto.DeleteAccountRequest) (*accountproto.
 
 func TestAccountRPCs_GetAccountService(t *testing.T) {
 	header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	defer delete(header, "Allow")
 	var a AccountRPCs
 	a.GetServiceRPC = mockGetAccountServiceRPC
 	mockApp := iris.New()
@@ -150,8 +150,8 @@ func TestAccountRPCs_CreateAccount(t *testing.T) {
 }
 
 func TestAccountRPCs_GetAllAccounts(t *testing.T) {
-    header["Allow"] = []string{"GET, POST"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET, POST"}
+	defer delete(header, "Allow")
 	var a AccountRPCs
 	a.GetAllAccountsRPC = mockGetAllAccountsRPC
 
@@ -172,8 +172,8 @@ func TestAccountRPCs_GetAllAccounts(t *testing.T) {
 }
 
 func TestAccountRPCs_GetAccount(t *testing.T) {
-    header["Allow"] = []string{"GET, PATCH, DELETE"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET, PATCH, DELETE"}
+	defer delete(header, "Allow")
 	var a AccountRPCs
 	a.GetAccountRPC = mockGetAccountRPC
 

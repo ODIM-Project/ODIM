@@ -88,8 +88,8 @@ func mockGetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto
 }
 
 func TestGetSystemsCollection_ValidToken(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var sys SystemRPCs
 	sys.GetSystemsCollectionRPC = mockGetSystemsCollection
 	mockApp := iris.New()

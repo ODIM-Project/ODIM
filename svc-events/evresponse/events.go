@@ -144,7 +144,7 @@ func (r *MutexLock) ReadResponse(subscriptionID string) (response.RPC, []string)
 		// Sucessfully created subscription
 		rpcResponse.StatusCode = int32(resp.StatusCode)
 		rpcResponse.Header = map[string]string{
-			"Location":          "/redfish/v1/EventService/Subscriptions/" + subscriptionID, // TODO make it dynamic
+			"Location": "/redfish/v1/EventService/Subscriptions/" + subscriptionID, // TODO make it dynamic
 		}
 		rpcResponse.Body = resp.Response
 	}

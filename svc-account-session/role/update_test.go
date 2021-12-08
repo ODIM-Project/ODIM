@@ -155,7 +155,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -174,7 +174,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -193,7 +193,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -212,7 +212,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusMethodNotAllowed,
 				StatusMessage: response.GeneralError,
-				Body: errArgGen.CreateGenericErrorResponse(),
+				Body:          errArgGen.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -231,7 +231,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueConflict,
-				Body: errArgGen1.CreateGenericErrorResponse(),
+				Body:          errArgGen1.CreateGenericErrorResponse(),
 			},
 		},
 	}

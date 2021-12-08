@@ -50,8 +50,8 @@ func TestGetSession(t *testing.T) {
 		Name:      "User Session",
 	}
 	successHeader := map[string]string{
-		"Link":              "</redfish/v1/SessionService/Sessions/" + sessionID + "/>; rel=self",
-		"X-Auth-Token":      sessionToken,
+		"Link":         "</redfish/v1/SessionService/Sessions/" + sessionID + "/>; rel=self",
+		"X-Auth-Token": sessionToken,
 	}
 	errArgUnauth := &response.Args{
 		Code:    response.GeneralError,
@@ -236,7 +236,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Body: errArgUnauth2.CreateGenericErrorResponse(),
+				Body:          errArgUnauth2.CreateGenericErrorResponse(),
 			},
 		},
 	}

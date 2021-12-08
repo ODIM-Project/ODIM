@@ -149,8 +149,8 @@ func TestSessionRPCs_GetSessionRPCError(t *testing.T) {
 }
 
 func TestSessionRPCs_GetAllAciveSessions(t *testing.T) {
-    header["Allow"] = []string{"GET, POST"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET, POST"}
+	defer delete(header, "Allow")
 	var s SessionRPCs
 	s.GetAllActiveSessionsRPC = mockGetAllActiveSessionsRPC
 
@@ -177,8 +177,8 @@ func TestSessionRPCs_GetAllAciveSessionsRPCError(t *testing.T) {
 }
 
 func TestSessionRPCs_GetSessionService(t *testing.T) {
-    header["Allow"] = []string{"GET"}
-	defer delete(header,"Allow")
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var s SessionRPCs
 	s.GetSessionServiceRPC = mockGetSessionServiceRPC
 

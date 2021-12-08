@@ -356,7 +356,7 @@ func fillResponse(body []byte, location string, method string, statusCode int32)
 	}
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+		"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 	}
 	if location != "" {
 		resp.Header["Location"] = location
@@ -396,7 +396,7 @@ func getFabricCollection() response.RPC {
 	fabricCollection.Members = members
 	fabricCollection.MembersCount = len(members)
 	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
+		"Allow": `"GET"`,
 	}
 	resp.Body = fabricCollection
 	resp.StatusCode = http.StatusOK

@@ -173,7 +173,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -197,7 +197,7 @@ func TestPluginContact_SetDefaultBootOrder(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body: map[string]interface{}{"MessageId": response.Success},
+				Body:          map[string]interface{}{"MessageId": response.Success},
 			},
 		},
 	}
@@ -326,7 +326,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 		}, {
 			name: "invalid uuid",
@@ -367,7 +367,7 @@ func TestPluginContact_ChangeBiosSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body: map[string]interface{}{"@odata.id": "/redfish/v1/Systems/1/Bios/Settings"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/1/Bios/Settings"},
 			},
 		},
 	}
@@ -527,7 +527,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 		}, {
 			name: "invalid uuid",
@@ -568,7 +568,7 @@ func TestPluginContact_ChangeBootOrderSettings(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body: map[string]interface{}{"@odata.id": "/redfish/v1/Systems/1"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/1"},
 			},
 		},
 	}

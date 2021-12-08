@@ -169,7 +169,7 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Body: errArgUnauth.CreateGenericErrorResponse(),
+				Body:          errArgUnauth.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -182,7 +182,7 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Body: errArgUnauth1.CreateGenericErrorResponse(),
+				Body:          errArgUnauth1.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -195,7 +195,7 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Body: errArg2.CreateGenericErrorResponse(),
+				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 		},
 	}

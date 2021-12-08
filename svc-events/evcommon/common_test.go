@@ -384,7 +384,7 @@ func TestGenErrorResponse(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.ResourceNotFound,
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 	}

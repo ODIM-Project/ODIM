@@ -171,10 +171,10 @@ func mockTargetandPlugin(t *testing.T) error {
 		}
 	}
 	var reqData = `{"@odata.id":"/redfish/v1/Systems/1"}`
-	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da:1")
-	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/d72dade0-c35a-984c-4859-1108132d72da:1")
-	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c:1")
+	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1")
+	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/d72dade0-c35a-984c-4859-1108132d72da.1")
+	mockSystemResourceData([]byte(reqData), "ComputerSystem", "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c.1")
 	return nil
 }
 
@@ -448,7 +448,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 	// positive test case
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
-		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 	resp := pc.DeleteEventSubscriptions(req)
 	assert.Equal(t, http.StatusNoContent, int(resp.StatusCode), "Status Code should be StatusNoContent")
@@ -465,7 +465,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 	// if UUID is is not present in DB
 	req1 = &eventsproto.EventRequest{
 		SessionToken: "validToken",
-		UUID:         "/redfish/v1/Systems/de018110-4859-984c-c35a-0a32d772d6c5:1",
+		UUID:         "/redfish/v1/Systems/de018110-4859-984c-c35a-0a32d772d6c5.1",
 	}
 
 	resp = pc.DeleteEventSubscriptions(req1)
@@ -474,7 +474,7 @@ func TestDeleteEventSubscriptionOnDeletServer(t *testing.T) {
 	//storeTestEventDetails(t)
 	req = &eventsproto.EventRequest{
 		SessionToken: "validToken",
-		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 	resp = pc.DeleteEventSubscriptions(req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")

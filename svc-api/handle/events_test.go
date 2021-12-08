@@ -148,7 +148,7 @@ func TestCreateEventSubscriptionRPC(t *testing.T) {
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
 		"OriginResources": []string{
-			"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1",
+			"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1",
 		},
 	}
 	e := httptest.New(t, mockApp)
@@ -194,7 +194,7 @@ func TestSubmitTestEventRPC(t *testing.T) {
 		"Message":           "Test Message",
 		"MessageArgs":       []string{},
 		"MessageId":         "MessageId.123",
-		"OriginOfCondition": "/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1",
+		"OriginOfCondition": "/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1",
 		"Severity":          "Critical",
 	}
 	e := httptest.New(t, mockApp)

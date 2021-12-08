@@ -59,7 +59,7 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 		}
 	}()
 	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/1/Power\"`)
-	err := mockResourceData(reqData, "Power", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power")
+	err := mockResourceData(reqData, "Power", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -81,8 +81,8 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			cha:  cha,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 					SessionToken: "validToken",
 				},
 				resp: &chassisproto.GetChassisResponse{},
@@ -93,8 +93,8 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			cha:  cha,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 					SessionToken: "invalidToken",
 				},
 				resp: &chassisproto.GetChassisResponse{},
@@ -105,8 +105,8 @@ func TestChassisRPC_GetChassisResource(t *testing.T) {
 			cha:  cha,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power1",
 					SessionToken: "validToken",
 				},
 				resp: &chassisproto.GetChassisResponse{},
@@ -188,8 +188,8 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1\"`)
-	err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
+	err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -215,7 +215,7 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 			cha:  cha,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &chassisproto.GetChassisResponse{},
@@ -226,7 +226,7 @@ func TestChassis_GetResourceInfo(t *testing.T) {
 			cha:  cha,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &chassisproto.GetChassisResponse{},

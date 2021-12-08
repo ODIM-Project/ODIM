@@ -133,6 +133,11 @@ data:
     		"UpdateService",
     		"TelemetryService"
     	],
-        "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
-    	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"]
+      "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
+    	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],
+      "EventConf": {
+                 "DeliveryRetryAttempts" : 3,
+                 "DeliveryRetryIntervalSeconds" : 60,
+                 "RetentionOfUndeliveredEventsInMinutes" : 10
+      }
     }

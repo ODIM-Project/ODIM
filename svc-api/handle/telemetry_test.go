@@ -43,6 +43,8 @@ func testTelemetryService(req teleproto.TelemetryRequest) (*teleproto.TelemetryR
 }
 
 func TestGetTelemetryService(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a TelemetryRPCs
 	a.GetTelemetryServiceRPC = testTelemetryService
 	testApp := iris.New()
@@ -51,7 +53,7 @@ func TestGetTelemetryService(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/TelemetryService",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/TelemetryService",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -75,10 +77,12 @@ func TestGetMetricDefinitionCollection(t *testing.T) {
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricDefinitions",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestGetMetricReportDefinitionCollection(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a TelemetryRPCs
 	a.GetMetricReportDefinitionCollectionRPC = testTelemetryService
 	testApp := iris.New()
@@ -87,7 +91,7 @@ func TestGetMetricReportDefinitionCollection(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricReportDefinitions",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricReportDefinitions",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -97,6 +101,8 @@ func TestGetMetricReportDefinitionCollection(t *testing.T) {
 }
 
 func TestGetMetricReportCollection(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a TelemetryRPCs
 	a.GetMetricReportCollectionRPC = testTelemetryService
 	testApp := iris.New()
@@ -105,7 +111,7 @@ func TestGetMetricReportCollection(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricReports",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricReports",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -133,6 +139,8 @@ func TestGetTriggerCollection(t *testing.T) {
 }
 
 func TestGetMetricDefinition(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a TelemetryRPCs
 	a.GetMetricDefinitionRPC = testTelemetryService
 	testApp := iris.New()
@@ -141,7 +149,7 @@ func TestGetMetricDefinition(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricDefinitions/1",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricDefinitions/1",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -169,6 +177,8 @@ func TestGetMetricReportDefinition(t *testing.T) {
 }
 
 func TestGetMetricReport(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a TelemetryRPCs
 	a.GetMetricReportRPC = testTelemetryService
 	testApp := iris.New()
@@ -177,7 +187,7 @@ func TestGetMetricReport(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricReports/1",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/TelemetryService/MetricReports/1",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -213,7 +223,7 @@ func TestUpdateTrigger(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.PATCH(
 		"/redfish/v1/TelemetryService/Triggers/1",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.PATCH(
 		"/redfish/v1/TelemetryService/Triggers/1",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)

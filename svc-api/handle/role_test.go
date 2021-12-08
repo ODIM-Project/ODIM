@@ -68,6 +68,8 @@ func mockDeleteRoleRPC(roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, er
 }
 
 func TestRoleRPCs_GetAllRoles(t *testing.T) {
+    header["Allow"] = []string{"GET, POST"}
+	defer delete(header,"Allow")
 	var r RoleRPCs
 	r.GetAllRolesRPC = mockGetAllRolesRPC
 	mockApp := iris.New()
@@ -77,7 +79,7 @@ func TestRoleRPCs_GetAllRoles(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestRoleRPCs_GetAllRolesWithRPCError(t *testing.T) {
@@ -90,7 +92,7 @@ func TestRoleRPCs_GetAllRolesWithRPCError(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestRoleRPCs_GetAllRolesWithoutToken(t *testing.T) {
@@ -103,7 +105,7 @@ func TestRoleRPCs_GetAllRolesWithoutToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService/Roles",
-	).Expect().Status(http.StatusUnauthorized)
+	).Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 }
 
 func TestRoleRPCs_CreateRole(t *testing.T) {
@@ -121,7 +123,7 @@ func TestRoleRPCs_CreateRole(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").WithJSON(body).Expect().Status(http.StatusCreated)
+	).WithHeader("X-Auth-Token", "token").WithJSON(body).Expect().Status(http.StatusCreated).Headers().Equal(header)
 	e.POST(
 		"/redfish/v1/AccountService/Roles",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusBadRequest)
@@ -149,6 +151,8 @@ func TestRoleRPCs_CreateRoleWithRPCError(t *testing.T) {
 }
 
 func TestRoleRPCs_GetRole(t *testing.T) {
+    header["Allow"] = []string{"GET, PATCH, DELETE"}
+	defer delete(header,"Allow")
 	var r RoleRPCs
 	r.GetRoleRPC = mockGetRoleRPC
 	mockApp := iris.New()
@@ -158,7 +162,7 @@ func TestRoleRPCs_GetRole(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService/Roles/someID",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestRoleRPCs_GetRoleWithRPCError(t *testing.T) {
@@ -200,7 +204,7 @@ func TestRoleRPCs_UpdateRole(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.PATCH(
 		"/redfish/v1/AccountService/Roles/someID",
-	).WithHeader("X-Auth-Token", "token").WithJSON(body).Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").WithJSON(body).Expect().Status(http.StatusOK).Headers().Equal(header)
 	e.PATCH(
 		"/redfish/v1/AccountService/Roles/someID",
 	).Expect().Status(http.StatusBadRequest)
@@ -239,7 +243,7 @@ func TestDeleteRole(t *testing.T) {
 	// rpc call with proper details
 	e.DELETE(
 		"/redfish/v1/Role/SomeID",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 
 	//rpc call with invalid session token
 	e.DELETE(

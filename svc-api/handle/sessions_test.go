@@ -90,7 +90,7 @@ func TestSessionRPCs_CreateSessionRPCError(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/SessionService/Sessions",
-	).WithJSON(map[string]string{"admin": "Password"}).Expect().Status(http.StatusInternalServerError)
+	).WithJSON(map[string]string{"admin": "Password"}).Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestSessionRPCs_DeleteSession(t *testing.T) {
@@ -103,7 +103,7 @@ func TestSessionRPCs_DeleteSession(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.DELETE(
 		"/redfish/v1/SessionService/Sessions/123",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 	e.DELETE(
 		"/redfish/v1/SessionService/Sessions/123",
 	).Expect().Status(http.StatusUnauthorized)
@@ -149,6 +149,8 @@ func TestSessionRPCs_GetSessionRPCError(t *testing.T) {
 }
 
 func TestSessionRPCs_GetAllAciveSessions(t *testing.T) {
+    header["Allow"] = []string{"GET, POST"}
+	defer delete(header,"Allow")
 	var s SessionRPCs
 	s.GetAllActiveSessionsRPC = mockGetAllActiveSessionsRPC
 
@@ -158,7 +160,7 @@ func TestSessionRPCs_GetAllAciveSessions(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/SessionService/Sessions",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestSessionRPCs_GetAllAciveSessionsRPCError(t *testing.T) {
@@ -175,6 +177,8 @@ func TestSessionRPCs_GetAllAciveSessionsRPCError(t *testing.T) {
 }
 
 func TestSessionRPCs_GetSessionService(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var s SessionRPCs
 	s.GetSessionServiceRPC = mockGetSessionServiceRPC
 
@@ -184,7 +188,7 @@ func TestSessionRPCs_GetSessionService(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/SessionService",
-	).Expect().Status(http.StatusOK)
+	).Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestSessionRPCs_GetSessionServiceRPCError(t *testing.T) {

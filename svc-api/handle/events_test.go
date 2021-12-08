@@ -103,6 +103,8 @@ func mockGetEventSubscriptionRPC(req eventsproto.EventRequest) (*eventsproto.Eve
 }
 
 func TestGetEventServiceRPC(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var event EventsRPCs
 	event.GetEventServiceRPC = mockGetEventServiceRPC
 	mockApp := iris.New()
@@ -112,7 +114,7 @@ func TestGetEventServiceRPC(t *testing.T) {
 	// test with valid token
 	e.GET(
 		"/redfish/v1/EventService",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 
 	// test with Invalid token
 	e.GET(
@@ -155,12 +157,12 @@ func TestCreateEventSubscriptionRPC(t *testing.T) {
 	// test with valid token
 	e.POST(
 		"/redfish/v1/EventService/Subscriptions",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(body).Expect().Status(http.StatusCreated)
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(body).Expect().Status(http.StatusCreated).Headers().Equal(header)
 
 	// test with Invalid token
 	e.POST(
 		"/redfish/v1/EventService/Subscriptions",
-	).WithHeader("X-Auth-Token", "InValidToken").WithJSON(body).Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "InValidToken").WithJSON(body).Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 
 	// test without token
 	e.POST(
@@ -201,7 +203,7 @@ func TestSubmitTestEventRPC(t *testing.T) {
 	// test with valid token
 	e.POST(
 		"/redfish/v1/EventService/Actions/EventService.SubmitTestEvent",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(body).Expect().Status(http.StatusCreated)
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(body).Expect().Status(http.StatusCreated).Headers().Equal(header)
 
 	// test with Invalid token
 	e.POST(
@@ -236,7 +238,7 @@ func TestDeleteEventSubscriptionRPC(t *testing.T) {
 	// test with valid token
 	e.DELETE(
 		"/redfish/v1/EventService/Subscriptions/1A",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 
 	// test with invalid token
 	e.DELETE(

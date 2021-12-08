@@ -99,6 +99,8 @@ func mockStartUpdate(req updateproto.UpdateRequest) (*updateproto.UpdateResponse
 }
 
 func TestGetUpdateService(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a UpdateRPCs
 	a.GetUpdateServiceRPC = testGetUpdateService
 	testApp := iris.New()
@@ -107,7 +109,7 @@ func TestGetUpdateService(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/UpdateService",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/UpdateService",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -131,10 +133,12 @@ func TestGetFirmwareInventoryCollection(t *testing.T) {
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	test.GET(
 		"/redfish/v1/UpdateService/FirmwareInventory",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestGetSoftwareInventoryCollection(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a UpdateRPCs
 	a.GetSoftwareInventoryCollectionRPC = testGetUpdateService
 	testApp := iris.New()
@@ -143,7 +147,7 @@ func TestGetSoftwareInventoryCollection(t *testing.T) {
 	test := httptest.New(t, testApp)
 	test.GET(
 		"/redfish/v1/UpdateService/SoftwareInventory",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/UpdateService/SoftwareInventory",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -153,6 +157,8 @@ func TestGetSoftwareInventoryCollection(t *testing.T) {
 }
 
 func TestGetFirmwareInventory(t *testing.T) {
+    header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a UpdateRPCs
 	a.GetFirmwareInventoryRPC = mockGetInventory
 	mockApp := iris.New()
@@ -162,10 +168,12 @@ func TestGetFirmwareInventory(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/UpdateService/FirmwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestGetSoftwareInventory(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var a UpdateRPCs
 	a.GetSoftwareInventoryRPC = mockGetInventory
 	mockApp := iris.New()
@@ -175,7 +183,7 @@ func TestGetSoftwareInventory(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/UpdateService/SoftwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestSimpleUpdateWithValidToken(t *testing.T) {
@@ -214,7 +222,7 @@ func TestSimpleUpdateWithInvalidToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestSimpleUpdateNegativeTestCases(t *testing.T) {
@@ -231,7 +239,7 @@ func TestStartUpdateWithValidToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestStartUpdateWithoutToken(t *testing.T) {
@@ -244,7 +252,7 @@ func TestStartUpdateWithoutToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestStartUpdateWithInvalidToken(t *testing.T) {

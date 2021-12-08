@@ -187,6 +187,8 @@ func mockVirtualMediaEjectRequest(req managersproto.ManagerRequest) (*managerspr
 	return response, nil
 }
 func TestGetManager_ValidManagerID(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header,"Allow")
 	var mgr ManagersRPCs
 	mgr.GetManagersRPC = mockGetManagersRequest
 	mockApp := iris.New()
@@ -195,7 +197,7 @@ func TestGetManager_ValidManagerID(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Managers/1A",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestGetManager_InvalidManagerID(t *testing.T) {
@@ -304,7 +306,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusOK)
 	test.POST(
 		"/redfish/v1/Managers/1A/VirtualMedia/1B/VirtualMedia.InsertMedia",
-	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 	test.POST(
 		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.InsertMedia",
 	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusForbidden)
@@ -313,7 +315,7 @@ func TestVirtualMediaInsert(t *testing.T) {
 	).WithHeader("X-Auth-Token", "").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusUnauthorized)
 	test.POST(
 		"/redfish/v1/Managers/3A/VirtualMedia/1B/VirtualMedia.InsertMedia",
-	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(map[string]string{"Image": "Body"}).Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestVirtualMediaEject(t *testing.T) {
@@ -332,10 +334,10 @@ func TestVirtualMediaEject(t *testing.T) {
 	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
 	test.POST(
 		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.EjectMedia",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusForbidden)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusForbidden).Headers().Equal(header)
 	test.POST(
 		"/redfish/v1/Managers/2A/VirtualMedia/1B/VirtualMedia.EjectMedia",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 	test.POST(
 		"/redfish/v1/Managers/3A/VirtualMedia/1B/VirtualMedia.EjectMedia",
 	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusInternalServerError)

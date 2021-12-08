@@ -142,6 +142,8 @@ func mockGetTaskMonitor(req *taskproto.GetTaskRequest) (*taskproto.TaskResponse,
 }
 
 func TestGetTaskStatus_ValidTaskID(t *testing.T) {
+    header["Allow"] = []string{"GET, DELETE"}
+	defer delete(header,"Allow")
 	var task TaskRPCs
 	task.GetTaskRPC = mockGetTaskStatus
 	mockApp := iris.New()
@@ -165,7 +167,7 @@ func TestGetTaskStatus_InvalidTaskID(t *testing.T) {
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusForbidden)
 	test.GET(
 		"/redfish/v1/TaskService/Tasks/3A",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestGetTaskStatus_InvalidToken(t *testing.T) {
@@ -267,8 +269,8 @@ func TestDeleteTask_ValidToken(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.DELETE(
 		"/redfish/v1/TaskService/Tasks/1A",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.DELETE(
 		"/redfish/v1/TaskService/Tasks/3A",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }

@@ -13,3 +13,4 @@ grfplugin:
   eventHost: grfplugin
   lbHost:
   lbPort:
+  messageBusType: Kafka

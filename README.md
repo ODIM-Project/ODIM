@@ -467,7 +467,7 @@ The following table lists the software components and their versions that are co
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
     | dellplugin            | 1.0         | dellplugin.tar               |
-    | urplugin              | 1.0         | urplugin.tar                 |
+    | urplugin              | 2.0         | urplugin.tar                 |
     | grfplugin             | 1.0         | grfplugin.tar                |
     | telemetry             | 1.0         | telemetry.tar                |
     

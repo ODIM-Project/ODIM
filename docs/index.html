@@ -1623,7 +1623,7 @@ Transfer-Encoding:chunked
     "Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
     "Name": "Session Service",
     "Message": "The resource has been created successfully",
-    "MessageId": "Base.1.10.0.Created",
+    "MessageId": "Base.1.11.0.Created",
     "Severity": "OK",
     "UserName": "abc"
 }
@@ -2367,7 +2367,7 @@ Transfer-Encoding:chunked
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.10.0.Created",
+   "MessageId":"Base.1.11.0.Created",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -2553,7 +2553,7 @@ Transfer-Encoding:chunked
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.10.0.AccountModified",
+   "MessageId":"Base.1.11.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -2869,7 +2869,7 @@ Content-Length:491 bytes
 <p>Sample response body (HTTP 200 status)</p>
 </blockquote>
 <pre class="highlight plaintext"><code>{
-   "code":"Base.1.10.0.Success",
+   "code":"Base.1.11.0.Success",
    "message":"Request completed successfully."
 } 
 </code></pre><h2 id='adding-a-server'>Adding a server</h2><pre class="highlight plaintext"><code>curl -i POST \
@@ -3007,7 +3007,7 @@ Content-Length:73 bytes
 <p>Sample response body (HTTP 200 status)</p>
 </blockquote>
 <pre class="highlight plaintext"><code>{
-   "code":"Base.1.10.0.Success",
+   "code":"Base.1.11.0.Success",
    "message":"Request completed successfully."
 }
 </code></pre><h2 id='resetting-servers'>Resetting servers</h2><pre class="highlight plaintext"><code>curl -i POST \
@@ -3215,7 +3215,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -3240,7 +3240,7 @@ Content-Length:491 bytes
 </blockquote>
 <pre class="highlight plaintext"><code>{ 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3371,7 +3371,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -3396,7 +3396,7 @@ Content-Length:491 bytes
 </blockquote>
 <pre class="highlight plaintext"><code>{ 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -5235,7 +5235,7 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
 </tr>
 <tr>
 <td><strong>Returns</strong></td>
-<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id. Example registry file name: Base.1.4). See <a href="#message-registries">Message Registries</a>.</td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id. Example registry file name: Base.1.11). See <a href="#message-registries">Message Registries</a>.</td>
 </tr>
 <tr>
 <td><strong>Response code</strong></td>
@@ -5262,7 +5262,7 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
 <pre class="highlight plaintext"><code>{
     "error": {
         "@Message.ExtendedInfo": [{
-            "MessageId": "Base.1.4.Success"
+            "MessageId": "Base.1.11.Success"
         }],
         "code": "iLO.0.10.ExtendedInfo",
         "message": "See @Message.ExtendedInfo for more information."
@@ -5282,7 +5282,7 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
 <pre class="highlight plaintext"><code>{
     "error": {
         "@Message.ExtendedInfo": [{
-            "MessageId": "Base.1.4.Success"
+            "MessageId": "Base.1.11.Success"
         }],
         "code": "iLO.0.10.ExtendedInfo",
         "message": "See @Message.ExtendedInfo for more information."
@@ -5309,7 +5309,7 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
 </tr>
 <tr>
 <td><strong>Returns</strong></td>
-<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id. Example registry file name: Base.1.4). See <a href="#message-registries">Message Registries</a>.</td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id. Example registry file name: Base.1.11). See <a href="#message-registries">Message Registries</a>.</td>
 </tr>
 <tr>
 <td><strong>Response code</strong></td>
@@ -5430,7 +5430,7 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
 </tr>
 <tr>
 <td><strong>Returns</strong></td>
-<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id). See <a href="#message-registries">Message Registries</a>. For example,<code>MessageId</code> in the sample response body is <code>Base.1.10.0.Success</code>. The registry to look up is <code>Base.1.10.0</code>.<br></td>
+<td>Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file (registry file name can be obtained by concatenating <code>RegistryPrefix</code> and version number present in the Message Id). See <a href="#message-registries">Message Registries</a>. For example,<code>MessageId</code> in the sample response body is <code>Base.1.11.0.Success</code>. The registry to look up is <code>Base.1.11.0</code>.<br></td>
 </tr>
 <tr>
 <td><strong>Response code</strong></td>
@@ -5512,7 +5512,7 @@ To access Redfish `Systems` and `Chassis` endpoints, ensure that you have a mini
    "error":{ 
       "@Message.ExtendedInfo":[ 
          { 
-            "MessageId":"Base.1.10.0.Success"
+            "MessageId":"Base.1.11.0.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",
@@ -8144,7 +8144,7 @@ Transfer-Encoding":chunked
       },
       "HttpOperation":"POST",
       "JsonBody":{
-         "code":"Base.1.10.0.Success",
+         "code":"Base.1.11.0.Success",
          "message":"Request completed successfully."
       },
       "TargetUri":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1"
@@ -8240,7 +8240,7 @@ Content-Length:491 bytes
 <p>Sample response body (completed task)</p>
 </blockquote>
 <pre class="highlight plaintext"><code>{
-"code": "Base.1.10.0.Success",
+"code": "Base.1.11.0.Success",
 "message": "Request completed successfully."
 }
 </code></pre>
@@ -8249,7 +8249,7 @@ Content-Length:491 bytes
 </blockquote>
 <pre class="highlight plaintext"><code>{ 
    "error":{ 
-      "code":"Base.1.10.0.GeneralError",
+      "code":"Base.1.11.0.GeneralError",
       "message":"one or more of the reset actions failed, check sub tasks for more info."
    }
 </code></pre>
@@ -8319,7 +8319,7 @@ Content-Length:491 bytes
       },
       "HttpOperation":"POST",
       "JsonBody":{
-         "code":"Base.1.10.0.Success",
+         "code":"Base.1.11.0.Success",
          "message":"Request completed successfully."
       },
       "TargetUri":"/redfish/v1/AggregationService/Actions/AggregationService.Add"
@@ -8891,7 +8891,7 @@ Transfer-Encoding:chunked
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -8918,7 +8918,7 @@ Transfer-Encoding:chunked
    "error":{
       "@Message.ExtendedInfo":[
          {
-            "MessageId":"Base.1.4.Created"
+            "MessageId":"Base.1.11.Created"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",
@@ -9603,9 +9603,9 @@ To access Redfish message registries, ensure that you have a minimum privilege o
 <p>Sample response body</p>
 </blockquote>
 <pre class="highlight plaintext"><code>{
-   "Id":"Base.1.6.1",
+   "Id":"Base.1.11.0",
    "@odata.context":"/redfish/v1/https://10.24.1.95:45000/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile",
-   "@odata.id":"/redfish/v1/Registries/Base.1.6.1",
+   "@odata.id":"/redfish/v1/Registries/Base.1.11.0",
    "@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile",
    "Name":"Registry File Repository",
    "Description":"Base Message Registry File Locations",
@@ -9615,10 +9615,10 @@ To access Redfish message registries, ensure that you have a minimum privilege o
    "Location":[
       {
          "Language":"en",
-         "Uri":"/redfish/v1/registries/Base.1.10.0.json"
+         "Uri":"/redfish/v1/registries/Base.1.11.0.json"
       }
    ],
-   "Registry":"Base.1.6.1"
+   "Registry":"Base.1.11.0"
 }
 </code></pre>
 <table><thead>

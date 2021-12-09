@@ -1250,7 +1250,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
       ```
-     docker save urplugin:1.0 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:2.0 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.

@@ -2403,7 +2403,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
 |**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:**<br> To reset an aggregate of systems, use this URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.11\). See [Message Registries](#message-registries).|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -2445,7 +2445,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 {
 	"error": {
 		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.4.Success"
+			"MessageId": "Base.1.11.Success"
 		}],
 		"code": "iLO.0.10.ExtendedInfo",
 		"message": "See @Message.ExtendedInfo for more information."
@@ -2462,7 +2462,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder` |
 |**Description** |This action changes the boot order of a specific system to default settings.<br>**NOTE:**<br> To change the boot order of an aggregate of systems, use this URI:<br> `/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` <br> See [Changing the Boot Order of Servers to Default Settings](#changing-the-boot-order-of-servers-to-default-settings).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.11\). See [Message Registries](#message-registries).|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -2484,7 +2484,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 {
 	"error": {
 		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.4.Success"
+			"MessageId": "Base.1.11.Success"
 		}],
 		"code": "iLO.0.10.ExtendedInfo",
 		"message": "See @Message.ExtendedInfo for more information."
@@ -2574,7 +2574,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot order settings of a specific system.|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.10.0.Success`. The registry to look up is `Base.1.10.0`.<br> |
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.11.0.Success`. The registry to look up is `Base.1.11.0`.<br> |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -2677,7 +2677,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
    "error":{ 
       "@Message.ExtendedInfo":[ 
          { 
-            "MessageId":"Base.1.10.0.Success"
+            "MessageId":"Base.1.11.0.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

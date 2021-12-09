@@ -414,7 +414,7 @@ Transfer-Encoding:chunked
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -442,7 +442,7 @@ Transfer-Encoding:chunked
    "error":{
       "@Message.ExtendedInfo":[
          {
-            "MessageId":"Base.1.4.Created"
+            "MessageId":"Base.1.11.Created"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

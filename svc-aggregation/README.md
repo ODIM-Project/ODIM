@@ -869,7 +869,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -895,7 +895,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1014,7 +1014,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1040,7 +1040,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1201,7 +1201,7 @@ Transfer-Encoding:chunked
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.10.0.Created",
+      "MessageId":"Base.1.11.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1242,7 +1242,7 @@ curl -i GET \
       "Id":"Aggregate",
       "Name":"Aggregate",
       "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.10.0.Success",
+      "MessageId":"Base.1.11.0.Success",
       "Severity":"OK",
       "Members@odata.count":1,
       "Members":[
@@ -1285,7 +1285,7 @@ curl -i GET \
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "Name":"Aggregate",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Elements":[
       "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1373,7 +1373,7 @@ curl -i POST \
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.10.0.Created",
+      "MessageId":"Base.1.11.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1483,7 +1483,7 @@ Content-Length:491 bytes
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1509,7 +1509,7 @@ Content-Length:491 bytes
 ```
  {
    "error":{
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1594,7 +1594,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1620,7 +1620,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }

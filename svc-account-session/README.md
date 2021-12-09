@@ -161,7 +161,7 @@ Transfer-Encoding:chunked
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
 	"Message": "The resource has been created successfully",
-	"MessageId": "Base.1.10.0.Created",
+	"MessageId": "Base.1.11.0.Created",
 	"Severity": "OK",
 	"UserName": "abc"
 }

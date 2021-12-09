@@ -397,7 +397,7 @@ Content-Length:491 bytes
    "error":{
       "@Message.ExtendedInfo":[
          {
-            "MessageId":"Base.1.4.Success"
+            "MessageId":"Base.1.11.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",
@@ -473,7 +473,7 @@ Content-Length:491 bytes
    "error":{
       "@Message.ExtendedInfo":[
          {
-            "MessageId":"Base.1.4.Success"
+            "MessageId":"Base.1.11.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

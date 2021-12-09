@@ -40,6 +40,7 @@ odim_svc_helmcharts:
    task: task-2.0.0
    update: update-2.0.0
    telemetry: telemetry-1.0.0
+   csplugin: csplugin-0.1.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation
@@ -57,6 +58,7 @@ odim_docker_images:
    redis: redis
    stakater_reloader: stakater/reloader
    busybox: busybox
+   csplugin: csplugin
 kubernetes_images:
    calico/cni: calico_cni
    calico/kube-controllers: calico_kube-controllers

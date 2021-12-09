@@ -21,180 +21,21 @@
 package events
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
-	if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
-		if method == http.MethodDelete {
-			body := `{"MessageId": "` + response.Success + `"}`
-			response := &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-			}
-			return response, nil
-		}
-		b := body.(*evmodel.Target)
-		if b.DeviceUUID == "d72dade0-c35a-984c-4859-1108132d72da" {
-			body := `{"MessageId": "` + response.Failure + `"}`
-			return &http.Response{
-				StatusCode: http.StatusBadRequest,
-				Header: map[string][]string{
-					"location": {"/ODIM/v1/Subscriptions/12"},
-				},
-				Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-			}, nil
-		}
-		body := `{"MessageId": "` + response.Success + `"}`
-		response := &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"location": {"/ODIM/v1/Subscriptions/12"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		response.Header.Set("location", "/ODIM/v1/Subscriptions/12")
-		return response, nil
-	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		response := &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"location": {"https://localhost:1234/ODIM/v1/Subscriptions/12"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		response.Header.Set("location", "/ODIM/v1/Subscriptions/12")
-		return response, nil
-	} else if url == "https://localhost:1234/ODIM/v1/Sessions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-
-		r := &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"X-Auth-Token": {"token"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		return r, nil
-	} else if url == "https://10.24.1.23:4321/ODIM/v1/Sessions" || url == "https://10.4.1.6:4321/ODIM/v1/Sessions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-
-		r := &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"X-Auth-Token": {"token"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		return r, nil
-	} else if url == "https://10.24.1.23:4321/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "` + response.Failure + `"}`
-		return &http.Response{
-			StatusCode: http.StatusUnauthorized,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://10.4.1.5:1234/ODIM/v1/Subscriptions/123" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		response := &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		return response, nil
-	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions/12345" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		response := &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		return response, nil
-	} else if url == "https://10.4.1.6:4321/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		response := &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"location": {"/ODIM/v1/Subscriptions/12345"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		response.Header.Set("location", "/ODIM/v1/Subscriptions/12345")
-		return response, nil
-	} else if url == "https://10.4.1.6:4321/ODIM/v1/Subscriptions/12345" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		response := &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		return response, nil
-	}
-
-	return nil, fmt.Errorf("InvalidRequest")
-}
-
-func mockCreateChildTask(sessionID, taskid string) (string, error) {
-	return "123456", nil
-}
-
-func mockUpdateTask(task common.TaskData) error {
-	return nil
-}
-
-type fabric struct {
-	FabricUUID string
-	PluginID   string
-}
-
-func mockFabricData(t *testing.T, fabuuid, pluginID string) {
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		t.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-
-	fab := &fabric{
-		FabricUUID: fabuuid,
-		PluginID:   pluginID,
-	}
-	const table string = "Fabric"
-	//Save data into Database
-	if err = connPool.Create(table, fabuuid, fab); err != nil {
-		t.Errorf("error while trying to create: %v", err.Error())
-	}
-}
-
 // Positive test cases
 func TestCreateEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	mockTargetandPlugin(t)
-
-	p := &PluginContact{
-		ContactClient:   mockContactClient,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-	}
+	p := getMockMethods()
 	taskID := "123"
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
@@ -221,8 +62,8 @@ func TestCreateEventSubscription(t *testing.T) {
 	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
-	// test with different event Types and same destinations
-	SubscriptionReq["EventTypes"] = []string{"Alert", "StatusChange"}
+	// try to subscrie with already subscribed destinations
+	SubscriptionReq["Destination"] = "https://10.24.1.15:9090/events"
 
 	postBody, _ = json.Marshal(&SubscriptionReq)
 
@@ -232,18 +73,6 @@ func TestCreateEventSubscription(t *testing.T) {
 	}
 	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusConflict, int(resp.StatusCode), "Status Code should be StatusCreated")
-
-	// test with same event Types
-	SubscriptionReq["EventTypes"] = []string{"Alert", "StatusChange"}
-
-	postBody, _ = json.Marshal(&SubscriptionReq)
-
-	req = &eventsproto.EventSubRequest{
-		SessionToken: "token",
-		PostBody:     postBody,
-	}
-	resp = p.CreateEventSubscription(taskID, sessionUserName, req)
-	assert.Equal(t, http.StatusConflict, int(resp.StatusCode), "Status Code should be StatusConflict")
 
 	// test with different Destinations
 	SubscriptionReq["Destination"] = "https://10.24.1.25:8070/Destination2"
@@ -287,24 +116,7 @@ func TestCreateEventSubscription(t *testing.T) {
 
 func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	mockTargetandPlugin(t)
-
-	p := &PluginContact{
-		ContactClient:   mockContactClient,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-	}
+	p := getMockMethods()
 	taskID := "123"
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
@@ -332,31 +144,12 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 	resp := p.CreateEventSubscription(taskID, sessionUserName, req)
 	assert.Equal(t, http.StatusCreated, int(resp.StatusCode), "Status Code should be StatusCreated")
 
-	_, err := evmodel.GetDeviceSubscriptions("*")
-	assert.Nil(t, err, "Error should be nil")
 }
 
 // Negative test cases
 func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	mockTargetandPlugin(t)
-
-	p := &PluginContact{
-		ContactClient:   mockContactClient,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-	}
+	p := getMockMethods()
 	taskID := "123"
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
@@ -507,23 +300,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 
 func TestCreateDefaultEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	mockTargetandPlugin(t)
-	p := &PluginContact{
-		ContactClient:   mockContactClient,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-	}
+	p := getMockMethods()
 	taskID := "123"
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
@@ -565,25 +342,7 @@ func TestFabricEventSubscription(t *testing.T) {
 		config.SetUpMockConfig(t)
 	}
 
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	fabuuid := "6d4a0a66-7efa-578e-83cf-44dc68d2874e"
-	mockFabricData(t, fabuuid, "CFM")
-	mockTargetandPlugin(t)
-
-	p := &PluginContact{
-		ContactClient:   mockContactClient,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-	}
+	p := getMockMethods()
 	taskID := "123"
 	sessionUserName := "admin"
 	SubscriptionReq := map[string]interface{}{
@@ -625,16 +384,11 @@ func TestFabricEventSubscription(t *testing.T) {
 	resp = p.CreateEventSubscription(taskID, sessionUserName, req1)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
-	fabuuid = "11081de0-4859-984c-c35a-6c50732d72da"
-	mockFabricData(t, fabuuid, "CFM1")
 	// Invalid Plugin ID
 	resp = p.CreateEventSubscription(taskID, sessionUserName, req1)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusCreated")
 
 	// Unauthorized token
-	fabuuid = "48591de0-4859-1108-c35a-6c50110872da"
-	mockFabricData(t, fabuuid, "CFMPlugin")
-
 	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
 		{OdataID: "/redfish/v1/Fabrics/48591de0-4859-1108-c35a-6c50110872da"},
 	}
@@ -699,69 +453,11 @@ func TestRmDupEleStrSlc(t *testing.T) {
 
 func TestCheckCollectionSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockTargetandPlugin(t)
-	storeSubscriptionCollection(t)
-	p := &PluginContact{
-		ContactClient:   mockContactClient,
-		CreateChildTask: mockCreateChildTask,
-		UpdateTask:      mockUpdateTask,
-	}
+	p := getMockMethods()
 	originResources := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	protocol := "Redfish"
 	p.checkCollectionSubscription(originResources, protocol)
-	devSub, _ := evmodel.GetDeviceSubscriptions("*" + originResources)
-	assert.Equal(t, "https://10.4.1.2/ODIM/v1/Subscriptions/12", devSub.Location, "Location should be https://10.4.1.2/ODIM/v1/Subscriptions/12")
+	devSub, _ := p.GetDeviceSubscriptions("*" + originResources)
+	assert.Equal(t, "https://10.4.1.2/ODIM/v1/Subscriptions/1", devSub.Location, "Location should be https://10.4.1.2/ODIM/v1/Subscriptions/12")
 	assert.Equal(t, "10.4.1.2", devSub.EventHostIP, "EventHostIP should be 10.4.1.2")
-}
-
-func storeSubscriptionCollection(t *testing.T) {
-	subarr := []evmodel.Subscription{
-		{
-			SubscriptionID: "71de0110-c35a-4859-984c-072d6c5a3211",
-			Destination:    "https://localhost:1234/eventsListener",
-			Name:           "Subscription",
-			Location:       "/ODIM/v1/Subscriptions/12345",
-			EventHostIP:    "localhost",
-			Context:        "context",
-			EventTypes:     []string{"Alert"},
-			MessageIds:     []string{},
-			ResourceTypes:  []string{},
-			OriginResource: "",
-			OriginResources: []string{"/redfish/v1/Systems",
-				"/redfish/v1/Chassis",
-				"/redfish/v1/Fabrics",
-				"/redfish/v1/Managers",
-			},
-			Hosts:                []string{},
-			SubordinateResources: true,
-		},
-	}
-
-	for _, sub := range subarr {
-		if cerr := evmodel.SaveEventSubscription(sub); cerr != nil {
-			t.Fatalf("Error while making save event subscriptions : %v\n", cerr.Error())
-		}
-
-		devSub := evmodel.DeviceSubscription{
-			EventHostIP: sub.EventHostIP,
-			Location:    sub.Location,
-			OriginResources: []string{
-				sub.OriginResource,
-			},
-		}
-
-		if cerr := evmodel.SaveDeviceSubscription(devSub); cerr != nil {
-			t.Fatalf("Error while making save device subscriptions : %v\n", cerr.Error())
-		}
-	}
 }

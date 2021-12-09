@@ -175,7 +175,7 @@ class ResourceBlocks():
                 code = HTTPStatus.CONFLICT
                 return
 
-            if rb_data.get("Links") or rb_data["Links"].get("Zones"):
+            if rb_data.get("Links") and rb_data["Links"].get("Zones"):
                 if len(rb_data["Links"]["Zones"]):
                     logging.error("The resource block {rb_id} delete is failed. The resource block is linked with resource zone".format(
                         rb_id=rb_data["Id"]))

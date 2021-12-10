@@ -62,7 +62,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)

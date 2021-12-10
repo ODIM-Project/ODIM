@@ -93,7 +93,7 @@ func TestGetEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", data.Response.ID, "ID should be 1")
 	assert.Equal(t, "Subscription", data.Response.Name, "Name should be Subscription")
-	assert.Equal(t, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", data.OriginResources[0].OdataID, " OdataID should be same /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	assert.Equal(t, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", data.OriginResources[0].OdataID, " OdataID should be same /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 
 	// Negative test cases
 	// Invalid token

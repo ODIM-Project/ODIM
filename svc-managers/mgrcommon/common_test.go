@@ -185,7 +185,7 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
 	}
 	var req = ResourceInfoRequest{
-		URL:                   "/redfish/v1/Managers/uuid:1/EthernetInterfaces",
+		URL:                   "/redfish/v1/Managers/uuid.1/EthernetInterfaces",
 		UUID:                  "uuid",
 		SystemID:              "1",
 		ContactClient:         mockContactClient,
@@ -194,12 +194,12 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
 	req.UUID = "uuid1"
-	req.URL = "/redfish/v1/Managers/uuid1:1/EthernetInterfaces"
+	req.URL = "/redfish/v1/Managers/uuid1.1/EthernetInterfaces"
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
 
 	req.UUID = "uuid"
-	req.URL = "/redfish/v1/Managers/uuid:1/VirtualMedia/1"
+	req.URL = "/redfish/v1/Managers/uuid.1/VirtualMedia/1"
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
 }
@@ -236,7 +236,7 @@ func TestGetResourceInfoFromDeviceInvalidPlugin(t *testing.T) {
 	config.Data.PluginStatusPolling.RetryIntervalInMins = 0
 
 	var req = ResourceInfoRequest{
-		URL:                   "/redfish/v1/Managers/uuid:1/EthernetInterfaces",
+		URL:                   "/redfish/v1/Managers/uuid.1/EthernetInterfaces",
 		UUID:                  "uuid2",
 		SystemID:              "1",
 		ContactClient:         mockContactClient,
@@ -270,7 +270,7 @@ func TestGetResourceInfoFromDeviceWithInvalidPluginSession(t *testing.T) {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
 	}
 	var req = ResourceInfoRequest{
-		URL:                   "/redfish/v1/Managers/uuid:1/EthernetInterfaces",
+		URL:                   "/redfish/v1/Managers/uuid.1/EthernetInterfaces",
 		UUID:                  "uuid",
 		SystemID:              "1",
 		ContactClient:         mockContactClient,
@@ -314,7 +314,7 @@ func TestDeviceCommunication(t *testing.T) {
 		t.Fatalf("Error in creating mock DeviceData :%v", err)
 	}
 	var req = ResourceInfoRequest{
-		URL:                   "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		URL:                   "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
 		UUID:                  "uuid",
 		SystemID:              "1",
 		ContactClient:         mockContactClient,
@@ -326,7 +326,7 @@ func TestDeviceCommunication(t *testing.T) {
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
 	req = ResourceInfoRequest{
-		URL:                   "/redfish/v1/Managers/uuid:1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+		URL:                   "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
 		UUID:                  "uuid",
 		SystemID:              "1",
 		ContactClient:         mockContactClient,

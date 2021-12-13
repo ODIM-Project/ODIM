@@ -72,6 +72,7 @@ jobs:
             cd $i
             if [[ "$i" == "svc-composition-service" ]]; then
               /bin/bash build.sh
+              cd ..
               continue
             fi
             go mod download

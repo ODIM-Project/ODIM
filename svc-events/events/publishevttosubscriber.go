@@ -346,16 +346,16 @@ func postEvent(destination, eventUniqueID string, event []byte) {
 			log.Printf("event post response: %v", resp)
 			return
 		}
-		if config.SaveUndeliveredEventsFlag {
-			err = evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
-			if err != nil {
-				log.Error("error while saving undelivered event: ", err.Error())
-			}
-		}
 		log.Println("Retrying event posting")
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
+	if evcommon.SaveUndeliveredEventsFlag {
+		err = evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
+		if err != nil {
+			log.Error("error while saving undelivered event: ", err.Error())
+		}
+	}
 	return
 }
 

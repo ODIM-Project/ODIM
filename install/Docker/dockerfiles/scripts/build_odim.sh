@@ -17,6 +17,9 @@ LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|add-hosts'`
 echo $LIST
 flag=0
 for i in $LIST; do
+    if [[ "$i" == "svc-composition-service" ]]; then
+        continue
+    fi
     cd $i
     go mod download
     go mod vendor

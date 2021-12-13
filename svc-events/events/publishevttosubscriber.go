@@ -69,7 +69,7 @@ func addFabric(requestData, host string) {
 // 	data of type interface{}
 //Returns:
 //	bool: return false if any error occurred during execution, else returns true
-func PublishEventsToDestination(data interface{}) bool {
+func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 
 	if data == nil {
 		log.Info("error: invalid input params")
@@ -97,7 +97,7 @@ func PublishEventsToDestination(data interface{}) bool {
 	}
 
 	if event.EventType == "MetricReport" {
-		return publishMetricReport(requestData)
+		return p.publishMetricReport(requestData)
 	}
 
 	var flag bool
@@ -111,7 +111,7 @@ func PublishEventsToDestination(data interface{}) bool {
 
 	addFabric(requestData, host)
 	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
+	deviceSubscription, err := p.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		log.Error("Failed to get the event destinations: ", err.Error())
 		return false
@@ -125,7 +125,7 @@ func PublishEventsToDestination(data interface{}) bool {
 	requestData, deviceUUID = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
 
 	searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
-	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptions, err := p.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return false
 	}
@@ -207,19 +207,19 @@ func PublishEventsToDestination(data interface{}) bool {
 			log.Error("unable to converts event into bytes: ", err.Error())
 			continue
 		}
-		go postEvent(key, eventUniqueID, data)
+		go p.postEvent(key, eventUniqueID, data)
 	}
 	return flag
 }
 
-func publishMetricReport(requestData string) bool {
+func (p *PluginContact) publishMetricReport(requestData string) bool {
 	eventUniqueID := uuid.NewV4().String()
-	subscriptions, err := evmodel.GetEvtSubscriptions("MetricReport")
+	subscriptions, err := p.GetEvtSubscriptions("MetricReport")
 	if err != nil {
 		return false
 	}
 	for _, sub := range subscriptions {
-		go postEvent(sub.Destination, eventUniqueID, []byte(requestData))
+		go p.postEvent(sub.Destination, eventUniqueID, []byte(requestData))
 	}
 	return true
 }
@@ -319,7 +319,7 @@ func isStringPresentInSlice(slice []string, str, message string) bool {
 }
 
 // postEvent will post the event to destination
-func postEvent(destination, eventUniqueID string, event []byte) {
+func (p *PluginContact) postEvent(destination, eventUniqueID string, event []byte) {
 	httpConf := &config.HTTPConfig{
 		CACertificate: &config.Data.KeyCertConf.RootCACertificate,
 	}
@@ -352,7 +352,7 @@ func postEvent(destination, eventUniqueID string, event []byte) {
 	log.Error("error while make https call to send the event: ", err.Error())
 
 	if evcommon.SaveUndeliveredEventsFlag {
-		err = evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
+		err = p.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
 		if err != nil {
 			log.Error("error while saving undelivered event: ", err.Error())
 		}

@@ -97,11 +97,11 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 }
 
 func deleteComputeforTest(index int, key string) *errors.Error {
-	if key == "/redfish/v1/systems/del-comp-internal-err:1" {
+	if key == "/redfish/v1/systems/del-comp-internal-err.1" {
 		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
 	}
-	if key != "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/systems/" &&
-		key != "/redfish/v1/systems/del-sys-internal-err:1" && key != "/redfish/v1/systems/sys-not-found:1" {
+	if key != "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1" && key != "/redfish/v1/systems/" &&
+		key != "/redfish/v1/systems/del-sys-internal-err.1" && key != "/redfish/v1/systems/sys-not-found.1" {
 		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
 	}
 	return nil
@@ -118,9 +118,9 @@ func deleteSystemforTest(key string) *errors.Error {
 }
 
 func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
-	if uuid == "/redfish/v1/systems/delete-subscription-error:1" {
+	if uuid == "/redfish/v1/systems/delete-subscription-error.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
-	} else if uuid == "/redfish/v1/systems/unexpected-statuscode:1" {
+	} else if uuid == "/redfish/v1/systems/unexpected-statuscode.1" {
 		return &eventsproto.EventSubResponse{
 			StatusCode: http.StatusCreated,
 		}, nil

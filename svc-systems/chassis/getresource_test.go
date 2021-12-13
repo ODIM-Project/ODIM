@@ -81,21 +81,21 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power"})
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power"})
 
-	err := mockChassisResourceData(reqData, "Power", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power")
+	err := mockChassisResourceData(reqData, "Power", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power")
 
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters"})
-	err1 := mockChassisResourceData(reqData1, "NetworkAdaptersCollection", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters")
+	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters"})
+	err1 := mockChassisResourceData(reqData1, "NetworkAdaptersCollection", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters")
 	if err1 != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err1)
 	}
 
-	reqData2, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters/1"})
-	err2 := mockChassisResourceData(reqData2, "NetworkAdapters", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters/1")
+	reqData2, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters/1"})
+	err2 := mockChassisResourceData(reqData2, "NetworkAdapters", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters/1")
 	if err2 != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err2)
 	}
@@ -126,7 +126,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error while trying to get compute details: no data with the with key 6d4a0a66-7efa-578e-83cf-44dc68d2874e found",
-				MessageArgs:   []interface{}{"", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power1"},
+				MessageArgs:   []interface{}{"", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power1"},
 			},
 		},
 	}
@@ -149,15 +149,15 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 				},
 			},
 			want: response.RPC{
 				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power"},
 			},
 			wantErr: false,
 		},
@@ -167,7 +167,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			args: args{
 				req: &chassisproto.GetChassisRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 				},
 			},
 			want: response.RPC{
@@ -185,8 +185,8 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power1",
 				},
 			},
 			want: response.RPC{
@@ -204,15 +204,15 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters",
 				},
 			},
 			want: response.RPC{
 				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters"},
 			},
 			wantErr: false,
 		},
@@ -222,8 +222,8 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &chassisproto.GetChassisRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters/1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters/1",
 					ResourceID:   "1",
 				},
 			},
@@ -231,7 +231,7 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/NetworkAdapters/1"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters/1"},
 			},
 			wantErr: false,
 		},

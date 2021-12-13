@@ -185,9 +185,9 @@ func TestGetTarget(t *testing.T) {
 func TestGetSystemByUUID(t *testing.T) {
 	body := `{"Id":"1","Status":{"State":"Enabled"}}`
 	table := "ComputerSystem"
-	key := "/redfish/v1/Systems/uuid:1"
+	key := "/redfish/v1/Systems/uuid.1"
 	GenericSave([]byte(body), table, key)
-	data, _ := GetSystemByUUID("/redfish/v1/Systems/uuid:1")
+	data, _ := GetSystemByUUID("/redfish/v1/Systems/uuid.1")
 	assert.Equal(t, data, body, "should be same")
 
 	_, err := GetSystemByUUID("/redfish/v1/Systems/uuid")

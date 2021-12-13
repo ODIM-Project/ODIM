@@ -274,7 +274,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	dbErr := testSystemIndex("123456:1", map[string]interface{}{
+	dbErr := testSystemIndex("123456.1", map[string]interface{}{
 		"UUID": "1s7sda8asd-asdas8as012",
 	})
 	if err != nil {

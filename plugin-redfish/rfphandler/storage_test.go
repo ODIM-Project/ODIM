@@ -88,7 +88,7 @@ func TestCreateVolume(t *testing.T) {
 	reqPostBody := map[string]interface{}{
 		"Name":     "Volume_Test1",
 		"RAIDType": "RAID0",
-		"Drives":   []dmtf.Link{{Oid: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931:1/Storage/ArrayControllers-0/Drives/0"}},
+		"Drives":   []dmtf.Link{{Oid: "/ODIM/v1/Systems/5a9e8356-265c-413b-80d2-58210592d931.1/Storage/ArrayControllers-0/Drives/0"}},
 	}
 	reqBodyBytes, _ := json.Marshal(reqPostBody)
 	requestBody := map[string]interface{}{

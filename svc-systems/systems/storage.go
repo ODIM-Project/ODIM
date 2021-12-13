@@ -62,7 +62,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -216,7 +216,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			if err != nil {
 				log.Error(err.Error())
 				if errors.DBKeyNotFound == err.ErrNo() {
-					requestData := strings.Split(systemID, ":")
+					requestData := strings.SplitN(systemID, ".", 2)
 					var getDeviceInfoRequest = scommon.ResourceInfoRequest{
 						URL:             driveURI,
 						UUID:            requestData[0],
@@ -294,7 +294,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) != 2 || requestData[1] == "" {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)

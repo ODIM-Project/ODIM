@@ -604,7 +604,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 	systemID := element[strings.LastIndexAny(element, "/")+1:]
 	var targetURI = element
 	taskInfo := &common.TaskUpdateInfo{TaskID: subTaskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: reqBody}
-	data := strings.Split(systemID, ":")
+	data := strings.SplitN(systemID, ".", 2)
 	if len(data) <= 1 {
 		subTaskChan <- http.StatusNotFound
 		errMsg := "error: SystemUUID not found"

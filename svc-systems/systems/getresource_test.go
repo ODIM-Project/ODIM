@@ -126,10 +126,10 @@ func mockTargetandPlugin(t *testing.T) error {
 }
 
 func mockGetDeviceInfo(req scommon.ResourceInfoRequest) (string, error) {
-	if req.URL == "/redfish/v1/Systems/uuid:1/Storage" {
+	if req.URL == "/redfish/v1/Systems/uuid.1/Storage" {
 		return "", fmt.Errorf("error")
 	}
-	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Systems/uuid:1/Storage\"`)
+	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Systems/uuid.1/Storage\"`)
 	return string(reqData), nil
 }
 
@@ -145,8 +145,8 @@ func TestGetAllSystems(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
+	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -157,7 +157,7 @@ func TestGetAllSystems(t *testing.T) {
 		"Storage/Drives/Type":     []string{"HDD", "HDD"},
 	}
 
-	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", indexData)
+	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", indexData)
 	if err != nil {
 		t.Fatalf("Error while creating mock index: %v", err)
 	}
@@ -176,7 +176,7 @@ func TestGetAllSystems(t *testing.T) {
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",
 	}
-	systemsCollection.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}}
+	systemsCollection.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}}
 	systemsCollection.MembersCount = 1
 
 	type args struct {
@@ -495,8 +495,8 @@ func TestGetSystems(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
+	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -517,8 +517,8 @@ func TestGetSystems(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get system details: no data with the with key /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1 found",
-				MessageArgs:   []interface{}{"ComputerSystem", "6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1"},
+				ErrorMessage:  "error while trying to get system details: no data with the with key /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1 found",
+				MessageArgs:   []interface{}{"ComputerSystem", "6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1"},
 			},
 		},
 	}
@@ -541,8 +541,8 @@ func TestGetSystems(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 				},
 			},
 			want: response.RPC{
@@ -556,7 +556,7 @@ func TestGetSystems(t *testing.T) {
 				},
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 			},
 			wantErr: false,
 		},
@@ -566,7 +566,7 @@ func TestGetSystems(t *testing.T) {
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 				},
 			},
 			want: response.RPC{
@@ -584,8 +584,8 @@ func TestGetSystems(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1:1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e1.1",
 				},
 			},
 			want: response.RPC{
@@ -621,8 +621,8 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot"})
-	err := mockSystemResourceData(reqData, "SecureBoot", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot")
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot"})
+	err := mockSystemResourceData(reqData, "SecureBoot", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -656,7 +656,7 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
 				ErrorMessage:  "error while trying to get compute details: no data with the with key 6d4a0a66-7efa-578e-83cf-44dc68d2874e found",
-				MessageArgs:   []interface{}{"ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot1"},
+				MessageArgs:   []interface{}{"ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot1"},
 			},
 		},
 	}
@@ -675,15 +675,15 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 				},
 			},
 			want: response.RPC{
 				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot"},
+				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot"},
 			},
 			wantErr: false,
 		},
@@ -693,7 +693,7 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
 					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 				},
 			},
 			want: response.RPC{
@@ -711,8 +711,8 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot1",
 				},
 			},
 			want: response.RPC{
@@ -748,16 +748,16 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
+	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f:1")
+	err = mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1")
+	err = mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -769,7 +769,7 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 		"Storage/Drives/Type":     []string{"HDD", "HDD"},
 	}
 
-	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", indexData1)
+	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", indexData1)
 	if err != nil {
 		t.Fatalf("Error while creating mock index: %v", err)
 	}
@@ -780,7 +780,7 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 		"Storage/Drives/Type":     []string{"HDD", "HDD"},
 	}
 
-	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f:1", "6d4a0a66-7efa-578e-83cf-44dc68d2874f:1", indexData2)
+	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1", "6d4a0a66-7efa-578e-83cf-44dc68d2874f.1", indexData2)
 	if err != nil {
 		t.Fatalf("Error while creating mock index: %v", err)
 	}
@@ -792,7 +792,7 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 		"Storage/Drives/Type":     []string{"HDD", "HDD"},
 	}
 
-	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1", "6d4a0a66-7efa-578e-83cf-44dc68d2874g:1", indexData3)
+	err = mockSystemIndex("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1", "6d4a0a66-7efa-578e-83cf-44dc68d2874g.1", indexData3)
 	if err != nil {
 		t.Fatalf("Error while creating mock index: %v", err)
 	}
@@ -812,34 +812,34 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",
 	}
-	systemsCollection.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f:1"},
-		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1"}}
+	systemsCollection.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1"},
+		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"}}
 	systemsCollection.MembersCount = 3
 
 	resp1 := systemsCollection
-	resp1.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1"}}
+	resp1.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"}}
 	resp1.MembersCount = len(resp1.Members)
 
 	resp2 := systemsCollection
-	resp2.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1"},
-		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}}
+	resp2.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"},
+		dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}}
 	resp2.MembersCount = len(resp2.Members)
 
 	resp3 := systemsCollection
-	resp3.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}}
+	resp3.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}}
 	resp3.MembersCount = len(resp3.Members)
 
 	resp4 := systemsCollection
-	resp4.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f:1"}}
+	resp4.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1"}}
 	resp4.MembersCount = len(resp4.Members)
 
 	resp5 := systemsCollection
-	resp5.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f:1"},
-		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g:1"},
-		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}}
+	resp5.Members = []dmtf.Link{dmtf.Link{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874f.1"},
+		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874g.1"},
+		{Oid: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}}
 	resp5.MembersCount = len(resp5.Members)
 	type args struct {
 		req *systemsproto.GetSystemsRequest

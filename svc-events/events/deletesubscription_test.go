@@ -205,7 +205,7 @@ func TestDeleteFabricsSubscription(t *testing.T) {
 	}
 	// positive test case with basic auth type
 	plugin := &evmodel.Plugin{
-		IP:                "10.4.1.5",
+		IP:                "10.10.1.5",
 		Port:              "1234",
 		Password:          password,
 		Username:          "admin",
@@ -234,7 +234,7 @@ func TestDeleteSubscription(t *testing.T) {
 		t.Fatalf("%v", err.Error())
 	}
 	target := evmodel.Target{
-		ManagerAddress: "10.4.1.2",
+		ManagerAddress: "100.100.100.100",
 		Password:       encryptedData,
 		UserName:       "admin",
 		DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",

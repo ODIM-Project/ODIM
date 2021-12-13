@@ -126,7 +126,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://10.24.1.23:4321/ODIM/v1/Sessions" || url == "https://10.4.1.6:4321/ODIM/v1/Sessions" {
+	} else if url == "https://10.10.10.23:4321/ODIM/v1/Sessions" || url == "https://10.10.1.6:4321/ODIM/v1/Sessions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 
 		r := &http.Response{
@@ -137,13 +137,13 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return r, nil
-	} else if url == "https://10.24.1.23:4321/ODIM/v1/Subscriptions" {
+	} else if url == "https://10.10.10.23:4321/ODIM/v1/Subscriptions" {
 		body := `{"MessageId": "` + response.Failure + `"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://10.4.1.5:1234/ODIM/v1/Subscriptions/123" {
+	} else if url == "https://10.10.1.5:1234/ODIM/v1/Subscriptions/123" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
@@ -157,7 +157,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}
 		return response, nil
-	} else if url == "https://10.4.1.6:4321/ODIM/v1/Subscriptions" {
+	} else if url == "https://10.10.1.6:4321/ODIM/v1/Subscriptions" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusCreated,
@@ -168,7 +168,7 @@ func MockContactClient(url, method, token string, odataID string, body interface
 		}
 		response.Header.Set("location", "/ODIM/v1/Subscriptions/12345")
 		return response, nil
-	} else if url == "https://10.4.1.6:4321/ODIM/v1/Subscriptions/12345" {
+	} else if url == "https://10.10.1.6:4321/ODIM/v1/Subscriptions/12345" {
 		body := `{"MessageId": "` + response.Success + `"}`
 		response := &http.Response{
 			StatusCode: http.StatusOK,
@@ -200,7 +200,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 	switch uuid {
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874e":
 		target = &evmodel.Target{
-			ManagerAddress: "10.4.1.2",
+			ManagerAddress: "100.100.100.100",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
@@ -208,7 +208,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "11081de0-4859-984c-c35a-6c50732d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.4.1.3",
+			ManagerAddress: "10.10.1.3",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "11081de0-4859-984c-c35a-6c50732d72da",
@@ -216,7 +216,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.4.1.4",
+			ManagerAddress: "10.10.1.4",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
@@ -224,7 +224,7 @@ func MockGetTarget(uuid string) (*evmodel.Target, error) {
 		}
 	case "110813e0-4859-984c-984c-d72da32d72da":
 		target = &evmodel.Target{
-			ManagerAddress: "10.4.1.5",
+			ManagerAddress: "10.10.1.5",
 			Password:       encryptedData,
 			UserName:       "admin",
 			DeviceUUID:     "110813e0-4859-984c-984c-d72da32d72da",
@@ -274,7 +274,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 		}
 	case "CFM":
 		plugin = &evmodel.Plugin{
-			IP:                "10.4.1.6",
+			IP:                "10.10.1.6",
 			Port:              "4321",
 			Password:          password,
 			Username:          "admin",
@@ -284,7 +284,7 @@ func MockGetPluginData(pluginID string) (*evmodel.Plugin, *errors.Error) {
 		}
 	case "CFMPlugin":
 		plugin = &evmodel.Plugin{
-			IP:                "10.24.1.23",
+			IP:                "10.10.10.23",
 			Port:              "4321",
 			Password:          password,
 			Username:          "admin",
@@ -313,7 +313,7 @@ func MockGetSingleSystem(id string) (string, error) {
 	switch id {
 	case "6d4a0a66-7efa-578e-83cf-44dc68d2874e":
 		systemData = SavedSystems{
-			ManagerAddress: "10.4.1.2",
+			ManagerAddress: "100.100.100.100",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
@@ -321,7 +321,7 @@ func MockGetSingleSystem(id string) (string, error) {
 		}
 	case "11081de0-4859-984c-c35a-6c50732d72da":
 		systemData = SavedSystems{
-			ManagerAddress: "10.4.1.3",
+			ManagerAddress: "10.10.1.3",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "11081de0-4859-984c-c35a-6c50732d72da",
@@ -329,7 +329,7 @@ func MockGetSingleSystem(id string) (string, error) {
 		}
 	case "d72dade0-c35a-984c-4859-1108132d72da":
 		systemData = SavedSystems{
-			ManagerAddress: "10.4.1.4",
+			ManagerAddress: "10.10.1.4",
 			Password:       []byte("Password"),
 			UserName:       "admin",
 			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
@@ -375,54 +375,54 @@ func MockGetFabricData(fabricID string) (evmodel.Fabric, error) {
 func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 	var subarr []evmodel.Subscription
 	switch searchKey {
-	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]10.4.1.2[^0-9]":
+	case "81de0110-c35a-4859-984c-072d6c5a32d7", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "[^0-9]100.100.100.100[^0-9]":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-				Destination:          "https://10.24.1.15:9090/events",
+				Destination:          "https://10.10.10.15:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.24.1.2/EventService/Subscriptions/1",
+				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{"IndicatorChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"10.4.1.2"},
+				Hosts:                []string{"100.100.100.100"},
 				SubordinateResources: true,
 			},
 		}
-	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://10.24.1.15:9090/events", "*":
+	case "11081de0-4859-984c-c35a-6c50732d72da", "/redfish/v1/Systems", "https://10.10.10.15:9090/events", "*":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
 				SubscriptionID:       "11081de0-4859-984c-c35a-6c50732d72da",
-				Destination:          "https://10.24.1.15:9090/events",
+				Destination:          "https://10.10.10.15:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.24.1.2/EventService/Subscriptions/1",
+				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "StatusChange"},
 				MessageIds:           []string{"IndicatorChanged", "StateChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"10.4.1.2", "10.4.1.3"},
+				Hosts:                []string{"100.100.100.100", "10.10.1.3"},
 				SubordinateResources: true,
 			},
 		}
-	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]10.4.1.3[^0-9]":
+	case "71de0110-c35a-4859-984c-072d6c5a32d8", "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1", "[^0-9]10.10.1.3[^0-9]":
 		subarr = []evmodel.Subscription{
 			{
 				UserName:             "admin",
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://10.24.1.16:9090/events",
+				Destination:          "https://10.10.10.16:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.24.1.3/EventService/Subscriptions/1",
+				Location:             "https://10.10.10.3/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert", "ResourceAdded"},
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
-				Hosts:                []string{"10.4.1.3"},
+				Hosts:                []string{"10.10.1.3"},
 				SubordinateResources: false,
 			},
 		}
@@ -430,7 +430,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 		subarr = []evmodel.Subscription{
 			{
 				SubscriptionID:       "71de0110-c35a-4859-984c-072d6c5a32d9",
-				Destination:          "https://10.24.1.16:9090/events",
+				Destination:          "https://10.10.10.16:9090/events",
 				Name:                 "Subscription",
 				Location:             "/ODIM/v1/Subscriptions/12345",
 				Context:              "context",
@@ -438,7 +438,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123456"},
-				Hosts:                []string{"10.4.1.6"},
+				Hosts:                []string{"10.10.1.6"},
 				SubordinateResources: true,
 			},
 		}
@@ -446,7 +446,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 		subarr = []evmodel.Subscription{
 			{
 				SubscriptionID:       "5a321010-c35a-4859-984c-072d6c",
-				Destination:          "https://10.24.1.16:9090/events",
+				Destination:          "https://10.10.10.16:9090/events",
 				Name:                 "Subscription",
 				Location:             "/ODIM/v1/Subscriptions/123",
 				Context:              "context",
@@ -454,7 +454,7 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 				MessageIds:           []string{},
 				ResourceTypes:        []string{},
 				OriginResources:      []string{"/redfish/v1/Fabrics/123"},
-				Hosts:                []string{"10.4.1.5"},
+				Hosts:                []string{"10.10.1.5"},
 				SubordinateResources: true,
 			},
 		}
@@ -483,15 +483,15 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 			{
 				UserName:             "admin",
 				SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d8",
-				Destination:          "https://10.24.1.9:9090/events",
+				Destination:          "https://10.10.10.9:9090/events",
 				Name:                 "Subscription",
-				Location:             "https://10.24.1.2/EventService/Subscriptions/1",
+				Location:             "https://10.10.10.2/EventService/Subscriptions/1",
 				Context:              "context",
 				EventTypes:           []string{"Alert"},
 				MessageIds:           []string{"IndicatorChanged"},
 				ResourceTypes:        []string{"ComputerSystem"},
 				OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-				Hosts:                []string{"10.4.1.2"},
+				Hosts:                []string{"100.100.100.100"},
 				SubordinateResources: true,
 			},
 		}
@@ -504,28 +504,28 @@ func MockGetEvtSubscriptions(searchKey string) ([]evmodel.Subscription, error) {
 // MockGetDeviceSubscriptions is for mocking up of get device subscription
 func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, error) {
 	var deviceSub *evmodel.DeviceSubscription
-	if strings.Contains(hostIP, "10.4.1.2") || hostIP == "*" {
+	if strings.Contains(hostIP, "100.100.100.100") || hostIP == "*" {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.24.1.2/EventService/Subscriptions/1",
-			EventHostIP:     "10.4.1.2",
+			Location:        "https://10.10.10.2/EventService/Subscriptions/1",
+			EventHostIP:     "100.100.100.100",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
-	} else if strings.Contains(hostIP, "10.4.1.3") {
+	} else if strings.Contains(hostIP, "10.10.1.3") {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.24.1.3/EventService/Subscriptions/1",
-			EventHostIP:     "10.4.1.3",
+			Location:        "https://10.10.10.3/EventService/Subscriptions/1",
+			EventHostIP:     "10.10.1.3",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		}
-	} else if strings.Contains(hostIP, "10.4.1.6") {
+	} else if strings.Contains(hostIP, "10.10.1.6") {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/12345",
-			EventHostIP:     "10.4.1.6",
+			EventHostIP:     "10.10.1.6",
 			OriginResources: []string{"/redfish/v1/Fabrics/123456"},
 		}
-	} else if strings.Contains(hostIP, "10.4.1.5") {
+	} else if strings.Contains(hostIP, "10.10.1.5") {
 		deviceSub = &evmodel.DeviceSubscription{
 			Location:        "/ODIM/v1/Subscriptions/123",
-			EventHostIP:     "10.4.1.5",
+			EventHostIP:     "10.10.1.5",
 			OriginResources: []string{"/redfish/v1/Fabrics/123"},
 		}
 	} else if strings.Contains(hostIP, "localhost") {
@@ -534,16 +534,16 @@ func MockGetDeviceSubscriptions(hostIP string) (*evmodel.DeviceSubscription, err
 			EventHostIP:     "localhost",
 			OriginResources: []string{""},
 		}
-	} else if strings.Contains(hostIP, "10.4.1.9") {
+	} else if strings.Contains(hostIP, "10.10.1.9") {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.24.1.9/EventService/Subscriptions/1",
-			EventHostIP:     "10.4.1.9",
+			Location:        "https://10.10.10.9/EventService/Subscriptions/1",
+			EventHostIP:     "10.10.1.9",
 			OriginResources: []string{"/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72ea.1"},
 		}
 	} else if hostIP == "*/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1" {
 		deviceSub = &evmodel.DeviceSubscription{
-			Location:        "https://10.4.1.2/ODIM/v1/Subscriptions/1",
-			EventHostIP:     "10.4.1.2",
+			Location:        "https://100.100.100.100/ODIM/v1/Subscriptions/1",
+			EventHostIP:     "100.100.100.100",
 			OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		}
 	} else {

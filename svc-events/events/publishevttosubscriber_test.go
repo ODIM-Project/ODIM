@@ -51,7 +51,7 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 		},
 	}
 
-	ip := []string{"10.4.1.2", "10.4.1.2", "10.4.1.3", "10.4.1.3"}
+	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events
@@ -66,7 +66,7 @@ func TestPublishEventsToDestiantion(t *testing.T) {
 	}
 	for _, v := range messages {
 		var event common.Events
-		event.IP = "10.24.1.9"
+		event.IP = "10.10.10.9"
 		message, err := json.Marshal(v)
 		if err != nil {
 			t.Errorf("expected err is nil but got : %v", err)
@@ -95,7 +95,7 @@ func TestPublishEventsWithEmptyOriginOfCondition(t *testing.T) {
 	}
 
 	var event common.Events
-	event.IP = "10.4.1.2"
+	event.IP = "100.100.100.100"
 	msg, err := json.Marshal(message)
 	if err != nil {
 		t.Errorf("expected err is nil but got : %v", err)
@@ -141,7 +141,7 @@ func TestPublishEventsToDestiantionWithMultipleEvents(t *testing.T) {
 		},
 	}
 
-	ip := []string{"10.4.1.2", "10.4.1.2", "10.4.1.3", "10.4.1.3"}
+	ip := []string{"100.100.100.100", "100.100.100.100", "10.10.1.3", "10.10.1.3"}
 	pc := getMockMethods()
 	for i, v := range messages {
 		var event common.Events

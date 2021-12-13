@@ -91,7 +91,7 @@ func TestCreateEventSubscription(t *testing.T) {
 	events := getMockPluginContactInitializer()
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.24.1.24:8070/Destination1",
+		"Destination":          "https://10.10.10.24:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",

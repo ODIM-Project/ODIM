@@ -162,9 +162,6 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 
 	resp.StatusCode = http.StatusCreated
 	resp.Body = responseBody
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-	}
 
 	log.Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
 }

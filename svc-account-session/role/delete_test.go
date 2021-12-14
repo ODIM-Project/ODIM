@@ -78,14 +78,6 @@ func createMockUser(username, roleID string) error {
 
 func TestDelete(t *testing.T) {
 	common.SetUpMockConfig()
-	header := map[string]string{
-		"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"X-Frame-Options":   "sameorigin",
-	}
 	defer truncateDB(t)
 	token, tokenWithoutPrivilege := "someToken", "tokenWithoutPrivilege"
 	err := mockSession(token, common.RoleAdmin, true)
@@ -189,7 +181,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusNoContent,
 				StatusMessage: response.ResourceRemoved,
-				Header:        header,
 			},
 		},
 		{
@@ -203,7 +194,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header:        header,
 				Body:          errArgsu.CreateGenericErrorResponse(),
 			},
 		},
@@ -218,7 +208,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
@@ -233,7 +222,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        header,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
@@ -248,7 +236,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
@@ -263,7 +250,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.ResourceInUse,
-				Header:        header,
 				Body:          errArgus.CreateGenericErrorResponse(),
 			},
 		},

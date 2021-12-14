@@ -160,10 +160,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: map[string]interface{}{"MessageId": response.Success},
+				Body:          map[string]interface{}{"MessageId": response.Success},
 			},
 		}, {
 			name: "Valid request with multiple drives",
@@ -178,10 +175,7 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: map[string]interface{}{"MessageId": response.Success},
+				Body:          map[string]interface{}{"MessageId": response.Success},
 			},
 		}, {
 			name: "invalid system id",

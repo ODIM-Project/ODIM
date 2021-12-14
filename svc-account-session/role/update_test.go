@@ -132,14 +132,6 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				Body: asmodel.Role{
 					ID:                 "MockRole",
 					AssignedPrivileges: []string{common.PrivilegeLogin, common.PrivilegeConfigureUsers},
@@ -163,15 +155,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -190,15 +174,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -217,15 +193,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -244,15 +212,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusMethodNotAllowed,
 				StatusMessage: response.GeneralError,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgGen.CreateGenericErrorResponse(),
+				Body:          errArgGen.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -271,15 +231,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueConflict,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgGen1.CreateGenericErrorResponse(),
+				Body:          errArgGen1.CreateGenericErrorResponse(),
 			},
 		},
 	}

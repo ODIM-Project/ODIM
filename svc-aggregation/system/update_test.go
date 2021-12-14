@@ -328,14 +328,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse1.CreateGenericResponse(response.Success)
 	commonResponse1.Message = ""
 	commonResponse1.MessageID = ""
@@ -357,14 +350,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp2.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse2.CreateGenericResponse(response.Success)
 	commonResponse2.Message = ""
 	commonResponse2.MessageID = ""

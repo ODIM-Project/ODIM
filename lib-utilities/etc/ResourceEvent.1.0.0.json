@@ -1,13 +1,13 @@
 {
     "@Redfish.Copyright": "Copyright 2014-2018 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_2_0.MessageRegistry",
-    "Id": "ResourceEvent.1.0.1",
+    "@odata.type": "#MessageRegistry.1.2.0.MessageRegistry",
+    "Id": "ResourceEventRegistry.1.2.0",
     "Name": "Resource Event Message Registry",
     "Language": "en",
     "Description": "This registry defines the messages to use for resource events.",
     "RegistryPrefix": "ResourceEvent",
-    "RegistryVersion": "1.0.1",
+    "RegistryVersion": "1.0.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "ResourceCreated": {
@@ -63,7 +63,7 @@
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
-                "number"
+                "value"
             ],
             "CorrespondingMessage": "ResourceErrorThresholdCleared",
             "Resolution": "None."
@@ -75,7 +75,7 @@
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
-                "number"
+                "value"
             ],
             "CorrespondingMessage": "ResourceWarningThresholdExceeded",
             "Resolution": "None.",
@@ -93,7 +93,7 @@
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
-                "number"
+                "value"
             ],
             "CorrespondingMessage": "ResourceErrorThresholdCleared",
             "Resolution": "None."
@@ -105,7 +105,7 @@
             "NumberOfArgs": 2,
             "ParamTypes": [
                 "string",
-                "number"
+                "value"
             ],
             "CorrespondingMessage": "ResourceErrorThresholdExceeded",
             "Resolution": "None.",

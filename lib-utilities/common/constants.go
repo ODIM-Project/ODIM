@@ -116,7 +116,7 @@ const (
 	// ManagerAccountType has schema version to be returned with manager account
 	ManagerAccountType = "#ManagerAccount.v1_8_0.ManagerAccount"
 	// AccountServiceType has schema version to be returned with accountservice
-	AccountServiceType = "#AccountService.v1_9_0.AccountService"
+	AccountServiceType = "#AccountService.v1_10_0.AccountService"
 	// RoleType has schema version to be returned with Role
 	RoleType = "#Role.v1_3_1.Role"
 	// SessionServiceType has schema version to be returned with sessionservice
@@ -124,21 +124,21 @@ const (
 	// SessionType has schema version to be returned with session
 	SessionType = "#Session.v1_3_0.Session"
 	// EventType has schema version to be returned with event
-	EventType = "#Event.v1_6_1.Event"
+	EventType = "#Event.v1_7_0.Event"
 	// AggregationServiceType has schema version to be returned with Aggregationservice
 	AggregationServiceType = "#AggregationService.v1_0_1.AggregationService"
 	// TaskType has schema version to be returned with Task
 	TaskType = "#Task.v1_5_1.Task"
 	// EventDestinationType has schema version to be returned with EventDestination
-	EventDestinationType = "#EventDestination.v1_10_1.EventDestination"
+	EventDestinationType = "#EventDestination.v1_11_0.EventDestination"
 	// EventServiceType has schema version to be returned with Event Service Type
-	EventServiceType = "#EventService.v1_7_0.EventService"
+	EventServiceType = "#EventService.v1_7_2.EventService"
 	// ManagerType has schema version to be returned with Manager
-	ManagerType = "#Manager.v1_12_0.Manager"
+	ManagerType = "#Manager.v1_13_0.Manager"
 	// TaskEventType has schema version to be returned with TaskEvent
 	TaskEventType = "TaskEvent.1.0.3"
 	// UpdateServiceType has schema version to be returned with UpdateService
-	UpdateServiceType = "#UpdateService.v1_9_0.UpdateService"
+	UpdateServiceType = "#UpdateService.v1_10_0.UpdateService"
 	// SettingsType has schema version to be returned with Settings in update service
 	SettingsType = "#Settings.v1_3_3.OperationApplyTimeSupport"
 	// TelemetryServiceType has version to be returned with Telemetry Service

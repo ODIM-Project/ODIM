@@ -8,7 +8,7 @@
         "Login",
         "ConfigureManager",
         "ConfigureUsers",
-        "ConfigureComponents",
+        "ComfigureComponents",
         "ConfigureSelf"
     ],
     "OEMPrivilegesUsed": [],

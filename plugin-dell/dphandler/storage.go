@@ -153,7 +153,7 @@ func CreateVolume(ctx iris.Context) {
 			oriOfCondition := compareCollection(list1, list2)
 			// creating a event payload
 			event := common.MessageData{
-				OdataType: "#Event.v1_2_1.Event",
+				OdataType: "#Event.v1_7_0.Event",
 				Name:      "Volume created Event",
 				Context:   "/redfish/v1/$metadata#Event.Event",
 				Events: []common.Event{
@@ -278,7 +278,7 @@ func DeleteVolume(ctx iris.Context) {
 	// If volume deletion is success then generating an event
 	if resp.StatusCode == http.StatusOK {
 		event := common.MessageData{
-			OdataType: "#Event.v1_2_1.Event",
+			OdataType: "#Event.v1_7_0.Event",
 			Name:      "Volume removed event",
 			Context:   "/redfish/v1/$metadata#Event.Event",
 			Events: []common.Event{

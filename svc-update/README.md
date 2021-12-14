@@ -48,7 +48,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#UpdateService.v1_8_1.UpdateService",
+   "@odata.type":"#UpdateService.v1_10_0.UpdateService",
    "@odata.id":"/redfish/v1/UpdateService",
    "@odata.context":"/redfish/v1/$metadata#UpdateService.UpdateService",
    "Id":"UpdateService",
@@ -167,7 +167,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_4_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -253,7 +253,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_4_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -397,7 +397,7 @@ Content-Length:491 bytes
    "error":{
       "@Message.ExtendedInfo":[
          {
-            "MessageId":"Base.1.4.Success"
+            "MessageId":"Base.1.11.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",
@@ -473,7 +473,7 @@ Content-Length:491 bytes
    "error":{
       "@Message.ExtendedInfo":[
          {
-            "MessageId":"Base.1.4.Success"
+            "MessageId":"Base.1.11.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

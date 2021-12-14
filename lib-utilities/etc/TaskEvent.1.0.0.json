@@ -1,13 +1,13 @@
 {
     "@Redfish.Copyright": "Copyright 2014-2018 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_2_0.MessageRegistry",
-    "Id": "TaskEvent.1.0.1",
+    "@odata.type": "#MessageRegistry.1.2.0.MessageRegistry",
+    "Id": "TaskEvents.1.0.0",
     "Name": "Task Event Message Registry",
     "Language": "en",
     "Description": "This registry defines the messages for task related events.",
     "RegistryPrefix": "TaskEvent",
-    "RegistryVersion": "1.0.1",
+    "RegistryVersion": "1.0.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "TaskStarted": {
@@ -16,7 +16,7 @@
             "Severity": "OK",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None."
         },
@@ -26,7 +26,7 @@
             "Severity": "OK",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None.",
             "ClearingLogic": {
@@ -42,7 +42,7 @@
             "Severity": "Warning",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None.",
             "ClearingLogic": {
@@ -58,7 +58,7 @@
             "Severity": "Critical",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None.",
             "ClearingLogic": {
@@ -74,7 +74,7 @@
             "Severity": "Warning",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None.",
             "ClearingLogic": {
@@ -90,7 +90,7 @@
             "Severity": "Warning",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None.",
             "ClearingLogic": {
@@ -104,7 +104,7 @@
             "Severity": "Warning",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None."
         },
@@ -114,7 +114,7 @@
             "Severity": "OK",
             "NumberOfArgs": 1,
             "ParamTypes": [
-                "string"
+                "value"
             ],
             "Resolution": "None.",
             "ClearingLogic": {
@@ -124,14 +124,14 @@
                 ]
             }
         },
-        "TaskProgressChanged": {
+        "TaskProgessChanged": {
             "Description": "The task with id %1 has changed to progress %2 percent complete.",
             "Message": "The task with id %1 has changed to progress %2 percent complete.",
             "Severity": "OK",
             "NumberOfArgs": 2,
             "ParamTypes": [
-                "string",
-                "number"
+                "value",
+                "value"
             ],
             "Resolution": "None."
         }

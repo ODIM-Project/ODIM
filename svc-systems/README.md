@@ -146,7 +146,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1",
-   "@odata.type":"#ComputerSystem.v1_14_1.ComputerSystem",
+   "@odata.type":"#ComputerSystem.v1_16_1.ComputerSystem",
    "Id":"e24fb205-6669-4080-b53c-67d4923aa73e:1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
@@ -552,7 +552,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Memory.Memory",
    "@odata.etag":"W/\"E6EC3A2C\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Memory/proc1dimm1",
-   "@odata.type":"#Memory.v1_7_1.Memory",
+   "@odata.type":"#Memory.v1_13_0.Memory",
    "Id":"proc1dimm1",
    "BaseModuleType":"RDIMM",
    "BusWidthBits":72,
@@ -739,7 +739,7 @@ curl -i GET \
 	"@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
 	"@odata.etag": "W/\"5DEAF04A\"",
 	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1/EthernetInterfaces/1",
-	"@odata.type": "#EthernetInterface.v1_4_1.EthernetInterface",
+	"@odata.type": "#EthernetInterface.v1_7_0.EthernetInterface",
 	"Id": "1",
 	"FullDuplex": true,
 	"IPv4Addresses": [],
@@ -884,7 +884,7 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
     "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0",
-    "@odata.type": "#Storage.v1_10_0.Storage",
+    "@odata.type": "#Storage.v1_11_0.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
@@ -1033,7 +1033,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Volume.Volume",
    "@odata.etag":"W/\"46916D5D\"",
    "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Volumes/1",
-   "@odata.type":"#Volume.v1_4_1.Volume",
+   "@odata.type":"#Volume.v1_6_2.Volume",
    "CapacityBytes":1200209526784,
    "Encrypted":false,
    "Id":"1",
@@ -1374,7 +1374,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
    "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1",
-   "@odata.type":"#Chassis.v1_16_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
@@ -1486,7 +1486,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
    "Description":"My RackGroup",
    "Name":"RG8",
@@ -1515,7 +1515,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -1629,7 +1629,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
    "@odata.etag":"W/\"F303ECE9\"",
    "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c:1/NetworkAdapters/{rid}",
-   "@odata.type":"#NetworkAdapter.v1_5_0.NetworkAdapter",
+   "@odata.type":"#NetworkAdapter.v1_8_0.NetworkAdapter",
    "Description":"The network adapter resource instances available in this chassis.",
    "Name":"Network Adapter View",
    "Oem":{
@@ -1865,7 +1865,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
    "Description":"My RackGroup",
    "Name":"RG5",
@@ -1984,7 +1984,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -2079,7 +2079,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -2170,7 +2170,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -2403,7 +2403,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.Reset` |
 |**Description** |This action shuts down, powers up, and restarts a specific system.<br>**NOTE:**<br> To reset an aggregate of systems, use this URI:<br>`/redfish/v1/AggregationService/Actions/AggregationService.Reset` <br> See [Resetting servers](#resetting-servers).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.11\). See [Message Registries](#message-registries).|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
 
@@ -2445,7 +2445,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 {
 	"error": {
 		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.4.Success"
+			"MessageId": "Base.1.11.Success"
 		}],
 		"code": "iLO.0.10.ExtendedInfo",
 		"message": "See @Message.ExtendedInfo for more information."
@@ -2462,7 +2462,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`POST` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}/Actions/ComputerSystem.SetDefaultBootOrder` |
 |**Description** |This action changes the boot order of a specific system to default settings.<br>**NOTE:**<br> To change the boot order of an aggregate of systems, use this URI:<br> `/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` <br> See [Changing the Boot Order of Servers to Default Settings](#changing-the-boot-order-of-servers-to-default-settings).|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.4\). See [Message Registries](#message-registries).|
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id. Example registry file name: Base.1.11\). See [Message Registries](#message-registries).|
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -2484,7 +2484,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 {
 	"error": {
 		"@Message.ExtendedInfo": [{
-			"MessageId": "Base.1.4.Success"
+			"MessageId": "Base.1.11.Success"
 		}],
 		"code": "iLO.0.10.ExtendedInfo",
 		"message": "See @Message.ExtendedInfo for more information."
@@ -2574,7 +2574,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
 |**Description** |This action changes the boot order settings of a specific system.|
-|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.10.0.Success`. The registry to look up is `Base.1.10.0`.<br> |
+|**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.11.0.Success`. The registry to look up is `Base.1.11.0`.<br> |
 |**Response code** |`200 OK` |
 |**Authentication** |Yes|
 
@@ -2677,7 +2677,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
    "error":{ 
       "@Message.ExtendedInfo":[ 
          { 
-            "MessageId":"Base.1.10.0.Success"
+            "MessageId":"Base.1.11.0.Success"
          }
       ],
       "code":"iLO.0.10.ExtendedInfo",

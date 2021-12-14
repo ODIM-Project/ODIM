@@ -183,7 +183,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 	mockDeviceData("passwordWithInvalidEncryption", device3)
 	mockDeviceData("7a2c6100-67da-5fd6-ab82-6870d29c7279", device2)
 	mockDeviceData("24b243cf-f1e3-5318-92d9-2d6737d6b0b9", device1)
-	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
+	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1")
 
 	type args struct {
 		deviceUUID string
@@ -218,7 +218,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "unknown-plugin-uuid",
-				systemURL:  "/redfish/v1/Systems/unknown-plugin-uuid:1",
+				systemURL:  "/redfish/v1/Systems/unknown-plugin-uuid.1",
 				updateFlag: true,
 			},
 		},
@@ -227,7 +227,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
-				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 				updateFlag: true,
 			},
 		},
@@ -236,7 +236,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "7a2c6100-67da-5fd6-ab82-6870d29c7279",
-				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1/Storage",
+				systemURL:  "/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1/Storage",
 				updateFlag: true,
 			},
 		},
@@ -245,7 +245,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "24b243cf-f1e3-5318-92d9-2d6737d6b0b9",
-				systemURL:  "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+				systemURL:  "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1",
 				updateFlag: true,
 			},
 		},
@@ -254,7 +254,7 @@ func TestExternalInterface_RediscoverSystemInventory(t *testing.T) {
 			e:    getMockExternalInterface(),
 			args: args{
 				deviceUUID: "something",
-				systemURL:  "/redfish/v1/Systems/something:1",
+				systemURL:  "/redfish/v1/Systems/something.1",
 				updateFlag: true,
 			},
 		},
@@ -311,12 +311,12 @@ func TestExternalInterface_isServerRediscoveryRequired(t *testing.T) {
 	mockDeviceData("ComputerSystem", device2)
 	mockDeviceData("Chassis&System", device3)
 	mockDeviceData("Chassis&System&Manager", device4)
-	mockSystemData("/redfish/v1/Systems/ComputerSystem:1")
-	mockSystemData("/redfish/v1/Systems/Chassis&System:1")
-	mockChassisData("/redfish/v1/Chassis/Chassis&System:1")
-	mockSystemData("/redfish/v1/Systems/Chassis&System&Manager:1")
-	mockChassisData("/redfish/v1/Chassis/Chassis&System&Manager:1")
-	mockManagerData("/redfish/v1/Managers/Chassis&System&Manager:1")
+	mockSystemData("/redfish/v1/Systems/ComputerSystem.1")
+	mockSystemData("/redfish/v1/Systems/Chassis&System.1")
+	mockChassisData("/redfish/v1/Chassis/Chassis&System.1")
+	mockSystemData("/redfish/v1/Systems/Chassis&System&Manager.1")
+	mockChassisData("/redfish/v1/Chassis/Chassis&System&Manager.1")
+	mockManagerData("/redfish/v1/Managers/Chassis&System&Manager.1")
 	type args struct {
 		deviceUUID string
 		systemKey  string

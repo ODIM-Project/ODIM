@@ -9,7 +9,6 @@ data:
     {
     	"RootServiceUUID": {{ .Values.odimra.rootServiceUUID | quote }},
     	"LocalhostFQDN": {{ .Values.odimra.fqdn | quote }},
-    	"MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
     	"SearchAndFilterSchemaPath": "/etc/odimra_schema/schema.json",
     	"RegistryStorePath": "/etc/registrystore",
     	"KeyCertConf": {
@@ -25,18 +24,23 @@ data:
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
     	},
+       "MessageBusConf": {
+         "MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
+         "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
+         "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote | toStrings }}
+      },
     	"DBConf": {
                 "Protocol": "tcp",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "InMemoryHost": "redis-inmemory",
                 "OnDiskHost": "redis-ondisk",
-                "InMemoryMasterSet": "mymaster",
-                "OnDiskMasterSet": "mymaster",
+                "InMemoryPrimarySet": "redisSentinel",
+                "OnDiskPrimarySet": "redisSentinel",
                 {{ else }}
                 "InMemoryHost": "redis-ha-inmemory",
                 "OnDiskHost": "redis-ha-ondisk",
-                "InMemoryMasterSet": "primaryset",
-                "OnDiskMasterSet": "primaryset",
+                "InMemoryPrimarySet": "primaryset",
+                "OnDiskPrimarySet": "primaryset",
                 {{ end }}
                 "InMemoryPort": "6379",
                 "OnDiskPort": "6379",
@@ -129,6 +133,11 @@ data:
     		"UpdateService",
     		"TelemetryService"
     	],
-        "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
-    	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"]
+      "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
+    	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],
+      "EventConf": {
+                 "DeliveryRetryAttempts" : 3,
+                 "DeliveryRetryIntervalSeconds" : 60,
+                 "RetentionOfUndeliveredEventsInMinutes" : 10
+      }
     }

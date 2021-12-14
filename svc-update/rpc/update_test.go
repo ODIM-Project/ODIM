@@ -40,14 +40,14 @@ func mockContactClient(url, method, token string, odataID string, body interface
 }
 
 func mockGetResource(table, key string, dbType common.DbType) (string, *errors.Error) {
-	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b:1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b:1") {
+	if (key == "/redfish/v1/UpdateService/FirmwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") || (key == "/redfish/v1/UpdateService/SoftwareInentory/3bd1f589-117a-4cf9-89f2-da44ee8e012b.1") {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
 }
 
 func mockGetAllKeysFromTable(table string, dbType common.DbType) ([]string, error) {
-	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid:1"}, nil
+	return []string{"/redfish/v1/UpdateService/FirmwareInentory/uuid.1"}, nil
 }
 
 func mockGetExternalInterface() *update.ExternalInterface {
@@ -202,7 +202,7 @@ func TestGetFirmwareInventorywithValidtoken(t *testing.T) {
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
-		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b:1",
+		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b.1",
 		SessionToken: "validToken",
 	}
 	resp, err := update.GetFirmwareInventory(ctx, req)
@@ -228,7 +228,7 @@ func TestGetSoftwareInventorywithValidtoken(t *testing.T) {
 	update := new(Updater)
 	update.connector = mockGetExternalInterface()
 	req := &updateproto.UpdateRequest{
-		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b:1",
+		ResourceID:   "3bd1f589-117a-4cf9-89f2-da44ee8e012b.1",
 		SessionToken: "validToken",
 	}
 	resp, err := update.GetSoftwareInventory(ctx, req)

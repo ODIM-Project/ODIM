@@ -239,6 +239,10 @@ func SetUpMockConfig(t *testing.T) error {
 		MaxIdleConns:   10,
 		MaxActiveConns: 120,
 	}
+	Data.MessageBusConf = &MessageBusConf{
+		MessageBusType:  "Kafka",
+		MessageBusQueue: []string{"redfish-topic"},
+	}
 	Data.KeyCertConf = &KeyCertConf{
 		RootCACertificate: hostCA,
 		RPCPrivateKey:     hostPrivKey,
@@ -327,6 +331,11 @@ func SetUpMockConfig(t *testing.T) error {
 			ConnectionMethodType:    "Redfish",
 			ConnectionMethodVariant: "Storage:BasicAuth:STG:1.0.0",
 		},
+	}
+	Data.EventConf = &EventConf{
+		DeliveryRetryAttempts:                 1,
+		DeliveryRetryIntervalSeconds:          1,
+		RetentionOfUndeliveredEventsInMinutes: 1,
 	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion)

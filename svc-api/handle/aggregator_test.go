@@ -412,8 +412,8 @@ func TestDeleteAggregationSource(t *testing.T) {
 
 var aggregateRequest = map[string]interface{}{
 	"Elements": []string{
-		"/redfish/v1/Systems/423e8254-e3ef-42bd-a130-f096c93a4wq2:1",
-		"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+		"/redfish/v1/Systems/423e8254-e3ef-42bd-a130-f096c93a4wq2.1",
+		"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 	},
 }
 

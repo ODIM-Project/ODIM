@@ -207,8 +207,8 @@ func TestCreateEventSubscription(t *testing.T) {
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
 		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-			{OdataID: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da:1"},
+			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
+			{OdataID: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 		},
 	}
 	postBody, _ := json.Marshal(&SubscriptionReq)
@@ -259,7 +259,7 @@ func TestCreateEventSubscription(t *testing.T) {
 
 	// test another subscription with other OriginResources
 	SubscriptionReq["OriginResources"] = []evmodel.OdataIDLink{
-		{OdataID: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da:1"},
+		{OdataID: "/redfish/v1/Systems/11081de0-4859-984c-c35a-6c50732d72da.1"},
 	}
 	SubscriptionReq["Destination"] = "https://10.24.1.25:8070/Destination3"
 	SubscriptionReq["EventTypes"] = []string{"Alert"}
@@ -318,7 +318,7 @@ func TestCreateEventSubscriptionwithHostName(t *testing.T) {
 		"SubordinateResources": true,
 		"OriginResources": []evmodel.OdataIDLink{
 			{
-				OdataID: "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c:1",
+				OdataID: "/redfish/v1/Systems/abab09db-e7a9-4352-8df0-5e41315a2a4c.1",
 			},
 		},
 	}
@@ -369,7 +369,7 @@ func TestNegativeCasesCreateEventSubscription(t *testing.T) {
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
 		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/d72dade0-c35a-984c-4859-1108132d72da:1"},
+			{OdataID: "/redfish/v1/Systems/d72dade0-c35a-984c-4859-1108132d72da.1"},
 		},
 	}
 
@@ -549,7 +549,7 @@ func TestCreateDefaultEventSubscription(t *testing.T) {
 	}
 	p.CreateEventSubscription(taskID, sessionUserName, req)
 
-	systemURL := []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"}
+	systemURL := []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"}
 	eventTypes := []string{"Alert"}
 	messageIDs := []string{}
 	resourceTypes := []string{}
@@ -716,7 +716,7 @@ func TestCheckCollectionSubscription(t *testing.T) {
 		CreateChildTask: mockCreateChildTask,
 		UpdateTask:      mockUpdateTask,
 	}
-	originResources := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"
+	originResources := "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	protocol := "Redfish"
 	p.checkCollectionSubscription(originResources, protocol)
 	devSub, _ := evmodel.GetDeviceSubscriptions("*" + originResources)

@@ -161,7 +161,7 @@ func TestGetFirmwareInventory(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/UpdateService/FirmwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"/redfish/v1/UpdateService/FirmwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
 }
 
@@ -174,7 +174,7 @@ func TestGetSoftwareInventory(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/UpdateService/SoftwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"/redfish/v1/UpdateService/SoftwareInventory/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
 }
 

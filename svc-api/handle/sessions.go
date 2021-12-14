@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
@@ -40,6 +41,7 @@ type SessionRPCs struct {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) CreateSession(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
@@ -83,6 +85,7 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
+	defer ctx.Next()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
@@ -114,6 +117,7 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) GetSession(ctx iris.Context) {
+	defer ctx.Next()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
@@ -141,6 +145,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
+	defer ctx.Next()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
@@ -160,6 +165,7 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 
 // GetSessionService will do the rpc call to get session service
 func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
+	defer ctx.Next()
 	resp, err := s.GetSessionServiceRPC()
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()

@@ -353,12 +353,12 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 	mockDeviceData("c14d91b5-3333-48bb-a7b7-75f74a137d48", device4)
 	mockDeviceData("8e896459-a8f9-4c83-95b7-7b316b4908e1", device5)
 	mockDeviceData("9dd6e488-31b2-475a-9304-d5f193a6a7cd", device6)
-	mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
-	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1")
-	mockSystemData("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	mockSystemData("/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
-	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1")
-	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1")
+	mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
+	mockSystemData("/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1")
+	mockSystemData("/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	mockSystemData("/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1")
+	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
+	mockSystemData("/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1")
 
 	type args struct {
 		taskID          string
@@ -380,8 +380,8 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1",
 		},
 	})
 
@@ -390,8 +390,8 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 		},
 	})
 
@@ -400,7 +400,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b",
 		},
 	})
@@ -410,8 +410,8 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
-			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1",
+			"/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
+			"/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1",
 		},
 	})
 
@@ -427,7 +427,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	})
 
@@ -436,7 +436,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		},
 	})
 
@@ -445,7 +445,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1:1",
+			"/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1",
 		},
 	})
 
@@ -454,7 +454,7 @@ func TestPluginContact_ResetComputerSystem(t *testing.T) {
 		DelayBetweenBatchesInSeconds: 2,
 		ResetType:                    "ForceRestart",
 		TargetURIs: []string{
-			"/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd:1",
+			"/redfish/v1/Systems/9dd6e488-31b2-475a-9304-d5f193a6a7cd.1",
 		},
 	})
 	tests := []struct {

@@ -159,6 +159,7 @@ func Router() *iris.Application {
 		GetCompositionServiceRPC:      rpc.GetCompositionService,
 		GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
 		GetResourceBlockRPC:           rpc.GetResourceBlock,
+		CreateResourceBlockRPC:        rpc.CreateResourceBlock,
 		DeleteResourceBlockRPC:        rpc.DeleteResourceBlock,
 		GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
 		GetResourceZoneRPC:            rpc.GetResourceZone,
@@ -582,6 +583,7 @@ func Router() *iris.Application {
 	compositionService.Get("/", cs.GetCompositionService)
 	compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
 	compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
+	compositionService.Post("/ResourceBlocks", cs.CreateResourceBlock)
 	compositionService.Delete("/ResourceBlocks/{id}", cs.DeleteResourceBlock)
 	compositionService.Get("/ResourceZones", cs.GetResourceZoneCollection)
 	compositionService.Get("/ResourceZones/{id}", cs.GetResourceZone)

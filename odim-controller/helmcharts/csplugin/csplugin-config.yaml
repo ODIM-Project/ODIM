@@ -1,0 +1,7 @@
+csplugin:
+  csPluginRootServiceUUID:
+  username: admin
+  password: Od!m12$4
+  odimUsername: admin
+  odimPassword:
+  logPath: /var/log/csplugin_logs

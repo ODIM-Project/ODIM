@@ -21,6 +21,7 @@ type CompositionServiceRPCs struct {
 	GetCompositionServiceRPC      func(req compositionserviceproto.GetCompositionServiceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	GetResourceBlockCollectionRPC func(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	GetResourceBlockRPC           func(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
+	CreateResourceBlockRPC        func(req compositionserviceproto.CreateCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	DeleteResourceBlockRPC        func(req compositionserviceproto.DeleteCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	GetResourceZoneCollectionRPC  func(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
 	GetResourceZoneRPC            func(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error)
@@ -115,6 +116,61 @@ func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	json.Unmarshal(resp.Body, &res)
+	ctx.JSON(res)
+}
+
+func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
+
+	var req interface{}
+	var res interface{}
+	err := ctx.ReadJSON(&req)
+	if err != nil {
+		errorMessage := "error while trying to get JSON body from the create Resource zone request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(req)
+	if err != nil {
+		errorMessage := "error while trying to create JSON request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+	if sessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	block_req := compositionserviceproto.CreateCompositionResourceRequest{
+		SessionToken: sessionToken,
+		RequestBody:  request,
+		URL:          ctx.Request().RequestURI,
+	}
+
+	resp, err := cs.CreateResourceBlockRPC(block_req)
+	if err != nil {
+		errorMessage := "RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}

@@ -67,11 +67,13 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         code = HTTPStatus.CREATED
         if request.URL:
             segments = request.URL.split("/")
-            # ResourceBlocks Collection
+            # ResourceBlock
             if segments[-1] == "ResourceBlocks":
                 # create resource Block
-                pass
-            # ResourceZones Collection
+                logging.info("In Create Composition Resource")
+                response, code = self.resourceblock.create_resource_block(
+                    json.loads(str(request.RequestBody.decode("utf-8"))))
+            # ResourceZone
             elif segments[-1] == "ResourceZones":
                 # create Resource Zone
                 response, code = self.resourcezone.create_resource_zone(

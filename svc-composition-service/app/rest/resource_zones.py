@@ -20,6 +20,7 @@ class ResourceZones():
 
         res = {}
         code = HTTPStatus.CREATED
+        pipe = self.redis.pipeline()
 
         if request_data is None:
             res["Error"] = "Request Body is empty"
@@ -90,7 +91,7 @@ class ResourceZones():
                     data['Links']['Zones'].append(
                         {"@odata.id": zone['@odata.id']})
 
-                    self.redis.set("{block}:{block_url}".format(
+                    pipe.set("{block}:{block_url}".format(
                         block="ResourceBlocks", block_url=data['@odata.id']), str(json.dumps(data)))
                     logging.info(
                         "Resource Block linked to Resource Zone is successfully updated")
@@ -99,10 +100,12 @@ class ResourceZones():
                     logging.debug("Getting resource block data from redis is failed for this resource: {uri}".format(
                         uri=resource_block['@odata.id']))
 
-            self.redis.set("{zones}:{zone_uri}".format(
+            pipe.set("{zones}:{zone_uri}".format(
                 zones="ResourceZones", zone_uri=zone['@odata.id']), str(json.dumps(zone)))
-            self.redis.set("{zone_block}:{zone_url}".format(
+            pipe.set("{zone_block}:{zone_url}".format(
                 zone_block="ResourceZone-ResourceBlock", zone_url=zone['@odata.id']), resource_block['@odata.id'])
+
+            pipe.execute()
 
             logging.info("Created a Resource Zone successfully")
             res = {"Id": zone["Id"]}
@@ -116,6 +119,7 @@ class ResourceZones():
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
+            pipe.reset()
             return res, code
 
     def get_resource_zone_collection(self, url):

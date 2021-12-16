@@ -113,8 +113,8 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 			},
 			Oem: evresponse.Oem{},
 		},
-		DeliveryRetryAttempts:        evcommon.DeliveryRetryAttempts,
-		DeliveryRetryIntervalSeconds: evcommon.DeliveryRetryIntervalSeconds,
+		DeliveryRetryAttempts:        config.Data.EventConf.DeliveryRetryAttempts,
+		DeliveryRetryIntervalSeconds: config.Data.EventConf.DeliveryRetryIntervalSeconds,
 		EventFormatTypes:             []string{"Event"},
 		EventTypesForSubscription: []string{
 			"StatusChange",

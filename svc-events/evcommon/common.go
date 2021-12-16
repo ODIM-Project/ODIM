@@ -38,12 +38,6 @@ import (
 )
 
 const (
-	// DeliveryRetryAttempts is of retry attempts for event posting
-	DeliveryRetryAttempts = 3
-
-	// DeliveryRetryIntervalSeconds is of retry interval in seconds for event posting
-	DeliveryRetryIntervalSeconds = 60
-
 	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
 	SaveUndeliveredEventsFlag = false
 )

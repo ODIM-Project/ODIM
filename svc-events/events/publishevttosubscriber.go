@@ -320,44 +320,59 @@ func isStringPresentInSlice(slice []string, str, message string) bool {
 
 // postEvent will post the event to destination
 func postEvent(destination, eventUniqueID string, event []byte) {
+	resp, err := sendEvent(destination, event)
+	if err == nil {
+		resp.Body.Close()
+		log.Printf("event post response: %v", resp)
+		return
+	}
+	if evcommon.SaveUndeliveredEventsFlag {
+		serr := evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
+		if serr != nil {
+			log.Error("error while saving undelivered event: ", serr.Error())
+		}
+	}
+	go reAttemptEvents(destination, event)
+	return
+}
+
+func sendEvent(destination string, event []byte) (*http.Response, error) {
 	httpConf := &config.HTTPConfig{
 		CACertificate: &config.Data.KeyCertConf.RootCACertificate,
 	}
 	httpClient, err := httpConf.GetHTTPClientObj()
 	if err != nil {
 		log.Error("failed to get http client object: ", err.Error())
-		return
+		return &http.Response{}, err
 	}
 	req, err := http.NewRequest("POST", destination, bytes.NewBuffer(event))
 	if err != nil {
 		log.Error("error while getting new http request: ", err.Error())
-		return
+		return &http.Response{}, err
 	}
 	req.Close = true
 	req.Header.Set("Content-Type", "application/json")
+	config.TLSConfMutex.RLock()
+	defer config.TLSConfMutex.RUnlock()
+	return httpClient.Do(req)
+}
+
+func reAttemptEvents(destination string, event []byte) {
 	var resp *http.Response
-	count := evcommon.DeliveryRetryAttempts + 1
+	var err error
+	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
-		config.TLSConfMutex.RLock()
-		resp, err = httpClient.Do(req)
-		config.TLSConfMutex.RUnlock()
+		log.Println("Retrying event posting")
+		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
 			return
 		}
-		log.Println("Retrying event posting")
-		time.Sleep(time.Second * evcommon.DeliveryRetryIntervalSeconds)
+		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
 
-	if evcommon.SaveUndeliveredEventsFlag {
-		err = evmodel.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
-		if err != nil {
-			log.Error("error while saving undelivered event: ", err.Error())
-		}
-	}
-	return
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On

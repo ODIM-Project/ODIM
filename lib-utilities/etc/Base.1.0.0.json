@@ -1,13 +1,13 @@
 {
-    "@Redfish.Copyright": "Copyright 2014-2018 DMTF. All rights reserved.",
+    "@Redfish.Copyright": "Copyright © 2014-2015 Distributed Management Task Force, Inc. (DMTF). All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
-    "@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
-    "Id": "Base.1.3.1",
+    "@odata.type": "#MessageRegistry.1.0.0.MessageRegistry",
+    "Id": "Base.1.0.0",
     "Name": "Base Message Registry",
     "Language": "en",
     "Description": "This registry defines the base messages for Redfish",
     "RegistryPrefix": "Base",
-    "RegistryVersion": "1.3.1",
+    "RegistryVersion": "1.0.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "Success": {
@@ -18,11 +18,11 @@
             "Resolution": "None"
         },
         "GeneralError": {
-            "Description": "Indicates that a general error has occurred.  Use in ExtendedInfo is discouraged.  When used in ExtendedInfo, implementations are expected to include a Resolution property with this error to indicate how to resolve the problem.",
-            "Message": "A general error has occurred. See Resolution for information on how to resolve the error.",
+            "Description": "Indicates that a general error has occurred.",
+            "Message": "A general error has occurred. See ExtendedInfo for more information.",
             "Severity": "Critical",
             "NumberOfArgs": 0,
-            "Resolution": "None."
+            "Resolution": "See ExtendedInfo for more information."
         },
         "Created": {
             "Description": "Indicates that all conditions of a successful creation operation have been met.",
@@ -63,7 +63,7 @@
             "Resolution": "Correct the value for the property in the request body and resubmit the request if the operation failed."
         },
         "PropertyValueFormatError": {
-            "Description": "Indicates that a property was given the correct value type but the value of that property was not supported.",
+            "Description": "Indicates that a property was given the correct value type but the value of that property was not supported.  This includes value size/length exceeded.",
             "Message": "The value %1 for the property %2 is of a different format than the property can accept.",
             "Severity": "Warning",
             "NumberOfArgs": 2,
@@ -83,17 +83,6 @@
                 "string"
             ],
             "Resolution": "Choose a value from the enumeration list that the implementation can support and resubmit the request if the operation failed."
-        },
-        "PropertyValueOutOfRange": {
-            "Description": "Indicates that a property was given the correct value type but the value of that property is outside the supported range.",
-            "Message": "The value %1 for the property %2 is not in the supported range of acceptable values.",
-            "Severity": "Warning",
-            "NumberOfArgs": 2,
-            "ParamTypes": [
-                "string",
-                "string"
-            ],
-            "Resolution": "Correct the value for the property in the request body and resubmit the request if the operation failed."
         },
         "PropertyNotWritable": {
             "Description": "Indicates that a property was given a value in the request body, but the property is a readonly property.",
@@ -121,13 +110,6 @@
             "Severity": "Critical",
             "NumberOfArgs": 0,
             "Resolution": "Ensure that the request body is valid JSON and resubmit the request."
-        },
-        "EmptyJSON": {
-            "Description": "Indicates that the request body contained an empty JSON object when one or more properties are expected in the body.",
-            "Message": "The request body submitted contained an empty JSON object and the service is unable to process it.",
-            "Severity": "Warning",
-            "NumberOfArgs": 0,
-            "Resolution": "Add properties in the JSON object and resubmit the request."
         },
         "ActionNotSupported": {
             "Description": "Indicates that the action supplied with the POST operation is not supported by the resource.",
@@ -163,7 +145,7 @@
         },
         "ActionParameterUnknown": {
             "Description": "Indicates that an action was submitted but a parameter supplied did not match any of the known parameters.",
-            "Message": "The action %1 was submitted with the invalid parameter %2.",
+            "Message": "The action %1 was submitted with with the invalid parameter %2.",
             "Severity": "Warning",
             "NumberOfArgs": 2,
             "ParamTypes": [
@@ -285,26 +267,10 @@
         },
         "ResourceAlreadyExists": {
             "Description": "Indicates that a resource change or creation was attempted but that the operation cannot proceed because the resource already exists.",
-            "Message": "The requested resource of type %1 with the property %2 with the value %3 already exists.",
+            "Message": "The requested resource already exists.",
             "Severity": "Critical",
-            "NumberOfArgs": 3,
-            "ParamTypes": [
-                "string",
-                "string",
-                "string"
-            ],
+            "NumberOfArgs": 0,
             "Resolution": "Do not repeat the create operation as the resource has already been created."
-        },
-        "ResourceNotFound": {
-            "Description": "Indicates that the operation expected a resource identifier that corresponds to an existing resource but one was not found.",
-            "Message": "The requested resource of type %1 named %2 was not found.",
-            "Severity": "Critical",
-            "NumberOfArgs": 2,
-            "ParamTypes": [
-                "string",
-                "string"
-            ],
-            "Resolution": "Provide a valid resource identifier and resubmit the request."
         },
         "CreateFailedMissingReqProperties": {
             "Description": "Indicates that a create was attempted on a resource but that properties that are required for the create operation were missing from the request.",
@@ -353,7 +319,7 @@
         },
         "AccountModified": {
             "Description": "Indicates that the account was successfully modified.",
-            "Message": "The account was successfully modified.",
+            "Message": "The account was successfully modifed.",
             "Severity": "OK",
             "NumberOfArgs": 0,
             "Resolution": "No resolution is required."
@@ -411,7 +377,7 @@
             "ParamTypes": [
                 "string"
             ],
-            "Resolution": "Place a valid resource at the URI or correct the URI and resubmit the request."
+            "Resolution": "Place a valid resource at thr URI or correct the URI and resubmit the request."
         },
         "ResourceAtUriInUnknownFormat": {
             "Description": "Indicates that the URI was valid but the resource or image at that URI was in a format not supported by the service.",
@@ -456,8 +422,8 @@
             "Resolution": "Change protocols or URIs. "
         },
         "AccessDenied": {
-            "Description": "Indicates that while attempting to access, connect to or transfer to/from another resource, the service denied access.",
-            "Message": "While attempting to establish a connection to %1, the service denied access.",
+            "Description": "Indicates that while attempting to access, connect to or transfer to/from another resource, the service was denied access.",
+            "Message": "While attempting to establish a connection to %1, the service was denied access.",
             "Severity": "Critical",
             "NumberOfArgs": 1,
             "ParamTypes": [
@@ -494,41 +460,6 @@
                 "string",
                 "string"
             ],
-            "Resolution": "No resolution is required."
-        },
-        "ResourceInStandby": {
-            "Description": "Indicates that the request could not be performed because the resource is in standby.",
-            "Message": "The request could not be performed because the resource is in standby.",
-            "Severity": "Critical",
-            "NumberOfArgs": 0,
-            "Resolution": "Ensure that the resource is in the correct power state and resubmit the request."
-        },
-        "ResourceExhaustion": {
-            "Description": "Indicates that a resource could not satisfy the request due to some unavailability of resources.  An example is that available capacity has been allocated.",
-            "Message": "The resource %1 was unable to satisfy the request due to unavailability of resources.",
-            "Severity": "Critical",
-            "NumberOfArgs": 1,
-            "ParamTypes": [
-                "string"
-            ],
-            "Resolution": "Ensure that the resources are available and resubmit the request."
-        },
-        "StringValueTooLong": {
-            "Description": "Indicates that a string value passed to the given resource exceeded its length limit. An example is when a shorter limit is imposed by an implementation than that allowed by the specification.",
-            "Message": "The string %1 exceeds the length limit %2.",
-            "Severity": "Warning",
-            "NumberOfArgs": 2,
-            "ParamTypes": [
-                "string",
-                "number"
-            ],
-            "Resolution": "Resubmit the request with an appropriate string length."
-        },
-        "SessionTerminated": {
-            "Description": "Indicates that the DELETE operation on the Session resource resulted in the successful termination of the session.",
-            "Message": "The session was successfully terminated.",
-            "Severity": "OK",
-            "NumberOfArgs": 0,
             "Resolution": "No resolution is required."
         }
     }

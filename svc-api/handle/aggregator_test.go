@@ -227,7 +227,7 @@ type params struct {
 var request = map[string]interface{}{
 	"@odata.context": "/redfish/v1/$metadata#ActionInfo.ActionInfo",
 	"@odata.id":      "/redfish/v1/AggregationService/RemoveActionInfo",
-	"@odata.type":    "#ActionInfo.v1_0_3.ActionInfo",
+	"@odata.type":    "#ActionInfo.v1_2_0.ActionInfo",
 	"Id":             "RemoveActionInfo",
 	"Name":           "Remove Action Info",
 	"Oem":            "",

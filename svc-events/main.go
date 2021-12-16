@@ -18,14 +18,12 @@ import (
 	"strings"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	evt "github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
 	"github.com/sirupsen/logrus"
 )
@@ -61,7 +59,10 @@ func main() {
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
 	// Intializing plugin token
 	evcommon.Token.Tokens = make(map[string]string)
-	registerHandler()
+
+	// register handlers
+	events := rpc.GetPluginContactInitializer()
+	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
@@ -69,7 +70,7 @@ func main() {
 	consumer.In, consumer.Out = common.CreateJobQueue(jobQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 5)
+	common.RunReadWorkers(consumer.Out, events.Connector.PublishEventsToDestination, 5)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
@@ -101,15 +102,4 @@ func main() {
 	if err := services.ODIMService.Run(); err != nil {
 		log.Fatal(err.Error())
 	}
-}
-
-func registerHandler() {
-	events := new(rpc.Events)
-	events.IsAuthorizedRPC = services.IsAuthorized
-	events.GetSessionUserNameRPC = services.GetSessionUserName
-	events.ContactClientRPC = pmbhandle.ContactPlugin
-	events.CreateTaskRPC = services.CreateTask
-	events.UpdateTaskRPC = evt.UpdateTaskData
-	events.CreateChildTaskRPC = services.CreateChildTask
-	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 }

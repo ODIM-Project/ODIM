@@ -81,7 +81,7 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURI,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           aggregateUUID,
@@ -188,7 +188,7 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      req.URL,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           data[1],
@@ -303,7 +303,7 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           aggregateID,
@@ -383,7 +383,7 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           aggregateID,

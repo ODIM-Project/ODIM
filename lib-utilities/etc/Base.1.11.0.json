@@ -2,12 +2,12 @@
     "@Redfish.Copyright": "Copyright 2014-2021 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
-    "Id": "Base.1.10.0",
+    "Id": "Base.1.11.0",
     "Name": "Base Message Registry",
     "Language": "en",
     "Description": "This registry defines the base messages for Redfish",
     "RegistryPrefix": "Base",
-    "RegistryVersion": "1.10.0",
+    "RegistryVersion": "1.11.0",
     "OwningEntity": "DMTF",
     "Messages": {
         "Success": {
@@ -144,6 +144,24 @@
                 "This argument shall contain the name of the property."
             ],
             "Resolution": "Choose a value from the enumeration list that the implementation can support and resubmit the request if the operation failed."
+        },
+        "PropertyValueError": {
+            "Description": "Indicates that a property was given an invalid value.",
+            "LongDescription": "This message shall be used to indicate that a property was given an invalid value, and the value cannot or should not be included in the message text.",
+            "Message": "The value provided for the property %1 is not valid.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The name of the property."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the property."
+            ],
+            "Resolution": "Correct the value for the property in the request body and resubmit the request if the operation failed."
         },
         "PropertyNotWritable": {
             "Description": "Indicates that a property was given a value in the request body, but the property is a readonly property.",
@@ -370,6 +388,27 @@
             ],
             "Resolution": "Choose a value from the enumeration list that the implementation can support and resubmit the request if the operation failed."
         },
+        "ActionParameterValueError": {
+            "Description": "Indicates that a parameter was given an invalid value.",
+            "LongDescription": "This message shall be used to indicate that a parameter was given an invalid value, and the value cannot or should not be included in the message.",
+            "Message": "The value for the parameter %1 in the action %2 is invalid.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The name of the action parameter.",
+                "The name of the action."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the name of the action parameter.",
+                "This argument shall contain the name of the action."
+            ],
+            "Resolution": "Correct the value for the parameter in the request body and resubmit the request if the operation failed."
+        },
         "ActionParameterNotSupported": {
             "Description": "Indicates that the parameter supplied for the action is not supported on the resource.",
             "LongDescription": "This message shall be used to indicate that the parameter supplied for the action is not supported on the resource.",
@@ -429,6 +468,24 @@
             ],
             "ArgLongDescriptions": [
                 "This argument shall contain the value provided for the query parameter.",
+                "This argument shall contain the name of the query parameter."
+            ],
+            "Resolution": "Correct the value for the query parameter in the request and resubmit the request if the operation failed."
+        },
+        "QueryParameterValueError": {
+            "Description": "Indicates that a query parameter was given an invalid value.",
+            "LongDescription": "This message shall be used to indicate that a query parameter was given an invalid value that can not or should not be included in the message.",
+            "Message": "The value for the parameter %1 is invalid.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The query parameter."
+            ],
+            "ArgLongDescriptions": [
                 "This argument shall contain the name of the query parameter."
             ],
             "Resolution": "Correct the value for the query parameter in the request and resubmit the request if the operation failed."
@@ -1217,6 +1274,9 @@
             "Severity": "Critical",
             "MessageSeverity": "Critical",
             "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
             "ArgDescriptions": [
                 "The software, provider, or service that reported the fault condition."
             ],
@@ -1362,6 +1422,42 @@
                 "This argument shall contain the name of the action that is deprecated."
             ],
             "Resolution": "Refer to the schema guide for more information."
+        },
+        "NetworkNameResolutionNotConfigured": {
+            "Description": "Indicates that network-based name resolution has not been configured on the service.",
+            "LongDescription": "This message shall be used to indicate that network-based name resolution, such as DNS or WINS protocols, has not been configured on the service.",
+            "Message": "Network name resolution has not been configured on this service.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 0,
+            "Resolution": "Configure the network name resolution protocol support on this service, or update any URI values to include an IP address instead of a network name and resubmit the request."
+        },
+        "NetworkNameResolutionNotSupported": {
+            "Description": "Indicates the service does not support network-based name resolution.",
+            "LongDescription": "This message shall be used to indicate that the service does not support network-based name resolution, such as DNS or WINS protocols.  URIs provided as property values must contain an IP address as the service cannot resolve a network name.",
+            "Message": "Resolution of network-based names is not supported by this service.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 0,
+            "Resolution": "Update any URI values to include an IP address instead of a network name and resubmit the request."
+        },
+        "ServiceDisabled": {
+            "Description": "Indicates that the operation failed because the service, such as the account service, is disabled and cannot accept requests.",
+            "LongDescription": "This message shall be used to indicate that the operation failed because the service, such as the account service, is disabled and cannot accept requests.",
+            "Message": "The operation failed because the service at %1 is disabled and cannot accept requests.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The URI of the disabled service."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the URI of the disabled service."
+            ],
+            "Resolution": "Enable the service and resubmit the request if the operation failed."
         }
     }
 }

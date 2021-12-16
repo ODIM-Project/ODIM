@@ -539,7 +539,7 @@ Transfer-Encoding:chunked
 {
    "@odata.context": "/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
    "@odata.id": "/redfish/v1/",
-   "@odata.type": "#ServiceRoot.v1_5_0.ServiceRoot",
+   "@odata.type": "#ServiceRoot.v1_11_0.ServiceRoot",
    "Id": "RootService",
    "Registries": {
       "@odata.id": "/redfish/v1/Registries"
@@ -819,7 +819,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#SessionService.v1_1_6.SessionService",
+   "@odata.type":"#SessionService.v1_1_8.SessionService",
    "@odata.id":"/redfish/v1/SessionService",
    "Id":"Sessions",
    "Name":"Session Service",
@@ -904,7 +904,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-	"@odata.type": "#SessionService.v1_1_6.SessionService",
+	"@odata.type": "#SessionService.v1_1_8.SessionService",
 	"@odata.id": "/redfish/v1/SessionService/Sessions/1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
@@ -967,7 +967,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Session.v1_2_1.Session",
+   "@odata.type":"#Session.v1_3_0.Session",
    "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
    "Id":"4ee42139-22db-4e2a-97e4-020013248768",
    "Name":"User Session",
@@ -1059,7 +1059,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_6_0.AccountService",
+   "@odata.type":"#AccountService.v1_10_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -1146,7 +1146,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1246,7 +1246,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1447,7 +1447,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1519,7 +1519,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1596,7 +1596,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1726,7 +1726,7 @@ Transfer-Encoding":chunked
    "@odata.context":"/redfish/v1/$metadata#AggregationService.AggregationService",
    "Id":"AggregationService",
    "@odata.id":"/redfish/v1/AggregationService",
-   "@odata.type":"#AggregationService.v1_0_0.AggregationService",
+   "@odata.type":"#AggregationService.v1_0_1.AggregationService",
    "Name":"AggregationService",
    "Description":"AggregationService",
    "Actions":{
@@ -2030,7 +2030,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-4c7d-942f-55eaf7d6812a",
@@ -2051,7 +2051,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
@@ -2188,7 +2188,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -2208,7 +2208,7 @@ x-frame-options":"sameorigin"
 >** Sample response body \(HTTP 201 status\)**
 ```
  {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
@@ -2292,7 +2292,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
@@ -2353,6 +2353,7 @@ curl -i PATCH \
 
 ```
 {
+
    "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
@@ -2475,7 +2476,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4103-8757-4c7d-942f-55eaf7d6412a",
@@ -2620,7 +2621,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
@@ -2728,7 +2729,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-2c7d-942f-55eaf7d6412a",
@@ -2826,7 +2827,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2910,7 +2911,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2998,7 +2999,7 @@ curl -i POST \
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -3089,7 +3090,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
@@ -3200,7 +3201,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
@@ -3310,7 +3311,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/e02faf78-f919-4612-b031-bec7ae59910d",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"e02faf78-f919-4612-b031-bec7ae59910d",
@@ -5071,6 +5072,7 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
+
    "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1",
    "@odata.type":"#Chassis.v1_6_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
@@ -5184,7 +5186,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
    "Description":"My RackGroup",
    "Name":"RG8",
@@ -5213,7 +5215,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5560,7 +5562,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
    "Description":"My RackGroup",
    "Name":"RG5",
@@ -5679,7 +5681,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5774,7 +5776,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5865,7 +5867,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -6503,7 +6505,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"2D2866FD\"",
    "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_13_0.Manager",
    "Actions":{ 
       "#Manager.Reset":{ 
          "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/Actions/Manager.Reset"
@@ -6582,7 +6584,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_13_0.Manager",
    "Name":"ODIMRA",
    "ManagerType":"Service",
    "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
@@ -6601,7 +6603,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_13_0.Manager",
    "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",
@@ -6850,7 +6852,7 @@ curl -i GET \
 
 ```
 {
-    "@odata.type": "#UpdateService.v1_9_0.UpdateService",
+    "@odata.type": "#UpdateService.v1_10_0.UpdateService",
     "@odata.id": "/redfish/v1/UpdateService",
     "@odata.context": "/redfish/v1/$metadata#UpdateService.UpdateService",
     "Id": "UpdateService",
@@ -6975,7 +6977,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -7061,7 +7063,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -7180,7 +7182,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -7253,7 +7255,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -7413,7 +7415,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5",
-   "@odata.type":"#Fabric.v1_0_5.Fabric",
+   "@odata.type":"#Fabric.v1_2_2.Fabric",
    "AddressPools":{ 
       "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/AddressPools"
    },
@@ -7518,7 +7520,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
-   "@odata.type":"#Switch.v1_2_0.Switch",
+   "@odata.type":"#Switch.v1_6_0.Switch",
    "Id":"fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
    "Manufacturer":"Aruba",
    "Model":"Aruba 8325",
@@ -7610,7 +7612,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0/Ports/80b5f999-25e9-4b37-992c-de2f065ee0e3",
-   "@odata.type":"#Port.v1_3_0.Port",
+   "@odata.type":"#Port.v1_5_0.Port",
    "CurrentSpeedGbps":0,
    "Description":"single port",
    "Id":"80b5f999-25e9-4b37-992c-de2f065ee0e3",
@@ -7860,7 +7862,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
-   "@odata.type":"#Endpoint.v1_5_0.Endpoint",
+   "@odata.type":"#Endpoint.v1_6_1.Endpoint",
    "Description":"NK Endpoint Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
@@ -7982,7 +7984,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/f310bf40-5163-4cbf-be5b-ac574fe87863",
-   "@odata.type":"#Zone.v1_5_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "DefaultRoutingEnabled":false,
    "Description":"",
    "Id":"f310bf40-5163-4cbf-be5b-ac574fe87863",
@@ -8119,7 +8121,7 @@ Transfer-Encoding:chunked
 ```
 {
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
-  "@odata.type": "#AddressPool.v1_1_0.AddressPool",
+  "@odata.type": "#AddressPool.v1_2_0.AddressPool",
   "BgpEvpn": {
     "AnycastGatewayIPAddress": "10.18.102.1",
     "AnycastGatewayMACAddress": "",
@@ -8306,7 +8308,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d",
-   "@odata.type":"#AddressPool.v1_1_0.AddressPool",
+   "@odata.type":"#AddressPool.v1_2_0.AddressPool",
    "BgpEvpn":{
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
@@ -8447,7 +8449,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98",
-   "@odata.type":"#Zone.v1_5_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"",
    "Id":"a2dc8760-ea05-4cab-8f95-866c1c380f98",
    "Links":{
@@ -8589,7 +8591,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
-   "@odata.type":"#Endpoint.v1_5_0.Endpoint",
+   "@odata.type":"#Endpoint.v1_6_1.Endpoint",
    "Description":"Host 2 Endpoint 1 Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
@@ -8746,7 +8748,7 @@ Transfer-Encoding: chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f",
-   "@odata.type":"#Zone.v1_5_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"",
    "Id":"06d344bb-cce1-4b0c-8414-6f6df1ea373f",
    "Links":{
@@ -8863,7 +8865,7 @@ curl -i -X PATCH \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"NK Zone Collection Description",
    "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
    "Links":{ 
@@ -8896,7 +8898,7 @@ curl -i -X PATCH \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"NK Zone Collection Description",
    "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
    "Links":{ 
@@ -9056,7 +9058,7 @@ Transfer-Encoding":chunked
 
 ```
 {
-   "@odata.type":"#TaskService.v1_1_4.TaskService",
+   "@odata.type":"#TaskService.v1_2_0.TaskService",
    "@odata.id":"/redfish/v1/TaskService",
    "@odata.context":"/redfish/v1/$metadata#TaskService.TaskService",
    "Description":"TaskService",
@@ -9155,7 +9157,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_5_0.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
@@ -9231,7 +9233,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
@@ -9372,7 +9374,7 @@ Transfer-Encoding:chunked
    "@odata.context":"/redfish/v1/$metadata#EventService.EventService",
    "Id":"EventService",
    "@odata.id":"/redfish/v1/EventService",
-   "@odata.type":"#EventService.v1_5_0.EventService",
+   "@odata.type":"#EventService.v1_7_2.EventService",
    "Name":"EventService",
    "Description":"EventService",
    "Actions":{
@@ -9723,7 +9725,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
@@ -9893,7 +9895,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_1_0.Event ",
+   "@odata.type":"#Event.v1_7_0.Event ",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",
@@ -9919,7 +9921,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-"@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
+"@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
 "Id": “Alert.1.0.0",
 "Name": "Base Message Registry",
 "Language": "en",
@@ -10138,7 +10140,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "@odata.context":"/redfish/v1/$metadata#EventDestination.EventDestination",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
@@ -10189,7 +10191,7 @@ curl -i -X DELETE \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",
@@ -10590,7 +10592,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
     "@odata.etag": "W/\"AB720077\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
-    "@odata.type": "#MetricDefinition.v1_0_0.MetricDefinition",
+    "@odata.type": "#MetricDefinition.v1_2_0.MetricDefinition",
     "Calculable": "NonSummable",
     "CalculationAlgorithm": "Average",
     "Description": "Metric definition for CPU Utilization",
@@ -10699,7 +10701,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#MetricReportDefinition.MetricReportDefinition",
     "@odata.etag": "W/\"9A613B5C\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1",
-    "@odata.type": "#MetricReportDefinition.v1_0_0.MetricReportDefinition",
+    "@odata.type": "#MetricReportDefinition.v1_4_1.MetricReportDefinition",
     "Description": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
     "Id": "CPUUtilCustom1",
     "MetricProperties": [
@@ -10952,7 +10954,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
     "@odata.etag": "W/\"BFAAE441\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
-    "@odata.type": "#Triggers.v1_0_0.Triggers",
+    "@odata.type": "#Triggers.v1_2_0.Triggers",
     "Description": "Triggers for CPU Utilization",
     "Id": "CPUUtilTriggers",
     "MetricProperties": [

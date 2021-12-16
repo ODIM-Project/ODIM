@@ -97,7 +97,7 @@ func GetManagersInfo(ctx iris.Context) {
 			OdataContext: "/ODIM/v1/$metadata#Manager.Manager",
 			//Etag:            "W/\"AA6D42B0\"",
 			OdataID:         uri,
-			OdataType:       "#Manager.v1_3_3.Manager",
+			OdataType:       "#Manager.v1_13_0.Manager",
 			Name:            pluginConfig.Data.PluginConf.ID,
 			ManagerType:     "Service",
 			ID:              pluginConfig.Data.RootServiceUUID,

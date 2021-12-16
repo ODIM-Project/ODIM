@@ -2,12 +2,12 @@
     "@Redfish.Copyright": "Copyright 2014-2021 DMTF. All rights reserved.",
     "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
     "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
-    "Id": "Base.1.10.0",
+    "Id": "Base.1.10.1",
     "Name": "Base Message Registry",
     "Language": "en",
     "Description": "This registry defines the base messages for Redfish",
     "RegistryPrefix": "Base",
-    "RegistryVersion": "1.10.0",
+    "RegistryVersion": "1.10.1",
     "OwningEntity": "DMTF",
     "Messages": {
         "Success": {
@@ -1217,6 +1217,9 @@
             "Severity": "Critical",
             "MessageSeverity": "Critical",
             "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
             "ArgDescriptions": [
                 "The software, provider, or service that reported the fault condition."
             ],

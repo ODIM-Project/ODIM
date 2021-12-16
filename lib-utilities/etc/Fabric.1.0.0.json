@@ -388,8 +388,6 @@
                 ]
             }
         },
-
-
         "PortAutomaticallyDisabled": {
             "Description": "Indicates that a switch's port has been automatically disabled.",
             "LongDescription": "This message shall be used to indicate that a switch's port has been automatically disabled, such as by the service.",

@@ -64,11 +64,11 @@ def write_node_details():
 		'all': {
 			'hosts': {},
 			'children': {
-				'kube-master': {'hosts': {}},
-				'kube-node': {'hosts': {}},
+				'kube_control_plane': {'hosts': {}},
+				'kube_node': {'hosts': {}},
 				'etcd': {'hosts': {}},
-				'k8s-cluster': {'children': {'kube-master': None, 'kube-node': None}},
-				'calico-rr': {'hosts': {}}
+				'k8s_cluster': {'children': {'kube_control_plane': None, 'kube_node': None}},
+				'calico_rr': {'hosts': {}}
 			}
 		}	
 	}
@@ -80,11 +80,11 @@ def write_node_details():
 		temp_dict = {node: None}
 		if attrs["isMaster"]:
 			logger.debug("%s(%s) is marked as master node", node, attrs['ip'])
-			node_details['all']['children']['kube-master']['hosts'].update(temp_dict)
-			node_details['all']['children']['kube-node']['hosts'].update(temp_dict)
+			node_details['all']['children']['kube_control_plane']['hosts'].update(temp_dict)
+			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
 			node_details['all']['children']['etcd']['hosts'].update(temp_dict)
 		else:
-			node_details['all']['children']['kube-node']['hosts'].update(temp_dict)
+			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
 
 	# consider None as empty dictionary
 	SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
@@ -421,7 +421,7 @@ def scale_in_k8s():
 	rm_nodes = ""
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
-		if node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts']:
+		if node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts']:
 			logger.warn("%s is master node, removing of which is not allowed, skipping!!!", node)
 			continue
 		if node in K8S_INVENTORY_DATA['all']['hosts'].keys():
@@ -430,7 +430,7 @@ def scale_in_k8s():
 			nodes_list += '{hostname},'.format(hostname=node)
 			K8S_INVENTORY_DATA['all']['hosts'].pop(node)
 			K8S_INVENTORY_DATA['all']['children']['etcd']['hosts'].pop(node, 'No Key found')
-			K8S_INVENTORY_DATA['all']['children']['kube-node']['hosts'].pop(node, 'No Key found')
+			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].pop(node, 'No Key found')
 		else:
 			logger.info("%s node is not part of the existing cluster, skipped", node)
 
@@ -525,7 +525,7 @@ def scale_out_k8s():
 			temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
 			K8S_INVENTORY_DATA['all']['hosts'].update(temp_dict)
 			temp_dict = {node: None}
-			K8S_INVENTORY_DATA['all']['children']['kube-node']['hosts'].update(temp_dict)
+			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].update(temp_dict)
 
 	if no_new_nodes_to_add:
 		logger.info("No new nodes to add to cluster %s, no changes made", DEPLOYMENT_ID)
@@ -890,7 +890,7 @@ def operation_odimra(operation):
 
 		# as rollback of failed operation is not handled yet
 		# will try on first master node and exit on failure
-		master_node = list(K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].keys())[0]
+		master_node = list(K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].keys())[0]
 		logger.info("Starting odimra %s on master node %s", operation, master_node)
 		odimra_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 				    --extra-vars "host={master_node} helm_config_file={helm_config_file} ignore_err={ignore_err}" \
@@ -1288,7 +1288,7 @@ def update_helm_charts(config_map_name):
 					logger.info("ODIMRA %s success copy docker image %s", operationName, dockerImageName)
 
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting upgrade of  %s on master node %s", fullHelmChartName, master_node[0])
 			odimra_upgrade_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					     --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
@@ -1331,7 +1331,7 @@ def list_deployments():
 	load_k8s_host_conf()
 
 	list_flag = False
-	for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+	for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 		ip = K8S_INVENTORY_DATA['all']['hosts'][master_node[0]]['ip']
 		list_deps_cmd = '/usr/bin/ssh {ip} helm list -n {namespace}'.format( \
 				namespace=CONTROLLER_CONF_DATA['odimra']['namespace'], ip=ip)
@@ -1360,7 +1360,7 @@ def list_deployment_history(depName):
 	load_k8s_host_conf()
 
 	list_flag = False
-	for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+	for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 		ip = K8S_INVENTORY_DATA['all']['hosts'][master_node[0]]['ip']
 		list_history_cmd = '/usr/bin/ssh {ip} helm history {deployment} -n {namespace}'.format( \
 				ip=ip, deployment=depName, \
@@ -1394,7 +1394,7 @@ def rollback_deployment(depName, revision):
 		rollback_flag = False
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting rollback of %s deployment on master node %s", depName, master_node[0])
 			rollback_dep_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} release={depName} revision={revision}" rollback.yaml'.format( \
@@ -1442,7 +1442,7 @@ def scale_plugin(plugin_name, replica_count):
 			exit(1)
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting scaling of %s plugin on master node %s", plugin_name, master_node[0])
 			scale_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file} replicas={replicas}" scale_plugin.yaml'.format( \
@@ -1503,7 +1503,7 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
 		scale_flag = False
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting scaling of  %s on master node %s", fullHelmChartName, master_node[0])
 			odimra_upgrade_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					     --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} replicas={replicas} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
@@ -1568,7 +1568,7 @@ def deploy_plugin(plugin_name):
 		plugin_count = 0
 
 		for plugin in plugin_list:
-			for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+			for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 				logger.info("Starting deployment of %s on master node %s", plugin, master_node[0])
 				deploy_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 						    --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" deploy_plugin.yaml'.format( \
@@ -1618,7 +1618,7 @@ def remove_plugin(plugin_name):
 		load_password_from_vault(cur_dir) 
 		upgrade_flag = False
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting removal of %s plugin on master node %s", plugin_name, master_node[0])
 			remove_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" remove_plugin.yaml'.format( \

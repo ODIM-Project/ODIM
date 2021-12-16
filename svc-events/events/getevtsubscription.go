@@ -32,7 +32,6 @@ import (
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
@@ -53,7 +52,7 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 	}
 	var subscriptions *evresponse.SubscriptionResponse
 
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(req.EventSubscriptionID)
+	subscriptionDetails, err := p.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()
@@ -134,7 +133,7 @@ func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRe
 	listMembers := []evresponse.ListMember{}
 	searchKey := "*"
 
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptionDetails, err := p.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()

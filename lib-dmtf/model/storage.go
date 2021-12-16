@@ -204,6 +204,7 @@ type DriveLinks struct {
 	PCIeFunctions []*Link `json:"PCIeFunctions,omitempty"`
 	StoragePools  []*Link `json:"StoragePools,omitempty"`
 	Volumes       []*Link `json:"Volumes,omitempty"`
+	Storage       *Link   `json:"Storage,omitempty"`
 }
 
 // DriveOperations represents drive operations

@@ -67,6 +67,31 @@ type ComputerSystem struct {
 	TrustedModules     []TrustedModule    `json:"TrustedModules"`
 	Oem                Oem                `json:"Oem,omitempty"`
 	PCIeDevicesCount   int                `json:"PCIeDevices@odata.count,omitempty"`
+	IdlePowerSaver     *IdlePowerSaver    `json:"IdlePowerSaver,omitempty"`
+	KeyManagement      KeyManagement      `json:"KeyManagement,omitempty"`
+}
+
+type KeyManagement struct {
+	KMIPCertificates *KMIPCertificates `json:"KMIPCertificates,omitempty"`
+	KMIPServers      []*KMIPServers    `json:"KMIPServers,omitempty"`
+}
+
+type KMIPCertificates struct {
+	Oid string `json:"@odata.id"`
+}
+
+type KMIPServers struct {
+	Address  string `json:"Address,omitempty"`
+	Password string `json:"Password,omitempty"`
+	Port     int    `json:"Port,omitempty"`
+	Username string `json:"Username,omitempty"`
+}
+type IdlePowerSaver struct {
+	Enabled                 bool `json:"Enabled,omitempty"`
+	EnterDwellTimeSeconds   int  `json:"EnterDwellTimeSeconds,omitempty"`
+	EnterUtilizationPercent int  `json:"EnterUtilizationPercent,omitempty"`
+	ExitDwellTimeSeconds    int  `json:"ExitDwellTimeSeconds,omitempty"`
+	ExitUtilizationPercent  int  `json:"ExitUtilizationPercent,omitempty"`
 }
 
 // Bios redfish structure
@@ -236,68 +261,82 @@ type HostWatchdogTimer struct {
 
 // Memory redfish structure
 type Memory struct {
-	Oid                                     string                `json:"@odata.id"`
-	Ocontext                                string                `json:"@odata.context,omitempty"`
-	Oetag                                   string                `json:"@odata.etag,omitempty"`
-	Otype                                   string                `json:"@odata.type,omitempty"`
-	Description                             string                `json:"description,omitempty"`
-	ID                                      string                `json:"Id,omitempty"`
-	Name                                    string                `json:"Name,omitempty"`
-	Oem                                     Oem                   `json:"Oem,omitempty"`
-	AllocationAlignmentMiB                  int                   `json:"AllocationAlignmentMiB,omitempty"`
-	AllocationIncrementMiB                  int                   `json:"AllocationIncrementMiB,omitempty"`
-	AllowedSpeedsMHz                        []int                 `json:"AllowedSpeedsMHz,omitempty"`
-	Assembly                                Assembly              `json:"Assembly,omitempty"`
-	BaseModuleType                          string                `json:"BaseModuleType,omitempty"` //enum
-	BusWidthBits                            int                   `json:"BusWidthBits,omitempty"`
-	CacheSizeMiB                            int                   `json:"CacheSizeMiB,omitempty"`
-	CapacityMiB                             int                   `json:"CapacityMiB,omitempty"`
-	ConfigurationLocked                     bool                  `json:"ConfigurationLocked,omitempty"`
-	DataWidthBits                           int                   `json:"DataWidthBits,omitempty"`
-	DeviceID                                string                `json:"DeviceID,omitempty"`
-	DeviceLocator                           string                `json:"DeviceLocator,omitempty"`
-	ErrorCorrection                         string                `json:"ErrorCorrection,omitempty"` //enum
-	FirmwareAPIVersion                      string                `json:"FirmwareApiVersion,omitempty"`
-	FirmwareRevision                        string                `json:"FirmwareRevision,omitempty"`
-	FunctionClasses                         []string              `json:"FunctionClasses,omitempty"`
-	IsRankSpareEnabled                      bool                  `json:"IsRankSpareEnabled,omitempty"`
-	IsSpareDeviceEnabled                    bool                  `json:"IsSpareDeviceEnabled,omitempty"`
-	Links                                   Links                 `json:"Links,omitempty"`
-	Location                                Location              `json:"Location,omitempty"`
-	LogicalSizeMiB                          int                   `json:"LogicalSizeMiB,omitempty"`
-	Manufacturer                            string                `json:"Manufacturer,omitempty"`
-	MaxTDPMilliWatts                        []int                 `json:"MaxTDPMilliWatts,omitempty"`
-	MemoryDeviceType                        string                `json:"MemoryDeviceType,omitempty"` //enum
-	MemoryLocation                          MemoryLocation        `json:"MemoryLocation,omitempty"`
-	MemoryMedia                             []string              `json:"MemoryMedia,omitempty"` //enum
-	MemorySubsystemControllerManufacturerID string                `json:"MemorySubsystemControllerManufacturerID,omitempty"`
-	MemorySubsystemControllerProductID      string                `json:"MemorySubsystemControllerProductID,omitempty"`
-	MemoryType                              string                `json:"MemoryType,omitempty"` //enum
-	Metrics                                 Metrics               `json:"Metrics,omitempty"`
-	ModuleManufacturerID                    string                `json:"ModuleManufacturerID,omitempty"`
-	ModuleProductID                         string                `json:"ModuleProductID,omitempty"`
-	NonVolatileSizeMiB                      int                   `json:"NonVolatileSizeMiB,omitempty"`
-	OperatingMemoryModes                    []string              `json:"OperatingMemoryModes,omitempty"` //enum
-	OperatingSpeedMhz                       int                   `json:"OperatingSpeedMhz,omitempty"`
-	PartNumber                              string                `json:"PartNumber,omitempty"`
-	PersistentRegionNumberLimit             int                   `json:"PersistentRegionNumberLimit,omitempty"`
-	PersistentRegionSizeLimitMiB            int                   `json:"PersistentRegionSizeLimitMiB,omitempty"`
-	PersistentRegionSizeMaxMiB              int                   `json:"PersistentRegionSizeMaxMiB,omitempty"`
-	PowerManagementPolicy                   PowerManagementPolicy `json:"PowerManagementPolicy,omitempty"`
-	RankCount                               int                   `json:"RankCount,omitempty"`
-	Regions                                 []Region              `json:"Regions,omitempty"`
-	SecurityCapabilities                    SecurityCapabilities  `json:"SecurityCapabilities,omitempty"`
-	SecurityState                           string                `json:"SecurityState,omitempty"` //enum
-	SerialNumber                            string                `json:"SerialNumber,omitempty"`
-	SpareDeviceCount                        int                   `json:"SpareDeviceCount,omitempty"`
-	Status                                  Status                `json:"Status,omitempty"`
-	SubsystemDeviceID                       string                `json:"SubsystemDeviceID,omitempty"`
-	SubsystemVendorID                       string                `json:"SubsystemVendorID,omitempty"`
-	VendorID                                string                `json:"VendorID,omitempty"`
-	VolatileRegionNumberLimit               int                   `json:"VolatileRegionNumberLimit,omitempty"`
-	VolatileRegionSizeLimitMiB              int                   `json:"VolatileRegionSizeLimitMiB,omitempty"`
-	VolatileRegionSizeMaxMiB                int                   `json:"VolatileRegionSizeMaxMiB,omitempty"`
-	VolatileSizeMiB                         int                   `json:"VolatileSizeMiB,omitempty"`
+	Oid                                     string                  `json:"@odata.id"`
+	Ocontext                                string                  `json:"@odata.context,omitempty"`
+	Oetag                                   string                  `json:"@odata.etag,omitempty"`
+	Otype                                   string                  `json:"@odata.type,omitempty"`
+	Description                             string                  `json:"description,omitempty"`
+	ID                                      string                  `json:"Id,omitempty"`
+	Name                                    string                  `json:"Name,omitempty"`
+	Oem                                     Oem                     `json:"Oem,omitempty"`
+	AllocationAlignmentMiB                  int                     `json:"AllocationAlignmentMiB,omitempty"`
+	AllocationIncrementMiB                  int                     `json:"AllocationIncrementMiB,omitempty"`
+	AllowedSpeedsMHz                        []int                   `json:"AllowedSpeedsMHz,omitempty"`
+	Assembly                                Assembly                `json:"Assembly,omitempty"`
+	BaseModuleType                          string                  `json:"BaseModuleType,omitempty"` //enum
+	BusWidthBits                            int                     `json:"BusWidthBits,omitempty"`
+	CacheSizeMiB                            int                     `json:"CacheSizeMiB,omitempty"`
+	CapacityMiB                             int                     `json:"CapacityMiB,omitempty"`
+	ConfigurationLocked                     bool                    `json:"ConfigurationLocked,omitempty"`
+	DataWidthBits                           int                     `json:"DataWidthBits,omitempty"`
+	DeviceID                                string                  `json:"DeviceID,omitempty"`
+	DeviceLocator                           string                  `json:"DeviceLocator,omitempty"`
+	ErrorCorrection                         string                  `json:"ErrorCorrection,omitempty"` //enum
+	FirmwareAPIVersion                      string                  `json:"FirmwareApiVersion,omitempty"`
+	FirmwareRevision                        string                  `json:"FirmwareRevision,omitempty"`
+	FunctionClasses                         []string                `json:"FunctionClasses,omitempty"`
+	IsRankSpareEnabled                      bool                    `json:"IsRankSpareEnabled,omitempty"`
+	IsSpareDeviceEnabled                    bool                    `json:"IsSpareDeviceEnabled,omitempty"`
+	Links                                   Links                   `json:"Links,omitempty"`
+	Location                                Location                `json:"Location,omitempty"`
+	LogicalSizeMiB                          int                     `json:"LogicalSizeMiB,omitempty"`
+	Manufacturer                            string                  `json:"Manufacturer,omitempty"`
+	MaxTDPMilliWatts                        []int                   `json:"MaxTDPMilliWatts,omitempty"`
+	MemoryDeviceType                        string                  `json:"MemoryDeviceType,omitempty"` //enum
+	MemoryLocation                          MemoryLocation          `json:"MemoryLocation,omitempty"`
+	MemoryMedia                             []string                `json:"MemoryMedia,omitempty"` //enum
+	MemorySubsystemControllerManufacturerID string                  `json:"MemorySubsystemControllerManufacturerID,omitempty"`
+	MemorySubsystemControllerProductID      string                  `json:"MemorySubsystemControllerProductID,omitempty"`
+	MemoryType                              string                  `json:"MemoryType,omitempty"` //enum
+	Metrics                                 Metrics                 `json:"Metrics,omitempty"`
+	ModuleManufacturerID                    string                  `json:"ModuleManufacturerID,omitempty"`
+	ModuleProductID                         string                  `json:"ModuleProductID,omitempty"`
+	NonVolatileSizeMiB                      int                     `json:"NonVolatileSizeMiB,omitempty"`
+	OperatingMemoryModes                    []string                `json:"OperatingMemoryModes,omitempty"` //enum
+	OperatingSpeedMhz                       int                     `json:"OperatingSpeedMhz,omitempty"`
+	PartNumber                              string                  `json:"PartNumber,omitempty"`
+	PersistentRegionNumberLimit             int                     `json:"PersistentRegionNumberLimit,omitempty"`
+	PersistentRegionSizeLimitMiB            int                     `json:"PersistentRegionSizeLimitMiB,omitempty"`
+	PersistentRegionSizeMaxMiB              int                     `json:"PersistentRegionSizeMaxMiB,omitempty"`
+	PowerManagementPolicy                   PowerManagementPolicy   `json:"PowerManagementPolicy,omitempty"`
+	RankCount                               int                     `json:"RankCount,omitempty"`
+	Regions                                 []Region                `json:"Regions,omitempty"`
+	SecurityCapabilities                    SecurityCapabilities    `json:"SecurityCapabilities,omitempty"`
+	SecurityState                           string                  `json:"SecurityState,omitempty"` //enum
+	SerialNumber                            string                  `json:"SerialNumber,omitempty"`
+	SpareDeviceCount                        int                     `json:"SpareDeviceCount,omitempty"`
+	Status                                  Status                  `json:"Status,omitempty"`
+	SubsystemDeviceID                       string                  `json:"SubsystemDeviceID,omitempty"`
+	SubsystemVendorID                       string                  `json:"SubsystemVendorID,omitempty"`
+	VendorID                                string                  `json:"VendorID,omitempty"`
+	VolatileRegionNumberLimit               int                     `json:"VolatileRegionNumberLimit,omitempty"`
+	VolatileRegionSizeLimitMiB              int                     `json:"VolatileRegionSizeLimitMiB,omitempty"`
+	VolatileRegionSizeMaxMiB                int                     `json:"VolatileRegionSizeMaxMiB,omitempty"`
+	VolatileSizeMiB                         int                     `json:"VolatileSizeMiB,omitempty"`
+	Log                                     *Link                   `json:"Log,omitempty"`
+	OperatingSpeedRangeMHz                  *OperatingSpeedRangeMHz `json:"OperatingSpeedRangeMHz,omitempty"`
+}
+
+type OperatingSpeedRangeMHz struct {
+	AllowableMax           int    `json:"AllowableMax,omitempty"`
+	AllowableMin           int    `json:"AllowableMin,omitempty"`
+	AllowableNumericValues []int  `json:"AllowableNumericValues,omitempty"`
+	ControlMode            string `json:"ControlMode,omitempty"`
+	DataSourceUri          string `json:"DataSourceUri,omitempty"`
+	Reading                int    `json:"Reading,omitempty"`
+	ReadingUnits           string `json:"ReadingUnits,omitempty"`
+	SettingMax             int    `json:"SettingMax,omitempty"`
+	SettingMin             int    `json:"SettingMin,omitempty"`
 }
 
 //MemoryLocation in place object
@@ -369,7 +408,7 @@ type MemorySummary struct {
 	MemoryMirroring                string `json:"MemoryMirroring"`
 	TotalSystemMemoryGiB           int    `json:"TotalSystemMemoryGiB"`
 	TotalSystemPersistentMemoryGiB int    `json:"TotalSystemPersistentMemoryGiB"`
-	Status                         Status `json:"Status"`
+	Status                         Status `json:"Status"` //deprecated
 }
 
 //NetworkInterfaces get
@@ -486,37 +525,39 @@ URIs:
 
 */
 type Processors struct {
-	Oid                   string                `json:"@odata.id"`
-	Ocontext              string                `json:"@odata.context,omitempty"`
-	Oetag                 string                `json:"@odata.etag,omitempty"`
-	Otype                 string                `json:"@odata.type,omitempty"`
-	Description           string                `json:"description,omitempty"`
-	ID                    string                `json:"Id,omitempty"`
-	Name                  string                `json:"Name,omitempty"`
-	Oem                   Oem                   `json:"Oem,omitempty"`
-	AccelerationFunctions AccelerationFunctions `json:"AccelerationFunctions,omitempty"`
-	Assembly              Assembly              `json:"Assembly,omitempty"`
-	FPGA                  FPGA                  `json:"FPGA,omitempty"`
-	InstructionSet        string                `json:"InstructionSet,omitempty"` //enum
-	Links                 Links                 `json:"Links,omitempty"`
-	Location              Location              `json:"Location,omitempty"`
-	Manufacturer          string                `json:"Manufacturer,omitempty"`
-	MaxSpeedMHz           int                   `json:"MaxSpeedMHz,omitempty"`
-	MaxTDPWatts           int                   `json:"MaxTDPWatts,omitempty"`
-	Metrics               Metrics               `json:"Metrics,omitempty"`
-	Model                 string                `json:"Model,omitempty"`
-	ProcessorArchitecture string                `json:"ProcessorArchitecture,omitempty"` //enum
-	ProcessorID           ProcessorID           `json:"ProcessorId,omitempty"`
-	ProcessorMemory       []ProcessorMemory     `json:"ProcessorMemory,omitempty"`
-	ProcessorType         string                `json:"ProcessorType,omitempty"` //enum
-	Socket                string                `json:"Socket,omitempty"`
-	Status                Status                `json:"Status,omitempty"`
-	SubProcessors         SubProcessors         `json:"SubProcessors,omitempty"`
-	TDPWatts              int                   `json:"TDPWatts,omitempty"`
-	TotalCores            int                   `json:"TotalCores,omitempty"`
-	TotalEnabledCores     int                   `json:"TotalEnabledCores,omitempty"`
-	TotalThreads          int                   `json:"TotalThreads,omitempty"`
-	UUID                  string                `json:"UUID,omitempty"`
+	Oid                    string                  `json:"@odata.id"`
+	Ocontext               string                  `json:"@odata.context,omitempty"`
+	Oetag                  string                  `json:"@odata.etag,omitempty"`
+	Otype                  string                  `json:"@odata.type,omitempty"`
+	Description            string                  `json:"description,omitempty"`
+	ID                     string                  `json:"Id,omitempty"`
+	Name                   string                  `json:"Name,omitempty"`
+	Oem                    Oem                     `json:"Oem,omitempty"`
+	AccelerationFunctions  AccelerationFunctions   `json:"AccelerationFunctions,omitempty"`
+	Assembly               Assembly                `json:"Assembly,omitempty"`
+	FPGA                   FPGA                    `json:"FPGA,omitempty"`
+	InstructionSet         string                  `json:"InstructionSet,omitempty"` //enum
+	Links                  Links                   `json:"Links,omitempty"`
+	Location               Location                `json:"Location,omitempty"`
+	Manufacturer           string                  `json:"Manufacturer,omitempty"`
+	MaxSpeedMHz            int                     `json:"MaxSpeedMHz,omitempty"`
+	MaxTDPWatts            int                     `json:"MaxTDPWatts,omitempty"`
+	Metrics                Metrics                 `json:"Metrics,omitempty"`
+	Model                  string                  `json:"Model,omitempty"`
+	ProcessorArchitecture  string                  `json:"ProcessorArchitecture,omitempty"` //enum
+	ProcessorID            ProcessorID             `json:"ProcessorId,omitempty"`
+	ProcessorMemory        []ProcessorMemory       `json:"ProcessorMemory,omitempty"`
+	ProcessorType          string                  `json:"ProcessorType,omitempty"` //enum
+	Socket                 string                  `json:"Socket,omitempty"`
+	Status                 Status                  `json:"Status,omitempty"`
+	SubProcessors          SubProcessors           `json:"SubProcessors,omitempty"`
+	TDPWatts               int                     `json:"TDPWatts,omitempty"`
+	TotalCores             int                     `json:"TotalCores,omitempty"`
+	TotalEnabledCores      int                     `json:"TotalEnabledCores,omitempty"`
+	TotalThreads           int                     `json:"TotalThreads,omitempty"`
+	UUID                   string                  `json:"UUID,omitempty"`
+	OperatingSpeedRangeMHz *OperatingSpeedRangeMHz `json:"OperatingSpeedRangeMHz,omitempty"`
+	Ports                  *Link                   `json:"Ports,omitempty"`
 }
 
 //AccelerationFunctions redfish structure
@@ -595,7 +636,7 @@ type ProcessorSummary struct {
 	LogicalProcessorCount int     `json:"LogicalProcessorCount"`
 	Model                 string  `json:"Model"`
 	Metrics               Metrics `json:"Metrics"`
-	Status                Status  `json:"Status"`
+	Status                Status  `json:"Status"` //deprecated
 }
 
 // SecureBoot redfish structure

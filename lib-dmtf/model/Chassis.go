@@ -77,6 +77,7 @@ type LogServices struct {
 	OverWritePolicy     string  `json:"OverWritePolicy,omitempty"`
 	ServiceEnabled      bool    `json:"ServiceEnabled,omitempty"`
 	Status              Status  `json:"Status,omitempty"`
+	AutoDSTEnabled      bool    `json:"AutoDSTEnabled,omitempty"`
 }
 
 //Entries redfish structure

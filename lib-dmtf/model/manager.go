@@ -49,6 +49,8 @@ type Manager struct {
 	SerialInterfaces        *Link         `json:"SerialInterfaces,omitempty"`
 	TimeZoneName            string        `json:"TimeZoneName,omitempty"`
 	UUID                    string        `json:"UUID,omitempty"`
+	Measurements            []*Link       `json:"Measurements,omitempty"`
+	Certificates            Link          `json:"Certificates,omitempty"`
 }
 
 // ManagerLinks ...
@@ -72,27 +74,32 @@ type ManagerLinks struct {
 
 //VirtualMedia is a redfish virtual media model
 type VirtualMedia struct {
-	ODataContext         string      `json:"@odata.context,omitempty"`
-	ODataEtag            string      `json:"@odata.etag,omitempty"`
-	ODataID              string      `json:"@odata.id"`
-	ODataType            string      `json:"@odata.type"`
-	Actions              VMActions   `json:"Actions,omitempty"`
-	ConnectedVia         string      `json:"ConnectedVia,omitempty"`
-	Description          string      `json:"Description,omitempty"`
-	ID                   string      `json:"Id"`
-	Image                string      `json:"Image"`
-	ImageName            string      `json:"ImageName,omitempty"`
-	Inserted             bool        `json:"Inserted"`
-	MediaTypes           []string    `json:"MediaTypes,omitempty"`
-	Name                 string      `json:"Name"`
-	Oem                  interface{} `json:"Oem,omitempty"`
-	Password             string      `json:"Password,omitempty"`
-	TransferMethod       string      `json:"TransferMethod,omitempty"`
-	TransferProtocolType string      `json:"TransferProtocolType,omitempty"`
-	UserName             string      `json:"UserName,omitempty"`
-	VerifyCertificate    bool        `json:"VerifyCertificate,omitempty"`
-	WriteProtected       bool        `json:"WriteProtected,omitempty"`
-	Status               *Status     `json:"Status,omitempty"`
+	ODataContext         string              `json:"@odata.context,omitempty"`
+	ODataEtag            string              `json:"@odata.etag,omitempty"`
+	ODataID              string              `json:"@odata.id"`
+	ODataType            string              `json:"@odata.type"`
+	Actions              VMActions           `json:"Actions,omitempty"`
+	ConnectedVia         string              `json:"ConnectedVia,omitempty"`
+	Description          string              `json:"Description,omitempty"`
+	ID                   string              `json:"Id"`
+	Image                string              `json:"Image"`
+	ImageName            string              `json:"ImageName,omitempty"`
+	Inserted             bool                `json:"Inserted"`
+	MediaTypes           []string            `json:"MediaTypes,omitempty"`
+	Name                 string              `json:"Name"`
+	Oem                  interface{}         `json:"Oem,omitempty"`
+	Password             string              `json:"Password,omitempty"`
+	TransferMethod       string              `json:"TransferMethod,omitempty"`
+	TransferProtocolType string              `json:"TransferProtocolType,omitempty"`
+	UserName             string              `json:"UserName,omitempty"`
+	VerifyCertificate    bool                `json:"VerifyCertificate,omitempty"`
+	WriteProtected       bool                `json:"WriteProtected,omitempty"`
+	Status               *Status             `json:"Status,omitempty"`
+	ClientCertificates   *ClientCertificates `json:"ClientCertificates,omitempty"`
+}
+
+type ClientCertificates struct {
+	OdataID string `json:"@odata.id"`
 }
 
 // VMActions contains the actions property details of virtual media

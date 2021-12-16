@@ -36,6 +36,10 @@ type SoftwareInventory struct {
 	OdataID string `json:"@odata.id"`
 }
 
+type ClientCertificates struct {
+	OdataID string `json:"@odata.id"`
+}
+
 // UpdateServiceSimpleUpdate defines Target information for the upgrade
 type UpdateServiceSimpleUpdate struct {
 	Target                           string                           `json:"target"`
@@ -64,13 +68,14 @@ type Actions struct {
 // UpdateService defines the service properties of update service
 type UpdateService struct {
 	response.Response
-	Status            Status            `json:"Status"`
-	ServiceEnabled    bool              `json:"ServiceEnabled"`
-	HttpPushUri       string            `json:"HttpPushUri"`
-	FirmwareInventory FirmwareInventory `json:"FirmwareInventory"`
-	SoftwareInventory SoftwareInventory `json:"SoftwareInventory"`
-	Actions           Actions           `json:"Actions"`
-	OEM               *OEM              `json:"Oem,omitempty"`
+	Status             Status              `json:"Status"`
+	ServiceEnabled     bool                `json:"ServiceEnabled"`
+	HttpPushUri        string              `json:"HttpPushUri"`
+	FirmwareInventory  FirmwareInventory   `json:"FirmwareInventory"`
+	SoftwareInventory  SoftwareInventory   `json:"SoftwareInventory"`
+	Actions            Actions             `json:"Actions"`
+	OEM                *OEM                `json:"Oem,omitempty"`
+	ClientCertificates *ClientCertificates `json:"ClientCertificates,omitempty"`
 }
 
 // OEM defines the ACME defined properties under the service

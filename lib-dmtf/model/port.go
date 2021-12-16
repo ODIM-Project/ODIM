@@ -55,6 +55,8 @@ type PortEthernet struct {
 	FlowControlConfiguration      string `json:"FlowControlConfiguration,omitempty"`
 	FlowControlStatus             string `json:"FlowControlStatus,omitempty"`
 	SupportedEthernetCapabilities string `json:"SupportedEthernetCapabilities,omitempty"`
+	WakeOnLANEnabled              bool   `json:"WakeOnLANEnabled,omitempty"`
+	EEEEnabled                    bool   `json:"EEEEnabled,omitempty"`
 }
 
 //FibreChannel redfish model
@@ -84,4 +86,5 @@ type PortLinks struct {
 	ConnectedSwitches    []Link      `json:"ConnectedSwitches,omitempty"`
 	ConnectedSwitchPorts []Link      `json:"ConnectedSwitchPorts,omitempty"`
 	Oem                  interface{} `json:"Oem,omitempty"`
+	Cables               []Link      `json:"Cables,omitempty"`
 }

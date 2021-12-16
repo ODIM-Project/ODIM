@@ -149,6 +149,7 @@ type Triggers struct {
 	Status                   Status            `json:"Status,omitempty"`
 	TriggerActions           []string          `json:"TriggerActions,omitempty"`
 	Wildcards                []WildCard        `json:"Wildcards,omitempty"`
+	MetricIds                []string          `json:"MetricIds,omitempty"`
 }
 
 //NumericThresholds defines when a numeric metric triggers

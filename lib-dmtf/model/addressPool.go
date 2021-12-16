@@ -69,21 +69,23 @@ type BFDSingleHopOnly struct {
 
 // BGPEvpn redfish structure
 type BGPEvpn struct {
-	ARPProxyEnabled                  bool          `json:"ARPProxyEnabled,omitempty"`
-	ARPSupressionEnabled             bool          `json:"ARPSupressionEnabled,omitempty"`
-	AnycastGatewayIPAddress          string        `json:"AnycastGatewayIPAddress,omitempty"`
-	AnycastGatewayMACAddress         string        `json:"AnycastGatewayMACAddress,omitempty"`
-	ESINumberRange                   *NumberRange  `json:"ESINumberRange,omitempty"`
-	EVINumberRange                   *NumberRange  `json:"EVINumberRange,omitempty"`
-	GatewayIPAddress                 string        `json:"GatewayIPAddress,omitempty"`
-	GatewayIPAddressRange            *AddressRange `json:"GatewayIPAddressRange,omitempty"`
-	NDPProxyEnabled                  bool          `json:"NDPProxyEnabled,omitempty"`
-	NDPSupressionEnabled             bool          `json:"NDPSupressionEnabled,omitempty"`
-	RouteDistinguisherRange          *AddressRange `json:"RouteDistinguisherRange,omitempty"`
-	RouteTargetRange                 *AddressRange `json:"RouteTargetRange,omitempty"`
-	UnderlayMulticastEnabled         bool          `json:"UnderlayMulticastEnabled,omitempty"`
-	UnknownUnicastSuppressionEnabled bool          `json:"UnknownUnicastSuppressionEnabled,omitempty"`
-	VLANIdentifierAddressRange       *NumberRange  `json:"VLANIdentifierAddressRange,omitempty"`
+	ARPProxyEnabled                         bool          `json:"ARPProxyEnabled,omitempty"`
+	ARPSupressionEnabled                    bool          `json:"ARPSupressionEnabled,omitempty"`
+	AnycastGatewayIPAddress                 string        `json:"AnycastGatewayIPAddress,omitempty"`
+	AnycastGatewayMACAddress                string        `json:"AnycastGatewayMACAddress,omitempty"`
+	ESINumberRange                          *NumberRange  `json:"ESINumberRange,omitempty"`
+	EVINumberRange                          *NumberRange  `json:"EVINumberRange,omitempty"`
+	GatewayIPAddress                        string        `json:"GatewayIPAddress,omitempty"`
+	GatewayIPAddressRange                   *AddressRange `json:"GatewayIPAddressRange,omitempty"`
+	NDPProxyEnabled                         bool          `json:"NDPProxyEnabled,omitempty"`
+	NDPSupressionEnabled                    bool          `json:"NDPSupressionEnabled,omitempty"`
+	RouteDistinguisherRange                 *AddressRange `json:"RouteDistinguisherRange,omitempty"`
+	RouteTargetRange                        *AddressRange `json:"RouteTargetRange,omitempty"`
+	UnderlayMulticastEnabled                bool          `json:"UnderlayMulticastEnabled,omitempty"`
+	UnknownUnicastSuppressionEnabled        bool          `json:"UnknownUnicastSuppressionEnabled,omitempty"`
+	VLANIdentifierAddressRange              *NumberRange  `json:"VLANIdentifierAddressRange,omitempty"`
+	RouteDistinguisherAdministratorSubfield string        `json:"RouteDistinguisherAdministratorSubfield,omitempty"`
+	RouteTargetAdministratorSubfield        string        `json:"RouteTargetAdministratorSubfield,omitempty"`
 }
 
 // EBGP redfish structure
@@ -124,6 +126,7 @@ type IPv4 struct {
 	NTPTimezone                   string        `json:"NTPTimezone,omitempty"`
 	NativeVLAN                    int           `json:"NativeVLAN,omitempty"`
 	VLANIdentifierAddressRange    *NumberRange  `json:"VLANIdentifierAddressRange,omitempty"`
+	SystemMACRange                *MACRange     `json:"SystemMACRange,omitempty"`
 }
 
 // CommonBGPProperties redfish model
@@ -134,6 +137,11 @@ type CommonBGPProperties struct {
 	GracefulRestart      *GracefulRestart `json:"GracefulRestart,omitempty"`
 	MultiplePaths        *MultiplePaths   `json:"MultiplePaths,omitempty"`
 	SendCommunityEnabled bool             `json:"SendCommunityEnabled,omitempty"`
+}
+
+type MACRange struct {
+	Lower string `json:"Lower,omitempty"`
+	Upper string `json:"Upper,omitempty"`
 }
 
 // NumberRange is a common structure ASNumberRange, ESINumberRange, EVINumberRange, etc
@@ -165,6 +173,8 @@ type BGPNeighbor struct {
 	ReplacePeerASEnabled                bool       `json:"ReplacePeerASEnabled,omitempty"`
 	TCPMaxSegmentSizeBytes              int        `json:"TCPMaxSegmentSizeBytes,omitempty"`
 	TreatAsWithdrawEnabled              bool       `json:"TreatAsWithdrawEnabled,omitempty"`
+	Enabled                             bool       `json:"Enabled,omitempty"`
+	CIDR                                int        `json:"CIDR,omitempty"`
 }
 
 // BGPRoute redfish model

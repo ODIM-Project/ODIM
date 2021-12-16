@@ -43,13 +43,13 @@ class ResourceBlocks():
                             system_uri)
                         if system_res:
                             # create resource block and set data into database
-                            resp = self.create_resource_block(system_res)
+                            resp = self.create_computer_sys_resource_block(system_res)
                             logging.info(
-                                "successfully Created Resource Block. {resp}".format(resp=resp))
+                                "successfully Created Computer system Resource Block. {resp}".format(resp=resp))
         except Exception as err:
             logging.error("unable to initialize the Resource Block")
 
-    def create_resource_block(self, system_data=None):
+    def create_computer_sys_resource_block(self, system_data=None):
         res = {}
         if system_data is None:
             return res
@@ -84,7 +84,7 @@ class ResourceBlocks():
                 "New ResourceBlock data: {rb_data}".format(rb_data=data))
         except Exception as err:
             logging.error(
-                "Unable to create Resource Block. Error: {e}".format(e=err))
+                "Unable to create Computer system Resource Block. Error: {e}".format(e=err))
         finally:
             return res
 
@@ -147,6 +147,68 @@ class ResourceBlocks():
                 "Unable to get Resource Block. Error: {e}".format(e=err))
             res = {
                 "Error": "Unable to get Resource Block. Error: {e}".format(e=err)
+            }
+            code = HTTPStatus.INTERNAL_SERVER_ERROR
+        finally:
+            return res, code
+
+    def create_resource_block(self, request):
+        res = {}
+        code = HTTPStatus.OK
+        try:
+            logging.info("Initialising the creation of Resource Block")
+            if request.get("ResourceBlockType") is None:
+                logging.error("The property 'ResourceBlockType' is missing from post body")
+                res = {"Error": "The property 'ResourceBlockType' is missing from post body"}
+                code = HTTPStatus.BAD_REQUEST
+                return
+            
+            if "ComputerSystem" in request["ResourceBlockType"]:
+                sys_urls = []
+                rb_computer_keys = self.redis.keys("ResourceBlocks-ComputerSystem:*")
+                if rb_computer_keys:
+                    for key in rb_computer_keys:
+                        sys_uri = self.redis.get(key)
+                        if sys_uri:
+                            sys_urls.append(sys_uri)
+                if request.get("ComputerSystems") is None:
+                    logging.error("The property 'ComputerSystems' is missing from post body")
+                    res = {"Error": "The property 'ComputerSystems' is missing from post body"}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
+                elif not len(request["ComputerSystems"]):
+                    logging.error("The property 'ComputerSystems' is empty")
+                    res = {"Error": "The property 'ComputerSystems' is empty"}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
+                elif len(request["ComputerSystems"]) > 1:
+                    logging.debug("Request has more than one computer system, Resource Block will be created with only one comuter system")
+
+                if request["ComputerSystems"][0]["@odata.id"] in sys_urls:
+                    logging.error("The ComputerSystem {sys} is aready exist".format(sys=request["ComputerSystems"][0]["@odata.id"]))
+                    res = {"Error": "The ComputerSystem {sys} is aready exist".format(sys=request["ComputerSystems"][0]["@odata.id"])}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
+
+                system_res = self.client.process_get_request(
+                    request["ComputerSystems"][0]["@odata.id"])
+                if system_res:
+                    # create resource block and set data into database
+                    res = self.create_computer_sys_resource_block(system_res)
+                    logging.info(
+                        "successfully Created Computer system Resource Block. {resp}".format(resp=res))
+                    code = HTTPStatus.OK
+                    return
+                else:
+                    logging.error("The System {uri} is not found".format(uri=request["ComputerSystems"][0]["@odata.id"]))
+                    res = {"Error": "The System {uri} is not found".format(uri=request["ComputerSystems"][0]["@odata.id"])}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
+        except Exception as err:
+            logging.error(
+                "Unable to Create Resource Block. Error: {e}".format(e=err))
+            res = {
+                "Error": "Unable to Create Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:

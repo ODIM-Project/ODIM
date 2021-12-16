@@ -1,5 +1,6 @@
 import logging
 import json
+import copy
 from http import HTTPStatus
 from utilities.client import Client
 from db.persistant import RedisClient
@@ -87,6 +88,7 @@ class CompositonService():
     def create_compose_system(self, req):
 
         res = {}
+        compose_sys = {}
         code = HTTPStatus.CREATED
         system_data = {}
         pipe = self.redis.pipeline()
@@ -128,29 +130,38 @@ class CompositonService():
                         code = HTTPStatus.BAD_REQUEST
                         return
 
-                    res["Id"] = "composed-{}".format(system_data["Id"])
-                    res["@odata.id"] = system_data["@odata.id"].replace(
-                        system_data["Id"], res["Id"])
-                    res["Name"] = "Computer system composed from physical system"
-                    system_data["Name"] = res["Name"]
-                    res["@odata.type"] = system_data["@odata.type"]
+                    compose_sys["Id"] = "composed-{}".format(system_data["Id"])
+                    compose_sys["@odata.id"] = system_data["@odata.id"].replace(
+                        system_data["Id"], compose_sys["Id"])
+                    compose_sys["Name"] = "Computer system composed from physical system"
+                    compose_sys["@odata.type"] = system_data["@odata.type"]
                     logging.debug(
-                        "New Compose System Id is: {id}".format(id=res["Id"]))
+                        "New Compose System Id is: {id}".format(id=compose_sys["Id"]))
 
-                    if not system_data.get("Links"):
-                        system_data["Links"] = {"ResourceBlocks": []}
+                    if system_data.get("Links"):
+                        compose_sys["Links"] = copy.deepcopy(system_data["Links"])
+
+                    if not compose_sys.get("Links"):
+                        compose_sys["Links"] = {"ResourceBlocks": [],
+                                        "SupplyingComputerSystems": []}
                     else:
-                        if not system_data["Links"].get("ResourceBlocks"):
-                            system_data["Links"]["ResourceBlocks"] = []
-                    system_data["Links"]["ResourceBlocks"].append(
-                        {"@odata.id": rs_block["@odata.id"]})
+                        if not compose_sys["Links"].get("ResourceBlocks"):
+                            compose_sys["Links"]["ResourceBlocks"] = []
+                        if not compose_sys["Links"].get("SupplyingComputerSystems"):
+                            compose_sys["Links"]["SupplyingComputerSystems"] = []
 
-                if not res.get("Links"):
-                    res["Links"] = {"ResourceBlocks": []}
-                elif not res["Links"].get("ResourceBlocks"):
-                    res["Links"]["ResourceBlocks"] = []
-                res["Links"]["ResourceBlocks"].append(
-                    {"@odata.id": rs_block["@odata.id"]})
+                    compose_sys["Links"]["ResourceBlocks"].append(
+                        {"@odata.id": rs_block["@odata.id"]})
+                    compose_sys["Links"]["SupplyingComputerSystems"].append(
+                        {"@odata.id": system_data["@odata.id"]})
+
+                    compose_sys["Actions"] = {"#ComputerSystem.AddResourceBlock": {"target": "{compose_sys_uri}/{add_resource}".format(
+                                                compose_sys_uri=compose_sys["@odata.id"], 
+                                                add_resource="Actions/ComputerSystem.AddResourceBlock")},
+                                            "#ComputerSystem.RemoveResourceBlock": {"target": "{compose_sys_uri}/{remove_resource}".format(
+                                                compose_sys_uri=compose_sys["@odata.id"], 
+                                                remove_resource="Actions/ComputerSystem.RemoveResourceBlock")}}
+
 
                 if (rs_block["CompositionStatus"]["MaxCompositions"] <= rs_block["CompositionStatus"]["NumberOfCompositions"]):
                     logging.error("NumberOfCompositions are excided to MaxCompositions for this Resource Block {id}".format(
@@ -174,26 +185,23 @@ class CompositonService():
                 rs_block["CompositionStatus"]["CompositionState"] = "Composed"
                 logging.info("The properties 'Pool' and 'CompositionState' of Resource Block {rb_uri}".format(
                     rb_uri=block_uri["@odata.id"]))
-                
-                if rs_block.get("Links") is not None:
-                    if rs_block["Links"].get("ComputerSystems") is None:
-                        rs_block["Links"]["ComputerSystems"] = []
-                else:
+                if not rs_block.get("Links"):
                     rs_block["Links"] = {"ComputerSystems": []}
-                rs_block["Links"]["ComputerSystems"].append({"@odata.id": res["@odata.id"]})
+                elif not rs_block["Links"].get("ComputerSystems"):
+                    rs_block["Links"]["ComputerSystems"] = []
+                rs_block["Links"]["ComputerSystems"].append({"@odata.id": compose_sys["@odata.id"]})
+
                 pipe.set("ResourceBlocks:{rb_uri}".format(rb_uri=block_uri["@odata.id"]), json.dumps(rs_block))
                 pipe.srem("FreePool", block_uri["@odata.id"])
                 pipe.sadd("ActivePool", block_uri["@odata.id"])
             
-            res["SystemType"] = "Composed"
-            system_data["SystemType"] = "Composed"
-            system_data["Id"] = res["Id"]
-            system_data["@odata.id"] = res["@odata.id"]
+            compose_sys["SystemType"] = "Composed"
             pipe.set("ComputerSystem:{compose_uri}".format(
-                compose_uri=res["@odata.id"]), json.dumps(json.dumps(system_data)))
+                compose_uri=compose_sys["@odata.id"]), json.dumps(json.dumps(compose_sys)))
             pipe.execute()
             logging.info(
-                "Compose System {id} is created successfully".format(id=res["Id"]))
+                "Compose System {id} is created successfully".format(id=compose_sys["Id"]))
+            res = compose_sys
             code = HTTPStatus.CREATED
 
         except Exception as err:

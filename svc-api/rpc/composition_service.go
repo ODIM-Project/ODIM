@@ -54,6 +54,21 @@ func GetResourceBlock(req compositionserviceproto.GetCompositionResourceRequest)
 	return resp, nil
 }
 
+// CreateResourceBlock will do the rpc call to Create Resource Block
+func CreateResourceBlock(req compositionserviceproto.CreateCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
+	conn, err := services.ODIMService.Client(services.CompositionService)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	csService := compositionserviceproto.NewCompositionClient(conn)
+	resp, err := csService.CreateCompositionResource(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, nil
+}
+
 // DeleteResourceBlock will do the rpc call to Delete Resource Block
 func DeleteResourceBlock(req compositionserviceproto.DeleteCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
 	conn, err := services.ODIMService.Client(services.CompositionService)

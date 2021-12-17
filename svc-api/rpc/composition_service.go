@@ -159,8 +159,8 @@ func Compose(req compositionserviceproto.ComposeRequest) (*compositionservicepro
 	return resp, nil
 }
 
+// GetActivePool will do the rpc call to list out the Active pool Resource block instance collection
 func GetActivePool(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
-	fmt.Errorf("In rpc.GetCompositionService")
 	conn, err := services.ODIMService.Client(services.CompositionService)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -174,8 +174,8 @@ func GetActivePool(req compositionserviceproto.GetCompositionResourceRequest) (*
 	return resp, nil
 }
 
+// GetFreePool will do the rpc call to list out the Free pool Resource block instance collection
 func GetFreePool(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
-	fmt.Errorf("In rpc.GetCompositionService")
 	conn, err := services.ODIMService.Client(services.CompositionService)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
@@ -189,8 +189,8 @@ func GetFreePool(req compositionserviceproto.GetCompositionResourceRequest) (*co
 	return resp, nil
 }
 
+// GetCompositionReservations will do the rpc call to list out the Compose action Reservation collection
 func GetCompositionReservations(req compositionserviceproto.GetCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
-	fmt.Errorf("In rpc.GetCompositionService")
 	conn, err := services.ODIMService.Client(services.CompositionService)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)

@@ -64,6 +64,7 @@ func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetResourceBlockCollection fetch the Resource Blocks Instance collection
 func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 
 	var res interface{}
@@ -95,6 +96,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetResourceBlock get the Resource Block Instance
 func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
@@ -126,6 +128,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// CreateResourceBlock Create the Resource Block Instance
 func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 
 	var req interface{}
@@ -159,13 +162,13 @@ func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 		return
 	}
 
-	block_req := compositionserviceproto.CreateCompositionResourceRequest{
+	blockReq := compositionserviceproto.CreateCompositionResourceRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,
 		URL:          ctx.Request().RequestURI,
 	}
 
-	resp, err := cs.CreateResourceBlockRPC(block_req)
+	resp, err := cs.CreateResourceBlockRPC(blockReq)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
@@ -181,6 +184,7 @@ func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// DeleteResourceBlock Remove Resource Block Instance
 func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
 
 	var res interface{}
@@ -215,6 +219,7 @@ func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetResourceZoneCollection fetch the Resource zones Instance collection
 func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
@@ -245,6 +250,7 @@ func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetResourceZone get the Resource zone Instance
 func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
@@ -276,6 +282,7 @@ func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// CreateResourceZone create Resource zone Instance
 func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 
 	var req interface{}
@@ -309,13 +316,13 @@ func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 		return
 	}
 
-	zone_req := compositionserviceproto.CreateCompositionResourceRequest{
+	zoneReq := compositionserviceproto.CreateCompositionResourceRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,
 		URL:          ctx.Request().RequestURI,
 	}
 
-	resp, err := cs.CreateResourceZoneRPC(zone_req)
+	resp, err := cs.CreateResourceZoneRPC(zoneReq)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
@@ -331,6 +338,7 @@ func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// DeleteResourceZone remove Resource zone Instance
 func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
 
 	var res interface{}
@@ -365,6 +373,7 @@ func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// Compose Action for compose system and decompose system
 func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 
 	var req interface{}
@@ -399,13 +408,13 @@ func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 		return
 	}
 
-	compose_req := compositionserviceproto.ComposeRequest{
+	composeReq := compositionserviceproto.ComposeRequest{
 		SessionToken: sessionToken,
 		RequestBody:  request,
 		URL:          ctx.Request().RequestURI,
 	}
 
-	resp, err := cs.ComposeRPC(compose_req)
+	resp, err := cs.ComposeRPC(composeReq)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
@@ -421,6 +430,7 @@ func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetActivePool Active Resource Block Instance collection
 func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
@@ -452,6 +462,7 @@ func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetFreePool Free Resource Block instance collection
 func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
@@ -483,6 +494,7 @@ func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
 	ctx.JSON(res)
 }
 
+// GetCompositionReservations Compose action reservation collection
 func (cs *CompositionServiceRPCs) GetCompositionReservations(ctx iris.Context) {
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{

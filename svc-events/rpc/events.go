@@ -64,6 +64,10 @@ func GetPluginContactInitializer() *Events {
 		DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
 		SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
 		SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
+		GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
+		GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
+		SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
+		DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
 	}
 	return &Events{
 		Connector: connector,

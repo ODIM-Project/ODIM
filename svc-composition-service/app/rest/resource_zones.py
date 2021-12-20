@@ -99,6 +99,9 @@ class ResourceZones():
                 else:
                     logging.debug("Getting resource block data from redis is failed for this resource: {uri}".format(
                         uri=resource_block['@odata.id']))
+                    res = {"Error": "The Resource Block {rs_block} is not found. Create ResourceZone is failed".format(rs_block=resource_block['@odata.id'])}
+                    code = HTTPStatus.BAD_REQUEST
+                    return
 
             pipe.set("{zones}:{zone_uri}".format(
                 zones="ResourceZones", zone_uri=zone['@odata.id']), str(json.dumps(zone)))

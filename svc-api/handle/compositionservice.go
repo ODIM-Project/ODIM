@@ -35,6 +35,7 @@ type CompositionServiceRPCs struct {
 
 //GetCompositionService fetches all composition service
 func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionServiceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -66,7 +67,7 @@ func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 
 // GetResourceBlockCollection fetch the Resource Blocks Instance collection
 func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
-
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -98,6 +99,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 
 // GetResourceBlock get the Resource Block Instance
 func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -130,7 +132,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 
 // CreateResourceBlock Create the Resource Block Instance
 func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
-
+	defer ctx.Next()
 	var req interface{}
 	var res interface{}
 	err := ctx.ReadJSON(&req)
@@ -186,7 +188,7 @@ func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 
 // DeleteResourceBlock Remove Resource Block Instance
 func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
-
+	defer ctx.Next()
 	var res interface{}
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
@@ -221,6 +223,7 @@ func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
 
 // GetResourceZoneCollection fetch the Resource zones Instance collection
 func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -252,6 +255,7 @@ func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
 
 // GetResourceZone get the Resource zone Instance
 func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -284,7 +288,7 @@ func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
 
 // CreateResourceZone create Resource zone Instance
 func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
-
+	defer ctx.Next()
 	var req interface{}
 	var res interface{}
 	err := ctx.ReadJSON(&req)
@@ -340,7 +344,7 @@ func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 
 // DeleteResourceZone remove Resource zone Instance
 func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
-
+	defer ctx.Next()
 	var res interface{}
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
@@ -375,7 +379,7 @@ func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
 
 // Compose Action for compose system and decompose system
 func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
-
+	defer ctx.Next()
 	var req interface{}
 	var res interface{}
 	err := ctx.ReadJSON(&req)
@@ -432,6 +436,7 @@ func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 
 // GetActivePool Active Resource Block Instance collection
 func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -464,6 +469,7 @@ func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
 
 // GetFreePool Free Resource Block instance collection
 func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
@@ -496,6 +502,7 @@ func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
 
 // GetCompositionReservations Compose action reservation collection
 func (cs *CompositionServiceRPCs) GetCompositionReservations(ctx iris.Context) {
+	defer ctx.Next()
 	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),

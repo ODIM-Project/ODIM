@@ -3,13 +3,16 @@ from config.config import PLUGIN_CONFIG
 from http import HTTPStatus
 import requests
 import logging
+from utilities.crypt import Crypt
 
 
 class Client():
 
     def __init__(self):
+        crypt = Crypt(PLUGIN_CONFIG["CertificatePath"],
+                      PLUGIN_CONFIG["PrivateKeyPath"])
         self.auth = HTTPBasicAuth(
-            PLUGIN_CONFIG["UserName"], PLUGIN_CONFIG["Password"])
+            PLUGIN_CONFIG["OdimUserName"], crypt.decrypt(PLUGIN_CONFIG["OdimPassword"]))
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',

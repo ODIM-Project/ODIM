@@ -169,6 +169,7 @@ func Router() *iris.Application {
 		GetActivePoolRPC:              rpc.GetActivePool,
 		GetFreePoolRPC:                rpc.GetFreePool,
 		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
+		CreateAllResourceBlocksRPC:    rpc.CreateAllResourceBlocks,
 	}
 
 	registryFile := handle.Registry{

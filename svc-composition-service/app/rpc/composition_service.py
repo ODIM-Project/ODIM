@@ -78,6 +78,10 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                 # create Resource Zone
                 response, code = self.resourcezone.create_resource_zone(
                     json.loads(str(request.RequestBody.decode("utf-8"))))
+            # Initialize all Resource Blocks
+            elif segments[-1] == "ResourceBlock.Initialize":
+                response, code = self.resourceblock.initialize()
+            
 
         return pb2.CompositionServiceResponse(statusCode=code, body=bytes(json.dumps(response), 'utf-8'))
 

@@ -102,7 +102,16 @@ class ResourceBlocks():
                 "Name": "Resource Block Collection",
                 "Members@odata.count": 0,
                 "Members": [],
-                "@odata.id": url
+                "@odata.id": url,
+                "Oem": {
+                    "Ami": {
+                        "Actions": {
+                            "#ResourceBlock.Initialize": {
+                                "target": "/redfish/v1/CompositionService/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize"
+                            }
+                        }
+                    }
+                }
             }
 
             rb_keys = self.redis.keys("ResourceBlocks:*")

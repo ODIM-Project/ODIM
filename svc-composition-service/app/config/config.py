@@ -11,6 +11,8 @@ PLUGIN_CONFIG = {
     "Password": "",
     "RootServiceUUID": "",
     "OdimURL": "",
+    "OdimUserName": "",
+    "OdimPassword": "",
     "LogLevel": "debug",
     "RedisAddress": "",
     "Db": 0,

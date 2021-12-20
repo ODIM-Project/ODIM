@@ -108,7 +108,7 @@ def read_conf():
 # load existing hosts.yaml that created for the deployment_id
 def load_k8s_host_conf():
 	global K8S_INVENTORY_DATA, DEPLOYMENT_SRC_DIR, K8S_INVENTORY_FILE
-	DEPLOYMENT_SRC_DIR = './inventory/k8s-cluster-' + DEPLOYMENT_ID
+	DEPLOYMENT_SRC_DIR = './inventory/k8s_cluster-' + DEPLOYMENT_ID
 	K8S_INVENTORY_FILE = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 
 	if not os.path.exists(K8S_INVENTORY_FILE):
@@ -202,7 +202,7 @@ def perform_checks(skip_opt_param_check=False):
 
 	check_extract_kubespray_src()
 
-	DEPLOYMENT_SRC_DIR = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s-cluster-' + DEPLOYMENT_ID)
+	DEPLOYMENT_SRC_DIR = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID)
 	if not os.path.exists(DEPLOYMENT_SRC_DIR):
 		os.mkdir(DEPLOYMENT_SRC_DIR, 0o755)
 
@@ -218,7 +218,7 @@ def perform_checks(skip_opt_param_check=False):
 
 	if 'nodePasswordFilePath' not in CONTROLLER_CONF_DATA or \
 	CONTROLLER_CONF_DATA['nodePasswordFilePath'] == None or CONTROLLER_CONF_DATA['nodePasswordFilePath'] == "":
-		ANSIBLE_SUDO_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s-cluster-' + DEPLOYMENT_ID, '.node_pw.dat')
+		ANSIBLE_SUDO_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.node_pw.dat')
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
 			store_password_in_vault()
 	else:
@@ -624,7 +624,7 @@ def remove_k8s():
 
 	os.chdir(KUBESPRAY_SRC_PATH)
 	global DEPLOYMENT_SRC_DIR
-	DEPLOYMENT_SRC_DIR = './inventory/k8s-cluster-' + DEPLOYMENT_ID
+	DEPLOYMENT_SRC_DIR = './inventory/k8s_cluster-' + DEPLOYMENT_ID
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 
 	if not os.path.exists(host_file):

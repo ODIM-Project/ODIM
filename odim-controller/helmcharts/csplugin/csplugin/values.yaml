@@ -5,8 +5,8 @@ odimra:
 csplugin:
   imageTag: "2.0"
   csPluginRootServiceUUID:
-  username: admin
-  password: Od!m12$4
+  username: 
+  password: 
   host: csplugin
   odimUsername:
   odimPassword:

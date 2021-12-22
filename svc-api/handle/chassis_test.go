@@ -222,7 +222,7 @@ func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
     "message": "An error has occurred. See ExtendedInfo for more information.",
     "@Message.ExtendedInfo": [
       {
-        "@odata.type": "#Message.v1_0_8.Message",
+        "@odata.type": "#Message.v1_1_2.Message",
         "MessageId": "` + errorResponse.MalformedJSON + `",
         "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
         "Severity": "Critical",

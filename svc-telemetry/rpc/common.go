@@ -62,7 +62,7 @@ func generateRPCResponse(rpcResp response.RPC, teleResp *teleproto.TelemetryResp
 
 func generateTaskRespone(taskID, taskURI string, rpcResp *response.RPC) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2.Task",
+		OdataType:    "#Task.v1_5_1.Task",
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

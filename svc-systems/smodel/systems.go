@@ -125,7 +125,7 @@ func FindAll(table, key string) ([][]byte, error) {
 		return nil, cpErr
 	}
 
-	affectedKeys, err := scan(cp, strings.Join([]string{table, key}, "."))
+	affectedKeys, err := scan(cp, strings.Join([]string{table, key}, ":"))
 	if err != nil {
 		return nil, err
 	}

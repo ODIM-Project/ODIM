@@ -22,41 +22,18 @@ package events
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockGetSessionUserName(sessionToken string) (string, error) {
-	if sessionToken == "validToken" {
-		return "admin", nil
-	}
-	return "", fmt.Errorf("user not found")
-}
-
 // Positive test cases
 func TestSubmitTestEvent(t *testing.T) {
-	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
-	p := &PluginContact{
-		ContactClient:      mockContactClient,
-		GetSessionUserName: mockGetSessionUserName,
-		Auth:               mockIsAuthorized,
-	}
+	config.SetUpMockConfig(t)
+	p := getMockMethods()
 	event := map[string]interface{}{
 		"MemberID":          "1",
 		"EventType":         "Alert",
@@ -91,7 +68,7 @@ func TestSubmitTestEvent(t *testing.T) {
 
 	// Invalid token
 	req = &eventsproto.EventSubRequest{
-		SessionToken: "token",
+		SessionToken: "invalidtoken",
 		PostBody:     message,
 	}
 	resp = p.SubmitTestEvent(req)

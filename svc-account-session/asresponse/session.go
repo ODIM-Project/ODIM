@@ -16,7 +16,6 @@
 package asresponse
 
 import (
-	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 

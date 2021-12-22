@@ -16,27 +16,31 @@ package model
 
 //Power is the redfish Power model according to the 2020.3 release
 type Power struct {
-	ODataContext  string          `json:"@odata.context,omitempty"`
-	ODataEtag     string          `json:"@odata.etag,omitempty"`
-	ODataID       string          `json:"@odata.id"`
-	ODataType     string          `json:"@odata.type"`
-	Actions       *OemActions     `json:"Actions,omitempty"`
-	Description   string          `json:"Description,omitempty"`
-	ID            string          `json:"Id"`
-	Name          string          `json:"Name"`
-	Oem           interface{}     `json:"Oem,omitempty"`
-	Status        *Status         `json:"Status,omitempty"`
-	PowerControl  []*PowerControl `json:"PowerControl,omitempty"`
-	PowerSupplies []*PowerControl `json:"PowerSupplies,omitempty"`
-	Redundancy    []Redundancy    `json:"Redundancy,omitempty"`
-	Voltages      []*Voltages     `json:"Voltages,omitempty"`
+	ODataContext       string          `json:"@odata.context,omitempty"`
+	ODataEtag          string          `json:"@odata.etag,omitempty"`
+	ODataID            string          `json:"@odata.id"`
+	ODataType          string          `json:"@odata.type"`
+	Actions            *OemActions     `json:"Actions,omitempty"`
+	Description        string          `json:"Description,omitempty"`
+	ID                 string          `json:"Id"`
+	Name               string          `json:"Name"`
+	Oem                interface{}     `json:"Oem,omitempty"`
+	Status             *Status         `json:"Status,omitempty"`
+	PowerControl       []*PowerControl `json:"PowerControl,omitempty"`
+	PowerSupplies      []*PowerControl `json:"PowerSupplies,omitempty"`
+	Redundancy         []Redundancy    `json:"Redundancy,omitempty"`
+	Voltages           []*Voltages     `json:"Voltages,omitempty"`
+	PowerControlCount  int             `json:"PowerControl@odata.count,omitempty"`
+	PowerSuppliesCount int             `json:"PowerSupplies@odata.count,omitempty"`
+	RedundancyCount    int             `json:"Redundancy@odata.count,omitempty"`
+	VoltagesCount      int             `json:"Voltages@odata.count,omitempty"`
 }
 
 // PowerControl redfish model
 type PowerControl struct {
 	ODataID             string        `json:"@odata.id"`
 	Actions             *OemActions   `json:"Actions,omitempty"`
-	MemberID            string        `json:"MemberId,omitempty"`
+	MemberID            string        `json:"MemberId"`
 	Name                string        `json:"Name,omitempty"`
 	Oem                 interface{}   `json:"Oem,omitempty"`
 	PhysicalContext     string        `json:"PhysicalContext,omitempty"`
@@ -49,6 +53,7 @@ type PowerControl struct {
 	PowerRequestedWatts float64       `json:"PowerRequestedWatts,omitempty"`
 	RelatedItem         []Link        `json:"RelatedItem,omitempty"`
 	Status              *Status       `json:"Status,omitempty"`
+	RelatedItemCount    int           `json:"RelatedItem@odata.count,omitempty"`
 }
 
 // PowerLimit redfish model
@@ -84,7 +89,7 @@ type PowerSupplies struct {
 	LineInputVoltageType string         `json:"LineInputVoltageType,omitempty"`
 	Location             interface{}    `json:"Location,omitempty"`
 	Manufacturer         string         `json:"Manufacturer,omitempty"`
-	MemberID             string         `json:"MemberId,omitempty"`
+	MemberID             string         `json:"MemberId"`
 	Model                string         `json:"Model,omitempty"`
 	PartNumber           string         `json:"PartNumber,omitempty"`
 	PowerCapacityWatts   float64        `json:"PowerCapacityWatts,omitempty"`
@@ -95,6 +100,8 @@ type PowerSupplies struct {
 	RelatedItem          []Link         `json:"RelatedItem,omitempty"`
 	SerialNumber         string         `json:"SerialNumber,omitempty"`
 	SparePartNumber      string         `json:"SparePartNumber,omitempty"`
+	RedundancyCount      int            `json:"Redundancy@odata.count,omitempty"`
+	RelatedItemCount     int            `json:"RelatedItem@odata.count,omitempty"`
 }
 
 // InputRanges redfish model
@@ -120,7 +127,7 @@ type Voltages struct {
 	LowerThresholdFatal       float64     `json:"LowerThresholdFatal,omitempty"`
 	LowerThresholdNonCritical float64     `json:"LowerThresholdNonCritical,omitempty"`
 	MaxReadingRange           float64     `json:"MaxReadingRange,omitempty"`
-	MemberID                  string      `json:"MemberId,omitempty"`
+	MemberID                  string      `json:"MemberId"`
 	MinReadingRange           float64     `json:"MinReadingRange,omitempty"`
 	PhysicalContext           string      `json:"PhysicalContext,omitempty"`
 	ReadingVolts              float64     `json:"ReadingVolts,omitempty"`
@@ -128,4 +135,5 @@ type Voltages struct {
 	UpperThresholdCritical    float64     `json:"UpperThresholdCritical,omitempty"`
 	UpperThresholdFatal       float64     `json:"UpperThresholdFatal,omitempty"`
 	UpperThresholdNonCritical float64     `json:"UpperThresholdNonCritical,omitempty"`
+	RelatedItemCount          int         `json:"RelatedItem@odata.count,omitempty"`
 }

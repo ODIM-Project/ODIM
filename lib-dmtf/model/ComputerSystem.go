@@ -21,54 +21,91 @@ import (
 
 // ComputerSystem redfish structure
 type ComputerSystem struct {
-	Ocontext           string             `json:"@odata.context"`
-	Oid                string             `json:"@odata.id"`
-	Otype              string             `json:"@odata.type"`
-	Oetag              string             `json:"@odata.etag,omitempty"`
-	ID                 string             `json:"Id"`
-	Description        string             `json:"Description"`
-	Name               string             `json:"Name"`
-	Actions            *OemActions        `json:"Actions,omitempty"`
-	AssetTag           string             `json:"AssetTag"`
-	BiosVersion        string             `json:"BiosVersion"`
-	HostName           string             `json:"HostName"`
-	IndicatorLED       string             `json:"IndicatorLED"`
-	Manufacturer       string             `json:"Manufacturer"`
-	Model              string             `json:"Model"`
-	PartNumber         string             `json:"PartNumber"`
-	PowerRestorePolicy string             `json:"PowerRestorePolicy"`
-	PowerState         string             `json:"PowerState"`
-	SerialNumber       string             `json:"SerialNumber"`
-	SKU                string             `json:"SKU"`
-	SubModel           string             `json:"SubModel"`
-	SystemType         string             `json:"SystemType"`
-	UUID               string             `json:"UUID"`
-	HostingRoles       []string           `json:"HostingRoles"`
-	PCIeDevices        []PCIeDevice       `json:"PCIeDevices"`
-	PCIeFunctions      []PCIeFunction     `json:"PCIeFunctions"`
-	Bios               Bios               `json:"Bios"`
-	Boot               Boot               `json:"Boot"`
-	EthernetInterfaces EthernetInterfaces `json:"EthernetInterfaces"`
-	HostedServices     HostedServices     `json:"HostedServices"`
-	HostWatchdogTimer  HostWatchdogTimer  `json:"HostWatchdogTimer"`
-	Links              Links              `json:"Links"`
-	LogServices        LogServices        `json:"LogServices"`
-	Memory             Memory             `json:"Memory"`
-	MemoryDomains      MemoryDomains      `json:"MemoryDomains"`
-	MemorySummary      MemorySummary      `json:"MemorySummary"`
-	NetworkInterfaces  NetworkInterfaces  `json:"NetworkInterfaces"`
-	Processors         Processors         `json:"Processors"`
-	ProcessorSummary   ProcessorSummary   `json:"ProcessorSummary"`
-	Redundancy         []Redundancy       `json:"Redundancy"`
-	SecureBoot         SecureBoot         `json:"SecureBoot"`
-	SimpleStorage      SimpleStorage      `json:"SimpleStorage"`
-	Status             Status             `json:"Status"`
-	Storage            Storage            `json:"Storage"`
-	TrustedModules     []TrustedModule    `json:"TrustedModules"`
-	Oem                Oem                `json:"Oem,omitempty"`
-	PCIeDevicesCount   int                `json:"PCIeDevices@odata.count,omitempty"`
-	IdlePowerSaver     *IdlePowerSaver    `json:"IdlePowerSaver,omitempty"`
-	KeyManagement      KeyManagement      `json:"KeyManagement,omitempty"`
+	Ocontext                string              `json:"@odata.context,omitempty"`
+	Oid                     string              `json:"@odata.id"`
+	Otype                   string              `json:"@odata.type"`
+	Oetag                   string              `json:"@odata.etag,omitempty"`
+	ID                      string              `json:"Id"`
+	Description             string              `json:"Description,omitempty"`
+	Name                    string              `json:"Name"`
+	Actions                 *OemActions         `json:"Actions,omitempty"`
+	AssetTag                string              `json:"AssetTag,omitempty"`
+	BiosVersion             string              `json:"BiosVersion,omitempty"`
+	HostName                string              `json:"HostName,omitempty"`
+	IndicatorLED            string              `json:"IndicatorLED,omitempty"`
+	Manufacturer            string              `json:"Manufacturer,omitempty"`
+	Model                   string              `json:"Model,omitempty"`
+	PartNumber              string              `json:"PartNumber,omitempty"`
+	PowerRestorePolicy      string              `json:"PowerRestorePolicy,omitempty"`
+	PowerState              string              `json:"PowerState,omitempty"`
+	SerialNumber            string              `json:"SerialNumber,omitempty"`
+	SKU                     string              `json:"SKU,omitempty"`
+	SubModel                string              `json:"SubModel,omitempty"`
+	SystemType              string              `json:"SystemType,omitempty"`
+	UUID                    string              `json:"UUID,omitempty"`
+	HostingRoles            []string            `json:"HostingRoles,omitempty"`
+	PCIeDevices             []PCIeDevice        `json:"PCIeDevices,omitempty"`
+	PCIeFunctions           []PCIeFunction      `json:"PCIeFunctions,omitempty"`
+	Bios                    Bios                `json:"Bios,omitempty"`
+	Boot                    Boot                `json:"Boot,omitempty"`
+	EthernetInterfaces      EthernetInterfaces  `json:"EthernetInterfaces,omitempty"`
+	HostedServices          HostedServices      `json:"HostedServices,omitempty"`
+	HostWatchdogTimer       HostWatchdogTimer   `json:"HostWatchdogTimer,omitempty"`
+	Links                   Links               `json:"Links,omitempty"`
+	LogServices             LogServices         `json:"LogServices,omitempty"`
+	Memory                  Memory              `json:"Memory,omitempty"`
+	MemoryDomains           MemoryDomains       `json:"MemoryDomains,omitempty"`
+	MemorySummary           MemorySummary       `json:"MemorySummary,omitempty"`
+	NetworkInterfaces       NetworkInterfaces   `json:"NetworkInterfaces,omitempty"`
+	Processors              Processors          `json:"Processors,omitempty"`
+	ProcessorSummary        ProcessorSummary    `json:"ProcessorSummary,omitempty"`
+	Redundancy              []Redundancy        `json:"Redundancy,omitempty"`
+	SecureBoot              SecureBoot          `json:"SecureBoot,omitempty"`
+	SimpleStorage           SimpleStorage       `json:"SimpleStorage,omitempty"`
+	Status                  Status              `json:"Status,omitempty"`
+	Storage                 Storage             `json:"Storage,omitempty"`
+	TrustedModules          []TrustedModule     `json:"TrustedModules,omitempty"`
+	Oem                     Oem                 `json:"Oem,omitempty"`
+	PCIeDevicesCount        int                 `json:"PCIeDevices@odata.count,omitempty"`
+	IdlePowerSaver          *IdlePowerSaver     `json:"IdlePowerSaver,omitempty"`
+	KeyManagement           KeyManagement       `json:"KeyManagement,omitempty"`
+	BootProgress            BootProgress        `json:"BootProgress,omitempty"`
+	Certificates            Certificates        `json:"Certificates"`
+	FabricAdapters          *Link               `json:"FabricAdapters,omitempty"`
+	GraphicalConsole        *GraphicalConsole   `json:"GraphicalConsole,omitempty"`
+	GraphicsControllers     *Link               `json:"GraphicsControllers,omitempty"`
+	LastResetTime           string              `json:"LastResetTime,omitempty"`
+	LocationIndicatorActive bool                `json:"LocationIndicatorActive,omitempty"`
+	Measurements            []*Link             `json:"Measurements,omitempty"`
+	PCIeFunctionsCount      int                 `json:"PCIeFunctions@odata.count,omitempty"`
+	PowerCycleDelaySeconds  float32             `json:"PowerCycleDelaySeconds,omitempty"`
+	PowerMode               string              `json:"PowerMode,omitempty"`
+	PowerOffDelaySeconds    float32             `json:"PowerOffDelaySeconds,omitempty"`
+	PowerOnDelaySeconds     float32             `json:"PowerOnDelaySeconds,omitempty"`
+	RedundancyCount         int                 `json:"Redundancy@odata.count,omitempty"`
+	SerialConsole           SerialConsole       `json:"SerialConsole,omitempty"`
+	USBControllers          *Link               `json:"USBControllers,omitempty"`
+	VirtualMedia            *Link               `json:"VirtualMedia,omitempty"`
+	VirtualMediaConfig      *VirtualMediaConfig `json:"VirtualMediaConfig,omitempty"`
+}
+
+type VirtualMediaConfig struct {
+	Port           int  `json:"Port,omitempty"`
+	ServiceEnabled bool `json:"ServiceEnabled,omitempty"`
+}
+
+type SerialConsole struct {
+	IPMI                  interface{} `json:"IPMI,omitempty"`
+	MaxConcurrentSessions int         `json:"MaxConcurrentSessions,omitempty"`
+	SSH                   interface{} `json:"SSH,omitempty"`
+	Telnet                interface{} `json:"Telnet,omitempty"`
+}
+
+type BootProgress struct {
+	LastState     string `json:"LastState,omitempty"`
+	LastStateTime string `json:"LastStateTime,omitempty"`
+	Oem           *Oem   `json:"Oem,omitempty"`
+	OemLastState  string `json:"OemLastState,omitempty"`
 }
 
 type KeyManagement struct {
@@ -87,11 +124,11 @@ type KMIPServers struct {
 	Username string `json:"Username,omitempty"`
 }
 type IdlePowerSaver struct {
-	Enabled                 bool `json:"Enabled,omitempty"`
-	EnterDwellTimeSeconds   int  `json:"EnterDwellTimeSeconds,omitempty"`
-	EnterUtilizationPercent int  `json:"EnterUtilizationPercent,omitempty"`
-	ExitDwellTimeSeconds    int  `json:"ExitDwellTimeSeconds,omitempty"`
-	ExitUtilizationPercent  int  `json:"ExitUtilizationPercent,omitempty"`
+	Enabled                 bool    `json:"Enabled,omitempty"`
+	EnterDwellTimeSeconds   int     `json:"EnterDwellTimeSeconds,omitempty"`
+	EnterUtilizationPercent float32 `json:"EnterUtilizationPercent,omitempty"`
+	ExitDwellTimeSeconds    int     `json:"ExitDwellTimeSeconds,omitempty"`
+	ExitUtilizationPercent  float32 `json:"ExitUtilizationPercent,omitempty"`
 }
 
 // Bios redfish structure
@@ -99,30 +136,38 @@ type Bios struct {
 	Oid         string `json:"@odata.id"`
 	Ocontext    string `json:"@odata.context,omitempty"`
 	Oetag       string `json:"@odata.etag,omitempty"`
-	Otype       string `json:"@odata.type,omitempty"`
+	Otype       string `json:"@odata.type"`
 	Description string `json:"description,omitempty"`
-	ID          string `json:"Id,omitempty"`
-	Name        string `json:"Name,omitempty"`
+	ID          string `json:"Id"`
+	Name        string `json:"Name"`
 	Oem         Oem    `json:"Oem,omitempty"`
 	/*The reference to the Attribute Registry that lists the metadata describing the
 	BIOS attribute settings in this resource.
 	*/
-	AttributeRegistry string                 `json:"AttributeRegistry,omitempty"` // read-only (null)
-	Attributes        map[string]interface{} `json:"Attributes,omitempty"`        // object
+	AttributeRegistry          string                 `json:"AttributeRegistry,omitempty"` // read-only (null)
+	Attributes                 map[string]interface{} `json:"Attributes,omitempty"`        // object
+	Links                      Links                  `json:"Links,omitempty"`
+	ResetBiosToDefaultsPending bool                   `json:"ResetBiosToDefaultsPending,omitempty"`
 }
 
 // Boot redfish structure
 type Boot struct {
-	AliasBootOrder               []string     `json:"AliasBootOrder"`
-	BootNext                     string       `json:"BootNext"`
-	BootOptions                  BootOptions  `json:"BootOptions"`
-	BootOrder                    []string     `json:"BootOrder"`
-	BootOrderPropertySelection   string       `json:"BootOrderPropertySelection"`
-	BootSourceOverrideEnabled    string       `json:"BootSourceOverrideEnabled"`
-	BootSourceOverrideMode       string       `json:"BootSourceOverrideMode"`
-	BootSourceOverrideTarget     string       `json:"BootSourceOverrideTarget"`
-	Certificates                 Certificates `json:"Certificates"`
-	UefiTargetBootSourceOverride string       `json:"UefiTargetBootSourceOverride"`
+	AliasBootOrder                  []string     `json:"AliasBootOrder,omitempty"`
+	BootNext                        string       `json:"BootNext,omitempty"`
+	BootOptions                     BootOptions  `json:"BootOptions,omitempty"`
+	BootOrder                       []string     `json:"BootOrder,omitempty"`
+	BootOrderPropertySelection      string       `json:"BootOrderPropertySelection,omitempty"`
+	BootSourceOverrideEnabled       string       `json:"BootSourceOverrideEnabled,omitempty"`
+	BootSourceOverrideMode          string       `json:"BootSourceOverrideMode,omitempty"`
+	BootSourceOverrideTarget        string       `json:"BootSourceOverrideTarget,omitempty"`
+	Certificates                    Certificates `json:"Certificates,omitempty"`
+	UefiTargetBootSourceOverride    string       `json:"UefiTargetBootSourceOverride,omitempty"`
+	AutomaticRetryAttempts          int          `json:"AutomaticRetryAttempts,omitempty"`
+	AutomaticRetryConfig            string       `json:"AutomaticRetryConfig,omitempty"`
+	HttpBootUri                     string       `json:"HttpBootUri,omitempty"`
+	RemainingAutomaticRetryAttempts int          `json:"RemainingAutomaticRetryAttempts,omitempty"`
+	StopBootOnFault                 string       `json:"StopBootOnFault,omitempty"`
+	TrustedModuleRequiredToBoot     string       `json:"TrustedModuleRequiredToBoot,omitempty"`
 }
 
 // EthernetInterfaces get
@@ -137,10 +182,10 @@ type EthernetInterfaces struct {
 	Oid                    string              `json:"@odata.id"`
 	Ocontext               string              `json:"@odata.context,omitempty"`
 	Oetag                  string              `json:"@odata.etag,omitempty"`
-	Otype                  string              `json:"@odata.type,omitempty"`
+	Otype                  string              `json:"@odata.type"`
 	Description            string              `json:"description,omitempty"`
-	ID                     string              `json:"Id,omitempty"`
-	Name                   string              `json:"Name,omitempty"`
+	ID                     string              `json:"Id"`
+	Name                   string              `json:"Name"`
 	Oem                    Oem                 `json:"Oem,omitempty"`
 	AutoNeg                bool                `json:"AutoNeg,omitempty"`
 	DHCPv4                 DHCPv4              `json:"DHCPv4,omitempty"`
@@ -264,10 +309,10 @@ type Memory struct {
 	Oid                                     string                  `json:"@odata.id"`
 	Ocontext                                string                  `json:"@odata.context,omitempty"`
 	Oetag                                   string                  `json:"@odata.etag,omitempty"`
-	Otype                                   string                  `json:"@odata.type,omitempty"`
+	Otype                                   string                  `json:"@odata.type"`
 	Description                             string                  `json:"description,omitempty"`
-	ID                                      string                  `json:"Id,omitempty"`
-	Name                                    string                  `json:"Name,omitempty"`
+	ID                                      string                  `json:"Id"`
+	Name                                    string                  `json:"Name"`
 	Oem                                     Oem                     `json:"Oem,omitempty"`
 	AllocationAlignmentMiB                  int                     `json:"AllocationAlignmentMiB,omitempty"`
 	AllocationIncrementMiB                  int                     `json:"AllocationIncrementMiB,omitempty"`
@@ -325,18 +370,25 @@ type Memory struct {
 	VolatileSizeMiB                         int                     `json:"VolatileSizeMiB,omitempty"`
 	Log                                     *Link                   `json:"Log,omitempty"`
 	OperatingSpeedRangeMHz                  *OperatingSpeedRangeMHz `json:"OperatingSpeedRangeMHz,omitempty"`
+	Certificates                            Certificates            `json:"Certificates,omitempty"`
+	Enabled                                 bool                    `json:"Enabled,omitempty"`
+	EnvironmentMetrics                      *Link                   `json:"EnvironmentMetrics,omitempty"`
+	LocationIndicatorActive                 bool                    `json:"LocationIndicatorActive,omitempty"`
+	Measurements                            []*Link                 `json:"Measurements,omitempty"`
+	Model                                   string                  `json:"Model,omitempty"`
+	SparePartNumber                         string                  `json:"SparePartNumber,omitempty"`
 }
 
 type OperatingSpeedRangeMHz struct {
-	AllowableMax           int    `json:"AllowableMax,omitempty"`
-	AllowableMin           int    `json:"AllowableMin,omitempty"`
-	AllowableNumericValues []int  `json:"AllowableNumericValues,omitempty"`
-	ControlMode            string `json:"ControlMode,omitempty"`
-	DataSourceUri          string `json:"DataSourceUri,omitempty"`
-	Reading                int    `json:"Reading,omitempty"`
-	ReadingUnits           string `json:"ReadingUnits,omitempty"`
-	SettingMax             int    `json:"SettingMax,omitempty"`
-	SettingMin             int    `json:"SettingMin,omitempty"`
+	AllowableMax           float32   `json:"AllowableMax,omitempty"`
+	AllowableMin           float32   `json:"AllowableMin,omitempty"`
+	AllowableNumericValues []float32 `json:"AllowableNumericValues,omitempty"`
+	ControlMode            string    `json:"ControlMode,omitempty"`
+	DataSourceUri          string    `json:"DataSourceUri,omitempty"`
+	Reading                float32   `json:"Reading,omitempty"`
+	ReadingUnits           string    `json:"ReadingUnits,omitempty"`
+	SettingMax             float32   `json:"SettingMax,omitempty"`
+	SettingMin             float32   `json:"SettingMin,omitempty"`
 }
 
 //MemoryLocation in place object
@@ -391,11 +443,14 @@ type MemoryDomains struct {
 	AllowsSparing             bool                     `json:"AllowsSparing,omitempty"`
 	InterleavableMemorySets   []InterleavableMemorySet `json:"InterleavableMemorySets,omitempty"`
 	MemoryChunks              MemoryChunks             `json:"MemoryChunks,omitempty"`
+	Actions                   *OemActions              `json:"Actions,omitempty"`
+	Links                     Link                     `json:"Links,omitempty"`
 }
 
 //InterleavableMemorySet in place object
 type InterleavableMemorySet struct {
-	MemorySet []Memory `json:"MemorySet"`
+	MemorySet      []Memory `json:"MemorySet,omitempty"`
+	MemorySetCount int      `json:"MemorySet@odata.count,omitempty"`
 }
 
 //MemoryChunks redfish structure
@@ -434,6 +489,8 @@ type NetworkInterfaces struct {
 	NetworkDeviceFunctions NetworkDeviceFunctions `json:"NetworkDeviceFunctions,omitempty"`
 	NetworkPorts           NetworkPorts           `json:"NetworkPorts,omitempty"`
 	Status                 Status                 `json:"Status,omitempty"`
+	Actions                *OemActions            `json:"Actions,omitempty"`
+	Ports                  *Link                  `json:"Ports,omitempty"`
 }
 
 //NetworkDeviceFunctions redfish structure
@@ -455,26 +512,32 @@ URIs:
 /redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}
 */
 type PCIeDevice struct {
-	Oid             string         `json:"@odata.id"`
-	Ocontext        string         `json:"@odata.context,omitempty"`
-	Oetag           string         `json:"@odata.etag,omitempty"`
-	Otype           string         `json:"@odata.type"`
-	Description     string         `json:"description,omitempty"`
-	ID              string         `json:"Id"`
-	Name            string         `json:"Name"`
-	Oem             Oem            `json:"Oem,omitempty"`
-	Assembly        *Assembly      `json:"Assembly,omitempty"`
-	AssetTag        string         `json:"AssetTag,omitempty"`
-	DeviceType      string         `json:"DeviceType,omitempty"` //enum
-	FirmwareVersion string         `json:"FirmwareVersion,omitempty"`
-	Links           *Links         `json:"Links,omitempty"`
-	Manufacturer    string         `json:"Manufacturer,omitempty"`
-	Model           string         `json:"Model,omitempty"`
-	PartNumber      string         `json:"PartNumber,omitempty"`
-	PCIeInterface   *PCIeInterface `json:"PCIeInterface,omitempty"`
-	SerialNumber    string         `json:"SerialNumber,omitempty"`
-	SKU             string         `json:"SKU,omitempty"`
-	Status          *Status        `json:"Status,omitempty"`
+	Oid                string         `json:"@odata.id"`
+	Ocontext           string         `json:"@odata.context,omitempty"`
+	Oetag              string         `json:"@odata.etag,omitempty"`
+	Otype              string         `json:"@odata.type"`
+	Description        string         `json:"description,omitempty"`
+	ID                 string         `json:"Id"`
+	Name               string         `json:"Name"`
+	Oem                Oem            `json:"Oem,omitempty"`
+	Assembly           *Assembly      `json:"Assembly,omitempty"`
+	AssetTag           string         `json:"AssetTag,omitempty"`
+	DeviceType         string         `json:"DeviceType,omitempty"` //enum
+	FirmwareVersion    string         `json:"FirmwareVersion,omitempty"`
+	Links              *Links         `json:"Links,omitempty"`
+	Manufacturer       string         `json:"Manufacturer,omitempty"`
+	Model              string         `json:"Model,omitempty"`
+	PartNumber         string         `json:"PartNumber,omitempty"`
+	PCIeInterface      *PCIeInterface `json:"PCIeInterface,omitempty"`
+	SerialNumber       string         `json:"SerialNumber,omitempty"`
+	SKU                string         `json:"SKU,omitempty"`
+	Status             *Status        `json:"Status,omitempty"`
+	Actions            *OemActions    `json:"Actions,omitempty"`
+	EnvironmentMetrics *Link          `json:"EnvironmentMetrics,omitempty"`
+	PCIeFunctions      *Link          `json:"PCIeFunctions,omitempty"`
+	ReadyToRemove      bool           `json:"ReadyToRemove,omitempty"`
+	SparePartNumber    string         `json:"SparePartNumber,omitempty"`
+	UUID               string         `json:"UUID,omitempty"`
 }
 
 //PCIeInterface in place object
@@ -494,25 +557,27 @@ URIs:
 /redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}/PCIeFunctions/{PCIeFunctionId}
 */
 type PCIeFunction struct {
-	Oid               string `json:"@odata.id"`
-	Ocontext          string `json:"@odata.context,omitempty"`
-	Oetag             string `json:"@odata.etag,omitempty"`
-	Otype             string `json:"@odata.type,omitempty"`
-	Description       string `json:"description,omitempty"`
-	ID                string `json:"Id,omitempty"`
-	Name              string `json:"Name,omitempty"`
-	Oem               Oem    `json:"Oem,omitempty"`
-	ClassCode         string `json:"ClassCode,omitempty"`
-	DeviceClass       string `json:"DeviceClass,omitempty"` //enum
-	DeviceID          string `json:"DeviceId,omitempty"`
-	FunctionID        int    `json:"FunctionId,omitempty"`
-	FunctionType      string `json:"FunctionType,omitempty"` //enum
-	Links             Links  `json:"Links,omitempty"`
-	RevisionID        string `json:"RevisionId,omitempty"`
-	Status            Status `json:"Status,omitempty"`
-	SubsystemID       string `json:"SubsystemId,omitempty"`
-	SubsystemVendorID string `json:"SubsystemVendorId,omitempty"`
-	VendorID          string `json:"VendorId,omitempty"`
+	Oid               string      `json:"@odata.id"`
+	Ocontext          string      `json:"@odata.context,omitempty"`
+	Oetag             string      `json:"@odata.etag,omitempty"`
+	Otype             string      `json:"@odata.type"`
+	Description       string      `json:"description,omitempty"`
+	ID                string      `json:"Id"`
+	Name              string      `json:"Name"`
+	Oem               Oem         `json:"Oem,omitempty"`
+	ClassCode         string      `json:"ClassCode,omitempty"`
+	DeviceClass       string      `json:"DeviceClass,omitempty"` //enum
+	DeviceID          string      `json:"DeviceId,omitempty"`
+	FunctionID        int         `json:"FunctionId,omitempty"`
+	FunctionType      string      `json:"FunctionType,omitempty"` //enum
+	Links             Links       `json:"Links,omitempty"`
+	RevisionID        string      `json:"RevisionId,omitempty"`
+	Status            Status      `json:"Status,omitempty"`
+	SubsystemID       string      `json:"SubsystemId,omitempty"`
+	SubsystemVendorID string      `json:"SubsystemVendorId,omitempty"`
+	VendorID          string      `json:"VendorId,omitempty"`
+	Actions           *OemActions `json:"Actions,omitempty"`
+	Enabled           bool        `json:"Enabled,omitempty"`
 }
 
 /*
@@ -525,39 +590,74 @@ URIs:
 
 */
 type Processors struct {
-	Oid                    string                  `json:"@odata.id"`
-	Ocontext               string                  `json:"@odata.context,omitempty"`
-	Oetag                  string                  `json:"@odata.etag,omitempty"`
-	Otype                  string                  `json:"@odata.type,omitempty"`
-	Description            string                  `json:"description,omitempty"`
-	ID                     string                  `json:"Id,omitempty"`
-	Name                   string                  `json:"Name,omitempty"`
-	Oem                    Oem                     `json:"Oem,omitempty"`
-	AccelerationFunctions  AccelerationFunctions   `json:"AccelerationFunctions,omitempty"`
-	Assembly               Assembly                `json:"Assembly,omitempty"`
-	FPGA                   FPGA                    `json:"FPGA,omitempty"`
-	InstructionSet         string                  `json:"InstructionSet,omitempty"` //enum
-	Links                  Links                   `json:"Links,omitempty"`
-	Location               Location                `json:"Location,omitempty"`
-	Manufacturer           string                  `json:"Manufacturer,omitempty"`
-	MaxSpeedMHz            int                     `json:"MaxSpeedMHz,omitempty"`
-	MaxTDPWatts            int                     `json:"MaxTDPWatts,omitempty"`
-	Metrics                Metrics                 `json:"Metrics,omitempty"`
-	Model                  string                  `json:"Model,omitempty"`
-	ProcessorArchitecture  string                  `json:"ProcessorArchitecture,omitempty"` //enum
-	ProcessorID            ProcessorID             `json:"ProcessorId,omitempty"`
-	ProcessorMemory        []ProcessorMemory       `json:"ProcessorMemory,omitempty"`
-	ProcessorType          string                  `json:"ProcessorType,omitempty"` //enum
-	Socket                 string                  `json:"Socket,omitempty"`
-	Status                 Status                  `json:"Status,omitempty"`
-	SubProcessors          SubProcessors           `json:"SubProcessors,omitempty"`
-	TDPWatts               int                     `json:"TDPWatts,omitempty"`
-	TotalCores             int                     `json:"TotalCores,omitempty"`
-	TotalEnabledCores      int                     `json:"TotalEnabledCores,omitempty"`
-	TotalThreads           int                     `json:"TotalThreads,omitempty"`
-	UUID                   string                  `json:"UUID,omitempty"`
-	OperatingSpeedRangeMHz *OperatingSpeedRangeMHz `json:"OperatingSpeedRangeMHz,omitempty"`
-	Ports                  *Link                   `json:"Ports,omitempty"`
+	Oid                     string                  `json:"@odata.id"`
+	Ocontext                string                  `json:"@odata.context,omitempty"`
+	Oetag                   string                  `json:"@odata.etag,omitempty"`
+	Otype                   string                  `json:"@odata.type"`
+	Description             string                  `json:"description,omitempty"`
+	ID                      string                  `json:"Id"`
+	Name                    string                  `json:"Name"`
+	Oem                     Oem                     `json:"Oem,omitempty"`
+	AccelerationFunctions   AccelerationFunctions   `json:"AccelerationFunctions,omitempty"`
+	Assembly                Assembly                `json:"Assembly,omitempty"`
+	FPGA                    FPGA                    `json:"FPGA,omitempty"`
+	InstructionSet          string                  `json:"InstructionSet,omitempty"` //enum
+	Links                   Links                   `json:"Links,omitempty"`
+	Location                Location                `json:"Location,omitempty"`
+	Manufacturer            string                  `json:"Manufacturer,omitempty"`
+	MaxSpeedMHz             int                     `json:"MaxSpeedMHz,omitempty"`
+	MaxTDPWatts             int                     `json:"MaxTDPWatts,omitempty"`
+	Metrics                 Metrics                 `json:"Metrics,omitempty"`
+	Model                   string                  `json:"Model,omitempty"`
+	ProcessorArchitecture   string                  `json:"ProcessorArchitecture,omitempty"` //enum
+	ProcessorID             ProcessorID             `json:"ProcessorId,omitempty"`
+	ProcessorMemory         []ProcessorMemory       `json:"ProcessorMemory,omitempty"`
+	ProcessorType           string                  `json:"ProcessorType,omitempty"` //enum
+	Socket                  string                  `json:"Socket,omitempty"`
+	Status                  Status                  `json:"Status,omitempty"`
+	SubProcessors           SubProcessors           `json:"SubProcessors,omitempty"`
+	TDPWatts                int                     `json:"TDPWatts,omitempty"`
+	TotalCores              int                     `json:"TotalCores,omitempty"`
+	TotalEnabledCores       int                     `json:"TotalEnabledCores,omitempty"`
+	TotalThreads            int                     `json:"TotalThreads,omitempty"`
+	UUID                    string                  `json:"UUID,omitempty"`
+	OperatingSpeedRangeMHz  *OperatingSpeedRangeMHz `json:"OperatingSpeedRangeMHz,omitempty"`
+	Ports                   *Link                   `json:"Ports,omitempty"`
+	Actions                 *OemActions             `json:"Actions,omitempty"`
+	BaseSpeedMHz            int                     `json:"BaseSpeedMHz,omitempty"`
+	BaseSpeedPriorityState  string                  `json:"BaseSpeedPriorityState,omitempty"`
+	Certificates            Certificates            `json:"Certificates,omitempty"`
+	Enabled                 bool                    `json:"Enabled,omitempty"`
+	EnvironmentMetrics      *Link                   `json:"EnvironmentMetrics,omitempty"`
+	FirmwareVersion         string                  `json:"FirmwareVersion,omitempty"`
+	HighSpeedCoreIDs        []int                   `json:"HighSpeedCoreIDs,omitempty"`
+	LocationIndicatorActive bool                    `json:"LocationIndicatorActive,omitempty"`
+	Measurements            []*Link                 `json:"Measurements,omitempty"`
+	MemorySummary           *MemorySummaryDetails   `json:"MemorySummary,omitempty"`
+	MinSpeedMHz             int                     `json:"MinSpeedMHz,omitempty"`
+	OperatingConfigs        *Link                   `json:"OperatingConfigs,omitempty"`
+	OperatingSpeedMHz       int                     `json:"OperatingSpeedMHz,omitempty"`
+	PartNumber              string                  `json:"PartNumber,omitempty"`
+	SerialNumber            string                  `json:"SerialNumber,omitempty"`
+	SparePartNumber         string                  `json:"SparePartNumber,omitempty"`
+	SpeedLimitMHz           int                     `json:"SpeedLimitMHz,omitempty"`
+	SpeedLocked             bool                    `json:"SpeedLocked,omitempty"`
+	SystemInterface         SystemInterface         `json:"SystemInterface,omitempty"`
+	TurboState              string                  `json:"TurboState,omitempty"`
+	Version                 string                  `json:"Version,omitempty"`
+}
+
+type SystemInterface struct {
+	Ethernet      Ethernet      `json:"Ethernet,omitempty"`
+	InterfaceType string        `json:"InterfaceType,omitempty"`
+	PCIe          PCIeInterface `json:"PCIe,omitempty"`
+}
+
+type MemorySummaryDetails struct {
+	ECCModeEnabled     bool    `json:"ECCModeEnabled,omitempty"`
+	Metrics            Metrics `json:"Metrics,omitempty"`
+	TotalCacheSizeMiB  int     `json:"TotalCacheSizeMiB,omitempty"`
+	TotalMemorySizeMiB int     `json:"TotalMemorySizeMiB,omitempty"`
 }
 
 //AccelerationFunctions redfish structure
@@ -609,12 +709,13 @@ type AccelerationFunction struct {
 
 //ProcessorID in place object
 type ProcessorID struct {
-	EffectiveFamily         string `json:"EffectiveFamily"`
-	EffectiveModel          string `json:"EffectiveModel"`
-	IdentificationRegisters string `json:"IdentificationRegisters"`
-	MicrocodeInfo           string `json:"MicrocodeInfo"`
-	Step                    string `json:"Step"`
-	VendorID                string `json:"VendorId"`
+	EffectiveFamily               string `json:"EffectiveFamily,omitempty"`
+	EffectiveModel                string `json:"EffectiveModel,omitempty"`
+	IdentificationRegisters       string `json:"IdentificationRegisters,omitempty"`
+	MicrocodeInfo                 string `json:"MicrocodeInfo,omitempty"`
+	Step                          string `json:"Step,omitempty"`
+	VendorID                      string `json:"VendorId,omitempty"`
+	ProtectedIdentificationNumber string `json:"ProtectedIdentificationNumber,omitempty"`
 }
 
 //ProcessorMemory in place object
@@ -641,43 +742,46 @@ type ProcessorSummary struct {
 
 // SecureBoot redfish structure
 type SecureBoot struct {
-	Oid                   string `json:"@odata.id"`
-	Ocontext              string `json:"@odata.context,omitempty"`
-	Oetag                 string `json:"@odata.etag,omitempty"`
-	Otype                 string `json:"@odata.type,omitempty"`
-	Description           string `json:"description,omitempty"`
-	ID                    string `json:"Id,omitempty"`
-	Name                  string `json:"Name,omitempty"`
-	Oem                   Oem    `json:"Oem,omitempty"`
-	SecureBootCurrentBoot string `json:"SecureBootCurrentBoot,omitempty"`
-	SecureBootEnable      bool   `json:"SecureBootEnable,omitempty"`
-	SecureBootMode        string `json:"SecureBootMode,omitempty"`
+	Oid                   string      `json:"@odata.id"`
+	Ocontext              string      `json:"@odata.context,omitempty"`
+	Oetag                 string      `json:"@odata.etag,omitempty"`
+	Otype                 string      `json:"@odata.type"`
+	Description           string      `json:"description,omitempty"`
+	ID                    string      `json:"Id"`
+	Name                  string      `json:"Name"`
+	Oem                   Oem         `json:"Oem,omitempty"`
+	SecureBootCurrentBoot string      `json:"SecureBootCurrentBoot,omitempty"`
+	SecureBootEnable      bool        `json:"SecureBootEnable,omitempty"`
+	SecureBootMode        string      `json:"SecureBootMode,omitempty"`
+	Actions               *OemActions `json:"Actions,omitempty"`
+	SecureBootDatabases   *Link       `json:"SecureBootDatabases,omitempty"`
 }
 
 // SimpleStorage redfish structure
 type SimpleStorage struct {
-	Oid            string   `json:"@odata.id"`
-	Ocontext       string   `json:"@odata.context,omitempty"`
-	Oetag          string   `json:"@odata.etag,omitempty"`
-	Otype          string   `json:"@odata.type,omitempty"`
-	Description    string   `json:"description,omitempty"`
-	ID             string   `json:"Id,omitempty"`
-	Name           string   `json:"Name,omitempty"`
-	Oem            Oem      `json:"Oem,omitempty"`
-	Devices        []Device `json:"Devices,omitempty"`
-	Links          Link     `json:"Links,omitempty"`
-	Status         Status   `json:"Status,omitempty"`
-	UefiDevicePath string   `json:"UefiDevicePath,omitempty"`
+	Oid            string      `json:"@odata.id"`
+	Ocontext       string      `json:"@odata.context,omitempty"`
+	Oetag          string      `json:"@odata.etag,omitempty"`
+	Otype          string      `json:"@odata.type"`
+	Description    string      `json:"description,omitempty"`
+	ID             string      `json:"Id"`
+	Name           string      `json:"Name"`
+	Oem            Oem         `json:"Oem,omitempty"`
+	Devices        []Device    `json:"Devices,omitempty"`
+	Links          Link        `json:"Links,omitempty"`
+	Status         Status      `json:"Status,omitempty"`
+	UefiDevicePath string      `json:"UefiDevicePath,omitempty"`
+	Actions        *OemActions `json:"Actions,omitempty"`
 }
 
 //Device in place object
 type Device struct {
-	CapacityBytes int    `json:"CapacityBytes"`
-	Manufacturer  string `json:"Manufacturer"`
-	Model         string `json:"Model"`
+	CapacityBytes int    `json:"CapacityBytes,omitempty"`
+	Manufacturer  string `json:"Manufacturer,omitempty"`
+	Model         string `json:"Model,omitempty"`
 	Name          string `json:"Name"`
-	Oem           Oem    `json:"Oem"`
-	Status        Status `json:"Status"`
+	Oem           Oem    `json:"Oem,omitempty"`
+	Status        Status `json:"Status,omitempty"`
 }
 
 // TrustedModule redfish structure

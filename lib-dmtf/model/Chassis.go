@@ -21,39 +21,56 @@ import (
 
 // Chassis redfish structure
 type Chassis struct {
-	Ocontext           string            `json:"@odata.context,omitempty"`
-	Oid                string            `json:"@odata.id"`
-	Otype              string            `json:"@odata.type"`
-	Oetag              string            `json:"@odata.etag,omitempty"`
-	ID                 string            `json:"Id"`
-	Description        string            `json:"Description,omitempty"`
-	Name               string            `json:"Name"`
-	AssetTag           string            `json:"AssetTag,omitempty"`
-	ChassisType        string            `json:"ChassisType"`
-	DepthMm            float32           `json:"DepthMm,omitempty"`
-	EnvironmentalClass string            `json:"EnvironmentalClass,omitempty"`
-	HeightMm           float32           `json:"HeightMm,omitempty"`
-	IndicatorLED       string            `json:"IndicatorLED,omitempty"`
-	Manufacturer       string            `json:"Manufacturer,omitempty"`
-	Model              string            `json:"Model,omitempty"`
-	PartNumber         string            `json:"PartNumber,omitempty"`
-	PowerState         string            `json:"PowerState,omitempty"`
-	SerialNumber       string            `json:"SerialNumber,omitempty"`
-	SKU                string            `json:"SKU,omitempty"`
-	UUID               string            `json:"UUID,omitempty"`
-	WeightKg           float32           `json:"WeightKg,omitempty"`
-	WidthMm            float32           `json:"WidthMm,omitempty"`
-	Links              *Links            `json:"Links,omitempty"`
-	Location           *Link             `json:"Location,omitempty"`
-	LogServices        *LogServices      `json:"LogServices,omitempty"`
-	Assembly           *Assembly         `json:"Assembly,omitempty"`
-	NetworkAdapters    *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
-	PCIeSlots          *PCIeSlots        `json:"PCIeSlots,omitempty"`
-	PhysicalSecurity   *PhysicalSecurity `json:"PhysicalSecurity,omitempty"`
-	Power              *Link             `json:"Power,omitempty"`
-	Sensors            *Sensors          `json:"Sensors,omitempty"`
-	Status             *Status           `json:"Status,omitempty"`
-	Thermal            *Link             `json:"Thermal,omitempty"`
+	Ocontext                string            `json:"@odata.context,omitempty"`
+	Oid                     string            `json:"@odata.id"`
+	Otype                   string            `json:"@odata.type"`
+	Oetag                   string            `json:"@odata.etag,omitempty"`
+	ID                      string            `json:"Id"`
+	Description             string            `json:"Description,omitempty"`
+	Name                    string            `json:"Name"`
+	AssetTag                string            `json:"AssetTag,omitempty"`
+	ChassisType             string            `json:"ChassisType"`
+	DepthMm                 float32           `json:"DepthMm,omitempty"`
+	EnvironmentalClass      string            `json:"EnvironmentalClass,omitempty"`
+	HeightMm                float32           `json:"HeightMm,omitempty"`
+	IndicatorLED            string            `json:"IndicatorLED,omitempty"`
+	Manufacturer            string            `json:"Manufacturer,omitempty"`
+	Model                   string            `json:"Model,omitempty"`
+	PartNumber              string            `json:"PartNumber,omitempty"`
+	PowerState              string            `json:"PowerState,omitempty"`
+	SerialNumber            string            `json:"SerialNumber,omitempty"`
+	SKU                     string            `json:"SKU,omitempty"`
+	UUID                    string            `json:"UUID,omitempty"`
+	WeightKg                float32           `json:"WeightKg,omitempty"`
+	WidthMm                 float32           `json:"WidthMm,omitempty"`
+	Links                   *Links            `json:"Links,omitempty"`
+	Location                *Link             `json:"Location,omitempty"`
+	LogServices             *LogServices      `json:"LogServices,omitempty"`
+	Assembly                *Assembly         `json:"Assembly,omitempty"`
+	NetworkAdapters         *NetworkAdapters  `json:"NetworkAdapters,omitempty"`
+	PCIeSlots               *PCIeSlots        `json:"PCIeSlots,omitempty"`
+	PhysicalSecurity        *PhysicalSecurity `json:"PhysicalSecurity,omitempty"`
+	Power                   *Link             `json:"Power,omitempty"`
+	Sensors                 *Sensors          `json:"Sensors,omitempty"`
+	Status                  *Status           `json:"Status,omitempty"`
+	Thermal                 *Link             `json:"Thermal,omitempty"`
+	Actions                 *OemActions       `json:"Actions,omitempty"`
+	Certificates            Certificates      `json:"Certificates"`
+	Controls                *Link             `json:"Controls,omitempty"`
+	Drives                  *Link             `json:"Drives,omitempty"`
+	EnvironmentMetrics      *Link             `json:"EnvironmentMetrics,omitempty"`
+	LocationIndicatorActive bool              `json:"LocationIndicatorActive,omitempty"`
+	MaxPowerWatts           float32           `json:"MaxPowerWatts,omitempty"`
+	Measurements            []*Link           `json:"Measurements,omitempty"`
+	MediaControllers        *Link             `json:"MediaControllers,omitempty"`
+	Memory                  *Link             `json:"Memory,omitempty"`
+	MemoryDomains           *Link             `json:"MemoryDomains,omitempty"`
+	MinPowerWatts           float32           `json:"MinPowerWatts,omitempty"`
+	Oem                     *Oem              `json:"Oem,omitempty"`
+	PCIeDevices             *Link             `json:"PCIeDevices,omitempty"`
+	PowerSubsystem          *Link             `json:"PowerSubsystem,omitempty"`
+	SparePartNumber         string            `json:"SparePartNumber,omitempty"`
+	ThermalSubsystem        *Link             `json:"ThermalSubsystem,omitempty"`
 }
 
 // LogServices get
@@ -62,22 +79,30 @@ type Chassis struct {
 /redfish/v1/Systems/{ComputerSystemId}/LogServices/{LogServiceId}
 */
 type LogServices struct {
-	Oid                 string  `json:"@odata.id"`
-	Ocontext            string  `json:"@odata.context,omitempty"`
-	Otype               string  `json:"@odata.type,omitempty"`
-	Oetag               string  `json:"@odata.etag,omitempty"`
-	ID                  string  `json:"Id,omitempty"`
-	Description         string  `json:"Description,omitempty"`
-	Name                string  `json:"Name,omitempty"`
-	DateTime            string  `json:"DateTime,omitempty"`
-	DateTimeLocalOffset string  `json:"DateTimeLocalOffset,omitempty"`
-	Entries             Entries `json:"Entries,omitempty"`
-	LogEntryType        string  `json:"LogEntryType,omitempty"`
-	MaxNumberOfRecords  int     `json:"MaxNumberOfRecords,omitempty"`
-	OverWritePolicy     string  `json:"OverWritePolicy,omitempty"`
-	ServiceEnabled      bool    `json:"ServiceEnabled,omitempty"`
-	Status              Status  `json:"Status,omitempty"`
-	AutoDSTEnabled      bool    `json:"AutoDSTEnabled,omitempty"`
+	Oid                 string      `json:"@odata.id"`
+	Ocontext            string      `json:"@odata.context,omitempty"`
+	Otype               string      `json:"@odata.type"`
+	Oetag               string      `json:"@odata.etag,omitempty"`
+	ID                  string      `json:"Id"`
+	Description         string      `json:"Description,omitempty"`
+	Name                string      `json:"Name"`
+	DateTime            string      `json:"DateTime,omitempty"`
+	DateTimeLocalOffset string      `json:"DateTimeLocalOffset,omitempty"`
+	Entries             Entries     `json:"Entries,omitempty"`
+	LogEntryType        string      `json:"LogEntryType,omitempty"`
+	MaxNumberOfRecords  int         `json:"MaxNumberOfRecords,omitempty"`
+	OverWritePolicy     string      `json:"OverWritePolicy,omitempty"`
+	ServiceEnabled      bool        `json:"ServiceEnabled,omitempty"`
+	Status              Status      `json:"Status,omitempty"`
+	AutoDSTEnabled      bool        `json:"AutoDSTEnabled,omitempty"`
+	Actions             *OemActions `json:"Actions,omitempty"`
+	Oem                 *Oem        `json:"Oem,omitempty"`
+	SyslogFilters       *SysLog     `json:"SyslogFilters,omitempty"`
+}
+
+type SysLog struct {
+	LogFacilities  []string `json:"LogFacilities,omitempty"`
+	LowestSeverity string   `json:"LowestSeverity,omitempty"`
 }
 
 //Entries redfish structure

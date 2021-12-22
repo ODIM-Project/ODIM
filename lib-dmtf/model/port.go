@@ -48,22 +48,62 @@ type Port struct {
 	PortID                  string               `json:"PortId,omitempty"`
 	SignalDetected          bool                 `json:"SignalDetected,omitempty"`
 	Width                   int                  `json:"Width,omitempty"`
+	CapableProtocolVersions []string             `json:"CapableProtocolVersions,omitempty"`
+	CurrentProtocolVersion  string               `json:"CurrentProtocolVersion,omitempty"`
+	Enabled                 bool                 `json:"Enabled,omitempty"`
+	EnvironmentMetrics      *Link                `json:"EnvironmentMetrics,omitempty"`
+	FunctionMaxBandwidth    []*FunctionBandwidth `json:"FunctionMaxBandwidth,omitempty"`
+	FunctionMinBandwidth    []*FunctionBandwidth `json:"FunctionMinBandwidth,omitempty"`
+	Location                *Link                `json:"Location,omitempty"`
+	SFP                     SFP                  `json:"SFP,omitempty"`
+}
+
+type SFP struct {
+	FiberConnectionType string   `json:"FiberConnectionType,omitempty"`
+	Manufacturer        string   `json:"Manufacturer,omitempty"`
+	MediumType          string   `json:"MediumType,omitempty"`
+	PartNumber          string   `json:"PartNumber,omitempty"`
+	SerialNumber        string   `json:"SerialNumber,omitempty"`
+	Status              Status   `json:"Status,omitempty"`
+	SupportedSFPTypes   []string `json:"SupportedSFPTypes,omitempty"`
+	Type                string   `json:"Type,omitempty"`
+}
+
+type FunctionBandwidth struct {
+	AllocationPercent     int   `json:"AllocationPercent,omitempty"`
+	NetworkDeviceFunction *Link `json:"NetworkDeviceFunctions,omitempty"`
 }
 
 //PortEthernet redfish model
 type PortEthernet struct {
-	FlowControlConfiguration      string `json:"FlowControlConfiguration,omitempty"`
-	FlowControlStatus             string `json:"FlowControlStatus,omitempty"`
-	SupportedEthernetCapabilities string `json:"SupportedEthernetCapabilities,omitempty"`
-	WakeOnLANEnabled              bool   `json:"WakeOnLANEnabled,omitempty"`
-	EEEEnabled                    bool   `json:"EEEEnabled,omitempty"`
+	FlowControlConfiguration      string   `json:"FlowControlConfiguration,omitempty"`
+	FlowControlStatus             string   `json:"FlowControlStatus,omitempty"`
+	SupportedEthernetCapabilities string   `json:"SupportedEthernetCapabilities,omitempty"`
+	WakeOnLANEnabled              bool     `json:"WakeOnLANEnabled,omitempty"`
+	EEEEnabled                    bool     `json:"EEEEnabled,omitempty"`
+	LLDPTransmit                  *LLDP    `json:"LLDPTransmit,omitempty"`
+	LLDPReceive                   *LLDP    `json:"LLDPReceive,omitempty"`
+	LLDPEnabled                   bool     `json:"LLDPEnabled,omitempty"`
+	AssociatedMACAddresses        []string `json:"AssociatedMACAddresses,omitempty"`
+}
+
+type LLDP struct {
+	ChassisId             string `json:"ChassisId,omitempty"`
+	ChassisIdSubtype      string `json:"ChassisIdSubtype,omitempty"`
+	ManagementAddressIPv4 string `json:"ManagementAddressIPv4,omitempty"`
+	ManagementAddressIPv6 string `json:"ManagementAddressIPv6,omitempty"`
+	ManagementAddressMAC  string `json:"ManagementAddressMAC,omitempty"`
+	ManagementVlanId      int    `json:"ManagementVlanId,omitempty"`
+	PortId                string `json:"PortId,omitempty"`
+	PortIdSubtype         string `json:"PortIdSubtype,omitempty"`
 }
 
 //FibreChannel redfish model
 type FibreChannel struct {
-	FabricName                  string `json:"FabricName,omitempty"`
-	NumberDiscoveredRemotePorts int    `json:"NumberDiscoveredRemotePorts,omitempty"`
-	PortConnectionType          string `json:"PortConnectionType,omitempty"`
+	FabricName                  string   `json:"FabricName,omitempty"`
+	NumberDiscoveredRemotePorts int      `json:"NumberDiscoveredRemotePorts,omitempty"`
+	PortConnectionType          string   `json:"PortConnectionType,omitempty"`
+	AssociatedWorldWideNames    []string `json:"AssociatedWorldWideNames,omitempty"`
 }
 
 //LinkConfiguration redfish model
@@ -71,6 +111,7 @@ type LinkConfiguration struct {
 	AutoSpeedNegotiationCapable bool                   `json:"AutoSpeedNegotiationCapable,omitempty"`
 	AutoSpeedNegotiationEnabled bool                   `json:"AutoSpeedNegotiationEnabled,omitempty"`
 	CapableLinkSpeedGbps        []CapableLinkSpeedGbps `json:"CapableLinkSpeedGbps,omitempty"`
+	ConfiguredNetworkLinks      []CapableLinkSpeedGbps `json:"ConfiguredNetworkLinks,omitempty"`
 }
 
 //CapableLinkSpeedGbps redfish model
@@ -81,10 +122,15 @@ type CapableLinkSpeedGbps struct {
 
 //PortLinks Port link redfish model
 type PortLinks struct {
-	AssociatedEndpoints  []Link      `json:"AssociatedEndpoints,omitempty"`
-	ConnectedPorts       []Link      `json:"ConnectedPorts,omitempty"`
-	ConnectedSwitches    []Link      `json:"ConnectedSwitches,omitempty"`
-	ConnectedSwitchPorts []Link      `json:"ConnectedSwitchPorts,omitempty"`
-	Oem                  interface{} `json:"Oem,omitempty"`
-	Cables               []Link      `json:"Cables,omitempty"`
+	AssociatedEndpoints       []Link      `json:"AssociatedEndpoints,omitempty"`
+	ConnectedPorts            []Link      `json:"ConnectedPorts,omitempty"`
+	ConnectedSwitches         []Link      `json:"ConnectedSwitches,omitempty"`
+	ConnectedSwitchPorts      []Link      `json:"ConnectedSwitchPorts,omitempty"`
+	Oem                       interface{} `json:"Oem,omitempty"`
+	Cables                    []Link      `json:"Cables,omitempty"`
+	AssociatedEndpointsCount  int         `json:"AssociatedEndpoints@odata.count,omitempty"`
+	CablesCount               int         `json:"Cables@odata.count,omitempty"`
+	ConnectedPortsCount       int         `json:"ConnectedPorts@odata.count,omitempty"`
+	ConnectedSwitchPortsCount int         `json:"ConnectedSwitchPorts@odata.count,omitempty"`
+	ConnectedSwitchesCount    int         `json:"ConnectedSwitches@odata.count,omitempty"`
 }

@@ -30,9 +30,9 @@ type Fabric struct {
 	AddressPools   *Link       `json:"AddressPools"`
 	Connections    *Link       `json:"Connections,omitempty"`
 	EndpointGroups *Link       `json:"EndpointGroups,omitempty"`
-	Endpoints      *Link       `json:"Endpoints"`
-	Switches       *Link       `json:"Switches"`
-	Zones          *Link       `json:"Zones"`
+	Endpoints      *Link       `json:"Endpoints,omitempty"`
+	Switches       *Link       `json:"Switches,omitempty"`
+	Zones          *Link       `json:"Zones,omitempty"`
 	MaxZones       int         `json:"MaxZones,omitempty"`
 	FabricType     string      `json:"FabricType"`
 }

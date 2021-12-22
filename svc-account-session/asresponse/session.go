@@ -16,6 +16,7 @@
 package asresponse
 
 import (
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
@@ -45,10 +46,10 @@ type Session struct {
 //SessionService struct definition
 type SessionService struct {
 	response.Response
-	Status         Status   `json:"Status"`
-	ServiceEnabled bool     `json:"ServiceEnabled"`
-	SessionTimeout float64  `json:"SessionTimeout"`
-	Sessions       Sessions `json:"Sessions"`
+	Status         Status   `json:"Status,omitempty"`
+	ServiceEnabled bool     `json:"ServiceEnabled,omitempty"`
+	SessionTimeout float64  `json:"SessionTimeout,omitempty"`
+	Sessions       Sessions `json:"Sessions,omitempty"`
 }
 
 //Sessions struct definition

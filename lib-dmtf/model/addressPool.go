@@ -24,7 +24,7 @@ type AddressPool struct {
 	Description  string               `json:"Description,omitempty"`
 	Ethernet     *AddressPoolEthernet `json:"Ethernet,omitempty"`
 	GenZ         *GenZ                `json:"GenZ,omitempty"`
-	ID           string               `json:"id"`
+	ID           string               `json:"Id"`
 	Links        *AddressPoolLinks    `json:"Links,omitempty"`
 	Name         string               `json:"Name"`
 	Oem          interface{}          `json:"Oem,omitempty"`
@@ -44,7 +44,6 @@ type AddressPoolEthernet struct {
 	IPv4              *IPv4                `json:"IPv4,omitempty"`
 	MultiProtocolEBGP *EBGP                `json:"MultiProtocolEBGP,omitempty"`
 	MultiProtocolIBGP *CommonBGPProperties `json:"MultiProtocolIBGP,omitempty"`
-	SystemMACRange    *AddressRange        `json:"SystemMACRange,omitempty"`
 }
 
 // GenZ redfish model

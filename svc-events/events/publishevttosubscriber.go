@@ -324,6 +324,8 @@ func (p *PluginContact) postEvent(destination, eventUniqueID string, event []byt
 	if err == nil {
 		resp.Body.Close()
 		log.Printf("event post response: %v", resp)
+		// check any undelivered events are present in db for the destination and publish those
+		go p.checkUndeliveredEvents(destination)
 		return
 	}
 	if evcommon.SaveUndeliveredEventsFlag {
@@ -332,7 +334,7 @@ func (p *PluginContact) postEvent(destination, eventUniqueID string, event []byt
 			log.Error("error while saving undelivered event: ", serr.Error())
 		}
 	}
-	go reAttemptEvents(destination, event)
+	go p.reAttemptEvents(destination, event)
 	return
 }
 
@@ -357,7 +359,7 @@ func sendEvent(destination string, event []byte) (*http.Response, error) {
 	return httpClient.Do(req)
 }
 
-func reAttemptEvents(destination string, event []byte) {
+func (p *PluginContact) reAttemptEvents(destination string, event []byte) {
 	var resp *http.Response
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
@@ -367,12 +369,13 @@ func reAttemptEvents(destination string, event []byte) {
 		if err == nil {
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
+			// check any undelivered events are present in db for the destination and publish those
+			go p.checkUndeliveredEvents(destination)
 			return
 		}
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
-
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On
@@ -495,4 +498,37 @@ func callPluginStartUp(event common.Events) {
 	}
 	log.Info("successfully sent plugin startup data to " + event.IP)
 	return
+}
+
+func (p *PluginContact) checkUndeliveredEvents(destination string) {
+	// first check any of the instance have already picked up for publishing
+	// undelivered events for the destination
+	flag, err := p.GetUndeliveredEventsFlag(destination)
+	if err != nil {
+		log.Error("error while getting undelivered events flag: ", err.Error())
+	}
+	if !flag {
+		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
+		err = p.SetUndeliveredEventsFlag(destination)
+		if err != nil {
+			log.Error("error while setting undelivered events flag: ", err.Error())
+		}
+		events, err := p.GetUndeliveredEvents(destination)
+		if err != nil {
+			log.Error("error while getting undelivered events flag: ", err.Error())
+		}
+		for _, event := range events {
+			resp, err := sendEvent(destination, []byte(event))
+			if err != nil {
+				log.Error("error while make https call to send the event: ", err.Error())
+			}
+			resp.Body.Close()
+			log.Printf("event post response: %v", resp)
+		}
+		// handle logic if inter connection fails
+		derr := p.DeleteUndeliveredEventsFlag(destination)
+		if derr != nil {
+			log.Error("error while deleting undelivered events flag: ", derr.Error())
+		}
+	}
 }

@@ -1,7 +1,6 @@
 import os
 import json
 
-
 CONF_FILE = os.getenv("PLUGIN_CONFIG_FILE_PATH")
 
 PLUGIN_CONFIG = {
@@ -37,7 +36,7 @@ def set_configuraion():
         with open(CONF_FILE) as f:
             try:
                 config_data = json.load(f)
-            except Exception as err:
+            except Exception:
                 pass
     if config_data:
         for key in PLUGIN_CONFIG.keys():

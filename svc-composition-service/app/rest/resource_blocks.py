@@ -7,11 +7,12 @@ from rest.resource_zones import ResourceZones
 import copy
 import uuid
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from http import HTTPStatus
 
-class ResourceBlocks():
 
+class ResourceBlocks():
     def __init__(self):
         self.redis = RedisClient()
         self.client = Client()
@@ -21,9 +22,10 @@ class ResourceBlocks():
         logging.info("Initialize Resource Blocks")
 
         try:
-      
+
             sys_urls = []
-            rb_computer_keys = self.redis.keys("ResourceBlocks-ComputerSystem:*")
+            rb_computer_keys = self.redis.keys(
+                "ResourceBlocks-ComputerSystem:*")
             if rb_computer_keys:
                 for key in rb_computer_keys:
                     sys_uri = self.redis.get(key)
@@ -43,11 +45,15 @@ class ResourceBlocks():
                             system_uri)
                         if system_res:
                             # create resource block and set data into database
-                            resp = self.create_computer_sys_resource_block(system_res)
+                            resp = self.create_computer_sys_resource_block(
+                                system_res)
                             logging.info(
-                                "successfully Created Computer system Resource Block. {resp}".format(resp=resp))
+                                "successfully Created Computer system Resource Block. {resp}"
+                                .format(resp=resp))
         except Exception as err:
-            logging.error("unable to initialize the Resource Block")
+            logging.error(
+                "unable to initialize the Resource Block. Error: {e}".format(
+                    e=err))
 
     def create_computer_sys_resource_block(self, system_data=None):
         res = {}
@@ -64,19 +70,21 @@ class ResourceBlocks():
                 data['Status']['Health'] = system_data['Status'].get('Health')
 
             data['Id'] = str(uuid.uuid1())
-            data['@odata.id'] = "{url}/{id}".format(
-                url=data['@odata.id'], id=data['Id'])
+            data['@odata.id'] = "{url}/{id}".format(url=data['@odata.id'],
+                                                    id=data['Id'])
 
-            data['ComputerSystems'] = [
-                {'@odata.id': system_data['@odata.id']}
-            ]
+            data['ComputerSystems'] = [{'@odata.id': system_data['@odata.id']}]
 
-            self.redis.set("{block}:{block_url}".format(
-                block="ResourceBlocks", block_url=data['@odata.id']), str(json.dumps(data)))
+            self.redis.set(
+                "{block}:{block_url}".format(block="ResourceBlocks",
+                                             block_url=data['@odata.id']),
+                str(json.dumps(data)))
 
-            self.redis.set("{block_system}:{block_url}".format(
-                block_system="ResourceBlocks-ComputerSystem", block_url=data['@odata.id']), system_data['@odata.id'])
-            
+            self.redis.set(
+                "{block_system}:{block_url}".format(
+                    block_system="ResourceBlocks-ComputerSystem",
+                    block_url=data['@odata.id']), system_data['@odata.id'])
+
             self.redis.sadd("FreePool", data['@odata.id'])
 
             res = {"Id": data['Id']}
@@ -84,7 +92,8 @@ class ResourceBlocks():
                 "New ResourceBlock data: {rb_data}".format(rb_data=data))
         except Exception as err:
             logging.error(
-                "Unable to create Computer system Resource Block. Error: {e}".format(e=err))
+                "Unable to create Computer system Resource Block. Error: {e}".
+                format(e=err))
         finally:
             return res
 
@@ -98,7 +107,8 @@ class ResourceBlocks():
         try:
 
             res = {
-                "@odata.type": "#ResourceBlockCollection.ResourceBlockCollection",
+                "@odata.type":
+                "#ResourceBlockCollection.ResourceBlockCollection",
                 "Name": "Resource Block Collection",
                 "Members@odata.count": 0,
                 "Members": [],
@@ -107,7 +117,8 @@ class ResourceBlocks():
                     "Ami": {
                         "Actions": {
                             "#ResourceBlock.Initialize": {
-                                "target": "/redfish/v1/CompositionService/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize"
+                                "target":
+                                "/redfish/v1/CompositionService/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize"
                             }
                         }
                     }
@@ -116,19 +127,24 @@ class ResourceBlocks():
 
             rb_keys = self.redis.keys("ResourceBlocks:*")
             for rb_key in rb_keys:
-                res["Members"].append({"@odata.id": "{uri}".format(
-                    uri=rb_key.replace("ResourceBlocks:", ""))})
+                res["Members"].append({
+                    "@odata.id":
+                    "{uri}".format(uri=rb_key.replace("ResourceBlocks:", ""))
+                })
 
             res["Members@odata.count"] = len(rb_keys)
             code = HTTPStatus.OK
-            logging.debug(
-                "ResourceBlocks collection: {rb_collection}".format(rb_collection=res))
+            logging.debug("ResourceBlocks collection: {rb_collection}".format(
+                rb_collection=res))
 
         except Exception as err:
             logging.error(
-                "Unable to create Resource Block Collection. Error: {e}".format(e=err))
+                "Unable to create Resource Block Collection. Error: {e}".
+                format(e=err))
             res = {
-                "error": "Unable to get Resource Block Collection. Error: {e}".format(e=err)
+                "error":
+                "Unable to get Resource Block Collection. Error: {e}".format(
+                    e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
@@ -155,7 +171,8 @@ class ResourceBlocks():
             logging.error(
                 "Unable to get Resource Block. Error: {e}".format(e=err))
             res = {
-                "Error": "Unable to get Resource Block. Error: {e}".format(e=err)
+                "Error":
+                "Unable to get Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
@@ -167,22 +184,33 @@ class ResourceBlocks():
         try:
             logging.info("Initialising the creation of Resource Block")
             if request.get("ResourceBlockType") is None:
-                logging.error("The property 'ResourceBlockType' is missing from post body")
-                res = {"Error": "The property 'ResourceBlockType' is missing from post body"}
+                logging.error(
+                    "The property 'ResourceBlockType' is missing from post body"
+                )
+                res = {
+                    "Error":
+                    "The property 'ResourceBlockType' is missing from post body"
+                }
                 code = HTTPStatus.BAD_REQUEST
                 return
-            
+
             if "ComputerSystem" in request["ResourceBlockType"]:
                 sys_urls = []
-                rb_computer_keys = self.redis.keys("ResourceBlocks-ComputerSystem:*")
+                rb_computer_keys = self.redis.keys(
+                    "ResourceBlocks-ComputerSystem:*")
                 if rb_computer_keys:
                     for key in rb_computer_keys:
                         sys_uri = self.redis.get(key)
                         if sys_uri:
                             sys_urls.append(sys_uri)
                 if request.get("ComputerSystems") is None:
-                    logging.error("The property 'ComputerSystems' is missing from post body")
-                    res = {"Error": "The property 'ComputerSystems' is missing from post body"}
+                    logging.error(
+                        "The property 'ComputerSystems' is missing from post body"
+                    )
+                    res = {
+                        "Error":
+                        "The property 'ComputerSystems' is missing from post body"
+                    }
                     code = HTTPStatus.BAD_REQUEST
                     return
                 elif not len(request["ComputerSystems"]):
@@ -191,11 +219,19 @@ class ResourceBlocks():
                     code = HTTPStatus.BAD_REQUEST
                     return
                 elif len(request["ComputerSystems"]) > 1:
-                    logging.debug("Request has more than one computer system, Resource Block will be created with only one comuter system")
+                    logging.debug(
+                        "Request has more than one computer system, Resource Block will be created with only one comuter system"
+                    )
 
                 if request["ComputerSystems"][0]["@odata.id"] in sys_urls:
-                    logging.error("The ComputerSystem {sys} is aready exist".format(sys=request["ComputerSystems"][0]["@odata.id"]))
-                    res = {"Error": "The ComputerSystem {sys} is aready exist".format(sys=request["ComputerSystems"][0]["@odata.id"])}
+                    logging.error(
+                        "The ComputerSystem {sys} is aready exist".format(
+                            sys=request["ComputerSystems"][0]["@odata.id"]))
+                    res = {
+                        "Error":
+                        "The ComputerSystem {sys} is aready exist".format(
+                            sys=request["ComputerSystems"][0]["@odata.id"])
+                    }
                     code = HTTPStatus.BAD_REQUEST
                     return
 
@@ -205,19 +241,26 @@ class ResourceBlocks():
                     # create resource block and set data into database
                     res = self.create_computer_sys_resource_block(system_res)
                     logging.info(
-                        "successfully Created Computer system Resource Block. {resp}".format(resp=res))
+                        "successfully Created Computer system Resource Block. {resp}"
+                        .format(resp=res))
                     code = HTTPStatus.OK
                     return
                 else:
-                    logging.error("The System {uri} is not found".format(uri=request["ComputerSystems"][0]["@odata.id"]))
-                    res = {"Error": "The System {uri} is not found".format(uri=request["ComputerSystems"][0]["@odata.id"])}
+                    logging.error("The System {uri} is not found".format(
+                        uri=request["ComputerSystems"][0]["@odata.id"]))
+                    res = {
+                        "Error":
+                        "The System {uri} is not found".format(
+                            uri=request["ComputerSystems"][0]["@odata.id"])
+                    }
                     code = HTTPStatus.BAD_REQUEST
                     return
         except Exception as err:
             logging.error(
                 "Unable to Create Resource Block. Error: {e}".format(e=err))
             res = {
-                "Error": "Unable to Create Resource Block. Error: {e}".format(e=err)
+                "Error":
+                "Unable to Create Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
@@ -239,30 +282,45 @@ class ResourceBlocks():
             rb_data = json.loads(data)
 
             if rb_data["CompositionStatus"]["CompositionState"] == "Composed":
-                logging.error("The resource block {rb_id} delete is failed. The resource block is comoposed with system {sys_id}".format(
-                    rb_id=rb_data["Id"], sys_id=rb_data["Links"]["ComputerSystems"][0]["@odata.id"]))
-                res = {"Error": "The resouce block {rb_id} delete is failed because the resource is in 'composed' state".format(
-                    rb_id=rb_data["Id"])}
+                logging.error(
+                    "The resource block {rb_id} delete is failed. The resource block is comoposed with system {sys_id}"
+                    .format(rb_id=rb_data["Id"],
+                            sys_id=rb_data["Links"]["ComputerSystems"][0]
+                            ["@odata.id"]))
+                res = {
+                    "Error":
+                    "The resouce block {rb_id} delete is failed because the resource is in 'composed' state"
+                    .format(rb_id=rb_data["Id"])
+                }
                 code = HTTPStatus.CONFLICT
                 return
 
             if rb_data.get("Links") and rb_data["Links"].get("Zones"):
                 if len(rb_data["Links"]["Zones"]):
-                    logging.error("The resource block {rb_id} delete is failed. The resource block is linked with resource zone".format(
-                        rb_id=rb_data["Id"]))
-                    res = {"Error": "The resource block {rb_id} delete is failed because the resource is liked with resource zone".format(
-                        rb_id=rb_data["Id"])}
+                    logging.error(
+                        "The resource block {rb_id} delete is failed. The resource block is linked with resource zone"
+                        .format(rb_id=rb_data["Id"]))
+                    res = {
+                        "Error":
+                        "The resource block {rb_id} delete is failed because the resource is liked with resource zone"
+                        .format(rb_id=rb_data["Id"])
+                    }
                     code = HTTPStatus.CONFLICT
                     return
-            
+
             if rb_data["Pool"] == "Active":
                 self.redis.srem("ActivePool", rb_data["@odata.id"])
             elif rb_data["Pool"] == "Free":
                 self.redis.srem("FreePool", rb_data["@odata.id"])
-            
-            self.redis.delete("ResourceBlocks:{block_uri}".format(block_uri=rb_data["@odata.id"]))
-            self.redis.delete("ResourceBlocks-ComputerSystem:{block_uri}".format(block_uri=rb_data["@odata.id"]))
-            logging.info("The Resource Block {rb_uri} is deleted successfully".format(rb_uri=rb_data["@odata.id"]))
+
+            self.redis.delete("ResourceBlocks:{block_uri}".format(
+                block_uri=rb_data["@odata.id"]))
+            self.redis.delete(
+                "ResourceBlocks-ComputerSystem:{block_uri}".format(
+                    block_uri=rb_data["@odata.id"]))
+            logging.info(
+                "The Resource Block {rb_uri} is deleted successfully".format(
+                    rb_uri=rb_data["@odata.id"]))
             res = {"Id": rb_data["Id"]}
             code = HTTPStatus.OK
 
@@ -270,7 +328,8 @@ class ResourceBlocks():
             logging.error(
                 "Unable to get Resource Block. Error: {e}".format(e=err))
             res = {
-                "Error": "Unable to get Resource Block. Error: {e}".format(e=err)
+                "Error":
+                "Unable to get Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:

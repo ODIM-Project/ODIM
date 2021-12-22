@@ -5,7 +5,6 @@ import logging
 
 
 class RedisClient():
-
     def __init__(self, **kwargs):
 
         self.host = None
@@ -22,11 +21,15 @@ class RedisClient():
         try:
             if self.host is not None and self.port is not None:
                 self.connection = StrictRedis(
-                    host=self.host, port=self.port, db=PLUGIN_CONFIG["Db"], socket_timeout=PLUGIN_CONFIG["SocketTimeout"])
+                    host=self.host,
+                    port=self.port,
+                    db=PLUGIN_CONFIG["Db"],
+                    socket_timeout=PLUGIN_CONFIG["SocketTimeout"])
             else:
                 # default host = "localhost", port = 6379
                 self.connection = StrictRedis(
-                    db=PLUGIN_CONFIG["Db"], socket_timeout=PLUGIN_CONFIG["SocketTimeout"])
+                    db=PLUGIN_CONFIG["Db"],
+                    socket_timeout=PLUGIN_CONFIG["SocketTimeout"])
         except Exception as err:
             logging.error(
                 "Unable to connect to redis database. Error:{e}".format(e=err))
@@ -38,8 +41,9 @@ class RedisClient():
                 if value is not None:
                     return value
         except Exception as err:
-            logging.error("Unable to execute command. options: [{arg}, {kwarg}]. Error:{e}".format(
-                arg=args, kwarg=kwargs, e=err))
+            logging.error(
+                "Unable to execute command. options: [{arg}, {kwarg}]. Error:{e}"
+                .format(arg=args, kwarg=kwargs, e=err))
 
     def set(self, key, value):
         try:
@@ -47,15 +51,17 @@ class RedisClient():
                 self.connection.set(key, value)
         except Exception as err:
             logging.error(
-                "unable to set key {key} in redis db. Error:{e}".format(key=key, e=err))
-   
+                "unable to set key {key} in redis db. Error:{e}".format(
+                    key=key, e=err))
+
     def sadd(self, key, value):
         try:
             if self.connection:
                 self.connection.sadd(key, value)
         except Exception as err:
             logging.error(
-                "unable to sadd key {key} in redis db. Error:{e}".format(key=key, e=err))
+                "unable to sadd key {key} in redis db. Error:{e}".format(
+                    key=key, e=err))
 
     def get(self, key):
         try:
@@ -65,8 +71,9 @@ class RedisClient():
                     return value.decode('utf-8')
         except Exception as err:
             logging.error(
-                "unable to get key {key} in redis db. Error:{e}".format(key=key, e=err))
-    
+                "unable to get key {key} in redis db. Error:{e}".format(
+                    key=key, e=err))
+
     def smembers(self, key):
         decoded_value = []
         try:
@@ -76,7 +83,8 @@ class RedisClient():
                     decoded_value.append(mem.decode('utf-8'))
         except Exception as err:
             logging.error(
-                "unable to smembers key {key} in redis db. Error:{e}".format(key=key, e=err))
+                "unable to smembers key {key} in redis db. Error:{e}".format(
+                    key=key, e=err))
         finally:
             return decoded_value
 
@@ -88,8 +96,9 @@ class RedisClient():
                 for value in keys:
                     decoded_keys.append(value.decode('utf-8'))
         except Exception as err:
-            logging.error("unable to get redis keys for pattern {pat} in redis db. Error:{e}".format(
-                pat=pattern, e=err))
+            logging.error(
+                "unable to get redis keys for pattern {pat} in redis db. Error:{e}"
+                .format(pat=pattern, e=err))
         finally:
             return decoded_keys
 
@@ -99,7 +108,8 @@ class RedisClient():
                 self.connection.delete(*keys)
         except Exception as err:
             logging.error(
-                "unable to delete keys {keys} in redis db. Error:{e}".format(key=keys, e=err))
+                "unable to delete keys {key} in redis db. Error:{e}".format(
+                    key=keys, e=err))
 
     def srem(self, key, *value):
         try:
@@ -107,7 +117,8 @@ class RedisClient():
                 self.connection.srem(key, *value)
         except Exception as err:
             logging.error(
-                "unable to delete keys {keys} in redis db. Error:{e}".format(key=key, e=err))
+                "unable to delete keys {key} in redis db. Error:{e}".format(
+                    key=key, e=err))
 
     def exists(self, *keys):
         exists = 0
@@ -116,7 +127,8 @@ class RedisClient():
                 exists = self.connection.exists(*keys)
         except Exception as err:
             logging.error(
-                "unable to exists keys {keys} in redis db. Error:{e}".format(key=keys, e=err))
+                "unable to exists keys {key} in redis db. Error:{e}".format(
+                    key=keys, e=err))
         finally:
             return exists
 
@@ -124,9 +136,10 @@ class RedisClient():
         pipe = None
         try:
             if self.connection:
-                pipe =  self.connection.pipeline()
+                pipe = self.connection.pipeline()
         except Exception as err:
             logging.error(
-                "Unable to create a pipeline in redis db. Error: {e}".format(e=err))
+                "Unable to create a pipeline in redis db. Error: {e}".format(
+                    e=err))
         finally:
             return pipe

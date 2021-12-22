@@ -7,11 +7,11 @@ import copy
 import uuid
 from http import HTTPStatus
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class ResourceZones():
-
     def __init__(self):
         self.redis = RedisClient()
         self.client = Client()
@@ -51,18 +51,14 @@ class ResourceZones():
                 zone_uri=zone['@odata.id'], id=zone['Id'])
             if request_data.get('Name') is None or request_data['Name'] == "":
                 # logging.error("The Property Name is missing")
-                res = {
-                    "Error": "The Property 'Name' is missing."
-                }
+                res = {"Error": "The Property 'Name' is missing."}
                 code = HTTPStatus.BAD_REQUEST
                 return
 
             zone['Name'] = request_data['Name']
 
             if request_data.get('Links') is None:
-                res = {
-                    "Error": "The Property 'Links' is missing."
-                }
+                res = {"Error": "The Property 'Links' is missing."}
                 code = HTTPStatus.BAD_REQUEST
                 return
             if request_data['Links'].get('ResourceBlocks') is None:
@@ -91,22 +87,35 @@ class ResourceZones():
                     data['Links']['Zones'].append(
                         {"@odata.id": zone['@odata.id']})
 
-                    pipe.set("{block}:{block_url}".format(
-                        block="ResourceBlocks", block_url=data['@odata.id']), str(json.dumps(data)))
+                    pipe.set(
+                        "{block}:{block_url}".format(
+                            block="ResourceBlocks",
+                            block_url=data['@odata.id']),
+                        str(json.dumps(data)))
                     logging.info(
-                        "Resource Block linked to Resource Zone is successfully updated")
+                        "Resource Block linked to Resource Zone is successfully updated"
+                    )
 
                 else:
-                    logging.debug("Getting resource block data from redis is failed for this resource: {uri}".format(
-                        uri=resource_block['@odata.id']))
-                    res = {"Error": "The Resource Block {rs_block} is not found. Create ResourceZone is failed".format(rs_block=resource_block['@odata.id'])}
+                    logging.debug(
+                        "Getting resource block data from redis is failed for this resource: {uri}"
+                        .format(uri=resource_block['@odata.id']))
+                    res = {
+                        "Error":
+                        "The Resource Block {rs_block} is not found. Create ResourceZone is failed"
+                        .format(rs_block=resource_block['@odata.id'])
+                    }
                     code = HTTPStatus.BAD_REQUEST
                     return
 
-            pipe.set("{zones}:{zone_uri}".format(
-                zones="ResourceZones", zone_uri=zone['@odata.id']), str(json.dumps(zone)))
-            pipe.set("{zone_block}:{zone_url}".format(
-                zone_block="ResourceZone-ResourceBlock", zone_url=zone['@odata.id']), resource_block['@odata.id'])
+            pipe.set(
+                "{zones}:{zone_uri}".format(zones="ResourceZones",
+                                            zone_uri=zone['@odata.id']),
+                str(json.dumps(zone)))
+            pipe.set(
+                "{zone_block}:{zone_url}".format(
+                    zone_block="ResourceZone-ResourceBlock",
+                    zone_url=zone['@odata.id']), resource_block['@odata.id'])
 
             pipe.execute()
 
@@ -118,7 +127,8 @@ class ResourceZones():
             logging.error(
                 "Unable to create Resource Zone. Error: {e}".format(e=err))
             res = {
-                "Error": "Unable to create Resource Zone. Error: {e}".format(e=err)
+                "Error":
+                "Unable to create Resource Zone. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
@@ -145,8 +155,10 @@ class ResourceZones():
             rz_keys = self.redis.keys("ResourceZones:*")
 
             for rz_key in rz_keys:
-                res["Members"].append({"@odata.id": "{uri}".format(
-                    uri=rz_key.replace("ResourceZones:", ""))})
+                res["Members"].append({
+                    "@odata.id":
+                    "{uri}".format(uri=rz_key.replace("ResourceZones:", ""))
+                })
 
             res["Members@odata.count"] = len(rz_keys)
 
@@ -154,9 +166,12 @@ class ResourceZones():
 
         except Exception as err:
             logging.error(
-                "Unable to Get Resource Zone Collection. Error: {e}".format(e=err))
+                "Unable to Get Resource Zone Collection. Error: {e}".format(
+                    e=err))
             res = {
-                "Error": "Unable to Get Resource Zone Collection. Error: {e}".format(e=err)
+                "Error":
+                "Unable to Get Resource Zone Collection. Error: {e}".format(
+                    e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
@@ -184,7 +199,8 @@ class ResourceZones():
             logging.error(
                 "Unable to Get Resource Zone. Error: {e}".format(e=err))
             res = {
-                "Error": "Unable to Get Resource Zone. Error: {e}".format(e=err)
+                "Error":
+                "Unable to Get Resource Zone. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
@@ -212,36 +228,51 @@ class ResourceZones():
                 if type(value) is list:
                     for obj in value:
                         if obj.get("@odata.id"):
-                            resource_data = self.redis.get("{resource}:{resource_uri}".format(
-                                resource=property, resource_uri=obj["@odata.id"]))
+                            resource_data = self.redis.get(
+                                "{resource}:{resource_uri}".format(
+                                    resource=property,
+                                    resource_uri=obj["@odata.id"]))
                             if not resource_data:
-                                logging.error("Unable to get {rb_uri} redis db".format(
-                                    rb_uri=obj["@odata.id"]))
+                                logging.error(
+                                    "Unable to get {rb_uri} redis db".format(
+                                        rb_uri=obj["@odata.id"]))
                                 continue
                             resource_data = json.loads(resource_data)
-                            if resource_data and resource_data.get("Links") and resource_data["Links"].get("Zones"):
+                            if resource_data and resource_data.get(
+                                    "Links") and resource_data["Links"].get(
+                                        "Zones"):
                                 done = False
                                 for zone_id in resource_data["Links"]["Zones"]:
-                                    if zone_id["@odata.id"] == data["@odata.id"]:
-                                        logging.info("Updating the ResourceBlock {rb_uri}".format(
-                                            rb_uri=obj["@odata.id"]))
+                                    if zone_id["@odata.id"] == data[
+                                            "@odata.id"]:
+                                        logging.info(
+                                            "Updating the ResourceBlock {rb_uri}"
+                                            .format(rb_uri=obj["@odata.id"]))
                                         resource_data["Links"]["Zones"].remove(
                                             zone_id)
                                         done = True
                                         break
 
                                 if done:
-                                    pipe.set("{resource}:{resource_uri}".format(
-                                        resource=property, resource_uri=obj["@odata.id"]), json.dumps(resource_data))
-                                    logging.info("{resource}:{resource_uri} is updateded".format(
-                                        resource=property, resource_uri=obj["@odata.id"]))
+                                    pipe.set(
+                                        "{resource}:{resource_uri}".format(
+                                            resource=property,
+                                            resource_uri=obj["@odata.id"]),
+                                        json.dumps(resource_data))
+                                    logging.info(
+                                        "{resource}:{resource_uri} is updateded"
+                                        .format(resource=property,
+                                                resource_uri=obj["@odata.id"]))
                                 else:
-                                    logging.info("{resource}:{resource_uri} updated is failed".format(
-                                        resource=property, resource_uri=obj["@odata.id"]))
+                                    logging.info(
+                                        "{resource}:{resource_uri} updated is failed"
+                                        .format(resource=property,
+                                                resource_uri=obj["@odata.id"]))
 
             pipe.delete("ResourceZones:{zone_uri}".format(zone_uri=url))
             pipe.delete("{zone_block}:{zone_url}".format(
-                zone_block="ResourceZone-ResourceBlock", zone_url=data['@odata.id']))
+                zone_block="ResourceZone-ResourceBlock",
+                zone_url=data['@odata.id']))
             logging.info("{resource}:{resource_uri} is deleted".format(
                 resource="ResourceZones", resource_uri=url))
 
@@ -253,7 +284,8 @@ class ResourceZones():
             logging.error(
                 "Unable to delete the Resource Zone. Error: {e}".format(e=err))
             res = {
-                "Error": "Unable to delete the Resource Zone. Error: {e}".format(e=err)
+                "Error":
+                "Unable to delete the Resource Zone. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:

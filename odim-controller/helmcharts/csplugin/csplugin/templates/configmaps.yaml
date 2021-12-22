@@ -20,6 +20,8 @@ data:
         "RedisAddress": "redis-inmemory:6379",
         "PrivateKeyPath": "/etc/csplugin_certs/odimra_server.key",
         "CertificatePath": "/etc/csplugin_certs/odimra_server.crt",
-        "RootCAPath": "/etc/csplugin_certs/rootCA.crt"
+        "RootCAPath": "/etc/csplugin_certs/rootCA.crt",
+        "RSAPrivateKeyPath": "/etc/csplugin_certs/odimra_rsa.private",
+        "RSAPublicKeyPath": "/etc/urplugin_certs/odimra_rsa.public"
     }
   

@@ -8,8 +8,8 @@ from utilities.crypt import Crypt
 
 class Client():
     def __init__(self):
-        crypt = Crypt(PLUGIN_CONFIG["CertificatePath"],
-                      PLUGIN_CONFIG["PrivateKeyPath"])
+        crypt = Crypt(PLUGIN_CONFIG["RSAPublicKeyPath"],
+                      PLUGIN_CONFIG["RSAPrivateKeyPath"])
         self.auth = HTTPBasicAuth(PLUGIN_CONFIG["OdimUserName"],
                                   crypt.decrypt(PLUGIN_CONFIG["OdimPassword"]))
         self.headers = {

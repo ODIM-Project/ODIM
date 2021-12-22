@@ -20,7 +20,9 @@ PLUGIN_CONFIG = {
     "RedisAddress": "",
     "PrivateKeyPath": "",
     "CertificatePath": "",
-    "RootCAPath": ""
+    "RootCAPath": "",
+    "RSAPrivateKeyPath": "",
+    "RSAPublicKeyPath": ""
 }
 
 CERTIFICATES = {

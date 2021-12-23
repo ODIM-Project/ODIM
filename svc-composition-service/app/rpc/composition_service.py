@@ -95,7 +95,7 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                     json.loads(str(request.RequestBody.decode("utf-8"))))
             # Initialize all Resource Blocks
             elif segments[-1] == "ResourceBlock.Initialize":
-                response, code = self.resourceblock.initialize()
+                self.resourceblock.initialize()
 
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(

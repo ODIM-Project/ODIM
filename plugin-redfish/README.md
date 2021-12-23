@@ -220,9 +220,6 @@ NOTE: By default, MessageBusType is Kafka. You can change it to Redis Stream dur
 | Message bus configuration parameters | Description                                                  |
 | ------------------------------------ | ------------------------------------------------------------ |
 | `MessageQueueConfigFilePath`         | File path to the configuration file that has the required configuration details regarding supported message queues |
-| `MessageBusAddress`                  | Redis database host for in-memory storage                    |
-| `MessageBusPort`                     | Redis database port for in-memory storage                    |
-| `HASet`                              | Redis Sential configuration                                  |
 | `MessageBusType`                     | Event message bus type                                       |
 | `MessageBusQueue`                    | Event message bus queue name                                 |
 

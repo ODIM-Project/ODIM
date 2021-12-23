@@ -47,6 +47,12 @@ spec:
             - key: odimra_serverkey
               path: odimra_server.key
               mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:

@@ -594,7 +594,7 @@ func Router() *iris.Application {
 	compositionService.Get("/ActivePool", cs.GetActivePool)
 	compositionService.Get("/FreePool", cs.GetFreePool)
 	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
-
+	compositionService.Post("/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize", cs.CreateAllResourceBlocks)
 	return router
 }
 

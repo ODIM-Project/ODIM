@@ -7,12 +7,11 @@ from utilities.crypt import Crypt
 
 
 class Client():
-
     def __init__(self):
-        crypt = Crypt(PLUGIN_CONFIG["CertificatePath"],
-                      PLUGIN_CONFIG["PrivateKeyPath"])
-        self.auth = HTTPBasicAuth(
-            PLUGIN_CONFIG["OdimUserName"], crypt.decrypt(PLUGIN_CONFIG["OdimPassword"]))
+        crypt = Crypt(PLUGIN_CONFIG["RSAPublicKeyPath"],
+                      PLUGIN_CONFIG["RSAPrivateKeyPath"])
+        self.auth = HTTPBasicAuth(PLUGIN_CONFIG["OdimUserName"],
+                                  crypt.decrypt(PLUGIN_CONFIG["OdimPassword"]))
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -25,31 +24,38 @@ class Client():
         if not uri:
             return res
         try:
-            target_url = "{burl}{url}".format(
-                burl=PLUGIN_CONFIG["OdimURL"], url=uri)
-            response = requests.get(
-                target_url, auth=self.auth, headers=self.headers, verify=self.verify)
+            target_url = "{burl}{url}".format(burl=PLUGIN_CONFIG["OdimURL"],
+                                              url=uri)
+            response = requests.get(target_url,
+                                    auth=self.auth,
+                                    headers=self.headers,
+                                    verify=self.verify)
             if response.status_code == HTTPStatus.OK:
                 res = response.json()
             logging.debug("GET Response for the url {url}: {resp}".format(
                 url=uri, resp=response.__dict__))
         except Exception as err:
             logging.error(
-                "Unable to Process GET Request for uri {url}. Error: {e}".format(url=uri, e=err))
+                "Unable to Process GET Request for uri {url}. Error: {e}".
+                format(url=uri, e=err))
         finally:
             return res
 
     def process_post_request(self, uri, payload):
         response = None
         try:
-            target_url = "{burl}{url}".format(
-                burl=PLUGIN_CONFIG["OdimURL"], url=uri)
-            response = requests.post(
-                target_url, auth=self.auth, headers=self.headers, verify=self.verify, data=payload)
+            target_url = "{burl}{url}".format(burl=PLUGIN_CONFIG["OdimURL"],
+                                              url=uri)
+            response = requests.post(target_url,
+                                     auth=self.auth,
+                                     headers=self.headers,
+                                     verify=self.verify,
+                                     data=payload)
             logging.debug("POST Response for the url {url}: {resp}".format(
                 url=uri, resp=response.__dict__))
         except Exception as err:
             logging.error(
-                "Unable to Process POST Request for uri {url}. Error: {e}".format(url=uri, e=err))
+                "Unable to Process POST Request for uri {url}. Error: {e}".
+                format(url=uri, e=err))
         finally:
             return response

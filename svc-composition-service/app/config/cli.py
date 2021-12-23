@@ -13,13 +13,17 @@ CL_ARGS = {
 def collect_cl_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", default="", help="service registry")
-    parser.add_argument("--registry_address", default="",
+    parser.add_argument("--registry_address",
+                        default="",
                         help="address of the registry")
-    parser.add_argument("--server_address", default="",
+    parser.add_argument("--server_address",
+                        default="",
                         help="address for the micro service")
-    parser.add_argument("--client_request_timeout", default="",
+    parser.add_argument("--client_request_timeout",
+                        default="",
                         help="maximum request time which client waits")
-    parser.add_argument("--framework", default="GRPC",
+    parser.add_argument("--framework",
+                        default="GRPC",
                         help="framework used for micro service communication")
 
     args = vars(parser.parse_args())

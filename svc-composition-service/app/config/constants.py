@@ -1,8 +1,9 @@
-
 EVENT_DESTINATION_URL = "/redfish/v1/EventService/CompositionServiceEvent"
 
-EVENT_TYPES = ["ResourceRemoved", "ResourceAdded", "ResourceUpdated",
-               "StatusChange", "Alert", "MetricReport", "Other"]
+EVENT_TYPES = [
+    "ResourceRemoved", "ResourceAdded", "ResourceUpdated", "StatusChange",
+    "Alert", "MetricReport", "Other"
+]
 
 EVENT_SUBSCRIPTION_URL = "/redfish/v1/EventService/Subscriptions"
 
@@ -15,8 +16,7 @@ RESOURCE_BLOCK_TEMP = {
     "Id": "ComputerSystemBlock",
     "Name": "ComputerSystem Block",
     "Description": "ComputerSystem Block",
-    "ResourceBlockType": [
-    ],
+    "ResourceBlockType": [],
     "Status": {
         "State": "Enabled",
         "Health": "OK"
@@ -42,8 +42,7 @@ RESOURCE_ZONE_TEMP = {
     },
     "ZoneType": "ZoneOfResourceBlocks",
     "Links": {
-        "ResourceBlocks": [
-        ]
+        "ResourceBlocks": []
     },
     "@odata.id": "/redfish/v1/CompositionService/ResourceZones"
 }

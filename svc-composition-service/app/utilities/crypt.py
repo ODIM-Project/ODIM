@@ -7,7 +7,6 @@ import logging
 
 
 class Crypt():
-
     def __init__(self, public_key_path, private_key_path):
         self.public_key = None
         self.private_key = None
@@ -25,8 +24,8 @@ class Crypt():
         encode_text = ""
         try:
             if self.public_key:
-                cipher = PKCS1_OAEP.new(
-                    self.public_key, hashAlgo=self.hash_object)
+                cipher = PKCS1_OAEP.new(self.public_key,
+                                        hashAlgo=self.hash_object)
                 encrypted_text = cipher.encrypt(message)
                 encode_text = base64.b64encode(encrypted_text)
         except Exception as err:
@@ -38,8 +37,8 @@ class Crypt():
         result = ""
         try:
             if self.private_key:
-                cipher = PKCS1_OAEP.new(
-                    self.private_key, hashAlgo=self.hash_object)
+                cipher = PKCS1_OAEP.new(self.private_key,
+                                        hashAlgo=self.hash_object)
                 decode_text = decode_text = base64.b64decode(decrypt_text)
 
                 result = cipher.decrypt(decode_text)

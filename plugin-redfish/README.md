@@ -208,9 +208,6 @@ Following are the parameters to be configured in the plugin configuration file.
 ```
 "MessageBusConf": {
 "MessageQueueConfigFilePath": "",
-"MessageBusAddress": "localhost",
-"MessageBusPort": "6379",
-"HASet": "redisSentinel",
 "MessageBusType": "Kafka",
 "MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 }

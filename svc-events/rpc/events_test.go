@@ -16,132 +16,52 @@
 package rpc
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"testing"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
+	"github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
-	fmt.Println(url)
-	if url == "https://localhost:1234/ODIM/v1/EventSubscriptions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		return &http.Response{
-			StatusCode: http.StatusCreated,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:1234/ODIM/v1/Subscriptions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-		return &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"location": {"https://localhost:1234/ODIM/v1/Subscriptions/12"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}, nil
-	} else if url == "https://localhost:1234/ODIM/v1/Sessions" {
-		body := `{"MessageId": "` + response.Success + `"}`
-
-		r := &http.Response{
-			StatusCode: http.StatusCreated,
-			Header: map[string][]string{
-				"X-Auth-Token": {"token"},
-			},
-			Body: ioutil.NopCloser(bytes.NewBufferString(body)),
-		}
-		return r, nil
+func getMockPluginContactInitializer() *Events {
+	connector := &events.PluginContact{
+		ContactClient:                    evcommon.MockContactClient,
+		Auth:                             evcommon.MockIsAuthorized,
+		CreateTask:                       evcommon.MockCreateTask,
+		CreateChildTask:                  evcommon.MockCreateChildTask,
+		UpdateTask:                       evcommon.MockUpdateTask,
+		GetSessionUserName:               evcommon.MockGetSessionUserName,
+		GetTarget:                        evcommon.MockGetTarget,
+		GetPluginData:                    evcommon.MockGetPluginData,
+		GetFabricData:                    evcommon.MockGetFabricData,
+		GetEvtSubscriptions:              evcommon.MockGetEvtSubscriptions,
+		GetDeviceSubscriptions:           evcommon.MockGetDeviceSubscriptions,
+		SaveEventSubscription:            evcommon.MockSaveEventSubscription,
+		UpdateEventSubscription:          evcommon.MockUpdateEventSubscription,
+		DeleteDeviceSubscription:         evcommon.MockDeleteDeviceSubscription,
+		DeleteEvtSubscription:            evcommon.MockDeleteEvtSubscription,
+		UpdateDeviceSubscriptionLocation: evcommon.MockUpdateDeviceSubscriptionLocation,
+		GetAllKeysFromTable:              evcommon.MockGetAllKeysFromTable,
+		GetAllFabrics:                    evcommon.MockGetAllFabrics,
+		GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
+		SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
 	}
-	return nil, fmt.Errorf("InvalidRequest")
+	return &Events{
+		Connector: connector,
+	}
 }
 
-func storeTestEventDetails(t *testing.T) {
-	subarr := []evmodel.Subscription{
-		// if SubordinateResources true
-		{
-			UserName:             "admin",
-			SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-			Destination:          "https://10.24.1.15:9090/events",
-			Name:                 "Subscription",
-			Context:              "context",
-			EventTypes:           []string{"Alert"},
-			MessageIds:           []string{"IndicatorChanged"},
-			ResourceTypes:        []string{"#Event"},
-			OriginResource:       "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-			Hosts:                []string{"10.4.1.2"},
-			SubordinateResources: true,
-		},
-	}
-	for _, sub := range subarr {
-		err := evmodel.SaveEventSubscription(sub)
-		if err != nil {
-			t.Errorf("error: %v", err)
-		}
-	}
-	var updatedDeviceSubscription = evmodel.DeviceSubscription{
-		Location:        "https://10.24.1.2/EventService/Subscriptions/1",
-		EventHostIP:     "10.4.1.2",
-		OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
-	}
-	err := evmodel.SaveDeviceSubscription(updatedDeviceSubscription)
-	if err != nil {
-		t.Errorf("error: %v", err)
-	}
-
-}
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
-	if sessionToken != "validToken" && sessionToken != "token" && sessionToken != "token1" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
-	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
-}
-
-func getMockedSessionUserName(sessionToken string) (string, error) {
-	if sessionToken == "token" {
-		return "non-admin", nil
-	} else if sessionToken == "token1" {
-		return "", fmt.Errorf("no details")
-	}
-	return "admin", nil
-}
-
-func mockCreateChildTask(sessionID, taskid string) (string, error) {
-	return "123456", nil
-}
-
-func mockUpdateTask(task common.TaskData) error {
-	return nil
-}
-
-func mockCreateTask(sessionusername string) (string, error) {
-	if sessionusername == "non-admin" {
-		return "", fmt.Errorf("no task details")
-	}
-	return "/redfish/v1/tasks/123", nil
-}
 func TestGetEventService(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
+	events := getMockPluginContactInitializer()
 	req := &eventsproto.EventSubRequest{
 		SessionToken: "validToken",
 	}
@@ -167,27 +87,11 @@ func TestGetEventService(t *testing.T) {
 
 func TestCreateEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.GetSessionUserNameRPC = getMockedSessionUserName
-	events.ContactClientRPC = mockContactClient
-	events.CreateChildTaskRPC = mockCreateChildTask
-	events.UpdateTaskRPC = mockUpdateTask
-	events.CreateTaskRPC = mockCreateTask
+	events := getMockPluginContactInitializer()
 	SubscriptionReq := map[string]interface{}{
 		"Name":                 "EventSubscription",
-		"Destination":          "https://10.24.1.24:8070/Destination1",
+		"Destination":          "https://10.10.10.24:8070/Destination1",
 		"EventTypes":           []string{"Alert"},
 		"Protocol":             "Redfish",
 		"Context":              "Event Subscription",
@@ -195,7 +99,7 @@ func TestCreateEventSubscription(t *testing.T) {
 		"EventFormatType":      "Event",
 		"SubordinateResources": true,
 		"OriginResources": []evmodel.OdataIDLink{
-			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"},
+			{OdataID: "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
 		},
 	}
 	postBody, _ := json.Marshal(&SubscriptionReq)
@@ -230,22 +134,8 @@ func TestCreateEventSubscription(t *testing.T) {
 
 func TestSubmitTestEvent(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.GetSessionUserNameRPC = getMockedSessionUserName
-	events.ContactClientRPC = mockContactClient
+	events := getMockPluginContactInitializer()
 	event := map[string]interface{}{
 		"MemberID":          "1",
 		"EventType":         "Alert",
@@ -253,7 +143,7 @@ func TestSubmitTestEvent(t *testing.T) {
 		"Severity":          "OK",
 		"Message":           "IndicatorChanged",
 		"MessageId":         "IndicatorChanged",
-		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"OriginOfCondition": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 
 	message, err := json.Marshal(event)
@@ -273,21 +163,8 @@ func TestSubmitTestEvent(t *testing.T) {
 
 func TestGetEventSubscriptionsCollection(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.ContactClientRPC = mockContactClient
+	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
@@ -305,21 +182,8 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 
 func TestGetEventSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.ContactClientRPC = mockContactClient
+	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
 		SessionToken:        "validToken",
@@ -337,26 +201,13 @@ func TestGetEventSubscriptions(t *testing.T) {
 	req.EventSubscriptionID = "81de0110"
 	//resp := &eventsproto.EventSubResponse{}
 	resp, _ := events.GetEventSubscription(ctx, req)
-	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusBadRequest.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusNotFound, "Status code should be StatusNotFound.")
 }
 
 func TestDeleteEventSubscription(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.ContactClientRPC = mockContactClient
+	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
 		SessionToken:        "validToken",
@@ -365,7 +216,7 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 	resp, err := events.DeleteEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusNotFound.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
 
 	req.EventSubscriptionID = "81de0110"
 
@@ -375,30 +226,17 @@ func TestDeleteEventSubscription(t *testing.T) {
 
 func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.ContactClientRPC = mockContactClient
+	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
-		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		UUID:         "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	}
 
 	resp, err := events.DeleteEventSubscription(ctx, req)
 	assert.Nil(t, err, "There should be no error")
-	assert.Equal(t, int(resp.StatusCode), http.StatusBadRequest, "Status code should be StatusBadRequest.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusNoContent, "Status code should be StatusNoContent.")
 
 	req.UUID = "81de0110"
 
@@ -408,21 +246,8 @@ func TestDeleteEventSubscriptionwithUUID(t *testing.T) {
 
 func TestCreateDefaultSubscriptions(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
 	var ctx context.Context
-	events := new(Events)
-	events.IsAuthorizedRPC = mockIsAuthorized
-	events.ContactClientRPC = mockContactClient
+	events := getMockPluginContactInitializer()
 	// Positive test cases
 	req := &eventsproto.DefaultEventSubRequest{
 		SystemID:      []string{"systemid"},
@@ -439,7 +264,7 @@ func TestCreateDefaultSubscriptions(t *testing.T) {
 
 func TestSubscribeEMB(t *testing.T) {
 	var ctx context.Context
-	events := new(Events)
+	events := getMockPluginContactInitializer()
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
 	req := &eventsproto.SubscribeEMBRequest{
 		PluginID:     "GRF",

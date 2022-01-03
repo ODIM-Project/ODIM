@@ -132,7 +132,7 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      req.URL,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           data[1],
@@ -175,7 +175,7 @@ func (e *ExternalInterface) updateAggregationSourceWithConnectionMethod(url stri
 	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
 	var data = strings.Split(url, "/redfish/v1/AggregationService/AggregationSources/")
 	uuid := url[strings.LastIndexByte(url, '/')+1:]
-	uuidData := strings.Split(uuid, ":")
+	uuidData := strings.SplitN(uuid, ".", 2)
 	target, terr := agmodel.GetTarget(uuidData[0])
 	if terr != nil || target == nil {
 		return e.updateManagerAggregationSource(data[1], cmVariants.PluginID, updateRequest, hostNameUpdated)
@@ -190,7 +190,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID, 
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, nil)
 	}
-	ipData := strings.Split(updateRequest["HostName"].(string), ":")
+	ipData := strings.SplitN(updateRequest["HostName"].(string), ".", 2)
 	plugin.IP = ipData[0]
 	plugin.Port = ipData[1]
 	plugin.Username = updateRequest["UserName"].(string)

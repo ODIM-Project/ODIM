@@ -3,7 +3,7 @@ module github.com/ODIM-Project/ODIM/svc-events
 go 1.17
 
 require (
-	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20201201072448-9772421f1b55
+	github.com/ODIM-Project/ODIM/lib-messagebus v0.0.0-20211220033333-4314870ed337
 	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
@@ -21,18 +21,21 @@ require (
 	github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible // indirect
+	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/coreos/etcd v3.3.17+incompatible // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/eknkc/amber v0.0.0-20171010120322-cdade1c07385 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
+	github.com/go-redis/redis/v8 v8.11.3 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/protobuf v1.5.0 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect

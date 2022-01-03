@@ -34,7 +34,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(systemID, ":")
+	requestData := strings.SplitN(systemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", systemID}, nil)
@@ -120,7 +120,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -226,7 +226,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -240,7 +240,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 		if ute, ok := err.(*json.UnmarshalTypeError); ok {
 			errMsg := fmt.Sprintf("UnmarshalTypeError: Expected field type %v but got %v \n", ute.Type, ute.Value)
 			log.Error(errMsg)
-			index := strings.LastIndex(string(req.RequestBody[:ute.Offset]), ":")
+			index := strings.LastIndex(string(req.RequestBody[:ute.Offset]), ".")
 			if index < 0 {
 				index = 0
 			}

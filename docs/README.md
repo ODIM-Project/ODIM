@@ -187,6 +187,7 @@ ODIMRA framework comprises the following two components.
 - The resource aggregation function (the resource aggregator)
 
   The resource aggregation function is the single point of contact between the northbound clients and the southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes Redfish-compliant APIs to allow northbound infrastructure management systems to:
+
     - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the resource inventory
     - Gather crucial configuration information about southbound resources
     - Manipulate groups of resources in a single action
@@ -196,7 +197,8 @@ ODIMRA framework comprises the following two components.
 
   The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. HPE Resource Aggregator for ODIM supports:
 
-    - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
+
+  - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
   - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
   - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
 
@@ -216,26 +218,27 @@ The following figure shows these functional layers of Resource Aggregator for OD
 
 **API layer**
 
+
 This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
 The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
 **Services layer**
 
-The services layer is where all the services are hosted. This layer implements service logic for all use cases
-through an extensible domain model (Redfish Data Model). All resource information is stored in this data model and is used to service the API requests coming from the API layer. Any responses from the plugin layer might update the domain model. It maintains the state for event subscriptions, credentials, and tasks.
+The services layer is where all the services are hosted. This layer implements service logic for all use cases through an extensible domain model (Redfish Data Model). All resource information is stored in this data model and is used to service the API requests coming from the API layer. Any responses from the plugin layer might update the domain model. It maintains the state for event subscriptions, credentials, and tasks.
+
 
 ![Redfish_data_model](images/redfish_data_model.png)
 
 **Event message bus layer**
 
-This layer hosts a message broker which acts as a communication channel between the plugin layer and the upper layers. It supports common messaging architecture to forward events received from the plugin layer to the upper layers. During the run-time, Resource Aggregator for ODIM uses either Kafka or the Redis stream service as the event message bus. 
 
+This layer hosts a message broker which acts as a communication channel between the plugin layer and the upper layers. It supports common messaging architecture to forward events received from the plugin layer to the upper layers. During the run-time, Resource Aggregator for ODIM uses either Kafka or the Redis stream service as the event message bus. 
 The services and the event message bus layers host Redis data store.
 
 **Plugin layer**
 
-This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. It uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
 
+This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. It uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 
@@ -267,7 +270,6 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 `https://{odimra_host}:{port}/`
 
 - {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
-  
 	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
@@ -329,7 +331,7 @@ The URL encoding mechanism translates the characters in the URLs to a representa
 
 Resource Aggregator for ODIM supports all standard URL encoded characters for all the APIs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in its path are internally translated and sent to the web browsers. In other words, if you replace a character in a URL with its standard encoding notation, Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browser and sends responses.
 
-**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
+**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
 
 <blockquote>Tip: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.</blockquote>
 
@@ -472,7 +474,7 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 | /redfish/v1/TelemetryService                                 | `GET`          |
 | /redfish/v1/TelemetryService/MetricDefinitions               | `GET`          |
 | /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionId} | `GET`          |
-| /redfish/v1/TelemetryService/MetricReportDefinitions         | `GET`,         |
+| /redfish/v1/TelemetryService/MetricReportDefinitions         | `GET`          |
 | /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionId} | `GET`          |
 | redfish/v1/TelemetryService/MetricReports                    | `GET`          |
 | /redfish/v1/TelemetryService/MetricReports/{MetricReportId}  | `GET`          |
@@ -492,8 +494,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 
 >**NOTE:**
 `ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM.
-It is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
-universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1*.
+It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
+universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
 
 
 ## Viewing the list of supported Redfish services
@@ -538,7 +540,7 @@ Transfer-Encoding:chunked
 {
    "@odata.context": "/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
    "@odata.id": "/redfish/v1/",
-   "@odata.type": "#ServiceRoot.v1_5_0.ServiceRoot",
+   "@odata.type": "#ServiceRoot.v1_11_0.ServiceRoot",
    "Id": "RootService",
    "Registries": {
       "@odata.id": "/redfish/v1/Registries"
@@ -716,9 +718,9 @@ With Resource Aggregator for ODIM, there are two kinds of defined roles:
 
     User-defined roles are the custom roles that you can create and assign to a user. The privileges of a user-defined role are configurable—you can choose a privilege or a set of privileges to assign to this role at the time of role creation.
 
-
 <blockquote>
 NOTE:
+
 
 -   Redfish predefined roles cannot be modified.
 
@@ -818,7 +820,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#SessionService.v1_1_6.SessionService",
+   "@odata.type":"#SessionService.v1_1_8.SessionService",
    "@odata.id":"/redfish/v1/SessionService",
    "Id":"Sessions",
    "Name":"Session Service",
@@ -903,7 +905,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-	"@odata.type": "#SessionService.v1_1_6.SessionService",
+	"@odata.type": "#SessionService.v1_1_8.SessionService",
 	"@odata.id": "/redfish/v1/SessionService/Sessions/1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
@@ -966,7 +968,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Session.v1_2_1.Session",
+   "@odata.type":"#Session.v1_3_0.Session",
    "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
    "Id":"4ee42139-22db-4e2a-97e4-020013248768",
    "Name":"User Session",
@@ -1058,7 +1060,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_6_0.AccountService",
+   "@odata.type":"#AccountService.v1_10_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -1145,7 +1147,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1245,7 +1247,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1446,7 +1448,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1518,7 +1520,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1595,7 +1597,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1725,7 +1727,7 @@ Transfer-Encoding":chunked
    "@odata.context":"/redfish/v1/$metadata#AggregationService.AggregationService",
    "Id":"AggregationService",
    "@odata.id":"/redfish/v1/AggregationService",
-   "@odata.type":"#AggregationService.v1_0_0.AggregationService",
+   "@odata.type":"#AggregationService.v1_0_1.AggregationService",
    "Name":"AggregationService",
    "Description":"AggregationService",
    "Actions":{
@@ -2029,7 +2031,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-4c7d-942f-55eaf7d6812a",
@@ -2050,7 +2052,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
@@ -2187,7 +2189,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -2207,7 +2209,7 @@ x-frame-options":"sameorigin"
 >** Sample response body \(HTTP 201 status\)**
 ```
  {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
@@ -2258,7 +2260,7 @@ curl -i GET \
          "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
       },
       {
-         "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660:1"
+         "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660.1"
       }
    ]   
 }
@@ -2291,7 +2293,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
@@ -2352,10 +2354,11 @@ curl -i PATCH \
 
 ```
 {
+
    "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
-   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
+   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
-   "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
+   "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "Name":"Aggregation Source",
    "HostName":"10.24.0.4",
    "UserName":"admin",
@@ -2428,8 +2431,8 @@ curl -i POST \
    "DelayBetweenBatchesInSeconds":1,
    "ResetType":"ForceRestart",
    "TargetURIs":[
-      "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1",
-      "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1"
+      "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1",
+      "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1"
    ]
 }
 
@@ -2474,7 +2477,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4103-8757-4c7d-942f-55eaf7d6412a",
@@ -2586,10 +2589,10 @@ curl -i POST \
 {
    "Systems":[
       {
-         "@odata.id":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+         "@odata.id":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
       },
       {
-         "@odata.id":"/redfish/v1/Systems/76632110-1c75-5a86-9cc2-471325983653:1"
+         "@odata.id":"/redfish/v1/Systems/76632110-1c75-5a86-9cc2-471325983653.1"
       }
    ]
 }
@@ -2619,7 +2622,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
@@ -2659,7 +2662,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -2727,7 +2730,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-2c7d-942f-55eaf7d6412a",
@@ -2825,7 +2828,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2909,7 +2912,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2918,8 +2921,8 @@ curl -i GET \
    "MessageId":"Base.1.6.1.Success",
    "Severity":"OK",
    "Elements":[
-      "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-      "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1:1"      
+      "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+      "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"      
    ]
 }
 ```
@@ -2997,7 +3000,7 @@ curl -i POST \
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -3006,8 +3009,8 @@ curl -i POST \
       "MessageId":"Base.1.6.1.Created",
       "Severity":"OK",
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"      
    ]   
 }
 ```
@@ -3088,7 +3091,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
@@ -3128,7 +3131,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -3199,7 +3202,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
@@ -3239,7 +3242,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -3293,8 +3296,8 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1.1"      
    ]   
 }
 ```
@@ -3309,7 +3312,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/e02faf78-f919-4612-b031-bec7ae59910d",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"e02faf78-f919-4612-b031-bec7ae59910d",
@@ -3434,10 +3437,10 @@ curl -i GET \
    "Name":"Computer Systems",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Systems/ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1"
+         "@odata.id":"/redfish/v1/Systems/ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1"
       },
       { 
-         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":2
@@ -3473,9 +3476,9 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
-   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1",
+   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1",
    "@odata.type":"#ComputerSystem.v1_4_0.ComputerSystem",
-   "Id":"e24fb205-6669-4080-b53c-67d4923aa73e:1",
+   "Id":"e24fb205-6669-4080-b53c-67d4923aa73e.1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
          "ResetType@Redfish.AllowableValues":[ 
@@ -3486,17 +3489,17 @@ curl -i GET \
             "Nmi",
             "PushPowerButton"
          ],
-         "target":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Actions/ComputerSystem.Reset"
+         "target":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Actions/ComputerSystem.Reset"
       }
    },
    "AssetTag":"",
    "Bios":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Bios"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Bios"
    },
    "BiosVersion":"U32 v2.00 (02/02/2019)",
    "Boot":{ 
       "BootOptions":{ 
-         "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/BootOptions"
+         "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/BootOptions"
       },
       "BootOrder":[ 
          "Boot000A",
@@ -3548,31 +3551,31 @@ curl -i GET \
       ]
    },
    "EthernetInterfaces":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/EthernetInterfaces"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/EthernetInterfaces"
    },
    "HostName":"",
    "IndicatorLED":"Off",
    "Links":{ 
       "ManagedBy":[ 
          { 
-            "@odata.id":"/redfish/v1/Managers/e24fb205-6669-4080-b53c-67d4923aa73e:1"
+            "@odata.id":"/redfish/v1/Managers/e24fb205-6669-4080-b53c-67d4923aa73e.1"
          }
       ],
       "Chassis":[ 
          { 
-            "@odata.id":"/redfish/v1/Chassis/e24fb205-6669-4080-b53c-67d4923aa73e:1"
+            "@odata.id":"/redfish/v1/Chassis/e24fb205-6669-4080-b53c-67d4923aa73e.1"
          }
       ]
    },
    "LogServices":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/LogServices"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/LogServices"
    },
    "Manufacturer":"HPE",
    "Memory":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Memory"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory"
    },
    "MemoryDomains":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/MemoryDomains"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/MemoryDomains"
    },
    "MemorySummary":{ 
       "Status":{ 
@@ -3584,7 +3587,7 @@ curl -i GET \
    "Model":"ProLiant DL360 Gen10",
    "Name":"Computer System",
    "NetworkInterfaces":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/NetworkInterfaces"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/NetworkInterfaces"
    },
    "Oem":{ 
       
@@ -3669,28 +3672,28 @@ curl -i GET \
          "IsColdBooting":false,
          "Links":{ 
             "PCIDevices":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIDevices"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIDevices"
             },
             "PCISlots":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCISlots"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCISlots"
             },
             "NetworkAdapters":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/BaseNetworkAdapters"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/BaseNetworkAdapters"
             },
             "SmartStorage":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/SmartStorage"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/SmartStorage"
             },
             "USBPorts":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/USBPorts"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/USBPorts"
             },
             "USBDevices":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/USBDevices"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/USBDevices"
             },
             "EthernetInterfaces":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/EthernetInterfaces"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/EthernetInterfaces"
             },
             "WorkloadPerformanceAdvisor":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/WorkloadPerformanceAdvisor"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/WorkloadPerformanceAdvisor"
             }
          },
          "PCAPartNumber":"847479-001",
@@ -3716,7 +3719,7 @@ curl -i GET \
          "ServerFQDN":"",
          "SmartStorageConfig":[ 
             { 
-               "@odata.id":"/redfish/v1/systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/smartstorageconfig"
+               "@odata.id":"/redfish/v1/systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/smartstorageconfig"
             }
          ],
          "SystemROMAndiLOEraseComponentStatus":{ 
@@ -3744,37 +3747,37 @@ curl -i GET \
    },
    "PCIeDevices":[
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/1"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/1"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/2"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/2"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/3"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/3"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/4"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/4"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/5"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/5"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/6"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/6"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/7"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/7"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/8"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/8"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/9"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/9"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/10"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/10"
     },
     {
-    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIeDevices/11"
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/11"
     }
    ],
    "PCIeDevices@odata.count": 11,
@@ -3787,11 +3790,11 @@ curl -i GET \
       }
    },
    "Processors":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Processors"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Processors"
    },
    "SKU":"867959-B21",
    "SecureBoot":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/SecureBoot"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/SecureBoot"
    },
    "SerialNumber":"MXQ91100T9",
    "Status":{ 
@@ -3800,7 +3803,7 @@ curl -i GET \
       "State":"Starting"
    },
    "Storage":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Storage"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Storage"
    },
    "SystemType":"Physical",
    "TrustedModules":[ 
@@ -3879,7 +3882,7 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#Memory.Memory",
    "@odata.etag":"W/\"E6EC3A2C\"",
-   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Memory/proc1dimm1",
+   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory/proc1dimm1",
    "@odata.type":"#Memory.v1_7_1.Memory",
    "Id":"proc1dimm1",
    "BaseModuleType":"RDIMM",
@@ -4066,7 +4069,7 @@ curl -i GET \
 {
 	"@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
 	"@odata.etag": "W/\"5DEAF04A\"",
-	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1/EthernetInterfaces/1",
+	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1/EthernetInterfaces/1",
 	"@odata.type": "#EthernetInterface.v1_4_1.EthernetInterface",
 	"Id": "1",
 	"FullDuplex": true,
@@ -4119,7 +4122,7 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#PCIeDevice.PCIeDevice",
     "@odata.etag": "W/\"33150E20\"",
-    "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79:1/PCIeDevices/1",
+    "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79.1/PCIeDevices/1",
     "@odata.type": "#PCIeDevice.v1_5_0.PCIeDevice",
     "Id": "1",
     "Name": "HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
@@ -4210,11 +4213,11 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 ```
 {
 	"@odata.etag": "\"2a840a57e9592422136\"",
-	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools",
 	"@odata.type": "#StoragePoolCollection.StoragePoolCollection",
 	"Description": "A collection of StoragePool resource instances.",
 	"Members": [{
-		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27"
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27"
 	}],
 	"Members@odata.count": 1,
 	"Name": "StoragePoolCollection"
@@ -4247,10 +4250,10 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 ```
 {
 	"@odata.etag": "\"7a55c980802224f456c\"",
-	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27",
 	"@odata.type": "#StoragePool.v1_5_0.StoragePool",
 	"AllocatedVolumes": {
-		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes"
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes"
 	},
 	"Capacity": {
 		"Data": {
@@ -4262,13 +4265,13 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 	},
 	"CapacitySources": [{
 		"@odata.etag": "\"31ecba89b48925a6bf3\"",
-		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1",
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1",
 		"@odata.type": "#Capacity.v1_1_3.CapacitySource",
 		"Description": "The resource is used to represent a capacity for a Redfish implementation.",
 		"Id": "1",
 		"Name": "CapacitySources_1",
 		"ProvidingDrives": {
-			"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives"
+			"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives"
 		}
 	}],
 	"CapacitySources@odata.count": 1,
@@ -4308,12 +4311,12 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 ```
 {
    "@odata.etag":"\"2cbdffec21f02963c79\"",
-   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes",
    "@odata.type":"#VolumeCollection.VolumeCollection",
    "Description":"A collection of volume resource instances.",
    "Members":[
       {
-         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27"
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27"
       }
    ],
    "Members@odata.count":1,
@@ -4347,7 +4350,7 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 ```
 {
    "@odata.etag":"\"915af5f726a127f66c2\"",
-   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27",
    "@odata.type":"#Volume.v1_4_1.Volume",
    "AccessCapabilities":[
       
@@ -4357,7 +4360,7 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
          "InitializeType@Redfish.AllowableValues":[
             "Fast"
          ],
-         "target":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27/Actions/Volume.Initialize",
+         "target":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27/Actions/Volume.Initialize",
          "title":"Initialize"
       }
    },
@@ -4380,7 +4383,7 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
    "Links":{
       "Drives":[
          {
-            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0"
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0"
          }
       ]
    },
@@ -4440,11 +4443,11 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 ```
 {
    "@odata.etag":"\"252e43d3e5862ae3d30\"",
-   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives",
    "@odata.type":"#DriveCollection.DriveCollection",
    "Members":[
       {
-         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0"
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0"
       }
    ],
    "Members@odata.count":1,
@@ -4477,7 +4480,7 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 ```
 {
    "@odata.etag":"\"a81c2a4f4e972e18b6306\"",
-   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Drives/Disk.0",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0",
    "@odata.type":"#Drive.v1_9_1.Drive",
    "AssetTag":"",
    "BlockSizeBytes":512,
@@ -4497,14 +4500,14 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
    ],
    "Links":{
       "Chassis":{
-         "@odata.id":"/redfish/v1/Chassis/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1"
+         "@odata.id":"/redfish/v1/Chassis/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1"
       },
       "PCIeFunctions":[
          
       ],
       "Volumes":[
          {
-            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886:1/Storage/RAID_Slot4/Volumes/27"
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Volumes/27"
          }
       ]
    },
@@ -4575,22 +4578,22 @@ curl -i GET \
 ```
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
-    "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0",
+    "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0",
     "@odata.type": "#Storage.v1_7_1.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
-            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0/Drives/0"
+            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Drives/0"
         },
         {
-            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0/Drives/1"
+            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Drives/1"
         }
     ],
     "Id": "ArrayController-0",
     "Name": "HpeSmartStorageArrayController",
     "StorageControllers": [
         {
-            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0#/StorageControllers/0",
+            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0#/StorageControllers/0",
             "FirmwareVersion": "1.98",
             "Manufacturer": "HPE",
             "MemberId": "0",
@@ -4612,7 +4615,7 @@ curl -i GET \
         }
     ],
     "Volumes": {
-        "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf:1/Storage/ArrayControllers-0/Volumes"
+        "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Volumes"
     }
 }
 
@@ -4684,12 +4687,12 @@ curl -i GET \
 {
       "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
       "@odata.etag":"W/\"AA6D42B0\"",
-      "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes",
+      "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407.1/Storage/ArrayControllers-0/Volumes",
       "@odata.type":"#VolumeCollection.VolumeCollection",
       "Description":"Volume Collection view",
       "Members":[
             {
-                  "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes/1"         
+                  "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407.1/Storage/ArrayControllers-0/Volumes/1"         
       }      
    ],
       "Members@odata.count":1,
@@ -4729,7 +4732,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Volume.Volume",
    "@odata.etag":"W/\"46916D5D\"",
-   "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Volumes/1",
+   "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Volumes/1",
    "@odata.type":"#Volume.v1_4_1.Volume",
    "CapacityBytes":1200209526784,
    "Encrypted":false,
@@ -4743,7 +4746,7 @@ curl -i GET \
    "Links":{
       "Drives":[
          {
-            "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
+            "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
          }
       ]
    },
@@ -4800,10 +4803,10 @@ curl -i -X POST \
    "RAIDType":"RAID1",
    "Drives":[
       {
-         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
+         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
       },
       {
-         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/1"
+         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/1"
       }
    ],
    "@Redfish.OperationApplyTime":"OnReset"
@@ -4998,10 +5001,10 @@ curl -i GET \
    "Name":"Computer System Chassis",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1"
+         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1"
       },
       { 
-         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":2
@@ -5026,10 +5029,10 @@ curl -i GET \
    "Name":"Computer System Chassis",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1"
+         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1"
       },
       { 
-         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":2
@@ -5070,19 +5073,20 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
-   "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1",
+
+   "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1",
    "@odata.type":"#Chassis.v1_6_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
       "ManagedBy":[ 
          { 
-            "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c:1"
+            "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c.1"
          }
       ],
       "ComputerSystems":[ 
          { 
-            "@odata.id":"/redfish/v1/Systems/192083d2-c60a-4318-967b-cb5890c6dfe4:1"
+            "@odata.id":"/redfish/v1/Systems/192083d2-c60a-4318-967b-cb5890c6dfe4.1"
          }
       ]
    },
@@ -5090,7 +5094,7 @@ curl -i GET \
    "Model":"ProLiant DL380 Gen10",
    "Name":"Computer System Chassis",
    "NetworkAdapters":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/NetworkAdapters"
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/NetworkAdapters"
    },
    "Oem":{ 
       
@@ -5125,7 +5129,7 @@ curl -i GET \
          },
          "Links":{ 
             "Devices":{ 
-               "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Devices"
+               "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Devices"
             }
          },
          "MCTPEnabledOnServer":true,
@@ -5163,7 +5167,7 @@ curl -i GET \
       }
    },
    "Power":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Power"
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Power"
    },
    "SKU":"868704-B21",
    "SerialNumber":"2M291101JX",
@@ -5172,7 +5176,7 @@ curl -i GET \
       "State":"Disabled"
    },
    "Thermal":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Thermal"
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Thermal"
    }
 }
 ```
@@ -5183,7 +5187,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
    "Description":"My RackGroup",
    "Name":"RG8",
@@ -5212,7 +5216,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5239,12 +5243,6 @@ curl -i GET \
    }
 }
 ```
-
-
-
-
-
-
 
 
 
@@ -5329,7 +5327,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
    "@odata.etag":"W/\"F303ECE9\"",
-   "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c:1/NetworkAdapters/{rid}",
+   "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c.1/NetworkAdapters/{rid}",
    "@odata.type":"#NetworkAdapter.v1_5_0.NetworkAdapter",
    "Description":"The network adapter resource instances available in this chassis.",
    "Name":"Network Adapter View",
@@ -5565,7 +5563,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
    "Description":"My RackGroup",
    "Name":"RG5",
@@ -5684,7 +5682,7 @@ Content-Length:462 bytes
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5779,7 +5777,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5795,7 +5793,7 @@ curl -i PATCH \
       ],
       "Contains":[
          {
-            "@odata.id":"/redfish/v1/Chassis/4159c951-d0d0-4263-858b-0294f5be6377:1"
+            "@odata.id":"/redfish/v1/Chassis/4159c951-d0d0-4263-858b-0294f5be6377.1"
          }
       ],
       "ContainedBy":[
@@ -5870,7 +5868,7 @@ curl -i PATCH \
 {
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
-   "@odata.type":"#Chassis.v1_14_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
    "Description":"rack no 1",
    "Name":"RACK#1",
@@ -5940,7 +5938,7 @@ None.
 ```
 curl -i DELETE \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-   'https://{odim_host}:{port}/redfish/v1/Chassis/{rackGroupId}`'
+   'https://{odim_host}:{port}/redfish/v1/Chassis/{rackGroupId}'
 ```
 
 
@@ -6061,10 +6059,6 @@ This filter searches a server having total physical memory of 384 GB and two Int
 
 
 
-
- 
-
-
 >**Sample response body**
 
 ```
@@ -6082,10 +6076,6 @@ This filter searches a server having total physical memory of 384 GB and two Int
    "Members@odata.count":1
 }
 ```
-
-
-
-
 
 
 
@@ -6457,13 +6447,13 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d"
       },
       {
-         "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c:1"
+         "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c.1"
       },
       {
          "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6"
       },
       {
-         "@odata.id":"/redfish/v1/Managers/0e778112-4684-433d-9998-ca6f399c031f:1"
+         "@odata.id":"/redfish/v1/Managers/0e778112-4684-433d-9998-ca6f399c031f.1"
       },
       {
          "@odata.id":"/redfish/v1/Managers/a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
@@ -6516,10 +6506,10 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"2D2866FD\"",
    "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_13_0.Manager",
    "Actions":{ 
       "#Manager.Reset":{ 
-         "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/Actions/Manager.Reset"
+         "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/Actions/Manager.Reset"
       }
    },
    "CommandShell":{ 
@@ -6531,7 +6521,7 @@ curl -i GET \
       "ServiceEnabled":true
    },
    "EthernetInterfaces":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/EthernetInterfaces"
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/EthernetInterfaces"
    },
    "FirmwareVersion":"iLO 5 v1.40",
    "GraphicalConsole":{ 
@@ -6542,31 +6532,31 @@ curl -i GET \
       "ServiceEnabled":true
    },
    "HostInterfaces":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/HostInterfaces"
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/HostInterfaces"
    },
    "Id":"1",
    "Links":{ 
       "ManagerForChassis":[ 
          { 
-            "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+            "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c.1"
          }
       ],
       "ManagerForServers":[ 
          { 
-            "@odata.id":"/redfish/v1/Systems/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+            "@odata.id":"/redfish/v1/Systems/88b36c7c-d708-4a4a-8af5-5d58779d377c.1"
          }
       ],
       "ManagerInChassis":{ 
-         "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+         "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c.1"
       }
    },
    "LogServices":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/LogServices"
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/LogServices"
    },
    "ManagerType":"BMC",
    "Name":"Manager",
    "NetworkProtocol":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/NetworkProtocol"
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/NetworkProtocol"
    },
    "Oem":{},
       
@@ -6584,7 +6574,7 @@ curl -i GET \
    },
    "UUID":"a964d6a9-a45c-57aa-90ec-08b38850b2f3",
    "VirtualMedia":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/VirtualMedia"
+      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/VirtualMedia"
    }
 }
 ```
@@ -6595,7 +6585,7 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_13_0.Manager",
    "Name":"ODIMRA",
    "ManagerType":"Service",
    "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
@@ -6614,7 +6604,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
    "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
-   "@odata.type":"#Manager.v1_3_3.Manager",
+   "@odata.type":"#Manager.v1_13_0.Manager",
    "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
    "ManagerType":"Service",
@@ -6810,6 +6800,8 @@ curl -i POST \
 | Inserted       | Boolean (Optional) | Default value is true |
 | WriteProtected | Boolean (Optional) | Default value is true |
 
+
+
 # Software and firmware inventory
 
 The resource aggregator exposes Redfish update service endpoints. Use these endpoints to access and update the software components of a system such as BIOS and firmware. Using these endpoints, you can also upgrade or downgrade firmware of other components such as system drivers and provider software.
@@ -6861,7 +6853,7 @@ curl -i GET \
 
 ```
 {
-    "@odata.type": "#UpdateService.v1_9_0.UpdateService",
+    "@odata.type": "#UpdateService.v1_10_0.UpdateService",
     "@odata.id": "/redfish/v1/UpdateService",
     "@odata.context": "/redfish/v1/$metadata#UpdateService.UpdateService",
     "Id": "UpdateService",
@@ -6928,28 +6920,28 @@ curl -i GET \
    ​   "Name":"FirmwareInventory",
    ​   "Members":​[
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:10"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.10"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:9"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.9"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:6"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.6"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:17"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.17"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:13"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.13"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:5"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.5"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:8"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.8"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:12"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.12"         ​
       }      ​
    ],
    ​   "Members@odata.count":8​
@@ -6986,7 +6978,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -7072,7 +7064,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -7135,7 +7127,7 @@ curl -i POST \
 ```
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
-  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"]
+  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a.1"]
 }
 ```
 
@@ -7144,7 +7136,7 @@ curl -i POST \
 ```
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
-  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
+  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a.1"],
   "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 }
 ```
@@ -7191,7 +7183,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -7264,7 +7256,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -7424,7 +7416,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5",
-   "@odata.type":"#Fabric.v1_0_5.Fabric",
+   "@odata.type":"#Fabric.v1_2_2.Fabric",
    "AddressPools":{ 
       "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/AddressPools"
    },
@@ -7503,14 +7495,6 @@ curl -i GET \
 
 
 
-
-
-
-
-
-
-
-
 ## Single switch
 
 |||
@@ -7537,7 +7521,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
-   "@odata.type":"#Switch.v1_2_0.Switch",
+   "@odata.type":"#Switch.v1_6_0.Switch",
    "Id":"fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
    "Manufacturer":"Aruba",
    "Model":"Aruba 8325",
@@ -7629,7 +7613,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0/Ports/80b5f999-25e9-4b37-992c-de2f065ee0e3",
-   "@odata.type":"#Port.v1_3_0.Port",
+   "@odata.type":"#Port.v1_5_0.Port",
    "CurrentSpeedGbps":0,
    "Description":"single port",
    "Id":"80b5f999-25e9-4b37-992c-de2f065ee0e3",
@@ -7655,12 +7639,6 @@ curl -i GET \
    "Width":1
 }
 ```
-
-
-
-
-
-
 
 
 
@@ -7736,16 +7714,6 @@ curl -i GET \
 }
 	
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -7869,8 +7837,6 @@ curl -i GET \
 
 
 
-
-
 ##  Single endpoint
 
 |||
@@ -7897,7 +7863,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
-   "@odata.type":"#Endpoint.v1_5_0.Endpoint",
+   "@odata.type":"#Endpoint.v1_6_1.Endpoint",
    "Description":"NK Endpoint Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
@@ -7992,8 +7958,6 @@ curl -i GET \
 
 
 
-
-
 ## Single zone
 
 
@@ -8021,7 +7985,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/f310bf40-5163-4cbf-be5b-ac574fe87863",
-   "@odata.type":"#Zone.v1_5_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "DefaultRoutingEnabled":false,
    "Description":"",
    "Id":"f310bf40-5163-4cbf-be5b-ac574fe87863",
@@ -8052,12 +8016,6 @@ curl -i GET \
    "ZoneType":"ZoneOfEndpoints"
 }
 ```
-
-
-
-
-
-
 
 
 
@@ -8101,10 +8059,6 @@ curl -i POST \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
 
 ```
-
-
-
-
 
 
 
@@ -8168,7 +8122,7 @@ Transfer-Encoding:chunked
 ```
 {
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
-  "@odata.type": "#AddressPool.v1_1_0.AddressPool",
+  "@odata.type": "#AddressPool.v1_2_0.AddressPool",
   "BgpEvpn": {
     "AnycastGatewayIPAddress": "10.18.102.1",
     "AnycastGatewayMACAddress": "",
@@ -8218,8 +8172,6 @@ Transfer-Encoding:chunked
 }
 
 ```
-
-
 
 
 
@@ -8274,10 +8226,6 @@ curl -i POST \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
 
 ```
-
-
-
-
 
 
 
@@ -8361,7 +8309,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d",
-   "@odata.type":"#AddressPool.v1_1_0.AddressPool",
+   "@odata.type":"#AddressPool.v1_2_0.AddressPool",
    "BgpEvpn":{
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
@@ -8502,7 +8450,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98",
-   "@odata.type":"#Zone.v1_5_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"",
    "Id":"a2dc8760-ea05-4cab-8f95-866c1c380f98",
    "Links":{
@@ -8644,7 +8592,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
-   "@odata.type":"#Endpoint.v1_5_0.Endpoint",
+   "@odata.type":"#Endpoint.v1_6_1.Endpoint",
    "Description":"Host 2 Endpoint 1 Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
@@ -8801,7 +8749,7 @@ Transfer-Encoding: chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f",
-   "@odata.type":"#Zone.v1_5_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"",
    "Id":"06d344bb-cce1-4b0c-8414-6f6df1ea373f",
    "Links":{
@@ -8918,7 +8866,7 @@ curl -i -X PATCH \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"NK Zone Collection Description",
    "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
    "Links":{ 
@@ -8951,7 +8899,7 @@ curl -i -X PATCH \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"NK Zone Collection Description",
    "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
    "Links":{ 
@@ -9000,10 +8948,6 @@ curl -i -X DELETE \
 
 
 
-
-
-
-
 ## Deleting an endpoint
 
 |||
@@ -9023,8 +8967,6 @@ curl -i DELETE \
  'https://{odim_hosts}:{port}/redfish/v1/Fabrics/{fabricID}/Endpoints/{endpointId}'
 
 ```
-
-
 
 
 
@@ -9117,7 +9059,7 @@ Transfer-Encoding":chunked
 
 ```
 {
-   "@odata.type":"#TaskService.v1_1_4.TaskService",
+   "@odata.type":"#TaskService.v1_2_0.TaskService",
    "@odata.id":"/redfish/v1/TaskService",
    "@odata.context":"/redfish/v1/$metadata#TaskService.TaskService",
    "Description":"TaskService",
@@ -9216,7 +9158,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_5_0.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
@@ -9234,8 +9176,8 @@ curl -i GET \
          "Cache-Control: no-cache",
          "Connection: keep-alive",
          "Content-type: application/json; charset=utf-8",
-         "Link: </redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d:1/>; rel=describedby",
-         "Location: /redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d:1",
+         "Link: </redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d.1/>; rel=describedby",
+         "Location: /redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d.1",
          "OData-Version: 4.0"
       ],
       "HttpOperation":"POST",
@@ -9292,7 +9234,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
@@ -9433,7 +9375,7 @@ Transfer-Encoding:chunked
    "@odata.context":"/redfish/v1/$metadata#EventService.EventService",
    "Id":"EventService",
    "@odata.id":"/redfish/v1/EventService",
-   "@odata.type":"#EventService.v1_5_0.EventService",
+   "@odata.type":"#EventService.v1_7_2.EventService",
    "Name":"EventService",
    "Description":"EventService",
    "Actions":{
@@ -9784,7 +9726,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
@@ -9824,7 +9766,7 @@ Transfer-Encoding:chunked
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -9898,10 +9840,10 @@ curl -i POST \
    "Message":"The LAN has been disconnected",
    "MessageArgs":[ 
        "EthernetInterface 1",
-            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
+            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1"
    ],
    "MessageId":"Alert.1.0.LanDisconnect",
-   "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1/EthernetInterfaces/1",
+   "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1/EthernetInterfaces/1",
    "Severity":"Critical"
 }
 
@@ -9954,7 +9896,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_1_0.Event ",
+   "@odata.type":"#Event.v1_7_0.Event ",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",
@@ -9967,9 +9909,9 @@ Transfer-Encoding:chunked
          "MessageId":"Alert.1.0.LanDisconnect",
          "MessageArgs":[ 
             "EthernetInterface 1",
-            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
+            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1"
          ],
-         "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1/EthernetInterfaces/1",
+         "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1/EthernetInterfaces/1",
          "Context":"Event Subscription"
 }
 ]
@@ -9980,7 +9922,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-"@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
+"@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
 "Id": “Alert.1.0.0",
 "Name": "Base Message Registry",
 "Language": "en",
@@ -10199,7 +10141,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "@odata.context":"/redfish/v1/$metadata#EventDestination.EventDestination",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
@@ -10250,7 +10192,7 @@ curl -i -X DELETE \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",
@@ -10651,7 +10593,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
     "@odata.etag": "W/\"AB720077\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
-    "@odata.type": "#MetricDefinition.v1_0_0.MetricDefinition",
+    "@odata.type": "#MetricDefinition.v1_2_0.MetricDefinition",
     "Calculable": "NonSummable",
     "CalculationAlgorithm": "Average",
     "Description": "Metric definition for CPU Utilization",
@@ -10671,8 +10613,8 @@ curl -i GET \
         {
             "Name": "SystemID",
             "Values": [
-                "9616fec9-c76a-4d26-ab53-196d08ce825a:1",
-                "ba5cd083-b360-4994-bc30-12b450859b27:1"
+                "9616fec9-c76a-4d26-ab53-196d08ce825a.1",
+                "ba5cd083-b360-4994-bc30-12b450859b27.1"
             ]
         }
     ]
@@ -10760,7 +10702,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#MetricReportDefinition.MetricReportDefinition",
     "@odata.etag": "W/\"9A613B5C\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1",
-    "@odata.type": "#MetricReportDefinition.v1_0_0.MetricReportDefinition",
+    "@odata.type": "#MetricReportDefinition.v1_4_1.MetricReportDefinition",
     "Description": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
     "Id": "CPUUtilCustom1",
     "MetricProperties": [
@@ -10891,7 +10833,7 @@ curl -i GET \
             "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
          },
          "MetricId":"CPUUtil",
-         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
          "MetricValue":"1",
          "Timestamp":"2021-08-28T13:46:05Z"
       },
@@ -10900,7 +10842,7 @@ curl -i GET \
             "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
          },
          "MetricId":"CPUUtil",
-         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
          "MetricValue":"1",
          "Timestamp":"2021-08-28T13:46:25Z"
       },
@@ -10909,7 +10851,7 @@ curl -i GET \
             "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
          },
          "MetricId":"CPUUtil",
-         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
          "MetricValue":"1",
          "Timestamp":"2021-08-28T13:46:45Z"
       },
@@ -10918,7 +10860,7 @@ curl -i GET \
             "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
          },
          "MetricId":"CPUUtil",
-         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a:1#SystemUsage/CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
          "MetricValue":"1",
          "Timestamp":"2021-08-28T13:47:05Z"
       },
@@ -11013,7 +10955,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
     "@odata.etag": "W/\"BFAAE441\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
-    "@odata.type": "#Triggers.v1_0_0.Triggers",
+    "@odata.type": "#Triggers.v1_2_0.Triggers",
     "Description": "Triggers for CPU Utilization",
     "Id": "CPUUtilTriggers",
     "MetricProperties": [
@@ -11044,8 +10986,8 @@ curl -i GET \
         {
             "Name": "SystemID",
             "Values": [
-                "9616fec9-c76a-4d26-ab53-196d08ce825a:1",
-                "ba5cd083-b360-4994-bc30-12b450859b27:1"
+                "9616fec9-c76a-4d26-ab53-196d08ce825a.1",
+                "ba5cd083-b360-4994-bc30-12b450859b27.1"
             ]
         }
     ]

@@ -97,7 +97,7 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	name := connectionMethod.ConnectionMethodType + "-" + aggregationSource.HostName
 	var data = strings.Split(reqURI, "/redfish/v1/AggregationService/AggregationSources/")
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      reqURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           data[1],

@@ -132,14 +132,6 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
 
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
 		// Update the task here with error response
 		errorMessage := "Error while Unmarshaling the Request: " + err.Error()
@@ -889,13 +881,7 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 		log.Error(errorMessage)
 		return resp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
 	log.Info("Creation of default subscriptions completed for :" + strings.Join(originResources, "::"))
@@ -1154,13 +1140,6 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 
 	host, response := p.eventSubscription(request, originResource, collectionName, collectionFlag)
 	resp.Body = response.Response
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = int32(response.StatusCode)
 	result.AddResponse(originResource, host, response)
 	percentComplete = 100

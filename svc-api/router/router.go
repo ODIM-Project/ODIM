@@ -213,6 +213,9 @@ func Router() *iris.Application {
 	v1.Get("/", serviceRoot.GetServiceRoot)
 	v1.Get("/odata", handle.GetOdata)
 	v1.Get("/$metadata", handle.GetMetadata)
+	v1.Any("/", handle.SRMethodNotAllowed)
+	v1.Any("/odata", handle.SRMethodNotAllowed)
+	v1.Any("/$metadata", handle.SRMethodNotAllowed)
 
 	registry := v1.Party("/Registries")
 	registry.SetRegisterRule(iris.RouteSkip)
@@ -229,6 +232,8 @@ func Router() *iris.Application {
 	session.Post("/Sessions", s.CreateSession)
 	session.Delete("/Sessions/{sessionID}", middleware.SessionDelMiddleware, s.DeleteSession)
 	session.Any("/", handle.SsMethodNotAllowed)
+	session.Any("/Sessions", handle.SsMethodNotAllowed)
+	session.Any("/Sessions/{sessionID}", handle.SsMethodNotAllowed)
 
 	account := v1.Party("/AccountService", middleware.SessionDelMiddleware)
 	account.SetRegisterRule(iris.RouteSkip)
@@ -239,6 +244,8 @@ func Router() *iris.Application {
 	account.Patch("/Accounts/{id}", a.UpdateAccount)
 	account.Delete("/Accounts/{id}", a.DeleteAccount)
 	account.Any("/", handle.AsMethodNotAllowed)
+	account.Any("/Accounts", handle.AsMethodNotAllowed)
+	account.Any("/Accounts/{id}", handle.AsMethodNotAllowed)
 
 	role := account.Party("/Roles", middleware.SessionDelMiddleware)
 	role.SetRegisterRule(iris.RouteSkip)
@@ -247,6 +254,8 @@ func Router() *iris.Application {
 	role.Post("/", r.CreateRole)
 	role.Patch("/{id}", r.UpdateRole)
 	role.Delete("/{id}", r.DeleteRole)
+	role.Any("/", handle.RoleMethodNotAllowed)
+	role.Any("/{id}", handle.RoleMethodNotAllowed)
 
 	task := v1.Party("/TaskService", middleware.SessionDelMiddleware)
 	task.SetRegisterRule(iris.RouteSkip)
@@ -352,6 +361,7 @@ func Router() *iris.Application {
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
+
 	aggregationSource := aggregation.Party("/AggregationSources", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregationSource.Get("/", pc.GetAllAggregationSource)

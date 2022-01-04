@@ -451,14 +451,6 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		},
 	}
 	respPtr.Body = args.CreateGenericErrorResponse()
-	respPtr.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"allow":             "POST,GET,DELETE",
-	}
 }
 
 // GenEventErrorResponse generates the error response in event service

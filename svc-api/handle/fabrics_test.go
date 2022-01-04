@@ -101,19 +101,19 @@ func TestGetFabricResource(t *testing.T) {
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/1",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
 		"/redfish/v1/Fabrics/1",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/1/",
-	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/1/Switches",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
@@ -215,7 +215,7 @@ func TestDeleteFabricResource(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -233,7 +233,7 @@ func TestUpdateFabricResource(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.PATCH(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON("").Expect().Status(http.StatusBadRequest)
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON("").Expect().Status(http.StatusBadRequest).Headers().Equal(header)
 	test.PATCH(
 		"/redfish/v1/Fabrics/",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)

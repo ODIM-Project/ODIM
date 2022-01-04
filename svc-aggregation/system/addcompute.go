@@ -105,7 +105,6 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	resp.Body = commonError
 	resp.StatusCode = http.StatusCreated
 	resp.StatusMessage = getResponse.StatusMessage
-	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 
 	saveSystem.DeviceUUID = uuid.NewV4().String()
 	getSystemBody := map[string]interface{}{
@@ -292,8 +291,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 
 	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		"Location":     resourceURI,
+		"Location": resourceURI,
 	}
 	log.Info("sucessfully added system with manager address " + addResourceRequest.ManagerAddress +
 		" using plugin id: " + pluginID)

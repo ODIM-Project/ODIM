@@ -73,14 +73,6 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 	return &resp, nil
 }
 
-func getHeader() map[string]string {
-	return map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
-}
-
 // GetSession is a rpc call to get session
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id then delete the session

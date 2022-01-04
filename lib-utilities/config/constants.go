@@ -27,9 +27,6 @@ const (
 	Server Host = iota
 	// Client is for defining application type is Client
 	Client
-
-	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
-	SaveUndeliveredEventsFlag = false
 )
 
 const (

@@ -16,9 +16,9 @@ jobs:
       run: |
         echo "[$(date)] -- INFO  -- Start pre req conguration"
         echo
-        cat /etc/os-release
-        dpkg -l
-        exit
+        
+        
+        
         
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo

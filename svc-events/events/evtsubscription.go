@@ -73,7 +73,8 @@ type PluginContact struct {
 	UpdateEventSubscription          func(evmodel.Subscription) error
 	SaveUndeliveredEvents            func(string, []byte) error
 	SaveDeviceSubscription           func(evmodel.DeviceSubscription) error
-	GetUndeliveredEvents             func(string) ([]string, error)
+	GetUndeliveredEvents             func(string) (string, error)
+	DeleteUndeliveredEvents          func(string) error
 	GetUndeliveredEventsFlag         func(string) (bool, error)
 	SetUndeliveredEventsFlag         func(string) error
 	DeleteUndeliveredEventsFlag      func(string) error

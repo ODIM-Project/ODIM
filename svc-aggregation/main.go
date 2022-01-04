@@ -15,7 +15,6 @@ package main
 
 import (
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -52,10 +51,8 @@ func main() {
 
 	config.CollectCLArgs()
 
-	if strings.EqualFold(config.Data.MessageBusConf.MessageBusType, "kafka") {
-		if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-			log.Fatal("error while trying to set messagebus configuration: " + err.Error())
-		}
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())

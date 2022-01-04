@@ -41,14 +41,6 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 }
 
 func TestGetRole(t *testing.T) {
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	commonResponse := response.Response{
 		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + common.RoleAdmin,
@@ -116,7 +108,6 @@ func TestGetRole(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header:        header,
 				Body: asresponse.UserRole{
 					Response:           commonResponse,
 					AssignedPrivileges: []string{common.PrivilegeConfigureUsers},
@@ -138,7 +129,6 @@ func TestGetRole(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		}, {
@@ -156,7 +146,6 @@ func TestGetRole(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        header,
 				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
@@ -176,14 +165,6 @@ func TestGetAllRoles(t *testing.T) {
 		OdataType: "#RoleCollection.RoleCollection",
 		OdataID:   "/redfish/v1/AccountService/Roles",
 		Name:      "Roles Collection",
-	}
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.MessageID = ""
@@ -229,7 +210,6 @@ func TestGetAllRoles(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header:        header,
 				Body: asresponse.List{
 					Response:     commonResponse,
 					MembersCount: 1,
@@ -252,7 +232,6 @@ func TestGetAllRoles(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},

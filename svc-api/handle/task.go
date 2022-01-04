@@ -53,7 +53,7 @@ func (task *TaskRPCs) DeleteTask(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -80,10 +80,12 @@ func (task *TaskRPCs) GetTaskStatus(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -107,10 +109,12 @@ func (task *TaskRPCs) GetSubTasks(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -135,10 +139,12 @@ func (task *TaskRPCs) GetSubTask(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -162,10 +168,11 @@ func (task *TaskRPCs) GetTaskMonitor(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -185,8 +192,9 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
+		common.SetResponseHeader(ctx, nil)
 		return
 	}
 	response, err := task.TaskCollectionRPC(req)
@@ -196,10 +204,12 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)
@@ -222,10 +232,12 @@ func (task *TaskRPCs) GetTaskService(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, response.Header)
 	ctx.StatusCode(int(response.StatusCode))
 	ctx.Write(response.Body)

@@ -108,14 +108,6 @@ func contactClientMock(url, method, token string, odataID string, body interface
 			resp.Body = ioutil.NopCloser(bytes.NewBufferString(basicAuthBody))
 		}
 	} else if url == "https://:/ODIM/v1/Chassis/valid" {
-		resp.Header = map[string][]string{
-			"Allow":             []string{`"GET"`},
-			"Cache-Control":     []string{"no-cache"},
-			"Connection":        []string{"keep-alive"},
-			"Content-type":      []string{"application/json; charset=utf-8"},
-			"Transfer-Encoding": []string{"chunked"},
-			"OData-Version":     []string{"4.0"},
-		}
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(chassisResource))
 	} else if url == "https://:/ODIM/v1/Chassis/valid_for_update" {
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(successBody))

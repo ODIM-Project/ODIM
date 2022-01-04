@@ -59,7 +59,8 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -68,11 +69,13 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -90,7 +93,8 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the  request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -101,7 +105,8 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -113,7 +118,8 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -127,7 +133,8 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -148,7 +155,8 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the  request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -159,7 +167,8 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -171,7 +180,8 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -185,7 +195,8 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -204,7 +215,8 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -215,7 +227,8 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -233,6 +246,7 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
@@ -253,7 +267,8 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -262,11 +277,13 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 		errorMessage := " RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -283,7 +300,8 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -292,11 +310,12 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 		errorMessage := " RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -311,7 +330,8 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -322,7 +342,8 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -341,6 +362,7 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
@@ -363,7 +385,8 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -372,7 +395,8 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 		errorMessage := " RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -391,7 +415,8 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -402,7 +427,8 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -419,6 +445,7 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 		errorMessage := "RPC error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
@@ -439,7 +466,8 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -448,11 +476,12 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -469,7 +498,8 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -478,11 +508,12 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -499,7 +530,8 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -508,7 +540,8 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -527,7 +560,8 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -538,7 +572,8 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -557,7 +592,8 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -576,7 +612,8 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -587,7 +624,8 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -606,7 +644,8 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -625,7 +664,8 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 		errorMessage := "error while trying to get JSON body from the aggregator request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -636,7 +676,8 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -655,7 +696,8 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -673,7 +715,8 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -688,7 +731,8 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -708,7 +752,8 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -717,11 +762,13 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -738,7 +785,8 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 		errorMessage := "no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -747,11 +795,13 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 		errorMessage := "something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

@@ -66,13 +66,7 @@ func TestGetAggregationSourceCollection(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""
 	commonResponse.ID = ""
@@ -119,13 +113,7 @@ func TestGetAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""
 	commonResponse.MessageID = ""

@@ -151,6 +151,11 @@ jobs:
         echo "[$(date)] -- INFO  -- configured values in kube_deploy_nodes.yaml"
         cat kube_deploy_nodes.yaml
         echo
+        
+        
+        sudo rm -rf  /var/lib/docker
+        
+        
 
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         echo "[$(date)] -- INFO  -- install kubernetes using odim-controller"

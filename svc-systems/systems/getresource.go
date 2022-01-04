@@ -544,16 +544,8 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
 	log.Debug("Entering the GetSystemResource with URL : ", req.URL)
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	// Splitting the SystemID to get UUID
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -698,14 +690,6 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 		allowed["queryKeys"][value] = true
 	}
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	paramStr := strings.SplitN(req.URL, "?", 2)
 	if len(paramStr) > 1 {
 		resp, retError := SearchAndFilter(paramStr, resp)
@@ -753,16 +737,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -797,7 +772,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
 	}
-	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`:`, -1)
+	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	resp.Body = resource

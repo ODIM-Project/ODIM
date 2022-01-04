@@ -134,7 +134,7 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 
 	req.DeviceUUID = deviceUUID
 	req.DeviceInfo = target
-	req.OID = systemURL
+	req.OID = strings.Replace(systemURL, "/redfish/v1/Systems/"+deviceUUID+".", "/redfish/v1/Systems/", -1)
 	req.UpdateFlag = updateFlag
 	req.UpdateTask = e.UpdateTask
 	var h respHolder
@@ -162,9 +162,6 @@ func (e *ExternalInterface) RediscoverSystemInventory(deviceUUID, systemURL stri
 
 	resp.StatusCode = http.StatusCreated
 	resp.Body = responseBody
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-	}
 
 	log.Info("Rediscovery of the BMC with ID " + deviceUUID + " is now complete.")
 }
@@ -287,7 +284,7 @@ func (e *ExternalInterface) getTargetSystemCollection(target agmodel.Target) ([]
 func (e *ExternalInterface) isServerRediscoveryRequired(deviceUUID string, systemKey string) bool {
 	strArray := strings.Split(systemKey, "/")
 	sysID := strArray[len(strArray)-1]
-	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+":", -1)
+	systemKey = strings.Replace(systemKey, "/"+sysID, "/"+deviceUUID+".", -1)
 	key := systemKey + sysID
 	_, err := agmodel.GetResource("ComputerSystem", key)
 	if err != nil {
@@ -355,7 +352,7 @@ func deleteSubordinateResource(deviceUUID string) {
 		return
 	}
 	for _, key := range keys {
-		resourceDetails := strings.SplitN(key, ":", 2)
+		resourceDetails := strings.Split(key, ":")
 		switch resourceDetails[0] {
 		case "ComputerSystem", "SystemReset", "SystemOperation", "Chassis", "Managers", "FirmwareInventory", "SoftwareInventory":
 			continue

@@ -32,7 +32,7 @@ func TestSimpleUpdate(t *testing.T) {
 	dpresponse.PluginToken = "token"
 	test := httptest.New(t, mockApp)
 	attributes := map[string]interface{}{"ImageUri": "abc",
-		"Targets": []string{"/ODIM/v1/Systems/uuid:1"}}
+		"Targets": []string{"/ODIM/v1/Systems/uuid.1"}}
 	attributeByte, _ := json.Marshal(attributes)
 	requestBody := map[string]interface{}{
 		"ManagerAddress": fmt.Sprintf("%s:%s", deviceHost, devicePort),

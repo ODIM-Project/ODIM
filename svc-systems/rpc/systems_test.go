@@ -137,8 +137,8 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData := []byte(`\"@odata.id\":\"/redfsh/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot\"`)
-	err := mockResourceData(reqData, "SecureBoot", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot")
+	reqData := []byte(`\"@odata.id\":\"/redfsh/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot\"`)
+	err := mockResourceData(reqData, "SecureBoot", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -161,8 +161,8 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -173,8 +173,8 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -185,8 +185,8 @@ func TestSystems_GetSystemResource(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot1",
+					RequestParam: "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -214,8 +214,8 @@ func TestSystems_GetAllSystems(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData := []byte(`\"@odata.id\":\"/redfsh/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1\"`)
-	err := mockResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData := []byte(`\"@odata.id\":\"/redfsh/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
+	err := mockResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -278,8 +278,8 @@ func TestSystems_GetSystems(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	reqData := []byte(`\"@odata.id\":\"/redfsh/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1\"`)
-	err := mockResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData := []byte(`\"@odata.id\":\"/redfsh/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
+	err := mockResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
@@ -302,7 +302,7 @@ func TestSystems_GetSystems(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -313,7 +313,7 @@ func TestSystems_GetSystems(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.GetSystemsRequest{
-					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					URL:          "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -352,7 +352,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 			args: args{
 				req: &systemsproto.ComputerSystemResetRequest{
 					RequestBody:  []byte(`{"ResetType": "ForceRestart"}`),
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -364,7 +364,7 @@ func TestSystems_ComputerSystemReset(t *testing.T) {
 			args: args{
 				req: &systemsproto.ComputerSystemResetRequest{
 					RequestBody:  []byte(`{"ResetType": "ForceRestart"}`),
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -412,7 +412,7 @@ func TestSystems_SetDefaultBootOrder(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.DefaultBootOrderRequest{
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -423,7 +423,7 @@ func TestSystems_SetDefaultBootOrder(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.DefaultBootOrderRequest{
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -471,7 +471,7 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.BiosSettingsRequest{
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -482,7 +482,7 @@ func TestSystems_ChangeBiosSettings(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.BiosSettingsRequest{
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -530,7 +530,7 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.BootOrderSettingsRequest{
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -541,7 +541,7 @@ func TestSystems_ChangeBootOrderSettings(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.BootOrderSettingsRequest{
-					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -589,7 +589,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.VolumeRequest{
-					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "validToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -600,7 +600,7 @@ func TestSystems_CreateVolume(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.VolumeRequest{
-					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:     "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken: "invalidToken",
 				},
 				resp: &systemsproto.SystemsResponse{},
@@ -638,9 +638,9 @@ func TestSystems_DeleteVolume(t *testing.T) {
 	}
 	mockPluginClientData(t)
 	mockDeviceData("6d5a0a66-7efa-578e-83cf-44dc68d2874e", device1)
-	mockSystemData("/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e:1")
-	var reqData = `{"@odata.id":"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/1/Volumes/1"}`
-	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/1/Volumes/1")
+	mockSystemData("/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e.1")
+	var reqData = `{"@odata.id":"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/1/Volumes/1"}`
+	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/6d5a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/1/Volumes/1")
 
 	sys := new(Systems)
 	sys.IsAuthorizedRPC = mockIsAuthorized
@@ -662,7 +662,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.VolumeRequest{
-					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken:    "validToken",
 					StorageInstance: "1",
 					VolumeID:        "1",
@@ -677,7 +677,7 @@ func TestSystems_DeleteVolume(t *testing.T) {
 			s:    sys,
 			args: args{
 				req: &systemsproto.VolumeRequest{
-					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e:1",
+					SystemID:        "6d5a0a66-7efa-578e-83cf-44dc68d2874e.1",
 					SessionToken:    "invalidToken",
 					StorageInstance: "1",
 					VolumeID:        "1",

@@ -44,7 +44,7 @@ func TestChassisRPCs_GetChassisResource(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
 }
 func TestChassisRPCs_GetChassisResourceWithRPCError(t *testing.T) {
@@ -56,7 +56,7 @@ func TestChassisRPCs_GetChassisResourceWithRPCError(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -69,7 +69,7 @@ func TestChassisRPCs_GetChassisResourceWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).Expect().Status(http.StatusUnauthorized)
 }
 
@@ -141,10 +141,13 @@ func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
 	resp.Status(http.StatusBadRequest)
 	resp.JSON().Schema(redfishErrorSchema)
 	resp.Headers().Equal(map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Content-Type":    {"application/json; charset=utf-8"},
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache"},
+		"Transfer-Encoding":      {"chunked"},
 	})
 }
 
@@ -165,10 +168,13 @@ func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
 	resp.Status(http.StatusInternalServerError)
 	resp.JSON().Schema(redfishErrorSchema)
 	resp.Headers().Equal(map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Content-Type":    {"application/json; charset=utf-8"},
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache"},
+		"Transfer-Encoding":      {"chunked"},
 	})
 }
 
@@ -197,10 +203,14 @@ func TestChassisRPCs_CreateChassis(t *testing.T) {
 	resp.Status(http.StatusOK)
 	resp.Body().Contains(string(expectedRPCResponse.Body))
 	resp.Headers().Equal(map[string][]string{
-		"Connection":      {"keep-alive"},
-		"Odata-Version":   {"4.0"},
-		"X-Frame-Options": {"sameorigin"},
-		"Location":        {"/redfish/odim/blebleble"},
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache"},
+		"Transfer-Encoding":      {"chunked"},
+		"Location":               {"/redfish/odim/blebleble"},
 	})
 }
 func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
@@ -212,7 +222,7 @@ func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
     "message": "An error has occurred. See ExtendedInfo for more information.",
     "@Message.ExtendedInfo": [
       {
-        "@odata.type": "#Message.v1_0_8.Message",
+        "@odata.type": "#Message.v1_1_2.Message",
         "MessageId": "` + errorResponse.MalformedJSON + `",
         "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
         "Severity": "Critical",

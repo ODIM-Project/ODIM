@@ -1,7 +1,6 @@
 {
 	"RootServiceUUID": "",
 	"LocalhostFQDN": "",
-	"MessageQueueConfigFilePath": "",
 	"SearchAndFilterSchemaPath": "",
 	"RegistryStorePath": "",
 	"KeyCertConf": {
@@ -17,6 +16,11 @@
 		"PrivateKeyPath": "",
 		"CertificatePath": ""
 	},
+	"MessageBusConf": {
+		"MessageQueueConfigFilePath": "",
+	  	"MessageBusType": "Kafka",
+		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	},
 	"DBConf": {
 		"Protocol": "tcp",
 		"InMemoryHost": "localhost",
@@ -28,8 +32,8 @@
 		"RedisHAEnabled": false,
 		"InMemorySentinelPort": "26379",
 		"OnDiskSentinelPort": "26379",
-		"InMemoryMasterSet": "mymaster",
-		"OnDiskMasterSet": "mymaster"
+		"InMemoryPrimarySet": "redisSentinel",
+		"OnDiskPrimarySet": "redisSentinel"
 	},
 	"TLSConf" : {
 		"MinVersion": "TLS_1.2",
@@ -120,13 +124,13 @@
          "ConnectionMethodType": "Redfish",
          "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
       },
-      {
-         "ConnectionMethodType": "Redfish",
-         "ConnectionMethodVariant": "Storage:BasicAuth:STG_v1.0.0"
-      },
 	  {
 		  "ConnectionMethodType": "Redfish",
 		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
 	  }
-   ]
+  ],
+  "EventConf": {
+		"DeliveryRetryAttempts" : 3,
+		"DeliveryRetryIntervalSeconds" : 60,
+  }
 }

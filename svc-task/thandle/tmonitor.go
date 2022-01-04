@@ -38,13 +38,7 @@ import (
 func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
 	var rsp taskproto.TaskResponse
 	rsp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Date":              time.Now().Format(http.TimeFormat),
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Date": time.Now().Format(http.TimeFormat),
 	}
 	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
@@ -100,7 +94,7 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_5_0.Task",
+		OdataType:    "#Task.v1_5_1.Task",
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

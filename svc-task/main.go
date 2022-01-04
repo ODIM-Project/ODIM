@@ -43,10 +43,9 @@ func main() {
 
 	config.CollectCLArgs()
 
-	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
-
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}

@@ -63,13 +63,7 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
-		"Content-type":  "application/json; charset=utf-8",
 		"Link": "	</redfish/v1/SchemaStore/en/UpdateService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -113,14 +107,6 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 // resources from the added BMC's
 func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	firmwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
 		OdataID:      "/redfish/v1/UpdateService/FirmwareInventory",
@@ -153,16 +139,8 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
-	requestData := strings.Split(req.ResourceID, ":")
+	requestData := strings.Split(req.ResourceID, ".")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.ResourceID}, nil)
@@ -206,14 +184,6 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 // resources from the added BMC's
 func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	softwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
 		OdataID:      "/redfish/v1/UpdateService/SoftwareInventory",
@@ -246,16 +216,8 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
-	requestData := strings.Split(req.ResourceID, ":")
+	requestData := strings.Split(req.ResourceID, ".")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.ResourceID}, nil)

@@ -1021,7 +1021,7 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
     {
        "@odata.context":"/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
          	   "@odata.id":"/redfish/v1/",
-         	   "@odata.type":"#ServiceRoot.v1_5_0.ServiceRoot",
+         	   "@odata.type":"#ServiceRoot.v1_11_0.ServiceRoot",
          	   "Id":"RootService",
          	   "Registries":{
          	   "@odata.id":"/redfish/v1/Registries"
@@ -1616,7 +1616,7 @@ The plugin you want to add is successfully deployed.
            "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
            "@odata.etag":"W/\"AA6D42B0\"",
            "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
-           "@odata.type":"#Manager.v1_3_3.Manager",
+           "@odata.type":"#Manager.v1_13_0.Manager",
            "FirmwareVersion":"1.0",
            "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
            "ManagerType":"Service",

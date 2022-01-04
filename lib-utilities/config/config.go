@@ -35,11 +35,11 @@ type configModel struct {
 	ServerRediscoveryBatchSize     int                      `json:"ServerRediscoveryBatchSize"`
 	FirmwareVersion                string                   `json:"FirmwareVersion"`
 	RootServiceUUID                string                   `json:"RootServiceUUID"` //static uuid used for root service
-	MessageQueueConfigFilePath     string                   `json:"MessageQueueConfigFilePath"`
 	SearchAndFilterSchemaPath      string                   `json:"SearchAndFilterSchemaPath"`
 	RegistryStorePath              string                   `json:"RegistryStorePath"`
 	LocalhostFQDN                  string                   `json:"LocalhostFQDN"`
 	EnabledServices                []string                 `json:"EnabledServices"`
+	MessageBusConf                 *MessageBusConf          `json:"MessageBusConf"`
 	DBConf                         *DBConf                  `json:"DBConf"`
 	KeyCertConf                    *KeyCertConf             `json:"KeyCertConf"`
 	AuthConf                       *AuthConf                `json:"AuthConf"`
@@ -51,6 +51,7 @@ type configModel struct {
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
+	EventConf                      *EventConf               `json:"EventConf"`
 }
 
 // DBConf holds all DB related configurations
@@ -65,8 +66,15 @@ type DBConf struct {
 	RedisHAEnabled       bool   `json:"RedisHAEnabled"`
 	InMemorySentinelPort string `json:"InMemorySentinelPort"`
 	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
-	InMemoryMasterSet    string `json:"InMemoryMasterSet"`
-	OnDiskMasterSet      string `json:"OnDiskMasterSet"`
+	InMemoryPrimarySet   string `json:"InMemoryPrimarySet"`
+	OnDiskPrimarySet     string `json:"OnDiskPrimarySet"`
+}
+
+// MessageBusConf holds all message bus configurations
+type MessageBusConf struct {
+	MessageQueueConfigFilePath string   `json:"MessageQueueConfigFilePath"`
+	MessageBusType             string   `json:"MessageBusType"`
+	MessageBusQueue            []string `json:"MessageBusQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -151,6 +159,13 @@ type ConnectionMethodConf struct {
 	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
 }
 
+// EventConf stores all inforamtion related to event delivery configurations
+type EventConf struct {
+	DeliveryRetryAttempts                 int `json:"DeliveryRetryAttempts"`                 // holds value of retrying event posting to destination
+	DeliveryRetryIntervalSeconds          int `json:"DeliveryRetryIntervalSeconds"`          // holds value of retrying events posting in interval
+	RetentionOfUndeliveredEventsInMinutes int `json:"RetentionOfUndeliveredEventsInMinutes"` // holds value of how long we can retain the events
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
@@ -181,6 +196,9 @@ func ValidateConfiguration() error {
 	if err = checkDBConf(); err != nil {
 		return err
 	}
+	if err = checkMessageBusConf(); err != nil {
+		return err
+	}
 	if err = checkKeyCertConf(); err != nil {
 		return err
 	}
@@ -191,6 +209,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkConnectionMethodConf(); err != nil {
+		return err
+	}
+	if err = checkEventConf(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -215,9 +236,6 @@ func checkMiscellaneousConf() error {
 	}
 	if Data.LocalhostFQDN == "" {
 		return fmt.Errorf("error: no value set for localhostFQDN")
-	}
-	if _, err := os.Stat(Data.MessageQueueConfigFilePath); err != nil {
-		return fmt.Errorf("error: value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageQueueConfigFilePath, err)
 	}
 	if _, err := os.Stat(Data.SearchAndFilterSchemaPath); err != nil {
 		return fmt.Errorf("error: value check failed for SearchAndFilterSchemaPath:%s with %v", Data.SearchAndFilterSchemaPath, err)
@@ -270,6 +288,29 @@ func checkDBConf() error {
 	return nil
 }
 
+func checkMessageBusConf() error {
+	if Data.MessageBusConf == nil {
+		return fmt.Errorf("error: MessageBusConf is not provided")
+	}
+	if Data.MessageBusConf.MessageBusType == "" {
+		log.Warn("No value set for MessageBusType, setting default value")
+		Data.MessageBusConf.MessageBusType = "Kafka"
+	}
+	if Data.MessageBusConf.MessageBusType == "Kafka" {
+		if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+			return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
+		}
+		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
+			log.Warn("No value set for MessageBusQueue, setting default value")
+			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+		}
+	}
+	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
+		return fmt.Errorf("error: invalid value configured for MessageBusType")
+	}
+	return nil
+}
+
 func checkDBHAConf() error {
 	if Data.DBConf.InMemorySentinelPort == "" {
 		return fmt.Errorf("error: no value configured for DB InMemorySentinelPort")
@@ -277,11 +318,11 @@ func checkDBHAConf() error {
 	if Data.DBConf.OnDiskSentinelPort == "" {
 		return fmt.Errorf("error: no value configured for DB OnDiskSentinelPort")
 	}
-	if Data.DBConf.InMemoryMasterSet == "" {
-		return fmt.Errorf("error: no value configured for DB InMemoryMasterSet")
+	if Data.DBConf.InMemoryPrimarySet == "" {
+		return fmt.Errorf("error: no value configured for DB InMemoryPrimarySet")
 	}
-	if Data.DBConf.OnDiskMasterSet == "" {
-		return fmt.Errorf("error: no value configured for DB OnDiskMasterSet")
+	if Data.DBConf.OnDiskPrimarySet == "" {
+		return fmt.Errorf("error: no value configured for DB OnDiskPrimarySet")
 	}
 	return nil
 }
@@ -530,4 +571,24 @@ func checkConnectionMethodConf() error {
 		return fmt.Errorf("error: ConnectionMethodConf is not provided")
 	}
 	return err
+}
+
+func checkEventConf() error {
+	if Data.EventConf == nil {
+		log.Warn("EventConf not provided, setting default value")
+		Data.EventConf = &EventConf{
+			DeliveryRetryAttempts:        DefaultDeliveryRetryAttempts,
+			DeliveryRetryIntervalSeconds: DefaultDeliveryRetryIntervalSeconds,
+		}
+		return nil
+	}
+	if Data.EventConf.DeliveryRetryAttempts <= 0 {
+		log.Warn("No value found for DeliveryRetryAttempts, setting default value")
+		Data.EventConf.DeliveryRetryAttempts = DefaultDeliveryRetryAttempts
+	}
+	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
+		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
+		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
+	}
+	return nil
 }

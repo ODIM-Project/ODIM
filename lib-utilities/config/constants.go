@@ -90,6 +90,12 @@ const (
 	DefaultTLSMaxVersion = tls.VersionTLS12
 	// DefaultTLSServerVerify - indicator for performing server validation
 	DefaultTLSServerVerify = true
+	// DefaultDeliveryRetryAttempts - default DeliveryRetryAttempts value
+	DefaultDeliveryRetryAttempts = 3
+	// DefaultDeliveryRetryIntervalSeconds - default DeliveryRetryIntervalSeconds value
+	DefaultDeliveryRetryIntervalSeconds = 60
+	// DefaultRetentionOfUndeliveredEventsInMinutes - default RetentionOfUndeliveredEventsInMinutes value
+	DefaultRetentionOfUndeliveredEventsInMinutes = 10
 )
 
 var (
@@ -142,3 +148,9 @@ var (
 		"TLS_1.2": tls.VersionTLS12,
 	}
 )
+
+// AllowedMessageBusTypes is for checking for message types are allowed
+var AllowedMessageBusTypes = map[string]bool{
+	"Kafka":       true,
+	"RedisStreams": true,
+}

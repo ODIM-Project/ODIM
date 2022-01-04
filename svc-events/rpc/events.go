@@ -23,25 +23,56 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/events"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
 //Events struct helps to register service
 type Events struct {
-	ContactClientRPC      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
-	GetSessionUserNameRPC func(sessionToken string) (string, error)
-	CreateTaskRPC         func(string) (string, error)
-	UpdateTaskRPC         func(task common.TaskData) error
-	CreateChildTaskRPC    func(sessionid, taskid string) (string, error)
+	Connector *events.PluginContact
 }
 
+// GetPluginContactInitializer intializes all the required connection functions for the events execution
+func GetPluginContactInitializer() *Events {
+	connector := &events.PluginContact{
+		ContactClient:                    pmbhandle.ContactPlugin,
+		Auth:                             services.IsAuthorized,
+		CreateTask:                       services.CreateTask,
+		UpdateTask:                       events.UpdateTaskData,
+		CreateChildTask:                  services.CreateChildTask,
+		GetSessionUserName:               services.GetSessionUserName,
+		GetEvtSubscriptions:              evmodel.GetEvtSubscriptions,
+		SaveEventSubscription:            evmodel.SaveEventSubscription,
+		GetPluginData:                    evmodel.GetPluginData,
+		GetDeviceSubscriptions:           evmodel.GetDeviceSubscriptions,
+		GetTarget:                        evmodel.GetTarget,
+		GetAllKeysFromTable:              evmodel.GetAllKeysFromTable,
+		GetAllFabrics:                    evmodel.GetAllFabrics,
+		GetAllMatchingDetails:            evmodel.GetAllMatchingDetails,
+		UpdateDeviceSubscriptionLocation: evmodel.UpdateDeviceSubscriptionLocation,
+		GetFabricData:                    evmodel.GetFabricData,
+		DeleteEvtSubscription:            evmodel.DeleteEvtSubscription,
+		UpdateEventSubscription:          evmodel.UpdateEventSubscription,
+		DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
+		SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
+		SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
+		GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
+		GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
+		SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
+		DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
+	}
+	return &Events{
+		Connector: connector,
+	}
+}
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
@@ -56,20 +87,13 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 
 	// Fill the response header first
 	resp.Header = map[string]string{
-		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
-		"Connection":        "Keep-alive",
-		"Link":              "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
+		"Link": "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
 	}
 	// Validate the token, if user has Login privelege then proceed.
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp := e.IsAuthorizedRPC(req.SessionToken, privileges, oemprivileges)
+	authResp := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session: status code: " + string(authResp.StatusCode) +
 			", status message: " + authResp.StatusMessage)
@@ -113,8 +137,8 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 			},
 			Oem: evresponse.Oem{},
 		},
-		DeliveryRetryAttempts:        evcommon.DeliveryRetryAttempts,
-		DeliveryRetryIntervalSeconds: evcommon.DeliveryRetryIntervalSeconds,
+		DeliveryRetryAttempts:        config.Data.EventConf.DeliveryRetryAttempts,
+		DeliveryRetryIntervalSeconds: config.Data.EventConf.DeliveryRetryIntervalSeconds,
 		EventFormatTypes:             []string{"Event"},
 		EventTypesForSubscription: []string{
 			"StatusChange",
@@ -165,15 +189,8 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	var resp eventsproto.EventSubResponse
 	var err error
 	var taskID string
-	pc := events.PluginContact{
-		ContactClient:      e.ContactClientRPC,
-		Auth:               e.IsAuthorizedRPC,
-		UpdateTask:         e.UpdateTaskRPC,
-		CreateChildTask:    e.CreateChildTaskRPC,
-		GetSessionUserName: e.GetSessionUserNameRPC,
-	}
 	// Athorize the request here
-	authResp := e.IsAuthorizedRPC(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session: status code: " +
 			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
@@ -181,7 +198,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = authResp.StatusCode
 		return &resp, nil
 	}
-	sessionUserName, err := pc.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.Connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while trying to get the session username: " + err.Error()
 		resp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
@@ -191,16 +208,13 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	}
 	// Create the task and get the taskID
 	// Contact Task Service using RPC and get the taskID
-	taskURI, err := e.CreateTaskRPC(sessionUserName)
+	taskURI, err := e.Connector.CreateTask(sessionUserName)
 	if err != nil {
 		// print err here as we are unbale to contact svc-task service
 		errorMessage := "error while trying to create the task: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error   headers
-		}
 		log.Error(errorMessage)
 		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
@@ -211,12 +225,11 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		taskID = strArray[len(strArray)-1]
 	}
 	//Spawn the thread to process the action asynchronously
-	go pc.CreateEventSubscription(taskID, sessionUserName, req)
+	go e.Connector.CreateEventSubscription(taskID, sessionUserName, req)
 	// Return 202 accepted
 	resp.StatusCode = http.StatusAccepted
 	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
-		"Location":     "/taskmon/" + taskID,
+		"Location": "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted
 	generateTaskRespone(taskID, taskURI, &resp)
@@ -229,13 +242,7 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient:      e.ContactClientRPC,
-		Auth:               e.IsAuthorizedRPC,
-		GetSessionUserName: e.GetSessionUserNameRPC,
-	}
-
-	data := pc.SubmitTestEvent(req)
+	data := e.Connector.SubmitTestEvent(req)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
@@ -256,12 +263,7 @@ func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubR
 func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
-
-	data := pc.GetEventSubscriptionsCollection(req)
+	data := e.Connector.GetEventSubscriptionsCollection(req)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
@@ -284,12 +286,7 @@ func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *event
 func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
-
-	data := pc.GetEventSubscriptionsDetails(req)
+	data := e.Connector.GetEventSubscriptionsDetails(req)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
@@ -312,17 +309,13 @@ func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.Even
 func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
 	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
 	var data response.RPC
 	if req.UUID == "" {
 		// Delete Event Subscription when admin requested
-		data = pc.DeleteEventSubscriptionsDetails(req)
+		data = e.Connector.DeleteEventSubscriptionsDetails(req)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
-		data = pc.DeleteEventSubscriptions(req)
+		data = e.Connector.DeleteEventSubscriptions(req)
 	}
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
@@ -343,11 +336,7 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 // after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
 func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *eventsproto.DefaultEventSubRequest) (*eventsproto.DefaultEventSubResponse, error) {
 	var resp eventsproto.DefaultEventSubResponse
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
-	pc.CreateDefaultEventSubscription(req.SystemID, req.EventTypes, req.MessageIDs, req.ResourceTypes, req.Protocol)
+	e.Connector.CreateDefaultEventSubscription(req.SystemID, req.EventTypes, req.MessageIDs, req.ResourceTypes, req.Protocol)
 	return &resp, nil
 }
 

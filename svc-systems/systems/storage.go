@@ -62,7 +62,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -160,11 +160,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
-	}
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -216,7 +212,7 @@ func (e *ExternalInterface) validateProperties(request *smodel.Volume, systemID 
 			if err != nil {
 				log.Error(err.Error())
 				if errors.DBKeyNotFound == err.ErrNo() {
-					requestData := strings.Split(systemID, ":")
+					requestData := strings.SplitN(systemID, ".", 2)
 					var getDeviceInfoRequest = scommon.ResourceInfoRequest{
 						URL:             driveURI,
 						UUID:            requestData[0],
@@ -294,7 +290,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) != 2 || requestData[1] == "" {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -397,7 +393,6 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
 	}
 
@@ -409,9 +404,6 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Volumes", key}, nil)
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-	}
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
 	}
 
 	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo

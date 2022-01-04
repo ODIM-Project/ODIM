@@ -37,14 +37,6 @@ import (
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
 func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	managers := mgrresponse.ManagersCollection{
 		OdataContext: "/redfish/v1/$metadata#ManagerCollection.ManagerCollection",
 		OdataID:      "/redfish/v1/Managers",
@@ -73,15 +65,6 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 // GetManagers will fetch individual manager details with the given ID
 func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
 	if req.ManagerID == config.Data.RootServiceUUID {
 		manager, err := e.getManagerDetails(req.ManagerID)
 		if err != nil {
@@ -95,7 +78,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		resp.Body = manager
 	} else {
 
-		requestData := strings.Split(req.ManagerID, ":")
+		requestData := strings.SplitN(req.ManagerID, ".", 2)
 		if len(requestData) <= 1 {
 			resp = e.getPluginManagerResoure(requestData[0], req.URL)
 			return resp
@@ -215,16 +198,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
-	requestData := strings.Split(req.ManagerID, ":")
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	if len(requestData) <= 1 {
 		resp = e.getPluginManagerResoure(requestData[0], req.URL)
 		return resp
@@ -312,7 +286,7 @@ func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerReques
 		}
 	}
 	// splitting managerID to get uuid
-	requestData := strings.Split(req.ManagerID, ":")
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
 	resp = e.deviceCommunication(req.URL, uuid, requestData[1], http.MethodPost, requestBody)
 
@@ -405,20 +379,17 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	}
 	req.OID = reqURI
 	var errorMessage = "unable to get the details " + reqURI + ": "
-	var header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	body, _, getResponse, err := mgrcommon.ContactPlugin(req, errorMessage)
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
 			if body, _, getResponse, err = mgrcommon.RetryManagersOperation(req, errorMessage); err != nil {
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal(body, &resp.Body)
-				resp.Header = header
 				return resp
 			}
 		} else {
 			resp.StatusCode = getResponse.StatusCode
 			json.Unmarshal(body, &resp.Body)
-			resp.Header = header
 			return resp
 		}
 	}
@@ -441,14 +412,6 @@ func fillResponse(body []byte) response.RPC {
 			[]interface{}{}, nil)
 	}
 	resp.Body = respData
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp

@@ -26,30 +26,42 @@ import (
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 	"github.com/stretchr/testify/assert"
 )
 
-func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) response.RPC {
-	if sessionToken != "validToken" && sessionToken != "token" {
-		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, "", nil, nil)
+func getMockMethods() PluginContact {
+	return PluginContact{
+		ContactClient:                    evcommon.MockContactClient,
+		Auth:                             evcommon.MockIsAuthorized,
+		CreateChildTask:                  evcommon.MockCreateChildTask,
+		UpdateTask:                       evcommon.MockUpdateTask,
+		GetSessionUserName:               evcommon.MockGetSessionUserName,
+		GetTarget:                        evcommon.MockGetTarget,
+		GetPluginData:                    evcommon.MockGetPluginData,
+		GetFabricData:                    evcommon.MockGetFabricData,
+		GetEvtSubscriptions:              evcommon.MockGetEvtSubscriptions,
+		GetDeviceSubscriptions:           evcommon.MockGetDeviceSubscriptions,
+		SaveEventSubscription:            evcommon.MockSaveEventSubscription,
+		UpdateEventSubscription:          evcommon.MockUpdateEventSubscription,
+		DeleteDeviceSubscription:         evcommon.MockDeleteDeviceSubscription,
+		DeleteEvtSubscription:            evcommon.MockDeleteEvtSubscription,
+		UpdateDeviceSubscriptionLocation: evcommon.MockUpdateDeviceSubscriptionLocation,
+		GetAllKeysFromTable:              evcommon.MockGetAllKeysFromTable,
+		GetAllFabrics:                    evcommon.MockGetAllFabrics,
+		GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
+		SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
+		SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
+		GetUndeliveredEvents:             evcommon.MockGetUndeliveredEvents,
+		GetUndeliveredEventsFlag:         evcommon.MockGetUndeliveredEventsFlag,
+		SetUndeliveredEventsFlag:         evcommon.MockSetUndeliveredEventsFlag,
+		DeleteUndeliveredEventsFlag:      evcommon.MockDeleteUndeliveredEventsFlag,
 	}
-	return common.GeneralError(http.StatusOK, response.Success, "", nil, nil)
 }
-
 func TestGetEventSubscriptionsCollection(t *testing.T) {
 	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
-	pc := PluginContact{
-		Auth: mockIsAuthorized,
-	}
+	pc := getMockMethods()
 	req := &eventsproto.EventRequest{
 		SessionToken: "validToken",
 	}
@@ -58,7 +70,7 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 	resp := pc.GetEventSubscriptionsCollection(req)
 	data := resp.Body.(evresponse.ListResponse)
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
-	assert.Equal(t, 8, data.MembersCount, "MembersCount should be 8")
+	assert.Equal(t, 1, data.MembersCount, "MembersCount should be 1")
 
 	// Negative test cases
 	// Invalid token
@@ -72,16 +84,7 @@ func TestGetEventSubscriptionsCollection(t *testing.T) {
 
 func TestGetEventSubscription(t *testing.T) {
 	common.SetUpMockConfig()
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	storeTestEventDetails(t)
-	pc := PluginContact{
-		Auth: mockIsAuthorized,
-	}
+	pc := getMockMethods()
 
 	// positive test case
 	req := &eventsproto.EventRequest{
@@ -93,7 +96,7 @@ func TestGetEventSubscription(t *testing.T) {
 	assert.Equal(t, http.StatusOK, int(resp.StatusCode), "Status Code should be StatusOK")
 	assert.Equal(t, "81de0110-c35a-4859-984c-072d6c5a32d7", data.Response.ID, "ID should be 1")
 	assert.Equal(t, "Subscription", data.Response.Name, "Name should be Subscription")
-	assert.Equal(t, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1", data.OriginResources[0].OdataID, " OdataID should be same /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	assert.Equal(t, "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1", data.OriginResources[0].OdataID, " OdataID should be same /redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 
 	// Negative test cases
 	// Invalid token
@@ -103,7 +106,11 @@ func TestGetEventSubscription(t *testing.T) {
 	resp = pc.GetEventSubscriptionsDetails(req1)
 	assert.Equal(t, http.StatusUnauthorized, int(resp.StatusCode), "Status Code should be StatusUnauthorized")
 
-	common.TruncateDB(common.OnDisk)
+	// invalid subscription id
+	req = &eventsproto.EventRequest{
+		SessionToken:        "validToken",
+		EventSubscriptionID: "1234",
+	}
 	resp = pc.GetEventSubscriptionsDetails(req)
 	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status Code should be StatusNotFound")
 

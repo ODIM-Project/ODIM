@@ -45,16 +45,8 @@ type PluginContact struct {
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetChassisResource(req *chassisproto.GetChassisRequest) (response.RPC, error) {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"Chassis", req.RequestParam}, nil), nil

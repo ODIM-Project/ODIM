@@ -722,7 +722,27 @@ func TestGetUndeliveredEvents(t *testing.T) {
 
 	eventData, err := GetUndeliveredEvents("destination")
 	assert.Nil(t, err, "error should be nil")
-	assert.Equal(t, 1, len(eventData), "there should be event data")
+	assert.Equal(t, string(eventData), eventData, "there should be event data")
+}
+
+func TestDeleteUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+
+	err := DeleteUndeliveredEvents("destination")
+	assert.Nil(t, err, "error should be nil")
+
+	_, err = GetUndeliveredEvents("destination")
+	assert.NotNil(t, err, "error should not be nil")
 }
 
 func TestSetUndeliveredEventsFlag(t *testing.T) {

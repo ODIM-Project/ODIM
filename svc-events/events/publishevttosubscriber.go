@@ -324,8 +324,10 @@ func (p *PluginContact) postEvent(destination, eventUniqueID string, event []byt
 	if err == nil {
 		resp.Body.Close()
 		log.Printf("event post response: %v", resp)
-		// check any undelivered events are present in db for the destination and publish those
-		go p.checkUndeliveredEvents(destination)
+		if evcommon.SaveUndeliveredEventsFlag {
+			// check any undelivered events are present in db for the destination and publish those
+			go p.checkUndeliveredEvents(destination)
+		}
 		return
 	}
 	if evcommon.SaveUndeliveredEventsFlag {
@@ -369,8 +371,10 @@ func (p *PluginContact) reAttemptEvents(destination string, event []byte) {
 		if err == nil {
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
-			// check any undelivered events are present in db for the destination and publish those
-			go p.checkUndeliveredEvents(destination)
+			if evcommon.SaveUndeliveredEventsFlag {
+				// check any undelivered events are present in db for the destination and publish those
+				go p.checkUndeliveredEvents(destination)
+			}
 			return
 		}
 		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
@@ -513,17 +517,32 @@ func (p *PluginContact) checkUndeliveredEvents(destination string) {
 		if err != nil {
 			log.Error("error while setting undelivered events flag: ", err.Error())
 		}
-		events, err := p.GetUndeliveredEvents(destination)
+		destData, err := p.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
 		if err != nil {
-			log.Error("error while getting undelivered events flag: ", err.Error())
+			log.Error("error while getting all matching details: ", err.Error())
 		}
-		for _, event := range events {
+		for _, dest := range destData {
+			event, err := p.GetUndeliveredEvents(dest)
+			if err != nil {
+				log.Error("error while getting undelivered events: ", err.Error())
+				continue
+			}
+			event = strings.Replace(event, "\\", "", -1)
+			event = strings.TrimPrefix(event, "\"")
+			event = strings.TrimSuffix(event, "\"")
+			log.Info("Undelivered Events", event)
 			resp, err := sendEvent(destination, []byte(event))
 			if err != nil {
 				log.Error("error while make https call to send the event: ", err.Error())
+				resp.Body.Close()
+				continue
 			}
 			resp.Body.Close()
 			log.Printf("event post response: %v", resp)
+			err = p.DeleteUndeliveredEvents(dest)
+			if err != nil {
+				log.Error("error while deleting undelivered events: ", err.Error())
+			}
 		}
 		// handle logic if inter connection fails
 		derr := p.DeleteUndeliveredEventsFlag(destination)

@@ -489,19 +489,31 @@ func SaveUndeliveredEvents(key string, event []byte) error {
 	return nil
 }
 
-// GetUndeliveredEvents read all the undelivered events for the destination
-func GetUndeliveredEvents(destination string) ([]string, error) {
+// GetUndeliveredEvents read the undelivered events for the destination
+func GetUndeliveredEvents(destination string) (string, error) {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
-		return []string{}, fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+		return "", fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
 	}
 
-	eventData, err := conn.GetAllMatchingDetails(UndeliveredEvents, destination)
+	eventData, err := conn.Read(UndeliveredEvents, destination)
 	if err != nil {
-		return []string{}, fmt.Errorf("error: while trying to fetch details: %v", err.Error())
+		return "", fmt.Errorf("error: while trying to fetch details: %v", err.Error())
 	}
 
 	return eventData, nil
+}
+
+// DeleteUndeliveredEvents deletes the undelivered events for the destination
+func DeleteUndeliveredEvents(destination string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+	}
+	if err := conn.Delete(UndeliveredEvents, destination); err != nil {
+		return fmt.Errorf("%v", err.Error())
+	}
+	return nil
 }
 
 // SetUndeliveredEventsFlag will set the flag to maintain one instance already picked up

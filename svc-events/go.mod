@@ -7,6 +7,7 @@ require (
 	github.com/ODIM-Project/ODIM/lib-rest-client v0.0.0-20201201072448-9772421f1b55
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f
+	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
 	gopkg.in/go-playground/validator.v9 v9.30.0
@@ -57,14 +58,12 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/ryanuber/columnize v2.1.0+incompatible // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/segmentio/kafka-go v0.3.5 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect

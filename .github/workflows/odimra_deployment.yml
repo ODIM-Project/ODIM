@@ -152,8 +152,13 @@ jobs:
         cat kube_deploy_nodes.yaml
         echo
         
-        
+        echo "Restarting docker"
         sudo rm -rf  /var/lib/docker
+        sudo systemctl enable docker
+        
+        sudo systemctl start docker
+        
+        echo "Restarted docker"
         
         
 

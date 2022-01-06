@@ -19,6 +19,11 @@ jobs:
         
         sudo systemctl status docker.service
         
+        sudo service docker reload
+        sudo service docker status
+        
+        exit
+        
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo
         

@@ -193,7 +193,13 @@ jobs:
                 count=$((count+1))
         done
         kubectl get pods -n odim -o wide
-        echo
+        echo "============Checking Node status================"
+        
+        kubectl get node -o wide 
+        
+        echo "===========Checking for services=============="
+        
+        kubectl get svc -n odim
            
            
         echo "$VM_IP"

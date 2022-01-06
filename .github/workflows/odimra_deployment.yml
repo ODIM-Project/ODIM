@@ -19,10 +19,11 @@ jobs:
         
         sudo systemctl status docker.service
         
+        echo "=========reloading docker ================"
         sudo service docker reload
+        echo "=========checking docker status================"
         sudo service docker status
         
-        exit
         
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
         echo
@@ -157,13 +158,7 @@ jobs:
         cat kube_deploy_nodes.yaml
         echo
         
-        echo "Restarting docker"
-        sudo rm -rf  /var/lib/docker
-        sudo systemctl enable docker
         
-        sudo systemctl start docker
-        
-        echo "Restarted docker"
         
         
 

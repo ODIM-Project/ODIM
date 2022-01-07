@@ -167,6 +167,8 @@ jobs:
         
         cat main.yml
         cd ${ODIM_CONTROLLER_PATH}/kubespray
+        tar -cvzf kubespray-2.17.0.tar.gz kubespray-2.17.0
+      
         rm -rf kubespray-2.17.0
         
         ls

@@ -40,23 +40,23 @@ var (
 	CtrlMsgProcQueue <-chan interface{}
 )
 
-// KafkaSubscriber consume messages from PMB
-func KafkaSubscriber(event interface{}) {
+// EventSubscriber consume messages from PMB
+func EventSubscriber(event interface{}) {
 	byteData, _ := json.Marshal(&event)
-	var kafkaMessage common.Events
+	var message common.Events
 
-	err := json.Unmarshal(byteData, &kafkaMessage)
+	err := json.Unmarshal(byteData, &message)
 	if err != nil {
 		log.Error("error while unmarshaling the event" + err.Error())
 		return
 	}
-	writeEventToJobQueue(kafkaMessage)
+	writeEventToJobQueue(message)
 }
 
 // writeEventToJobQueue align events to job queue
-func writeEventToJobQueue(kafkaMessage common.Events) {
+func writeEventToJobQueue(message common.Events) {
 	// events contains a slice of event subscribed from kafka
-	events := []interface{}{kafkaMessage}
+	events := []interface{}{message}
 	go func() {
 		// Wait for the write workers to finish writing to
 		// In buffer and clear the memory assigned to the data
@@ -78,8 +78,8 @@ func writeEventToJobQueue(kafkaMessage common.Events) {
 		}
 		// empty the slice passed to RunWriteWorkers for GC
 		events = nil
-		// empty the slice in the passed kafkaMessage data for GC
-		kafkaMessage.Request = nil
+		// empty the slice in the passed message data for GC
+		message.Request = nil
 		ticker.Stop()
 		close(done)
 	}()
@@ -90,15 +90,16 @@ func writeEventToJobQueue(kafkaMessage common.Events) {
 func Consume(topicName string) {
 	config.TLSConfMutex.RLock()
 	messageQueueConfigFilePath := config.Data.MessageBusConf.MessageQueueConfigFilePath
+	messagebusType := config.Data.MessageBusConf.MessageBusType
 	config.TLSConfMutex.RUnlock()
 	// connecting to kafka
-	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath, topicName)
+	k, err := dc.Communicator(messagebusType, messageQueueConfigFilePath, topicName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return
 	}
 	// subscribe from message bus
-	if err := k.Accept(KafkaSubscriber); err != nil {
+	if err := k.Accept(EventSubscriber); err != nil {
 		log.Error(err.Error())
 		return
 	}
@@ -109,9 +110,10 @@ func Consume(topicName string) {
 func SubscribeCtrlMsgQueue(topicName string) {
 	config.TLSConfMutex.RLock()
 	messageQueueConfigFilePath := config.Data.MessageBusConf.MessageQueueConfigFilePath
+	messagebusType := config.Data.MessageBusConf.MessageBusType
 	config.TLSConfMutex.RUnlock()
-	// connecting to kafka
-	k, err := dc.Communicator(dc.KAFKA, messageQueueConfigFilePath, topicName)
+	// connecting to messagbus
+	k, err := dc.Communicator(messagebusType, messageQueueConfigFilePath, topicName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

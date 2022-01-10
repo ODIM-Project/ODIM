@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -76,6 +77,39 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 
 // Accept implmentation need to be added
 func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
+	redisClient := getDBConnection()
+	var id = uuid.NewV4().String()
+	rerr := redisClient.XGroupCreateMkStream(context.Background(),
+		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
+	if rerr != nil {
+		log.Error("Unable to create the group ", rerr)
+	}
+
+	// create a unique consumer id for the  instance
+
+	go func() {
+		for {
+			events, err := redisClient.XReadGroup(context.Background(),
+				&redis.XReadGroupArgs{
+					Group:    EVENTREADERGROUPNAME,
+					Consumer: id,
+					Count:    1,
+					Streams:  []string{rp.pipe, ">"},
+				}).Result()
+			if err != nil {
+				log.Error("Unable to get data from the group ", err)
+			} else {
+
+				if len(events) > 0 && len(events[0].Messages) > 0 {
+					evtStr := events[0].Messages[0].Values["data"].(string)
+					var evt interface{}
+					Decode([]byte(evtStr), &evt)
+					fn(evt)
+					//TODO ack msg
+				}
+			}
+		}
+	}()
 	return nil
 }
 

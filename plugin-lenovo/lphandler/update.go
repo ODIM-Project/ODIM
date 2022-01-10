@@ -72,7 +72,7 @@ func SimpleUpdate(ctx iris.Context) {
 		operationApplyTime = requestBody["@Redfish.OperationApplyTime"].(string)
 	}
 	if operationApplyTime == "OnStartUpdateRequest" && urlList[1] == "SimpleUpdate" {
-		body := `{"error":{"code": Base.1.11.Success,"message": "See @Message.ExtendedInfo for more information.","@Message.ExtendedInfo":[{"MessageId": "Base.1.11.Success"}]}}`
+		body := `{"error":{"code": Base.1.11.0.Success,"message": "See @Message.ExtendedInfo for more information.","@Message.ExtendedInfo":[{"MessageId": "Base.1.11.0.Success"}]}}`
 		ctx.StatusCode(http.StatusOK)
 		ctx.WriteString(body)
 		return

@@ -36,6 +36,14 @@ type SoftwareInventory struct {
 	OdataID string `json:"@odata.id"`
 }
 
+type ClientCertificates struct {
+	OdataID string `json:"@odata.id"`
+}
+
+type RemoteServerCertificates struct {
+	OdataID string `json:"@odata.id"`
+}
+
 // UpdateServiceSimpleUpdate defines Target information for the upgrade
 type UpdateServiceSimpleUpdate struct {
 	Target                           string                           `json:"target"`
@@ -64,13 +72,35 @@ type Actions struct {
 // UpdateService defines the service properties of update service
 type UpdateService struct {
 	response.Response
-	Status            Status            `json:"Status"`
-	ServiceEnabled    bool              `json:"ServiceEnabled"`
-	HttpPushUri       string            `json:"HttpPushUri"`
-	FirmwareInventory FirmwareInventory `json:"FirmwareInventory"`
-	SoftwareInventory SoftwareInventory `json:"SoftwareInventory"`
-	Actions           Actions           `json:"Actions"`
-	OEM               *OEM              `json:"Oem,omitempty"`
+	Status                        Status                    `json:"Status"`
+	ServiceEnabled                bool                      `json:"ServiceEnabled"`
+	HttpPushUri                   string                    `json:"HttpPushUri"`
+	FirmwareInventory             FirmwareInventory         `json:"FirmwareInventory"`
+	SoftwareInventory             SoftwareInventory         `json:"SoftwareInventory"`
+	Actions                       Actions                   `json:"Actions"`
+	OEM                           *OEM                      `json:"Oem,omitempty"`
+	ClientCertificates            *ClientCertificates       `json:"ClientCertificates,omitempty"`
+	Description                   string                    `json:"Description,omitempty"`
+	HttpPushUriOptions            *HttpPushUriOptions       `json:"HttpPushUriOptions,omitempty"`
+	HttpPushUriOptionsBusy        bool                      `json:"HttpPushUriOptionsBusy,omitempty"`
+	HttpPushUriTargets            []string                  `json:"HttpPushUriTargets,omitempty"`
+	HttpPushUriTargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
+	ID                            string                    `json:"Id,omitempty"`
+	MaxImageSizeBytes             int                       `json:"MaxImageSizeBytes,omitempty"`
+	MultipartHttpPushUri          string                    `json:"MultipartHttpPushUri,omitempty"`
+	Name                          string                    `json:"Name,omitempty"`
+	VerifyRemoteServerCertificate bool                      `json:"VerifyRemoteServerCertificate,omitempty"`
+	RemoteServerCertificates      *RemoteServerCertificates `json:"RemoteServerCertificates,omitempty"`
+}
+
+type HttpPushUriOptions struct {
+	HttpPushUriApplyTime *HttpPushUriApplyTime `json:"HttpPushUriApplyTime,omitempty"`
+}
+
+type HttpPushUriApplyTime struct {
+	ApplyTime                          string `json:"ApplyTime,omitempty"`
+	MaintenanceWindowDurationInSeconds int    `json:"MaintenanceWindowDurationInSeconds,omitempty"`
+	MaintenanceWindowStartTime         string `json:"MaintenanceWindowStartTime,omitempty"`
 }
 
 // OEM defines the ACME defined properties under the service

@@ -53,28 +53,40 @@ type ListMember struct {
 
 //EventServiceResponse is used to return response
 type EventServiceResponse struct {
-	OdataContext                 string   `json:"@odata.context"`
-	Etag                         string   `json:"@odata.etag,omitempty"`
-	ID                           string   `json:"Id"`
-	OdataID                      string   `json:"@odata.id"`
-	OdataType                    string   `json:"@odata.type"`
-	Name                         string   `json:"Name"`
-	Description                  string   `json:"Description"`
-	Actions                      Actions  `json:"Actions"`
-	DeliveryRetryAttempts        int      `json:"DeliveryRetryAttempts"`
-	DeliveryRetryIntervalSeconds int      `json:"DeliveryRetryIntervalSeconds"`
-	EventFormatTypes             []string `json:"EventFormatTypes"`
-	EventTypesForSubscription    []string `json:"EventTypesForSubscription"` // Deprecated v1.3
-	RegistryPrefixes             []string `json:"RegistryPrefixes"`
-	ResourceTypes                []string `json:"ResourceTypes"`
-	ServerSentEventURI           string   `json:"ServerSentEventUri,omitempty"`
-	ServiceEnabled               bool     `json:"ServiceEnabled"`
+	OdataContext                      string                        `json:"@odata.context,omitempty"`
+	Etag                              string                        `json:"@odata.etag,omitempty"`
+	ID                                string                        `json:"Id"`
+	OdataID                           string                        `json:"@odata.id"`
+	OdataType                         string                        `json:"@odata.type"`
+	Name                              string                        `json:"Name"`
+	Description                       string                        `json:"Description,omitempty"`
+	Actions                           Actions                       `json:"Actions,omitempty"`
+	DeliveryRetryAttempts             int                           `json:"DeliveryRetryAttempts"`
+	DeliveryRetryIntervalSeconds      int                           `json:"DeliveryRetryIntervalSeconds"`
+	EventFormatTypes                  []string                      `json:"EventFormatTypes"`
+	EventTypesForSubscription         []string                      `json:"EventTypesForSubscription"` // Deprecated v1.3
+	RegistryPrefixes                  []string                      `json:"RegistryPrefixes"`
+	ResourceTypes                     []string                      `json:"ResourceTypes"`
+	ServerSentEventURI                string                        `json:"ServerSentEventUri,omitempty"`
+	ServiceEnabled                    bool                          `json:"ServiceEnabled,omitempty"`
+	SSEFilterPropertiesSupported      *SSEFilterPropertiesSupported `json:"SSEFilterPropertiesSupported,omitempty"`
+	Status                            Status                        `json:"Status,omitempty"`
+	SubordinateResourcesSupported     bool                          `json:"SubordinateResourcesSupported,omitempty"`
+	Subscriptions                     Subscriptions                 `json:"Subscriptions,omitempty"`
+	Oem                               Oem                           `json:"Oem,omitempty"`
+	IncludeOriginOfConditionSupported bool                          `json:"IncludeOriginOfConditionSupported,omitempty"`
+	SMTP                              *SMTP                         `json:"SMTP,omitempty"`
+}
 
-	SSEFilterPropertiesSupported  *SSEFilterPropertiesSupported `json:"SSEFilterPropertiesSupported,omitempty"`
-	Status                        Status                        `json:"Status"`
-	SubordinateResourcesSupported bool                          `json:"SubordinateResourcesSupported"`
-	Subscriptions                 Subscriptions                 `json:"Subscriptions"`
-	Oem                           Oem                           `json:"Oem"`
+type SMTP struct {
+	Authentication     string `json:"Authentication,omitempty"`
+	ConnectionProtocol string `json:"ConnectionProtocol,omitempty"`
+	FromAddress        string `json:"FromAddress,omitempty"`
+	Password           string `json:"Password,omitempty"`
+	Port               int    `json:"Port,omitempty"`
+	ServerAddress      string `json:"ServerAddress,omitempty"`
+	ServiceEnabled     bool   `json:"ServiceEnabled,omitempty"`
+	Username           string `json:"Username,omitempty"`
 }
 
 //SSEFilterPropertiesSupported defines set propertis that are supported in the

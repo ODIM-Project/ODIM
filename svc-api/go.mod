@@ -13,6 +13,7 @@ require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
 	github.com/CloudyKit/jet/v3 v3.0.0 // indirect
 	github.com/Joker/hpp v1.0.0 // indirect
+	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20210901061202-f84c396a018e // indirect
 	github.com/ODIM-Project/ODIM/lib-persistence-manager v0.0.0-20201201072448-9772421f1b55 // indirect
 	github.com/Shopify/goreferrer v0.0.0-20181106222321-ec9c9a553398 // indirect
 	github.com/ajg/form v1.5.1 // indirect
@@ -33,7 +34,7 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.2-0.20200519141726-cb32006e483f // indirect
 	github.com/googleapis/gnostic v0.1.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20211101210129-f9bde24e5ca2 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20211111143520-d0d5ecc1a356 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/iris-contrib/blackfriday v2.0.0+incompatible // indirect

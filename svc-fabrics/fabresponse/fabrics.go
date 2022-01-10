@@ -22,11 +22,13 @@ import (
 // FabricCollection response which svc-fabric service return back
 // for GetFabricCollection whenever there is a failure
 type FabricCollection struct {
-	OdataContext string      `json:"@odata.context"`
-	OdataID      string      `json:"@odata.id"`
-	OdataType    string      `json:"@odata.type"`
-	Description  string      `json:"Description"`
-	Name         string      `json:"Name"`
-	Members      []dmtf.Link `json:"Members"`
-	MembersCount int         `json:"Members@odata.count"`
+	OdataContext    string      `json:"@odata.context"`
+	OdataID         string      `json:"@odata.id"`
+	OdataType       string      `json:"@odata.type"`
+	Description     string      `json:"Description"`
+	Name            string      `json:"Name"`
+	Members         []dmtf.Link `json:"Members"`
+	MembersCount    int         `json:"Members@odata.count"`
+	Oem             *dmtf.Oem   `json:"Oem,omitempty"`
+	MembersNextLink string      `json:"Members@odata.nextLink,omitempty"`
 }

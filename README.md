@@ -231,7 +231,7 @@ The following table lists the software components and their versions that are co
     - To add 5,000 servers or less, you require nodes having 32 GB (32768 MB) RAM, 16 CPU cores and 32 threads, and 200GB HDD each
 
 
-1. Download and install [Ubuntu 20.04 LTS](https://old-releases.ubuntu.com/releases/18.04.4/ubuntu-18.04-server-amd64.iso) on the deployment node and all the cluster nodes. 
+1. Download and install `ubuntu-20.04.3-live-server-amd64.iso` on the deployment node and all the cluster nodes. 
     During installation, configure the IP addresses of cluster nodes to reach the management VLANs where devices are connected. Ensure there is no firewall or switches blocking the connections and ports.
 
    <blockquote>
@@ -949,9 +949,9 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
 		kubectl get pods -n kube-system -o wide
         ```
     
-        The following output is displayed.
+        Example output:
     
-        ![screenshot](docs/images/kuberenetes_pods_verification.png)
+        <img src="docs/images/kuberenetes_pods_verification.png" alt="screenshot" style="zoom:60%;" /> 
 
 
 3. Deploy the resource aggregator services: 
@@ -974,8 +974,7 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
 
         Example output:
 
-        ![screenshot](docs/images/all_services_verification.png)
-
+        <img src="docs/images/all_services_verification.png" alt="screenshot" style="zoom:55%;" />
         If the services are not successfully deployed, reset the deployment and try deploying again. 
         To reset, run the following command:
 
@@ -987,8 +986,7 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
 
         For a three-node cluster deployment, resetting deployment removes the virtual IP configured through Keepalived. After resetting the deployment, restart the Keepalived service. Also, ensure the parameters in the `kube_deploy_nodes.yaml `are not NULL. Update such parameters to `""` or as per your requirement.
         **For example**: After resetting the deployment, update the odimCertsPath parameter to `""` or to your actual certificate path in the `kube_deploy_nodes.yaml` file. 
-        
-<blockquote>NOTE: Save the RootServiceUUID in the kube_deploy_nodes.yaml file in the path ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml.
+    <blockquote>NOTE: Save the RootServiceUUID in the kube_deploy_nodes.yaml file in the path ~/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml.
             If the services are not successfully deployed and you want to reset the deployment, you can use the saved RootServiceUUID.</blockquote>	
 
 

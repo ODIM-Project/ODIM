@@ -39,12 +39,6 @@ import (
 )
 
 const (
-	// DeliveryRetryAttempts is of retry attempts for event posting
-	DeliveryRetryAttempts = 3
-
-	// DeliveryRetryIntervalSeconds is of retry interval in seconds for event posting
-	DeliveryRetryIntervalSeconds = 60
-
 	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
 	SaveUndeliveredEventsFlag = false
 )
@@ -457,14 +451,6 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		},
 	}
 	respPtr.Body = args.CreateGenericErrorResponse()
-	respPtr.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"allow":             "POST,GET,DELETE",
-	}
 }
 
 // GenEventErrorResponse generates the error response in event service

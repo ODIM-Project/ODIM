@@ -28,8 +28,9 @@ import (
 // BrokerType defines the underline MQ platform to be selected for the
 // messages. KAFKA and RedisStremas platforms are supported.
 const (
-	KAFKA        = "Kafka"        // KAFKA as Messaging Platform, Please use this ID
-	REDISSTREAMS = "RedisStreams" // REDISSTREAMS as Messaging Platform
+	KAFKA                = "Kafka"        // KAFKA as Messaging Platform, Please use this ID
+	REDISSTREAMS         = "RedisStreams" // REDISSTREAMS as Messaging Platform
+	EVENTREADERGROUPNAME = "eventreaders_grp"
 )
 
 // MQBus Interface defines the Process interface function (Only function user

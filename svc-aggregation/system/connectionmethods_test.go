@@ -93,13 +93,6 @@ func TestGetConnectionCollection(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp1.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: 1,

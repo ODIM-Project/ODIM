@@ -64,9 +64,6 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -79,9 +76,6 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
 
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -132,9 +126,6 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage, resp)
 		return &resp, nil
 	}
@@ -147,9 +138,6 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -198,9 +186,6 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -213,9 +198,6 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -264,9 +246,6 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -279,9 +258,6 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -330,9 +306,6 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -345,9 +318,6 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -398,9 +368,6 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}
@@ -413,9 +380,6 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
 		return &resp, nil
 	}

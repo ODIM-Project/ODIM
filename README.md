@@ -2161,10 +2161,10 @@ Ensure that all the nodes \(deployment node and cluster nodes\) are in the same 
 Run the following commands:
 
 1. ```
-    wget https://dl.google.com/go/go1.13.7.linux-amd64.tar.gz -P /var/tmp
+    wget https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
    ```
 1. ```
-    sudo tar -C /usr/local -xzf /var/tmp/go1.13.7.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
    ```
 1. ```
     export PATH=$PATH:/usr/local/go/bin

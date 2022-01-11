@@ -161,14 +161,6 @@ func TestGetAllSystems(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error while creating mock index: %v", err)
 	}
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	systemsCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
 		OdataID:      "/redfish/v1/Systems",
@@ -196,7 +188,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -211,7 +202,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -226,7 +216,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -241,7 +230,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -256,7 +244,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -271,7 +258,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -286,7 +272,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -301,7 +286,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -316,7 +300,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -331,7 +314,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -346,7 +328,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -361,7 +342,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -376,7 +356,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -391,7 +370,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -406,7 +384,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -421,7 +398,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -436,7 +412,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -451,7 +426,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -466,7 +440,6 @@ func TestGetAllSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -546,14 +519,6 @@ func TestGetSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
@@ -570,9 +535,6 @@ func TestGetSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
@@ -589,9 +551,6 @@ func TestGetSystems(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs1.CreateGenericErrorResponse(),
@@ -625,14 +584,6 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 	err := mockSystemResourceData(reqData, "SecureBoot", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
-	}
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
@@ -680,7 +631,6 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot"},
@@ -697,9 +647,6 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
@@ -716,9 +663,6 @@ func TestPluginContact_GetSystemResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs1.CreateGenericErrorResponse(),
@@ -797,14 +741,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 		t.Fatalf("Error while creating mock index: %v", err)
 	}
 
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	systemsCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
 		OdataID:      "/redfish/v1/Systems",
@@ -858,7 +794,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp2,
@@ -873,7 +808,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp2,
@@ -888,7 +822,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -903,7 +836,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -918,7 +850,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp3,
@@ -933,7 +864,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp4,
@@ -948,7 +878,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          systemsCollection,
@@ -963,7 +892,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp1,
@@ -978,7 +906,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp1,
@@ -993,7 +920,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp5,
@@ -1008,7 +934,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp3,
@@ -1023,7 +948,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp3,
@@ -1038,7 +962,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp3,
@@ -1053,7 +976,6 @@ func TestGetAllSystemsWithMultipleIndexData(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          resp3,

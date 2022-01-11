@@ -100,26 +100,30 @@ func TestGetMetadata(t *testing.T) {
 
 //TestAsMethodNotAllowed is unittest method for AsMethodNotAllowed func.
 func TestAsMethodNotAllowed(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/AccountService", AsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Account service URL
-	e.POST("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
+	e.POST("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed).Headers().Equal(header)
 	e.PUT("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestSsMethodNotAllowed is unittest method for SsMethodNotAllowed func.
 func TestSsMethodNotAllowed(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/SessionService", SsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Account service URL
-	e.POST("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
+	e.POST("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed).Headers().Equal(header)
 	e.PUT("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
 }

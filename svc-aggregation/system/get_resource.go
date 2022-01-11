@@ -49,13 +49,6 @@ func (e *ExternalInterface) GetAggregationSourceCollection() response.RPC {
 		ID:           "AggregationSource",
 		Name:         "Aggregation Source",
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""
 	commonResponse.ID = ""
@@ -106,13 +99,6 @@ func (e *ExternalInterface) GetAggregationSource(reqURI string) response.RPC {
 	var resp = response.RPC{
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
-	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""

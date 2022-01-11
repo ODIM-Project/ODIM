@@ -100,14 +100,6 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 		t.Fatalf("Error in creating mock resource data :%v", err2)
 	}
 
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	errArgs := response.Args{
 		Code:    response.GeneralError,
 		Message: "",
@@ -154,7 +146,6 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power"},
@@ -171,9 +162,6 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs.CreateGenericErrorResponse(),
@@ -190,9 +178,6 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
 				Body:          errArgs1.CreateGenericErrorResponse(),
@@ -209,7 +194,6 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters"},
@@ -228,7 +212,6 @@ func TestPluginContact_GetChassisResource(t *testing.T) {
 				},
 			},
 			want: response.RPC{
-				Header:        header,
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Body:          map[string]interface{}{"@odata.id": "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/NetworkAdapters/1"},

@@ -55,9 +55,6 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -78,9 +75,6 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -105,24 +99,11 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.AccountRemoved
-
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
-		"X-Frame-Options":   "sameorigin",
-	}
-
 	return resp
 }

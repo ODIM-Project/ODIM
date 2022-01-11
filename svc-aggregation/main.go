@@ -51,7 +51,7 @@ func main() {
 
 	config.CollectCLArgs()
 
-	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
 	if err := common.CheckDBConnection(); err != nil {

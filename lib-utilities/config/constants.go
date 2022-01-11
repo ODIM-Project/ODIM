@@ -151,6 +151,6 @@ var (
 
 // AllowedMessageBusTypes is for checking for message types are allowed
 var AllowedMessageBusTypes = map[string]bool{
-	"Kafka":       true,
+	"Kafka":        true,
 	"RedisStreams": true,
 }

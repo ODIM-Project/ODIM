@@ -15,7 +15,6 @@ package main
 
 import (
 	"os"
-	"strings"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -42,10 +41,8 @@ func main() {
 
 	config.CollectCLArgs()
 
-	if strings.EqualFold(config.Data.MessageBusConf.MessageBusType, "kafka") {
-		if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-			log.Fatal("error while trying to set messagebus configuration: " + err.Error())
-		}
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
 	}
 	if err := common.CheckDBConnection(); err != nil {
 		log.Fatal("error while trying to check DB connection health: " + err.Error())
@@ -89,7 +86,7 @@ func main() {
 	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
 	// Subscribe to intercomm messagebus queue
-	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.MessageBusType)
+	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.MessageBusQueue[0])
 
 	// Subscribe to EMBs of all the available plugins
 	startUPInterface := evcommon.StartUpInteraface{

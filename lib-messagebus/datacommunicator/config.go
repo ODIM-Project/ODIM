@@ -50,7 +50,8 @@ import (
 // structure format. These configurations are embedded into MQF structure for direct
 // access to the data.
 type MQF struct {
-	KafkaF `toml:"KAFKA"`
+	KafkaF       `toml:"KAFKA"`
+	RedisStreams *RedisStreams `toml:"RedisStreams"`
 }
 
 // KafkaF defines the KAFKA Server connection configurations. This structure
@@ -69,6 +70,13 @@ type KafkaF struct {
 	KAFKAKeyFile string `toml:"KAFKAKeyFile"`
 	// KAFKACAFile defines the KAFKA Certification Authority. No DEFAULT
 	KAFKACAFile string `toml:"KAFKACAFile"`
+}
+
+// RedisStreams  defines the Redis  connection configurations.
+type RedisStreams struct {
+	RedisServerAddress string `toml:"RedisServerAddress"`
+	RedisServerPort    string `toml:"RedisServerPort"`
+	HASet              string `toml:"HASet"`
 }
 
 // Create both MQF and KafkaPacket Objects. MQF will be used to store

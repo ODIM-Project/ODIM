@@ -138,14 +138,7 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 		ID:           data[1],
 		Name:         "Aggregation Source",
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""
 	commonResponse.MessageID = ""

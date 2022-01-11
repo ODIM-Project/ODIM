@@ -43,13 +43,6 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	var subscriptions *evresponse.SubscriptionResponse
 
 	subscriptionDetails, err := p.GetEvtSubscriptions(req.EventSubscriptionID)
@@ -122,13 +115,6 @@ func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRe
 	if authResp.StatusCode != http.StatusOK {
 		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
-	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	listMembers := []evresponse.ListMember{}
 	searchKey := "*"

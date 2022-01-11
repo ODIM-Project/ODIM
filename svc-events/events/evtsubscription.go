@@ -73,6 +73,10 @@ type PluginContact struct {
 	UpdateEventSubscription          func(evmodel.Subscription) error
 	SaveUndeliveredEvents            func(string, []byte) error
 	SaveDeviceSubscription           func(evmodel.DeviceSubscription) error
+	GetUndeliveredEvents             func(string) ([]string, error)
+	GetUndeliveredEventsFlag         func(string) (bool, error)
+	SetUndeliveredEventsFlag         func(string) error
+	DeleteUndeliveredEventsFlag      func(string) error
 }
 
 func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
@@ -131,14 +135,6 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		percentComplete int32 = 100
 		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
-
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
 		// Update the task here with error response
@@ -889,13 +885,7 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 		log.Error(errorMessage)
 		return resp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
 	log.Info("Creation of default subscriptions completed for :" + strings.Join(originResources, "::"))
@@ -1154,13 +1144,6 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 
 	host, response := p.eventSubscription(request, originResource, collectionName, collectionFlag)
 	resp.Body = response.Response
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = int32(response.StatusCode)
 	result.AddResponse(originResource, host, response)
 	percentComplete = 100

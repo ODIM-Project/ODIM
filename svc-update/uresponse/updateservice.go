@@ -80,15 +80,12 @@ type UpdateService struct {
 	Actions                       Actions                   `json:"Actions"`
 	OEM                           *OEM                      `json:"Oem,omitempty"`
 	ClientCertificates            *ClientCertificates       `json:"ClientCertificates,omitempty"`
-	Description                   string                    `json:"Description,omitempty"`
 	HttpPushUriOptions            *HttpPushUriOptions       `json:"HttpPushUriOptions,omitempty"`
 	HttpPushUriOptionsBusy        bool                      `json:"HttpPushUriOptionsBusy,omitempty"`
 	HttpPushUriTargets            []string                  `json:"HttpPushUriTargets,omitempty"`
 	HttpPushUriTargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
-	ID                            string                    `json:"Id,omitempty"`
 	MaxImageSizeBytes             int                       `json:"MaxImageSizeBytes,omitempty"`
 	MultipartHttpPushUri          string                    `json:"MultipartHttpPushUri,omitempty"`
-	Name                          string                    `json:"Name,omitempty"`
 	VerifyRemoteServerCertificate bool                      `json:"VerifyRemoteServerCertificate,omitempty"`
 	RemoteServerCertificates      *RemoteServerCertificates `json:"RemoteServerCertificates,omitempty"`
 }

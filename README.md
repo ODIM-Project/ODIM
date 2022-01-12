@@ -273,7 +273,7 @@ The following table lists the software components and their versions that are co
       ```
    
    7. ```
-      sudo apt-get install openjdk-11-jre-headless=11.0.11+9-0ubuntu2~20.04 -y
+      sudo apt-get install openjdk-11-jre-headless=11.0.13+8-0ubuntu1~20.04 -y
       ```
    
    8. ```

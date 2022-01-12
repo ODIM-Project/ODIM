@@ -53,7 +53,7 @@ type Error struct {
 	errMsg string
 }
 
-const messageOdataTypeStr string = "#Message.v1_0_6.Message"
+const messageOdataTypeStr string = "#Message.v1_1_2.Message"
 
 // CreateErrorResponse defines the creation of the error message response body.
 // As input the fuction takes status message and the error message and will

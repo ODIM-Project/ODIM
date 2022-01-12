@@ -13,7 +13,6 @@
     ],
     "OEMPrivilegesUsed": [],
     "Mappings": [
-
         {
             "Entity": "AccelerationFunction",
             "OperationMap": {

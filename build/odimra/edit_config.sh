@@ -24,7 +24,7 @@ d=/etc/registrystore
 e=/etc
 ############changes in odimra_json.json #######
 sed -i "s#\"LocalhostFQDN\".*#\"LocalhostFQDN\": \"$fqdn\",#" /etc/odimra_config/odimra_config.json
-sed -i "s#\"MessageQueueConfigFilePath\".*#\"MessageQueueConfigFilePath\": \"$t/platformconfig.toml\",#" /etc/odimra_config/odimra_config.json
+sed -i "s#\"MessageBusConfigFilePath\".*#\"MessageBusConfigFilePath\": \"$t/platformconfig.toml\",#" /etc/odimra_config/odimra_config.json
 sed -i "s#\"SearchAndFilterSchemaPath\".*#\"SearchAndFilterSchemaPath\": \"$e/schema.json\",#" /etc/odimra_config/odimra_config.json
 sed -i "s#\"RegistryStorePath\".*#\"RegistryStorePath\": \"$d\",#" /etc/odimra_config/odimra_config.json
 sed -i "s#\"RootCACertificatePath\".*#\"RootCACertificatePath\": \"$c/rootCA.crt\",#" /etc/odimra_config/odimra_config.json

@@ -129,13 +129,7 @@ func TestGetUpdateService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
-					"Content-type":  "application/json; charset=utf-8",
 					"Link": "	</redfish/v1/SchemaStore/en/UpdateService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
 				},
 				Body: uresponse.UpdateService{
 					Response: successResponse,
@@ -172,13 +166,7 @@ func TestGetUpdateService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
-					"Content-type":  "application/json; charset=utf-8",
 					"Link": "	</redfish/v1/SchemaStore/en/UpdateService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
 				},
 				Body: uresponse.UpdateService{
 					Response: successResponse,

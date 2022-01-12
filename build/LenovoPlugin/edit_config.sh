@@ -32,7 +32,7 @@ sed -i "s#\"PrivateKeyPath\".*#\"PrivateKeyPath\": \"$t/odimra_server.key\",#"  
 sed -i "s#\"CertificatePath\".*#\"CertificatePath\": \"$t/odimra_server.crt\"#" /etc/lenovo_plugin_config/config_lenovo_plugin.json
 sed -i "s#\"LBHost\".*#\"LBHost\": \"$ip\",#" /etc/lenovo_plugin_config/config_lenovo_plugin.json
 sed -i "s#\"LBPort\".*#\"LBPort\": \"45010\"#" /etc/lenovo_plugin_config/config_lenovo_plugin.json
-sed -i "s#\"MessageQueueConfigFilePath\".*#\"MessageQueueConfigFilePath\": \"/etc/lenovo_plugin_config/platformconfig.toml\",#" /etc/lenovo_plugin_config/config_lenovo_plugin.json
+sed -i "s#\"MessageBusConfigFilePath\".*#\"MessageBusConfigFilePath\": \"/etc/lenovo_plugin_config/platformconfig.toml\",#" /etc/lenovo_plugin_config/config_lenovo_plugin.json
 
 ########changes in platformconfig.toml file ######
 sed -i "s#.*KServersInfo.*#KServersInfo      = [\"kafka:9092\"]#" /etc/lenovo_plugin_config/platformconfig.toml

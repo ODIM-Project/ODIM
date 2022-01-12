@@ -34,7 +34,7 @@ func Publish(data interface{}) bool {
 	event := data.(common.Events)
 
 	topic := config.Data.MessageBusConf.EmbQueue[0]
-	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath, topic)
+	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageBusConfigFilePath, topic)
 	if err != nil {
 		log.Error("Unable communicate with kafka, got:" + err.Error())
 		return false

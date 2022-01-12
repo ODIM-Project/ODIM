@@ -31,6 +31,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -38,20 +39,21 @@ import (
 )
 
 const (
-	// DeliveryRetryAttempts is of retry attempts for event posting
-	DeliveryRetryAttempts = 3
-
-	// DeliveryRetryIntervalSeconds is of retry interval in seconds for event posting
-	DeliveryRetryIntervalSeconds = 60
-
 	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
 	SaveUndeliveredEventsFlag = false
 )
 
 //StartUpInteraface Holds the function pointer of  external interface functions
 type StartUpInteraface struct {
-	DecryptPassword func([]byte) ([]byte, error)
-	EMBConsume      func(string)
+	DecryptPassword                  func([]byte) ([]byte, error)
+	EMBConsume                       func(string)
+	GetAllPlugins                    func() ([]evmodel.Plugin, *errors.Error)
+	GetAllSystems                    func() ([]string, error)
+	GetSingleSystem                  func(string) (string, error)
+	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
+	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
+	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
+	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
 }
 
 // EmbTopic hold the list all consuming topics after
@@ -186,7 +188,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
-					err = callPluginStartUp(allServers, pluginID)
+					err = st.callPluginStartUp(allServers, pluginID)
 					if err != nil {
 						log.Error("Error While trying call plugin startup" +
 							pluginID + err.Error())
@@ -194,7 +196,7 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 					break
 				}
 				batchServers := allServers[:StartUpResourceBatchSize]
-				err = callPluginStartUp(batchServers, pluginID)
+				err = st.callPluginStartUp(batchServers, pluginID)
 				if err != nil {
 					log.Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
@@ -216,13 +218,13 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 
 func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, error) {
 	var matchedServers []SavedSystems
-	allServers, err := evmodel.GetAllSystems()
+	allServers, err := st.GetAllSystems()
 	if err != nil {
 		return matchedServers, err
 	}
 	for i := 0; i < len(allServers); i++ {
 		var s SavedSystems
-		singleServer, err := evmodel.GetSingleSystem(allServers[i])
+		singleServer, err := st.GetSingleSystem(allServers[i])
 		if err != nil {
 			// skip to next member in the array.
 			continue
@@ -269,16 +271,16 @@ func GetPluginStatus(plugin *evmodel.Plugin) bool {
 	return status
 }
 
-func callPluginStartUp(servers []SavedSystems, pluginID string) error {
+func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID string) error {
 	var startUpMap []StartUpMap
-	plugin, errs := evmodel.GetPluginData(pluginID)
+	plugin, errs := st.GetPluginData(pluginID)
 	if errs != nil {
 		return errs
 	}
 	for _, server := range servers {
 		var s StartUpMap
 		var err error
-		s.Location, s.EventTypes, err = getSubscribedEventsDetails(server.ManagerAddress)
+		s.Location, s.EventTypes, err = st.getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
 			log.Error("Error while retrieving the Subsction details from DB for device: " +
 				server.ManagerAddress + err.Error())
@@ -341,7 +343,7 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 
 }
 
-func getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
+func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
 	var location string
 	var eventTypes []string
 	var emptyListFlag bool
@@ -351,14 +353,14 @@ func getSubscribedEventsDetails(serverAddress string) (string, []string, error) 
 		return "", nil, fmt.Errorf(errorMessage)
 	}
 	searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
+	deviceSubscription, err := st.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		return "", nil, err
 	}
 	location = deviceSubscription.Location
 
 	searchKey = GetSearchKey(deviceIPAddress, evmodel.SubscriptionIndex)
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptionDetails, err := st.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return "", nil, err
 	}
@@ -449,14 +451,6 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		},
 	}
 	respPtr.Body = args.CreateGenericErrorResponse()
-	respPtr.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"allow":             "POST,GET,DELETE",
-	}
 }
 
 // GenEventErrorResponse generates the error response in event service

@@ -422,7 +422,7 @@ x-frame-options":"sameorigin"
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
@@ -577,7 +577,7 @@ x-frame-options":"sameorigin"
 >** Sample response body \(HTTP 201 status\)**
 ```
  {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
@@ -661,7 +661,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
@@ -722,7 +722,7 @@ curl -i PATCH \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c:1",
@@ -869,7 +869,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -895,7 +895,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1014,7 +1014,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1040,7 +1040,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1195,13 +1195,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.10.0.Created",
+      "MessageId":"Base.1.11.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1242,7 +1242,7 @@ curl -i GET \
       "Id":"Aggregate",
       "Name":"Aggregate",
       "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.10.0.Success",
+      "MessageId":"Base.1.11.0.Success",
       "Severity":"OK",
       "Members@odata.count":1,
       "Members":[
@@ -1279,13 +1279,13 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "Name":"Aggregate",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Elements":[
       "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1367,13 +1367,13 @@ curl -i POST \
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
       "Message":"The resource has been created successfully",
-      "MessageId":"Base.1.10.0.Created",
+      "MessageId":"Base.1.11.0.Created",
       "Severity":"OK",
       "Elements":[
             "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
@@ -1483,7 +1483,7 @@ Content-Length:491 bytes
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1509,7 +1509,7 @@ Content-Length:491 bytes
 ```
  {
    "error":{
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1594,7 +1594,7 @@ Content-Length:491 bytes
    "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
    "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.10.0.Success",
+   "MessageId":"Base.1.11.0.Success",
    "Severity":"OK",
    "Members@odata.count":0,
    "Members":null,
@@ -1620,7 +1620,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.10.0.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -1679,7 +1679,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/e02faf78-f919-4612-b031-bec7ae59910d",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"e02faf78-f919-4612-b031-bec7ae59910d",

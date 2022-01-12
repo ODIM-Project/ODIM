@@ -34,130 +34,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func stubDevicePassword(password []byte) ([]byte, error) {
-	return password, nil
-}
-func stubEMBConsume(topic string) {
-
-}
-func mockTarget(t *testing.T) {
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	targetArr := []evmodel.Target{
-		{
-			ManagerAddress: "10.4.1.2",
-			Password:       []byte("Password"),
-			UserName:       "admin",
-			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
-			PluginID:       "ILO",
-		},
-		{
-			ManagerAddress: "10.4.1.3",
-			Password:       []byte("Password"),
-			UserName:       "admin",
-			DeviceUUID:     "11081de0-4859-984c-c35a-6c50732d72da",
-			PluginID:       "ILO",
-		},
-		{
-			ManagerAddress: "10.4.1.4",
-			Password:       []byte("Password"),
-			UserName:       "admin",
-			DeviceUUID:     "d72dade0-c35a-984c-4859-1108132d72da",
-			PluginID:       "GRF",
-		},
-	}
-	for _, target := range targetArr {
-		const table string = "System"
-		//Save data into Database
-		if err = connPool.Create(table, target.DeviceUUID, &target); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}
-}
-
-func getEncryptedKey(t *testing.T, key []byte) []byte {
-	cryptedKey, err := common.EncryptWithPublicKey(key)
-	if err != nil {
-		t.Fatalf("error: failed to encrypt data: %v", err)
-	}
-	return cryptedKey
-}
-
-func mockPlugins(t *testing.T) {
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		t.Errorf("error while trying to connecting to DB: %v", err.Error())
-	}
-
-	password := getEncryptedKey(t, []byte("Password"))
-	pluginArr := []evmodel.Plugin{
-		{
-			IP:                "localhost",
-			Port:              "1234",
-			Password:          password,
-			Username:          "admin",
-			ID:                "GRF",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "GRF",
-		},
-		{
-			IP:                "localhost",
-			Port:              "1234",
-			Password:          password,
-			Username:          "admin",
-			ID:                "ILO",
-			PreferredAuthType: "BasicAuth",
-			PluginType:        "ILO",
-		},
-	}
-	for _, plugin := range pluginArr {
-		pl := "Plugin"
-		//Save data into Database
-		if err := connPool.Create(pl, plugin.ID, &plugin); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}
-}
-
-func storeTestEventDetails(t *testing.T) {
-	subarr := []evmodel.Subscription{
-		// if SubordinateResources true
-		{
-			UserName:             "admin",
-			SubscriptionID:       "81de0110-c35a-4859-984c-072d6c5a32d7",
-			Destination:          "https://10.24.1.15:9090/events",
-			Name:                 "Subscription",
-			Context:              "context",
-			EventTypes:           []string{"Alert"},
-			MessageIds:           []string{"IndicatorChanged"},
-			ResourceTypes:        []string{"#Event"},
-			OriginResource:       "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
-			OriginResources:      []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-			Hosts:                []string{"10.4.1.2"},
-			SubordinateResources: true,
-		},
-	}
-	for _, sub := range subarr {
-		err := evmodel.SaveEventSubscription(sub)
-		if err != nil {
-			t.Errorf("error: %v", err)
-		}
-	}
-	var updatedDeviceSubscription = evmodel.DeviceSubscription{
-		Location:        "https://10.4.1.2/EventService/Subscriptions/1",
-		EventHostIP:     "10.4.1.2",
-		OriginResources: []string{"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"},
-	}
-
-	err := evmodel.SaveDeviceSubscription(updatedDeviceSubscription)
-	if err != nil {
-		t.Errorf("error: %v", err)
-	}
-
-}
-
 var (
 	hostCA = []byte(`-----BEGIN CERTIFICATE-----
 MIIGLzCCBBegAwIBAgIUWxsjs12pFXWyV3ncdNN0OxjLsgUwDQYJKoZIhvcNAQEN
@@ -290,7 +166,7 @@ func startTestServer() *httptest.Server {
 	}
 
 	respBody := make(map[string]string)
-	respBody["10.4.1.2"] = "/redfish/v1/EventService/Subscriptions/2"
+	respBody["100.100.100.100"] = "/redfish/v1/EventService/Subscriptions/2"
 	body, _ := json.Marshal(respBody)
 	pluginStatusRespBody := common.StatusResponse{
 		Status: &common.PluginResponseStatus{
@@ -346,6 +222,7 @@ func startTestServer() *httptest.Server {
 	ts.Config.TLSConfig = tlsConfig
 	return ts
 }
+
 func TestGenErrorResponse(t *testing.T) {
 	config.SetUpMockConfig(t)
 
@@ -384,15 +261,7 @@ func TestGenErrorResponse(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-					"allow":             "POST,GET,DELETE",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -408,19 +277,10 @@ func TestGenErrorResponse(t *testing.T) {
 
 func TestGetAllServers(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockTarget(t)
 	st := StartUpInteraface{
 		DecryptPassword: stubDevicePassword,
+		GetAllSystems:   MockGetAllSystems,
+		GetSingleSystem: MockGetSingleSystem,
 	}
 	servers, err := st.getAllServers("ILO")
 	assert.Nil(t, err, "Error Should be nil")
@@ -428,48 +288,35 @@ func TestGetAllServers(t *testing.T) {
 
 }
 
-func mockData(t *testing.T, dbType common.DbType, table, id string, data interface{}) {
-	connPool, err := common.GetDBConnection(dbType)
-	if err != nil {
-		t.Fatalf("error: mockData() failed to DB connection: %v", err)
-	}
-	if err = connPool.Create(table, id, data); err != nil {
-		t.Fatalf("error: mockData() failed to create entry %s-%s: %v", table, id, err)
-	}
-}
-
 func TestCallPluginStartUp(t *testing.T) {
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockPlugins(t)
-	mockData(t, common.OnDisk, "Plugin", "pluginBadData", "pluginBadData")
-	storeTestEventDetails(t)
 	ts := startTestServer()
 	// Start the server.
 	ts.StartTLS()
 	defer ts.Close()
 	servers := []SavedSystems{
 		SavedSystems{
-			ManagerAddress: "10.4.1.2",
+			ManagerAddress: "100.100.100.100",
 			Password:       []byte("password"),
 			UserName:       "admin",
 			DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
 			PluginID:       "ILO",
 		},
 	}
-	err := callPluginStartUp(servers, "ILO")
+	st := StartUpInteraface{
+		DecryptPassword:                  stubDevicePassword,
+		EMBConsume:                       stubEMBConsume,
+		GetAllSystems:                    MockGetAllSystems,
+		GetSingleSystem:                  MockGetSingleSystem,
+		GetPluginData:                    MockGetPluginData,
+		GetEvtSubscriptions:              MockGetEvtSubscriptions,
+		GetDeviceSubscriptions:           MockGetDeviceSubscriptions,
+		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
+	}
+	err := st.callPluginStartUp(servers, "ILO")
 	assert.Nil(t, err, "Error Should be nil")
 
-	err = callPluginStartUp(servers, "pluginBadData")
+	err = st.callPluginStartUp(servers, "pluginBadData")
 	assert.NotNil(t, err, "error should not be nil")
 }
 
@@ -490,7 +337,7 @@ func TestGetPluginStatus(t *testing.T) {
 	// Start the server.
 	ts.StartTLS()
 	defer ts.Close()
-	password := getEncryptedKey(t, []byte("Password"))
+	password, _ := GetEncryptedKey([]byte("Password"))
 	result := GetPluginStatus(&evmodel.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
@@ -513,18 +360,6 @@ func TestGenEventErrorResponse(t *testing.T) {
 }
 
 func TestGetPluginStatusandStartUP(t *testing.T) {
-	defer func() {
-		err := common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-	mockPlugins(t)
-	storeTestEventDetails(t)
 	ts := startTestServer()
 	// Start the server.
 	ts.StartTLS()
@@ -532,10 +367,16 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 	// Intializing the TopicsList
 	EMBTopics.TopicsList = make(map[string]bool)
 	st := StartUpInteraface{
-		DecryptPassword: stubDevicePassword,
-		EMBConsume:      stubEMBConsume,
+		DecryptPassword:                  stubDevicePassword,
+		EMBConsume:                       stubEMBConsume,
+		GetAllSystems:                    MockGetAllSystems,
+		GetSingleSystem:                  MockGetSingleSystem,
+		GetPluginData:                    MockGetPluginData,
+		GetEvtSubscriptions:              MockGetEvtSubscriptions,
+		GetDeviceSubscriptions:           MockGetDeviceSubscriptions,
+		UpdateDeviceSubscriptionLocation: MockUpdateDeviceSubscriptionLocation,
 	}
-	password := getEncryptedKey(t, []byte("Password"))
+	password, _ := GetEncryptedKey([]byte("Password"))
 	st.getPluginStatus(evmodel.Plugin{
 		IP:                "localhost",
 		Port:              "1234",
@@ -545,10 +386,10 @@ func TestGetPluginStatusandStartUP(t *testing.T) {
 		PreferredAuthType: "BasicAuth",
 		PluginType:        "RF-GENERIC",
 	})
-	searchKey := GetSearchKey("10.4.1.2", evmodel.DeviceSubscriptionIndex)
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
+	searchKey := GetSearchKey("100.100.100.100", evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := st.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	assert.Equal(t, "/redfish/v1/EventService/Subscriptions/2", deviceSubscription.Location, "should be same")
+	assert.Equal(t, "https://10.10.10.2/EventService/Subscriptions/1", deviceSubscription.Location, "should be same")
 }

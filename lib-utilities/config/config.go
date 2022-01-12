@@ -72,9 +72,9 @@ type DBConf struct {
 
 // MessageBusConf holds all message bus configurations
 type MessageBusConf struct {
-	MessageQueueConfigFilePath string   `json:"MessageQueueConfigFilePath"`
-	MessageBusType             string   `json:"MessageBusType"`
-	MessageBusQueue            []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"`
+	MessageBusType           string   `json:"MessageBusType"`
+	MessageBusQueue          []string `json:"MessageBusQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -297,8 +297,8 @@ func checkMessageBusConf() error {
 		Data.MessageBusConf.MessageBusType = "Kafka"
 	}
 	if Data.MessageBusConf.MessageBusType == "Kafka" {
-		if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-			return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
+		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 		}
 		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
 			log.Warn("No value set for MessageBusQueue, setting default value")
@@ -577,9 +577,8 @@ func checkEventConf() error {
 	if Data.EventConf == nil {
 		log.Warn("EventConf not provided, setting default value")
 		Data.EventConf = &EventConf{
-			DeliveryRetryAttempts:                 DefaultDeliveryRetryAttempts,
-			DeliveryRetryIntervalSeconds:          DefaultDeliveryRetryIntervalSeconds,
-			RetentionOfUndeliveredEventsInMinutes: DefaultRetentionOfUndeliveredEventsInMinutes,
+			DeliveryRetryAttempts:        DefaultDeliveryRetryAttempts,
+			DeliveryRetryIntervalSeconds: DefaultDeliveryRetryIntervalSeconds,
 		}
 		return nil
 	}
@@ -590,16 +589,6 @@ func checkEventConf() error {
 	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
 		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
 		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
-	}
-	if SaveUndeliveredEventsFlag {
-		reattempt := Data.EventConf.DeliveryRetryAttempts * Data.EventConf.DeliveryRetryIntervalSeconds
-		if reattempt < (Data.EventConf.RetentionOfUndeliveredEventsInMinutes / 60) {
-			return fmt.Errorf("RetentionOfUndeliveredEventsInMinutes value can't be less than the delivery attempt values")
-		}
-		if Data.EventConf.RetentionOfUndeliveredEventsInMinutes <= 0 {
-			log.Warn("No value found for RetentionEventsInMinutes, setting default value")
-			Data.EventConf.RetentionOfUndeliveredEventsInMinutes = DefaultRetentionOfUndeliveredEventsInMinutes
-		}
 	}
 	return nil
 }

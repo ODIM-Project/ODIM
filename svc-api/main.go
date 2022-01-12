@@ -110,14 +110,14 @@ func main() {
 				if err != nil && resp == nil {
 					errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 					log.Error(errorMessage)
-					w.Header().Set("Content-type", "application/json; charset=utf-8")
+					common.SetCommonHeaders(w)
 					w.WriteHeader(http.StatusInternalServerError)
 					body, _ := json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
 					w.Write([]byte(body))
 					return
 				}
 				if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-					w.Header().Set("Content-type", "application/json; charset=utf-8")
+					common.SetCommonHeaders(w)
 					w.WriteHeader(int(resp.StatusCode))
 					if resp.StatusCode == http.StatusServiceUnavailable {
 						log.Error("error: unable to establish connection with db")
@@ -185,7 +185,7 @@ func main() {
 
 // invalidAuthResp function is used to generate an invalid credentials response
 func invalidAuthResp(errMsg string, w http.ResponseWriter) {
-	w.Header().Set("Content-type", "application/json; charset=utf-8")
+	common.SetCommonHeaders(w)
 	w.WriteHeader(http.StatusUnauthorized)
 	body, _ := json.Marshal(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil).Body)
 	w.Write([]byte(body))

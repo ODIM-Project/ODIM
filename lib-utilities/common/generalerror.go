@@ -61,9 +61,6 @@ func GeneralError(statusCode int32, statusMsg, errMsg string, msgArgs []interfac
 		},
 	}
 	resp.Body = args.CreateGenericErrorResponse()
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
-	}
 	if t != nil && t.TaskID != "" && t.TargetURI != "" && t.UpdateTask != nil {
 		task := TaskData{
 			TaskID:          t.TaskID,

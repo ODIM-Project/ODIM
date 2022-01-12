@@ -24,7 +24,7 @@ const (
 	//ErrorHelperMessage holds helper error message sent in error response
 	ErrorHelperMessage = "An error has occurred. See ExtendedInfo for more information."
 	//ErrorMessageOdataType holds message registry version
-	ErrorMessageOdataType               = "#Message.v1_0_8.Message"
+	ErrorMessageOdataType               = "#Message.v1_1_2.Message"
 	propertyMissingArgCount             = 1
 	propertyValueNotInListArgCount      = 2
 	propertyValueTypeErrorArgCount      = 2
@@ -286,7 +286,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 		case ResourceCannotBeDeleted:
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
-					OdataType:  "#Message.v1_0_8.Message",
+					OdataType:  "#Message.v1_1_2.Message",
 					MessageID:  errArg.StatusMessage,
 					Message:    "The delete request failed because the resource requested cannot be deleted." + errArg.ErrorMessage,
 					Severity:   "Critical",

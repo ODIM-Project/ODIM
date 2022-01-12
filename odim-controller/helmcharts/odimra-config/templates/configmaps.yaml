@@ -25,7 +25,7 @@ data:
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
     	},
        "MessageBusConf": {
-         "MessageQueueConfigFilePath": "/etc/odimra_config/platformconfig.toml",
+         "MessageBusConfigFilePath": "/etc/odimra_config/platformconfig.toml",
          "MessageBusType": {{ .Values.odimra.messageBusType | quote }},
          "MessageBusQueue": {{ .Values.odimra.messageBusQueue | quote | toStrings }}
       },

@@ -20,7 +20,7 @@ import (
 
 func TestCommunicator(t *testing.T) {
 	type args struct {
-		bt               int
+		bt               string
 		mqConfigFilePath string
 		pipe             string
 	}

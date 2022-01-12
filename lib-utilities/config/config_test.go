@@ -71,7 +71,7 @@ func TestSetConfiguration(t *testing.T) {
                 "MaxActiveConns": 120
         },
        	"MessageBusConf": {
-      			"MessageQueueConfigFilePath": "/tmp/testFile.dat",
+      			"MessageBusConfigFilePath": "/tmp/testFile.dat",
 	                "MessageBusType": "Kafka",
       			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	      },
@@ -334,7 +334,7 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "Invalid value for MessageQueueConfigFilePath",
+			name:    "Invalid value for MessageBusConfigFilePath",
 			wantErr: true,
 		},
 		{
@@ -373,7 +373,7 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			Data.KeyCertConf.RSAPrivateKeyPath = sampleFileForTest
 		case 10:
 			Data.MessageBusConf = &MessageBusConf{
-				MessageQueueConfigFilePath: sampleFileForTest,
+				MessageBusConfigFilePath: sampleFileForTest,
 			}
 		case 11:
 			Data.MessageBusConf.MessageBusType = "Kafka"

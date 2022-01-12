@@ -89,11 +89,11 @@ func writeEventToJobQueue(message common.Events) {
 // the topic can be defined inside configuration file config.toml
 func Consume(topicName string) {
 	config.TLSConfMutex.RLock()
-	messageQueueConfigFilePath := config.Data.MessageBusConf.MessageQueueConfigFilePath
+	MessageBusConfigFilePath := config.Data.MessageBusConf.MessageBusConfigFilePath
 	messagebusType := config.Data.MessageBusConf.MessageBusType
 	config.TLSConfMutex.RUnlock()
 	// connecting to kafka
-	k, err := dc.Communicator(messagebusType, messageQueueConfigFilePath, topicName)
+	k, err := dc.Communicator(messagebusType, MessageBusConfigFilePath, topicName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return
@@ -109,11 +109,11 @@ func Consume(topicName string) {
 // SubscribeCtrlMsgQueue creates a consumer for the kafka topic
 func SubscribeCtrlMsgQueue(topicName string) {
 	config.TLSConfMutex.RLock()
-	messageQueueConfigFilePath := config.Data.MessageBusConf.MessageQueueConfigFilePath
+	MessageBusConfigFilePath := config.Data.MessageBusConf.MessageBusConfigFilePath
 	messagebusType := config.Data.MessageBusConf.MessageBusType
 	config.TLSConfMutex.RUnlock()
 	// connecting to messagbus
-	k, err := dc.Communicator(messagebusType, messageQueueConfigFilePath, topicName)
+	k, err := dc.Communicator(messagebusType, MessageBusConfigFilePath, topicName)
 	if err != nil {
 		log.Error("Unable to connect to kafka" + err.Error())
 		return

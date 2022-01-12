@@ -44,7 +44,7 @@ data:
     		"LBPort": {{ .Values.dellplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                 "MessageQueueConfigFilePath": "/etc/dellplugin_config/platformconfig.toml",
+                 "MessageBusConfigFilePath": "/etc/dellplugin_config/platformconfig.toml",
                  {{ if eq .Values.odimra.haDeploymentEnabled false }}
                  "MessageBusAddress": "redis-inmemory",
                  "HASet": "",

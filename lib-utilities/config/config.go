@@ -72,9 +72,9 @@ type DBConf struct {
 
 // MessageBusConf holds all message bus configurations
 type MessageBusConf struct {
-	MessageQueueConfigFilePath string   `json:"MessageQueueConfigFilePath"`
-	MessageBusType             string   `json:"MessageBusType"`
-	MessageBusQueue            []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"`
+	MessageBusType           string   `json:"MessageBusType"`
+	MessageBusQueue          []string `json:"MessageBusQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -297,8 +297,8 @@ func checkMessageBusConf() error {
 		Data.MessageBusConf.MessageBusType = "Kafka"
 	}
 	if Data.MessageBusConf.MessageBusType == "Kafka" {
-		if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-			return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
+		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 		}
 		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
 			log.Warn("No value set for MessageBusQueue, setting default value")

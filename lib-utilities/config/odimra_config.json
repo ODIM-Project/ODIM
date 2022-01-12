@@ -17,7 +17,7 @@
 		"CertificatePath": ""
 	},
 	"MessageBusConf": {
-		"MessageQueueConfigFilePath": "",
+		"MessageBusConfigFilePath": "",
 	  	"MessageBusType": "Kafka",
 		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	},

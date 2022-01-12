@@ -180,8 +180,6 @@
 
 # Introduction 
 
- Welcome to Resource Aggregator for Open Distributed Infrastructure Management!
-
 Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
 
 ODIMRA framework comprises the following two components.
@@ -189,21 +187,23 @@ ODIMRA framework comprises the following two components.
 - The resource aggregation function (the resource aggregator)
 
   The resource aggregation function is the single point of contact between the northbound clients and the southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes Redfish-compliant APIs to allow northbound infrastructure management systems to:
-    - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the
-      resource inventory.
-    - Gather crucial configuration information about southbound resources.
-    - Manipulate groups of resources in a single action.
-    - Listen to similar events from multiple southbound resources.
+
+    - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the resource inventory
+    - Gather crucial configuration information about southbound resources
+    - Manipulate groups of resources in a single action
+    - Listen to similar events from multiple southbound resources
   
 - One or more plugins
 
   The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. HPE Resource Aggregator for ODIM supports:
-  
-  - Generic Redfish plugin for ODIM (GRF): Generic Redfish plugin that can be used as a plugin for any Redfish-compliant device.
-  - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks. 
-    - Integration of additional third-party plugins.  	
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.11.1](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.11.1.pdf) and are fully Redfish-compliant.
+
+  - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
+  - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
+  - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
+
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are fully Redfish-compliant.
+
 Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
 
 
@@ -216,27 +216,29 @@ The following figure shows these functional layers of Resource Aggregator for OD
 
 ![ODIM_architecture](images/arch.png)
 
-- **API layer**
+**API layer**
 
-This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2020.3 and Specification 1.11.1).
+
+This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
 The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
-- **Services layer**
+**Services layer**
 
-The services layer is where all the services are hosted. This layer implements service logic for all use cases
-through an extensible domain model (Redfish Data Model). Requests coming from the API layer and the
-responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).
+The services layer is where all the services are hosted. This layer implements service logic for all use cases through an extensible domain model (Redfish Data Model). All resource information is stored in this data model and is used to service the API requests coming from the API layer. Any responses from the plugin layer might update the domain model. It maintains the state for event subscriptions, credentials, and tasks.
+
 
 ![Redfish_data_model](images/redfish_data_model.png)
 
-- **Event message bus layer**
+**Event message bus layer**
 
-This layer hosts a message broker which acts as a communication channel between the upper layers and the plugin layer. It supports common messaging architecture and real-time streaming. Resource Aggregator for ODIM uses Kafka as the event message bus.
+
+This layer hosts a message broker which acts as a communication channel between the plugin layer and the upper layers. It supports common messaging architecture to forward events received from the plugin layer to the upper layers. During the run-time, Resource Aggregator for ODIM uses either Kafka or the Redis stream service as the event message bus. 
 The services and the event message bus layers host Redis data store.
 
-- **Plugin layer**
+**Plugin layer**
 
-This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. It uses REST-based communication which is based on OpenAPI Specification v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
+
+This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. It uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
 The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 
@@ -248,7 +250,7 @@ To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS
 Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
 you will want to write your own scripting code to perform requests.
 </blockquote>
-This guide contains sample request and response payloads. For information on response payload parameters, refer to [Redfish® Scalable Platforms API (Redfish) schema 2020.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP0268_2020.3.pdf).
+This guide contains sample request and response payloads. For information on response payload parameters, refer to [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
 
 > **IMPORTANT:**
 The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
@@ -268,7 +270,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 `https://{odimra_host}:{port}/`
 
 - {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
-  
+
 	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 

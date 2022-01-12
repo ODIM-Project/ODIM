@@ -587,7 +587,32 @@ func MockSaveUndeliveredEvents(key string, event []byte) error {
 	return nil
 }
 
-// MockSaveDeviceSubscription is for mocking up of save device subscription
+// MockSaveDeviceSubscription is for mocking up of save undelivered events
 func MockSaveDeviceSubscription(evmodel.DeviceSubscription) error {
+	return nil
+}
+
+// MockGetUndeliveredEvents is for mocking up of get undelivered events
+func MockGetUndeliveredEvents(destination string) (string, error) {
+	return "", nil
+}
+
+// MockGetUndeliveredEventsFlag is for mocking up of getting undelivered events flag
+func MockGetUndeliveredEventsFlag(destination string) (bool, error) {
+	return true, nil
+}
+
+// MockSetUndeliveredEventsFlag is for mocking up of setting undelivered events flag
+func MockSetUndeliveredEventsFlag(destination string) error {
+	return nil
+}
+
+// MockDeleteUndeliveredEventsFlag is for mocking up of deleting undelivered events flag
+func MockDeleteUndeliveredEventsFlag(destination string) error {
+	return nil
+}
+
+// MockDeleteUndeliveredEvents is for mocking up of deleting undelivered events
+func MockDeleteUndeliveredEvents(destination string) error {
 	return nil
 }

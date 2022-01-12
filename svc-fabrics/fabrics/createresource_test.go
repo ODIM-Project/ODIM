@@ -102,13 +102,8 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-					"Location":          "12345",
+					"Allow":    `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+					"Location": "12345",
 				},
 				Body: map[string]interface{}{
 					"@odata.id": "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",
@@ -128,7 +123,6 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errResp1.CreateGenericErrorResponse(),
 			},
 		},
@@ -146,7 +140,6 @@ func TestFabrics_UpdateFabricResource(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errResp2.CreateGenericErrorResponse(),
 			},
 		},
@@ -208,13 +201,8 @@ func TestFabrics_UpdateFabricResourceWithNoValidSession(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-					"Location":          "12345",
+					"Allow":    `"GET", "PUT", "POST", "PATCH", "DELETE"`,
+					"Location": "12345",
 				},
 				Body: map[string]interface{}{
 					"@odata.id": "/redfish/v1/Fabrics/d72dade0-c35a-984c-4859-1108132d72da",

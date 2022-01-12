@@ -27,9 +27,6 @@ const (
 	Server Host = iota
 	// Client is for defining application type is Client
 	Client
-
-	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
-	SaveUndeliveredEventsFlag = false
 )
 
 const (
@@ -154,6 +151,6 @@ var (
 
 // AllowedMessageBusTypes is for checking for message types are allowed
 var AllowedMessageBusTypes = map[string]bool{
-	"Kafka":       true,
-	"RedisStream": true,
+	"Kafka":        true,
+	"RedisStreams": true,
 }

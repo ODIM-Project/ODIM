@@ -52,6 +52,7 @@ func getMockPluginContactInitializer() *Events {
 		GetAllFabrics:                    evcommon.MockGetAllFabrics,
 		GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
 		SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
+		SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
 	}
 	return &Events{
 		Connector: connector,

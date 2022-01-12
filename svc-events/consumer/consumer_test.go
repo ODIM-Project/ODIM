@@ -59,11 +59,11 @@ func TestKafkaSubscriber(t *testing.T) {
 		},
 	}
 	event, _ := json.Marshal(eventMessage)
-	kafkaMessage := common.Events{
+	message := common.Events{
 		IP:      "10.1.2.3",
 		Request: event,
 	}
-	KafkaSubscriber(kafkaMessage)
+	EventSubscriber(message)
 
 	var currentData int
 

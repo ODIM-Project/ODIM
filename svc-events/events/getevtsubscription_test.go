@@ -53,6 +53,11 @@ func getMockMethods() PluginContact {
 		GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
 		SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
 		SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
+		GetUndeliveredEvents:             evcommon.MockGetUndeliveredEvents,
+		GetUndeliveredEventsFlag:         evcommon.MockGetUndeliveredEventsFlag,
+		SetUndeliveredEventsFlag:         evcommon.MockSetUndeliveredEventsFlag,
+		DeleteUndeliveredEventsFlag:      evcommon.MockDeleteUndeliveredEventsFlag,
+		DeleteUndeliveredEvents:          evcommon.MockDeleteUndeliveredEvents,
 	}
 }
 func TestGetEventSubscriptionsCollection(t *testing.T) {

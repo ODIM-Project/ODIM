@@ -29,3 +29,9 @@ KTimeout   = 10
 KAFKACertFile       = ""
 KAFKAKeyFile        = ""
 KAFKACAFile         = ""
+
+[RedisStreams]
+RedisServerAddress =""
+RedisServerPort =""
+HASet =""
+

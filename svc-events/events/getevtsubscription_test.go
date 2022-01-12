@@ -57,6 +57,7 @@ func getMockMethods() PluginContact {
 		GetUndeliveredEventsFlag:         evcommon.MockGetUndeliveredEventsFlag,
 		SetUndeliveredEventsFlag:         evcommon.MockSetUndeliveredEventsFlag,
 		DeleteUndeliveredEventsFlag:      evcommon.MockDeleteUndeliveredEventsFlag,
+		DeleteUndeliveredEvents:          evcommon.MockDeleteUndeliveredEvents,
 	}
 }
 func TestGetEventSubscriptionsCollection(t *testing.T) {

@@ -207,7 +207,7 @@ Following are the parameters to be configured in the plugin configuration file.
 
 ```
 "MessageBusConf": {
-"MessageQueueConfigFilePath": "",
+"MessageBusConfigFilePath": "",
 "MessageBusType": "Kafka",
 "MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 }

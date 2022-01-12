@@ -42,11 +42,11 @@ type MsgExtendedInfo struct {
 func CreateErrorResponse(errs string) ErrorResopnse {
 	var err = ErrorResopnse{
 		Error{
-			Code:    "Base.1.6.1.GeneralError",
+			Code:    "Base.1.11.0.GeneralError",
 			Message: "See @Message.ExtendedInfo for more information.",
 			MessageExtendedInfo: []MsgExtendedInfo{
 				MsgExtendedInfo{
-					MessageID: "Base.1.6.1.GeneralError",
+					MessageID: "Base.1.11.0.GeneralError",
 					Message:   errs,
 				},
 			},

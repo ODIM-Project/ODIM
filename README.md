@@ -347,6 +347,7 @@ The following table lists the software components and their versions that are co
         ```
 
 
+
 ## Pulling the Docker images of all the Kubernetes microservices
 
 1. Run the following command on the deployment node to pull each Docker image in the following table:
@@ -2783,7 +2784,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 7. Save the GRF plugin Docker image on the deployment node at `~/plugins/grfplugin`.
 
     ```
-    docker save grfplugin:1.0 -o ~/plugins/grfplugin/grfplugin.tar
+    docker save grfplugin:2.0 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
 8. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.

@@ -68,11 +68,11 @@ type EventRecord struct {
 	Actions                    *OemActions `json:"Actions,omitempty"`
 	Context                    string      `json:"Context,omitempty"`
 	EventGroupID               int         `json:"EventGroupId,omitempty"`
-	EventID                    string      `json:"EventId"`
-	EventTimestamp             string      `json:"EventTimestamp"`
+	EventID                    string      `json:"EventId,omitempty"`
+	EventTimestamp             string      `json:"EventTimestamp,omitempty"`
 	EventType                  string      `json:"EventType"`
-	MemberID                   string      `json:"MemberId,omitempty"`
-	Message                    string      `json:"Message"`
+	MemberID                   string      `json:"MemberId"`
+	Message                    string      `json:"Message,omitempty"`
 	MessageArgs                []string    `json:"MessageArgs,omitempty"`
 	MessageID                  string      `json:"MessageId"`
 	MessageSeverity            string      `json:"MessageSeverity,omitempty"`
@@ -80,4 +80,5 @@ type EventRecord struct {
 	OriginOfCondition          *Link       `json:"OriginOfCondition,omitempty"`
 	Severity                   string      `json:"Severity,omitempty"`
 	SpecificEventExistsInGroup bool        `json:"SpecificEventExistsInGroup,omitempty"`
+	LogEntry                   *Link       `json:"LogEntry,omitempty"`
 }

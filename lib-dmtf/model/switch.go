@@ -48,6 +48,11 @@ type Switch struct {
 	SwitchType              string       `json:"SwitchType"`
 	TotalSwitchWidth        int          `json:"TotalSwitchWidth,omitempty"`
 	UUID                    string       `json:"UUID,omitempty"`
+	Certificates            Certificates `json:"Certificates,omitempty"`
+	Enabled                 bool         `json:"Enabled,omitempty"`
+	EnvironmentMetrics      *Link        `json:"EnvironmentMetrics,omitempty"`
+	Location                *Link        `json:"Location,omitempty"`
+	Measurements            []*Link      `json:"Measurements,omitempty"`
 }
 
 // SwitchLinks defines the

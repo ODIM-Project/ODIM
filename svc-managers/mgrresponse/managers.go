@@ -21,12 +21,14 @@ import (
 
 //ManagersCollection for odimra
 type ManagersCollection struct {
-	OdataContext string      `json:"@odata.context"`
-	Etag         string      `json:"@odata.etag,omitempty"`
-	OdataID      string      `json:"@odata.id"`
-	OdataType    string      `json:"@odata.type"`
-	Description  string      `json:"Description"`
-	Name         string      `json:"Name"`
-	Members      []dmtf.Link `json:"Members"`
-	MembersCount int         `json:"Members@odata.count"`
+	OdataContext    string      `json:"@odata.context"`
+	Etag            string      `json:"@odata.etag,omitempty"`
+	OdataID         string      `json:"@odata.id"`
+	OdataType       string      `json:"@odata.type"`
+	Description     string      `json:"Description,omitempty"`
+	Name            string      `json:"Name"`
+	Members         []dmtf.Link `json:"Members"`
+	MembersCount    int         `json:"Members@odata.count"`
+	MembersNextLink string      `json:"Members@odata.nextLink,omitempty"`
+	Oem             *dmtf.Oem   `json:"Oem,omitempty"`
 }

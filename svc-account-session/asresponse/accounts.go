@@ -16,6 +16,7 @@
 package asresponse
 
 import (
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
@@ -47,18 +48,46 @@ type Role struct {
 //AccountService struct definition
 type AccountService struct {
 	response.Response
-	Status                          Status   `json:"Status"`
-	ServiceEnabled                  bool     `json:"ServiceEnabled"`
-	AuthFailureLoggingThreshold     int      `json:"AuthFailureLoggingThreshold"`
-	MinPasswordLength               int      `json:"MinPasswordLength"`
-	AccountLockoutThreshold         int      `json:"AccountLockoutThreshold"`
-	AccountLockoutDuration          int      `json:"AccountLockoutDuration"`
-	AccountLockoutCounterResetAfter int      `json:"AccountLockoutCounterResetAfter"`
-	Accounts                        Accounts `json:"Accounts"`
-	Roles                           Accounts `json:"Roles"`
+	Status                             Status           `json:"Status,omitempty"`
+	ServiceEnabled                     bool             `json:"ServiceEnabled,omitempty"`
+	AuthFailureLoggingThreshold        int              `json:"AuthFailureLoggingThreshold,omitempty"`
+	MinPasswordLength                  int              `json:"MinPasswordLength,omitempty"`
+	AccountLockoutThreshold            int              `json:"AccountLockoutThreshold,omitempty"`
+	AccountLockoutDuration             int              `json:"AccountLockoutDuration,omitempty"`
+	AccountLockoutCounterResetAfter    int              `json:"AccountLockoutCounterResetAfter,omitempty"`
+	Accounts                           Accounts         `json:"Accounts,omitempty"`
+	Roles                              Accounts         `json:"Roles,omitempty"`
+	AccountLockoutCounterResetEnabled  bool             `json:"AccountLockoutCounterResetEnabled,omitempty"`
+	Actions                            *dmtf.OemActions `json:"Actions,omitempty"`
+	ActiveDirectory                    *ActiveDirectory `json:"ActiveDirectory,omitempty"`
+	AdditionalExternalAccountProviders *dmtf.Link       `json:"AdditionalExternalAccountProviders,omitempty"`
+	LDAP                               *LDAP            `json:"LDAP,omitempty"`
+	LocalAccountAuth                   string           `json:"LocalAccountAuth,omitempty"`
+	MaxPasswordLength                  int              `json:"MaxPasswordLength,omitempty"`
+	OAuth2                             *OAuth2          `json:"OAuth2,omitempty"`
+	Oem                                *OEM             `json:"Oem,omitempty"`
+	PasswordExpirationDays             int              `json:"PasswordExpirationDays,omitempty"`
+	PrivilegeMap                       *dmtf.Link       `json:"PrivilegeMap,omitempty"`
+	RestrictedOemPrivileges            []string         `json:"RestrictedOemPrivileges,omitempty"`
+	RestrictedPrivileges               []string         `json:"RestrictedPrivileges,omitempty"`
+	SupportedAccountTypes              []string         `json:"SupportedAccountTypes,omitempty"`
+	SupportedOEMAccountTypes           []string         `json:"SupportedOEMAccountTypes,omitempty"`
+	TACACSplus                         *TACACSplus      `json:"TACACSplus,omitempty"`
 }
 
 //Accounts struct definition
 type Accounts struct {
 	OdataID string `json:"@odata.id"`
+}
+
+type OAuth2 struct {
+}
+
+type ActiveDirectory struct {
+}
+
+type LDAP struct {
+}
+
+type TACACSplus struct {
 }

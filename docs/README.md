@@ -270,6 +270,7 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 `https://{odimra_host}:{port}/`
 
 - {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
+
 	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
@@ -1979,9 +1980,9 @@ curl -i POST \
 
 ```
 {
-   "HostName":"{plugin_host}:45003",
+   "HostName":"{plugin_host}:45007",
    "UserName":"admin",
-   "Password":"Od!m12$4",
+   "Password":"Plug!n12$4",
    "Links":{
       "ConnectionMethod": {
          "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a171e66c-b4a8-137f-981b-1c07ddfeacbb"

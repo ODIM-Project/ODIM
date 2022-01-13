@@ -14,6 +14,8 @@
 
 package model
 
+//Thermal 1.7.1 (deprecated)
+
 //Thermal is the redfish Power model according to the 2020.3 release
 type Thermal struct {
 	ODataContext string          `json:"@odata.context,omitempty"`

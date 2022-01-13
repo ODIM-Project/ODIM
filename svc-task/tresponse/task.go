@@ -39,16 +39,18 @@ type SubTask struct {
 //Task struct is used to display to the user
 type Task struct {
 	response.Response
-	TaskState       string     `json:"TaskState"`
-	StartTime       time.Time  `json:"StartTime"`
-	EndTime         time.Time  `json:"EndTime,omitempty"`
-	TaskStatus      string     `json:"TaskStatus"`
-	SubTasks        string     `json:"SubTasks,omitempty"`
-	TaskMonitor     string     `json:"TaskMonitor"`
-	PercentComplete int32      `json:"PercentComplete,omitempty"`
-	HidePayload     bool       `json:"-"`
-	Payload         Payload    `json:"Payload,omitempty"`
-	Messages        []Messages `json:"Messages"`
+	TaskState       string      `json:"TaskState"`
+	StartTime       time.Time   `json:"StartTime"`
+	EndTime         time.Time   `json:"EndTime,omitempty"`
+	TaskStatus      string      `json:"TaskStatus"`
+	SubTasks        string      `json:"SubTasks,omitempty"`
+	TaskMonitor     string      `json:"TaskMonitor"`
+	PercentComplete int32       `json:"PercentComplete,omitempty"`
+	HidePayload     bool        `json:"HidePayload,omitempty"`
+	Payload         Payload     `json:"Payload,omitempty"`
+	Messages        []Messages  `json:"Messages,omitempty"`
+	Actions         *OemActions `json:"Actions,omitempty"`
+	Oem             Oem         `json:"Oem,omitempty"`
 }
 
 //Messages struct is used to display to the user
@@ -60,6 +62,7 @@ type Messages struct {
 	RelatedProperties []string `json:"RelatedProperties"`
 	Resolution        string   `json:"Resolution"`
 	Severity          string   `json:"Severity"`
+	MessageSeverity   string   `json:"MessageSeverity,omitempty"`
 }
 
 // Oem Model
@@ -84,12 +87,19 @@ type TaskCollectionResponse struct {
 //TaskServiceResponse is used to give baxk the response
 type TaskServiceResponse struct {
 	response.Response
-	CompletedTaskOverWritePolicy    string    `json:"CompletedTaskOverWritePolicy"`
-	DateTime                        time.Time `json:"DateTime"`
-	LifeCycleEventOnTaskStateChange bool      `json:"LifeCycleEventOnTaskStateChange"`
-	ServiceEnabled                  bool      `json:"ServiceEnabled"`
-	Status                          Status    `json:"Status"`
-	Tasks                           Tasks     `json:"Tasks"`
+	CompletedTaskOverWritePolicy    string      `json:"CompletedTaskOverWritePolicy,omitempty"`
+	DateTime                        time.Time   `json:"DateTime,omitempty"`
+	LifeCycleEventOnTaskStateChange bool        `json:"LifeCycleEventOnTaskStateChange,omitempty"`
+	ServiceEnabled                  bool        `json:"ServiceEnabled,omitempty"`
+	Status                          Status      `json:"Status,omitempty"`
+	Tasks                           Tasks       `json:"Tasks,omitempty"`
+	TaskAutoDeleteTimeoutMinutes    int         `json:"TaskAutoDeleteTimeoutMinutes,omitempty"`
+	Actions                         *OemActions `json:"Actions,omitempty"`
+	Oem                             Oem         `json:"Oem,omitempty"`
+}
+
+type OemActions struct {
+	Oem *Oem `json:"Oem,omitempty"`
 }
 
 //Tasks struct for response

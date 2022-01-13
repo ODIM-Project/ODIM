@@ -3,6 +3,7 @@ module github.com/ODIM-Project/ODIM/svc-account-session
 go 1.17
 
 require (
+	github.com/ODIM-Project/ODIM/lib-dmtf v0.0.0-20210901061202-f84c396a018e
 	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20201201072448-9772421f1b55
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.6.0
@@ -32,11 +33,9 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/googleapis/gnostic v0.1.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20211101210129-f9bde24e5ca2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/iris-contrib/blackfriday v2.0.0+incompatible // indirect
 	github.com/iris-contrib/jade v1.1.3 // indirect
@@ -61,7 +60,6 @@ require (
 	github.com/ryanuber/columnize v2.1.0+incompatible // indirect
 	github.com/schollz/closestmatch v2.1.0+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/smartystreets/assertions v1.2.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect

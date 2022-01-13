@@ -50,13 +50,14 @@ type SessionService struct {
 	OdataType      string   `json:"@odata.type"`
 	ID             string   `json:"Id"`
 	Name           string   `json:"Name"`
-	Description    string   `json:"Description"`
-	Status         Status   `json:"Status"`
-	ServiceEnabled bool     `json:"ServiceEnabled"`
-	SessionTimeout float64  `json:"SessionTimeout"`
-	Sessions       Sessions `json:"Sessions"`
-	OdataContext   string   `json:"@odata.context"`
+	Description    string   `json:"Description,omitempty"`
+	Status         Status   `json:"Status,omitempty"`
+	ServiceEnabled bool     `json:"ServiceEnabled,omitempty"`
+	SessionTimeout float64  `json:"SessionTimeout,omitempty"`
+	Sessions       Sessions `json:"Sessions,omitempty"`
+	OdataContext   string   `json:"@odata.context,omitempty"`
 	OdataID        string   `json:"@odata.id"`
+	Etag           string   `json:"@odata.etag,omitempty"`
 }
 
 //Sessions struct definition

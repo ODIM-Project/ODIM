@@ -26,4 +26,5 @@ type Collection struct {
 	MembersCount         int         `json:"Members@odata.count"`
 	MemberNavigationLink string      `json:"Members@odata.navigationLink,omitempty"`
 	Oem                  interface{} `json:"Oem,omitempty"`
+	MembersNextLink      string      `json:"Members@odata.nextLink,omitempty"`
 }

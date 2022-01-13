@@ -1,3 +1,5 @@
+
+
 # Redfish-plugin  
 
 Redfish-plugin communicates with redfish compliant BMC.  
@@ -196,6 +198,32 @@ Each plugin implements API services conforming to specific standards targeted at
   <blockquote>
   NOTE: All events are sent to the aggregator over the message bus. These events further deliver the redfish events as json payloads. 
   </blockquote>
+
+### Message bus configuration
+
+The common messaging architecture is used to forward events received from the plugin layer to the upper layers. During the run-time, the plugin uses either Kafka or the Redis stream service as the event message bus.
+
+Following are the parameters to be configured in the plugin configuration file.
+
+```
+"MessageBusConf": {
+"MessageBusConfigFilePath": "",
+"MessageBusType": "Kafka",
+"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+}
+```
+
+<blockquote>
+NOTE: By default, MessageBusType is Kafka. You can change it to Redis Stream during deployment, if required.
+</blockquote>
+
+| Message bus configuration parameters | Description                                                  |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `MessageQueueConfigFilePath`         | File path to the configuration file that has the required configuration details regarding supported message queues |
+| `MessageBusType`                     | Event message bus type                                       |
+| `MessageBusQueue`                    | Event message bus queue name                                 |
+
+
 
 ## Event message bus interface
 

@@ -87,13 +87,7 @@ func TestGetAllAccounts(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "POST", "HEAD"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
 				},
 				Body: asresponse.List{
 					Response:     successResponse,
@@ -119,10 +113,7 @@ func TestGetAllAccounts(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -200,13 +191,7 @@ func TestGetAccount(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "POST", "HEAD"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -234,13 +219,7 @@ func TestGetAccount(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "POST", "HEAD"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -267,10 +246,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -287,10 +263,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -307,10 +280,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -351,13 +321,7 @@ func TestGetAccountService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
-					"Content-type":  "application/json; charset=utf-8",
 					"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
 				},
 				Body: asresponse.AccountService{
 					Response: successResponse,
@@ -382,13 +346,7 @@ func TestGetAccountService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
-					"Content-type":  "application/json; charset=utf-8",
 					"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
 				},
 				Body: asresponse.AccountService{
 					Response: successResponse,

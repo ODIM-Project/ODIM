@@ -57,7 +57,7 @@ func main() {
 		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
-	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 

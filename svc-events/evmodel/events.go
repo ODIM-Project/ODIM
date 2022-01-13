@@ -48,6 +48,9 @@ const (
 
 	// UndeliveredEvents holds table for UndeliveredEvent
 	UndeliveredEvents = "UndeliveredEvents"
+
+	// ReadInProgres holds table for ReadInProgres
+	ReadInProgres = "ReadInProgres"
 )
 
 // OdataIDLink containes link to a resource
@@ -482,6 +485,77 @@ func SaveUndeliveredEvents(key string, event []byte) error {
 	if err = connPool.AddResourceData(UndeliveredEvents, key, string(event)); err != nil {
 		log.Error(" while trying to add Undelivered Events to DB: " + err.Error())
 		return fmt.Errorf("error while trying to add Undelivered Events to DB: %v", err.Error())
+	}
+	return nil
+}
+
+// GetUndeliveredEvents read the undelivered events for the destination
+func GetUndeliveredEvents(destination string) (string, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return "", fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+	}
+
+	eventData, err := conn.Read(UndeliveredEvents, destination)
+	if err != nil {
+		return "", fmt.Errorf("error: while trying to fetch details: %v", err.Error())
+	}
+
+	return eventData, nil
+}
+
+// DeleteUndeliveredEvents deletes the undelivered events for the destination
+func DeleteUndeliveredEvents(destination string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+	}
+	if err := conn.Delete(UndeliveredEvents, destination); err != nil {
+		return fmt.Errorf("%v", err.Error())
+	}
+	return nil
+}
+
+// SetUndeliveredEventsFlag will set the flag to maintain one instance already picked up
+// the undelivered events for the destination
+func SetUndeliveredEventsFlag(destination string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+	}
+	if err = conn.AddResourceData(ReadInProgres, destination, "true"); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", ReadInProgres, err.Error())
+	}
+	data, err := conn.Read(ReadInProgres, destination)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(data)
+	return nil
+}
+
+// GetUndeliveredEventsFlag will get the flag to maintain one instance already picked up
+// the undelivered events for the destination
+func GetUndeliveredEventsFlag(destination string) (bool, error) {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return false, fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+	}
+	_, err = conn.Read(ReadInProgres, destination)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// DeleteUndeliveredEventsFlag deletes the PickUpUndeliveredEventsFlag key from the DB, return error if any
+func DeleteUndeliveredEventsFlag(destination string) error {
+	conn, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return fmt.Errorf("error: while trying to create connection with DB: %v", err.Error())
+	}
+	if err := conn.Delete(ReadInProgres, destination); err != nil {
+		return fmt.Errorf("%v", err.Error())
 	}
 	return nil
 }

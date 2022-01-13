@@ -75,7 +75,6 @@ func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r res
 	}
 	if !is2xx(statusCode) {
 		json.Unmarshal(body, &r.Body)
-		r.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		r.StatusCode = int32(statusCode)
 		r.StatusMessage = statusMessage
 		return

@@ -693,3 +693,103 @@ func TestUpdateEvtSubscription(t *testing.T) {
 	assert.Equal(t, "https://10.10.10.23:8080/destination1", evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination1")
 
 }
+func TestSaveUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+}
+
+func TestGetUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+
+	eventData, err := GetUndeliveredEvents("destination")
+	assert.Nil(t, err, "error should be nil")
+	assert.Equal(t, string(eventData), eventData, "there should be event data")
+}
+
+func TestDeleteUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+
+	err := DeleteUndeliveredEvents("destination")
+	assert.Nil(t, err, "error should be nil")
+
+	_, err = GetUndeliveredEvents("destination")
+	assert.NotNil(t, err, "error should not be nil")
+}
+
+func TestSetUndeliveredEventsFlag(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
+		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
+	}
+}
+
+func TestGetUndeliveredEventsFlag(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
+		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
+	}
+
+	flag, err := GetUndeliveredEventsFlag("destination")
+	assert.Nil(t, err, "error should be nil")
+	assert.True(t, flag, "flag should be true")
+}
+
+func TestDeleteUndeliveredEventsFlag(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
+		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
+	}
+	err := DeleteUndeliveredEventsFlag("destination")
+	assert.Nil(t, err, "error should be nil")
+
+	flag, err := GetUndeliveredEventsFlag("destination")
+	assert.NotNil(t, err, "error should be nil")
+	assert.False(t, flag, "flag should be false")
+}

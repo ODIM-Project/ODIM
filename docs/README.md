@@ -585,7 +585,7 @@ Transfer-Encoding:chunked
    "Oem":{
 
    },
-   "RedfishVersion": "1.11.1",
+   "RedfishVersion": "1.14.0",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
@@ -911,7 +911,7 @@ Transfer-Encoding:chunked
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
 	"Message": "The resource has been created successfully",
-	"MessageId": "Base.1.6.1.Created",
+	"MessageId": "Base.1.11.0.Created",
 	"Severity": "OK",
 	"UserName": "abc"
 }
@@ -1455,7 +1455,7 @@ Transfer-Encoding:chunked
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.6.1.Created",
+   "MessageId":"Base.1.11.0.Created",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -1604,7 +1604,7 @@ Transfer-Encoding:chunked
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.6.1.AccountModified",
+   "MessageId":"Base.1.11.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -2355,8 +2355,7 @@ curl -i PATCH \
 
 ```
 {
-
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
@@ -2529,7 +2528,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -3478,7 +3477,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1",
-   "@odata.type":"#ComputerSystem.v1_4_0.ComputerSystem",
+   "@odata.type":"#ComputerSystem.v1_16_0.ComputerSystem",
    "Id":"e24fb205-6669-4080-b53c-67d4923aa73e.1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
@@ -3884,7 +3883,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Memory.Memory",
    "@odata.etag":"W/\"E6EC3A2C\"",
    "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory/proc1dimm1",
-   "@odata.type":"#Memory.v1_7_1.Memory",
+   "@odata.type":"#Memory.v1_13_0.Memory",
    "Id":"proc1dimm1",
    "BaseModuleType":"RDIMM",
    "BusWidthBits":72,
@@ -4071,7 +4070,7 @@ curl -i GET \
 	"@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
 	"@odata.etag": "W/\"5DEAF04A\"",
 	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1/EthernetInterfaces/1",
-	"@odata.type": "#EthernetInterface.v1_4_1.EthernetInterface",
+	"@odata.type": "#EthernetInterface.v1_7_0.EthernetInterface",
 	"Id": "1",
 	"FullDuplex": true,
 	"IPv4Addresses": [],
@@ -4124,7 +4123,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#PCIeDevice.PCIeDevice",
     "@odata.etag": "W/\"33150E20\"",
     "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79.1/PCIeDevices/1",
-    "@odata.type": "#PCIeDevice.v1_5_0.PCIeDevice",
+    "@odata.type": "#PCIeDevice.v1_7_0.PCIeDevice",
     "Id": "1",
     "Name": "HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
     "Oem": {
@@ -4352,9 +4351,8 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 {
    "@odata.etag":"\"915af5f726a127f66c2\"",
    "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27",
-   "@odata.type":"#Volume.v1_4_1.Volume",
+   "@odata.type":"#Volume.v1_6_2.Volume",
    "AccessCapabilities":[
-      
    ],
    "Actions":{
       "#Volume.Initialize":{
@@ -4482,7 +4480,7 @@ The StoragePools schema represents storage pools, allocated volumes and drives.
 {
    "@odata.etag":"\"a81c2a4f4e972e18b6306\"",
    "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0",
-   "@odata.type":"#Drive.v1_9_1.Drive",
+   "@odata.type":"#Drive.v1_13_1.Drive",
    "AssetTag":"",
    "BlockSizeBytes":512,
    "CapableSpeedGbs":6,
@@ -4580,7 +4578,7 @@ curl -i GET \
 {
     "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
     "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0",
-    "@odata.type": "#Storage.v1_7_1.Storage",
+    "@odata.type": "#Storage.v1_11_1.Storage",
     "Description": "HPE Smart Storage Array Controller View",
     "Drives": [
         {
@@ -4734,7 +4732,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#Volume.Volume",
    "@odata.etag":"W/\"46916D5D\"",
    "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Volumes/1",
-   "@odata.type":"#Volume.v1_4_1.Volume",
+   "@odata.type":"#Volume.v1_6_2.Volume",
    "CapacityBytes":1200209526784,
    "Encrypted":false,
    "Id":"1",
@@ -5074,9 +5072,8 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
-
    "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1",
-   "@odata.type":"#Chassis.v1_6_0.Chassis",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
@@ -5329,7 +5326,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
    "@odata.etag":"W/\"F303ECE9\"",
    "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c.1/NetworkAdapters/{rid}",
-   "@odata.type":"#NetworkAdapter.v1_5_0.NetworkAdapter",
+   "@odata.type":"#NetworkAdapter.v1_8_0.NetworkAdapter",
    "Description":"The network adapter resource instances available in this chassis.",
    "Name":"Network Adapter View",
    "Oem":{
@@ -7381,7 +7378,7 @@ curl -i GET \
    ],
    "Members@odata.count":1,
    "Name":"Fabric Collection",
-   "RedfishVersion":"1.8.0",
+   "RedfishVersion":"1.14.0",
    "@odata.type":"#FabricCollection.FabricCollection"
 }
 ```
@@ -7710,7 +7707,7 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.0.4",
+	"RedfishVersion": "1.14.0",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	
@@ -9897,7 +9894,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_7_0.Event ",
+   "@odata.type":"#Event.v1_7_0.Event",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",

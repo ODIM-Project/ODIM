@@ -74,10 +74,29 @@ type SystemOperation struct {
 
 // AggregationSource  payload of adding a AggregationSource
 type AggregationSource struct {
-	HostName string
-	UserName string
-	Password []byte
-	Links    interface{}
+	HostName     string                `json:"HostName"`
+	UserName     string                `json:"UserName,omitempty"`
+	Password     []byte                `json:"Password,omitempty"`
+	Links        interface{}           `json:"Links,omitempty"`
+	ODataContext string                `json:"@odata.context,omitempty"`
+	ODataEtag    string                `json:"@odata.etag,omitempty"`
+	ODataID      string                `json:"@odata.id"`
+	ODataType    string                `json:"@odata.type"`
+	Name         string                `json:"Name"`
+	Actions      *dmtfmodel.OemActions `json:"Actions,omitempty"`
+	Description  string                `json:"Description,omitempty"`
+	Id           string                `json:"Id"`
+	Oem          *dmtfmodel.Oem        `json:"Oem,omitempty"`
+	SNMP         *SNMP                 `json:"SNMP,omitempty"`
+}
+
+type SNMP struct {
+	AuthenticationKey      string `json:"AuthenticationKey,omitempty"`
+	AuthenticationKeySet   string `json:"AuthenticationKeySet,omitempty"`
+	AuthenticationProtocol string `json:"AuthenticationProtocol,omitempty"`
+	EncryptionKey          string `json:"EncryptionKey,omitempty"`
+	EncryptionKeySet       bool   `json:"EncryptionKeySet,omitempty"`
+	EncryptionProtocol     string `json:"EncryptionProtocol,omitempty"`
 }
 
 // Aggregate payload is used for perform the operations on Aggregate

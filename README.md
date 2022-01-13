@@ -620,6 +620,8 @@ Upon each execution of odim-controller, the following information is logged:
 - Options passed to odim-controller
 - Complete output of the operation
 
+
+
 # Deploying Resource Aggregator for ODIM and the Plugins
 
 Topics covered in this section include:

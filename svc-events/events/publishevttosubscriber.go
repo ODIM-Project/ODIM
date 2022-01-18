@@ -323,20 +323,21 @@ func (p *PluginContact) postEvent(destination, eventUniqueID string, event []byt
 	resp, err := sendEvent(destination, event)
 	if err == nil {
 		resp.Body.Close()
-		log.Printf("event post response: %v", resp)
+		log.Info("Event is successfully forwarded")
 		if evcommon.SaveUndeliveredEventsFlag {
 			// check any undelivered events are present in db for the destination and publish those
 			go p.checkUndeliveredEvents(destination)
 		}
 		return
 	}
+	undeliveredEventID := destination + ":" + eventUniqueID
 	if evcommon.SaveUndeliveredEventsFlag {
-		serr := p.SaveUndeliveredEvents(destination+":"+eventUniqueID, event)
+		serr := p.SaveUndeliveredEvents(undeliveredEventID, event)
 		if serr != nil {
 			log.Error("error while saving undelivered event: ", serr.Error())
 		}
 	}
-	go p.reAttemptEvents(destination, event)
+	go p.reAttemptEvents(destination, undeliveredEventID, event)
 	return
 }
 
@@ -361,17 +362,22 @@ func sendEvent(destination string, event []byte) (*http.Response, error) {
 	return httpClient.Do(req)
 }
 
-func (p *PluginContact) reAttemptEvents(destination string, event []byte) {
+func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, event []byte) {
 	var resp *http.Response
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
-		log.Println("Retrying event posting")
+		log.Info("Retrying event posting")
 		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
-			log.Printf("event post response: %v", resp)
+			log.Info("Event is successfully forwarded")
 			if evcommon.SaveUndeliveredEventsFlag {
+				// if event is delivered then delete the same which is saved in 1st attempt
+				err = p.DeleteUndeliveredEvents(undeliveredEventID)
+				if err != nil {
+					log.Error("error while deleting undelivered events: ", err.Error())
+				}
 				// check any undelivered events are present in db for the destination and publish those
 				go p.checkUndeliveredEvents(destination)
 			}
@@ -519,7 +525,7 @@ func (p *PluginContact) checkUndeliveredEvents(destination string) {
 		}
 		destData, err := p.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
 		if err != nil {
-			log.Error("error while getting all matching details: ", err.Error())
+			log.Error("No matching details found")
 		}
 		for _, dest := range destData {
 			event, err := p.GetUndeliveredEvents(dest)
@@ -530,7 +536,6 @@ func (p *PluginContact) checkUndeliveredEvents(destination string) {
 			event = strings.Replace(event, "\\", "", -1)
 			event = strings.TrimPrefix(event, "\"")
 			event = strings.TrimSuffix(event, "\"")
-			log.Info("Undelivered Events", event)
 			resp, err := sendEvent(destination, []byte(event))
 			if err != nil {
 				log.Error("error while make https call to send the event: ", err.Error())
@@ -538,7 +543,7 @@ func (p *PluginContact) checkUndeliveredEvents(destination string) {
 				continue
 			}
 			resp.Body.Close()
-			log.Printf("event post response: %v", resp)
+			log.Info("Event is successfully forwarded")
 			err = p.DeleteUndeliveredEvents(dest)
 			if err != nil {
 				log.Error("error while deleting undelivered events: ", err.Error())

@@ -14,7 +14,7 @@
 
 - set_fact:
     hostname_list: "{{ hostname_list + [item] }}"
-  with_items: "{{ groups['kube-master'] }}"
+  with_items: "{{ groups['kube_control_plane'] }}"
 
 - name: Copying helm config file
   copy:

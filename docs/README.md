@@ -11037,6 +11037,8 @@ Audit logs has information on each API and is stored in the API.log file.  Each 
 
 - <110> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
 
+- <110> 2022-01-17T13:57:48Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"10.24.0.5","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+
 - <107> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
 
   <blockquote> Note: <110> is the audit information code and <107> is the audit error code. </blockquote>

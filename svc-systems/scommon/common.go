@@ -123,7 +123,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 		"Password":       decryptedPasswordByte,
 	}
 	//replace the uuid:system id with the system to the @odata.id from request url
-	contactRequest.OID = strings.Replace(req.URL, req.UUID+ "." +req.SystemID, req.SystemID, -1)
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
 	body, _, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
@@ -179,7 +179,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis")) {
-			key = append(key, DeviceUUID + "." + id)
+			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
 		key = append(key, id)

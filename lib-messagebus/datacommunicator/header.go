@@ -26,9 +26,11 @@ import (
 )
 
 // BrokerType defines the underline MQ platform to be selected for the
-// messages. KAFKA is the platform supported as part of odimra phase 1.
+// messages. KAFKA and RedisStremas platforms are supported.
 const (
-	KAFKA = iota // KAFKA as Messaging Platform, Please use this ID
+	KAFKA                = "Kafka"        // KAFKA as Messaging Platform, Please use this ID
+	REDISSTREAMS         = "RedisStreams" // REDISSTREAMS as Messaging Platform
+	EVENTREADERGROUPNAME = "eventreaders_grp"
 )
 
 // MQBus Interface defines the Process interface function (Only function user
@@ -58,7 +60,7 @@ type MsgProcess func(d interface{})
 // DataResponder - Refer HandleResponse Type description
 type Packet struct {
 	// BrokerType defines the underline MQ platform
-	BrokerType int
+	BrokerType string
 }
 
 // Communicator defines the Broker platform Middleware selection and corresponding
@@ -66,13 +68,13 @@ type Packet struct {
 // type would be stored as part of Connection Object "Packet".
 // TODO: We would be looking into Kafka Synchronous communication API for providing
 // support for Sync Communication Model in MessageBus
-func Communicator(bt int, messageQueueConfigPath, pipe string) (MQBus, error) {
+func Communicator(bt string, messageQueueConfigPath, pipe string) (MQBus, error) {
 
 	// Defining pointer for KAFKA Connection Objects Based on
 	// BrokerType value, Middleware Connection will be created. Also we would be
 	// storing maintain the connections as a Map (Between Connection and Pipe)
 	var kp *KafkaPacket
-
+	var rp *RedisStreamsPacket
 	switch bt {
 	case KAFKA:
 		kp = new(KafkaPacket)
@@ -80,8 +82,13 @@ func Communicator(bt int, messageQueueConfigPath, pipe string) (MQBus, error) {
 		kp.messageBusConfigFile = messageQueueConfigPath
 		kp.pipe = pipe
 		return kp, nil
+	case REDISSTREAMS:
+		rp = new(RedisStreamsPacket)
+		rp.BrokerType = bt
+		rp.pipe = pipe
+		return rp, nil
 	default:
-		return nil, fmt.Errorf("Broker: \"Broker Type\" is not supported - %d", bt)
+		return nil, fmt.Errorf("Broker: \"Broker Type\" is not supported - %s", bt)
 	}
 }
 

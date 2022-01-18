@@ -134,10 +134,8 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 	if err != nil {
 		resp.StatusCode = getResp.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
 	}
-	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	err = json.Unmarshal(body, &resp.Body)

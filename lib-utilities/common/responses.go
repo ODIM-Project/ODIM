@@ -17,14 +17,31 @@ package common
 
 import (
 	iris "github.com/kataras/iris/v12"
+	"net/http"
 )
+
+// commonHeaders holds the common response headers
+var commonHeaders = map[string]string{
+	"Connection":             "keep-alive",
+	"OData-Version":          "4.0",
+	"X-Frame-Options":        "sameorigin",
+	"X-Content-Type-Options": "nosniff",
+	"Content-type":           "application/json; charset=utf-8",
+	"Cache-Control":          "no-cache",
+	"Transfer-Encoding":      "chunked",
+}
 
 // SetResponseHeader will add the params to the response header
 func SetResponseHeader(ctx iris.Context, params map[string]string) {
-	ctx.ResponseWriter().Header().Set("Connection", "keep-alive")
-	ctx.ResponseWriter().Header().Set("OData-Version", "4.0")
-	ctx.ResponseWriter().Header().Set("X-Frame-Options", "sameorigin")
+	SetCommonHeaders(ctx.ResponseWriter())
 	for key, value := range params {
 		ctx.ResponseWriter().Header().Set(key, value)
+	}
+}
+
+// SetCommonHeaders will add the common headers to the response writer
+func SetCommonHeaders(w http.ResponseWriter) {
+	for key, value := range commonHeaders {
+		w.Header().Set(key, value)
 	}
 }

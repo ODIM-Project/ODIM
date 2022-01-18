@@ -44,7 +44,7 @@ data:
     		"LBPort": {{ .Values.grfplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                "MessageQueueConfigFilePath": "/etc/grfplugin_config/platformconfig.toml",
+                "MessageBusConfigFilePath": "/etc/grfplugin_config/platformconfig.toml",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "MessageBusAddress": "redis-inmemory",
                 "HASet": "",

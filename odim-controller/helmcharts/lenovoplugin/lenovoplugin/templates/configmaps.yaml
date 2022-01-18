@@ -44,7 +44,7 @@ data:
     		"LBPort": {{ .Values.lenovoplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                "MessageQueueConfigFilePath": "/etc/lenovoplugin_config/platformconfig.toml",
+                "MessageBusConfigFilePath": "/etc/lenovoplugin_config/platformconfig.toml",
                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
                 "MessageBusAddress": "redis-inmemory",
                 "HASet": "",

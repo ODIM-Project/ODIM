@@ -16,27 +16,30 @@ package model
 
 // Storage redfish structure
 type Storage struct {
-	Oid                string                `json:"@odata.id"`
-	ODataContext       string                `json:"@odata.context,omitempty"`
-	ODataEtag          string                `json:"@odata.etag,omitempty"`
-	ODataType          string                `json:"@odata.type,omitempty"`
-	Description        string                `json:"Description,omitempty"`
-	ID                 string                `json:"Id,omitempty"`
-	Name               string                `json:"Name,omitempty"`
-	Oem                *Oem                  `json:"Oem,omitempty"`
-	Drives             []*Link               `json:"Drives,omitempty"`
-	Links              *StorageLinks         `json:"Links,omitempty"`
-	Redundancy         []*Redundancy         `json:"Redundancy,omitempty"`
-	Status             *Status               `json:"Status,omitempty"`
-	StorageControllers []*StorageControllers `json:"StorageControllers,omitempty"`
-	Volumes            *Link                 `json:"Volumes,omitempty"`
-	ConsistencyGroups  *Link                 `json:"ConsistencyGroups,omitempty"`
-	Controllers        *Link                 `json:"Controllers,omitempty"`
-	EndpointGroups     *Link                 `json:"EndpointGroups,omitempty"`
-	FileSystems        *Link                 `json:"FileSystems,omitempty"`
-	Identifiers        *Identifier           `json:"Identifiers,omitempty"`
-	StorageGroups      *Link                 `json:"StorageGroups,omitempty"`
-	StoragePools       *Link                 `json:"StoragePools,omitempty"`
+	Oid                     string                `json:"@odata.id"`
+	ODataContext            string                `json:"@odata.context,omitempty"`
+	ODataEtag               string                `json:"@odata.etag,omitempty"`
+	ODataType               string                `json:"@odata.type"`
+	Description             string                `json:"Description,omitempty"`
+	ID                      string                `json:"Id"`
+	Name                    string                `json:"Name"`
+	Oem                     *Oem                  `json:"Oem,omitempty"`
+	Drives                  []*Link               `json:"Drives,omitempty"`
+	Links                   *StorageLinks         `json:"Links,omitempty"`
+	Redundancy              []*Redundancy         `json:"Redundancy,omitempty"`
+	Status                  *Status               `json:"Status,omitempty"`
+	StorageControllers      []*StorageControllers `json:"StorageControllers,omitempty"`
+	Volumes                 *Link                 `json:"Volumes,omitempty"`
+	ConsistencyGroups       *Link                 `json:"ConsistencyGroups,omitempty"`
+	Controllers             *Link                 `json:"Controllers,omitempty"`
+	EndpointGroups          *Link                 `json:"EndpointGroups,omitempty"`
+	FileSystems             *Link                 `json:"FileSystems,omitempty"`
+	Identifiers             *Identifier           `json:"Identifiers,omitempty"`
+	StorageGroups           *Link                 `json:"StorageGroups,omitempty"`
+	StoragePools            *Link                 `json:"StoragePools,omitempty"`
+	DrivesCount             int                   `json:"Drives@odata.count,omitempty"`
+	RedundancyCount         int                   `json:"Redundancy@odata.count,omitempty"`
+	StorageControllersCount int                   `json:"StorageControllers@odata.count,omitempty"`
 }
 
 //StorageControllers redfish structure
@@ -67,6 +70,8 @@ type StorageControllers struct {
 	PCIeInterface                *PCIeInterface            `json:"PCIeInterface,omitempty"`
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
+	Certificates                 Certificates              `json:"Certificates,omitempty"`
+	Measurements                 []*Link                   `json:"Measurements,omitempty"`
 }
 
 //Actions redfish structure
@@ -194,6 +199,9 @@ type Drive struct {
 	Location                      string             `json:"Location,omitempty"`
 	RotationalSpeedRpm            int                `json:"RotationalSpeedRpm,omitempty"`
 	FirmwareVersion               *FirmwareVersion   `json:"FirmwareVersion,omitempty"`
+	Certificates                  Certificates       `json:"Certificates,omitempty"`
+	EnvironmentMetrics            *Link              `json:"EnvironmentMetrics,omitempty"`
+	Measurements                  []*Link            `json:"Measurements,omitempty"`
 }
 
 // DriveLinks represents drive links
@@ -204,6 +212,7 @@ type DriveLinks struct {
 	PCIeFunctions []*Link `json:"PCIeFunctions,omitempty"`
 	StoragePools  []*Link `json:"StoragePools,omitempty"`
 	Volumes       []*Link `json:"Volumes,omitempty"`
+	Storage       *Link   `json:"Storage,omitempty"`
 }
 
 // DriveOperations represents drive operations
@@ -278,6 +287,9 @@ type Volume struct {
 	WriteCachePolicy                 string                   `json:"WriteCachePolicy,omitempty"`
 	WriteCacheState                  string                   `json:"WriteCacheState,omitempty"`
 	WriteHoleProtectionPolicy        string                   `json:"WriteHoleProtectionPolicy,omitempty"`
+	CapacitySourcesCount             int                      `json:"CapacitySources@odata.count,omitempty"`
+	InitializeMethod                 string                   `json:"InitializeMethod,omitempty"`
+	ReplicaTargetsCount              int                      `json:"ReplicaTargets@odata.count,omitempty"`
 }
 
 // VolumeLinks represents volume links

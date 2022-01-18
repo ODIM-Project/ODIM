@@ -66,12 +66,12 @@ type EventConf struct {
 
 // MessageBusConf will have configuration data of MessageBusConf
 type MessageBusConf struct {
-	MessageQueueConfigFilePath string   `json:"MessageQueueConfigFilePath"` // Message Queue Config File Path
-	MessageBusAddress          string   `json:"MessageBusAddress"`
-	MessageBusPort             string   `json:"MessageBusPort"`
-	HASet                      string   `json:"HASet"`
-	EmbType                    string   `json:"MessageBusType"`
-	EmbQueue                   []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"` // Message Queue Config File Path
+	MessageBusAddress        string   `json:"MessageBusAddress"`
+	MessageBusPort           string   `json:"MessageBusPort"`
+	HASet                    string   `json:"HASet"`
+	EmbType                  string   `json:"MessageBusType"`
+	EmbQueue                 []string `json:"MessageBusQueue"`
 }
 
 //KeyCertConf is for holding all security oriented configuration
@@ -220,8 +220,8 @@ func checkMessageBusConf() error {
 		Data.MessageBusConf.EmbType = "Kafka"
 	}
 	if Data.MessageBusConf.EmbType == "Kafka" {
-		if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-			return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
+		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 		}
 		if len(Data.MessageBusConf.EmbQueue) <= 0 {
 			log.Warn("No value set for MessageBusQueue, setting default value")

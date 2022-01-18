@@ -70,7 +70,6 @@ func TestGeneralError(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          successRespArgs.CreateGenericErrorResponse(),
 			},
 		},

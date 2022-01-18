@@ -227,7 +227,7 @@ type params struct {
 var request = map[string]interface{}{
 	"@odata.context": "/redfish/v1/$metadata#ActionInfo.ActionInfo",
 	"@odata.id":      "/redfish/v1/AggregationService/RemoveActionInfo",
-	"@odata.type":    "#ActionInfo.v1_0_3.ActionInfo",
+	"@odata.type":    "#ActionInfo.v1_2_0.ActionInfo",
 	"Id":             "RemoveActionInfo",
 	"Name":           "Remove Action Info",
 	"Oem":            "",
@@ -245,7 +245,7 @@ func TestResetCompute(t *testing.T) {
 	e := httptest.New(t, testApp)
 	e.POST(
 		"/redfish/v1/AggregationService#Reset",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusOK).Headers().Equal(header)
 	e.POST(
 		"/redfish/v1/AggregationService#Reset",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusBadRequest)
@@ -265,7 +265,7 @@ func TestResetComputeWithRPCError(t *testing.T) {
 	e := httptest.New(t, testApp)
 	e.POST(
 		"/redfish/v1/AggregationService#Reset",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 func TestSetDefaultBootOrderCompute(t *testing.T) {
 	var a AggregatorRPCs
@@ -278,7 +278,7 @@ func TestSetDefaultBootOrderCompute(t *testing.T) {
 	e := httptest.New(t, testApp)
 	e.POST(
 		"/redfish/v1/AggregationService#SetDefaultBootOrder",
-	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").WithJSON(request).Expect().Status(http.StatusOK).Headers().Equal(header)
 	e.POST(
 		"/redfish/v1/AggregationService#SetDefaultBootOrder",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusBadRequest)

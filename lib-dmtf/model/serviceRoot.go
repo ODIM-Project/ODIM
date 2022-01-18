@@ -43,10 +43,35 @@ type ServiceRoot struct {
 	Tasks                     *Link                      `json:"Tasks,omitempty"`
 	UpdateService             *Link                      `json:"UpdateService,omitempty"`
 	UUID                      string                     `json:"UUID,omitempty"`
+	AggregationService        *Link                      `json:"AggregationService,omitempty"`
+	Cables                    *Link                      `json:"Cables,omitempty"`
+	CertificateService        *Link                      `json:"CertificateService,omitempty"`
+	Facilities                *Link                      `json:"Facilities,omitempty"`
+	JobService                *Link                      `json:"JobService,omitempty"`
+	KeyService                *Link                      `json:"KeyService,omitempty"`
+	NVMeDomains               *Link                      `json:"NVMeDomains,omitempty"`
+	ResourceBlocks            *Link                      `json:"ResourceBlocks,omitempty"`
+	Storage                   Storage                    `json:"Storage,omitempty"`
+	TelemetryService          *Link                      `json:"TelemetryService,omitempty"`
+	Vendor                    string                     `json:"Vendor,omitempty"`
 }
 
 // Product redfish structure
 type Product struct{}
 
 // ProtocolFeaturesSupported redfish structure
-type ProtocolFeaturesSupported struct{}
+type ProtocolFeaturesSupported struct {
+	ExcerptQuery    bool         `json:"ExcerptQuery"`
+	ExpandQuery     *ExpandQuery `json:"ExpandQuery:omitempty"`
+	FilterQuery     bool         `json:"FilterQuery"`
+	OnlyMemberQuery bool         `json:"OnlyMemberQuery"`
+	SelectQuery     bool         `json:"SelectQuery"`
+}
+
+type ExpandQuery struct {
+	ExpandAll bool `json:"ExpandAll"`
+	Levels    bool `json:"Levels"`
+	Links     bool `json:"Links"`
+	MaxLevels int  `json:"MaxLevels"`
+	NoLinks   bool `json:"NoLinks"`
+}

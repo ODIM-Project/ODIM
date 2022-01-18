@@ -17,7 +17,7 @@
 		"CertificatePath": ""
 	},
 	"MessageBusConf": {
-		"MessageQueueConfigFilePath": "",
+		"MessageBusConfigFilePath": "",
 	  	"MessageBusType": "Kafka",
 		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	},
@@ -132,6 +132,5 @@
   "EventConf": {
 		"DeliveryRetryAttempts" : 3,
 		"DeliveryRetryIntervalSeconds" : 60,
-		"RetentionOfUndeliveredEventsInMinutes" : 10
   }
 }

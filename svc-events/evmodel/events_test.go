@@ -44,7 +44,7 @@ func mockTarget(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	target := &Target{
-		ManagerAddress: "10.24.0.14",
+		ManagerAddress: "10.10.0.14",
 		Password:       []byte("Password"),
 		UserName:       "admin",
 		DeviceUUID:     "6d4a0a66-7efa-578e-83cf-44dc68d2874e",
@@ -122,7 +122,7 @@ func mockFabricData(t *testing.T, fabuuid, pluginID string) {
 func TestGetTarget(t *testing.T) {
 	config.SetUpMockConfig(t)
 	target := &Target{
-		ManagerAddress: "10.24.0.14",
+		ManagerAddress: "10.10.0.14",
 		Password:       []byte("Password"),
 		UserName:       "admin",
 		DeviceUUID:     "1e61aeb6-0f03-4a35-b266-9c98e08da111",
@@ -362,7 +362,7 @@ func TestGetSingleSystem(t *testing.T) {
 	assert.Nil(t, err, "Error Should be nil")
 	var system Target
 	json.Unmarshal([]byte(resp), &system)
-	assert.Equal(t, "10.24.0.14", system.ManagerAddress, "ManagerAddress should be 10.24.0.14")
+	assert.Equal(t, "10.10.0.14", system.ManagerAddress, "ManagerAddress should be 10.10.0.14")
 	assert.Equal(t, "admin", system.UserName, "UserName should be admin")
 	assert.Equal(t, "6d4a0a66-7efa-578e-83cf-44dc68d2874e", system.DeviceUUID, "DeviceUUID should be 6d4a0a66-7efa-578e-83cf-44dc68d2874e")
 	assert.Equal(t, "GRF", system.PluginID, "PluginID should be GRF")
@@ -434,8 +434,8 @@ func TestSaveDeviceSubscription(t *testing.T) {
 	}()
 
 	var devSubscription = DeviceSubscription{
-		EventHostIP:     "10.24.0.1",
-		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
+		EventHostIP:     "10.10.0.1",
+		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
@@ -453,8 +453,8 @@ func TestSaveDeviceSubscription_existing_subscription(t *testing.T) {
 	}()
 
 	var devSubscription = DeviceSubscription{
-		EventHostIP:     "10.24.0.1",
-		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
+		EventHostIP:     "10.10.0.1",
+		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
@@ -476,8 +476,8 @@ func TestGetDeviceSubscriptions(t *testing.T) {
 	}()
 
 	var devSubscription = DeviceSubscription{
-		EventHostIP:     "10.24.0.1",
-		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
+		EventHostIP:     "10.10.0.1",
+		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
@@ -488,8 +488,8 @@ func TestGetDeviceSubscriptions(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting device suscription: %v\n", err.Error())
 	}
-	assert.Equal(t, devSubscription.EventHostIP, devSub.EventHostIP, "event host ip should be 10.24.0.1")
-	assert.Equal(t, devSubscription.Location, devSub.Location, "Location should be https://10.24.1.23/redfish/v1/EventService/Subscriptions/123")
+	assert.Equal(t, devSubscription.EventHostIP, devSub.EventHostIP, "event host ip should be 10.10.0.1")
+	assert.Equal(t, devSubscription.Location, devSub.Location, "Location should be https://10.10.10.23/redfish/v1/EventService/Subscriptions/123")
 
 	if !reflect.DeepEqual(devSubscription.OriginResources, devSub.OriginResources) {
 		t.Errorf("Origin Resource are not same")
@@ -506,8 +506,8 @@ func TestDeleteDeviceSubscription(t *testing.T) {
 	}()
 
 	var devSubscription = DeviceSubscription{
-		EventHostIP:     "10.24.0.1",
-		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
+		EventHostIP:     "10.10.0.1",
+		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
@@ -529,15 +529,15 @@ func TestUpdateDeviceSubscriptionLocation(t *testing.T) {
 	}()
 
 	var devSubscription = DeviceSubscription{
-		EventHostIP:     "10.24.0.1",
-		Location:        "https://10.24.1.23/redfish/v1/EventService/Subscriptions/123",
+		EventHostIP:     "10.10.0.1",
+		Location:        "https://10.10.10.23/redfish/v1/EventService/Subscriptions/123",
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
 	}
 	if cerr := SaveDeviceSubscription(devSubscription); cerr != nil {
 		t.Errorf("Error while saving device suscription: %v\n", cerr.Error())
 	}
 
-	devSubscription.Location = "https://10.24.1.23/redfish/v1/EventService/Subscriptions/12345"
+	devSubscription.Location = "https://10.10.10.23/redfish/v1/EventService/Subscriptions/12345"
 	if err := UpdateDeviceSubscriptionLocation(devSubscription); err != nil {
 		t.Errorf("Error while updating device suscription: %v\n", err.Error())
 	}
@@ -546,8 +546,8 @@ func TestUpdateDeviceSubscriptionLocation(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting device suscription: %v\n", err.Error())
 	}
-	assert.Equal(t, devSubscription.EventHostIP, devSub.EventHostIP, "event host ip should be 10.24.0.1")
-	assert.Equal(t, devSubscription.Location, devSub.Location, "Location should be https://10.24.1.23/redfish/v1/EventService/Subscriptions/123")
+	assert.Equal(t, devSubscription.EventHostIP, devSub.EventHostIP, "event host ip should be 10.10.0.1")
+	assert.Equal(t, devSubscription.Location, devSub.Location, "Location should be https://10.10.10.23/redfish/v1/EventService/Subscriptions/123")
 
 	if !reflect.DeepEqual(devSubscription.OriginResources, devSub.OriginResources) {
 		t.Errorf("Origin Resource are not same")
@@ -565,7 +565,7 @@ func TestSaveEventSubscription(t *testing.T) {
 	}()
 	sub := Subscription{
 		SubscriptionID:  "1",
-		Destination:     "https://10.24.1.23:8080/destination",
+		Destination:     "https://10.10.10.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -585,7 +585,7 @@ func TestSaveEventSubscription_existingData(t *testing.T) {
 	}()
 	sub := Subscription{
 		SubscriptionID:  "123456",
-		Destination:     "https://10.24.1.23:8080/destination",
+		Destination:     "https://10.10.10.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -609,7 +609,7 @@ func TestGetEvtSubscriptions(t *testing.T) {
 
 	sub := Subscription{
 		SubscriptionID:  "1",
-		Destination:     "https://10.24.1.23:8080/destination",
+		Destination:     "https://10.10.10.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -623,9 +623,9 @@ func TestGetEvtSubscriptions(t *testing.T) {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
 	assert.Equal(t, sub.SubscriptionID, evtSub[0].SubscriptionID, "SubscriptionID should be 1")
-	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.24.1.23:8080/destination")
+	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination")
 	assert.Equal(t, sub.Name, evtSub[0].Name, "Name should be Event Subscription")
-	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.24.1.23:8080/destination")
+	assert.Equal(t, sub.Destination, evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination")
 	if !reflect.DeepEqual(sub.EventTypes, evtSub[0].EventTypes) {
 		t.Errorf("Event Types are not same")
 	}
@@ -645,7 +645,7 @@ func TestDeleteEvtSubscription(t *testing.T) {
 
 	sub := Subscription{
 		SubscriptionID:  "112345",
-		Destination:     "https://10.24.1.23:8080/destination",
+		Destination:     "https://10.10.10.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -672,7 +672,7 @@ func TestUpdateEvtSubscription(t *testing.T) {
 
 	sub := Subscription{
 		SubscriptionID:  "112345",
-		Destination:     "https://10.24.1.23:8080/destination",
+		Destination:     "https://10.10.10.23:8080/destination",
 		Name:            "Event Subscription",
 		EventTypes:      []string{"Alert", "StatusChange"},
 		OriginResources: []string{"/redfish/v1/Systems/uuid.1"},
@@ -681,7 +681,7 @@ func TestUpdateEvtSubscription(t *testing.T) {
 		t.Errorf("Error while making save event subscriptions: %v\n", cerr.Error())
 	}
 
-	sub.Destination = "https://10.24.1.23:8080/destination1"
+	sub.Destination = "https://10.10.10.23:8080/destination1"
 	if err := UpdateEventSubscription(sub); err != nil {
 		t.Errorf("Error while updating event subscriptions: %v\n", err.Error())
 	}
@@ -690,6 +690,106 @@ func TestUpdateEvtSubscription(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting event subscriptions: %v\n", err.Error())
 	}
-	assert.Equal(t, "https://10.24.1.23:8080/destination1", evtSub[0].Destination, "Destination should be https://10.24.1.23:8080/destination1")
+	assert.Equal(t, "https://10.10.10.23:8080/destination1", evtSub[0].Destination, "Destination should be https://10.10.10.23:8080/destination1")
 
+}
+func TestSaveUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+}
+
+func TestGetUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+
+	eventData, err := GetUndeliveredEvents("destination")
+	assert.Nil(t, err, "error should be nil")
+	assert.Equal(t, string(eventData), eventData, "there should be event data")
+}
+
+func TestDeleteUndeliveredEvents(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	eventByte := []byte(`event`)
+	if cerr := SaveUndeliveredEvents("destination", eventByte); cerr != nil {
+		t.Errorf("Error while making save undelivered events : %v\n", cerr.Error())
+	}
+
+	err := DeleteUndeliveredEvents("destination")
+	assert.Nil(t, err, "error should be nil")
+
+	_, err = GetUndeliveredEvents("destination")
+	assert.NotNil(t, err, "error should not be nil")
+}
+
+func TestSetUndeliveredEventsFlag(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
+		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
+	}
+}
+
+func TestGetUndeliveredEventsFlag(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
+		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
+	}
+
+	flag, err := GetUndeliveredEventsFlag("destination")
+	assert.Nil(t, err, "error should be nil")
+	assert.True(t, flag, "flag should be true")
+}
+
+func TestDeleteUndeliveredEventsFlag(t *testing.T) {
+	common.SetUpMockConfig()
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	if cerr := SetUndeliveredEventsFlag("destination"); cerr != nil {
+		t.Errorf("Error while making set undelivered events flag: %v\n", cerr.Error())
+	}
+	err := DeleteUndeliveredEventsFlag("destination")
+	assert.Nil(t, err, "error should be nil")
+
+	flag, err := GetUndeliveredEventsFlag("destination")
+	assert.NotNil(t, err, "error should be nil")
+	assert.False(t, flag, "flag should be false")
 }

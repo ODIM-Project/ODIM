@@ -132,20 +132,13 @@ func (e *ExternalInterface) UpdateAggregationSource(req *aggregatorproto.Aggrega
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      req.URL,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           data[1],
 		Name:         "Aggregation Source",
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.Message = ""
 	commonResponse.MessageID = ""

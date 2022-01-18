@@ -42,6 +42,19 @@ type ServiceRoot struct {
 	OEM                       OEM          `json:"Oem"`
 	RedfishVersion            string       `json:"RedfishVersion"`
 	UUID                      string       `json:"UUID"`
+	CompositionService        *Service     `json:"CompositionService,omitempty"`
+	Description               string       `json:"Description,omitempty"`
+	Product                   string       `json:"Product,omitempty"`
+	StorageServices           *Service     `json:"StorageServices,omitempty"`
+	StorageSystems            *Service     `json:"StorageSystems,omitempty"`
+	Cables                    *Service     `json:"Cables,omitempty"`
+	CertificateService        *Service     `json:"CertificateService,omitempty"`
+	Facilities                *Service     `json:"Facilities,omitempty"`
+	KeyService                *Service     `json:"KeyService,omitempty"`
+	NVMeDomains               *Service     `json:"NVMeDomains,omitempty"`
+	ResourceBlocks            *Service     `json:"ResourceBlocks,omitempty"`
+	Storage                   *Service     `json:"Storage,omitempty"`
+	Vendor                    string       `json:"Vendor,omitempty"`
 }
 
 //PFSupported struct definition

@@ -32,7 +32,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
@@ -82,7 +81,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	}
 
 	// Find out all the subscription destinations of the requesting user
-	subscriptions, err := evmodel.GetEvtSubscriptions(sessionUserName)
+	subscriptions, err := p.GetEvtSubscriptions(sessionUserName)
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
@@ -100,19 +99,12 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 			if sub.Destination != "" {
 				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
 					log.Info("Destination: " + sub.Destination)
-					go postEvent(sub.Destination, eventUniqueID, messageBytes)
+					go p.postEvent(sub.Destination, eventUniqueID, messageBytes)
 				}
 			}
 		}
 	}
 
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	resp.Body = response.ErrorClass{

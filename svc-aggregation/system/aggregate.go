@@ -81,20 +81,15 @@ func (e *ExternalInterface) CreateAggregate(req *aggregatorproto.AggregatorReque
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURI,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           aggregateUUID,
 		Name:         "Aggregate",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "<" + aggregateURI + "/>; rel=describedby",
-		"Location":          aggregateURI,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link":     "<" + aggregateURI + "/>; rel=describedby",
+		"Location": aggregateURI,
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	resp.Body = agresponse.AggregateResponse{
@@ -158,13 +153,6 @@ func (e *ExternalInterface) GetAllAggregates(req *aggregatorproto.AggregatorRequ
 		Name:         "Aggregate",
 		Description:  "Aggregate collection view",
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
 	resp.Body = agresponse.List{
 		Response:     commonResponse,
@@ -188,7 +176,7 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 	}
 	var data = strings.Split(req.URL, "/redfish/v1/AggregationService/Aggregates/")
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      req.URL,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           data[1],
@@ -198,13 +186,7 @@ func (e *ExternalInterface) GetAggregate(req *aggregatorproto.AggregatorRequest)
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse.CreateGenericResponse(response.Success)
 	resp.Body = agresponse.AggregateResponse{
 		Response: commonResponse,
@@ -236,13 +218,6 @@ func (e *ExternalInterface) DeleteAggregate(req *aggregatorproto.AggregatorReque
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 	resp.StatusCode = http.StatusNoContent
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	return resp
 }
 
@@ -303,19 +278,14 @@ func (e *ExternalInterface) AddElementsToAggregate(req *aggregatorproto.Aggregat
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           aggregateID,
 		Name:         "Aggregate",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "<" + aggregateURL + "/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link": "<" + aggregateURL + "/>; rel=describedby",
 	}
 	aggregate, _ = agmodel.GetAggregate(aggregateURL)
 	commonResponse.CreateGenericResponse(response.Success)
@@ -383,19 +353,14 @@ func (e *ExternalInterface) RemoveElementsFromAggregate(req *aggregatorproto.Agg
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#Aggregate.v1_0_0.Aggregate",
+		OdataType:    "#Aggregate.v1_0_1.Aggregate",
 		OdataID:      aggregateURL,
 		OdataContext: "/redfish/v1/$metadata#Aggregate.Aggregate",
 		ID:           aggregateID,
 		Name:         "Aggregate",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "<" + aggregateURL + "/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link": "<" + aggregateURL + "/>; rel=describedby",
 	}
 	aggregate, _ = agmodel.GetAggregate(aggregateURL)
 	commonResponse.CreateGenericResponse(response.Success)
@@ -557,13 +522,7 @@ func (e *ExternalInterface) ResetElementsOfAggregate(taskID string, sessionUserN
 		log.Error(errMsg)
 		return common.GeneralError(resp.StatusCode, resp.StatusMessage, errMsg, nil, taskInfo)
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	log.Info("all reset actions are successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -697,12 +656,7 @@ func (e *ExternalInterface) resetSystem(taskID, reqBody string, subTaskChan chan
 		Message: "Request completed successfully.",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"Location":          element,
+		"Location": element,
 	}
 	resp.StatusCode = getResponse.StatusCode
 	percentComplete = 100
@@ -807,13 +761,6 @@ func (e *ExternalInterface) SetDefaultBootOrderElementsOfAggregate(taskID string
 		}
 	}
 
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	log.Error("all SetDefaultBootOrder requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK

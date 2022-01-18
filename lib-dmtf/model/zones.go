@@ -30,7 +30,7 @@ type Zone struct {
 	DefaultRoutingEnabled bool         `json:"DefaultRoutingEnabled,omitempty"`
 	ExternalAccessibility string       `json:"ExternalAccessibility,omitempty"`
 	Identifiers           []Identifier `json:"Identifiers,omitempty"`
-	ZoneType              string
+	ZoneType              string       `json:"ZoneType,omitempty"`
 }
 
 // Identifiers is a redfish model under Zone

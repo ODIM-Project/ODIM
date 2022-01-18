@@ -109,7 +109,6 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 			Message: errMsg,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
@@ -189,20 +188,15 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      aggregationSourceURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           aggregationSourceUUID,
 		Name:         "Aggregation Source",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "<" + aggregationSourceURI + "/>; rel=describedby",
-		"Location":          aggregationSourceURI,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link":     "<" + aggregationSourceURI + "/>; rel=describedby",
+		"Location": aggregationSourceURI,
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	commonResponse.Message = ""

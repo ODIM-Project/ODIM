@@ -183,14 +183,6 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusCreated,
 				StatusMessage: response.ResourceCreated,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				Body: asresponse.UserRole{
 					IsPredefined:       false,
 					AssignedPrivileges: []string{common.PrivilegeLogin},
@@ -214,15 +206,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -240,15 +224,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -266,15 +242,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgsInvalid.CreateGenericErrorResponse(),
+				Body:          errArgsInvalid.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -292,15 +260,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgsMiss.CreateGenericErrorResponse(),
+				Body:          errArgsMiss.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -317,15 +277,7 @@ func TestCreate(t *testing.T) {
 			}, want: response.RPC{
 				StatusCode:    http.StatusConflict,
 				StatusMessage: response.GeneralError,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -342,15 +294,7 @@ func TestCreate(t *testing.T) {
 			}, want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgsInvalidRole.CreateGenericErrorResponse(),
+				Body:          errArgsInvalidRole.CreateGenericErrorResponse(),
 			},
 		},
 	}

@@ -6,7 +6,7 @@
     - uninstall
 
 - name: Perform post-uninstall steps to clean up ODIM-RA data
-  hosts: kube-node
+  hosts: kube_node
 
   roles:
     - plugin-delete-image

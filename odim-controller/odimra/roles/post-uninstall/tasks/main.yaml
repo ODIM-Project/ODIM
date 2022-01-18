@@ -13,7 +13,7 @@
     - name: Update nginx configuration on existing nodes
       include_tasks: roles/update-proxy-conf/tasks/main.yaml
       loop:
-        "{{ groups['kube-node'] }}"
+        "{{ groups['kube_node'] }}"
       loop_control:
         loop_var: host_item
       when: scenario is defined

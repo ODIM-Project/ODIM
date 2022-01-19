@@ -592,7 +592,7 @@ func AuditLogEntry(reqBody map[string]interface{}, ctx iris.Context) {
 			log.Error(errMsg)
 			return
 		}
-		sessionRoleID, err = srv.GetSessionUserRoleId(sessionToken)
+		sessionRoleID, err = srv.GetSessionUserRoleID(sessionToken)
 		if err != nil {
 			errMsg := "while trying to get session details: " + err.Error()
 			log.Error(errMsg)

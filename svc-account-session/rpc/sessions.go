@@ -99,10 +99,10 @@ func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.Sess
 	return resp, err
 }
 
-// GetSessionUserRoleId is a rpc call to get session user's role ID
+// GetSessionUserRoleID is a rpc call to get session user's role ID
 // It will get the session username's role id from the session
-func (s *Session) GetSessionUserRoleId(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
-	resp, err := session.GetSessionUserRoleId(req)
+func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+	resp, err := session.GetSessionUserRoleID(req)
 	return resp, err
 }
 

@@ -49,8 +49,8 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 	return &resp, nil
 }
 
-//GetSessionUserRoleId is a RPC handle to get the session user's role id from the session Token
-func GetSessionUserRoleId(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+//GetSessionUserRoleID is a RPC handle to get the session user's role id from the session Token
+func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
 	var resp sessionproto.SessionUsersRoleID
 	resp.RoleID = ""
 	// Validating the session

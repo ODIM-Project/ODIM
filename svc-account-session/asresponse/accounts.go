@@ -79,15 +79,15 @@ type AccountService struct {
 type Accounts struct {
 	OdataID string `json:"@odata.id"`
 }
-// OAuth2
+// OAuth2 struct definition
 type OAuth2 struct {
 }
-// ActiveDirectory
+// ActiveDirectory struct definition
 type ActiveDirectory struct {
 }
-// LDAP
+// LDAP struct definition
 type LDAP struct {
 }
-// TACACSplus
+// TACACSplus struct definition
 type TACACSplus struct {
 }

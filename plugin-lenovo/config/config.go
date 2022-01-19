@@ -18,9 +18,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 
 	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
@@ -67,9 +68,6 @@ type EventConf struct {
 // MessageBusConf will have configuration data of MessageBusConf
 type MessageBusConf struct {
 	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"` // Message Queue Config File Path
-	MessageBusAddress        string   `json:"MessageBusAddress"`
-	MessageBusPort           string   `json:"MessageBusPort"`
-	HASet                    string   `json:"HASet"`
 	EmbType                  string   `json:"MessageBusType"`
 	EmbQueue                 []string `json:"MessageBusQueue"`
 }
@@ -217,22 +215,12 @@ func checkMessageBusConf() error {
 		log.Warn("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.EmbType = "Kafka"
 	}
-	if Data.MessageBusConf.EmbType == "Kafka" {
-		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
-			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
-		}
-		if len(Data.MessageBusConf.EmbQueue) <= 0 {
-			log.Warn("No value set for MessageBusQueue, setting default value")
-			Data.MessageBusConf.EmbQueue = []string{"REDFISH-EVENTS-TOPIC"}
-		}
+	if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+		return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 	}
-	if Data.MessageBusConf.EmbType == "RedisStream" {
-		if Data.MessageBusConf.MessageBusAddress == "" {
-			return fmt.Errorf("error: no value configured for MessageBusAddress")
-		}
-		if Data.MessageBusConf.MessageBusPort == "" {
-			return fmt.Errorf("error: no value configured for MessageBusPort")
-		}
+	if len(Data.MessageBusConf.EmbQueue) <= 0 {
+		log.Warn("No value set for MessageBusQueue, setting default value")
+		Data.MessageBusConf.EmbQueue = []string{"REDFISH-EVENTS-TOPIC"}
 	}
 	if !lutilconf.AllowedMessageBusTypes[Data.MessageBusConf.EmbType] {
 		return fmt.Errorf("error: invalid value configured for MessageBusType")

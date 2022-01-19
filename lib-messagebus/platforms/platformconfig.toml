@@ -33,5 +33,5 @@ KAFKACAFile         = ""
 [RedisStreams]
 RedisServerAddress =""
 RedisServerPort =""
-HASet =""
+SentinalAddress =""
 

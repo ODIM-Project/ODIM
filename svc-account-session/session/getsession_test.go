@@ -366,7 +366,7 @@ func TestGetSessionUserName(t *testing.T) {
 	}
 }
 
-func TestGetSessionUserRoleId(t *testing.T) {
+func TestGetSessionUserRoleID(t *testing.T) {
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
 		if err != nil {
@@ -415,9 +415,9 @@ func TestGetSessionUserRoleId(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GetSessionUserRoleId(tt.args.req)
+			_, err := GetSessionUserRoleID(tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetSessionUserRoleId() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetSessionUserRoleID() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.wantErr && tt.want.Error() != err.Error() {
 				t.Errorf("Expected %v but got %v", tt.want, err)

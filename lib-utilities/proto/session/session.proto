@@ -21,7 +21,7 @@ service Session {
     rpc GetSession(SessionRequest) returns (SessionResponse) {}
     rpc GetSessionUserName(SessionRequest) returns (SessionUserName) {}
     rpc GetSessionService(SessionRequest) returns (SessionResponse) {}
-    rpc GetSessionUserRoleId(SessionRequest) returns (SessionUsersRoleID) {}
+    rpc GetSessionUserRoleID(SessionRequest) returns (SessionUsersRoleID) {}
 }
 
 message SessionCreateRequest {

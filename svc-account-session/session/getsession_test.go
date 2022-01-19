@@ -365,3 +365,63 @@ func TestGetSessionUserName(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSessionUserRoleId(t *testing.T) {
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
+	type args struct {
+		req  *sessionproto.SessionRequest
+		resp *sessionproto.SessionUsersRoleID
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    error
+	}{
+		// TODO: Add test cases.
+		{
+			name: "successful get session user roleid",
+			args: args{
+				req: &sessionproto.SessionRequest{
+					SessionId:    sessionID,
+					SessionToken: sessionToken,
+				},
+				resp: &sessionproto.SessionUsersRoleID{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid session id",
+			args: args{
+				req: &sessionproto.SessionRequest{
+					SessionId:    sessionID,
+					SessionToken: "sessionToken",
+				},
+				resp: &sessionproto.SessionUsersRoleID{},
+			},
+			wantErr: true,
+			want:    fmt.Errorf("error while trying to get session details with the token sessionToken: error while trying to get the session from DB: no data with the with key sessionToken found"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := GetSessionUserRoleId(tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSessionUserRoleId() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr && tt.want.Error() != err.Error() {
+				t.Errorf("Expected %v but got %v", tt.want, err)
+			}
+		})
+	}
+}

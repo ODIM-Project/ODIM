@@ -19,11 +19,11 @@ package router
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-	"fmt"
 	"time"
 
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
@@ -635,15 +635,15 @@ func AuditLogEntry(reqBody map[string]interface{}, ctx iris.Context) {
 	}
 
 	timeNow := time.Now().Format(time.RFC3339)
-    logMsg := fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]",timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
-    //based on the operation status i.e. operation is success or failed logging
-    // 110 is for audit log info
-    // 107 is for audit log error
-    if operationStatus {
-        successMsg := "<110> "+logMsg+" Operation successful"
-	    fmt.Println(successMsg)
+	logMsg := fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
+	//based on the operation status i.e. operation is success or failed logging
+	// 110 is for audit log info
+	// 107 is for audit log error
+	if operationStatus {
+		successMsg := "<110> " + logMsg + " Operation successful"
+		fmt.Println(successMsg)
 	} else {
-	    successMsg := "<107> "+logMsg+" Operation failed"
-	    fmt.Println(successMsg)
+		successMsg := "<107> " + logMsg + " Operation failed"
+		fmt.Println(successMsg)
 	}
 }

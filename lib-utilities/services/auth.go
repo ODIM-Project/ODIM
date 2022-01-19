@@ -82,3 +82,24 @@ func GetSessionUserName(sessionToken string) (string, error) {
 	}
 	return response.UserName, err
 }
+
+// GetSessionUserRoleId will get user name from the session token by rpc call to account-session service
+func GetSessionUserRoleId(sessionToken string) (string, error) {
+	conn, err := ODIMService.Client(AccountSession)
+	if err != nil {
+		return "", fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
+	response, err := asService.GetSessionUserRoleId(
+		context.TODO(),
+		&sessionproto.SessionRequest{
+			SessionToken: sessionToken,
+		},
+	)
+	if err != nil && response == nil {
+		log.Error("something went wrong with rpc call: " + err.Error())
+		return "", err
+	}
+	return response.RoleID, err
+}

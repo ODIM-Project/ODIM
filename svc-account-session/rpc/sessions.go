@@ -99,6 +99,13 @@ func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.Sess
 	return resp, err
 }
 
+// GetSessionUserRoleId is a rpc call to get session user's role ID
+// It will get the session username's role id from the session
+func (s *Session) GetSessionUserRoleId(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+	resp, err := session.GetSessionUserRoleId(req)
+	return resp, err
+}
+
 // GetAllActiveSessions is a rpc call to get all active sessions
 // This method will accepts the sessionrequest which has session id and session token
 // and it will call GetAllActiveSessions from the session package

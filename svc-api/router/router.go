@@ -23,6 +23,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"fmt"
+	"time"
 
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
@@ -196,7 +198,7 @@ func Router() *iris.Application {
 		next(w, r)
 	})
 	router.Done(func(ctx iris.Context) {
-		logEntry(reqBody, ctx)
+		AuditLogEntry(reqBody, ctx)
 		reqBody = make(map[string]interface{})
 	})
 	taskmon := router.Party("/taskmon")
@@ -574,18 +576,25 @@ func Router() *iris.Application {
 	return router
 }
 
-// logEntry is used for generated audit logs for each request
-// this function logs an info for successfull operation and error for failure operation
-// properties logged are time, loglevel, username, host, resource, requestbody, responsecode and message
-func logEntry(reqBody map[string]interface{}, ctx iris.Context) {
+// AuditLogEntry is used for generated audit logs in syslog format for each request
+// this function logs an info for successful operation and error for failure operation
+// properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
+func AuditLogEntry(reqBody map[string]interface{}, ctx iris.Context) {
 	var err error
 	// getting the session details
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	sessionUserName := ""
+	sessionRoleID := "null"
 	if sessionToken != "" {
 		sessionUserName, err = srv.GetSessionUserName(sessionToken)
 		if err != nil {
-			errMsg := "while trying to authenticate session: " + err.Error()
+			errMsg := "while trying to get session details: " + err.Error()
+			log.Error(errMsg)
+			return
+		}
+		sessionRoleID, err = srv.GetSessionUserRoleId(sessionToken)
+		if err != nil {
+			errMsg := "while trying to get session details: " + err.Error()
 			log.Error(errMsg)
 			return
 		}
@@ -617,6 +626,7 @@ func logEntry(reqBody map[string]interface{}, ctx iris.Context) {
 	// adding null if no credentials are supplied while requesting
 	if sessionUserName == "" {
 		sessionUserName = "null"
+		sessionRoleID = "null"
 	}
 	// adding null to requestbody property if no payload is sent
 	reqStr := string(jsonStr)
@@ -624,24 +634,16 @@ func logEntry(reqBody map[string]interface{}, ctx iris.Context) {
 		reqStr = "null"
 	}
 
-	//based on the operation status i.e. operation is success or failed logging
-	message := method + " operation failed"
-	if operationStatus {
-		message = method + " operation successful"
-		log.WithFields(log.Fields{
-			"User":         sessionUserName,
-			"Host":         host,
-			"Resource":     rawURI,
-			"RequestBody":  reqStr,
-			"ResponseCode": respStatusCode,
-		}).Info(message)
+	timeNow := time.Now().Format(time.RFC3339)
+    logMsg := fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]",timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
+    //based on the operation status i.e. operation is success or failed logging
+    // 110 is for audit log info
+    // 107 is for audit log error
+    if operationStatus {
+        successMsg := "<110> "+logMsg+" Operation successful"
+	    fmt.Println(successMsg)
 	} else {
-		log.WithFields(log.Fields{
-			"User":         sessionUserName,
-			"Host":         host,
-			"Resource":     rawURI,
-			"RequestBody":  reqStr,
-			"ResponseCode": respStatusCode,
-		}).Error(message)
+	    successMsg := "<107> "+logMsg+" Operation failed"
+	    fmt.Println(successMsg)
 	}
 }

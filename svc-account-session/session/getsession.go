@@ -49,6 +49,27 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 	return &resp, nil
 }
 
+//GetSessionUserRoleId is a RPC handle to get the session user's role id from the session Token
+func GetSessionUserRoleId(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+	var resp sessionproto.SessionUsersRoleID
+	resp.RoleID = ""
+	// Validating the session
+	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
+	if err != nil {
+		errorMessage := "Unable to authorize session token: " + err.Error()
+		log.Error(errorMessage)
+		return &resp, err
+	}
+
+	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
+		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		log.Error(errorMessage)
+		return &resp, errs
+	}
+	resp.RoleID = currentSession.RoleID
+	return &resp, nil
+}
+
 // GetSession is a method to get session
 // it will accepts the SessionCreateRequest which will have sessionid and sessiontoken
 // and it will check privileges to get session and then get the session against the sessionID

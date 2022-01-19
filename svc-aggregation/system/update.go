@@ -183,7 +183,7 @@ func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID, 
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, nil)
 	}
-	ipData := strings.SplitN(updateRequest["HostName"].(string), ".", 2)
+	ipData := strings.Split(updateRequest["HostName"].(string), ":")
 	plugin.IP = ipData[0]
 	plugin.Port = ipData[1]
 	plugin.Username = updateRequest["UserName"].(string)

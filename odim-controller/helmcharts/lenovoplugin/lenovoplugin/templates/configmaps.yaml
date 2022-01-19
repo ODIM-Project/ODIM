@@ -44,10 +44,10 @@ data:
     		"LBPort": {{ .Values.lenovoplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                "MessageBusConfigFilePath": "/etc/lenovoplugin_config/platformconfig.toml",
-                "MessageBusType": "Kafka",
-								"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
-        },
+    		"MessageQueueConfigFilePath": "/etc/lenovoplugin_config/platformconfig.toml",
+    		"MessageBusType": "Kafka",
+    		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+    	},
     	"URLTranslation": {
     		"NorthBoundURL": {
     			"redfish": "ODIM"

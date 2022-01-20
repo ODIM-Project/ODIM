@@ -31,6 +31,7 @@ type AggregationSourceResponse struct {
 	SNMP     *SNMP            `json:"SNMP,omitempty"`
 }
 
+// SNMP defines the response for SNMP
 type SNMP struct {
 	AuthenticationKey      string `json:"AuthenticationKey,omitempty"`
 	AuthenticationKeySet   string `json:"AuthenticationKeySet,omitempty"`

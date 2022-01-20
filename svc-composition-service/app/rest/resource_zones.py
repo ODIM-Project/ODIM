@@ -291,8 +291,8 @@ class ResourceZones():
                 resource="ResourceZones", resource_uri=url))
 
             pipe.execute()
-            res = {"Id": data["Id"]}
-            code = HTTPStatus.OK
+            #res = {"Id": data["Id"]}
+            code = HTTPStatus.NO_CONTENT
 
         except Exception as err:
             logging.error(

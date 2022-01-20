@@ -335,8 +335,8 @@ class ResourceBlocks():
             logging.info(
                 "The Resource Block {rb_uri} is deleted successfully".format(
                     rb_uri=rb_data["@odata.id"]))
-            res = {"Id": rb_data["Id"]}
-            code = HTTPStatus.OK
+            #res = {"Id": rb_data["Id"]}
+            code = HTTPStatus.NO_CONTENT
 
         except Exception as err:
             logging.error(

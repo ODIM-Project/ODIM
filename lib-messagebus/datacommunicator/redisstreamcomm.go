@@ -17,6 +17,8 @@ package datacommunicator
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -32,9 +34,9 @@ type RedisStreamsPacket struct {
 func getDBConnection() *redis.Client {
 	var dbConn *redis.Client
 
-	if len(mq.RedisStreams.HASet) > 0 {
+	if len(mq.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    mq.RedisStreams.HASet,
+			MasterName:    mq.RedisStreams.SentinalAddress,
 			SentinelAddrs: []string{fmt.Sprintf("%s:%s", mq.RedisStreams.RedisServerAddress, mq.RedisStreams.RedisServerPort)},
 			MaxRetries:    -1,
 		})
@@ -86,7 +88,7 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 	}
 
 	// create a unique consumer id for the  instance
-
+	go rp.checkUnacknowledgedEvents(fn, id)
 	go func() {
 		for {
 			events, err := redisClient.XReadGroup(context.Background(),
@@ -101,11 +103,12 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 			} else {
 
 				if len(events) > 0 && len(events[0].Messages) > 0 {
+					messageID := events[0].Messages[0].ID
 					evtStr := events[0].Messages[0].Values["data"].(string)
 					var evt interface{}
 					Decode([]byte(evtStr), &evt)
 					fn(evt)
-					//TODO ack msg
+					redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
 				}
 			}
 		}
@@ -132,4 +135,26 @@ func (rp *RedisStreamsPacket) Remove() error {
 // Close implmentation need to be added
 func (rp *RedisStreamsPacket) Close() error {
 	return nil
+}
+func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string) {
+	redisClient := getDBConnection()
+	for {
+		events, _, _ := redisClient.XAutoClaim(context.Background(), &redis.XAutoClaimArgs{
+			Stream:   rp.pipe,
+			Group:    EVENTREADERGROUPNAME,
+			Consumer: id,
+			MinIdle:  time.Minute * 10,
+			Count:    100,
+			Start:    "0-0",
+		}).Result()
+		for _, event := range events {
+			messageID := event.ID
+			evtStr := event.Values["data"].(string)
+			var evt interface{}
+			Decode([]byte(evtStr), &evt)
+			fn(evt)
+			redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
+		}
+		time.Sleep(time.Minute * 10)
+	}
 }

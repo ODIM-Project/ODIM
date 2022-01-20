@@ -19,6 +19,7 @@ package datacommunicator
 // -----------------------------------------------------------------------------
 import (
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/BurntSushi/toml"
@@ -76,7 +77,7 @@ type KafkaF struct {
 type RedisStreams struct {
 	RedisServerAddress string `toml:"RedisServerAddress"`
 	RedisServerPort    string `toml:"RedisServerPort"`
-	HASet              string `toml:"HASet"`
+	SentinalAddress    string `toml:"SentinalAddress"`
 }
 
 // Create both MQF and KafkaPacket Objects. MQF will be used to store

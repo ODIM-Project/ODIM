@@ -44,17 +44,9 @@ data:
     		"LBPort": {{ .Values.dellplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                 "MessageBusConfigFilePath": "/etc/dellplugin_config/platformconfig.toml",
-                 {{ if eq .Values.odimra.haDeploymentEnabled false }}
-                 "MessageBusAddress": "redis-inmemory",
-                 "HASet": "",
-                 {{ else }}
-                 "MessageBusAddress": "redis-ha-inmemory",
-                 "HASet": "redisSentinel",
-                 {{ end }}
-                 "MessageBusPort": "6379",
-                 "MessageBusType": {{ .Values.dellplugin.messageBusType | quote }},
-                 "MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+    		"MessageBusConfigFilePath": "/etc/dellplugin_config/platformconfig.toml",
+    		"MessageBusType": "Kafka",
+    		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
     	},
     	"URLTranslation": {
     		"NorthBoundURL": {

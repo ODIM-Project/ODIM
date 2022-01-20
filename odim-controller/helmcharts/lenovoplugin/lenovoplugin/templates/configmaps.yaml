@@ -44,18 +44,10 @@ data:
     		"LBPort": {{ .Values.lenovoplugin.lbPort | quote }}
     	},
     	"MessageBusConf": {
-                "MessageBusConfigFilePath": "/etc/lenovoplugin_config/platformconfig.toml",
-                {{ if eq .Values.odimra.haDeploymentEnabled false }}
-                "MessageBusAddress": "redis-inmemory",
-                "HASet": "",
-                {{ else }}
-                "MessageBusAddress": "redis-ha-inmemory",
-                "HASet": "redisSentinel",
-                {{ end }}
-                "MessageBusPort": 6379,
-                "MessageBusType": {{ .Values.lenovoplugin.messageBusType | quote }},
-                "MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
-        },
+    		"MessageBusConfigFilePath": "/etc/lenovoplugin_config/platformconfig.toml",
+    		"MessageBusType": "Kafka",
+    		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+    	},
     	"URLTranslation": {
     		"NorthBoundURL": {
     			"redfish": "ODIM"

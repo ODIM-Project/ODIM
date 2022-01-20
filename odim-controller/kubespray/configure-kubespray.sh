@@ -38,7 +38,7 @@ unpack_kubespray_bundle()
 configure_kubespray()
 {
 	# Disable dashboard and enable helm deployment
-	k8s_add_ons_conf_file=${KUBESPRAY_SRC_PATH}/inventory/sample/group_vars/k8s-cluster/addons.yml
+	k8s_add_ons_conf_file=${KUBESPRAY_SRC_PATH}/inventory/sample/group_vars/k8s_cluster/addons.yml
 	sed -i "s/dashboard_enabled: true/dashboard_enabled: false/; s/helm_enabled: false/helm_enabled: true/" ${k8s_add_ons_conf_file}
 	if [[ $? -ne 0 ]]; then
 		echo "[$(date)] -- ERROR -- configuring kubespray features failed"

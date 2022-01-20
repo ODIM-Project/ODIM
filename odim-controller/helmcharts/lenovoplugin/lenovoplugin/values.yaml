@@ -14,4 +14,3 @@ lenovoplugin:
   eventHost: lenovoplugin
   lbHost:
   lbPort:
-  messageBusType: Kafka

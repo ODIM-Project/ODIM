@@ -347,6 +347,7 @@ The following table lists the software components and their versions that are co
         ```
 
 
+
 ## Pulling the Docker images of all the Kubernetes microservices
 
 1. Run the following command on the deployment node to pull each Docker image in the following table:
@@ -467,7 +468,7 @@ The following table lists the software components and their versions that are co
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
     | dellplugin            | 1.0         | dellplugin.tar               |
-    | urplugin              | 1.0         | urplugin.tar                 |
+    | urplugin              | 2.0         | urplugin.tar                 |
     | grfplugin             | 1.0         | grfplugin.tar                |
     | telemetry             | 1.0         | telemetry.tar                |
     
@@ -619,6 +620,8 @@ Upon each execution of odim-controller, the following information is logged:
 - User and the groups, user belongs to
 - Options passed to odim-controller
 - Complete output of the operation
+
+
 
 # Deploying Resource Aggregator for ODIM and the Plugins
 
@@ -1250,7 +1253,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
       ```
-     docker save urplugin:1.0 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:2.0 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
@@ -2781,7 +2784,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 7. Save the GRF plugin Docker image on the deployment node at `~/plugins/grfplugin`.
 
     ```
-    docker save grfplugin:1.0 -o ~/plugins/grfplugin/grfplugin.tar
+    docker save grfplugin:2.0 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
 8. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.

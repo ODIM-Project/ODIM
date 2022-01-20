@@ -225,23 +225,24 @@ func (e *ExternalInterface) updateManagerAggregationSource(aggregationSourceID, 
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
 	}
 	var managerUUID = plugin.ManagerUUID
+	var managersMap map[string]interface{}
+	// Getting all managers info from plugin
+	pluginContactRequest.OID = "/ODIM/v1/Managers"
+	body, _, getResponse, err = contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
+	if err != nil {
+		errMsg := err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
+	}
+	//  Extract all managers info and loop  over each members
+	err = json.Unmarshal([]byte(body), &managersMap)
+	if err != nil {
+		errMsg := "Unable to parse the managers resposne" + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
+
 	if hostNameUpdated {
-		var managersMap map[string]interface{}
-		// Getting all managers info from plugin
-		pluginContactRequest.OID = "/ODIM/v1/Managers"
-		body, _, getResponse, err = contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
-		if err != nil {
-			errMsg := err.Error()
-			log.Error(errMsg)
-			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil)
-		}
-		//  Extract all managers info and loop  over each members
-		err = json.Unmarshal([]byte(body), &managersMap)
-		if err != nil {
-			errMsg := "Unable to parse the managers resposne" + err.Error()
-			log.Error(errMsg)
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-		}
 		managerMembers := managersMap["Members"]
 
 		// Getting the individual managers response

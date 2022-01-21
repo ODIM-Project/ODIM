@@ -85,11 +85,12 @@ type AggregationSource struct {
 	Name         string                `json:"Name"`
 	Actions      *dmtfmodel.OemActions `json:"Actions,omitempty"`
 	Description  string                `json:"Description,omitempty"`
-	Id           string                `json:"Id"`
+	ID           string                `json:"Id"`
 	Oem          *dmtfmodel.Oem        `json:"Oem,omitempty"`
 	SNMP         *SNMP                 `json:"SNMP,omitempty"`
 }
 
+// SNMP  payload of adding a SNMP
 type SNMP struct {
 	AuthenticationKey      string `json:"AuthenticationKey,omitempty"`
 	AuthenticationKeySet   string `json:"AuthenticationKeySet,omitempty"`

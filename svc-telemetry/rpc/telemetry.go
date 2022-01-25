@@ -16,7 +16,6 @@ package rpc
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"

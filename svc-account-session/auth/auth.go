@@ -24,18 +24,18 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-// Auth functinality will do the following
+// Auth functionality will do the following
 // 1. It will check whether the session taken is valid
 // 2. fetch the previleges from DB against session token
 //    and check the service has the previlege
 func Auth(req *authproto.AuthRequest) (int32, string) {
 	go expiredSessionCleanUp()
 	if req.SessionToken == "" {
-		log.Error("Unable to validate the token, is empty")
+		log.Error("No session token is supplied, unable to validate")
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	if len(req.Privileges) == 0 {
-		log.Error("Unable to validate the privileges, is empty")
+		log.Error("No privileges are supplied, unable to validate")
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	session, err := CheckSessionTimeOut(req.SessionToken)
@@ -60,6 +60,6 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 
 	// TODO: Need to check OEM Privileges
 
-	log.Info("Authorization successful")
+	//log.Info("Authorization successful")
 	return http.StatusOK, response.Success
 }

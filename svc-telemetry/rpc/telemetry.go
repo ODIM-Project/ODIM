@@ -23,9 +23,6 @@ import (
 	teleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/telemetry"
 )
 
-// SESSAUTHFAILED string constant to raise errors
-const SESSAUTHFAILED string = "Unable to authenticate session"
-
 // GetTelemetryService is an rpc handler, it gets invoked during GET on TelemetryService API (/redfis/v1/TelemetryService/)
 func (a *Telemetry) GetTelemetryService(ctx context.Context, req *teleproto.TelemetryRequest) (*teleproto.TelemetryResponse, error) {
 	resp := &teleproto.TelemetryResponse{}
@@ -38,7 +35,6 @@ func (a *Telemetry) GetMetricDefinitionCollection(ctx context.Context, req *tele
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -51,7 +47,6 @@ func (a *Telemetry) GetMetricReportDefinitionCollection(ctx context.Context, req
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -64,7 +59,6 @@ func (a *Telemetry) GetMetricReportCollection(ctx context.Context, req *teleprot
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -77,7 +71,6 @@ func (a *Telemetry) GetTriggerCollection(ctx context.Context, req *teleproto.Tel
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -90,7 +83,6 @@ func (a *Telemetry) GetMetricDefinition(ctx context.Context, req *teleproto.Tele
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -103,7 +95,6 @@ func (a *Telemetry) GetMetricReportDefinition(ctx context.Context, req *teleprot
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -116,7 +107,6 @@ func (a *Telemetry) GetMetricReport(ctx context.Context, req *teleproto.Telemetr
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -129,7 +119,6 @@ func (a *Telemetry) GetTrigger(ctx context.Context, req *teleproto.TelemetryRequ
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -142,7 +131,6 @@ func (a *Telemetry) UpdateTrigger(ctx context.Context, req *teleproto.TelemetryR
 	resp := &teleproto.TelemetryResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}

@@ -28,6 +28,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	validator "gopkg.in/go-playground/validator.v9"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Create defines creation of a new role. The function is supposed to be used as part of RPC.
@@ -115,7 +116,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OEMPrivileges) == 0 {

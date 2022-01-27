@@ -174,8 +174,11 @@ func Router() *iris.Application {
 	    // Validating session token
 	    sessionToken := r.Header.Get("X-Auth-Token")
 	    if sessionToken == "" {
-	        errorMessage := "X-Auth-Token is missing in the request header"
-            customLogs.AuthLog(sessionToken, "", "", errorMessage, http.StatusUnauthorized)
+	        logProperties := make(map[string]interface{})
+            logProperties["SessionToken"] = sessionToken
+            logProperties["Message"] = "X-Auth-Token is missing in the request header"
+            logProperties["ResponseStatusCode"] = http.StatusUnauthorized
+            customLogs.AuthLog(logProperties)
 	    }
 
 		rawURI := r.RequestURI

@@ -44,21 +44,41 @@ func AuditLog(ctx iris.Context, reqBody map[string]interface{}){
 }
 
 // AuthLog function
-func AuthLog(sessionToken, sessionUserName, sessionRoleID, msg string, respStatusCode int32){
-    var logMsg string
+func AuthLog(logProperties map[string]interface{}){
+    sessionToken := "null"
+    sessionUserName := "null"
+    sessionRoleID := "null"
+    msg := "null"
+    respStatusCode := int32(http.StatusUnauthorized)
+    tokenMsg := ""
+
+    if logProperties["SessionToken"] != nil{
+        sessionToken = logProperties["SessionToken"].(string)
+    }
+    if logProperties["SessionUserID"] != nil{
+        sessionUserName = logProperties["SessionUserID"].(string)
+    }
+    if logProperties["SessionRoleID"] != nil{
+        sessionRoleID = logProperties["SessionRoleID"].(string)
+    }
+    if logProperties["Message"] != nil{
+        msg = logProperties["Message"].(string)
+    }
+    if logProperties["ResponseStatusCode"] != nil{
+        respStatusCode = logProperties["ResponseStatusCode"].(int32)
+    }
+
     timeNow := time.Now().Format(time.RFC3339)
     // formatting logs in syslog format
-	logMsg = fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]",timeNow, sessionUserName, sessionRoleID)
+	logMsg := fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]",timeNow, sessionUserName, sessionRoleID)
     // Get response code
     operationStatus := getResponseStatus(respStatusCode)
-    tokenMsg := ""
     if sessionToken != ""{
         tokenMsg = "for session token "+sessionToken
     }
     // 86 is for auth log info
 	// 84 is for auth log warning
 	if operationStatus {
-		//successMsg := "<86> " + logMsg + " Authentication/Authorization successful "+tokenMsg
 		successMsg := fmt.Sprintf("%s %s %s %s","<86>", logMsg, "Authentication/Authorization successful", tokenMsg)
 		fmt.Println(successMsg)
 	} else {
@@ -68,7 +88,6 @@ func AuthLog(sessionToken, sessionUserName, sessionRoleID, msg string, respStatu
         } else if respStatusCode == http.StatusUnauthorized {
             errMsg = "Authentication failed"
         }
-		//failedMsg := "<84> " + logMsg + errMsg + tokenMsg
 		failedMsg := fmt.Sprintf("%s %s %s %s, %s","<84>", logMsg, errMsg, tokenMsg, msg)
 		fmt.Println(failedMsg)
 	}

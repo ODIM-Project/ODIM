@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 	"net/http"
@@ -175,7 +176,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 
@@ -200,7 +201,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
 			return resp
 		}
 	}
@@ -223,7 +224,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
 			return resp
 		}
 

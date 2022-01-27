@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Delete defines deletion of an existing account.
@@ -75,7 +76,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 

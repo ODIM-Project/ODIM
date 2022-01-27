@@ -32,13 +32,10 @@ import (
 func Auth(req *authproto.AuthRequest) (int32, string) {
 	go expiredSessionCleanUp()
 	if req.SessionToken == "" {
-		//log.Error("Received empty SessionToken, unable to proceed")
-		AuthLog("", "Received invalid session token ",http.StatusUnauthorized)
+		AuthLog("", "Invalid session token ",http.StatusUnauthorized)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	if len(req.Privileges) == 0 {
-		//log.Error("Unable to validate the privileges, is empty")
-		//log.Error("Received empty privileges, unable to proceed")
 		AuthLog(req.SessionToken, "Received empty privileges, unable to proceed ",http.StatusForbidden)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
@@ -70,15 +67,14 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 
 	// TODO: Need to check OEM Privileges
 
-	//log.Info("Authorization successful")
 	AuthLog(req.SessionToken, "Authorization is successful",http.StatusOK)
 	return http.StatusOK, response.Success
 }
 
 // AuthLog function
 func AuthLog(sessionToken, msg string, respStatusCode int32){
-    userID := "null"
-    roleID := "null"
+    userID := ""
+    roleID := ""
     if sessionToken != ""{
 	    currentSession, err := CheckSessionTimeOut(sessionToken)
 	    if err == nil {	    
@@ -86,5 +82,12 @@ func AuthLog(sessionToken, msg string, respStatusCode int32){
 			roleID = currentSession.RoleID
 		}
 	}
-	customLogs.AuthLog(sessionToken, userID, roleID, msg, respStatusCode)
+
+	logProperties := make(map[string]interface{})
+	logProperties["SessionToken"] = sessionToken
+	logProperties["SessionUserID"] = userID
+	logProperties["SessionRoleID"] = roleID
+	logProperties["Message"] = msg
+	logProperties["ResponseStatusCode"] = respStatusCode
+	customLogs.AuthLog(logProperties)
 }

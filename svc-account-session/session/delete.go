@@ -93,7 +93,7 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			auth.AuthLog(req.SessionToken, errorMessage ,resp.StatusCode)
 			return resp
 		}
 	}

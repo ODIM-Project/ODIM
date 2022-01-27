@@ -16,6 +16,7 @@ package tmessagebus
 
 import (
 	"encoding/json"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -36,12 +37,15 @@ func Publish(taskURI string, messageID string, eventType string) {
 
 	var eventID = uuid.NewV4().String()
 	var event = common.Event{
-		EventID:   eventID,
-		MessageID: messageID,
-		EventType: eventType,
+		EventID:        eventID,
+		MessageID:      messageID,
+		EventTimestamp: time.Now().Format(time.RFC3339),
+		EventType:      eventType,
+		Message:        "Task event",
 		OriginOfCondition: &common.Link{
 			Oid: taskURI,
 		},
+		Severity: "OK",
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{

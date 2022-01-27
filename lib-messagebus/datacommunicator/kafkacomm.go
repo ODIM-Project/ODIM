@@ -134,10 +134,10 @@ func TLS(cCert, cKey, caCert string) (*tls.Config, error) {
 func kafkaConnect(kp *KafkaPacket) error {
 
 	// Using MQF details, connecting to the KAFKA Server.
-	kp.ServersInfo = mq.KServersInfo
+	kp.ServersInfo = mq.KafkaF.KServersInfo
 
 	// Creation of TLS Config and Dialer
-	tls, e := TLS(mq.KAFKACertFile, mq.KAFKAKeyFile, mq.KAFKACAFile)
+	tls, e := TLS(mq.KafkaF.KAFKACertFile, mq.KafkaF.KAFKAKeyFile, mq.KafkaF.KAFKACAFile)
 	if e != nil {
 		log.Error(e.Error())
 		return e

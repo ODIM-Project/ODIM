@@ -99,7 +99,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password",
+				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
 				MessageArgs:   []interface{}{},
 			},
 		},

@@ -81,13 +81,10 @@ func AuthLog(sessionToken, msg string, respStatusCode int32){
     roleID := "null"
     if sessionToken != ""{
 	    currentSession, err := CheckSessionTimeOut(sessionToken)
-	    if err != nil {
-		    errorMessage := "Unable to authorize session token: " + err.Error()
-		    log.Error(errorMessage)
-		    return
-	    }
-	    userID = currentSession.UserName
-	    roleID = currentSession.RoleID
+	    if err == nil {	    
+			userID = currentSession.UserName
+			roleID = currentSession.RoleID
+		}
 	}
 	customLogs.AuthLog(sessionToken, userID, roleID, msg, respStatusCode)
 }

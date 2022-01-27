@@ -72,7 +72,7 @@ func addFabric(requestData, host string) {
 func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 
 	if data == nil {
-		log.Info("error: invalid input params")
+		log.Info("invalid input params")
 		return false
 	}
 
@@ -367,7 +367,7 @@ func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, 
 	var err error
 	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
-		log.Info("Retrying event posting")
+		log.Info("Retry event forwarding on destination: ", destination)
 		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
@@ -410,7 +410,7 @@ func rediscoverSystemInventory(systemID, systemURL string) {
 		log.Info("Error while rediscoverSystemInventroy")
 		return
 	}
-	log.Info("info: rediscovery of system and chasis started.")
+	log.Info("rediscovery of system and chasis started.")
 	return
 }
 
@@ -437,7 +437,7 @@ func addFabricRPCCall(origin, address string) {
 		ContactClient: pmbhandle.ContactPlugin,
 	}
 	p.checkCollectionSubscription(origin, "Redfish")
-	log.Info("info: Fabric Added")
+	log.Info("Fabric Added")
 	return
 }
 
@@ -452,7 +452,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 	id := systemURI[index+1:]
 
 	if strings.ContainsAny(id, ":/-") {
-		log.Info("error: event contains invalid origin of condition - ", systemURI)
+		log.Error("event contains invalid origin of condition - ", systemURI)
 		return
 	}
 	if strings.Contains(state, "ServerPoweredOn") {
@@ -480,7 +480,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 		log.Error("system power state update failed with ", err.Error())
 		return
 	}
-	log.Info("info: system power state update initiated")
+	log.Info("system power state update initiated")
 	return
 }
 

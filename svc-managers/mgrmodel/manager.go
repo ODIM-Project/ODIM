@@ -66,6 +66,7 @@ type Manager struct {
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
 	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
+	Description             string             `json:"Description,omitempty"`
 }
 
 // Status struct is to define the status of the manager
@@ -119,6 +120,7 @@ type RAManager struct {
 	FirmwareVersion string `json:"FirmwareVersion"`
 	UUID            string `json:"UUID"`
 	State           string `json:"State"`
+	Description     string `json:"Description"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

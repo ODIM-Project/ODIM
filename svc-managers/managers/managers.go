@@ -187,6 +187,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		Status: &mgrmodel.Status{
 			State: mgrData.State,
 		},
+		Description: mgrData.Description,
 	}, nil
 }
 

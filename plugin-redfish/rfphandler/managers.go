@@ -104,6 +104,7 @@ func GetManagersInfo(ctx iris.Context) {
 			Status: &dmtf.Status{
 				State: "Enabled",
 			},
+			Description:     "Plugin manager"
 		}
 		ctx.StatusCode(http.StatusOK)
 		ctx.JSON(managers)

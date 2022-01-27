@@ -61,10 +61,10 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		    log.Error(errorMessage)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-		    auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -126,7 +126,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-		    auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -184,10 +184,10 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		    log.Error(errorMessage)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-		    auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -248,7 +248,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -306,10 +306,10 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-            log.Error(errorMessage)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -369,10 +369,10 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
-		    log.Error(errorMessage)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return &resp, nil
 	}

@@ -16,21 +16,21 @@
 package logs
 
 import (
-    "fmt"
-    "net/http"
-    "time"
-    "github.com/kataras/iris/v12"
+	"fmt"
+	"github.com/kataras/iris/v12"
+	"net/http"
+	"time"
 )
 
 // AuditLog is used for generating audit logs in syslog format for each request
 // this function logs an info for successful operation and error for failure operation
 // properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
 //func AuditLog(ctx iris.Context, reqBody map[string]interface{}, sessionUserName, sessionRoleID string){
-func AuditLog(ctx iris.Context, reqBody map[string]interface{}){
-    logMsg := auditLogEntry(ctx, reqBody)
-    // Get response code
-    respStatusCode := int32(ctx.GetStatusCode())
-    operationStatus := getResponseStatus(respStatusCode)
+func AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
+	logMsg := auditLogEntry(ctx, reqBody)
+	// Get response code
+	respStatusCode := int32(ctx.GetStatusCode())
+	operationStatus := getResponseStatus(respStatusCode)
 
 	// 110 is for audit log info
 	// 107 is for audit log error
@@ -44,58 +44,58 @@ func AuditLog(ctx iris.Context, reqBody map[string]interface{}){
 }
 
 // AuthLog function
-func AuthLog(logProperties map[string]interface{}){
-    sessionToken := "null"
-    sessionUserName := "null"
-    sessionRoleID := "null"
-    msg := "null"
-    respStatusCode := int32(http.StatusUnauthorized)
-    tokenMsg := ""
+func AuthLog(logProperties map[string]interface{}) {
+	sessionToken := "null"
+	sessionUserName := "null"
+	sessionRoleID := "null"
+	msg := "null"
+	respStatusCode := int32(http.StatusUnauthorized)
+	tokenMsg := ""
 
-    if logProperties["SessionToken"] != nil{
-        sessionToken = logProperties["SessionToken"].(string)
-    }
-    if logProperties["SessionUserID"] != nil{
-        sessionUserName = logProperties["SessionUserID"].(string)
-    }
-    if logProperties["SessionRoleID"] != nil{
-        sessionRoleID = logProperties["SessionRoleID"].(string)
-    }
-    if logProperties["Message"] != nil{
-        msg = logProperties["Message"].(string)
-    }
-    if logProperties["ResponseStatusCode"] != nil{
-        respStatusCode = logProperties["ResponseStatusCode"].(int32)
-    }
+	if logProperties["SessionToken"] != nil {
+		sessionToken = logProperties["SessionToken"].(string)
+	}
+	if logProperties["SessionUserID"] != nil {
+		sessionUserName = logProperties["SessionUserID"].(string)
+	}
+	if logProperties["SessionRoleID"] != nil {
+		sessionRoleID = logProperties["SessionRoleID"].(string)
+	}
+	if logProperties["Message"] != nil {
+		msg = logProperties["Message"].(string)
+	}
+	if logProperties["ResponseStatusCode"] != nil {
+		respStatusCode = logProperties["ResponseStatusCode"].(int32)
+	}
 
-    timeNow := time.Now().Format(time.RFC3339)
-    // formatting logs in syslog format
-	logMsg := fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]",timeNow, sessionUserName, sessionRoleID)
-    // Get response code
-    operationStatus := getResponseStatus(respStatusCode)
-    if sessionToken != ""{
-        tokenMsg = "for session token "+sessionToken
-    }
-    // 86 is for auth log info
+	timeNow := time.Now().Format(time.RFC3339)
+	// formatting logs in syslog format
+	logMsg := fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", timeNow, sessionUserName, sessionRoleID)
+	// Get response code
+	operationStatus := getResponseStatus(respStatusCode)
+	if sessionToken != "" {
+		tokenMsg = "for session token " + sessionToken
+	}
+	// 86 is for auth log info
 	// 84 is for auth log warning
 	if operationStatus {
-		successMsg := fmt.Sprintf("%s %s %s %s","<86>", logMsg, "Authentication/Authorization successful", tokenMsg)
+		successMsg := fmt.Sprintf("%s %s %s %s", "<86>", logMsg, "Authentication/Authorization successful", tokenMsg)
 		fmt.Println(successMsg)
 	} else {
-	    errMsg := "Authentication/Authorization failed"
-	    if respStatusCode == http.StatusForbidden{
-            errMsg = "Authorization failed"
-        } else if respStatusCode == http.StatusUnauthorized {
-            errMsg = "Authentication failed"
-        }
-		failedMsg := fmt.Sprintf("%s %s %s %s, %s","<84>", logMsg, errMsg, tokenMsg, msg)
+		errMsg := "Authentication/Authorization failed"
+		if respStatusCode == http.StatusForbidden {
+			errMsg = "Authorization failed"
+		} else if respStatusCode == http.StatusUnauthorized {
+			errMsg = "Authentication failed"
+		}
+		failedMsg := fmt.Sprintf("%s %s %s %s, %s", "<84>", logMsg, errMsg, tokenMsg, msg)
 		fmt.Println(failedMsg)
 	}
 }
 
 // auditLogEntry function
 func auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
-    var logMsg string
+	var logMsg string
 	// getting the request URI, host and method from context
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	sessionUserName, sessionRoleID := getUserDetails(sessionToken)
@@ -104,13 +104,13 @@ func auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
 	method := ctx.Request().Method
 	respStatusCode := ctx.GetStatusCode()
 	timeNow := time.Now().Format(time.RFC3339)
-    reqStr := maskRequestBody(reqBody)
+	reqStr := maskRequestBody(reqBody)
 
 	// formatting logs in syslog format
-	if reqStr == "null"{
-	    logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]",timeNow, host, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
-	}else {
-	    logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]",timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
+	if reqStr == "null" {
+		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, respStatusCode)
+	} else {
+		logMsg = fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
 	}
-    return logMsg
+	return logMsg
 }

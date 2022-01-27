@@ -16,16 +16,16 @@
 package logs
 
 import (
-    "net/http"
-    "encoding/json"
-    log "github.com/sirupsen/logrus"
-    srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"encoding/json"
+	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
+	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 // getUserDetails function
 // getting the session details
-func getUserDetails(sessionToken string) (string, string){
-    var err error
+func getUserDetails(sessionToken string) (string, string) {
+	var err error
 	sessionUserName := "null"
 	sessionRoleID := "null"
 	if sessionToken != "" {
@@ -46,9 +46,9 @@ func getUserDetails(sessionToken string) (string, string){
 }
 
 // maskRequestBody function
-func maskRequestBody(reqBody map[string]interface{}) string{
-    var jsonStr []byte
-    var err error
+func maskRequestBody(reqBody map[string]interface{}) string {
+	var jsonStr []byte
+	var err error
 	if len(reqBody) > 0 {
 		reqBody["Password"] = "null"
 		jsonStr, err = json.Marshal(reqBody)
@@ -66,7 +66,7 @@ func maskRequestBody(reqBody map[string]interface{}) string{
 
 // getResponseStatus function
 // setting operation status flag based on the response code
-func getResponseStatus(respStatusCode int32) bool{
+func getResponseStatus(respStatusCode int32) bool {
 	operationStatus := false
 	successStatusCodes := []int32{http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent}
 	for _, statusCode := range successStatusCodes {
@@ -77,4 +77,3 @@ func getResponseStatus(respStatusCode int32) bool{
 	}
 	return operationStatus
 }
-

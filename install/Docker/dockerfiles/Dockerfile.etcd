@@ -13,12 +13,12 @@
 # under the License.
 
 # This is Dockerfile to build etcd image
-FROM ubuntu:18.04 as etcd-build
+FROM ubuntu:20.04 as etcd-build
 
 LABEL version="1.0"
 LABEL ubuntuVersion="18.04"
 LABEL etcdVersion="3.4.15"
-LABEL description="etcd docker image built on top of ubuntu:18.04"
+LABEL description="etcd docker image built on top of ubuntu:20.04"
 
 # This is the release of etcd to pull in.
 ENV ETDC_VERSION=3.4.15

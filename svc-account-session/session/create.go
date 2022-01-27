@@ -81,7 +81,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 			logProperties := make(map[string]interface{})
             logProperties["SessionUserID"] = createSession.UserName
             logProperties["Message"] = "Invalid username or password"
-            logProperties["ResponseStatusCode"] = http.StatusUnauthorized
+            logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
 		    customLogs.AuthLog(logProperties)
 		}
 		return resp, ""
@@ -105,7 +105,7 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
         logProperties["SessionUserID"] = createSession.UserName
         logProperties["SessionRoleID"] = role.ID
         logProperties["Message"] = errorMessage
-        logProperties["ResponseStatusCode"] = http.StatusForbidden
+        logProperties["ResponseStatusCode"] = int32(http.StatusForbidden)
         customLogs.AuthLog(logProperties)
 		return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, errorMessage, nil, nil), ""
 	}

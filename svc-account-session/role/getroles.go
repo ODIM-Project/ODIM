@@ -63,7 +63,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-        auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+        auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 	//Get role from database using role ID
@@ -141,7 +141,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 				},
 			},
 		}
-		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}

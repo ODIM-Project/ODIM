@@ -104,7 +104,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 	role, gerr := asmodel.GetRoleDetailsByID(req.Id)

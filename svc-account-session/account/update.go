@@ -176,7 +176,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 
@@ -201,7 +201,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+			auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 			return resp
 		}
 	}
@@ -224,7 +224,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+			auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 			return resp
 		}
 

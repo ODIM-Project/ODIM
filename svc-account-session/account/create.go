@@ -101,7 +101,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	invalidParams := validateRequest(user)

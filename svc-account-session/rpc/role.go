@@ -66,7 +66,7 @@ func (r *Role) CreateRole(ctx context.Context, req *roleproto.RoleRequest) (*rol
 			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.AuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -132,7 +132,7 @@ func (r *Role) GetRole(ctx context.Context, req *roleproto.GetRoleRequest) (*rol
 		    log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.AuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -198,7 +198,7 @@ func (r *Role) GetAllRoles(ctx context.Context, req *roleproto.GetRoleRequest) (
 		    log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.AuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
 		}
 		return &resp, nil
 	}
@@ -265,7 +265,7 @@ func (r *Role) UpdateRole(ctx context.Context, req *roleproto.UpdateRoleRequest)
 		    log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
-			auth.AuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
 		}
 		return &resp, nil
 	}

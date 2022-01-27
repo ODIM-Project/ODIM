@@ -15,6 +15,7 @@
 package response
 
 const (
+    // BaseVersion defines the latest version of Base
 	BaseVersion = "Base.1.11.0."
 	// Created is the message for successful creation
 	Created = BaseVersion + "Created"

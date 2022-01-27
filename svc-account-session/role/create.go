@@ -116,7 +116,7 @@ func Create(req *roleproto.RoleRequest, session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.AuthLog(session.Token, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
 		return resp
 	}
 	if len(createRoleReq.AssignedPrivileges) == 0 && len(createRoleReq.OEMPrivileges) == 0 {

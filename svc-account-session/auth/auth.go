@@ -32,18 +32,18 @@ import (
 func Auth(req *authproto.AuthRequest) (int32, string) {
 	go expiredSessionCleanUp()
 	if req.SessionToken == "" {
-		AuthLog("", "Invalid session token ",http.StatusUnauthorized)
+		CustomAuthLog("", "Invalid session token ",http.StatusUnauthorized)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	if len(req.Privileges) == 0 {
-		AuthLog(req.SessionToken, "Received empty privileges, unable to proceed ",http.StatusForbidden)
+		CustomAuthLog(req.SessionToken, "Received empty privileges, unable to proceed ",http.StatusForbidden)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	session, err := CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
 	    status, message := err.GetAuthStatusCodeAndMessage()
 		if status == http.StatusUnauthorized{
-		    AuthLog("", "Received invalid session token "+req.SessionToken,http.StatusUnauthorized)
+		    CustomAuthLog("", "Received invalid session token "+req.SessionToken,http.StatusUnauthorized)
 		}else {
 		    log.Error("SessionToken validation failed, unable to proceed "+err.Error())
 		}
@@ -60,19 +60,21 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 	// if any of the privilege isn't assigned to service then return failure
 	for _, privilege := range req.Privileges {
 		if !session.Privileges[privilege] {
-		    AuthLog(req.SessionToken, "User does not have sufficient privileges",http.StatusForbidden)
+		    CustomAuthLog(req.SessionToken, "User does not have sufficient privileges",http.StatusForbidden)
 			return http.StatusForbidden, response.InsufficientPrivilege
 		}
 	}
 
 	// TODO: Need to check OEM Privileges
 
-	AuthLog(req.SessionToken, "Authorization is successful",http.StatusOK)
+	CustomAuthLog(req.SessionToken, "Authorization is successful",http.StatusOK)
 	return http.StatusOK, response.Success
 }
 
-// AuthLog function
-func AuthLog(sessionToken, msg string, respStatusCode int32){
+// CustomAuthLog function takes session token, message and response status code
+// Gets the user id and role id for the session token provided
+// logs the messages in custom log format
+func CustomAuthLog(sessionToken, msg string, respStatusCode int32){
     userID := ""
     roleID := ""
     if sessionToken != ""{
@@ -82,7 +84,6 @@ func AuthLog(sessionToken, msg string, respStatusCode int32){
 			roleID = currentSession.RoleID
 		}
 	}
-
 	logProperties := make(map[string]interface{})
 	logProperties["SessionToken"] = sessionToken
 	logProperties["SessionUserID"] = userID

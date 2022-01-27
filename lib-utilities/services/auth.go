@@ -58,9 +58,9 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 	if response.StatusCode == http.StatusServiceUnavailable {
 		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort))
 	}
-    // getting user details
-    //sessionUserName,sessionRoleID := GetUserDetails(sessionToken)
-    //common.AuthLog(sessionToken, sessionUserName, sessionRoleID, response.StatusCode)
+	// getting user details
+	//sessionUserName,sessionRoleID := GetUserDetails(sessionToken)
+	//common.AuthLog(sessionToken, sessionUserName, sessionRoleID, response.StatusCode)
 	return common.GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs, nil)
 }
 
@@ -107,8 +107,8 @@ func GetSessionUserRoleID(sessionToken string) (string, error) {
 }
 
 // GetUserDetails function is used to get the session details
-func GetUserDetails(sessionToken string) (string, string){
-    var err error
+func GetUserDetails(sessionToken string) (string, string) {
+	var err error
 	sessionUserName := "null"
 	sessionRoleID := "null"
 	if sessionToken != "" {

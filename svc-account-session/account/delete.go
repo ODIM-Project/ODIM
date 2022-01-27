@@ -76,7 +76,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(session.Token, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 

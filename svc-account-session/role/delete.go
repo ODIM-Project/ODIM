@@ -39,7 +39,7 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
-			auth.CustomAuthLog(sessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(sessionToken, "Invalid session token", resp.StatusCode)
 		}
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(req.SessionToken, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		return &resp
 	}
 	users, uerr := asmodel.GetAllUsers()

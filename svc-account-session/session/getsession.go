@@ -106,8 +106,8 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
-		}		
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
+		}
 		return resp
 	}
 
@@ -128,7 +128,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			auth.CustomAuthLog(req.SessionToken, "Invalid session token" ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 			continue
 		}
 		if session.ID == req.SessionId {
@@ -155,7 +155,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			auth.CustomAuthLog(req.SessionToken, errorMessage ,resp.StatusCode)
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
@@ -208,8 +208,8 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
-			auth.CustomAuthLog(req.SessionToken, errorMessage ,resp.StatusCode)
-		}		
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
+		}
 		return resp
 	}
 
@@ -228,7 +228,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body = args.CreateGenericErrorResponse()
-		auth.CustomAuthLog(req.SessionToken, errorMessage ,resp.StatusCode)
+		auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		return resp
 	}
 

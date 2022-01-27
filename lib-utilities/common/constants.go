@@ -19,7 +19,7 @@ package common
 type EventConst int
 
 const (
-    // RedfishEvent constant
+	// RedfishEvent constant
 	RedfishEvent EventConst = iota
 	// MetricReport constant
 	MetricReport

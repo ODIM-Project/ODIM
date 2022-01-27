@@ -21,12 +21,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
-	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 
@@ -79,10 +79,10 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		} else {
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 			logProperties := make(map[string]interface{})
-            logProperties["SessionUserID"] = createSession.UserName
-            logProperties["Message"] = "Invalid username or password"
-            logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-		    customLogs.AuthLog(logProperties)
+			logProperties["SessionUserID"] = createSession.UserName
+			logProperties["Message"] = "Invalid username or password"
+			logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
+			customLogs.AuthLog(logProperties)
 		}
 		return resp, ""
 	}
@@ -102,11 +102,11 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
 		errorMessage := "User doesn't have required privilege to create a session"
 		logProperties := make(map[string]interface{})
-        logProperties["SessionUserID"] = createSession.UserName
-        logProperties["SessionRoleID"] = role.ID
-        logProperties["Message"] = errorMessage
-        logProperties["ResponseStatusCode"] = int32(http.StatusForbidden)
-        customLogs.AuthLog(logProperties)
+		logProperties["SessionUserID"] = createSession.UserName
+		logProperties["SessionRoleID"] = role.ID
+		logProperties["Message"] = errorMessage
+		logProperties["ResponseStatusCode"] = int32(http.StatusForbidden)
+		customLogs.AuthLog(logProperties)
 		return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, errorMessage, nil, nil), ""
 	}
 

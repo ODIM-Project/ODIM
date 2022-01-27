@@ -21,12 +21,17 @@ import (
 	"testing"
 	"time"
 
+	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 func TestConsume(t *testing.T) {
+
 	config.SetUpMockConfig(t)
+	dc.MQ = dc.MQF{
+		KafkaF: &dc.KafkaF{}}
+
 	tests := []struct {
 		name      string
 		topicName string

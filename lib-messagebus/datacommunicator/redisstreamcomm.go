@@ -34,15 +34,15 @@ type RedisStreamsPacket struct {
 func getDBConnection() *redis.Client {
 	var dbConn *redis.Client
 
-	if len(mq.RedisStreams.SentinalAddress) > 0 {
+	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    mq.RedisStreams.SentinalAddress,
-			SentinelAddrs: []string{fmt.Sprintf("%s:%s", mq.RedisStreams.RedisServerAddress, mq.RedisStreams.RedisServerPort)},
+			MasterName:    MQ.RedisStreams.SentinalAddress,
+			SentinelAddrs: []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
 			MaxRetries:    -1,
 		})
 	} else {
 		dbConn = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", mq.RedisStreams.RedisServerAddress, mq.RedisStreams.RedisServerPort),
+			Addr:     fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
 			Password: "", // no password set
 			DB:       0,  // use default DB
 		})

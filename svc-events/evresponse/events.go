@@ -17,8 +17,9 @@
 package evresponse
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"sync"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // SubscriptionResponse is used to return response to end user

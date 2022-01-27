@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 
@@ -78,7 +79,8 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 		} else {
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 		}
-		log.Error(errMsg)
+		//log.Error(errMsg)
+		customLogs.AuthLog("", createSession.UserName, "", "Invalid username or password", http.StatusUnauthorized)
 		return resp, ""
 	}
 
@@ -96,7 +98,8 @@ func CreateNewSession(req *sessionproto.SessionCreateRequest) (response.RPC, str
 	//User requires Login privelege to create a session
 	if _, exist := rolePrivilege[common.PrivilegeLogin]; !exist {
 		errorMessage := "User doesn't have required privilege to create a session"
-		log.Error(errorMessage)
+		//log.Error(errorMessage)
+		customLogs.AuthLog("", createSession.UserName, role.ID, errorMessage, http.StatusForbidden)
 		return common.GeneralError(http.StatusForbidden, response.InsufficientPrivilege, errorMessage, nil, nil), ""
 	}
 

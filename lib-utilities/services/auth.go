@@ -59,8 +59,8 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort))
 	}
     // getting user details
-    sessionUserName,sessionRoleID := GetUserDetails(sessionToken)
-    common.AuthLog(sessionUserName, sessionRoleID, response.StatusCode)
+    //sessionUserName,sessionRoleID := GetUserDetails(sessionToken)
+    //common.AuthLog(sessionToken, sessionUserName, sessionRoleID, response.StatusCode)
 	return common.GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs, nil)
 }
 
@@ -106,8 +106,7 @@ func GetSessionUserRoleID(sessionToken string) (string, error) {
 	return response.RoleID, err
 }
 
-// getUserDetails
-// getting the session details
+// GetUserDetails function is used to get the session details
 func GetUserDetails(sessionToken string) (string, string){
     var err error
 	sessionUserName := "null"
@@ -123,14 +122,8 @@ func GetUserDetails(sessionToken string) (string, string){
 		if err != nil {
 			errMsg := "while trying to get session details: " + err.Error()
 			log.Error(errMsg)
-			return "null", "null"
+			return sessionUserName, "null"
 		}
 	}
-
-	/*// adding null if no credentials are supplied while requesting
-	if sessionUserName == "" {
-		sessionUserName = "null"
-		sessionRoleID = "null"
-	}*/
 	return sessionUserName, sessionRoleID
 }

@@ -28,8 +28,7 @@ import (
 	//"context"
 
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	//customLog "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
@@ -172,6 +171,13 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	    // Validating session token
+	    sessionToken := r.Header.Get("X-Auth-Token")
+	    if sessionToken == "" {
+	        errorMessage := "X-Auth-Token is missing in the request header"
+            customLogs.AuthLog(sessionToken, "", "", errorMessage, http.StatusUnauthorized)
+	    }
+
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -201,7 +207,7 @@ func Router() *iris.Application {
 		next(w, r)
 	})
 	router.Done(func(ctx iris.Context) {
-		auditLogEntry(ctx, reqBody)
+		customLogs.AuditLog(ctx, reqBody)
 		reqBody = make(map[string]interface{})
 	})
 	taskmon := router.Party("/taskmon")
@@ -579,9 +585,3 @@ func Router() *iris.Application {
 	return router
 }
 
-// auditLogEntry function
-func auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) {
-    sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-    sessionUserName,sessionRoleID := srv.GetUserDetails(sessionToken)
-    common.AuditLog(ctx, reqBody, sessionUserName, sessionRoleID)
-}

@@ -39,7 +39,7 @@ type Manager struct {
 	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
 	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
 	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
-	LogServices             dmtf.Link          `json:"LogServices"`
+	LogServices             *dmtf.Link            `json:"LogServices,omitempty"`
 	NetworkProtocol         []OdataID           `json:"NetworkProtocol,omitempty"`
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
@@ -121,6 +121,7 @@ type RAManager struct {
 	UUID            string   `json:"UUID"`
 	State           string   `json:"State"`
 	Description     string   `json:"Description"`
+	LogServices     *dmtf.Link  `json:"LogServices"`
 	
 	
 }

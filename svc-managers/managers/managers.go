@@ -188,6 +188,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 			State: mgrData.State,
 		},
 		Description: mgrData.Description,
+		LogServices:       mgrData.LogServices,
 	}, nil
 }
 

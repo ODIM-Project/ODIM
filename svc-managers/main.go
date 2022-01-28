@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
 var log = logrus.New()
@@ -89,7 +90,12 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
 		Description:     "odimra manager",
+
+		LogServices:  &dmtf.Link{
+				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID+"/LogServices",
+			},
 	}
+	log.Info("manager--- ",&mgr)
 	return managerInterface.AddManagertoDBInterface(mgr)
 
 }

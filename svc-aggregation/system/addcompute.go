@@ -311,21 +311,20 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 		log.Error(err.Error())
 	}
 	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
-	log.Info("Value for Manager URI:", managerURI)
+	var managerData map[string]interface{}
+	chassis := make(map[int]map[string]interface{})
+	server := make(map[int]map[string]interface{})
+	managerLinks := make(map[string]interface{})
+	var chassisLink, serverLink, listOfChassis, listOfServer []interface{}
 
-	data, jerr := agmodel.GetManagerByURL(managerURI)
+	data, jerr := agmodel.GetResource("Managers", managerURI)
 	if jerr != nil {
-		errorMessage := "error unmarshalling manager details: " + jerr.Error()
+		errorMessage := "error getting manager details: " + jerr.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil
 	}
 
-	var managerData map[string]interface{}
-	chassis := make(map[string]interface{})
-	server := make(map[string]interface{})
-	managerLinks := make(map[string]interface{})
-	var chassisLink, serverLink []interface{}
 	err = json.Unmarshal([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
@@ -334,29 +333,43 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 			nil, nil), "", nil
 	}
 
-	chassis["@odata.id"] = "/redfish/v1/Chassis/" + aggregationSourceID
-	server["@odata.id"] = "/redfish/v1/Systems/" + aggregationSourceID
+	for index, val := range chassisList {
+		chassis[index] = make(map[string]interface{})
+		chassis[index]["@odata.id"] = val
+		listOfChassis = append(listOfChassis, chassis[index])
+	}
+	for index, val := range h.SystemURL {
+		server[index] = make(map[string]interface{})
+		server[index]["@odata.id"] = val
+		listOfServer = append(listOfServer, server[index])
+	}
 	if links, ok := managerData["Links"].(map[string]interface{}); ok {
 		if managerData["Links"].(map[string]interface{})["ManagerForChassis"] != nil {
 			chassisLink = links["ManagerForChassis"].([]interface{})
 		}
-		chassisLink = append(chassisLink, chassis)
+		chassisLink = append(chassisLink, listOfChassis...)
 		managerData["Links"].(map[string]interface{})["ManagerForChassis"] = chassisLink
 
 		if managerData["Links"].(map[string]interface{})["ManagerForServers"] != nil {
 			serverLink = links["ManagerForServers"].([]interface{})
 		}
-		serverLink = append(serverLink, server)
+		serverLink = append(serverLink, listOfServer...)
 		managerData["Links"].(map[string]interface{})["ManagerForServers"] = serverLink
 	} else {
-		chassisLink = append(chassisLink, chassis)
-		serverLink = append(serverLink, server)
+		chassisLink = append(chassisLink, listOfChassis...)
+		serverLink = append(serverLink, listOfServer...)
 		managerLinks["ManagerForChassis"] = chassisLink
 		managerLinks["ManagerForServers"] = serverLink
 		managerData["Links"] = managerLinks
 	}
-
-	err = agmodel.UpdateManagerData(managerURI, managerData, "Managers")
+	mgrData, err := json.Marshal(managerData)
+	if err != nil {
+		errorMessage := "unable to marshal data while updating managers detail: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
+	err = agmodel.GenericSave([]byte(mgrData), "Managers", managerURI)
 	if err != nil {
 		errorMessage := "error while saving manager details: " + err.Error()
 		log.Error(errorMessage)

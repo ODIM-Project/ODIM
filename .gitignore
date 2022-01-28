@@ -8,3 +8,4 @@ build/cert_generator/*.key
 build/cert_generator/*.jks
 build/cert_generator/*.private
 build/cert_generator/*.public
+*.pb.go

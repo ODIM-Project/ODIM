@@ -1,4 +1,4 @@
-module odim-5334/ODIM/odim-controller/scripts
+module github.com/ODIM-Project/ODIM/odim-controller/scripts
 
 go 1.17
 

@@ -17,7 +17,7 @@ data:
         "FirmwareVersion": "v1.0.0",
         "LogLevel": "debug",
         "LogPath": "/var/log/csplugin_logs/csplugin.log",
-        "RedisAddress": "redis-inmemory:6379",
+        "RedisAddress": "redis-ondisk:6379",
         "PrivateKeyPath": "/etc/csplugin_certs/odimra_server.key",
         "CertificatePath": "/etc/csplugin_certs/odimra_server.crt",
         "RootCAPath": "/etc/csplugin_certs/rootCA.crt",

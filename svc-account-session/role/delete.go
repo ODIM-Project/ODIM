@@ -36,10 +36,11 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
+			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
+			auth.CustomAuthLog(sessionToken, "Invalid session token", resp.StatusCode)
 		}
-		log.Error(errorMessage)
 		return nil, err
 	}
 	if errs := session.UpdateLastUsedTime(sessionToken); errs != nil {
@@ -75,7 +76,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		return &resp
 	}
 	users, uerr := asmodel.GetAllUsers()

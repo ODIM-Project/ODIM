@@ -15,10 +15,13 @@
 // Package common ...
 package common
 
+// EventConst constant
 type EventConst int
 
 const (
+	// RedfishEvent constant
 	RedfishEvent EventConst = iota
+	// MetricReport constant
 	MetricReport
 )
 

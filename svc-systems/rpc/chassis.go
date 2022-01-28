@@ -100,7 +100,6 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	sessionToken := req.SessionToken
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		rewrite(authResp, &resp)
 		return &resp, nil
 	}

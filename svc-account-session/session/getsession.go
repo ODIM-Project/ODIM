@@ -35,7 +35,6 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		errorMessage := "Unable to authorize session token: " + err.Error()
 		return &resp, err
 	}
 
@@ -55,7 +54,6 @@ func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.Sessi
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		errorMessage := "Unable to authorize session token: " + err.Error()
 		return &resp, err
 	}
 

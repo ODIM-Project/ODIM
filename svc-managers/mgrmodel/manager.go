@@ -39,8 +39,8 @@ type Manager struct {
 	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
 	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
 	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
-	LogServices             *OdataID           `json:"LogServices,omitempty"`
-	NetworkProtocol         *OdataID           `json:"NetworkProtocol,omitempty"`
+	LogServices             dmtf.Link          `json:"LogServices"`
+	NetworkProtocol         []OdataID           `json:"NetworkProtocol,omitempty"`
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
 	GraphicalConsole        *GraphicalConsole  `json:"GraphicalConsole,omitempty"`
@@ -60,11 +60,11 @@ type Manager struct {
 	ServiceEntryPointUUID   string             `json:"ServiceEntryPointUUID,omitempty"`
 	TimeZoneName            string             `json:"TimeZoneName,omitempty"`
 	Measurements            []*dmtf.Link       `json:"Measurements,omitempty"`
-	Certificates            dmtf.Certificates  `json:"Certificates,omitempty"`
+	Certificates            *dmtf.Certificates  `json:"Certificates,omitempty"`
 	Location                *dmtf.Link         `json:"Location,omitempty"`
 	LocationIndicatorActive bool               `json:"LocationIndicatorActive,omitempty"`
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
-	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
+	SerialConsole           *dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
 	Description             string             `json:"Description,omitempty"`
 }
@@ -114,13 +114,15 @@ type Target struct {
 
 // RAManager struct is to store odimra details into DB
 type RAManager struct {
-	ID              string `json:"ManagerID"`
-	Name            string `json:"Name"`
-	ManagerType     string `json:"ManagerType"`
-	FirmwareVersion string `json:"FirmwareVersion"`
-	UUID            string `json:"UUID"`
-	State           string `json:"State"`
-	Description     string `json:"Description"`
+	ID              string   `json:"ManagerID"`
+	Name            string   `json:"Name"`
+	ManagerType     string   `json:"ManagerType"`
+	FirmwareVersion string   `json:"FirmwareVersion"`
+	UUID            string   `json:"UUID"`
+	State           string   `json:"State"`
+	Description     string   `json:"Description"`
+	
+	
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

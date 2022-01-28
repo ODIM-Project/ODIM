@@ -17,9 +17,11 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"reflect"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -89,7 +91,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		}
 		for _, systemURI := range systemList {
 			index := strings.LastIndexAny(systemURI, "/")
-			resp = e.deleteCompute(systemURI, index)
+			resp = e.deleteCompute(systemURI, index, target.PluginID)
 		}
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -246,7 +248,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	return resp
 }
 
-func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
+func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string) response.RPC {
 	var resp response.RPC
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
@@ -260,6 +262,31 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 			systemOperation.Operation + " operation  is under progress")
 		errMsg := systemOperation.Operation + " operation  is under progress"
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
+	}
+	// Get the plugin
+	var managerData map[string]interface{}
+	plugin, errs := agmodel.GetPluginData(pluginID)
+	if errs != nil {
+		errMsg := errs.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, nil)
+	}
+
+	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
+	mgrData, jerr := agmodel.GetResource("Managers", managerURI)
+	if jerr != nil {
+		errorMessage := "error unmarshalling manager details: " + jerr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
+
+	unmarshallErr := json.Unmarshal([]byte(mgrData), &managerData)
+	if unmarshallErr != nil {
+		errorMessage := "error unmarshalling manager details: " + unmarshallErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
 	}
 	systemOperation.Operation = "Delete"
 	dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
@@ -291,6 +318,20 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
+	mgrResp := deleteLinkDetails(managerData, key, chassisList)
+	data, marshalErr := json.Marshal(mgrResp)
+	if marshalErr != nil {
+		errorMessage := "unable to marshal data for updating: " + marshalErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	genericErr := agmodel.GenericSave([]byte(data), "Managers", managerURI)
+	if genericErr != nil {
+		errorMessage := "error while saving manager details: " + genericErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+
 	// Delete Compute System Details from InMemory
 	if derr := e.DeleteComputeSystem(index, key); derr != nil {
 		errMsg := "error while trying to delete compute system: " + derr.Error()
@@ -332,6 +373,39 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	return resp
+}
+
+func deleteLinkDetails(managerData map[string]interface{}, systemID string, chassisList []string) map[string]interface{} {
+	if links, ok := managerData["Links"].(map[string]interface{}); ok {
+		if managerForServers, ok := links["ManagerForServers"].([]interface{}); ok {
+			for k, v := range managerForServers {
+				if reflect.DeepEqual(v.(map[string]interface{})["@odata.id"], systemID) {
+					managerForServers = append(managerForServers[:k], managerForServers[k+1:]...)
+					if len(managerForServers) != 0 {
+						links["ManagerForServers"] = managerForServers
+					} else {
+						delete(links, "ManagerForServers")
+					}
+				}
+			}
+		}
+		for _, val := range chassisList {
+			if managerForChassis, ok := links["ManagerForChassis"].([]interface{}); ok {
+				for k, v := range managerForChassis {
+					if reflect.DeepEqual(v.(map[string]interface{})["@odata.id"], val) {
+						managerForChassis = append(managerForChassis[:k], managerForChassis[k+1:]...)
+						if len(managerForChassis) != 0 {
+							links["ManagerForChassis"] = managerForChassis
+						} else {
+							delete(links, "ManagerForChassis")
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return managerData
 }
 
 // deleteWildCardValues will delete the wild card values and

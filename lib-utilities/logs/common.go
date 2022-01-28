@@ -23,7 +23,7 @@ import (
 )
 
 // getUserDetails function
-// getting the session details
+// getting the session user id and role id for a given session token
 func getUserDetails(sessionToken string) (string, string) {
 	var err error
 	sessionUserName := "null"
@@ -46,6 +46,7 @@ func getUserDetails(sessionToken string) (string, string) {
 }
 
 // maskRequestBody function
+// masking the request body, making password as null
 func maskRequestBody(reqBody map[string]interface{}) string {
 	var jsonStr []byte
 	var err error

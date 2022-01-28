@@ -25,7 +25,6 @@ import (
 // AuditLog is used for generating audit logs in syslog format for each request
 // this function logs an info for successful operation and error for failure operation
 // properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
-//func AuditLog(ctx iris.Context, reqBody map[string]interface{}, sessionUserName, sessionRoleID string){
 func AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
 	logMsg := auditLogEntry(ctx, reqBody)
 	// Get response code
@@ -43,7 +42,9 @@ func AuditLog(ctx iris.Context, reqBody map[string]interface{}) {
 	}
 }
 
-// AuthLog function
+// AuthLog is used for generating security logs in syslog format for each request
+// this function logs an info for successful operation and warning for failure auth operation
+// properties logged are prival, time, username, roleid and message
 func AuthLog(logProperties map[string]interface{}) {
 	sessionToken := "null"
 	sessionUserName := "null"
@@ -73,7 +74,7 @@ func AuthLog(logProperties map[string]interface{}) {
 	logMsg := fmt.Sprintf("%s [account@1 user=\"%s\" roleID=\"%s\"]", timeNow, sessionUserName, sessionRoleID)
 	// Get response code
 	operationStatus := getResponseStatus(respStatusCode)
-	if sessionToken != "" {
+	if sessionToken != "null" {
 		tokenMsg = "for session token " + sessionToken
 	}
 	// 86 is for auth log info
@@ -93,7 +94,8 @@ func AuthLog(logProperties map[string]interface{}) {
 	}
 }
 
-// auditLogEntry function
+// auditLogEntry extracts the required info from context like session token, username, request URI
+// and formats in syslog format for audit logs
 func auditLogEntry(ctx iris.Context, reqBody map[string]interface{}) string {
 	var logMsg string
 	// getting the request URI, host and method from context

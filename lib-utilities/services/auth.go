@@ -58,9 +58,6 @@ func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errRe
 	if response.StatusCode == http.StatusServiceUnavailable {
 		msgArgs = append(msgArgs, fmt.Sprintf("%v:%v", config.Data.DBConf.InMemoryHost, config.Data.DBConf.InMemoryPort))
 	}
-	// getting user details
-	//sessionUserName,sessionRoleID := GetUserDetails(sessionToken)
-	//common.AuthLog(sessionToken, sessionUserName, sessionRoleID, response.StatusCode)
 	return common.GeneralError(response.StatusCode, response.StatusMessage, "while checking the authorization", msgArgs, nil)
 }
 

@@ -19,13 +19,10 @@ package router
 import (
 	"bytes"
 	"encoding/json"
-	//"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-	//"time"
-	//"context"
 
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"

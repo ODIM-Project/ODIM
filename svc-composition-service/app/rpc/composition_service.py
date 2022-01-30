@@ -110,6 +110,7 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
             # Initialize all Resource Blocks
             elif segments[-1] == "ResourceBlock.Initialize":
                 self.resourceblock.initialize()
+                code = HTTPStatus.NO_CONTENT
 
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(

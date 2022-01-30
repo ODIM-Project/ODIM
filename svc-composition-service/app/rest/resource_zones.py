@@ -134,7 +134,8 @@ class ResourceZones():
             pipe.execute()
 
             logging.info("Created a Resource Zone successfully")
-            res = {"Id": zone["Id"]}
+            #res = {"Id": zone["Id"]}
+            res = json.dumps(zone)
             code = HTTPStatus.CREATED
 
         except Exception as err:

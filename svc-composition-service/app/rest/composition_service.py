@@ -15,6 +15,7 @@
 import logging
 import json
 import copy
+import uuid
 from http import HTTPStatus
 from utilities.client import Client
 from db.persistant import RedisClient
@@ -155,7 +156,8 @@ class CompositonService():
                         code = HTTPStatus.BAD_REQUEST
                         return
 
-                    compose_sys["Id"] = "composed-{}".format(system_data["Id"])
+                    #compose_sys["Id"] = "composed-{}".format(system_data["Id"])
+                    compose_sys["Id"] = str(uuid.uuid1())
                     compose_sys["@odata.id"] = system_data[
                         "@odata.id"].replace(system_data["Id"],
                                              compose_sys["Id"])
@@ -164,6 +166,10 @@ class CompositonService():
                     compose_sys["@odata.type"] = system_data["@odata.type"]
                     logging.debug("New Compose System Id is: {id}".format(
                         id=compose_sys["Id"]))
+
+                    compose_sys["Processors"] = copy.deepcopy(system_data["Processors"])
+                    compose_sys["Memory"] = copy.deepcopy(system_data["Memory"])
+                    compose_sys["Storage"] = copy.deepcopy(system_data["Storage"])
 
                     if system_data.get("Links"):
                         compose_sys["Links"] = copy.deepcopy(
@@ -187,6 +193,7 @@ class CompositonService():
                     compose_sys["Links"]["SupplyingComputerSystems"].append(
                         {"@odata.id": system_data["@odata.id"]})
 
+                    """
                     compose_sys["Actions"] = {
                         "#ComputerSystem.AddResourceBlock": {
                             "target":
@@ -203,7 +210,7 @@ class CompositonService():
                                 "Actions/ComputerSystem.RemoveResourceBlock")
                         }
                     }
-
+                    """
                 if (rs_block["CompositionStatus"]["MaxCompositions"] <=
                         rs_block["CompositionStatus"]["NumberOfCompositions"]):
                     logging.error(

@@ -101,7 +101,8 @@ class ResourceBlocks():
 
             self.redis.sadd("FreePool", data['@odata.id'])
 
-            res = {"Id": data['Id']}
+            #res = {"Id": data['Id']}
+            res = json.dumps(data)
             logging.debug(
                 "New ResourceBlock data: {rb_data}".format(rb_data=data))
         except Exception as err:

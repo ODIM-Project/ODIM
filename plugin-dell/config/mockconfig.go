@@ -207,7 +207,7 @@ func SetUpMockConfig(t *testing.T) error {
 		PreferredCipherSuites: []string{
 			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
 			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-			"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+			"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
 		},
 	}
 	lutilconf.SetVerifyPeer(Data.TLSConf.VerifyPeer)

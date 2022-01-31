@@ -44,7 +44,7 @@
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing go](#downloading-and-installing-go)
-   - [Configuring Docker proxy](#configuring-docker-proxy)
+   - [Configuring proxy for Docker](#configuring-proxy-for-docker)
    - [Installing Docker](#installing-docker)
    - [Odim-controller configuration parameters](#odim-controller-configuration-parameters)
    - [Running curl commands on a different server](#Running-curl-commands-on-a-different-server)
@@ -2198,7 +2198,7 @@ Run the following commands:
    ```
 
 
-## Configuring Docker proxy
+## Configuring proxy for Docker
 <blockquote>
 NOTE: Before performing the following steps, ensure the `http_proxy`, `https_proxy`, and `no_proxy` environment variables are set.
 </blockquote>
@@ -2370,7 +2370,7 @@ The following table lists all the configuration parameters required by odim-cont
 |haDeploymentEnabled|When set to true, it deploys third-party services as a three-instance cluster. By default, it is set to true.|
 |connectionMethodConf|Parameters of type array required to configure the supported connection methods. <br><blockquote>NOTE: To deploy a plugin after deploying the resource aggregator services, add its connection method information in the array and update the file using odim-controller `--upgrade` option.<br></blockquote>|
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. The default port is 30092. You can optionally change it.<br><blockquote>NOTE: Ensure that the port is in the range of 30000 to 32767.<br></blockquote>|
-|MessageBusType|Event message bus type. It is either Kafka or RedisStream.|
+|MessageBusType|Event message bus type. The value is either `Kafka` or `RedisStream` and they are case-sensitive.|
 |MessageBusQueue|Event message bus queue name.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br> <blockquote>NOTE: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
 |appsLogPath|The path where the logs of the Resource Aggregator for ODIM services must be stored. The default path is `/var/log/odimra`.<br>|

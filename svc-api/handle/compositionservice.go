@@ -52,7 +52,6 @@ type CompositionServiceRPCs struct {
 //GetCompositionService fetches all composition service
 func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionServiceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -61,7 +60,7 @@ func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -70,21 +69,19 @@ func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetResourceBlockCollection fetch the Resource Blocks Instance collection
 func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -93,7 +90,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -102,21 +99,19 @@ func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetResourceBlock get the Resource Block Instance
 func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -126,7 +121,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -135,22 +130,20 @@ func (cs *CompositionServiceRPCs) GetResourceBlock(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // CreateResourceBlock Create the Resource Block Instance
 func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 	defer ctx.Next()
 	var req interface{}
-	var res interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the create Resource Block request body: " + err.Error()
@@ -164,8 +157,8 @@ func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -198,14 +191,12 @@ func (cs *CompositionServiceRPCs) CreateResourceBlock(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // DeleteResourceBlock Remove Resource Block Instance
 func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -233,14 +224,12 @@ func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetResourceZoneCollection fetch the Resource zones Instance collection
 func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -249,7 +238,7 @@ func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -258,21 +247,19 @@ func (cs *CompositionServiceRPCs) GetResourceZoneCollection(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetResourceZone get the Resource zone Instance
 func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -282,7 +269,7 @@ func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -291,22 +278,20 @@ func (cs *CompositionServiceRPCs) GetResourceZone(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // CreateResourceZone create Resource zone Instance
 func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 	defer ctx.Next()
 	var req interface{}
-	var res interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the create Resource zone request body: " + err.Error()
@@ -320,8 +305,8 @@ func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -354,14 +339,12 @@ func (cs *CompositionServiceRPCs) CreateResourceZone(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // DeleteResourceZone remove Resource zone Instance
 func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
@@ -389,15 +372,13 @@ func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // Compose Action for compose system and decompose system
 func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 	defer ctx.Next()
 	var req interface{}
-	var res interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the compose request body: " + err.Error()
@@ -412,8 +393,8 @@ func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -446,14 +427,12 @@ func (cs *CompositionServiceRPCs) Compose(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetActivePool Active Resource Block Instance collection
 func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -462,7 +441,7 @@ func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -479,14 +458,12 @@ func (cs *CompositionServiceRPCs) GetActivePool(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetFreePool Free Resource Block instance collection
 func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -495,7 +472,7 @@ func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -512,14 +489,12 @@ func (cs *CompositionServiceRPCs) GetFreePool(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // GetCompositionReservations Compose action reservation collection
 func (cs *CompositionServiceRPCs) GetCompositionReservations(ctx iris.Context) {
 	defer ctx.Next()
-	var res interface{}
 	req := compositionserviceproto.GetCompositionResourceRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,
@@ -528,7 +503,7 @@ func (cs *CompositionServiceRPCs) GetCompositionReservations(ctx iris.Context) {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -545,15 +520,13 @@ func (cs *CompositionServiceRPCs) GetCompositionReservations(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }
 
 // CreateAllResourceBlocks Create all the Resource Block Instance
 func (cs *CompositionServiceRPCs) CreateAllResourceBlocks(ctx iris.Context) {
 	defer ctx.Next()
 	var req interface{}
-	var res interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the create all Resource Blocks request body: " + err.Error()
@@ -567,8 +540,8 @@ func (cs *CompositionServiceRPCs) CreateAllResourceBlocks(ctx iris.Context) {
 	if err != nil {
 		errorMessage := "error while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -601,6 +574,5 @@ func (cs *CompositionServiceRPCs) CreateAllResourceBlocks(ctx iris.Context) {
 
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
-	json.Unmarshal(resp.Body, &res)
-	ctx.JSON(res)
+	ctx.Write(resp.Body)
 }

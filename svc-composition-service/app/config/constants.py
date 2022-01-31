@@ -12,7 +12,7 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-EVENT_DESTINATION_URL = "/redfish/v1/EventService/CompositionServiceEvent"
+EVENT_DESTINATION_URL = "/ODIM/v1/EventService/CompositionServiceEvent"
 
 EVENT_TYPES = [
     "ResourceRemoved", "ResourceAdded", "ResourceUpdated", "StatusChange",
@@ -62,3 +62,16 @@ RESOURCE_ZONE_TEMP = {
 }
 
 COMPOSITION_SERVICE_NAME = "svc.composition.service"
+
+ACCOUNT_SESSION_NAME = "svc.account.session"
+
+# PrivilegeLogin defines the privilege for login
+PrivilegeLogin = "Login"
+# PrivilegeConfigureManager defines the privilege for configuraton manager
+PrivilegeConfigureManager = "ConfigureManager"
+# PrivilegeConfigureUsers defines the privilege for user configuratons
+PrivilegeConfigureUsers = "ConfigureUsers"
+# PrivilegeConfigureSelf defines the privilege for self configuratons
+PrivilegeConfigureSelf = "ConfigureSelf"
+# PrivilegeConfigureComponents defines the privilege for component configuratons
+PrivilegeConfigureComponents = "ConfigureComponents"

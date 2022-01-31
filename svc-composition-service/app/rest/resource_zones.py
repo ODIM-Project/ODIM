@@ -42,21 +42,7 @@ class ResourceZones():
 
         try:
             logging.info("Initialize for creation of Resource Zone")
-
-            # request_data = {
-            #   "Name": "CS Reosurce Zone",
-            #   "Links":{
-            #       "ResourceBlocks": [
-            #       {
-            #           "@odata.id": "/redfish/v1/CompositionService/ResourceBlocks/1"
-            #       },
-            #       {
-            #           "@odata.id": "/redfish/v1/CompositionService/ResourceBlocks/2"
-            #       },
-            #       ]
-            #    }
-            # }
-            # Required parameters Name, Links, and ResourceBlocks.
+            
             logging.debug(
                 "Request payload is {body}".format(body=request_data))
             zone = copy.deepcopy(constants.RESOURCE_ZONE_TEMP)
@@ -134,7 +120,6 @@ class ResourceZones():
             pipe.execute()
 
             logging.info("Created a Resource Zone successfully")
-            #res = {"Id": zone["Id"]}
             res = json.dumps(zone)
             code = HTTPStatus.CREATED
 
@@ -292,7 +277,6 @@ class ResourceZones():
                 resource="ResourceZones", resource_uri=url))
 
             pipe.execute()
-            #res = {"Id": data["Id"]}
             code = HTTPStatus.NO_CONTENT
 
         except Exception as err:

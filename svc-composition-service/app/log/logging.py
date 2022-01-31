@@ -17,7 +17,17 @@ from config.config import PLUGIN_CONFIG
 
 
 def logger():
-    logging.basicConfig(filename=PLUGIN_CONFIG["LogPath"],
-                        format='%(asctime)s | %(levelname)s | %(message)s',
-                        datefmt='%m/%d/%Y %I:%M:%S %p',
-                        level=PLUGIN_CONFIG["LogLevel"].upper())
+    if PLUGIN_CONFIG["LogPath"]:
+        logging.basicConfig(
+            filename=PLUGIN_CONFIG["LogPath"],
+            format='%(asctime)s | %(levelname)s | %(message)s',
+            datefmt='%m/%d/%Y %I:%M:%S %p',
+            level=PLUGIN_CONFIG["LogLevel"].upper() if isinstance(
+                PLUGIN_CONFIG["LogLevel"], str) else None)
+
+    else:
+        logging.basicConfig(
+            format='%(asctime)s | %(levelname)s | %(message)s',
+            datefmt='%m/%d/%Y %I:%M:%S %p',
+            level=PLUGIN_CONFIG["LogLevel"].upper() if isinstance(
+                PLUGIN_CONFIG["LogLevel"], str) else None)

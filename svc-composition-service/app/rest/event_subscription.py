@@ -38,7 +38,7 @@ class EventSubscription():
             "EventSubscription",
             "Destination":
             "{protocol}://{host}:{port}{url}".format(
-                protocol="http",
+                protocol="https",
                 host=PLUGIN_CONFIG["Host"],
                 port=PLUGIN_CONFIG["Port"],
                 url=constants.EVENT_DESTINATION_URL),

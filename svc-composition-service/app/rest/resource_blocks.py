@@ -101,7 +101,6 @@ class ResourceBlocks():
 
             self.redis.sadd("FreePool", data['@odata.id'])
 
-            #res = {"Id": data['Id']}
             res = json.dumps(data)
             logging.debug(
                 "New ResourceBlock data: {rb_data}".format(rb_data=data))
@@ -336,7 +335,6 @@ class ResourceBlocks():
             logging.info(
                 "The Resource Block {rb_uri} is deleted successfully".format(
                     rb_uri=rb_data["@odata.id"]))
-            #res = {"Id": rb_data["Id"]}
             code = HTTPStatus.NO_CONTENT
 
         except Exception as err:

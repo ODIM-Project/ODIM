@@ -25,7 +25,7 @@ from rest.composition_service import CompositonService
 
 
 class CompositionServiceRpc(pb2_grpc.CompositionServicer):
-    """The listener function implemests the rpc call as described in the .proto file"""
+    """The listener function implements the rpc call as described in the .proto file"""
     def __init__(self):
         self.cs = CompositonService()
         self.resourcezone = ResourceZones()
@@ -43,7 +43,6 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                                               body=bytes(
                                                   json.dumps(response),
                                                   'utf-8'))
-        # return pb2.CompositionServiceResponse(statusCode=code, body=response)
 
     def GetCompositionResource(
             self, request: pb2.GetCompositionResourceRequest,

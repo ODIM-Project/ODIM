@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: csplugin
+  name: composition-service
   namespace: {{ .Values.odimra.namespace }}
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
@@ -9,21 +9,21 @@ spec:
   replicas: {{ .Values.ReplicaCount | default 1}}
   selector:
     matchLabels:
-      app: csplugin
+      app: composition-service
   template:
     metadata:
       labels:
-        app: csplugin
+        app: composition-service
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      hostname: csplugin
+      hostname: composition-service
       volumes:
-        - name: csplugin-config-vol
+        - name: cs-config-vol
           projected:
             sources:
             - configMap:
-                name: csplugin-config
+                name: cs-config
         - name: configure-hosts
           configMap:
             name: configure-hosts
@@ -31,9 +31,6 @@ spec:
             - key: hosts
               path: host.append
               mode: 0644
-        - name: csplugin-log
-          persistentVolumeClaim:
-            claimName: csplugin-log-claim
         - name: odimra-secret
           secret:
             secretName: odimra-secret
@@ -53,23 +50,26 @@ spec:
             - key: odimra_rsapublic
               path: odimra_rsa.public
               mode: 0444
+        - name: odimra-log
+          persistentVolumeClaim:
+            claimName: odimra-log-claim
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
-        - name: csplugin
+        - name: composition-service
           env:
             - name: GET_HOSTS_FROM
               value: dns
-          image: csplugin:{{ .Values.csplugin.imageTag }}
+          image: composition-service:{{ .Values.compositionservice.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 45100
+            - containerPort: 45112
           volumeMounts:
-            - name: csplugin-config-vol
-              mountPath: /etc/csplugin_config
+            - name: cs-config-vol
+              mountPath: /etc/composition_service_config
             - name: configure-hosts
               mountPath: /tmp
-            - name: csplugin-log
-              mountPath: /var/log/csplugin_logs
+            - name: odimra-log
+              mountPath: /var/log/odimra_logs
             - name: odimra-secret
-              mountPath: /etc/csplugin_certs
+              mountPath: /etc/odimra_certs

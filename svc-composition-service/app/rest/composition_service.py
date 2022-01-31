@@ -156,7 +156,6 @@ class CompositonService():
                         code = HTTPStatus.BAD_REQUEST
                         return
 
-                    #compose_sys["Id"] = "composed-{}".format(system_data["Id"])
                     compose_sys["Id"] = str(uuid.uuid1())
                     compose_sys["@odata.id"] = system_data[
                         "@odata.id"].replace(system_data["Id"],

@@ -3245,6 +3245,42 @@ func SystemsMethodNotAllowed(ctx iris.Context) {
 	return
 }
 
+// CompositionServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Systems URLs and returns 405 error.
+func CompositionServiceMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	url := ctx.Request().URL
+	path := url.Path
+	resourceID := ctx.Params().Get("id")
+	// Extend switch case, when each path, requires different handling
+	switch path {
+	case "/redfish/v1/CompositionService/ResourceBlocks":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/CompositionServie/ResourceBlocks/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	case "/redfish/v1/CompositionService/ResourceZones":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/CompositionService/ResourceZones/" + resourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
+	case "/redfish/v1/CompositionService/ResourceBlocks/Actions":
+		ctx.ResponseWriter().Header().Set("Allow", "")
+	case "/redfish/v1/CompositionService/ResourceBlocks/Actions/Oem":
+		ctx.ResponseWriter().Header().Set("Allow", "")
+	case "/redfish/v1/CompositionService/ResourceBlocks/Actions/Oem/Ami":
+		ctx.ResponseWriter().Header().Set("Allow", "")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+
+	// Set Allow header for search and filter queries
+	if strings.Contains(path, "?") {
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
 func ManagersMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()

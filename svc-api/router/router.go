@@ -595,6 +595,18 @@ func Router() *iris.Application {
 	compositionService.Get("/FreePool", cs.GetFreePool)
 	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
 	compositionService.Post("/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize", cs.CreateAllResourceBlocks)
+	compositionService.Any("/", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceZones", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceZones/{id}", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/FreePool", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}/Actions", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}/Actions/Oem", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}/Actions/Oem/Ami", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}/Actions/Oem/Ami/ResourceBlock.Initialize", handle.CompositionServiceMethodNotAllowed)
+		
 	return router
 }
 

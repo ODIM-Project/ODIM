@@ -725,6 +725,9 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
         apiNodePort: 30080
         kafkaNodePort: 30092
         
+        messageBusType: Kafka
+        messageBusQueue: REDFISH-EVENTS-TOPIC
+      
         etcdDataPath: /etc/etcd/data
         etcdConfPath: /etc/etcd/conf
         
@@ -874,6 +877,9 @@ Ensure all the [Predeployment procedures](#predeployment-procedures) are complet
      apiProxyPort: 45000
      apiNodePort: 30080
      kafkaNodePort: 30092
+     
+     messageBusType: Kafka
+     messageBusQueue: REDFISH-EVENTS-TOPIC
      
      etcdDataPath: /etc/etcd/data
      etcdConfPath: /etc/etcd/conf
@@ -2364,6 +2370,8 @@ The following table lists all the configuration parameters required by odim-cont
 |haDeploymentEnabled|When set to true, it deploys third-party services as a three-instance cluster. By default, it is set to true.|
 |connectionMethodConf|Parameters of type array required to configure the supported connection methods. <br><blockquote>NOTE: To deploy a plugin after deploying the resource aggregator services, add its connection method information in the array and update the file using odim-controller `--upgrade` option.<br></blockquote>|
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. The default port is 30092. You can optionally change it.<br><blockquote>NOTE: Ensure that the port is in the range of 30000 to 32767.<br></blockquote>|
+|MessageBusType|Event message bus type.|
+|MessageBusQueue|Event message bus queue name.|
 |etcHostsEntries|List of FQDNs of the external servers and plugins to be added to the `/etc/hosts` file in each of the service containers of Resource Aggregator for ODIM. The external servers are the servers that you want to add into the resource inventory.<br> <blockquote>NOTE: It must be in the YAML multiline format as shown in the "etcHostsEntries template".<br>|
 |appsLogPath|The path where the logs of the Resource Aggregator for ODIM services must be stored. The default path is `/var/log/odimra`.<br>|
 |odimraServerCertFQDNSan|List of FQDNs to be included in the server certificate of Resource Aggregator for ODIM. It is required for deploying plugins.<br> <blockquote>NOTE: When you add a plugin, add the FQDN of the new plugin to the existing comma-separated list of FQDNs.<br></blockquote>|

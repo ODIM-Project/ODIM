@@ -49,7 +49,6 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 	privileges := []string{common.PrivilegeLogin}
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -132,7 +131,6 @@ func (a *Aggregator) Reset(ctx context.Context, req *aggregatorproto.AggregatorR
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -209,7 +207,6 @@ func (a *Aggregator) SetDefaultBootOrder(ctx context.Context, req *aggregatorpro
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -293,7 +290,6 @@ func (a *Aggregator) AddAggregationSource(ctx context.Context, req *aggregatorpr
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -403,7 +399,6 @@ func (a *Aggregator) GetAllAggregationSource(ctx context.Context, req *aggregato
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -429,7 +424,6 @@ func (a *Aggregator) GetAggregationSource(ctx context.Context, req *aggregatorpr
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -455,7 +449,6 @@ func (a *Aggregator) UpdateAggregationSource(ctx context.Context, req *aggregato
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -483,7 +476,6 @@ func (a *Aggregator) DeleteAggregationSource(ctx context.Context, req *aggregato
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -584,7 +576,6 @@ func (a *Aggregator) CreateAggregate(ctx context.Context, req *aggregatorproto.A
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -607,7 +598,6 @@ func (a *Aggregator) GetAllAggregates(ctx context.Context, req *aggregatorproto.
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -630,7 +620,6 @@ func (a *Aggregator) GetAggregate(ctx context.Context, req *aggregatorproto.Aggr
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -653,7 +642,6 @@ func (a *Aggregator) DeleteAggregate(ctx context.Context, req *aggregatorproto.A
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -676,7 +664,6 @@ func (a *Aggregator) AddElementsToAggregate(ctx context.Context, req *aggregator
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -699,7 +686,6 @@ func (a *Aggregator) RemoveElementsFromAggregate(ctx context.Context, req *aggre
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -723,7 +709,6 @@ func (a *Aggregator) ResetElementsOfAggregate(ctx context.Context, req *aggregat
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -799,7 +784,6 @@ func (a *Aggregator) SetDefaultBootOrderElementsOfAggregate(ctx context.Context,
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -865,7 +849,6 @@ func (a *Aggregator) GetAllConnectionMethods(ctx context.Context, req *aggregato
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}
@@ -888,7 +871,6 @@ func (a *Aggregator) GetConnectionMethod(ctx context.Context, req *aggregatorpro
 	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
 	resp := &aggregatorproto.AggregatorResponse{}
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("Unable to authenticate session with token: " + req.SessionToken)
 		generateResponse(authResp, resp)
 		return resp, nil
 	}

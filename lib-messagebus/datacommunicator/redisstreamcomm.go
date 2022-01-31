@@ -17,6 +17,7 @@ package datacommunicator
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -71,6 +72,11 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 
 	if rerr != nil {
 		log.Error("Unable to publish event to redis, got: " + rerr.Error())
+		if rerr != nil {
+			if strings.Contains(rerr.Error(), " connection timed out") {
+				redisClient = getDBConnection()
+			}
+		}
 		return rerr
 	}
 
@@ -85,6 +91,10 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
 	if rerr != nil {
 		log.Error("Unable to create the group ", rerr)
+		if strings.Contains(rerr.Error(), " connection timed out") {
+			redisClient = getDBConnection()
+		}
+
 	}
 
 	// create a unique consumer id for the  instance
@@ -100,6 +110,9 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 				}).Result()
 			if err != nil {
 				log.Error("Unable to get data from the group ", err)
+				if strings.Contains(err.Error(), " connection timed out") {
+					redisClient = getDBConnection()
+				}
 			} else {
 
 				if len(events) > 0 && len(events[0].Messages) > 0 {
@@ -139,7 +152,7 @@ func (rp *RedisStreamsPacket) Close() error {
 func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string) {
 	redisClient := getDBConnection()
 	for {
-		events, _, _ := redisClient.XAutoClaim(context.Background(), &redis.XAutoClaimArgs{
+		events, _, err := redisClient.XAutoClaim(context.Background(), &redis.XAutoClaimArgs{
 			Stream:   rp.pipe,
 			Group:    EVENTREADERGROUPNAME,
 			Consumer: id,
@@ -147,6 +160,11 @@ func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string
 			Count:    100,
 			Start:    "0-0",
 		}).Result()
+		if err != nil {
+			if strings.Contains(err.Error(), " connection timed out") {
+				redisClient = getDBConnection()
+			}
+		}
 		for _, event := range events {
 			messageID := event.ID
 			evtStr := event.Values["data"].(string)

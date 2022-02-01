@@ -57,7 +57,6 @@ func (a *AggregatorRPCs) GetAggregationService(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -103,7 +102,6 @@ func (a *AggregatorRPCs) Reset(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -165,7 +163,6 @@ func (a *AggregatorRPCs) SetDefaultBootOrder(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -225,7 +222,6 @@ func (a *AggregatorRPCs) AddAggregationSource(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -265,7 +261,6 @@ func (a *AggregatorRPCs) GetAllAggregationSource(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -298,7 +293,6 @@ func (a *AggregatorRPCs) GetAggregationSource(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -340,7 +334,6 @@ func (a *AggregatorRPCs) UpdateAggregationSource(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -383,7 +376,6 @@ func (a *AggregatorRPCs) DeleteAggregationSource(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -425,7 +417,6 @@ func (a *AggregatorRPCs) CreateAggregate(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -464,7 +455,6 @@ func (a *AggregatorRPCs) GetAggregateCollection(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -496,7 +486,6 @@ func (a *AggregatorRPCs) GetAggregate(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -528,7 +517,6 @@ func (a *AggregatorRPCs) DeleteAggregate(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -570,7 +558,6 @@ func (a *AggregatorRPCs) AddElementsToAggregate(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -622,7 +609,6 @@ func (a *AggregatorRPCs) RemoveElementsFromAggregate(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -674,7 +660,6 @@ func (a *AggregatorRPCs) ResetAggregateElements(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -713,7 +698,6 @@ func (a *AggregatorRPCs) SetDefaultBootOrderAggregateElements(ctx iris.Context) 
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -750,7 +734,6 @@ func (a *AggregatorRPCs) GetAllConnectionMethods(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -783,7 +766,6 @@ func (a *AggregatorRPCs) GetConnectionMethod(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)

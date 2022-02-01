@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 //GetRole defines the viewing of a particular role which is identified by the id.
@@ -62,7 +63,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	//Get role from database using role ID
@@ -140,7 +141,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 				},
 			},
 		}
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}

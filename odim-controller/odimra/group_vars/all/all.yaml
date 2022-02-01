@@ -32,6 +32,9 @@ odim_Kafka_helmcharts:
 odim_Redis_helmcharts:
    redis: redis-6.2.5-2.0.0
    etcd: etcd-1.0.0
+odim_third_party_har_helmcharts:
+   redis: redis-ha-6.2.5-2.0.0
+   etcd: etcd-ha-1.0.0
 odim_third_party_ha_helmcharts:
    zookeeper: zookeeper-ha-2.5.0-0.1.0
    redis: redis-ha-6.2.5-2.0.0
@@ -66,17 +69,19 @@ odim_docker_images:
    stakater_reloader: stakater/reloader
    busybox: busybox
 kubernetes_images:
-   calico/cni: calico_cni
-   calico/kube-controllers: calico_kube-controllers
-   calico/node: calico_node
-   coredns/coredns: coredns_coredns
-   k8s.gcr.io/cluster-proportional-autoscaler-amd64: k8s.gcr.io_cluster-proportional-autoscaler-amd64
-   k8s.gcr.io/k8s-dns-node-cache: k8s.gcr.io_k8s-dns-node-cache
+   quay.io/calico/cni: quay.io_calico_cni
+   quay.io/calico/kube-controllers: quay.io_calico_kube-controllers
+   quay.io/calico/node: quay.io_calico_node
+   quay.io/calico/pod2daemon-flexvol: quay.io_calico_pod2daemon-flexvol
+   k8s.gcr.io/coredns/coredns: k8s.gcr.io_coredns_coredns
+   k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64: k8s.gcr.io_cpa_cluster-proportional-autoscaler-amd64
+   k8s.gcr.io/dns/k8s-dns-node-cache: k8s.gcr.io_dns_k8s-dns-node-cache
    k8s.gcr.io/kube-apiserver: k8s.gcr.io_kube-apiserver
-   k8s.gcr.io/kube-controller-manager: k8s.gcr.io_kube-controller-manager
-   k8s.gcr.io/kube-proxy: k8s.gcr.io_kube-proxy
    k8s.gcr.io/kube-scheduler: k8s.gcr.io_kube-scheduler
+   k8s.gcr.io/kube-proxy: k8s.gcr.io_kube-proxy
+   k8s.gcr.io/kube-controller-manager: k8s.gcr.io_kube-controller-manager
    k8s.gcr.io/pause: k8s.gcr.io_pause
+   quay.io/coreos/etcd: quay.io_coreos_etcd
    lachlanevenson/k8s-helm: lachlanevenson_k8s-helm
    nginx: nginx
-   quay.io/coreos/etcd: quay.io_coreos_etcd
+

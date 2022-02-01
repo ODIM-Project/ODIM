@@ -17,8 +17,9 @@
 package evresponse
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"sync"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // SubscriptionResponse is used to return response to end user
@@ -78,6 +79,7 @@ type EventServiceResponse struct {
 	SMTP                              *SMTP                         `json:"SMTP,omitempty"`
 }
 
+// SMTP is for SMTP event delivery
 type SMTP struct {
 	Authentication     string `json:"Authentication,omitempty"`
 	ConnectionProtocol string `json:"ConnectionProtocol,omitempty"`

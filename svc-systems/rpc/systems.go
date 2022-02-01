@@ -68,7 +68,6 @@ func (s *Systems) GetSystemsCollection(ctx context.Context, req *systemsproto.Ge
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -88,7 +87,6 @@ func (s *Systems) GetSystems(ctx context.Context, req *systemsproto.GetSystemsRe
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -113,7 +111,6 @@ func (s *Systems) ComputerSystemReset(ctx context.Context, req *systemsproto.Com
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -137,7 +134,6 @@ func (s *Systems) SetDefaultBootOrder(ctx context.Context, req *systemsproto.Def
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -161,7 +157,6 @@ func (s *Systems) ChangeBiosSettings(ctx context.Context, req *systemsproto.Bios
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -185,7 +180,6 @@ func (s *Systems) ChangeBootOrderSettings(ctx context.Context, req *systemsproto
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -209,7 +203,6 @@ func (s *Systems) CreateVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}
@@ -230,7 +223,6 @@ func (s *Systems) DeleteVolume(ctx context.Context, req *systemsproto.VolumeRequ
 	sessionToken := req.SessionToken
 	authResp := s.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		fillSystemProtoResponse(&resp, authResp)
 		return &resp, nil
 	}

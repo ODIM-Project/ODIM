@@ -88,7 +88,6 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -125,7 +124,6 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -161,7 +159,6 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)

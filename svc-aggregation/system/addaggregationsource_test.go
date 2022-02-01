@@ -54,6 +54,22 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 	mockPluginData(t, "GRF_v1.0.0")
 	mockPluginData(t, "XAuthPlugin_v1.0.0")
 	mockPluginData(t, "XAuthPluginFail_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
@@ -324,7 +340,22 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 	mockPluginData(t, "GRF_v1.0.0")
-
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",

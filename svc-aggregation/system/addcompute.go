@@ -365,7 +365,7 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	}
 	err = agmodel.GenericSave([]byte(mgrData), "Managers", managerURI)
 	if err != nil {
-		errorMessage := "error while saving manager details: " + err.Error()
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil), "", nil

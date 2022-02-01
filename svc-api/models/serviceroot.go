@@ -42,7 +42,7 @@ type ServiceRoot struct {
 	OEM                       OEM          `json:"Oem"`
 	RedfishVersion            string       `json:"RedfishVersion"`
 	UUID                      string       `json:"UUID"`
-	CompositionService        *Service     `json:"CompositionService"`
+	CompositionService        *Service     `json:"CompositionService,omitempty"`
 }
 
 //PFSupported struct definition

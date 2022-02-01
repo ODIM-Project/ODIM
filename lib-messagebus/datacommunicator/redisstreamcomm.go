@@ -75,6 +75,10 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 		if rerr != nil {
 			if strings.Contains(rerr.Error(), " connection timed out") {
 				redisClient = getDBConnection()
+				redisClient.XAdd(ctx, &redis.XAddArgs{
+					Stream: rp.pipe,
+					Values: map[string]interface{}{"data": b},
+				}).Result()
 			}
 		}
 		return rerr

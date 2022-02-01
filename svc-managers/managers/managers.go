@@ -199,7 +199,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
-	fmt.Println("GetManagersResource----")
+	
 	var resp response.RPC
 	var tableName string
 	var resource map[string]interface{}

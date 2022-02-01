@@ -275,7 +275,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
 	mgrData, jerr := agmodel.GetResource("Managers", managerURI)
 	if jerr != nil {
-		errorMessage := "error unmarshalling manager details: " + jerr.Error()
+		errorMessage := "error while getting manager details: " + jerr.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
@@ -327,7 +327,7 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	}
 	genericErr := agmodel.GenericSave([]byte(data), "Managers", managerURI)
 	if genericErr != nil {
-		errorMessage := "error while saving manager details: " + genericErr.Error()
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + genericErr.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}

@@ -48,7 +48,6 @@ func (a *AccountRPCs) GetAccountService(ctx iris.Context) {
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -97,7 +96,6 @@ func (a *AccountRPCs) CreateAccount(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -142,7 +140,6 @@ func (a *AccountRPCs) GetAllAccounts(ctx iris.Context) {
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -182,7 +179,6 @@ func (a *AccountRPCs) GetAccount(ctx iris.Context) {
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -233,7 +229,6 @@ func (a *AccountRPCs) UpdateAccount(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -281,7 +276,6 @@ func (a *AccountRPCs) DeleteAccount(ctx iris.Context) {
 
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)

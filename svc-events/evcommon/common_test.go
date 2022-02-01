@@ -19,12 +19,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -173,7 +174,7 @@ func startTestServer() *httptest.Server {
 			Available: "yes",
 		},
 		EventMessageBus: &common.EventMessageBus{
-			EmbType: "Kafka",
+			EmbType: "RedisStreams",
 			EmbQueue: []common.EmbQueue{
 				common.EmbQueue{
 					QueueName: "EVENTS",

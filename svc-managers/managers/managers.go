@@ -201,18 +201,36 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	fmt.Println("GetManagersResource----")
 	var resp response.RPC
+	var tableName string
+	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	fmt.Println("requestData", requestData)
 	fmt.Println("req.ManagerID", req.ManagerID)
 	fmt.Println("len(requestData)----------------------", len(requestData))
-
-	/*if len(requestData) <= 1 {
-	resp = e.getPluginManagerResoure(requestData[0], req.URL)
-	return resp
-	}*/
-	uuid := requestData[0]
 	urlData := strings.Split(req.URL, "/")
-	var tableName string
+	if len(requestData) <= 1 {
+		if req.ManagerID == config.Data.RootServiceUUID {
+			resourceName := urlData[len(urlData)-1]
+			tableName = common.ManagersResource[resourceName]
+			data, err := e.DB.GetResource(tableName, req.URL)
+			if err != nil {
+				errorMessage := "unable to get odimra managers details: " + err.Error()
+				log.Error(errorMessage)
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+			}
+
+			json.Unmarshal([]byte(data), &resource)
+			resp.Body = resource
+			resp.StatusCode = http.StatusOK
+			resp.StatusMessage = response.Success
+
+			return resp
+		}
+		resp = e.getPluginManagerResoure(requestData[0], req.URL)
+		return resp
+	}
+	uuid := requestData[0]
+
 	fmt.Println("req.ResourceID", req.ResourceID)
 	if req.ResourceID == "" {
 		resourceName := urlData[len(urlData)-1]
@@ -239,7 +257,6 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 		}
 	}
 
-	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK

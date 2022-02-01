@@ -78,6 +78,7 @@ type EventServiceResponse struct {
 	SMTP                              *SMTP                         `json:"SMTP,omitempty"`
 }
 
+// SMTP is for SMTP event delivery
 type SMTP struct {
 	Authentication     string `json:"Authentication,omitempty"`
 	ConnectionProtocol string `json:"ConnectionProtocol,omitempty"`

@@ -188,7 +188,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 			State: mgrData.State,
 		},
 		Description: mgrData.Description,
-		LogServices:       mgrData.LogServices,
+		LogServices: mgrData.LogServices,
 	}, nil
 }
 
@@ -199,15 +199,21 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
+	fmt.Println("GetManagersResource----")
 	var resp response.RPC
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
-	if len(requestData) <= 1 {
-		resp = e.getPluginManagerResoure(requestData[0], req.URL)
-		return resp
-	}
+	fmt.Println("requestData", requestData)
+	fmt.Println("req.ManagerID", req.ManagerID)
+	fmt.Println("len(requestData)----------------------", len(requestData))
+
+	/*if len(requestData) <= 1 {
+	resp = e.getPluginManagerResoure(requestData[0], req.URL)
+	return resp
+	}*/
 	uuid := requestData[0]
 	urlData := strings.Split(req.URL, "/")
 	var tableName string
+	fmt.Println("req.ResourceID", req.ResourceID)
 	if req.ResourceID == "" {
 		resourceName := urlData[len(urlData)-1]
 		tableName = common.ManagersResource[resourceName]
@@ -219,6 +225,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error
+			fmt.Println("requestData[1]--------------------", requestData[1])
 			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
 				errorMessage := "unable to get resource details from device: " + err.Error()
 				log.Error(errorMessage)
@@ -329,8 +336,13 @@ func validateFields(request *mgrmodel.VirtualMediaInsert) (int32, string, []inte
 }
 
 func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
+	fmt.Println("getPluginManagerResoure-----------,managerID:", managerID)
+	fmt.Println("reqURI---", reqURI)
+
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
+	fmt.Println("data------", data)
+
 	if dberr != nil {
 		log.Error("unable to get manager details : " + dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
@@ -349,10 +361,11 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 		return resp
 	}
 	var pluginID = managerData["Name"].(string)
+	fmt.Println("pluginID---", pluginID)
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
-		log.Error("unable to get manager details : " + gerr.Error())
+		log.Error("2unable to get manager details : " + gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}
 		errorMessage := gerr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,

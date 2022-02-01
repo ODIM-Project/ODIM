@@ -14,10 +14,12 @@
 package main
 
 import (
+	"encoding/json"
+	"github.com/sirupsen/logrus"
 	"os"
 
-	"github.com/sirupsen/logrus"
-
+	"fmt"
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -26,7 +28,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
-	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 )
 
 var log = logrus.New()
@@ -50,6 +51,7 @@ func main() {
 
 	var managerInterface = mgrcommon.DBInterface{
 		AddManagertoDBInterface: mgrmodel.AddManagertoDB,
+		GenericSave:             mgrmodel.GenericSave,
 	}
 	err := addManagertoDB(managerInterface)
 	if err != nil {
@@ -91,11 +93,27 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		State:           "Enabled",
 		Description:     "odimra manager",
 
-		LogServices:  &dmtf.Link{
-				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID+"/LogServices",
-			},
+		LogServices: &dmtf.Link{
+			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		},
 	}
-	log.Info("manager--- ",&mgr)
-	return managerInterface.AddManagertoDBInterface(mgr)
+
+	managerInterface.AddManagertoDBInterface(mgr)
+	data := map[string]interface{}{
+		"@odata.context":      "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		"@odata.etag":         "W570254F2",
+		"@odata.id":           "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		"@odata.type":         "#LogServiceCollection.LogServiceCollection",
+		"Description":         "Logs view",
+		"Members":             "",
+		"Members@odata.count": 0,
+		"Name":                "Logs",
+	}
+	dbdata, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("unable to marshal manager data: %v", err)
+	}
+	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
+	return mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
 
 }

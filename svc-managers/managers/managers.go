@@ -204,9 +204,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	var tableName string
 	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
-	fmt.Println("requestData", requestData)
-	fmt.Println("req.ManagerID", req.ManagerID)
-	fmt.Println("len(requestData)----------------------", len(requestData))
+	
 	urlData := strings.Split(req.URL, "/")
 	if len(requestData) <= 1 {
 		if req.ManagerID == config.Data.RootServiceUUID {
@@ -231,7 +229,6 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	}
 	uuid := requestData[0]
 
-	fmt.Println("req.ResourceID", req.ResourceID)
 	if req.ResourceID == "" {
 		resourceName := urlData[len(urlData)-1]
 		tableName = common.ManagersResource[resourceName]
@@ -243,7 +240,6 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
 			var err error
-			fmt.Println("requestData[1]--------------------", requestData[1])
 			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
 				errorMessage := "unable to get resource details from device: " + err.Error()
 				log.Error(errorMessage)

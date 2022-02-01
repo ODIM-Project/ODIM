@@ -25,6 +25,7 @@ import (
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Update defines the updation of the role details. Every role details can be
@@ -103,7 +104,7 @@ func Update(req *roleproto.UpdateRoleRequest, session *asmodel.Session) response
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	role, gerr := asmodel.GetRoleDetailsByID(req.Id)

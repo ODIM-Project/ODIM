@@ -19,13 +19,12 @@ package router
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
@@ -169,6 +168,16 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		// Validating session token
+		sessionToken := r.Header.Get("X-Auth-Token")
+		if sessionToken == "" {
+			logProperties := make(map[string]interface{})
+			logProperties["SessionToken"] = sessionToken
+			logProperties["Message"] = "X-Auth-Token is missing in the request header"
+			logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
+			customLogs.AuthLog(logProperties)
+		}
+
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -198,7 +207,7 @@ func Router() *iris.Application {
 		next(w, r)
 	})
 	router.Done(func(ctx iris.Context) {
-		AuditLogEntry(reqBody, ctx)
+		customLogs.AuditLog(ctx, reqBody)
 		reqBody = make(map[string]interface{})
 	})
 	taskmon := router.Party("/taskmon")
@@ -574,76 +583,4 @@ func Router() *iris.Application {
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
 
 	return router
-}
-
-// AuditLogEntry is used for generated audit logs in syslog format for each request
-// this function logs an info for successful operation and error for failure operation
-// properties logged are prival, time, host, username, roleid, request method, resource, requestbody, responsecode and message
-func AuditLogEntry(reqBody map[string]interface{}, ctx iris.Context) {
-	var err error
-	// getting the session details
-	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
-	sessionUserName := ""
-	sessionRoleID := "null"
-	if sessionToken != "" {
-		sessionUserName, err = srv.GetSessionUserName(sessionToken)
-		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
-			return
-		}
-		sessionRoleID, err = srv.GetSessionUserRoleID(sessionToken)
-		if err != nil {
-			errMsg := "while trying to get session details: " + err.Error()
-			log.Error(errMsg)
-			return
-		}
-	}
-	// getting the request URI, host and method from context
-	rawURI := ctx.Request().RequestURI
-	host := ctx.Request().Host
-	method := ctx.Request().Method
-	var jsonStr []byte
-	if len(reqBody) > 0 {
-		reqBody["Password"] = "null"
-		jsonStr, err = json.Marshal(reqBody)
-		if err != nil {
-			log.Error("while marshalling request body", err.Error())
-		}
-	}
-
-	//setting operation status flag based on the response code
-	operationStatus := false
-	respStatusCode := ctx.GetStatusCode()
-	successStatusCodes := []int{http.StatusOK, http.StatusCreated, http.StatusAccepted, http.StatusNoContent}
-	for _, statusCode := range successStatusCodes {
-		if statusCode == respStatusCode {
-			operationStatus = true
-			break
-		}
-	}
-
-	// adding null if no credentials are supplied while requesting
-	if sessionUserName == "" {
-		sessionUserName = "null"
-		sessionRoleID = "null"
-	}
-	// adding null to requestbody property if no payload is sent
-	reqStr := string(jsonStr)
-	if reqStr == "" {
-		reqStr = "null"
-	}
-
-	timeNow := time.Now().Format(time.RFC3339)
-	logMsg := fmt.Sprintf("%s %s [account@1 user=\"%s\" roleID=\"%s\"][request@1 method=\"%s\" resource=\"%s\" requestBody=\"%s\"][response@1 responseCode=%d]", timeNow, host, sessionUserName, sessionRoleID, method, rawURI, reqStr, respStatusCode)
-	//based on the operation status i.e. operation is success or failed logging
-	// 110 is for audit log info
-	// 107 is for audit log error
-	if operationStatus {
-		successMsg := "<110> " + logMsg + " Operation successful"
-		fmt.Println(successMsg)
-	} else {
-		successMsg := "<107> " + logMsg + " Operation failed"
-		fmt.Println(successMsg)
-	}
 }

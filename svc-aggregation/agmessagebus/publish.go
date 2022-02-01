@@ -35,12 +35,20 @@ func Publish(systemID, eventType, collectionType string) {
 		return
 	}
 
+	var message string
+	switch eventType {
+	case "ResourceAdded":
+		message = "The resource has been created successfully."
+	case "ResourceRemoved":
+		message = "The resource has been removed successfully."
+	}
+
 	var event = common.Event{
 		EventID:        uuid.NewV4().String(),
-		MessageID:      "ResourceEvent.1.0.3." + eventType,
+		MessageID:      "ResourceEvent.1.2.0." + eventType,
 		EventTimestamp: time.Now().Format(time.RFC3339),
 		EventType:      eventType,
-		Message:        "Resource event",
+		Message:        message,
 		OriginOfCondition: &common.Link{
 			Oid: systemID,
 		},

@@ -45,13 +45,13 @@
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
   loop: "{{ odim_third_party_har_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
-  when: odimra.haDeploymentEnabled is defined and odimra.messageBusType == 'RedisStreams'
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'RedisStreams'
 
 - name: Remove etcd, redis, kafka, zookeeper HA services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
   loop: "{{ odim_third_party_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
-  when: odimra.haDeploymentEnabled is defined and odimra.messageBusType == 'Kafka'
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'Kafka'
 
 - name: Delete PV, PVC, Secrets created for ODIM-RA services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"

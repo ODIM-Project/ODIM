@@ -24,9 +24,9 @@ import (
 // SubscribeToEMB method will subscribe to respective  event queue of the plugin
 func SubscribeToEMB(pluginID string, queueList []string) {
 	log.Info("subscribing to EMB for plugin " + pluginID)
-	conn, err_conn := ODIMService.Client(Events)
-	if err_conn != nil {
-		log.Error("Failed to create client connection: " + err_conn.Error())
+	conn, errConn := ODIMService.Client(Events)
+	if errConn != nil {
+		log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)
@@ -46,9 +46,9 @@ func DeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
 	req := eventsproto.EventRequest{
 		UUID: uuid,
 	}
-	conn, err_conn := ODIMService.Client(Events)
-	if err_conn != nil {
-		return &resp, fmt.Errorf("Failed to create client connection: %v", err_conn)
+	conn, errConn := ODIMService.Client(Events)
+	if errConn != nil {
+		return &resp, fmt.Errorf("Failed to create client connection: %v", errConn)
 	}
 	defer conn.Close()
 	events := eventsproto.NewEventsClient(conn)

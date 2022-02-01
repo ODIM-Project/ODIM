@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -62,7 +63,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	//Get all user keys
@@ -140,7 +141,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}

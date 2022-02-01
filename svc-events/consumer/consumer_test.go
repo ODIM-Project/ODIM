@@ -22,26 +22,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
-
-func TestConsume(t *testing.T) {
-	config.SetUpMockConfig(t)
-	tests := []struct {
-		name      string
-		topicName string
-	}{
-		{
-			name:      "posivite case",
-			topicName: "topic",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			Consume(tt.topicName)
-		})
-	}
-}
 
 func TestKafkaSubscriber(t *testing.T) {
 	In, Out = common.CreateJobQueue(1)

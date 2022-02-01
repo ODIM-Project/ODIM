@@ -130,7 +130,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	}
 	err = smodel.GenericSave([]byte(mgrData), "Managers", managerURI.(string))
 	if err != nil {
-		errorMessage := "error while saving manager details: " + err.Error()
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)

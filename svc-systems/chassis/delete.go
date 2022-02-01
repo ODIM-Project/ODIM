@@ -60,7 +60,7 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 
 	data, jerr := smodel.GetResource("Managers", managerURI)
 	if jerr != nil {
-		errorMessage := "error unmarshalling manager details: " + jerr.Error()
+		errorMessage := "error while getting manager details: " + jerr.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)
@@ -99,7 +99,7 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 
 	genericErr := smodel.GenericSave([]byte(detail), "Managers", managerURI)
 	if genericErr != nil {
-		errorMessage := "error while saving manager details: " + genericErr.Error()
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + genericErr.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}

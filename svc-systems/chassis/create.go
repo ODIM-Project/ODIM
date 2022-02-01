@@ -72,7 +72,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	var managerData map[string]interface{}
 	data, jerr := smodel.GetResource("Managers", managerURI.(string))
 	if jerr != nil {
-		errorMessage := "error unmarshalling manager details: " + jerr.Error()
+		errorMessage := "error while getting manager details: " + jerr.Error()
 		log.Error(errorMessage)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 			nil, nil)

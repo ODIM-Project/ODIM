@@ -58,7 +58,7 @@
 - name: Deploy etcd, redis, kafka, zookeeper HA services
   command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }} --set \"hostname={ {{ hostname_list |join(', ') }} }\""
   loop: "{{ odim_third_party_ha_helmcharts | dict2items  }}"
-  when: odimra.haDeploymentEnabled is defined and odimra.messageBusType == 'Kafka'
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'Kafka'
 
   #- name: Deploy etcd, redis, kafka, zookeeper HA services
   #command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }} --set \"hostname={ {{ hostname_list |join(', ') }} }\""

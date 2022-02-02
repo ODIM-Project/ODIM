@@ -44,7 +44,6 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -77,7 +76,6 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -114,7 +112,6 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -174,7 +171,6 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -211,7 +207,6 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)

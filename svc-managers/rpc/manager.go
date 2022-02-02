@@ -41,7 +41,6 @@ func (m *Managers) GetManagersCollection(ctx context.Context, req *managersproto
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -67,7 +66,6 @@ func (m *Managers) GetManager(ctx context.Context, req *managersproto.ManagerReq
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -93,7 +91,6 @@ func (m *Managers) GetManagersResource(ctx context.Context, req *managersproto.M
 	sessionToken := req.SessionToken
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -116,7 +113,6 @@ func (m *Managers) VirtualMediaInsert(ctx context.Context, req *managersproto.Ma
 	resp := &managersproto.ManagerResponse{}
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)
@@ -139,7 +135,6 @@ func (m *Managers) VirtualMediaEject(ctx context.Context, req *managersproto.Man
 	resp := &managersproto.ManagerResponse{}
 	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("while trying to authenticate session")
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage
 		resp.Body = generateResponse(authResp.Body)

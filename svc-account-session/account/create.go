@@ -35,6 +35,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Create defines creation of a new account. The function is supposed to be used as part of RPC.
@@ -100,7 +101,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	invalidParams := validateRequest(user)

@@ -51,7 +51,7 @@ import (
 // structure format. These configurations are embedded into MQF structure for direct
 // access to the data.
 type MQF struct {
-	KafkaF       `toml:"KAFKA"`
+	KafkaF       *KafkaF       `toml:"KAFKA"`
 	RedisStreams *RedisStreams `toml:"RedisStreams"`
 }
 
@@ -80,35 +80,36 @@ type RedisStreams struct {
 	SentinalAddress    string `toml:"SentinalAddress"`
 }
 
-// Create both MQF and KafkaPacket Objects. MQF will be used to store
+// MQ Create both MQF and KafkaPacket Objects. MQF will be used to store
 // all config information including Server URL, Port, User credentials
 // and other configuration information, which is for Future Expansion.
-var mq MQF
+var MQ MQF
 
 // SetConfiguration defines the function to read the client side configuration file any
 // configuration data, which need / should be provided by MQ user would be taken
 // directly from the user by asking to fill a structure.  THIS DATA DETAILS
 // SHOULD BE DEFINED AS PART OF INTERFACE DEFINITION.
 func SetConfiguration(filePath string) error {
-	if _, err := toml.DecodeFile(filePath, &mq); err != nil {
+	if _, err := toml.DecodeFile(filePath, &MQ); err != nil {
 		return fmt.Errorf("Configuration File - %v Read Error: %v", filePath, err)
 	}
-	if len(mq.KafkaF.KServersInfo) <= 0 {
-		return fmt.Errorf("no value found for KServersInfo in messagebus config file")
+	if MQ.KafkaF != nil {
+		if len(MQ.KafkaF.KServersInfo) <= 0 {
+			return fmt.Errorf("no value found for KServersInfo in messagebus config file")
+		}
+		if MQ.KafkaF.KTimeout == 0 {
+			log.Warn("no value found for KTimeout in messagebus config file, using default time 10 seconds")
+			MQ.KafkaF.KTimeout = 10
+		}
+		if MQ.KafkaF.KAFKACertFile == "" {
+			return fmt.Errorf("no value found for KAFKACertFile in messagebus config file")
+		}
+		if MQ.KafkaF.KAFKAKeyFile == "" {
+			return fmt.Errorf("no value found for KAFKAKeyFile in messagebus config file")
+		}
+		if MQ.KafkaF.KAFKACAFile == "" {
+			return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
+		}
 	}
-	if mq.KafkaF.KTimeout == 0 {
-		log.Warn("no value found for KTimeout in messagebus config file, using default time 10 seconds")
-		mq.KafkaF.KTimeout = 10
-	}
-	if mq.KafkaF.KAFKACertFile == "" {
-		return fmt.Errorf("no value found for KAFKACertFile in messagebus config file")
-	}
-	if mq.KafkaF.KAFKAKeyFile == "" {
-		return fmt.Errorf("no value found for KAFKAKeyFile in messagebus config file")
-	}
-	if mq.KafkaF.KAFKACAFile == "" {
-		return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
-	}
-
 	return nil
 }

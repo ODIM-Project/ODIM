@@ -16,8 +16,9 @@
 package tresponse
 
 import (
-	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"time"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 //SubTask struct is used to display to the user
@@ -43,7 +44,7 @@ type Task struct {
 	StartTime       time.Time   `json:"StartTime"`
 	EndTime         time.Time   `json:"EndTime,omitempty"`
 	TaskStatus      string      `json:"TaskStatus"`
-	SubTasks        string      `json:"SubTasks,omitempty"`
+	SubTasks        ListMember  `json:"SubTasks,omitempty"`
 	TaskMonitor     string      `json:"TaskMonitor"`
 	PercentComplete int32       `json:"PercentComplete,omitempty"`
 	HidePayload     bool        `json:"HidePayload,omitempty"`

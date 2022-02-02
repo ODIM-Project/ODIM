@@ -56,7 +56,7 @@ type TasksRPC struct {
 	UpdateTaskStatusModel            func(t *tmodel.Task, db common.DbType) error
 	PersistTaskModel                 func(t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(userName string) error
-	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string)
+	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
 
 //CreateTask is a rpc handler which intern call actual CreatTask to create new task
@@ -883,7 +883,7 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus string, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
 
 	var task *tmodel.Task
-	var taskEvenMessageID string
+	var taskEvenMessageID, taskMessage string
 	// Retrieve the task details using taskID
 	task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 	if err != nil {
@@ -925,6 +925,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState + taskStatus
+		taskMessage = fmt.Sprintf("The task with Id %v has completed.", taskID)
 	case "Killed":
 		/*This state shall represent that the operation is complete because the task
 		was killed by an operator. Deprecated v1.2+. This value has been deprecated
@@ -948,6 +949,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".TaskAborted"
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 	case "Cancelled":
 		/* This state shall represent that the operation was cancelled either
 		through a Delete on a Task Monitor or Task Resource or by an internal
@@ -970,6 +972,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("Work on the task with Id %v has been halted prior to completion due to an explicit request.", taskID)
 	case "Exception":
 		/* This state shall represent that the operation is complete and
 		completed with errors.
@@ -996,6 +999,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState + taskStatus
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 	case "Cancelling":
 		/*This state shall represent that the operation is in the process of being
 		cancelled.
@@ -1003,6 +1007,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("Work on the task with Id %v has been halted prior to completion due to an explicit request.", taskID)
 		// TODO
 	case "Interrupted":
 		/* This state shall represent that the operation has been interrupted but is
@@ -1015,6 +1020,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors..", taskID)
 		// TODO
 	case "New":
 		/* This state shall represent that this task is newly created but the
@@ -1024,6 +1030,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
 		// TODO
 	case "Pending":
 		/*This state shall represent that the operation is pending some condition and
@@ -1032,6 +1039,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 		// TODO
 	case "Running":
 		// This state shall represent that the operation is executing.
@@ -1039,6 +1047,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".TaskProgressChanged"
+		taskMessage = fmt.Sprintf("The task with Id %v has changed to progress %v percent complete.", taskID, percentComplete)
 		// TODO
 	case "Service":
 		/* This state shall represent that the operation is now running as a service
@@ -1047,12 +1056,14 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
 		// TODO
 	case "Starting":
 		// This state shall represent that the operation is starting.
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
 		// TODO
 	case "Stopping":
 		/* This state shall represent that the operation is stopping but is not yet
@@ -1061,6 +1072,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has been paused.", taskID)
 		// TODO
 	case "Suspended":
 		/*This state shall represent that the operation has been suspended but is
@@ -1069,6 +1081,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
 		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 		// TODO
 	default:
 		log.Error("error invalid task state")
@@ -1083,6 +1096,6 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
-	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType)
+	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
 	return err
 }

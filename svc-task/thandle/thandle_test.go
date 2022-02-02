@@ -132,7 +132,8 @@ func mockUpdateTaskStatusModel(task *tmodel.Task, db common.DbType) error {
 	}
 	return nil
 }
-func mockPublishToMessageBus(taskURI string, taskEvenMessageID string, eventType string) {
+
+func mockPublishToMessageBus(taskURI, taskEvenMessageID, eventType, taskMessage string) {
 
 }
 func mockValidateTaskUserNameModel(userName string) error {

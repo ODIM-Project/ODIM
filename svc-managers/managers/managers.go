@@ -374,7 +374,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
-		log.Error("2unable to get manager details : " + gerr.Error())
+		log.Error("unable to get manager details : " + gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}
 		errorMessage := gerr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,

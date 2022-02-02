@@ -349,13 +349,10 @@ func validateFields(request *mgrmodel.VirtualMediaInsert) (int32, string, []inte
 }
 
 func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
-	fmt.Println("getPluginManagerResoure-----------,managerID:", managerID)
-	fmt.Println("reqURI---", reqURI)
-
+	
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
-	fmt.Println("data------", data)
-
+	
 	if dberr != nil {
 		log.Error("unable to get manager details : " + dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
@@ -374,7 +371,6 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 		return resp
 	}
 	var pluginID = managerData["Name"].(string)
-	fmt.Println("pluginID---", pluginID)
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {

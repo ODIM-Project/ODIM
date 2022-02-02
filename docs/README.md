@@ -177,7 +177,7 @@
   * [Collection of Triggers](#collection-of-triggers)
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
-
+- [Security logging](#security-logging)
 # Introduction 
 
 Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
@@ -11026,5 +11026,18 @@ curl -i -X PATCH \
 }
 ```
 
+
+
+# Security Logging
+
+Security logging gives information on the successful and failed user authentication and authorization attempts. The logs are stored in api.log and account_session.log file in odimra logs.
+
+**Samples**
+
+- <86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+
+- <84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed , Invalid username or password
+
+  <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
 
 

@@ -31,6 +31,10 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         self.resourcezone = ResourceZones()
         self.resourceblock = ResourceBlocks()
         self.pool = ResourcePool()
+        self.headers = {
+            "Allow": '"GET"',
+            "Content-type": "application/json; charset=utf-8"
+        }
 
     def __str__(self):
         return self.__class__.__name__
@@ -42,7 +46,8 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(
                                                   json.dumps(response),
-                                                  'utf-8'))
+                                                  'utf-8'),
+                                              header=self.headers)
 
     def GetCompositionResource(
             self, request: pb2.GetCompositionResourceRequest,
@@ -58,19 +63,23 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                     logging.info("In Resource Blocks")
                     response, code = self.resourceblock.get_resource_block(
                         request.URL)
+                    self.headers["Allow"] = '"GET", "DELETE"'
                 # ResourceZones Instance
                 elif segments[-2] == "ResourceZones":
                     response, code = self.resourcezone.get_resource_zone(
                         request.URL)
+                    self.headers["Allow"] = '"GET", "DELETE"'
             else:
                 # ResourceBlocks Collection
                 if segments[-1] == "ResourceBlocks":
                     response, code = self.resourceblock.get_resource_block_collection(
                         request.URL)
+                    self.headers["Allow"] = '"GET", "POST"'
                 # ResourceZones Collection
                 elif segments[-1] == "ResourceZones":
                     response, code = self.resourcezone.get_resource_zone_collection(
                         request.URL)
+                    self.headers["Allow"] = '"GET", "POST"'
                 # ActivePool Collection
                 elif segments[-1] == "ActivePool":
                     response, code = self.pool.get_active_pool_collection(
@@ -86,7 +95,8 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(
                                                   json.dumps(response),
-                                                  'utf-8'))
+                                                  'utf-8'),
+                                              header=self.headers)
 
     def CreateCompositionResource(
             self, request: pb2.CreateCompositionResourceRequest,
@@ -101,20 +111,24 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                 logging.info("In Create Composition Resource")
                 response, code = self.resourceblock.create_resource_block(
                     json.loads(str(request.RequestBody.decode("utf-8"))))
+                self.headers["Allow"] = '"GET", "POST"'
             # ResourceZone
             elif segments[-1] == "ResourceZones":
                 # create Resource Zone
                 response, code = self.resourcezone.create_resource_zone(
                     json.loads(str(request.RequestBody.decode("utf-8"))))
+                self.headers["Allow"] = '"GET", "POST"'
             # Initialize all Resource Blocks
             elif segments[-1] == "ResourceBlock.Initialize":
                 self.resourceblock.initialize()
                 code = HTTPStatus.NO_CONTENT
+                self.headers["Allow"] = '"POST"'
 
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(
                                                   json.dumps(response),
-                                                  'utf-8'))
+                                                  'utf-8'),
+                                              header=self.headers)
 
     def DeleteCompositionResource(
             self, request: pb2.DeleteCompositionResourceRequest,
@@ -128,16 +142,19 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                 # Delete resource Block
                 response, code = self.resourceblock.delete_resource_block(
                     request.URL)
+                self.headers["Allow"] = '"GET", "DELETE"'
             # ResourceZone Instance
             elif segments[-2] == "ResourceZones":
                 # Delete Resource Zone
                 response, code = self.resourcezone.delete_resource_zone(
                     request.URL)
+                self.headers["Allow"] = '"GET", "DELETE"'
 
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(
                                                   json.dumps(response),
-                                                  'utf-8'))
+                                                  'utf-8'),
+                                              header=self.headers)
 
     def Compose(
             self, request: pb2.ComposeRequest,
@@ -147,9 +164,11 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
         try:
             response, code = self.cs.compose_action(
                 json.loads(str(request.RequestBody.decode("utf-8"))))
+            self.headers["Allow"] = '"POST"'
             return pb2.CompositionServiceResponse(statusCode=code,
                                                   body=bytes(
                                                       json.dumps(response),
-                                                      'utf-8'))
+                                                      'utf-8'),
+                                                  header=self.headers)
         except Exception as err:
             logging.error("Compose Error: {}".format(err))

@@ -30,6 +30,6 @@ data:
     SentinalAddress = ""
     {{ else }}
     RedisServerAddress = "redis-ha-inmemory"
-    RedisServerPort = "6379"
-    SentinalAddress ="redisSentinel"
+    RedisServerPort = "26379"
+    SentinalAddress ="primaryset"
     {{ end }}

@@ -26,9 +26,9 @@ import (
 
 //CreateTask function is to contact the svc-task through the rpc call
 func CreateTask(sessionUserName string) (string, error) {
-	conn, err_conn := ODIMService.Client(Tasks)
-	if err_conn != nil {
-		log.Error("Failed to create client connection: " + err_conn.Error())
+	conn, errConn := ODIMService.Client(Tasks)
+	if errConn != nil {
+		log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
@@ -47,9 +47,9 @@ func CreateTask(sessionUserName string) (string, error) {
 
 // CreateChildTask function is to contact the svc-task through the rpc call
 func CreateChildTask(sessionUserName string, parentTaskID string) (string, error) {
-	conn, err_conn := ODIMService.Client(Tasks)
-	if err_conn != nil {
-		log.Error("Failed to create client connection: " + err_conn.Error())
+	conn, errConn := ODIMService.Client(Tasks)
+	if errConn != nil {
+		log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)
@@ -74,9 +74,9 @@ func UpdateTask(taskID string, taskState string, taskStatus string, percentCompl
 		log.Error("Failed to convert the time to protobuff timestamp: " + err.Error())
 		return err
 	}
-	conn, err_conn := ODIMService.Client(Tasks)
-	if err_conn != nil {
-		log.Error("Failed to create client connection: " + err_conn.Error())
+	conn, errConn := ODIMService.Client(Tasks)
+	if errConn != nil {
+		log.Error("Failed to create client connection: " + errConn.Error())
 	}
 	defer conn.Close()
 	taskService := taskproto.NewGetTaskServiceClient(conn)

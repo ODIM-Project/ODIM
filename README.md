@@ -1531,19 +1531,25 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
        docker save lenovoplugin:1.0 -o ~/plugins/lenovoplugin/lenovoplugin.tar
 
-8. Save the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
+8. Navigate to the` ODIM` directory.
+
+   ```
+   cd ODIM
+   ```
+
+9. Save the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
 
    **Important**: Do NOT change the value of any parameter in this file. 
 
-9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
+10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
        $ cd ~/ODIM/odim-controller/scripts
 
-10. Open the `kube_deploy_nodes.yaml` file.
+11. Open the `kube_deploy_nodes.yaml` file.
 
          $ vi kube_deploy_nodes.yaml
 
-11. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
+12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
@@ -1562,23 +1568,23 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
          odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events
       ```
 
-12. Move odimra_kafka_client.key, odimra_kafka_client.crt, odimra_server.key and odimra_server.crt stored in odimCertsPath to a different folder.
+13. Move odimra_kafka_client.key, odimra_kafka_client.crt, odimra_server.key and odimra_server.crt stored in odimCertsPath to a different folder.
 
     <blockquote> NOTE: odimCertsPath is the absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. Refer to the "Odim-controller configuration parameters" section in this document for more information on odimCertsPath. </blockquote>
 
-13. Upgrade odimra-secrets:
+14. Upgrade odimra-secrets:
 
         python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
 
-14. Run the following command: 
+15. Run the following command: 
 
           $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
 
-15. Run the following command to install the Lenovo plugin: 
+16. Run the following command to install the Lenovo plugin: 
 
          $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin lenovoplugin
 
-16. Run the following command on the cluster nodes to verify the Lenovo plugin pod is up and running: 
+17. Run the following command on the cluster nodes to verify the Lenovo plugin pod is up and running: 
 
          $ kubectl get pods -n odim
 
@@ -1588,7 +1594,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     | ---------------------------- | ----- | ------- | -------- | ----- |
     | lenovoplugin-5fc4b6788-2xx97 | 1/1   | Running | 0        | 4d22h |
 
-17. [Add the Lenovo plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
+18. [Add the Lenovo plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
 
 
 

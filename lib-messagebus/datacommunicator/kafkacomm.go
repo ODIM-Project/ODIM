@@ -223,7 +223,7 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 	unlocked := false
 	defer func() {
 		if err := recover(); err != nil && !unlocked {
-			krw.writer.Unlock()
+			krw.reader.Unlock()
 		}
 	}()
 
@@ -232,6 +232,7 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 	if _, exist := krw.Readers[kp.pipe]; !exist {
 		if e := kafkaConnect(kp); e != nil {
 			krw.reader.Unlock()
+			unlocked = true
 			return e
 		}
 		krw.Readers[kp.pipe] = kafka.NewReader(kafka.ReaderConfig{

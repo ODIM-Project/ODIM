@@ -443,7 +443,7 @@ The following table lists the software components and their versions that are co
 	   ```
 	   If the images are built successfully, you get an output similar to the following sample:
 	   
-	   <img src="docs/images/odimra_images.png" alt="Cluster node" style="zoom: 55%;" />
+	   <img src="docs/images/odimra_images.png" style="zoom:95%;"   >
 	   
 	7. Pull the reloader and busybox images using the following commands:
 	   
@@ -462,26 +462,26 @@ The following table lists the software components and their versions that are co
 
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |
-    | account-session       | 2.0         | account-session.tar          |
-    | aggregation           | 2.0         | aggregation.tar              |
-    | api                   | 2.0         | api.tar                      |
-    | events                | 2.0         | events.tar                   |
-    | fabrics               | 2.0         | fabrics.tar                  |
-    | managers              | 2.0         | managers.tar                 |
-    | systems               | 2.0         | systems.tar                  |
-    | task                  | 2.0         | task.tar                     |
-    | update                | 2.0         | update.tar                   |
+    | account-session       | 3.0         | account-session.tar          |
+    | aggregation           | 3.0         | aggregation.tar              |
+    | api                   | 3.0         | api.tar                      |
+    | events                | 3.0         | events.tar                   |
+    | fabrics               | 3.0         | fabrics.tar                  |
+    | managers              | 3.0         | managers.tar                 |
+    | systems               | 3.0         | systems.tar                  |
+    | task                  | 3.0         | task.tar                     |
+    | update                | 3.0         | update.tar                   |
     | kafka                 | 1.0         | kafka.tar                    |
     | zookeeper             | 1.0         | zookeeper.tar                |
     | etcd                  | 1.16        | etcd.tar                     |
     | redis                 | 2.0         | redis.tar                    |
     | stakater/reloader     | v0.0.76     | stakater_reloader.tar        |
     | busybox               | 1.33        | busybox.tar                  |
-    | dellplugin            | 1.0         | dellplugin.tar               |
+    | dellplugin            | 2.0         | dellplugin.tar               |
     | lenovoplugin          | 1.0         | lenovoplugin.tar             |
-    | urplugin              | 1.0         | urplugin.tar                 |
-    | grfplugin             | 1.0         | grfplugin.tar                |
-    | telemetry             | 1.0         | telemetry.tar                |
+    | urplugin              | 3.0         | urplugin.tar                 |
+    | grfplugin             | 3.0         | grfplugin.tar                |
+    | telemetry             | 2.0         | telemetry.tar                |
     
 3. To install the Docker images of all services on the cluster nodes, create a directory called `odimra_images` on the deployment node and copy each tar archive to this directory. 
     For example: `cp /home/bruce/ODIM/*.tar /home/bruce/odimra_images`

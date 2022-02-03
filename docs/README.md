@@ -8047,29 +8047,8 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "curl -i POST \
-   -H "X-Auth-Token:{X-Auth-Token}" \
-    -d \
-'{
-   "Name":"FC 18 vlan_102 - AddressPools",
-   "Description":"vlan_102",
-   "IPv4":{
-      "VlanIdentifierAddressRange":{
-         "Lower":102,
-         "Upper":102
-      }
-   },
-   "BgpEvpn":{
-      "GatewayIPAddressList":[
          "192.168.256.288/24",
-         "192.168.256.289/24"
-      ],
-      "AnycastGatewayIPAddress":"192.168.256.287"
-   }
-}
-'
- 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'/24",
-         "192.168.256.289/24"
+         "192.168.256.289/24"  
       ],
       "AnycastGatewayIPAddress":"192.168.256.287"
    }

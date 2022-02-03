@@ -13,4 +13,3 @@ dellplugin:
   lbHost: 
   lbPort: 
   logPath:
-  messageBusType: Kafka

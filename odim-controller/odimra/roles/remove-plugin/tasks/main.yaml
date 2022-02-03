@@ -9,12 +9,12 @@
   shell: "sleep 30; {{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ release_name }} -q | sort -u) -f"
   delegate_to: "{{ item }}"
   loop:
-    "{{ groups['kube-node'] }}"
+    "{{ groups['kube_node'] }}"
 
 - name: Invoke hook script of {{ release_name }} for uninstall operation
   include_tasks: roles/remove-plugin/tasks/plugins.yaml
   loop:
-    "{{ groups['kube-node'] }}"
+    "{{ groups['kube_node'] }}"
 
 - name: Remove proxy conf file of {{ release_name }} and reload nginx
   block:
@@ -24,7 +24,7 @@
         state: absent
       delegate_to: "{{ item }}"
       loop:
-        "{{ groups['kube-node'] }}"
+        "{{ groups['kube_node'] }}"
 
     - name: Reload nginx to remove {{ release_name }} conf
       systemd:
@@ -32,7 +32,7 @@
         state: reloaded
       delegate_to: "{{ item }}"
       loop:
-        "{{ groups['kube-node'] }}"
+        "{{ groups['kube_node'] }}"
       ignore_errors: true
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
 
@@ -42,4 +42,4 @@
     state: absent
   delegate_to: "{{ item }}"
   loop:
-    "{{ groups['kube-node'] }}"
+    "{{ groups['kube_node'] }}"

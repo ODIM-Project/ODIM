@@ -17,6 +17,9 @@ package datacommunicator
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -32,15 +35,15 @@ type RedisStreamsPacket struct {
 func getDBConnection() *redis.Client {
 	var dbConn *redis.Client
 
-	if len(mq.RedisStreams.HASet) > 0 {
+	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    mq.RedisStreams.HASet,
-			SentinelAddrs: []string{fmt.Sprintf("%s:%s", mq.RedisStreams.RedisServerAddress, mq.RedisStreams.RedisServerPort)},
+			MasterName:    MQ.RedisStreams.SentinalAddress,
+			SentinelAddrs: []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
 			MaxRetries:    -1,
 		})
 	} else {
 		dbConn = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", mq.RedisStreams.RedisServerAddress, mq.RedisStreams.RedisServerPort),
+			Addr:     fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
 			Password: "", // no password set
 			DB:       0,  // use default DB
 		})
@@ -69,6 +72,15 @@ func (rp *RedisStreamsPacket) Distribute(data interface{}) error {
 
 	if rerr != nil {
 		log.Error("Unable to publish event to redis, got: " + rerr.Error())
+		if rerr != nil {
+			if strings.Contains(rerr.Error(), " connection timed out") {
+				redisClient = getDBConnection()
+				redisClient.XAdd(ctx, &redis.XAddArgs{
+					Stream: rp.pipe,
+					Values: map[string]interface{}{"data": b},
+				}).Result()
+			}
+		}
 		return rerr
 	}
 
@@ -83,10 +95,14 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 		rp.pipe, EVENTREADERGROUPNAME, "$").Err()
 	if rerr != nil {
 		log.Error("Unable to create the group ", rerr)
+		if strings.Contains(rerr.Error(), " connection timed out") {
+			redisClient = getDBConnection()
+		}
+
 	}
 
 	// create a unique consumer id for the  instance
-
+	go rp.checkUnacknowledgedEvents(fn, id)
 	go func() {
 		for {
 			events, err := redisClient.XReadGroup(context.Background(),
@@ -98,14 +114,18 @@ func (rp *RedisStreamsPacket) Accept(fn MsgProcess) error {
 				}).Result()
 			if err != nil {
 				log.Error("Unable to get data from the group ", err)
+				if strings.Contains(err.Error(), " connection timed out") {
+					redisClient = getDBConnection()
+				}
 			} else {
 
 				if len(events) > 0 && len(events[0].Messages) > 0 {
+					messageID := events[0].Messages[0].ID
 					evtStr := events[0].Messages[0].Values["data"].(string)
 					var evt interface{}
 					Decode([]byte(evtStr), &evt)
 					fn(evt)
-					//TODO ack msg
+					redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
 				}
 			}
 		}
@@ -132,4 +152,31 @@ func (rp *RedisStreamsPacket) Remove() error {
 // Close implmentation need to be added
 func (rp *RedisStreamsPacket) Close() error {
 	return nil
+}
+func (rp *RedisStreamsPacket) checkUnacknowledgedEvents(fn MsgProcess, id string) {
+	redisClient := getDBConnection()
+	for {
+		events, _, err := redisClient.XAutoClaim(context.Background(), &redis.XAutoClaimArgs{
+			Stream:   rp.pipe,
+			Group:    EVENTREADERGROUPNAME,
+			Consumer: id,
+			MinIdle:  time.Minute * 10,
+			Count:    100,
+			Start:    "0-0",
+		}).Result()
+		if err != nil {
+			if strings.Contains(err.Error(), " connection timed out") {
+				redisClient = getDBConnection()
+			}
+		}
+		for _, event := range events {
+			messageID := event.ID
+			evtStr := event.Values["data"].(string)
+			var evt interface{}
+			Decode([]byte(evtStr), &evt)
+			fn(evt)
+			redisClient.XAck(context.Background(), rp.pipe, EVENTREADERGROUPNAME, messageID)
+		}
+		time.Sleep(time.Minute * 10)
+	}
 }

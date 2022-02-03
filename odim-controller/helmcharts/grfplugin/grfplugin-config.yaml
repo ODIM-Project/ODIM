@@ -6,4 +6,3 @@ grfplugin:
   password: "UUFCYFpBoHh6UdvytPzm65SkHj5zyl73EYVNJNbrFeAPWYrkpTijGB9zrVQSbbLv052HK7-7chqDQQcjgWf7YA=="
   lbHost:
   lbPort:
-  messageBusType: Kafka

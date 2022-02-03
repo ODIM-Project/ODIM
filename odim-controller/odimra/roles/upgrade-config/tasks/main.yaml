@@ -41,7 +41,7 @@
   delegate_to: "{{ item[1] }}"
   with_nested:
     - ["{{ odimCertsPath }}/kafka.truststore.jks", "{{ odimCertsPath }}/kafka.keystore.jks"]
-    - "{{ groups['kube-node'] }}"
+    - "{{ groups['kube_node'] }}"
   when: " 'kafka-secret' in helm_chart_name "
 
 - name: Copy updated zookeeper data
@@ -54,7 +54,7 @@
   delegate_to: "{{ item[1] }}"
   with_nested:
     - ["{{ odimCertsPath }}/zookeeper.keystore.jks", "{{ odimCertsPath }}/zookeeper.truststore.jks"]
-    - "{{ groups['kube-node'] }}"
+    - "{{ groups['kube_node'] }}"
   when: " 'zookeeper-secret' in helm_chart_name "
 
 - name: Upgrading  configurations config map

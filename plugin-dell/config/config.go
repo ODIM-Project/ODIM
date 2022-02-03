@@ -18,10 +18,11 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+
+	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	log "github.com/sirupsen/logrus"
 )
 
 // Data will have the configuration data from config file
@@ -219,22 +220,12 @@ func checkMessageBusConf() error {
 		log.Warn("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.EmbType = "Kafka"
 	}
-	if Data.MessageBusConf.EmbType == "Kafka" {
-		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
-			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
-		}
-		if len(Data.MessageBusConf.EmbQueue) <= 0 {
-			log.Warn("No value set for MessageBusQueue, setting default value")
-			Data.MessageBusConf.EmbQueue = []string{"REDFISH-EVENTS-TOPIC"}
-		}
+	if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+		return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
 	}
-	if Data.MessageBusConf.EmbType == "RedisStream" {
-		if Data.MessageBusConf.MessageBusAddress == "" {
-			return fmt.Errorf("error: no value configured for MessageBusAddress")
-		}
-		if Data.MessageBusConf.MessageBusPort == "" {
-			return fmt.Errorf("error: no value configured for MessageBusPort")
-		}
+	if len(Data.MessageBusConf.EmbQueue) <= 0 {
+		log.Warn("No value set for MessageBusQueue, setting default value")
+		Data.MessageBusConf.EmbQueue = []string{"REDFISH-EVENTS-TOPIC"}
 	}
 	if !lutilconf.AllowedMessageBusTypes[Data.MessageBusConf.EmbType] {
 		return fmt.Errorf("error: invalid value configured for MessageBusType")

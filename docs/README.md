@@ -178,6 +178,7 @@
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
 - [Audit Logging](#audit-logging)
+- [Security logging](#security-logging)
 
 # Introduction 
 
@@ -11029,6 +11030,7 @@ curl -i -X PATCH \
 
 
 
+
 # Audit Logging
 
 Audit logs has information on each API and is stored in the api.log file in odimra logs.  Each log consists of a priority value followed by the date and time of the log, hostname from which the APIs were sent, user account and role details, API request method and resource, response body, response code and the message.
@@ -11042,4 +11044,17 @@ Audit logs has information on each API and is stored in the api.log file in odim
 - <107> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
 
   <blockquote> Note: <110> and <107> are priority values. </107> is the audit information log and <107> is the audit error log. </blockquote>
+
+# Security Logging
+
+Security logging gives information on the successful and failed user authentication and authorization attempts. The logs are stored in api.log and account_session.log file in odimra logs.
+
+**Samples**
+
+- <86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+
+- <84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed , Invalid username or password
+
+  <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
+
 

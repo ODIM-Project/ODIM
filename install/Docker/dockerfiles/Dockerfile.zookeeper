@@ -13,13 +13,13 @@
 # under the License.
 
 # This is Dockerfile to build zookeeper image
-FROM ubuntu:18.04 as zookeeper-build
+FROM ubuntu:20.04 as zookeeper-build
 
 LABEL version="1.0"
 LABEL ubuntuVersion="18.04"
 LABEL kafkaVersion="2.5.0"
 LABEL zookeeperVersion="3.5.7"
-LABEL description="Zookeeper docker image built on top of ubuntu:18.04 using kafka:2.5.0 bundle"
+LABEL description="Zookeeper docker image built on top of ubuntu:20.04 using kafka:2.5.0 bundle"
 
 WORKDIR /zookeeper/
 

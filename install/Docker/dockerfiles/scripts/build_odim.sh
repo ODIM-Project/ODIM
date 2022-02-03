@@ -13,6 +13,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update")
+for str in ${protos[@]}; do
+  proto_path="$(pwd)/lib-utilities/proto/$str"
+  proto_file_name="$str.proto"
+  if [ $str == 'auth' ]
+  then
+    proto_file_name="odim_auth.proto"
+  fi
+  protoc --go_opt=M$proto_file_name=./ --go_out=plugins=grpc:$proto_path --proto_path=$proto_path $proto_file_name
+done
+
 LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|add-hosts'`
 echo $LIST
 flag=0

@@ -18,9 +18,10 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -77,7 +78,6 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		}
 		resp.Body = manager
 	} else {
-
 		requestData := strings.SplitN(req.ManagerID, ".", 2)
 		if len(requestData) <= 1 {
 			resp = e.getPluginManagerResoure(requestData[0], req.URL)
@@ -199,33 +199,33 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
-	
 	var resp response.RPC
 	var tableName string
 	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
-	
+
 	urlData := strings.Split(req.URL, "/")
 	if len(requestData) <= 1 {
-		if req.ManagerID == config.Data.RootServiceUUID {
-			resourceName := urlData[len(urlData)-1]
-			tableName = common.ManagersResource[resourceName]
-			data, err := e.DB.GetResource(tableName, req.URL)
-			if err != nil {
-				errorMessage := "unable to get odimra managers details: " + err.Error()
-				log.Error(errorMessage)
-				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+		resourceName := urlData[len(urlData)-1]
+
+		tableName = common.ManagersResource[resourceName]
+		data, err := e.DB.GetResource(tableName, req.URL)
+		if err != nil {
+			if req.ManagerID != config.Data.RootServiceUUID {
+				return e.getPluginManagerResoure(requestData[0], req.URL)
 			}
-
-			json.Unmarshal([]byte(data), &resource)
-			resp.Body = resource
-			resp.StatusCode = http.StatusOK
-			resp.StatusMessage = response.Success
-
-			return resp
+			errorMessage := "unable to get odimra managers details: " + err.Error()
+			log.Error(errorMessage)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
 		}
-		resp = e.getPluginManagerResoure(requestData[0], req.URL)
+	
+		json.Unmarshal([]byte(data), &resource)
+		resp.Body = resource
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+
 		return resp
+
 	}
 	uuid := requestData[0]
 
@@ -254,6 +254,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	}
 
 	json.Unmarshal([]byte(data), &resource)
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -349,10 +350,8 @@ func validateFields(request *mgrmodel.VirtualMediaInsert) (int32, string, []inte
 }
 
 func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
-	
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
-	
 	if dberr != nil {
 		log.Error("unable to get manager details : " + dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
@@ -366,8 +365,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	if jerr != nil {
 		errorMessage := "unable to unmarshal manager details: " + jerr.Error()
 		log.Error(errorMessage)
-		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
-			nil, nil)
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		return resp
 	}
 	var pluginID = managerData["Name"].(string)
@@ -401,6 +399,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 		}
 
 	}
+
 	req.OID = reqURI
 	var errorMessage = "unable to get the details " + reqURI + ": "
 	body, _, getResponse, err := mgrcommon.ContactPlugin(req, errorMessage)
@@ -417,6 +416,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 			return resp
 		}
 	}
+
 	return fillResponse(body)
 
 }

@@ -17,9 +17,10 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -178,6 +179,33 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 		managersData[pluginContactRequest.OID] = body
 	}
+
+	//adding  empty logservices collection
+	ldata := map[string]interface{}{
+		"@odata.context":      "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		"@odata.etag":         "W570254F2",
+		"@odata.id":           "/redfish/v1/Managers/" + managerUUID + "/LogServices",
+		"@odata.type":         "#LogServiceCollection.LogServiceCollection",
+		"Description":         "Logs view",
+		"Members":             []interface{}{},
+		"Members@odata.count": 0,
+		"Name":                "Logs",
+	}
+	dbdata, err := json.Marshal(ldata)
+	if err != nil {
+		errMsg := "unable to marshal manager data: %v" + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+	}
+	key := "/redfish/v1/Managers/" + managerUUID + "/LogServices"
+	dbErr1 := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
+	if dbErr1 != nil {
+		errMsg := dbErr1.Error()
+		log.Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
@@ -192,6 +220,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})
+
 	}
 	e.SubscribeToEMB(plugin.ID, queueList)
 

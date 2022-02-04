@@ -44,7 +44,7 @@ type Manager struct {
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
 	GraphicalConsole        *GraphicalConsole  `json:"GraphicalConsole,omitempty"`
-	Links                   *dmtf.Links        `json:"Links,omitempty"`
+	Links                   *Links             `json:"Links,omitempty"`
 	Actions                 *Actions           `json:"Actions,omitempty"`
 	AutoDSTEnabled          bool               `json:"AutoDSTEnabled,omitempty"`
 	DateTime                string             `json:"DateTime,omitempty"`

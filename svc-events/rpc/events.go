@@ -96,8 +96,6 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	privileges := []string{common.PrivilegeLogin}
 	authResp := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session: status code: " + string(authResp.StatusCode) +
-			", status message: " + authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusMessage = authResp.StatusMessage
 		resp.StatusCode = authResp.StatusCode
@@ -193,8 +191,6 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 	// Athorize the request here
 	authResp := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session: status code: " +
-			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusCode = authResp.StatusCode
 		return &resp, nil

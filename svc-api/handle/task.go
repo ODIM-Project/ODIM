@@ -190,7 +190,6 @@ func (task *TaskRPCs) TaskCollection(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)

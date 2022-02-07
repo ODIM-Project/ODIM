@@ -720,7 +720,7 @@ def deploy_k8s():
 		host_file_gen_cmd = 'CONFIG_FILE={host_conf_file} python3 contrib/inventory_builder/inventory.py {node_details_list}'.format( \
 				host_conf_file=host_file, node_details_list=node_ip_list)
 
-		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS_MASTERS': '3'})
+		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS': '3'})
 		if ret != 0:
 			logger.critical("k8s cluster hosts file generation failed")
 			os.chdir(cur_dir)

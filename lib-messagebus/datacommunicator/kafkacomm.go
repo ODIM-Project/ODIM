@@ -134,10 +134,10 @@ func TLS(cCert, cKey, caCert string) (*tls.Config, error) {
 func kafkaConnect(kp *KafkaPacket) error {
 
 	// Using MQF details, connecting to the KAFKA Server.
-	kp.ServersInfo = mq.KServersInfo
+	kp.ServersInfo = MQ.KafkaF.KServersInfo
 
 	// Creation of TLS Config and Dialer
-	tls, e := TLS(mq.KAFKACertFile, mq.KAFKAKeyFile, mq.KAFKACAFile)
+	tls, e := TLS(MQ.KafkaF.KAFKACertFile, MQ.KafkaF.KAFKAKeyFile, MQ.KafkaF.KAFKACAFile)
 	if e != nil {
 		log.Error(e.Error())
 		return e
@@ -223,7 +223,7 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 	unlocked := false
 	defer func() {
 		if err := recover(); err != nil && !unlocked {
-			krw.writer.Unlock()
+			krw.reader.Unlock()
 		}
 	}()
 
@@ -232,6 +232,7 @@ func (kp *KafkaPacket) Accept(fn MsgProcess) error {
 	if _, exist := krw.Readers[kp.pipe]; !exist {
 		if e := kafkaConnect(kp); e != nil {
 			krw.reader.Unlock()
+			unlocked = true
 			return e
 		}
 		krw.Readers[kp.pipe] = kafka.NewReader(kafka.ReaderConfig{

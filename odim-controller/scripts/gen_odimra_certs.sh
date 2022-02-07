@@ -249,7 +249,7 @@ generate_odim_kafka_client_certs()
 {
 
 	# check if RedisStream is selected as message bus
-	echo "========================checking for RedisStreams======================"
+	echo "========================checking for MessageBus======================"
 	if [[ "$ODIMRA_MESSAGE_BUS_TYPE" == "RedisStreams" ]]; then
 		echo "[$(date)] -- INFO  -- RedisStreams is selected, not generating cert and key required for kafka"
 		return
@@ -351,7 +351,7 @@ EOF
 generate_kafka_certs()
 {
 	
-	echo "========================checking for RedisStreams======================"
+	echo "========================checking for MessageBus======================"
 	# check if RedisStream is selected as message bus
 	if [[ "$ODIMRA_MESSAGE_BUS_TYPE" == "RedisStreams" ]]; then
 		echo "[$(date)] -- INFO  -- RedisStreams is selected, not generating cert and key required for kafka"
@@ -447,7 +447,7 @@ HERE
 generate_zookeeper_certs()
 {
 	# check if RedisStream is selected as message bus
-	echo "========================checking for RedisStreams======================"
+	echo "========================checking for MessageBus======================"
 	if [[ "$ODIMRA_MESSAGE_BUS_TYPE" == "RedisStreams" ]]; then
 		echo "[$(date)] -- INFO  -- RedisStreams is selected, not generating cert and key required for zookeeper"
 		return

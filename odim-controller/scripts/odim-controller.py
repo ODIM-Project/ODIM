@@ -78,13 +78,19 @@ def write_node_details():
 		temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
 		node_details['all']['hosts'].update(temp_dict)
 		temp_dict = {node: None}
+		logger.debug("------print node details-------")
+		logger.debug("%s", node_details)
 		if attrs["isMaster"]:
 			logger.debug("%s(%s) is marked as master node", node, attrs['ip'])
 			node_details['all']['children']['kube_control_plane']['hosts'].update(temp_dict)
 			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
 			node_details['all']['children']['etcd']['hosts'].update(temp_dict)
+			logger.debug("----inside if loop----")
 		else:
 			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
+			logger.debug("----inside else loop----")
+		logger.debug("------print node details after if loop-------")
+		logger.debug("%s", node_details)
 
 	# consider None as empty dictionary
 	SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
@@ -92,6 +98,7 @@ def write_node_details():
 		yaml.safe_dump(node_details, f, default_flow_style=False)
 	
 	logger.debug("Hosts file prepared and stored at ./kube_hosts_details.yaml")
+	exit(1)
 
 # read_conf is used for loading the odim-controller conf
 def read_conf():
@@ -720,7 +727,7 @@ def deploy_k8s():
 		host_file_gen_cmd = 'CONFIG_FILE={host_conf_file} python3 contrib/inventory_builder/inventory.py {node_details_list}'.format( \
 				host_conf_file=host_file, node_details_list=node_ip_list)
 
-		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS_MASTERS': '3'})
+		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS': '3'})
 		if ret != 0:
 			logger.critical("k8s cluster hosts file generation failed")
 			os.chdir(cur_dir)
@@ -784,8 +791,15 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['rootCACert'] = read_file(os.path.join(cert_dir, 'rootCA.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
-	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
-	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
+                logger.info("RedisStreams is selected as messageBusType")
+	else:
+                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
+	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == "RedisStreams":
+                logger.info("RedisStreams is selected as messageBusType")
+	else:
+                logger.info("Kafka is selected as messageBusType")
+                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 

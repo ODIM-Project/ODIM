@@ -177,7 +177,9 @@
   * [Collection of Triggers](#collection-of-triggers)
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
+- [Audit Logging](#audit-logging)
 - [Security logging](#security-logging)
+
 # Introduction 
 
 Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
@@ -11027,6 +11029,21 @@ curl -i -X PATCH \
 ```
 
 
+
+
+# Audit Logging
+
+Audit logs has information on each API and is stored in the api.log file in odimra logs.  Each log consists of a priority value followed by the date and time of the log, hostname from which the APIs were sent, user account and role details, API request method and resource, response body, response code and the message.
+
+**Samples**
+
+- <110> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+
+- <110> 2022-01-17T13:57:48Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"10.24.0.5","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+
+- <107> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+
+  <blockquote> Note: <110> and <107> are priority values. </107> is the audit information log and <107> is the audit error log. </blockquote>
 
 # Security Logging
 

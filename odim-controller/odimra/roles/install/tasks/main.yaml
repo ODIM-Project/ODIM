@@ -41,7 +41,7 @@
 
 - name: Deploy etcd, redis, kafka, zookeeper services
   command: "{{ helm_bin_path }} install {{ item.key }} {{ helm_charts_path }}/{{ item.value }}.tgz -n {{ helm_name_space }} -f {{ values_file_path }}"
-  loop: "{{ odim_Kafka_helmcharts | dict2items  }}".
+  loop: "{{ odim_Kafka_helmcharts | dict2items  }}"
   when: not odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'Kafka'
   
 - name: Deploy etcd, redis HA services

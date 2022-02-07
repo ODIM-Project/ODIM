@@ -1,5 +1,5 @@
 ---
-# default path on k8s-cluster nodes to store odim-controller data
+## default path on k8s-cluster nodes to store odim-controller data
 odim_controller_path: "/opt/odim_controller"
 helm_charts_path: "{{ odim_controller_path }}/helmcharts"
 docker_images_path: "{{ odim_controller_path }}/docker_images"

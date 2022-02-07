@@ -1628,6 +1628,7 @@ The plugin you want to add is successfully deployed.
     | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     | UR plugin port                                               | 45007 — Port to be used while adding UR plugin               |
     | Dell plugin port<br />EventListenerNodePort<br />lbport      | 45005 — Port to be used while adding Dell plugin<br />30084 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin. <br />For one-node cluster configuration, it is the same as EventListenerNodePort |
+    | Lenovo plugin port<br />EventListenerNodePort<br />lbport    | 45009 — Port to be used while adding Lenovo plugin<br />30089 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin. <br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     
     Provide a JSON request payload specifying:
     
@@ -1667,7 +1668,7 @@ The plugin you want to add is successfully deployed.
     }
     ```
     
-    **Sample request payload for adding Dell:** 
+   **Sample request payload for adding Dell:** 
    
    ```
    {
@@ -1682,7 +1683,24 @@ The plugin you want to add is successfully deployed.
    }
    ```
    
-    **Request payload parameters** 
+    **Sample request payload for adding Lenovo:** 
+   
+   ```
+   {
+      "HostName":"lenovoplugin:45009",
+      "UserName":"admin",
+      "Password":"Plug!n12$4",
+     "Links":{
+             "ConnectionMethod": {
+               "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+           }
+     }
+   }
+   ```
+   
+   
+   
+   **Request payload parameters** 
    
    |Parameter|Type|Description|
    |---------|----|-----------|

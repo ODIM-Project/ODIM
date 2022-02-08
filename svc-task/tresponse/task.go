@@ -98,6 +98,7 @@ type TaskServiceResponse struct {
 	Oem                             Oem         `json:"Oem,omitempty"`
 }
 
+//OemActions struct for oem actions
 type OemActions struct {
 	Oem *Oem `json:"Oem,omitempty"`
 }

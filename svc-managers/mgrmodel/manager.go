@@ -60,7 +60,6 @@ type Manager struct {
 	ServiceEntryPointUUID   string             `json:"ServiceEntryPointUUID,omitempty"`
 	TimeZoneName            string             `json:"TimeZoneName,omitempty"`
 	Measurements            []*dmtf.Link       `json:"Measurements,omitempty"`
-	Certificates            dmtf.Certificates  `json:"Certificates,omitempty"`
 	Location                *dmtf.Link         `json:"Location,omitempty"`
 	LocationIndicatorActive bool               `json:"LocationIndicatorActive,omitempty"`
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`

@@ -34,7 +34,7 @@ type Manager struct {
 	ManagerType             string              `json:"ManagerType"`
 	ID                      string              `json:"Id"`
 	UUID                    string              `json:"UUID"`
-	FirmwareVersion         string              `json:"FirmwareVersion"`
+	FirmwareVersion         string              `json:"FirmwareVersion,omitempty"`
 	Status                  *Status             `json:"Status,omitempty"`
 	HostInterfaces          *OdataID            `json:"HostInterfaces,omitempty"`
 	SerialInterfaces        *OdataID            `json:"SerialInterfaces,omitempty"`
@@ -67,6 +67,8 @@ type Manager struct {
 	SerialConsole           *dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string              `json:"SparePartNumber,omitempty"`
 	Description             string              `json:"Description,omitempty"`
+	Members                 []*dmtf.Link        `json:"Members"`
+	MembersCount            int                 `json:"Members@odata.count,omit"`
 }
 
 // Status struct is to define the status of the manager

@@ -15,10 +15,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
 	"fmt"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -98,26 +100,23 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		},
 	}
 
-	err := managerInterface.AddManagertoDBInterface(mgr)
-	if err != nil {
-		return err
+	managerInterface.AddManagertoDBInterface(mgr)
+	data := mgrmodel.Manager{
+		OdataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		OdataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		OdataType:    "#LogServiceCollection.LogServiceCollection",
+		Etag:         "W570254F2",
+		Description:  "Logs view",
+		Members:      []*dmtf.Link{},
+		MembersCount: 0,
+		Name:         "Logs",
 	}
-	data := map[string]interface{}{
-		"@odata.context":      "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
-		"@odata.etag":         "W570254F2",
-		"@odata.id":           "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
-		"@odata.type":         "#LogServiceCollection.LogServiceCollection",
-		"Description":         "Logs view",
-		"Members":             []interface{}{},
-		"Members@odata.count": 0,
-		"Name":                "Logs",
-	}
+
 	dbdata, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("unable to marshal manager data: %v", err)
 	}
 	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
-	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
-	return nil
+	return mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
 
 }

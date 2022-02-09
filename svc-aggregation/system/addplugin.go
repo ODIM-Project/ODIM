@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -179,18 +180,19 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 		managersData[pluginContactRequest.OID] = body
 	}
-
 	//adding  empty logservices collection
-	ldata := map[string]interface{}{
-		"@odata.context":      "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
-		"@odata.etag":         "W570254F2",
-		"@odata.id":           "/redfish/v1/Managers/" + managerUUID + "/LogServices",
-		"@odata.type":         "#LogServiceCollection.LogServiceCollection",
-		"Description":         "Logs view",
-		"Members":             []interface{}{},
-		"Members@odata.count": 0,
-		"Name":                "Logs",
+	ldata := model.Manager{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices",
+		ODataEtag:    "W570254F2",
+		ODataType:    "#LogServiceCollection.LogServiceCollection",
+		Description:  "Logs view",
+		Members:      []*model.Link{},
+		MembersCount: 0,
+		Name:         "Logs",
+	
 	}
+
 	dbdata, err := json.Marshal(ldata)
 	if err != nil {
 		errMsg := "unable to marshal manager data: %v" + err.Error()

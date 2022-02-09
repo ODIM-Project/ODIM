@@ -57,7 +57,8 @@ type Manager struct {
 	LocationIndicatorActive bool              `json:"LocationIndicatorActive,omitempty"`
 	RedundancyCount         int               `json:"Redundancy@odata.count,omitempty"`
 	SparePartNumber         string            `json:"SparePartNumber,omitempty"`
-	
+	Members                 []*Link           `json:"Members"`
+	MembersCount            int               `json:"Members@odata.count,omit"`
 }
 
 type CommandShell struct {

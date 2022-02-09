@@ -368,6 +368,15 @@ func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, 
 	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
 		log.Info("Retry event forwarding on destination: ", destination)
+		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
+		if evcommon.SaveUndeliveredEventsFlag {
+			// if undelivered event already published then ignore retrying
+			eventString, err := p.GetUndeliveredEvents(undeliveredEventID)
+			if err != nil || len(eventString) < 1 {
+				log.Info("Event is forwarded to destination")
+				return
+			}
+		}
 		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
@@ -383,7 +392,7 @@ func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, 
 			}
 			return
 		}
-		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
+
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
 }

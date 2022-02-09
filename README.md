@@ -373,7 +373,6 @@ The following table lists the software components and their versions that are co
    |quay.io/calico/pod2daemon-flexvol| v3.19.2 |quay.io/calico/pod2daemon-flexvol.tar |
    |quay.io/calico/cni| v3.19.2 |quay.io/calico/cni.tar |
    |quay.io/calico/kube-controllers| v3.19.2 |quay.io/calico/kube-controllers.tar |
-   |k8s.gcr.io/k8s-dns-node-cache| 1.15.13 |k8s.gcr.io/k8s-dns-node-cache.tar |
    |k8s.gcr.io/dns/k8s-dns-node-cache|1.17.1 |k8s.gcr.io_k8s-dns-node-cache.tar |
    |k8s.gcr.io/pause|3.4.1 |k8s.gcr.io_pause.tar |
    |nginx|1.19 |nginx.tar |

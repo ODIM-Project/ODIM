@@ -181,16 +181,16 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		managersData[pluginContactRequest.OID] = body
 	}
 	//adding  empty logservices collection
-	ldata := model.Manager{
+		ldata := model.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices",
 		ODataEtag:    "W570254F2",
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
 		Description:  "Logs view",
 		Members:      []*model.Link{},
+
 		MembersCount: 0,
 		Name:         "Logs",
-	
 	}
 
 	dbdata, err := json.Marshal(ldata)

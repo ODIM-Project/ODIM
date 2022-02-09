@@ -100,11 +100,11 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		},
 	}
 	managerInterface.AddManagertoDBInterface(mgr)
-	data := mgrmodel.Manager{
-		OdataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
-		OdataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
-		OdataType:    "#LogServiceCollection.LogServiceCollection",
-		Etag:         "W570254F2",
+	data := dmtf.Collection{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		ODataType:    "#LogServiceCollection.LogServiceCollection",
+		ODataEtag:    "W570254F2",
 		Description:  "Logs view",
 		Members:      []*dmtf.Link{},
 		MembersCount: 0,

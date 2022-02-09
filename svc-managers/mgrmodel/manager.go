@@ -67,8 +67,6 @@ type Manager struct {
 	SerialConsole           *dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string              `json:"SparePartNumber,omitempty"`
 	Description             string              `json:"Description,omitempty"`
-	Members                 []*dmtf.Link        `json:"Members"`
-	MembersCount            int                 `json:"Members@odata.count,omit"`
 }
 
 // Status struct is to define the status of the manager

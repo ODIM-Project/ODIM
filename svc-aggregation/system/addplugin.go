@@ -19,10 +19,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
 	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	log "github.com/sirupsen/logrus"
-
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -188,11 +186,9 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
 		Description:  "Logs view",
 		Members:      []*model.Link{},
-
 		MembersCount: 0,
 		Name:         "Logs",
 	}
-
 	dbdata, err := json.Marshal(ldata)
 	if err != nil {
 		errMsg := "unable to marshal manager data: %v" + err.Error()

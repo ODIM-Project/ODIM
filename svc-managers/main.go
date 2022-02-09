@@ -99,7 +99,6 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
 		},
 	}
-
 	managerInterface.AddManagertoDBInterface(mgr)
 	data := mgrmodel.Manager{
 		OdataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
@@ -111,7 +110,6 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		MembersCount: 0,
 		Name:         "Logs",
 	}
-
 	dbdata, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("unable to marshal manager data: %v", err)

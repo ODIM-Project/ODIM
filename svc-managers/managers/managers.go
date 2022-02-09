@@ -218,7 +218,7 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 			log.Error(errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
 		}
-	
+
 		json.Unmarshal([]byte(data), &resource)
 		resp.Body = resource
 		resp.StatusCode = http.StatusOK

@@ -380,12 +380,7 @@ The following table lists the software components and their versions that are co
    |k8s.gcr.io/coredns/coredns|v1.8.0 |k8s.gcr.io/coredns/coredns.tar |
    |quay.io/coreos/etcd|v3.4.13 |quay.io/coreos/etcd.tar |
    |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64|1.8.3 |k8s.gcr.io/cpa/cluster-proportional-autoscaler-amd64.tar |
-   |calico/node|v3.15.1 |calico/node.tar |
-   |calico/cni|v3.15.1 | calico/cni.tar                                           |
-   |calico/kube-controllers|v3.15.1 | calico/kube-controllers.tar                              |
-   |k8s.gcr.io/cluster-proportional-autoscaler-amd64| 1.8.1   | k8s.gcr.io/cluster-proportional-autoscaler-amd64.tar     |
    | lachlanevenson/k8s-helm                              |v3.2.3 |lachlanevenson/k8s-helm.tar |
-   | coredns/coredns                                      |1.6.7 |coredns/coredns.tar |
    
 2. Verify the images are successfully pulled using the following command.
    ```
@@ -1264,7 +1259,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 8. Save the URP Docker image on the deployment node at `~/plugins/urplugin`.
 
       ```
-     docker save urplugin:1.0 -o ~/plugins/urplugin/urplugin.tar
+     docker save urplugin:3.0 -o ~/plugins/urplugin/urplugin.tar
      ```
 
 9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
@@ -1405,7 +1400,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 7. Save the Dell plugin Docker image on the deployment node at `~/plugins/dellplugin`.
 
     ```
-    docker save dellplugin:1.0 -o ~/plugins/dellplugin/dellplugin.tar
+    docker save dellplugin:2.0 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
 8. Save the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
@@ -2795,7 +2790,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 7. Save the GRF plugin Docker image on the deployment node at `~/plugins/grfplugin`.
 
     ```
-    docker save grfplugin:1.0 -o ~/plugins/grfplugin/grfplugin.tar
+    docker save grfplugin:3.0 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
 8. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.

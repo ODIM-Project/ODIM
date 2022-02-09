@@ -153,6 +153,7 @@
 - [Events](#events)
   * [Viewing the event service root](#viewing-the-event-service-root)
   * [Creating an event subscription](#creating-an-event-subscription)
+    + [Sample event](#sample-event)
     + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
   * [Submitting a test event](#submitting-a-test-event)
   * [Event subscription use cases](#event-subscription-use-cases)
@@ -9580,9 +9581,9 @@ curl -i POST \
 
 ```
 
->**Sample response body**
+### Sample event
 
-Here's a sample response returned for standard Redfish events at the destination.
+Here is a sample of standard Redfish event delivered to a destination.
 
 ~~~
 {

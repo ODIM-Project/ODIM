@@ -75,7 +75,7 @@ func TestSetConfiguration(t *testing.T) {
 	                "MessageBusType": "Kafka",
       			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	      },
-        "FirmwareVersion": "1.0",
+        "FirmwareVersion": "3.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
         "AuthConf": {

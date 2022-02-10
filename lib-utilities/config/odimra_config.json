@@ -48,7 +48,7 @@
 			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
 		]
 	},
-	"FirmwareVersion": "1.0",
+	"FirmwareVersion": "3.0",
 	"SouthBoundRequestTimeoutInSecs": 300,
 	"ServerRediscoveryBatchSize": 30,
 	"AuthConf": {

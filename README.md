@@ -1403,19 +1403,25 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     docker save dellplugin:1.0 -o ~/plugins/dellplugin/dellplugin.tar
     ```
 
-8. Save the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
+8. Navigate to the `ODIM` directory.
+
+    ```
+    cd ODIM
+    ```
+
+9. Save the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
 
     **Important**: Do NOT change the value of any parameter in this file. 
 
-9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
+10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
       ```
-    cd ~/ODIM/odim-controller/scripts
-    ```
+      cd ~/ODIM/odim-controller/scripts
+      ```
 
 11. Open the `kube_deploy_nodes.yaml` file.
 
-         vi kube_deploy_nodes.yaml
+            vi kube_deploy_nodes.yaml
 
 12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
 
@@ -1425,36 +1431,36 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br />`dellplugin`, `dellplugin-events`<br>Add these values to the existing comma-separated list.<br> |
     | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying the Dell plugin:<br /> `dellplugin`, `dellplugin-events`<br> Add these values to the existing comma-separated list.<br> |
 
-    Example:
+       Example:
 
-    ```
-    odimPluginPath: /home/bruce/plugins
-      connectionMethodConf:
-      - ConnectionMethodType: Redfish
-        ConnectionMethodVariant: Compute:BasicAuth:DELL_v1.0.0
-      odimraKafkaClientCertFQDNSan: dellplugin,dellplugin-events
-      odimraServerCertFQDNSan: dellplugin,dellplugin-events    
-    ```
-    
+       ```
+       odimPluginPath: /home/bruce/plugins
+         connectionMethodConf:
+         - ConnectionMethodType: Redfish
+           ConnectionMethodVariant: Compute:BasicAuth:DELL_v1.0.0
+         odimraKafkaClientCertFQDNSan: dellplugin,dellplugin-events
+         odimraServerCertFQDNSan: dellplugin,dellplugin-events    
+       ```
+
 13. Move odimra_kafka_client.key, odimra_kafka_client.crt, odimra_server.key and odimra_server.crt stored in odimCertsPath to a different folder.
 
-    <blockquote> NOTE: odimCertsPath is the absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. Refer to the "Odim-controller configuration parameters" section in this document for more information on odimCertsPath. </blockquote>
+       <blockquote> NOTE: odimCertsPath is the absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. Refer to the "Odim-controller configuration parameters" section in this document for more information on odimCertsPath. </blockquote>
 
 14. Upgrade odimra-secrets:
 
-         python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
+            python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
 
 15. Run the following command: 
 
-         python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+            python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
 
 16. Run the following command to install the Dell plugin: 
 
-         python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin dellplugin
+            python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin dellplugin
 
 17. Run the following command on the cluster nodes to verify the Dell plugin pod is up and running:
 
-         kubectl get pods -n odim
+            kubectl get pods -n odim
 
    Example output of the Dell plugin pod details:
    ```
@@ -2795,11 +2801,17 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     docker save grfplugin:2.0 -o ~/plugins/grfplugin/grfplugin.tar
     ```
 
-8. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.
+8. Navigate to the `ODIM` directory.
+
+    ```
+    cd ODIM
+    ```
+
+9. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.
 
     **Important**: Do NOT change the value of any parameter in this file. 
 
-9. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
+10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
 
     ```
      cd ~/ODIM/odim-controller/scripts
@@ -2807,9 +2819,9 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 11. Open the kube\_deploy\_nodes.yaml file to edit.
 
-      ```
-     vi kube_deploy_nodes.yaml
-      ```
+       ```
+      vi kube_deploy_nodes.yaml
+       ```
 
 12. Update the following parameters in the kube\_deploy\_nodes.yaml file to their corresponding values: 
 

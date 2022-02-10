@@ -452,7 +452,7 @@ The following table lists the software components and their versions that are co
     ```
     docker save -o <image_name.tar> <image_name>:<version>
     ```
-    Example: `docker save -o api.tar api:2.0`
+    Example: `docker save -o api.tar api:3.0`
 
     | **Docker image name** | **Version** | **Docker image bundle name** |
     | :-------------------- | ----------- | ---------------------------- |

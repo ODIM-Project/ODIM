@@ -45,7 +45,7 @@ Password: O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFc
 # REDFISH                                                                                          #
 ####################################################################################################
 RootServiceUUID: 99999999-9999-9999-9999-999999999999           # exposed on plugin's service root
-FirmwareVersion: v1.0.0                                         # exposed on plugin's manager
+FirmwareVersion: v2.0.0                                         # exposed on plugin's manager
 
 ####################################################################################################
 # ODIM's NB interface                                                                              #

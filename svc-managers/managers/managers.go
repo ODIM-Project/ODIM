@@ -119,6 +119,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if val, ok := managerData["ManagerType"]; ok {
 			managerType = val.(string)
 		}
+		//adding default description
 		if _, ok := managerData["Description"]; !ok {
 			managerData["Description"] = "BMC Manager"
 		}

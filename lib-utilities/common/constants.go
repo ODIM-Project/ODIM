@@ -314,3 +314,12 @@ type DeviceSubscription struct {
 	OriginResources []string `json:"OriginResources"`
 	Location        string   `json:"location,omitempty"`
 }
+
+// URIWithNoAuth contains the list of URI's which does not require authentication
+var URIWithNoAuth = []string{
+"/redfish/v1",
+"/redfish/v1/$metadata",
+"/redfish/v1/odata",
+"/redfish/v1/SessionService",
+"/redfish/v1/SesssionService/Sessions",
+}

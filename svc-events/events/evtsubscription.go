@@ -24,7 +24,6 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -34,6 +33,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -505,7 +506,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
 
-	log.Info("Subscription Request" + reqData)
+	log.Info("Subscription Request: " + reqData)
 	response, err := p.callPlugin(contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
@@ -520,7 +521,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		}
 	}
 	defer response.Body.Close()
-	log.Info("Subscription Response StatusCode:" + strconv.Itoa(int(response.StatusCode)))
+	log.Info("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
@@ -530,7 +531,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 			log.Error(errorMessage)
 			return "", resp
 		}
-		log.Info("Subscription Response:" + string(body))
+		log.Info("Subscription Response: " + string(body))
 		var res interface{}
 		err = json.Unmarshal(body, &res)
 		if err != nil {
@@ -830,14 +831,14 @@ func (p *PluginContact) PluginCall(req evcommon.PluginContactRequest) (errRespon
 // CreateDefaultEventSubscription is creates the  subscription with event types which will be required to rediscover the inventory
 // after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
 func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTypes, messageIDs, resourceTypes []string, protocol string) errResponse.RPC {
-	log.Info("Creation of default subscriptions started for:" + strings.Join(originResources, "::"))
+	log.Info("Creation of default subscriptions started for: " + strings.Join(originResources, "::"))
 	var resp errResponse.RPC
 	var response evresponse.EventResponse
 	var partialResultFlag bool
 	if protocol == "" {
 		protocol = "Redfish"
 	}
-	var hosts []string
+	var host string
 	bubbleUpStatusCode := http.StatusCreated
 	for i := 0; i < len(originResources); i++ {
 		var postRequest evmodel.RequestBody
@@ -849,10 +850,8 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 		postRequest.Protocol = protocol
 		postRequest.SubscriptionType = evmodel.SubscriptionType
 		postRequest.SubordinateResources = true
-		var host string
 		host, response = p.eventSubscription(postRequest, originResources[i], "", false)
-		hosts = append(hosts, host)
-		go p.checkCollectionSubscription(originResources[i], protocol)
+		p.checkCollectionSubscription(originResources[i], protocol)
 		if response.StatusCode != http.StatusCreated {
 			partialResultFlag = true
 			if response.StatusCode > bubbleUpStatusCode {
@@ -873,7 +872,7 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 		MessageIds:           messageIDs,
 		ResourceTypes:        resourceTypes,
 		OriginResources:      originResources,
-		Hosts:                hosts,
+		Hosts:                []string{host},
 		Protocol:             protocol,
 		SubscriptionType:     evmodel.SubscriptionType,
 		SubordinateResources: true,
@@ -889,7 +888,7 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
-	log.Info("Creation of default subscriptions completed for :" + strings.Join(originResources, "::"))
+	log.Info("Creation of default subscriptions completed for : " + strings.Join(originResources, "::"))
 	return resp
 }
 
@@ -1191,7 +1190,6 @@ func (p *PluginContact) callPlugin(req evcommon.PluginContactRequest) (*http.Res
 // If its' exists it will  update the existing subscription information with newly added server origin
 func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	//Creating key to get all the System Collection subscription
-
 	var searchKey string
 	var bmcFlag bool
 	if strings.Contains(origin, "Fabrics") {
@@ -1222,7 +1220,6 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 			}
 		}
 	}
-
 	if len(collectionSubscription) <= 0 {
 		return
 	}
@@ -1331,7 +1328,6 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 	var err error
 	var plugin *evmodel.Plugin
 	var contactRequest evcommon.PluginContactRequest
-	log.Info(origin)
 	// Extract the fabric id from the Origin
 	fabricID := getFabricID(origin)
 	fabric, dberr := p.GetFabricData(fabricID)
@@ -1447,7 +1443,7 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 		}
 	}
 
-	log.Error("Subscription Response Status Code" + string(rune(response.StatusCode)))
+	log.Info("Subscription Response Status Code: " + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {

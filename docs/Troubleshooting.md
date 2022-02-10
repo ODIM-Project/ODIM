@@ -15,7 +15,7 @@ This document helps you troubleshoot any common issues you might experience whil
 
 The troubleshooting information is listed in the form of Questions and Answers. You can also find some of the Frequently Asked Questions in this document.
 
-Questions and the associated error messages are in **bold** font. Answers are in the regular font.
+Questions and the associated error messages are in **bold** font. Solutions are in the regular font.
 
 # Troubleshooting Information
 
@@ -25,6 +25,8 @@ This section covers issues you might experience while deploying or using Resourc
 ------
 
 **1. The docker start fails with the following error during Kubernetes deployment:<br />`Error log found in journalctl -u docker:`<br />`unable to configure the Docker daemon with file /etc/docker/daemon.json: the following directives are specified both as a flag and in the configuration file: log-opts: (from flag: map[max-file:5 [max-size:50m](http://max-size:50m/)], from file: map[[max-size:100m](http://max-size:100m/)])`**
+
+**Solution**:
 
    1. Create a file `/etc/systemd/system/docker.service.d/docker.conf `and add the following content in it:
       `[Service]`
@@ -40,21 +42,26 @@ This section covers issues you might experience while deploying or using Resourc
 
 **2. I get `500 Internal Server Error` or `503 Service Unavailable Error` upon sending HTTP requests.**
 
+**Solution**:
+
+Your server encounters unexpected conditions that can prevent it from fulfilling requests due to temporary overloading, session timeout, or any unforeseen reasons.
+
    1. Run the following command on the master node to verify all deployed services are running successfully:
       `kubectl get pods -n odim -o wide`
       
    2. Navigate to the configured ODIMRA log path and the plugin log path for each server and check the latest logs for any errors.
 
-      <blockquote>NOTE: Your server encounters unexpected conditions that can prevent it from fulfilling requests due to temporary overloading, session timeout or any unforeseen reasons.</blockquote>
 
 ------
 
-**3. Resetting Resource Aggregator for ODIM deployment or removing the resource aggregator services fails with the following command:<br />`python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml`**  
+**3. Resetting Resource Aggregator for ODIM deployment or removing the resource aggregator services fails when you use the following command:<br />`python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml`**  
 
-   Use the following command to reset Resource Aggregator for ODIM deployment or uninstall all the resource aggregator services:
+**Solution**:
+
+Use the following command to reset Resource Aggregator for ODIM deployment:
 
    ```
-   python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --ignore-errors
+python3 odim-controller.py --reset odimra --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --ignore-errors
    ```
 
 ------
@@ -69,9 +76,13 @@ This section covers issues you might experience while deploying or using Resourc
 
    **`2021-08-17 09:54:48,764 - odim_controller - CRITICAL - ODIM-RA certificates path does not exist`**
 
+**Solution**:
+
+The error is displayed if `odimCertsPath` has invalid or null value. Perform the following steps:
+
    1. Navigate to the `kube_deploy_nodes.yaml` file.
    
-   2. Specify a valid value for odimCertsPath , else specify their values as `""` (empty double quotations).
+   2. Specify a valid value for `odimCertsPath`, else specify its value as `""` (empty double quotations).
 
 
 ------
@@ -95,6 +106,8 @@ This section covers issues you might experience while deploying or using Resourc
    **`140414011879872:error:22098080:X509 V3 routines:X509V3_EXT_nconf:error in extension:../crypto/x509v3/v3_conf.c:47:name=subjectAltName, value=@alt_names`**
 **`[Tue Aug 17 09:20:29 UTC 2021] -- ERROR -- /home/odim/ODIM/odim-controller/scripts/certs/OneNodeDeployment/odimra_server.csr generation failed`**
 
+**Solution**:
+
    1. Navigate to the `kube_deploy_nodes.yaml` file.
    
    2. Specify valid values for the following parameters, else specify their values as `""` (empty double quotations):
@@ -103,6 +116,10 @@ This section covers issues you might experience while deploying or using Resourc
 ------
 
 **6. The plugin pod is in “CrashLoopBackOff” state after adding the plugin using the command  `python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin <plugin name>`** 
+
+**Solution**:
+
+You must be the owner of the plugin tar file.
 
    1. Run `kubectl describe pod <pod name> -n odim`.
 
@@ -118,6 +135,8 @@ This section covers issues you might experience while deploying or using Resourc
 
 **`nginx: [emerg] bind() to <VIP>:<nginx_port> failed (99: Cannot assign requested address)`**
 
+**Solution**:
+
 You must restart Nginx systemd service ONLY on the leader node \(cluster node where Keepalived priority is set to the highest number). Restarting Nginx systemd service on the follower nodes (cluster nodes having lower Keepalived priority numbers) will result in the above error.`
 
 ------
@@ -128,7 +147,9 @@ You must restart Nginx systemd service ONLY on the leader node \(cluster node wh
 aggregation 2021-09-16 05:53:35 - odim-controller - ERROR - An instance of
 odim-controller is already active, another execution is not allowed`**
 
-Multiple executions of odim-controller is not allowed simultaneously.
+**Solution**:
+
+The error is displayed because multiple executions of odim-controller is not allowed simultaneously.
 To verify the active instance of odim-controller:
 
 1. Run `$ ps -eaf | grep odim-controller`. The following output is displayed listing the active instance.
@@ -172,17 +193,24 @@ ansible_find_payload.zip/ansible/modules/files/find.py\", line 409, in main
 \nTypeError: 'NoneType' object is not iterable\n", "module_stdout": "",
 "msg": "MODULE FAILURE\nSee stdout/stderr for the exact error", "rc": 1}`**
 
+**Solution**:
+
+The error is displayed if the `odimPluginPath` parameter has invalid or null value. Perform the following steps:
+
 1. Navigate to the kube_deploy_nodes.yaml file.
-2. Specify a valid value for odimPluginPath, else specify its value as "" (empty double quotation marks).
+2. Specify a valid value for `odimPluginPath`, else specify its value as "" (empty double quotation marks).
 
 ------
 
 **10. The following sample error is displayed:
 ` 2021-09-22 13:36:05 - odim-controller - ERROR - Caught an exception: can only concatenate str (not "NoneType") to str`**
 
+**Solution**:
+
+The error is displayed if the `httpProxy`, `httpsProxy` and `noProxy` parameters have invalid or null values. Perform the following steps:
+
 1. Navigate to the kube_deploy_nodes.yaml file.
-2. Specify valid values for httpProxy, httpsProxy and noProxy, else specify their respective values as `""`
-   (empty double quotation marks).
+2. Specify valid values for `httpProxy`, `httpsProxy` and `noProxy`, else specify their respective values as `""` (empty double quotation marks).
 
 ------
 
@@ -217,11 +245,66 @@ extension:../crypto/x509v3/v3_conf.c:47:name=subjectAltName, value=@alt_names
 2021-09-23 07:37:40 - odim-controller - CRITICAL - ODIM-RA certificate
 generation failed`**
 
+**Solution**:
+
+The error is displayed if the `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan` parameters have invalid or null values. Perform the following steps:
+
 1. Navigate to the kube_deploy_nodes.yaml file.
 2. Specify valid values for `odimraServerCertIPSan` and `odimraKafkaClientCertIPSan`, else specify
    both their values as `""` (empty double quotation marks).
 
 ------
+
+**12. I see the following error while installing Kubernetes**
+
+**`TASK [k8-copy-image : Install docker packages] *********************************`**
+
+**`fatal: [mastervm]: FAILED! => {"cache_update_time": 1643275509, "cache_updated": false, "changed": false, "msg": "'/usr/bin/apt-get -y -o \"Dpkg::Options::=--force-confdef\" -o \"Dpkg::Options::=--force-confold\"   install 'docker-ce=5:20.10.11~3-0~ubuntu-bionic' 'docker-ce-cli=5:20.10.11~3-0~ubuntu-bionic' 'containerd.io'' failed: E: Sub-process /usr/bin/dpkg returned an error code (1)\n", "rc": 100, "stderr": "E: Sub-process /usr/bin/dpkg returned an error code (1)\n", "stderr_lines": ["E: Sub-process /usr/bin/dpkg returned an error code (1)"], "stdout": "Reading package lists...\nBuilding dependency tree...\nReading state information...\nSuggested packages:\n aufs-tools cgroupfs-mount | cgroup-lite\nThe following NEW packages will be installed:\n containerd.io docker-ce docker-ce-cli\n0 upgraded, 3 newly installed, 0 to remove and 2 not upgraded.\nNeed to get 0 B/83.7 MB of archives.\nAfter this operation, 368 MB of additional disk space will be used.\nSelecting previously unselected package containerd.io.\r\n(Reading database ... \r(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r(Reading database ... 75%\r(Reading database ... 80%\r(Reading database ... 85%\r(Reading database ... 90%\r(Reading database ... 95%\r(Reading database ... 100%\r(Reading database ... 108067 files and directories currently installed.)\r\nPreparing to unpack .../containerd.io_1.4.12-1_amd64.deb ...\r\nUnpacking containerd.io (1.4.12-1) ...\r\nSelecting previously unselected package docker-ce-cli.\r\nPreparing to unpack .../docker-ce-cli_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...\r\nUnpacking docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...\r\nSelecting previously unselected package docker-ce.\r\nPreparing to unpack .../docker-ce_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...\r\nUnpacking docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...\r\nSetting up containerd.io (1.4.12-1) ...\r\nCreated symlink /etc/systemd/system/multi-user.target.wants/containerd.service -> /lib/systemd/system/containerd.service.\r\nSetting up docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...\r\nSetting up docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...\r\nCreated symlink /etc/systemd/system/multi-user.target.wants/docker.service -> /lib/systemd/system/docker.service.\r\nCreated symlink /etc/systemd/system/sockets.target.wants/docker.socket -> /lib/systemd/system/docker.socket.\r\nJob for docker.service failed because the control process exited with error code.\r\nSee \"systemctl status docker.service\" and \"journalctl -xe\" for details.\r\ninvoke-rc.d: initscript docker, action \"start\" failed.\r\n* docker.service - Docker Application Container Engine\r\n   Loaded: loaded (\u001b]8;;file://deployvm/lib/systemd/system/docker.service\u0007/lib/systemd/system/docker.service\u001b]8;;\u0007; enabled; vendor preset: enabled)\r\n   Active: activating (auto-restart) (Result: exit-code) since Thu 2022-01-27 11:13:06 UTC; 6ms ago\r\nTriggeredBy: \u001b[0;1;32m*\u001b[0m docker.socket\r\n    Docs: \u001b]8;;https://docs.docker.com\u0007https://docs.docker.com\u001b]8;;\u0007\r\n  Process: 142814 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \u001b[0;1;31m(code=exited, status=1/FAILURE)\u001b[0m\r\n  Main PID: 142814 (code=exited, status=1/FAILURE)\r\ndpkg: error processing package docker-ce (--configure):\r\n installed docker-ce package post-installation script subprocess returned error exit status 1\r\nProcessing triggers for man-db (2.9.1-1) ...\r\nProcessing triggers for systemd (245.4-4ubuntu3.15) ...\r\nErrors were encountered while processing:\r\n docker-ce\r\n", "stdout_lines": ["Reading package lists...", "Building dependency tree...", "Reading state information...", "Suggested packages:", " aufs-tools cgroupfs-mount | cgroup-lite", "The following NEW packages will be installed:", " containerd.io docker-ce docker-ce-cli", "0 upgraded, 3 newly installed, 0 to remove and 2 not upgraded.", "Need to get 0 B/83.7 MB of archives.", "After this operation, 368 MB of additional disk space will be used.", "Selecting previously unselected package containerd.io.", "(Reading database ... ", "(Reading database ... 5%", "(Reading database ... 10%", "(Reading database ... 15%", "(Reading database ... 20%", "(Reading database ... 25%", "(Reading database ... 30%", "(Reading database ... 35%", "(Reading database ... 40%", "(Reading database ... 45%", "(Reading database ... 50%", "(Reading database ... 55%", "(Reading database ... 60%", "(Reading database ... 65%", "(Reading database ... 70%", "(Reading database ... 75%", "(Reading database ... 80%", "(Reading database ... 85%", "(Reading database ... 90%", "(Reading database ... 95%", "(Reading database ... 100%", "(Reading database ... 108067 files and directories currently installed.)", "Preparing to unpack .../containerd.io_1.4.12-1_amd64.deb ...", "Unpacking containerd.io (1.4.12-1) ...", "Selecting previously unselected package docker-ce-cli.", "Preparing to unpack .../docker-ce-cli_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...", "Unpacking docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...", "Selecting previously unselected package docker-ce.", "Preparing to unpack .../docker-ce_5%3a20.10.11~3-0~ubuntu-bionic_amd64.deb ...", "Unpacking docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...", "Setting up containerd.io (1.4.12-1) ...", "Created symlink /etc/systemd/system/multi-user.target.wants/containerd.service -> /lib/systemd/system/containerd.service.", "Setting up docker-ce-cli (5:20.10.11~3-0~ubuntu-bionic) ...", "Setting up docker-ce (5:20.10.11~3-0~ubuntu-bionic) ...", "Created symlink /etc/systemd/system/multi-user.target.wants/docker.service -> /lib/systemd/system/docker.service.", "Created symlink /etc/systemd/system/sockets.target.wants/docker.socket -> /lib/systemd/system/docker.socket.", "Job for docker.service failed because the control process exited with error code.", "See \"systemctl status docker.service\" and \"journalctl -xe\" for details.", "invoke-rc.d: initscript docker, action \"start\" failed.", " *docker.service - Docker Application Container Engine", "   Loaded: loaded (\u001b]8;;file://deployvm/lib/systemd/system/docker.service\u0007/lib/systemd/system/docker.service\u001b]8;;\u0007; enabled; vendor preset: enabled)", "   Active: activating (auto-restart) (Result: exit-code) since Thu 2022-01-27 11:13:06 UTC; 6ms ago", "TriggeredBy: \u001b[0;1;32m*\u001b[0m docker.socket", "    Docs: \u001b]8;;https://docs.docker.com\u0007https://docs.docker.com\u001b]8;;\u0007", "  Process: 142814 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock \u001b[0;1;31m(code=exited, status=1/FAILURE)\u001b[0m", "  Main PID: 142814 (code=exited, status=1/FAILURE)", "dpkg: error processing package docker-ce (--configure):", " installed docker-ce package post-installation script subprocess returned error exit status 1", "Processing triggers for man-db (2.9.1-1) ...", "Processing triggers for systemd (245.4-4ubuntu3.15) ...", "Errors were encountered while processing:", " docker-ce"]}`**
+
+**Solution**:
+
+The error is displayed if the Docker packages aren't removed properly from the previous installation. Perform the following steps:
+
+1. Remove docker packages from all Kubernetes cluster nodes using the following commands.
+
+   ```
+   dpkg -l | grep -i docker 
+   ```
+   ```sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce  docker-ce-rootless-extras  docker-scan-plugin containerd.io
+   sudo apt-get purge  -y docker-engine docker docker.io docker-ce  docker-ce-rootless-extras  docker-scan-plugin containerd.io	
+   ```
+   ```sudo rm -rf /var/lib/docker /etc/docker
+   sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce  docker-ce-rootless-extras  docker-scan-plugin containerd.io
+   ```
+   ```sudo rm /etc/apparmor.d/docker
+   sudo rm -rf /var/lib/docker /etc/docker
+   ```
+   ```sudo groupdel docker
+   sudo rm /etc/apparmor.d/docker
+   ```
+   ```sudo rm -rf /var/run/docker.sock
+   sudo groupdel docker
+   ```
+   ```
+   sudo rm -rf /var/run/docker.sock
+   ```
+   
+2. Reset Kubernetes deployment:
+
+   ```
+   python3 odim-controller.py --reset kubernetes --config \
+   /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
+   ```
+   
+3. Redeploy Kubernetes:
+
+   ```
+   python3 odim-controller.py --deploy \
+   kubernetes --config /home/${USER}/ODIM/odim-controller/\
+   scripts/kube_deploy_nodes.yaml
+   ```
+
+   
 
 ## Other Frequently Asked Questions
 

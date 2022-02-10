@@ -16,6 +16,7 @@ package tmessagebus
 
 import (
 	"encoding/json"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -26,7 +27,7 @@ import (
 )
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
-func Publish(taskURI string, messageID string, eventType string) {
+func Publish(taskURI, messageID, eventType, taskMessage string) {
 	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
 	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
@@ -36,16 +37,19 @@ func Publish(taskURI string, messageID string, eventType string) {
 
 	var eventID = uuid.NewV4().String()
 	var event = common.Event{
-		EventID:   eventID,
-		MessageID: messageID,
-		EventType: eventType,
+		EventID:        eventID,
+		MessageID:      messageID,
+		EventTimestamp: time.Now().Format(time.RFC3339),
+		EventType:      eventType,
+		Message:        taskMessage,
 		OriginOfCondition: &common.Link{
 			Oid: taskURI,
 		},
+		Severity: "OK",
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
-		Name:      "Resource Event",
+		Name:      "Task Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
 		OdataType: common.EventType,
 		Events:    events,

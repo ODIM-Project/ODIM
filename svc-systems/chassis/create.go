@@ -26,6 +26,8 @@ import (
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
+	log "github.com/sirupsen/logrus"
 )
 
 func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
@@ -58,6 +60,31 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
+	var managingMgrData map[string]interface{}
+	unmarshalErr := json.Unmarshal([]byte(managingManager), &managingMgrData)
+	if unmarshalErr != nil {
+		errorMessage := "error unmarshalling managing manager details: " + unmarshalErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
+	managerURI := managingMgrData["@odata.id"]
+	var managerData map[string]interface{}
+	data, jerr := smodel.GetResource("Managers", managerURI.(string))
+	if jerr != nil {
+		errorMessage := "error while getting manager details: " + jerr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
+
+	err := json.Unmarshal([]byte(data), &managerData)
+	if err != nil {
+		errorMessage := "error unmarshalling manager details: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
 
 	pluginManagingManager := new(nameCarrier)
 	e = json.Unmarshal([]byte(managingManager), pluginManagingManager)
@@ -76,7 +103,40 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, pe.Error(), nil, nil)
 	}
 
-	return pc.Post("/redfish/v1/Chassis", body)
+	resp := pc.Post("/redfish/v1/Chassis", body)
+	chassisID := resp.Header["Location"]
+	managerLinks := make(map[string]interface{})
+	var chassisLink, listOfChassis []interface{}
+
+	listOfChassis = append(listOfChassis, map[string]string{"@odata.id": chassisID})
+	if links, ok := managerData["Links"].(map[string]interface{}); ok {
+		if managerData["Links"].(map[string]interface{})["ManagerForChassis"] != nil {
+			chassisLink = links["ManagerForChassis"].([]interface{})
+		}
+		chassisLink = append(chassisLink, listOfChassis...)
+		managerData["Links"].(map[string]interface{})["ManagerForChassis"] = chassisLink
+
+	} else {
+		chassisLink = append(chassisLink, listOfChassis...)
+		managerLinks["ManagerForChassis"] = chassisLink
+		managerData["Links"] = managerLinks
+	}
+	mgrData, err := json.Marshal(managerData)
+	if err != nil {
+		errorMessage := "unable to marshal data for updating: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
+	err = smodel.GenericSave([]byte(mgrData), "Managers", managerURI.(string))
+	if err != nil {
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
+
+	return resp
 }
 
 type Create struct {

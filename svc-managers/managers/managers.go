@@ -119,6 +119,10 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if val, ok := managerData["ManagerType"]; ok {
 			managerType = val.(string)
 		}
+		//adding default description
+		if _, ok := managerData["Description"]; !ok {
+			managerData["Description"] = "BMC Manager"
+		}
 
 		if managerType != common.ManagerTypeService && managerType != "" {
 			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])

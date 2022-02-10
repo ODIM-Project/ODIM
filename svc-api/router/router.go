@@ -190,7 +190,7 @@ func Router() *iris.Application {
 					break
 				}
 			}
-			if !authRequired {
+			if authRequired {
 			    logProperties := make(map[string]interface{})
 			    logProperties["SessionToken"] = sessionToken
 			    logProperties["Message"] = "X-Auth-Token is missing in the request header"

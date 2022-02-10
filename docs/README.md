@@ -6605,6 +6605,18 @@ curl -i GET \
    "@odata.type":"#Manager.v1_13_0.Manager",
    "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/ff4655fe-5afa-4b1f-acb0-ddf2f2af61bf.1"
+         }
+      ],
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/ff4655fe-5afa-4b1f-acb0-ddf2f2af61bf.1"
+         }
+      ]
+   },
    "ManagerType":"Service",
    "Name":"GRF",
    "Status":{

@@ -627,7 +627,7 @@ Here's the list of headers that are common across responses.
 "X-Frame-Options": "sameorigin",
 "X-Content-Type-Options":"nosniff",
 "Content-type":"application/json; charset=utf-8",
-"Cache-Control":"no-cache",
+"Cache-Control":"no-cache, no-store, must-revalidate",
 "Transfer-Encoding":"chunked",
 ```
 

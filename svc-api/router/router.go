@@ -24,8 +24,8 @@ import (
 	"net/url"
 	"strings"
 
-	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
@@ -191,11 +191,11 @@ func Router() *iris.Application {
 				}
 			}
 			if authRequired {
-			    logProperties := make(map[string]interface{})
-			    logProperties["SessionToken"] = sessionToken
-			    logProperties["Message"] = "X-Auth-Token is missing in the request header"
-			    logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-			    customLogs.AuthLog(logProperties)
+				logProperties := make(map[string]interface{})
+				logProperties["SessionToken"] = sessionToken
+				logProperties["Message"] = "X-Auth-Token is missing in the request header"
+				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
+				customLogs.AuthLog(logProperties)
 			}
 		}
 

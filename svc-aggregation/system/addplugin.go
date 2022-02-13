@@ -202,7 +202,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		errMsg := dbErr1.Error()
 		log.Error(errMsg)
 
-		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+		//return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 	}
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)

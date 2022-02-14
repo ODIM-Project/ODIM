@@ -538,6 +538,19 @@ func DeleteManagersData(key string) *errors.Error {
 	return nil
 }
 
+//DeleteLogServicesCollection will delete the LogServicesCollection entry from the database based on the  key
+
+func DeleteLogServicesCollection(key string) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return err
+	}
+	if err = conn.Delete("LogServicesCollection", key); err != nil {
+		return err
+	}
+	return nil
+}
+
 //UpdateIndex is used for updating an existing index
 func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)

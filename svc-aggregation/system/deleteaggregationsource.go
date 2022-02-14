@@ -226,6 +226,18 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+	lkey := oid + "/LogServices"
+	
+	//deleting logservice empty collection
+	dberr = agmodel.DeleteLogServicesCollection(lkey)
+	if dberr != nil {
+		errMsg := derr.Error()
+		log.Error(errMsg)
+		if errors.DBKeyNotFound == derr.ErrNo() {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"Managers", oid}, nil)
+		}
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	}
 	// deleting the plugin if  zero devices are managed
 	dberr = agmodel.DeletePluginData(pluginID)
 	if dberr != nil {

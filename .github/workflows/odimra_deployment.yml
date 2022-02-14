@@ -244,7 +244,7 @@ jobs:
         odimraKafkaClientCertFQDNSan=odim-controller.odim.com,grfplugin,grfplugin-events,urplugin,api
         odimraServerCertFQDNSan=odim-controller.odim.com,grfplugin,grfplugin-events,urplugin,api
         ConnectionMethodType=Redfish
-        ConnectionMethodVariant=Compute:BasicAuth:URP_v1.0.0
+        ConnectionMethodVariant=Compute:BasicAuth:URP_v3.0.0
         
         sed -i "s#.*odimraKafkaClientCertFQDNSan.*#  odimraKafkaClientCertFQDNSan: ${odimraKafkaClientCertFQDNSan}#" kube_deploy_nodes.yaml
         sed -i "s#.*odimraKafkaClientCertIPSan.*#  odimraKafkaClientCertIPSan: ${odimraServerCertFQDNSan}#" kube_deploy_nodes.yaml
@@ -318,7 +318,7 @@ jobs:
         cd ${ODIM_CONTROLLER_PATH}/scripts
         
         ConnectionMethodType=Redfish
-        ConnectionMethodVariant_GRF=Compute:BasicAuth:DELL_v1.0.0
+        ConnectionMethodVariant_GRF=Compute:BasicAuth:DELL_v3.0.0
         
         python3 odim-controller.py --config ${ODIM_CONTROLLER_PATH}/scripts/kube_deploy_nodes.yaml --add plugin --plugin dellplugin
         
@@ -380,7 +380,7 @@ jobs:
         cd ${ODIM_CONTROLLER_PATH}/scripts
         
         ConnectionMethodType=Redfish
-        ConnectionMethodVariant_GRF=Compute:BasicAuth:GRF_v1.0.0
+        ConnectionMethodVariant_GRF=Compute:BasicAuth:GRF_v3.0.0
         
         sed -i "s#.*ConnectionMethodType.*#  \ \- \ConnectionMethodType: ${ConnectionMethodType}#" kube_deploy_nodes.yaml
         sed -i "s#.*ConnectionMethodVariant.*#  \ \ \ \ConnectionMethodVariant: ${ConnectionMethodVariant_GRF}#" kube_deploy_nodes.yaml

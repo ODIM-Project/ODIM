@@ -426,8 +426,8 @@ func TestSetPreferredCipherSuites(t *testing.T) {
 			exec: func() {
 				configuredCipherSuiteList = []uint16{}
 			},
-			arg:     []string{"TLS_RSA_WITH_AES_256_GCM_SHA384"},
-			want:    []uint16{tls.TLS_RSA_WITH_AES_256_GCM_SHA384},
+			arg:     []string{"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"},
+			want:    []uint16{tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384},
 			wanterr: false,
 		},
 		{

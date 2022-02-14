@@ -167,7 +167,7 @@ def perform_checks(skip_opt_param_check=False):
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
 
 	if not skip_opt_param_check:
-		logger.debug("Checking if the local user matches with the configired nodes user")
+		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')
 		for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
 			if cur_user != attrs['username']:

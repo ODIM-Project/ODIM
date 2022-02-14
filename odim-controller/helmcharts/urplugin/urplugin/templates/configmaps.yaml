@@ -13,7 +13,7 @@ data:
     OdimURL: https://api:45000
     OdimUserName: {{ .Values.urplugin.odimUsername }}
     OdimPassword: {{ .Values.urplugin.odimPassword }}
-    FirmwareVersion: v1.0.0
+    FirmwareVersion: v3.0.0
     LogLevel: debug
     PKIRootCACertificatePath: /etc/urplugin_certs/rootCA.crt
     PKIPrivateKeyPath: /etc/urplugin_certs/odimra_server.key

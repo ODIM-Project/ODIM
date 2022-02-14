@@ -48,7 +48,7 @@
 			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
 		]
 	},
-	"FirmwareVersion": "1.0",
+	"FirmwareVersion": "3.0",
 	"SouthBoundRequestTimeoutInSecs": 300,
 	"ServerRediscoveryBatchSize": 30,
 	"AuthConf": {
@@ -122,11 +122,11 @@
   "ConnectionMethodConf": [
       {
          "ConnectionMethodType": "Redfish",
-         "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
+         "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v3.0.0"
       },
 	  {
 		  "ConnectionMethodType": "Redfish",
-		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
+		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v3.0.0"
 	  }
   ],
   "EventConf": {

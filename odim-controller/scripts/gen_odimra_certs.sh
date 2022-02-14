@@ -46,6 +46,7 @@ declare ODIMRA_VIRTUAL_IP
 declare NGINX_SERVER_CSR_PATH
 declare NGINX_SERVER_CRT_PATH
 declare NGINX_SERVER_KEY_PATH
+declare ODIMRA_MESSAGE_BUS_TYPE
 
 OPENSSL_BIN_PATH="/usr/bin/openssl"
 KEYTOOL_BIN_PATH="/usr/bin/keytool"
@@ -246,6 +247,14 @@ EOF
 # ODIM-RA services for interacting with kafka
 generate_odim_kafka_client_certs()
 {
+
+	# check if RedisStream is selected as message bus
+	echo "========================checking for MessageBus======================"
+	if [[ "$ODIMRA_MESSAGE_BUS_TYPE" == "RedisStreams" ]]; then
+		echo "[$(date)] -- INFO  -- RedisStreams is selected, not generating cert and key required for kafka"
+		return
+	fi
+
 	# check if cert and key exists and is not empty
 	if [[ -s ${ODIMRA_KAFKA_CLIENT_KEY_PATH} ]] && [[ -s ${ODIMRA_KAFKA_CLIENT_CRT_PATH} ]]; then
 		echo "[$(date)] -- INFO  -- odimra kafka client crt and key already exists"
@@ -341,6 +350,14 @@ EOF
 # java keystore
 generate_kafka_certs()
 {
+	
+	echo "========================checking for MessageBus======================"
+	# check if RedisStream is selected as message bus
+	if [[ "$ODIMRA_MESSAGE_BUS_TYPE" == "RedisStreams" ]]; then
+		echo "[$(date)] -- INFO  -- RedisStreams is selected, not generating cert and key required for kafka"
+		return
+	fi
+	
 	# check if cert and key exists and is not empty
 	if [[ -s ${KAFKA_JKS_PATH} ]] && [[ -s ${KAFKA_JTS_PATH} ]]; then
 		echo "[$(date)] -- INFO  -- kafka keystore and truststore already exists"
@@ -429,6 +446,13 @@ HERE
 # java keystore
 generate_zookeeper_certs()
 {
+	# check if RedisStream is selected as message bus
+	echo "========================checking for MessageBus======================"
+	if [[ "$ODIMRA_MESSAGE_BUS_TYPE" == "RedisStreams" ]]; then
+		echo "[$(date)] -- INFO  -- RedisStreams is selected, not generating cert and key required for zookeeper"
+		return
+	fi
+
 	# check if cert and key exists and is not empty
 	if [[ -s ${ZOOKEEPER_JKS_PATH} ]] && [[ -s ${ZOOKEEPER_JTS_PATH} ]]; then
 		echo "[$(date)] -- INFO  -- zookeeper keystore and truststore already exists"
@@ -686,6 +710,7 @@ read_config_file()
 	ZOOKEEPER_JKS_PASSWORD=$(read_config_value "zookeeperJKSPassword")
 	ODIMRA_NAMESPACE=$(read_config_value "namespace")
 	ODIMRA_HA_DEPLOYMENT=$(read_config_value "haDeploymentEnabled")
+	ODIMRA_MESSAGE_BUS_TYPE=$(read_config_value "messageBusType")
 	ODIMRA_VIRTUAL_IP=$(read_config_value "virtualIP")
 
 	parse_cert_san
@@ -744,6 +769,10 @@ validate_config_params()
 		((count++))
 	fi
 
+	if [[ -z ${ODIMRA_MESSAGE_BUS_TYPE} ]]; then
+		echo "[$(date)] -- INFO  -- messageBusType param not found or value not assigned, default value considered"
+		ODIMRA_MESSAGE_BUS_TYPE=Kafka
+	fi
 	if [[ $count -ne 0 ]]; then
 		echo "[$(date)] -- ERROR -- $count parameter(s) have invalid value configured, exiting"
 		exit 1

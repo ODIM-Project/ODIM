@@ -131,7 +131,6 @@ func (ts *TasksRPC) GetTaskMonitor(ctx context.Context, req *taskproto.GetTaskRe
 			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
 		}
 		taskResponse.SubTasks = &subTask
-		// taskResponse.SubTasks.OdataID = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
 	}
 	rsp.Body = generateResponse(taskResponse)
 

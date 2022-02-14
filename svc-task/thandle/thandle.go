@@ -254,7 +254,6 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
 		}
 		taskResponse.SubTasks = &subTask
-		// taskResponse.SubTasks.OdataID = "/redfish/v1/Tasks/" + task.ID + "/SubTasks"
 	}
 	//  return tasks in case of Success
 	//Frame the response body below to send back to the user
@@ -675,7 +674,6 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest)
 			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
 		}
 		taskResponse.SubTasks = &subTask
-		// taskResponse.SubTasks.OdataID = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
 	}
 	// Check the state of the task
 	if task.TaskState == "Completed" || task.TaskState == "Cancelled" || task.TaskState == "Killed" || task.TaskState == "Exception" {

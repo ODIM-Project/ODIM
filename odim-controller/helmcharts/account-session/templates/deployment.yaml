@@ -23,7 +23,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: account-session      
+              app: account-session
       hostname: account-session
       volumes:
         - name: odimra-config-vol

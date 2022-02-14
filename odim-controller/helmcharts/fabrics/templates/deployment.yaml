@@ -23,7 +23,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: fabrics       
+              app: fabrics 
       hostname: fabrics
       volumes:
         - name: odimra-config-vol

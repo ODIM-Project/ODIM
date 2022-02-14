@@ -23,7 +23,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: dellplugin      
+              app: dellplugin
       hostname: dellplugin
       volumes:
         - name: dellplugin-config-vol

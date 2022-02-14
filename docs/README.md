@@ -153,6 +153,7 @@
 - [Events](#events)
   * [Viewing the event service root](#viewing-the-event-service-root)
   * [Creating an event subscription](#creating-an-event-subscription)
+    + [Sample event](#sample-event)
     + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
   * [Submitting a test event](#submitting-a-test-event)
   * [Event subscription use cases](#event-subscription-use-cases)
@@ -9578,6 +9579,33 @@ curl -i POST \
 
 ```
 
+### Sample event
+
+Here is a sample of standard Redfish event delivered to a destination.
+
+~~~
+{
+   "@odata.context":"/redfish/v1/$metadata#Event.Event",
+   "@odata.type":"#Event.v1_7_0.Event",
+   "Events":[
+      {
+         "EventId":"ffa39cd4-4d95-4296-9ffd-e67c1135e96f",
+         "EventTimestamp":"2022-02-01T16:40:35Z",
+         "EventType":"ResourceAdded",
+         "Message":"The resource has been created successfully.",
+         "MessageId":"ResourceEvent.1.2.0.ResourceAdded",
+         "OriginOfCondition":{
+            "@odata.id":"/redfish/v1/Managers/dd187ab4-310c-4be0-beeb-0412a6b00806.1"
+         },
+         "Severity":"OK"
+      }
+   ],
+   "Name":"Resource Event"
+}
+~~~
+
+
+
 ###  Creating event subscription with eventformat type - MetricReport
 
 If `EventFormatType` is empty, default value will be `Event`.
@@ -9705,8 +9733,6 @@ Content-Length:0 byte
 
 ```
 
- 
-
 >**Sample response header** \(HTTP 201 status\) 
 
 ```
@@ -9740,6 +9766,7 @@ Transfer-Encoding:chunked
 ```
 
 >**Sample response body** \(subtask\) 
+
 
 ```
 {

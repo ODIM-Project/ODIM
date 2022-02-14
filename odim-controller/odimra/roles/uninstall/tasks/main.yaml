@@ -29,17 +29,29 @@
   loop: "{{ odim_svc_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
 
+- name: Remove etcd, redis, services
+  command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
+  loop: "{{ odim_Redis_helmcharts | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+  when: not odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'RedisStreams'
+
 - name: Remove etcd, redis, kafka, zookeeper services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
   loop: "{{ odim_third_party_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
-  when: odimra.haDeploymentEnabled is not defined or not odimra.haDeploymentEnabled|bool
+  when: not odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'Kafka'
+
+- name: Remove etcd, redis, HA services
+  command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
+  loop: "{{ odim_third_party_har_helmcharts | dict2items }}"
+  ignore_errors: "{{ ignore_err }}"
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'RedisStreams'
 
 - name: Remove etcd, redis, kafka, zookeeper HA services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"
   loop: "{{ odim_third_party_helmcharts | dict2items }}"
   ignore_errors: "{{ ignore_err }}"
-  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool and odimra.messageBusType == 'Kafka'
 
 - name: Delete PV, PVC, Secrets created for ODIM-RA services
   command: "{{ helm_bin_path }} uninstall {{ item.key }} -n {{ helm_name_space }}"

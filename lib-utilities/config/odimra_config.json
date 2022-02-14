@@ -122,11 +122,11 @@
   "ConnectionMethodConf": [
       {
          "ConnectionMethodType": "Redfish",
-         "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
+         "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v3.0.0"
       },
 	  {
 		  "ConnectionMethodType": "Redfish",
-		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
+		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v3.0.0"
 	  }
   ],
   "EventConf": {

@@ -201,7 +201,7 @@ Each plugin implements API services conforming to specific standards targeted at
 
 ### Message bus configuration
 
-The common messaging architecture is used to forward events received from the plugin layer to the upper layers. During the run-time, the plugin uses either Kafka or the Redis stream service as the event message bus.
+The common messaging architecture is used to forward events received from the plugin layer to the upper layers. During the run-time, the plugin uses Kafka as the event message bus.
 
 Following are the parameters to be configured in the plugin configuration file.
 
@@ -213,9 +213,6 @@ Following are the parameters to be configured in the plugin configuration file.
 }
 ```
 
-<blockquote>
-NOTE: By default, MessageBusType is Kafka. You can change it to Redis Stream during deployment, if required.
-</blockquote>
 
 | Message bus configuration parameters | Description                                                  |
 | ------------------------------------ | ------------------------------------------------------------ |

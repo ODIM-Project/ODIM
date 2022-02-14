@@ -766,7 +766,6 @@ func (r *Registry) GetRegistryFileCollection(ctx iris.Context) {
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -853,7 +852,6 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
@@ -947,7 +945,6 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 	}
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)

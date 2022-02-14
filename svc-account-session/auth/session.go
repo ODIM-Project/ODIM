@@ -36,18 +36,18 @@ var Lock sync.Mutex
 func CheckSessionCreationCredentials(userName, password string) (*asmodel.User, *errors.Error) {
 	go expiredSessionCleanUp()
 	if userName == "" || password == "" {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: username or password missing")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
 	}
 	user, err := asmodel.GetUserDetails(userName)
 	if err != nil {
-		return nil, errors.PackError(err.ErrNo(), "error while trying to get user with username ", userName, ": ", err.Error())
+		return nil, errors.PackError(err.ErrNo(), "error: Invalid username or password :", err.Error())
 	}
 	hash := sha3.New512()
 	hash.Write([]byte(password))
 	hashSum := hash.Sum(nil)
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	if user.Password != hashedPassword {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: password mismatch ")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
 	}
 	return &user, nil
 }

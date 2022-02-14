@@ -310,6 +310,66 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	if err = PushPluginStartUpData(plugin, pluginStartUpData); err != nil {
 		log.Error(err.Error())
 	}
+	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
+	var managerData map[string]interface{}
+	managerLinks := make(map[string]interface{})
+	var chassisLink, serverLink, listOfChassis, listOfServer []interface{}
+
+	data, jerr := agmodel.GetResource("Managers", managerURI)
+	if jerr != nil {
+		errorMessage := "error getting manager details: " + jerr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
+
+	err = json.Unmarshal([]byte(data), &managerData)
+	if err != nil {
+		errorMessage := "error unmarshalling manager details: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
+
+	for _, val := range chassisList {
+		listOfChassis = append(listOfChassis, map[string]string{"@odata.id": val})
+	}
+	for _, val := range h.SystemURL {
+		listOfServer = append(listOfServer, map[string]string{"@odata.id": val})
+	}
+	if links, ok := managerData["Links"].(map[string]interface{}); ok {
+		if managerData["Links"].(map[string]interface{})["ManagerForChassis"] != nil {
+			chassisLink = links["ManagerForChassis"].([]interface{})
+		}
+		chassisLink = append(chassisLink, listOfChassis...)
+		managerData["Links"].(map[string]interface{})["ManagerForChassis"] = chassisLink
+
+		if managerData["Links"].(map[string]interface{})["ManagerForServers"] != nil {
+			serverLink = links["ManagerForServers"].([]interface{})
+		}
+		serverLink = append(serverLink, listOfServer...)
+		managerData["Links"].(map[string]interface{})["ManagerForServers"] = serverLink
+	} else {
+		chassisLink = append(chassisLink, listOfChassis...)
+		serverLink = append(serverLink, listOfServer...)
+		managerLinks["ManagerForChassis"] = chassisLink
+		managerLinks["ManagerForServers"] = serverLink
+		managerData["Links"] = managerLinks
+	}
+	mgrData, err := json.Marshal(managerData)
+	if err != nil {
+		errorMessage := "unable to marshal data while updating managers detail: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
+	err = agmodel.GenericSave([]byte(mgrData), "Managers", managerURI)
+	if err != nil {
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + err.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil), "", nil
+	}
 
 	return resp, aggregationSourceID, ciphertext
 }

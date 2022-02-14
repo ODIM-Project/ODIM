@@ -535,8 +535,8 @@ func Router() *iris.Application {
 	managers.Get("/{id}/HostInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces/{rid}", manager.GetManagersResource)
 
-	managers.Get("/{id}/SerialInterface", manager.GetManagersResource)
-	managers.Get("/{id}/SerialInterface/{rid}", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia/{rid}", manager.GetManagersResource)
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", manager.VirtualMediaEject)

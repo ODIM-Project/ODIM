@@ -29,7 +29,7 @@ var header = map[string][]string{
 	"X-Frame-Options":        {"sameorigin"},
 	"Content-Type":           {"application/json; charset=utf-8"},
 	"X-Content-Type-Options": {"nosniff"},
-	"Cache-Control":          {"no-cache"},
+	"Cache-Control":          {"no-cache, no-store, must-revalidate"},
 	"Transfer-Encoding":      {"chunked"},
 }
 

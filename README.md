@@ -20,6 +20,7 @@
    - [Deploying the resource aggregator services](#deploying-the-resource-aggregator-services)
    - [Deploying the Unmanaged Rack Plugin \(URP\)](#deploying-the-unmanaged-rack-plugin)
    - [Deploying the Dell plugin](#deploying-the-dell-plugin)
+   - [Deploying the Lenovo plugin](#deploying-the-lenovo-plugin)
    - [Deploying the Cisco ACI plugin](#deploying-the-cisco-aci-plugin)
    - [Adding a plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework)
 5. [Use cases for Resource Aggregator for ODIM](#use-cases-for-resource-aggregator-for-odim)
@@ -1475,6 +1476,145 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
 17. [Add the Dell plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
 
+
+
+## Deploying the Lenovo plugin
+
+**Prerequisites**
+
+Kubernetes cluster is set up and the resource aggregator is successfully deployed.
+
+1. Create a directory called `plugins` on the deployment node.
+
+       mkdir plugins
+
+2. In the `plugins` directory, create a directory called `lenovoplugin`.
+
+       mkdir ~/plugins/lenovoplugin
+
+3. On the deployment node, copy the Lenovo plugin configuration file and the hook script to `~/plugins/lenovoplugin`.
+
+   ```
+   cp ~/ODIM/odim-controller/helmcharts/lenovoplugin/lenovoplugin-config.yaml ~/plugins/lenovoplugin
+   ```
+
+   ```
+   cp ~/ODIM/odim-controller/helmcharts/lenovoplugin/lenovoplugin.sh ~/plugins/lenovoplugin
+   ```
+
+4. Open the Lenovo plugin configuration YAML file. 
+
+       vi ~/plugins/lenovoplugin/lenovoplugin-config.yaml
+
+   **Sample lenovoplugin-config.yaml file:**
+
+   ```
+   lenovoplugin:
+     hostname: knode1
+     eventListenerNodePort: 30089
+     lenovoPluginRootServiceUUID: 7a38b735-8b9f-48a0-b3e7-e5a180567d37
+     username: admin
+     password: sTfTyTZFvNj5zU5Tt0TfyDYU-ye3_ZqTMnMIj-LAeXaa8vCnBqq8Ga7zV6ZdfqQCdSAzmaO5AJxccD99UHLVlQ==
+     lbHost: 10.24.1.232
+     lbPort: 30089
+     logPath: /var/log/lenovoplugin_logs
+   ```
+
+5. Update the following parameters in the plugin configuration file: 
+
+   - **lbHost**: IP address of the cluster node where the Lenovo plugin will be installed for one node cluster configuration. For three node cluster configuration,  lbHost is the virtual IP address configured in Nginx and Keepalived.
+
+   - **lbPort**: Default port is 30089. for one node cluster configuration. For three node cluster configuration,lbport must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as nginx proxy port for the plugin.
+
+     <blockquote>Note: The lbport is used as proxy port for eventlistenernodeport, which is used for subscribing to events.</blockquote>
+
+   - **lenovoPluginRootServiceUUID**: RootServiceUUID to be used by the Lenovo plugin service.  Generate a new UUID by executing the command `uuidgen`.
+
+   Other parameters can have default values. Optionally, you can update them with values based on your requirements. For more information on each parameter, see [Plugin configuration parameters](#plugin-configuration-parameters).
+
+6. Generate the Helm package for the Lenovo plugin on the deployment node.
+
+   1. Navigate to `odim-controller/helmcharts/lenovoplugin`.
+
+          cd ~/ODIM/odim-controller/helmcharts/lenovoplugin
+
+   2. Run the following command to create `lenovoplugin` Helm package at `~/plugins/lenovoplugin`:
+
+          helm package lenovoplugin -d ~/plugins/lenovoplugin
+
+      The Helm package for the Lenovo plugin is created in the tgz format.
+
+7. Save the Lenovo plugin Docker image on the deployment node at `~/plugins/lenovoplugin`.
+
+       docker save lenovoplugin:1.0 -o ~/plugins/lenovoplugin/lenovoplugin.tar
+
+8. Navigate to the` ODIM` directory.
+
+   ```
+   cd ODIM
+   ```
+
+9. Save the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
+
+   **Important**: Do NOT change the value of any parameter in this file. 
+
+10. Navigate to the `/ODIM/odim-controller/scripts` directory on the deployment node.
+
+       $ cd ~/ODIM/odim-controller/scripts
+
+11. Open the `kube_deploy_nodes.yaml` file.
+
+         $ vi kube_deploy_nodes.yaml
+
+12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
+
+    | Parameter                    | Value                                                        |
+    | ---------------------------- | ------------------------------------------------------------ |
+    | connectionMethodConf         | The connection method associated with Lenovo: ConnectionMethodVariant: `Compute:BasicAuth:LENOVO_v1.0.0`<br> |
+    | odimraKafkaClientCertFQDNSan | The FQDN to be included in the Kafka client certificate of Resource Aggregator for ODIM for deploying Lenovo plugins: `lenovoplugin`, `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
+    | odimraServerCertFQDNSan      | The FQDN to be included in the server certificate of Resource Aggregator for ODIM for deploying Lenovo: `lenovoplugin` `lenovoplugin-events`<br />Add these values to the existing comma-separated list. |
+
+       Example:
+
+      ```
+      odimPluginPath: /home/bruce/plugins
+       connectionMethodConf:
+       - ConnectionMethodType: Redfish
+         ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v1.0.0
+         odimraKafkaClientCertFQDNSan: lenovoplugin, lenovoplugin-events
+         odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events
+      ```
+
+13. Move odimra_kafka_client.key, odimra_kafka_client.crt, odimra_server.key and odimra_server.crt stored in odimCertsPath to a different folder.
+
+    <blockquote> NOTE: odimCertsPath is the absolute path of the directory where certificates required by the services of Resource Aggregator for ODIM are present. Refer to the "Odim-controller configuration parameters" section in this document for more information on odimCertsPath. </blockquote>
+
+14. Upgrade odimra-secrets:
+
+        python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-secret
+
+15. Run the following command: 
+
+          $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --upgrade odimra-config
+
+16. Run the following command to install the Lenovo plugin: 
+
+         $ python3 odim-controller.py --config /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml --add plugin --plugin lenovoplugin
+
+17. Run the following command on the cluster nodes to verify the Lenovo plugin pod is up and running: 
+
+         $ kubectl get pods -n odim
+
+      Example output of the Lenovo plugin pod details:
+
+    | NAME                         | READY | STATUS  | RESTARTS | AGE   |
+    | ---------------------------- | ----- | ------- | -------- | ----- |
+    | lenovoplugin-5fc4b6788-2xx97 | 1/1   | Running | 0        | 4d22h |
+
+18. [Add the Lenovo plugin into the Resource Aggregator for ODIM framework](#adding-a-plugin-into-the-resource-aggregator-for-odim-framework). 
+
+
+
 ## Deploying the Cisco ACI plugin
 
 Refer to the deployment instructions of the Cisco ACI plugin [here](https://github.com/ODIM-Project/PluginCiscoACI/blob/main/README.md).
@@ -1505,6 +1645,7 @@ The plugin you want to add is successfully deployed.
     | GRF plugin port<br />EventListenerNodePort<br />lbport       | 45001 — Port to be used while adding GRF plugin<br />30081 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin<br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     | UR plugin port                                               | 45007 — Port to be used while adding UR plugin               |
     | Dell plugin port<br />EventListenerNodePort<br />lbport      | 45005 — Port to be used while adding Dell plugin<br />30084 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin. <br />For one-node cluster configuration, it is the same as EventListenerNodePort |
+    | Lenovo plugin port<br />EventListenerNodePort<br />lbport    | 45009 — Port to be used while adding Lenovo plugin<br />30089 — Port used for event subscriptions in one-node cluster configuration <br />lbport — For three-node cluster configuration, specify lbport as per your requirement. This port must be assigned with a free port (preferably above 45000) available on all cluster nodes. This port is used as Nginx proxy port for the plugin. <br />For one-node cluster configuration, it is the same as EventListenerNodePort |
     
     Provide a JSON request payload specifying:
     
@@ -1544,7 +1685,7 @@ The plugin you want to add is successfully deployed.
     }
     ```
     
-    **Sample request payload for adding Dell:** 
+   **Sample request payload for adding Dell:** 
    
    ```
    {
@@ -1559,7 +1700,24 @@ The plugin you want to add is successfully deployed.
    }
    ```
    
-    **Request payload parameters** 
+    **Sample request payload for adding Lenovo:** 
+   
+   ```
+   {
+      "HostName":"lenovoplugin:45009",
+      "UserName":"admin",
+      "Password":"Plug!n12$4",
+     "Links":{
+             "ConnectionMethod": {
+               "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+           }
+     }
+   }
+   ```
+   
+   
+   
+   **Request payload parameters** 
    
    |Parameter|Type|Description|
    |---------|----|-----------|
@@ -2378,7 +2536,7 @@ The following table lists all the configuration parameters required by odim-cont
 |namespace|Namespace to be used for creating the service pods of Resource Aggregator for ODIM. The default value is "odim". You can optionally change it to a different value.<br>|
 |fqdn|Name of the server associated with the services of Resource Aggregator for ODIM. This name is used for communication among the services of Resource Aggregator for ODIM.<br>Example: "odim.example.com".|
 |rootServiceUUID|RootServiceUUID to be used by the resource aggregator and the plugin services. To generate an UUID, run the following command:<br> `uuidgen` <br> Copy the output and paste it as the value for rootServiceUUID.<br>|
-|haDeploymentEnabled|When set to true, it deploys third-party services as a three-instance cluster. By default, it is set to true.|
+|haDeploymentEnabled|Default value is `True`. It deploys third-party services as a three-instance cluster.<br />NOTE: For three-node cluster deployments, always set it to `True`.|
 |connectionMethodConf|Parameters of type array required to configure the supported connection methods. <br><blockquote>NOTE: To deploy a plugin after deploying the resource aggregator services, add its connection method information in the array and update the file using odim-controller `--upgrade` option.<br></blockquote>|
 |kafkaNodePort|The port to be used for accessing the Kafka services from external services. The default port is 30092. You can optionally change it.<br><blockquote>NOTE: Ensure that the port is in the range of 30000 to 32767.<br></blockquote>|
 |MessageBusType|Event message bus type. The value is either `Kafka` or `RedisStreams` and they are case-sensitive.|

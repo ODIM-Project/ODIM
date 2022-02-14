@@ -16,19 +16,19 @@
 declare ACTION
 declare DIR_PATH
 declare -A images_list=(\
-		["account-session"]="2.0" \
-		["aggregation"]="2.0" \
-		["api"]="2.0" \
+		["account-session"]="3.0" \
+		["aggregation"]="3.0" \
+		["api"]="3.0" \
 		["etcd"]="1.16" \
-		["events"]="2.0" \
-		["fabrics"]="2.0" \
+		["events"]="3.0" \
+		["fabrics"]="3.0" \
 		["kafka"]="1.0" \
-		["managers"]="2.0" \
+		["managers"]="3.0" \
 		["redis"]="2.0" \
-		["systems"]="2.0" \
-		["task"]="2.0" \
-		["telemetry"]="1.0"\
-		["update"]="2.0" \
+		["systems"]="3.0" \
+		["task"]="3.0" \
+		["telemetry"]="2.0"\
+		["update"]="3.0" \
 		["zookeeper"]="1.0" \
 		)
 

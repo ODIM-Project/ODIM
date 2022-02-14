@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  telemetryImageTag: "1.0"
+  telemetryImageTag: "2.0"

@@ -4,7 +4,7 @@ odimra:
   haDeploymentEnabled:
 grfplugin:
   eventListenerNodePort:
-  imageTag: "2.0"
+  imageTag: "3.0"
   logPath:
   rootServiceUUID:
   username:

@@ -44,7 +44,7 @@ type Manager struct {
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
 	GraphicalConsole        *GraphicalConsole  `json:"GraphicalConsole,omitempty"`
-	Links                   *dmtf.Links        `json:"Links,omitempty"`
+	Links                   *Links             `json:"Links,omitempty"`
 	Actions                 *Actions           `json:"Actions,omitempty"`
 	AutoDSTEnabled          bool               `json:"AutoDSTEnabled,omitempty"`
 	DateTime                string             `json:"DateTime,omitempty"`
@@ -60,7 +60,6 @@ type Manager struct {
 	ServiceEntryPointUUID   string             `json:"ServiceEntryPointUUID,omitempty"`
 	TimeZoneName            string             `json:"TimeZoneName,omitempty"`
 	Measurements            []*dmtf.Link       `json:"Measurements,omitempty"`
-	Certificates            dmtf.Certificates  `json:"Certificates,omitempty"`
 	Location                *dmtf.Link         `json:"Location,omitempty"`
 	LocationIndicatorActive bool               `json:"LocationIndicatorActive,omitempty"`
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`

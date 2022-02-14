@@ -18,9 +18,10 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -393,11 +394,11 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 			return resp
 		}
 	}
-	return fillResponse(body)
+	return fillResponse(body, managerData)
 
 }
 
-func fillResponse(body []byte) response.RPC {
+func fillResponse(body []byte, managerData map[string]interface{}) response.RPC {
 	var resp response.RPC
 	data := string(body)
 	//replacing the response with north bound translation URL
@@ -411,6 +412,7 @@ func fillResponse(body []byte) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
+	respData["Links"] = managerData["Links"]
 	resp.Body = respData
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

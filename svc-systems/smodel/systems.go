@@ -48,6 +48,7 @@ type Plugin struct {
 	ID                string
 	PluginType        string
 	PreferredAuthType string
+	ManagerUUID       string
 }
 
 // Volume is for sending a volume's request to south bound

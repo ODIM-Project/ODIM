@@ -46,7 +46,7 @@
    - [Adding new services](#adding-new-services)
    - [Licensing](#licensing)
    - [Reference links](#reference-links)
-10. [Appendix](#appendix)
+9. [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing go](#downloading-and-installing-go)

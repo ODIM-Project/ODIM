@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:
-  fabricsImageTag: "2.0"
+  fabricsImageTag: "3.0"

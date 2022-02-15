@@ -163,6 +163,14 @@ func TestGetManagerResourcewithValidURL(t *testing.T) {
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/LogServices",
+	}
+	response = e.GetManagersResource(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
 }
 
 func TestGetManagerResourcewithInvalidURL(t *testing.T) {
@@ -178,6 +186,13 @@ func TestGetManagerResourcewithInvalidURL(t *testing.T) {
 	req = &managersproto.ManagerRequest{
 		ManagerID: "uuid1.1",
 		URL:       "/redfish/v1/Managers/uuid1.1/Virtual",
+	}
+	response = e.GetManagersResource(req)
+	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID: "uuid1.1",
+		URL:       "/redfish/v1/Managers/uuid1.1/Logservice",
 	}
 	response = e.GetManagersResource(req)
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound.")

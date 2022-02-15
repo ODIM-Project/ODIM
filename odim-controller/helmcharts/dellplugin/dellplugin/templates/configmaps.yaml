@@ -36,7 +36,7 @@ data:
                         "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
     		]
     	},
-    	"FirmwareVersion": "v2.0.0",
+    	"FirmwareVersion": "v1.0.0",
     	"SessionTimeoutInMinutes": 30,
     	"LoadBalancerConf": {
     		"LBHost": {{ .Values.dellplugin.lbHost | quote }},

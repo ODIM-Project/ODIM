@@ -75,7 +75,7 @@ func TestSetConfiguration(t *testing.T) {
 	                "MessageBusType": "Kafka",
       			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
 	      },
-        "FirmwareVersion": "3.0",
+        "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
         "AuthConf": {
@@ -145,7 +145,7 @@ func TestSetConfiguration(t *testing.T) {
 		"ConnectionMethodConf":[
 		  {
 				"ConnectionMethodType":"Redfish",
-				"ConnectionMethodVariant":"Compute:GRF_v3.0.0"
+				"ConnectionMethodVariant":"Compute:GRF_v1.0.0"
 			},
 		  {
 				"ConnectionMethodType":"Redfish",
@@ -475,7 +475,7 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.ConnectionMethodConf = []ConnectionMethodConf{
 				{
 					ConnectionMethodType:    "Redfish",
-					ConnectionMethodVariant: "GRF_v3.0.0",
+					ConnectionMethodVariant: "GRF_v1.0.0",
 				},
 			}
 		case 7:

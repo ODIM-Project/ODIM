@@ -254,7 +254,7 @@ services:
       PLUGIN_SERVICE_ROOT_UUID: a03deede-8d0f-43b1-825c-a7e3bcd07aba
       PLUGIN_ODIM_URL: https://$FQDN:45000
       PLUGIN_ODIM_USERNAME: admin
-      PLUGIN_FIRMWARE_VERSION: v3.0.0
+      PLUGIN_FIRMWARE_VERSION: v1.0.0
       PLUGIN_LOG_LEVEL: debug
       PLUGIN_PKI_ROOT_CA_PATH: /certs/rootCA.crt
       PLUGIN_PKI_PRIVATE_KEY_PATH: /certs/odimra_server.key

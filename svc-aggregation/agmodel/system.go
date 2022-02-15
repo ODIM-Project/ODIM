@@ -515,41 +515,28 @@ func GetAllSystems() ([]Target, *errors.Error) {
 }
 
 //DeletePluginData will delete the plugin entry from the database based on the uuid
-func DeletePluginData(key string) *errors.Error {
+func DeletePluginData(key,table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	if err = conn.Delete("Plugin", key); err != nil {
+	if err = conn.Delete(table, key); err != nil {
 		return err
 	}
 	return nil
 }
-
-//DeleteManagersData will delete the Managers entry from the database based on the uuid
-func DeleteManagersData(key string) *errors.Error {
+//DeleteManagersData will delete the table entry from the database based on the uuid
+func DeleteManagersData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return err
 	}
-	if err = conn.Delete("Managers", key); err != nil {
+	if err = conn.Delete(table, key); err != nil {
 		return err
 	}
 	return nil
 }
 
-//DeleteLogServicesCollection will delete the LogServicesCollection entry from the database based on the  key
-
-func DeleteLogServicesCollection(key string) *errors.Error {
-	conn, err := common.GetDBConnection(common.InMemory)
-	if err != nil {
-		return err
-	}
-	if err = conn.Delete("LogServicesCollection", key); err != nil {
-		return err
-	}
-	return nil
-}
 
 //UpdateIndex is used for updating an existing index
 func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {

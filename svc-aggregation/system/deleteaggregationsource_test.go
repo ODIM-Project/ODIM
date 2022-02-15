@@ -1,7 +1,3 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-//
-
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 
 //not use this file except in compliance with the License. You may obtain
@@ -256,7 +252,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 			"@odata.id": "/redfish/v1/Managers/1234877451-1233/LogServices",
 		},
 	})
-	mockLogServicesCollectionData("/redfish/v1/Managers/1234877451-1234/LogServices", map[string]interface{}{
+	mockLogServicesCollectionData("/redfish/v1/Managers/1234877451-1233/LogServices", map[string]interface{}{
 		"ODataContext": "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		"ODataID":      "/redfish/v1/Managers/1234877451-1233/LogServices",
 		"ODataEtag":    "W570254F2",

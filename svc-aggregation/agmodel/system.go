@@ -515,7 +515,7 @@ func GetAllSystems() ([]Target, *errors.Error) {
 }
 
 //DeletePluginData will delete the plugin entry from the database based on the uuid
-func DeletePluginData(key,table string) *errors.Error {
+func DeletePluginData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
@@ -525,6 +525,7 @@ func DeletePluginData(key,table string) *errors.Error {
 	}
 	return nil
 }
+
 //DeleteManagersData will delete the table entry from the database based on the uuid
 func DeleteManagersData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
@@ -536,7 +537,6 @@ func DeleteManagersData(key, table string) *errors.Error {
 	}
 	return nil
 }
-
 
 //UpdateIndex is used for updating an existing index
 func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {

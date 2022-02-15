@@ -118,7 +118,7 @@ func mockLogServicesCollectionData(id string, data map[string]interface{}) error
 	}
 
 	if err = connPool.Create("LogServicesCollection", id, string(reqData)); err != nil {
-		return fmt.Errorf("error while trying to create new %v resource: %v", "Managaers", err.Error())
+		return fmt.Errorf("error while trying to create new %v resource: %v", "LogServicesCollectionData", err.Error())
 	}
 	return nil
 }
@@ -248,7 +248,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
 		"Name": "ILO_v1.0.0",
 		"UUID": "1234877451-1233",
-		"LogServices": map[string]interface{}{
+		"LogService": map[string]interface{}{
 			"@odata.id": "/redfish/v1/Managers/1234877451-1233/LogServices",
 		},
 	})
@@ -262,6 +262,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 		"MembersCount": 0,
 		"Name":         "Logs",
 	})
+
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
 		"Name": "NoStatusPlugin_v1.0.0",
 		"UUID": "1234877451-1235",

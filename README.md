@@ -2070,29 +2070,36 @@ Following are the two ways of scaling up the resources and services of Resource 
      <blockquote>
      NOTE:Scaling of third-party services is not supported.
      </blockquote>
-1. To add a node, run the following command on the deployment node: 
+1. Log in to each cluster node and update all the configuration files inside `/opt/nginx/servers` with the new node details. 
+
+    <blockquote>NOTE: Refer the existing node entries and add the new node entry. </blockquote>
+    
+2. Update the `kube_deploy_nodes.yaml` file with the new node details being added.
+
+3. To add a node, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --addnode kubernetes --config \
     /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
     ```
-    
+
     Before adding a node, ensure that time on the node is same as the time on all the other existing nodes. To know how to set time sync, see [Setting up time sync across nodes](#setting-up-time-sync-across-nodes).
-    
-2. Log in to each cluster node and update all the configuration files inside `/opt/nginx/servers` with the new node details. 
-3. To scale up the resource aggregator deployments, run the following command on the deployment node: 
+
+4. To scale up the resource aggregator services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
     /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-    --scale --svc aggregation --replicas <replica_count>
+    --scale --svc <service_name> --replicas <replica_count>
     ```
 
-    Replace <deployment\_name\> with the name of the deployment which you want to scale up. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
+5. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Replace <replica\_count\> with an integer indicating the number of service instances to be added.
+    Please note, you can scale up only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services.
 
-5. To scale up the plugin services, run the following command on the deployment node: 
+6. Replace <`replica_count>` with an integer indicating the number of service instances to be added.
+
+7. To scale up the plugin services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
@@ -2100,10 +2107,11 @@ Following are the two ways of scaling up the resources and services of Resource 
     kube_deploy_nodes.yaml --scale --plugin <plugin_name> --replicas <replica_count>
     ```
 
-    Replace <plugin\_name\> with the name of the plugin whose service you want to scale up.
+8. Replace <plugin\_name\> with the name of the plugin whose service you want to scale up.
+    For example: `urplugin`, `grfplugin`, `dellplugin`, `lenovoplugin`, `aciplugin`
 
-    Replace <replica\_count\> with an integer indicating the number of plugin service instances to be added.
-	
+9. Replace <replica\_count\> with an integer indicating the number of plugin service instances to be added.
+
 ## Scaling down the resources and services of Resource Aggregator for ODIM
 
 Scaling down involves removing one or more worker nodes from an existing three-node cluster where the services of Resource Aggregator for ODIM are deployed.
@@ -2111,9 +2119,9 @@ Scaling down involves removing one or more worker nodes from an existing three-n
 <blockquote>NOTE: You cannot remove controller nodes in a cluster.</blockquote>
 
 1. To remove a node, do the following: 
-    1. Open the `kube\_deploy\_nodes.yaml` file on the deployment node.
+    1. Open the `kube_deploy_nodes.yaml` file on the deployment node.
     
-    2. Remove all the node entries under nodes except for the node that  you want to remove.
+    2. Remove all the node entries under nodes except for the node that you want to remove.
     
     3. Run the following command:
     
@@ -2122,19 +2130,21 @@ Scaling down involves removing one or more worker nodes from an existing three-n
         /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
         ```
     
-2. To scale down the resource aggregator deployments, run the following command on the deployment node: 
+2. To scale down the resource aggregator services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
     /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-    --scale --svc aggregation --replicas <replica_count>
+    --scale --svc <service_name> --replicas <replica_count>
     ```
 
-    Replace <deployment\_name\> with the name of the deployment which you want to scale down. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
+3. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Replace <replica\_count\> with an integer indicating the number of service instances to be removed.
+    Please note, you can scale down only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services. 
 
-3. To scale down the plugin services, run the following command on the deployment node: 
+4. Replace `<replica\_count\>` with an integer indicating the number of service instances to be removed.
+
+5. To scale down the plugin services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
@@ -2142,10 +2152,11 @@ Scaling down involves removing one or more worker nodes from an existing three-n
     --scale --plugin <plugin_name> --replicas <replica_count>
     ```
 
-    Replace <plugin\_name\> with the name of the plugin whose service you want to scale up.
+6. Replace <plugin\_name\> with the name of the plugin whose service you want to scale down.
+   For example: `urplugin`, `grfplugin`, `dellplugin`, `lenovoplugin`, `aciplugin`
+   
+7. Replace <replica\_count\> with an integer indicating the number of plugin service instances to be removed.
 
-    Replace <replica\_count\> with an integer indicating the number of plugin service instances to be removed.
-	
 ## Rolling back to an earlier deployment revision
 
 Rolling back the deployment of Resource Aggregator for ODIM to a particular revision restores the configuration manifest of that version.
@@ -2628,30 +2639,32 @@ The following table lists all the configuration parameters required to deploy a 
 
 ## Resource Aggregator for ODIM deployment names
 
-| Deployment name       | Description                                                  |
-| --------------------- | ------------------------------------------------------------ |
-| odimra-config         | Deployment name of the ConfigMap which contains the configuration information required by the resource aggregator services |
-| odimra-platformconfig | Deployment name of the ConfigMap which contains the Kafka client configuration information required by the resource aggregator services |
-| configure-hosts       | Deployment name of the ConfigMap which contains the entries to be added in the `/etc/hosts` file on all the containers |
-| odimra-secret         | Deployment name of the secret which contains the certificates and keys used by the resource aggregator services |
-| kafka-secret          | Deployment name of the secret which contains the JKS password of Kafka keystore |
-| zookeeper-secret      | Deployment name of the secret which contains the JKS password of zookeeper keystore |
-| account-session       | Deployment name of the account-sessions service              |
-| aggregation           | Deployment name of the aggregation service                   |
-| api                   | Deployment name of the api service                           |
-| events                | Deployment name of the events service                        |
-| fabrics               | Deployment name of the fabrics service                       |
-| managers              | Deployment name of the managers service                      |
-| systems               | Deployment name of the systems service                       |
-| tasks                 | Deployment name of the tasks service                         |
-| update                | Deployment name of the update service                        |
-| kafka                 | Deployment name of the Kafka service                         |
-| zookeeper             | Deployment name of the zookeeper service                     |
-| redis                 | Deployment name of the Redis service                         |
-| etcd                  | Deployment name of the etcd service                          |
-| all                   | Deployment name to be used for scaling up all the resource aggregator services |
-| odimra                | Deployment name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services |
-| thirdparty            | Deployment name to be used for scaling up all the third-party ConfigMaps and secrets |
+| Deployment/Service names | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| odimra-config            | Name of the ConfigMap which contains the configuration information required by the resource aggregator services |
+| odimra-platformconfig    | Name of the ConfigMap which contains the Kafka client configuration information required by the resource aggregator services |
+| configure-hosts          | Name of the ConfigMap which contains the entries to be added in the `/etc/hosts` file on all the containers |
+| odimra-secret            | Name of the secret which contains the certificates and keys used by the resource aggregator services |
+| kafka-secret             | Name of the secret which contains the JKS password of Kafka keystore |
+| zookeeper-secret         | Name of the secret which contains the JKS password of zookeeper keystore |
+| account-session          | Name of the account-sessions service                         |
+| aggregation              | Name of the aggregation service                              |
+| api                      | Name of the api service                                      |
+| events                   | Name of the events service                                   |
+| fabrics                  | Name of the fabrics service                                  |
+| managers                 | Name of the managers service                                 |
+| systems                  | Name of the systems service                                  |
+| tasks                    | Name of the tasks service                                    |
+| update                   | Name of the update service                                   |
+| kafka                    | Name of the Kafka service                                    |
+| zookeeper                | Name of the zookeeper service                                |
+| redis                    | Name of the Redis service                                    |
+| etcd                     | Name of the etcd service                                     |
+| all                      | Name to be used for scaling up all the resource aggregator services |
+| odimra                   | Name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services |
+| thirdparty               | Name to be used for scaling up all the third-party ConfigMaps and secrets |
+
+<blockquote>NOTE: You can scale up only the account-session, aggregation, api, events, fabrics, managers, systems, tasks, update, and all services.</blockquote>
 
 ## Using your own CA certificates and keys
 

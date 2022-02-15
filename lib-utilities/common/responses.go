@@ -16,8 +16,9 @@
 package common
 
 import (
-	iris "github.com/kataras/iris/v12"
 	"net/http"
+
+	iris "github.com/kataras/iris/v12"
 )
 
 // commonHeaders holds the common response headers
@@ -27,7 +28,7 @@ var commonHeaders = map[string]string{
 	"X-Frame-Options":        "sameorigin",
 	"X-Content-Type-Options": "nosniff",
 	"Content-type":           "application/json; charset=utf-8",
-	"Cache-Control":          "no-cache",
+	"Cache-Control":          "no-cache, no-store, must-revalidate",
 	"Transfer-Encoding":      "chunked",
 }
 

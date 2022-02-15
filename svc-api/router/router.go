@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
@@ -168,16 +169,6 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		// Validating session token
-		sessionToken := r.Header.Get("X-Auth-Token")
-		if sessionToken == "" {
-			logProperties := make(map[string]interface{})
-			logProperties["SessionToken"] = sessionToken
-			logProperties["Message"] = "X-Auth-Token is missing in the request header"
-			logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-			customLogs.AuthLog(logProperties)
-		}
-
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -188,6 +179,25 @@ func Router() *iris.Application {
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
 		r.RequestURI = path
 		r.URL.Path = parsedURI.Path
+
+		// Validating session token
+		sessionToken := r.Header.Get("X-Auth-Token")
+		if sessionToken == "" {
+			authRequired := true
+			for _, item := range common.URIWithNoAuth {
+				if item == r.URL.Path {
+					authRequired = false
+					break
+				}
+			}
+			if authRequired {
+				logProperties := make(map[string]interface{})
+				logProperties["SessionToken"] = sessionToken
+				logProperties["Message"] = "X-Auth-Token is missing in the request header"
+				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
+				customLogs.AuthLog(logProperties)
+			}
+		}
 
 		// getting the request body for audit logs
 		if r.Body != nil {

@@ -71,6 +71,7 @@ var Token PluginToken
 // DBInterface hold interface for db functions
 type DBInterface struct {
 	AddManagertoDBInterface func(mgrmodel.RAManager) error
+	GenericSave             func([]byte, string, string) error
 }
 
 // StoreToken to store the token ioto the  map

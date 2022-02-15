@@ -18,14 +18,15 @@ package rfpmessagebus
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"strings"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	log "github.com/sirupsen/logrus"
-	"net"
-	"strings"
 )
 
 // Publish function will handle events request in two originofcondition format
@@ -63,27 +64,6 @@ func Publish(data interface{}) bool {
 	log.Info("Forwarded event: " + string(event.Request))
 	log.Info("Event Published")
 	return true
-}
-
-// translateOriginOfCondition changes the ilo specific uri to  redfsih std uri
-func translateOriginOfCondition(eventOriginOfCondition string) string {
-	originOfCondition := strings.Replace(eventOriginOfCondition, "systems", "Systems", -1)
-	originOfCondition = strings.Replace(originOfCondition, "bios", "Bios", -1)
-	originOfCondition = strings.Replace(originOfCondition, "settings", "Settings", -1)
-	originOfCondition = strings.Replace(originOfCondition, "SmartStorage", "Storage", -1)
-	originOfCondition = strings.Replace(originOfCondition, "DiskDrives", "Drives", -1)
-	originOfCondition = strings.Replace(originOfCondition, "LogicalDrives", "Volumes", -1)
-	originOfCondition = strings.Replace(originOfCondition, "PCIDevices", "PCIeDevices", -1)
-	return strings.Replace(originOfCondition, "/ArrayControllers/", "/ArrayControllers-", -1)
-}
-
-// translateOriginOfCondition to changes Oem block  ilo specific uri to  redfsih std uri
-func translateOemData(oem interface{}) interface{} {
-	oemData, _ := json.Marshal(oem)
-	updateData := translateOriginOfCondition(string(oemData))
-	var updateOemData interface{}
-	json.Unmarshal([]byte(updateData), updateOemData)
-	return updateOemData
 }
 
 func formatMetricReportEventRequest(eventRequest common.Events) (common.Events, error) {

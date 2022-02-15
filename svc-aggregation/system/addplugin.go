@@ -17,10 +17,7 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strings"
-
+	"github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -28,6 +25,9 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agcommon"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agresponse"
+	log "github.com/sirupsen/logrus"
+	"net/http"
+	"strings"
 )
 
 func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, targetURI string, pluginContactRequest getResourceRequest, queueList []string, cmVariants connectionMethodVariants) (response.RPC, string, []byte) {
@@ -178,6 +178,32 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 		managersData[pluginContactRequest.OID] = body
 	}
+	//adding  empty logservices collection
+	ldata := model.Collection{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices",
+		ODataEtag:    "W570254F2",
+		ODataType:    "#LogServiceCollection.LogServiceCollection",
+		Description:  "Logs view",
+		Members:      []*model.Link{},
+		MembersCount: 0,
+		Name:         "Logs",
+	}
+	dbdata, err := json.Marshal(ldata)
+	if err != nil {
+		errMsg := "unable to marshal manager data: %v" + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+	}
+	key := "/redfish/v1/Managers/" + managerUUID + "/LogServices"
+	dbErr1 := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
+	if dbErr1 != nil {
+		errMsg := dbErr1.Error()
+		log.Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
 	// saving all plugin manager data
 	var listMembers = make([]agresponse.ListMember, 0)
 	for oid, data := range managersData {
@@ -192,6 +218,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		listMembers = append(listMembers, agresponse.ListMember{
 			OdataID: oid,
 		})
+
 	}
 	e.SubscribeToEMB(plugin.ID, queueList)
 

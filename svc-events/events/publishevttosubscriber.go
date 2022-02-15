@@ -33,7 +33,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -46,7 +45,7 @@ import (
 
 // addFabric will add the new fabric resource to db when an event is ResourceAdded and
 // originofcondition has fabrics odataid.
-func addFabric(requestData, host string) {
+func (p *PluginContact) addFabric(requestData, host string) {
 	var message common.MessageData
 	if err := json.Unmarshal([]byte(requestData), &message); err != nil {
 		log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
@@ -59,7 +58,7 @@ func addFabric(requestData, host string) {
 		}
 		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+			p.addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
 	}
 }
@@ -109,7 +108,7 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 		return false
 	}
 
-	addFabric(requestData, host)
+	p.addFabric(requestData, host)
 	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
 	deviceSubscription, err := p.GetDeviceSubscriptions(searchKey)
 	if err != nil {
@@ -368,6 +367,15 @@ func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, 
 	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
 		log.Info("Retry event forwarding on destination: ", destination)
+		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
+		if evcommon.SaveUndeliveredEventsFlag {
+			// if undelivered event already published then ignore retrying
+			eventString, err := p.GetUndeliveredEvents(undeliveredEventID)
+			if err != nil || len(eventString) < 1 {
+				log.Info("Event is forwarded to destination")
+				return
+			}
+		}
 		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
@@ -383,7 +391,7 @@ func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, 
 			}
 			return
 		}
-		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
+
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
 }
@@ -414,7 +422,7 @@ func rediscoverSystemInventory(systemID, systemURL string) {
 	return
 }
 
-func addFabricRPCCall(origin, address string) {
+func (p *PluginContact) addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
@@ -432,9 +440,6 @@ func addFabricRPCCall(origin, address string) {
 	if err != nil {
 		log.Error("Error while AddFabric ", err.Error())
 		return
-	}
-	p := PluginContact{
-		ContactClient: pmbhandle.ContactPlugin,
 	}
 	p.checkCollectionSubscription(origin, "Redfish")
 	log.Info("Fabric Added")

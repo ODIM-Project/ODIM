@@ -204,7 +204,7 @@ var ManagersResource = map[string]string{
 	"HostInterfaces":     "HostInterfacesCollection",
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
-	"SerialInterface":    "SerialInterfaceCollection",
+	"SerialInterfaces":   "SerialInterfaceCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription
@@ -260,7 +260,7 @@ var ResourceTypes = map[string]string{
 	"Role":                   "Role",
 	"SecureBoot":             "SecureBoot",
 	"Sensor":                 "Sensor",
-	"SerialInterface":        "SerialInterface",
+	"SerialInterfaces":       "SerialInterfaces",
 	"Session":                "Session",
 	"Storage":                "Storage",
 	"Switch":                 "Switch",
@@ -313,4 +313,13 @@ type DeviceSubscription struct {
 	EventHostIP     string   `json:"EventHostIP,omitempty"`
 	OriginResources []string `json:"OriginResources"`
 	Location        string   `json:"location,omitempty"`
+}
+
+// URIWithNoAuth contains the list of URI's which does not require authentication
+var URIWithNoAuth = []string{
+	"/redfish/v1",
+	"/redfish/v1/$metadata",
+	"/redfish/v1/odata",
+	"/redfish/v1/SessionService",
+	"/redfish/v1/SesssionService/Sessions",
 }

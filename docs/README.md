@@ -153,6 +153,7 @@
 - [Events](#events)
   * [Viewing the event service root](#viewing-the-event-service-root)
   * [Creating an event subscription](#creating-an-event-subscription)
+    + [Sample event](#sample-event)
     + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
   * [Submitting a test event](#submitting-a-test-event)
   * [Event subscription use cases](#event-subscription-use-cases)
@@ -741,8 +742,6 @@ With Resource Aggregator for ODIM, there are two kinds of defined roles:
 
 <blockquote>
 NOTE:
-
-
 -   Redfish predefined roles cannot be modified.
 
 -   Before assigning a user-defined role to a user at the time of user account creation, ensure that it is created first.
@@ -2041,8 +2040,8 @@ Content-Length:491 bytes
 connection":"keep-alive
 content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
-link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a:1/>; rel=describedby
-location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a:1
+link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1/>; rel=describedby
+location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1
 odata-version:4.0
 transfer-encoding:"chunked
 x-frame-options":"sameorigin"
@@ -2537,7 +2536,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -2819,7 +2818,7 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1"      
    ]   
 }
 ```
@@ -2857,8 +2856,8 @@ Transfer-Encoding:chunked
       "MessageId":"Base.1.6.1.Created",
       "Severity":"OK",
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"      
    ]   
 }
 ```
@@ -3004,8 +3003,8 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1.1"      
    ]   
 }
 ```
@@ -5772,7 +5771,7 @@ curl -i PATCH \
   "Links": {
     "Contains": [
       {
-        "@odata.id": "/redfish/v1/Chassis/46db63a9-2dcb-43b3-bdf2-54ce9c42e9d9:1"
+        "@odata.id": "/redfish/v1/Chassis/46db63a9-2dcb-43b3-bdf2-54ce9c42e9d9.1"
       }
     ]
   }
@@ -6088,7 +6087,7 @@ This filter searches a server having total physical memory of 384 GB and two Int
    "Name":"Computer Systems",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":1
@@ -6523,7 +6522,7 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"2D2866FD\"",
-   "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
+   "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1",
    "@odata.type":"#Manager.v1_13_0.Manager",
    "Actions":{ 
       "#Manager.Reset":{ 
@@ -6625,6 +6624,18 @@ curl -i GET \
    "@odata.type":"#Manager.v1_13_0.Manager",
    "FirmwareVersion":"v1.0.0",
    "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/ff4655fe-5afa-4b1f-acb0-ddf2f2af61bf.1"
+         }
+      ],
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/ff4655fe-5afa-4b1f-acb0-ddf2f2af61bf.1"
+         }
+      ]
+   },
    "ManagerType":"Service",
    "Name":"GRF",
    "Status":{
@@ -7638,7 +7649,7 @@ curl -i GET \
    "Links":{ 
       "ConnectedPorts":[ 
          { 
-            "@odata.id":"/redfish/v1/Systems/768f9da7-56fc-4f13-b6f8-a1cd241e2313:1/EthernetInterfaces/3"
+            "@odata.id":"/redfish/v1/Systems/768f9da7-56fc-4f13-b6f8-a1cd241e2313.1/EthernetInterfaces/3"
          }
       ],
       "ConnectedSwitches":[ 
@@ -7775,13 +7786,13 @@ curl -i GET \
       "EbgpAsNumberUpperAddress":65100
    },
    "IPv4":{ 
-      "IPv4FabricLinkLowerAddress":"172.10.20.1",
-      "IPv4FabricLinkUpperAddress":"172.10.20.10",
+      "IPv4FabricLinkLowerAddress":"192.168.256.258",
+      "IPv4FabricLinkUpperAddress":"192.168.256.268",
       "IPv4GatewayAddress":"",
       "IPv4HostLowerAddress":"",
       "IPv4HostUpperAddress":"",
-      "IPv4LoopbackLowerAddress":"172.10.20.1",
-      "IPv4LoopbackUpperAddress":"172.10.20.10",
+      "IPv4LoopbackLowerAddress":"192.168.256.278",
+      "IPv4LoopbackUpperAddress":"192.168.256.288",
       "NativeVlan":0,
       "VlanIdentifierLowerAddress":0,
       "VlanIdentifierUpperAddress":0
@@ -8067,10 +8078,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "10.18.102.2/24",
-         "10.18.102.3/24"
+         "192.168.256.288/24",
+         "192.168.256.289/24"  
       ],
-      "AnycastGatewayIPAddress":"10.18.102.1"
+      "AnycastGatewayIPAddress":"192.168.256.287"
    }
 }
 '
@@ -8094,10 +8105,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "10.18.102.2/24",
-         "10.18.102.3/24"
+         "192.168.256.288/24",
+         "192.168.256.289/24"
       ],
-      "AnycastGatewayIPAddress":"10.18.102.1"
+      "AnycastGatewayIPAddress":"192.168.256.287"
    }
 }
 ```
@@ -8142,11 +8153,11 @@ Transfer-Encoding:chunked
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
   "@odata.type": "#AddressPool.v1_2_0.AddressPool",
   "BgpEvpn": {
-    "AnycastGatewayIPAddress": "10.18.102.1",
+    "AnycastGatewayIPAddress": "192.168.256.287",
     "AnycastGatewayMACAddress": "",
     "GatewayIPAddressList": [
-      "10.18.102.2/24",
-      "10.18.102.3/24"
+      "192.168.256.288/24",
+      "192.168.256.289/24"
     ],
     "RouteDistinguisherList": "",
     "RouteTargetList": [
@@ -8221,12 +8232,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "192.12.1.10",
-              "Upper": "192.12.1.15"
+              "Lower": "192.168.256.288",
+              "Upper": "192.168.256.293"
     },
     "EbgpAddressRange": {
-              "Lower": "172.12.1.10",
-              "Upper": "172.12.1.15"
+              "Lower": "192.168.260.288",
+              "Upper": "192.168.260.295"
     }
   },
   "Ebgp": {
@@ -8238,7 +8249,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["192.168.18.122/31", "192.168.18.123/31"]
+    "GatewayIPAddressList": ["192.168.261.290/31", "192.168.261.291/31"]
   }
 }'
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
@@ -8258,12 +8269,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "192.12.1.10",
-              "Upper": "192.12.1.15"
+              "Lower": "192.168.256.288",
+              "Upper": "192.168.256.293"
     },
     "EbgpAddressRange": {
-              "Lower": "172.12.1.10",
-              "Upper": "172.12.1.15"
+             "Lower": "192.168.260.288",
+              "Upper": "192.168.260.295"
     }
   },
   "Ebgp": {
@@ -8275,7 +8286,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["192.168.18.122/31", "192.168.18.123/31"]
+    "GatewayIPAddressList": ["192.168.261.290/31", "192.168.261.291/31"]
   }
 }
 
@@ -8332,8 +8343,8 @@ Transfer-Encoding:chunked
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
       "GatewayIPAddressList":[
-         "192.168.18.122/31",
-         "192.168.18.123/31"
+         "192.168.261.290/31",
+         "192.168.261.291/31"
       ],
       "RouteDistinguisherList":[
          "65002:102"
@@ -8352,16 +8363,16 @@ Transfer-Encoding:chunked
    },
    "IPv4":{
       "EbgpAddressRange":{
-         "Lower":"172.12.1.10",
-         "Upper":"172.12.1.15"
+         "Lower":"192.168.261.280",
+         "Upper":"192.168.261.285"
       },
       "FabricLinkAddressRange":{
          "Lower":"",
          "Upper":""
       },
       "IbgpAddressRange":{
-         "Lower":"192.12.1.10",
-         "Upper":"192.12.1.15"
+         "Lower":"192.168.261.290",
+         "Upper":"192.168.261.295"
       },
       "LoopbackAddressRange":{
          "Lower":"",
@@ -9005,7 +9016,7 @@ curl -i DELETE \
 ```
 curl -i -X DELETE \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspo'
+ 'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
 
 ```
 
@@ -9598,6 +9609,33 @@ curl -i POST \
 
 ```
 
+### Sample event
+
+Here is a sample of standard Redfish event delivered to a destination.
+
+~~~
+{
+   "@odata.context":"/redfish/v1/$metadata#Event.Event",
+   "@odata.type":"#Event.v1_7_0.Event",
+   "Events":[
+      {
+         "EventId":"ffa39cd4-4d95-4296-9ffd-e67c1135e96f",
+         "EventTimestamp":"2022-02-01T16:40:35Z",
+         "EventType":"ResourceAdded",
+         "Message":"The resource has been created successfully.",
+         "MessageId":"ResourceEvent.1.2.0.ResourceAdded",
+         "OriginOfCondition":{
+            "@odata.id":"/redfish/v1/Managers/dd187ab4-310c-4be0-beeb-0412a6b00806.1"
+         },
+         "Severity":"OK"
+      }
+   ],
+   "Name":"Resource Event"
+}
+~~~
+
+
+
 ###  Creating event subscription with eventformat type - MetricReport
 
 If `EventFormatType` is empty, default value will be `Event`.
@@ -9725,8 +9763,6 @@ Content-Length:0 byte
 
 ```
 
- 
-
 >**Sample response header** \(HTTP 201 status\) 
 
 ```
@@ -9760,6 +9796,7 @@ Transfer-Encoding:chunked
 ```
 
 >**Sample response body** \(subtask\) 
+
 
 ```
 {
@@ -10178,7 +10215,7 @@ curl -i GET \
       "ComputerSystem"
    ],
    "OriginResources":[
-      "@odata.id":"/redfish/v1/Systems/936f4838-9ce5-4e2a-9e2d-34a45422a389:1"
+      "@odata.id":"/redfish/v1/Systems/936f4838-9ce5-4e2a-9e2d-34a45422a389.1"
    ]
 }
 ```
@@ -10748,7 +10785,7 @@ curl -i GET \
         {
             "Name": "SystemID",
             "Values": [
-                "9616fec9-c76a-4d26-ab53-196d08ce825a:1"
+                "9616fec9-c76a-4d26-ab53-196d08ce825a.1"
             ]
         }
     ]
@@ -11055,11 +11092,11 @@ Audit logs has information on each API and is stored in the api.log file in odim
 
 **Samples**
 
-- <110> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+- <110> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
 
-- <110> 2022-01-17T13:57:48Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"10.24.0.5","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+- <110> 2022-01-17T13:57:48Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"192.168.260.280","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
 
-- <107> 2009-11-10T23:00:00Z 10.24.1.237 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+- <107> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
 
   <blockquote> Note: <110> and <107> are priority values. </107> is the audit information log and <107> is the audit error log. </blockquote>
 

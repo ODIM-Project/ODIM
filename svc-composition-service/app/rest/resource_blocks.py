@@ -101,7 +101,7 @@ class ResourceBlocks():
 
             self.redis.sadd("FreePool", data['@odata.id'])
 
-            res = json.dumps(data)
+            res = data
             logging.debug(
                 "New ResourceBlock data: {rb_data}".format(rb_data=data))
         except Exception as err:
@@ -257,7 +257,7 @@ class ResourceBlocks():
                     logging.info(
                         "successfully Created Computer system Resource Block. {resp}"
                         .format(resp=res))
-                    code = HTTPStatus.OK
+                    code = HTTPStatus.CREATED
                     return
                 else:
                     logging.error("The System {uri} is not found".format(

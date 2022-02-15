@@ -120,7 +120,7 @@ class ResourceZones():
             pipe.execute()
 
             logging.info("Created a Resource Zone successfully")
-            res = json.dumps(zone)
+            res = zone
             code = HTTPStatus.CREATED
 
         except Exception as err:

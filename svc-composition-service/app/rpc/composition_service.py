@@ -103,6 +103,7 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
             context: grpc.ServicerContext) -> pb2.CompositionServiceResponse:
         response = {}
         code = HTTPStatus.CREATED
+        headers = {}
         if request.URL:
             segments = request.URL.split("/")
             # ResourceBlock
@@ -111,24 +112,29 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                 logging.info("In Create Composition Resource")
                 response, code = self.resourceblock.create_resource_block(
                     json.loads(str(request.RequestBody.decode("utf-8"))))
-                self.headers["Allow"] = '"GET", "POST"'
+                headers["Allow"] = '"GET", "POST"'
+                headers["Location"] = response["@odata.id"]
+                headers["Content-type"] = "application/json; charset=utf-8"
             # ResourceZone
             elif segments[-1] == "ResourceZones":
                 # create Resource Zone
                 response, code = self.resourcezone.create_resource_zone(
                     json.loads(str(request.RequestBody.decode("utf-8"))))
-                self.headers["Allow"] = '"GET", "POST"'
+                res = json.loads(response)
+                headers["Allow"] = '"GET", "POST"'
+                headers["Location"] = res["@odata.id"]
+                headers["Content-type"] = "application/json; charset=utf-8"
             # Initialize all Resource Blocks
             elif segments[-1] == "ResourceBlock.Initialize":
                 self.resourceblock.initialize()
                 code = HTTPStatus.NO_CONTENT
-                self.headers["Allow"] = '"POST"'
+                headers["Allow"] = '"POST"'
 
         return pb2.CompositionServiceResponse(statusCode=code,
                                               body=bytes(
                                                   json.dumps(response),
                                                   'utf-8'),
-                                              header=self.headers)
+                                              header=headers)
 
     def DeleteCompositionResource(
             self, request: pb2.DeleteCompositionResourceRequest,

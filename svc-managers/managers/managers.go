@@ -78,7 +78,6 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		}
 		resp.Body = manager
 	} else {
-
 		requestData := strings.SplitN(req.ManagerID, ".", 2)
 		if len(requestData) <= 1 {
 			resp = e.getPluginManagerResoure(requestData[0], req.URL)
@@ -118,6 +117,10 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		var managerType string
 		if val, ok := managerData["ManagerType"]; ok {
 			managerType = val.(string)
+		}
+		//adding default description
+		if _, ok := managerData["Description"]; !ok {
+			managerData["Description"] = "BMC Manager"
 		}
 
 		if managerType != common.ManagerTypeService && managerType != "" {
@@ -188,6 +191,8 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		Status: &mgrmodel.Status{
 			State: mgrData.State,
 		},
+		Description: mgrData.Description,
+		LogServices: mgrData.LogServices,
 	}, nil
 }
 
@@ -199,14 +204,35 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
+	var tableName string
+	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
+
+	urlData := strings.Split(req.URL, "/")
 	if len(requestData) <= 1 {
-		resp = e.getPluginManagerResoure(requestData[0], req.URL)
+		resourceName := urlData[len(urlData)-1]
+
+		tableName = common.ManagersResource[resourceName]
+		data, err := e.DB.GetResource(tableName, req.URL)
+		if err != nil {
+			if req.ManagerID != config.Data.RootServiceUUID {
+				return e.getPluginManagerResoure(requestData[0], req.URL)
+			}
+			errorMessage := "unable to get odimra managers details: " + err.Error()
+			log.Error(errorMessage)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+		}
+
+		json.Unmarshal([]byte(data), &resource)
+		resp.Body = resource
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+
 		return resp
+
 	}
 	uuid := requestData[0]
-	urlData := strings.Split(req.URL, "/")
-	var tableName string
+
 	if req.ResourceID == "" {
 		resourceName := urlData[len(urlData)-1]
 		tableName = common.ManagersResource[resourceName]
@@ -231,8 +257,8 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 		}
 	}
 
-	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -343,8 +369,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	if jerr != nil {
 		errorMessage := "unable to unmarshal manager details: " + jerr.Error()
 		log.Error(errorMessage)
-		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
-			nil, nil)
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		return resp
 	}
 	var pluginID = managerData["Name"].(string)
@@ -378,6 +403,7 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 		}
 
 	}
+
 	req.OID = reqURI
 	var errorMessage = "unable to get the details " + reqURI + ": "
 	body, _, getResponse, err := mgrcommon.ContactPlugin(req, errorMessage)
@@ -394,7 +420,9 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 			return resp
 		}
 	}
+
 	return fillResponse(body, managerData)
+
 
 }
 

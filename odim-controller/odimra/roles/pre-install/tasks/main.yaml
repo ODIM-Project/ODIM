@@ -128,6 +128,7 @@
     files:
       - "{{ odimCertsPath }}/kafka.truststore.jks"
       - "{{ odimCertsPath }}/kafka.keystore.jks"
+  when: odimra.messageBusType != 'RedisStreams'
 
 - name: Copy zookeeper certificates
   copy:
@@ -141,6 +142,7 @@
     files:
       - "{{ odimCertsPath }}/zookeeper.keystore.jks"
       - "{{ odimCertsPath }}/zookeeper.truststore.jks"
+  when: odimra.messageBusType != 'RedisStreams'
 
 - name: Get list of plugins under plugin helm charts path
   find:

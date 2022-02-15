@@ -17,6 +17,13 @@ spec:
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 3
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: aggregation 
       hostname: aggregation
       volumes:
         - name: odimra-config-vol

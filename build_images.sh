@@ -47,7 +47,7 @@ eval_cmd_exec()
 }
 
 # base image for building ODIMRA services image
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.odim -t odim:2.0 ." "odim"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.odim -t odim:3.0 ." "odim"
 
 # third party docker images
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.etcd -t etcd:1.16 ." "etcd"
@@ -56,19 +56,19 @@ eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.ka
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.zookeeper -t zookeeper:1.0 ." "zookeeper"
 
 # ODIMRA services image
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.accountSession -t account-session:2.0 ." "account session"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.aggregation -t aggregation:2.0 ". "aggregation"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.api -t api:2.0 ." "api"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.events -t events:2.0 ." "events"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.fabrics -t fabrics:2.0 ." "fabrics"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.telemetry -t telemetry:1.0 ." "telemetry"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.managers -t managers:2.0 ." "managers"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.systems -t systems:2.0 ." "systems"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.task -t task:2.0 ." "task"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.update -t update:2.0 ." "update"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.accountSession -t account-session:3.0 ." "account session"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.aggregation -t aggregation:3.0 ". "aggregation"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.api -t api:3.0 ." "api"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.events -t events:3.0 ." "events"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.fabrics -t fabrics:3.0 ." "fabrics"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.telemetry -t telemetry:2.0 ." "telemetry"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.managers -t managers:3.0 ." "managers"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.systems -t systems:3.0 ." "systems"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.task -t task:3.0 ." "task"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.update -t update:3.0 ." "update"
 
 # ODIMRA plugins image
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t urplugin:2.0 ." "urplugin"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.grfplugin -t grfplugin:2.0 ." "grfplugin"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.dellplugin -t dellplugin:1.0 ." "dellplugin"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t urplugin:3.0 ." "urplugin"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.grfplugin -t grfplugin:3.0 ." "grfplugin"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.dellplugin -t dellplugin:2.0 ." "dellplugin"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.lenovoplugin -t lenovoplugin:1.0 ." "lenovoplugin"

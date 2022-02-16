@@ -472,3 +472,26 @@ func (e *ExternalInterface) deviceCommunication(reqURL, uuid, systemID, httpMeth
 	}
 	return e.Device.DeviceRequest(deviceInfoRequest)
 }
+
+// GetRemoteAccountService is used to fetch resource data for BMC account service.
+// ManagerRequest holds the UUID, URL and ResourceId ,
+// There will be two return values for the function. One is the RPC response, which contains the
+// status code, status message, headers and body and the second value is error.
+func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var resource map[string]interface{}
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	data, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
+	if err != nil {
+		errorMessage := "unable to get resource details from device: " + err.Error()
+		log.Error(errorMessage)
+		errArgs := []interface{}{}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	}
+	json.Unmarshal([]byte(data), &resource)
+	resp.Body = resource
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	return resp
+}

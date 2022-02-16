@@ -132,6 +132,7 @@ func Router() *iris.Application {
 		GetManagersResourceRPC:   rpc.GetManagersResource,
 		VirtualMediaInsertRPC:    rpc.VirtualMediaInsert,
 		VirtualMediaEjectRPC:     rpc.VirtualMediaEject,
+        GetRemoteAccountServiceRPC: rpc.GetRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -556,6 +557,8 @@ func Router() *iris.Application {
 	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
+	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
+    managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
 	managers.Any("/{id}/LogServices", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Entries", handle.ManagersMethodNotAllowed)

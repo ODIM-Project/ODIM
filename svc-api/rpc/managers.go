@@ -97,3 +97,18 @@ func VirtualMediaEject(req managersproto.ManagerRequest) (*managersproto.Manager
 	}
 	return resp, nil
 }
+
+//GetRemoteAccountService will do the rpc call to collect BMC accounts
+func GetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	conn, err := services.ODIMService.Client(services.Managers)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	mService := managersproto.NewManagersClient(conn)
+	resp, err := mService.GetRemoteAccountService(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	return resp, nil
+}

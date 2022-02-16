@@ -490,7 +490,10 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 		errArgs := []interface{}{}
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 	}
-	json.Unmarshal([]byte(data), &resource)
+	// Replace response body to BMC manager
+	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+req.ManagerID+"/RemoteAccountService", -1)
+
+    json.Unmarshal([]byte(data), &resource)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

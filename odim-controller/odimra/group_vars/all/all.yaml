@@ -1,5 +1,5 @@
 ---
-# default path on k8s-cluster nodes to store odim-controller data
+## default path on k8s-cluster nodes to store odim-controller data
 odim_controller_path: "/opt/odim_controller"
 helm_charts_path: "{{ odim_controller_path }}/helmcharts"
 docker_images_path: "{{ odim_controller_path }}/docker_images"
@@ -24,22 +24,33 @@ odim_third_party_helmcharts:
    redis: redis-6.2.5-2.0.0
    kafka: kafka-2.5.0-0.1.0
    etcd: etcd-1.0.0
+odim_Kafka_helmcharts:
+   zookeeper: zookeeper-2.5.0-0.1.0
+   redis: redis-6.2.5-2.0.0
+   kafka: kafka-2.5.0-0.1.0
+   etcd: etcd-1.0.0
+odim_Redis_helmcharts:
+   redis: redis-6.2.5-2.0.0
+   etcd: etcd-1.0.0
+odim_third_party_har_helmcharts:
+   redis: redis-ha-6.2.5-2.0.0
+   etcd: etcd-ha-1.0.0
 odim_third_party_ha_helmcharts:
    zookeeper: zookeeper-ha-2.5.0-0.1.0
    redis: redis-ha-6.2.5-2.0.0
    kafka: kafka-ha-2.5.0-0.1.0
    etcd: etcd-ha-1.0.0
 odim_svc_helmcharts:
-   account-session: account-session-2.0.0
-   aggregation: aggregation-2.0.0
-   api: api-2.0.0
-   events: events-2.0.0
-   fabrics: fabrics-2.0.0
-   managers: managers-2.0.0
-   systems: systems-2.0.0
-   task: task-2.0.0
-   update: update-2.0.0
-   telemetry: telemetry-1.0.0
+   account-session: account-session-3.0.0
+   aggregation: aggregation-3.0.0
+   api: api-3.0.0
+   events: events-3.0.0
+   fabrics: fabrics-3.0.0
+   managers: managers-3.0.0
+   systems: systems-3.0.0
+   task: task-3.0.0
+   update: update-3.0.0
+   telemetry: telemetry-2.0.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation

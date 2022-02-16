@@ -167,7 +167,7 @@ def perform_checks(skip_opt_param_check=False):
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
 
 	if not skip_opt_param_check:
-		logger.debug("Checking if the local user matches with the configired nodes user")
+		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')
 		for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
 			if cur_user != attrs['username']:
@@ -784,8 +784,14 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['rootCACert'] = read_file(os.path.join(cert_dir, 'rootCA.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
-	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
-	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
+                logger.info("RedisStreams is selected as messageBusType")
+	else:
+                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
+	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == "RedisStreams":
+                logger.info("RedisStreams is selected as messageBusType")
+	else:
+                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 

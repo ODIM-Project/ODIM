@@ -58,9 +58,9 @@ type PowerControl struct {
 
 // PowerLimit redfish model
 type PowerLimit struct {
-	CorrectionInMs int     `json:"CorrectionInMs,omitempty"`
-	LimitException string  `json:"LimitException,omitempty"`
-	LimitInWatts   float64 `json:"LimitInWatts,omitempty"`
+	CorrectionInMs interface{} `json:"CorrectionInMs"`
+	LimitException interface{} `json:"LimitException"`
+	LimitInWatts   interface{} `json:"LimitInWatts"`
 }
 
 // PowerMetrics redfish model

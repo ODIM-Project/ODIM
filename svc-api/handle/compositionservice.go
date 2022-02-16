@@ -208,7 +208,7 @@ func (cs *CompositionServiceRPCs) DeleteResourceBlock(ctx iris.Context) {
 	}
 
 	req := compositionserviceproto.DeleteCompositionResourceRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: sessionToken,
 		URL:          ctx.Request().RequestURI,
 	}
 
@@ -356,7 +356,7 @@ func (cs *CompositionServiceRPCs) DeleteResourceZone(ctx iris.Context) {
 	}
 
 	req := compositionserviceproto.DeleteCompositionResourceRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		SessionToken: sessionToken,
 		URL:          ctx.Request().RequestURI,
 	}
 

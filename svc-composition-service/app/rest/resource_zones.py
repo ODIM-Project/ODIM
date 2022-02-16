@@ -92,6 +92,11 @@ class ResourceZones():
                             block="ResourceBlocks",
                             block_url=data['@odata.id']),
                         str(json.dumps(data)))
+                    pipe.sadd(
+                        "{zone_block}:{zone_url}".format(
+                            zone_block="ResourceZone-ResourceBlock",
+                            zone_url=zone['@odata.id']),
+                        resource_block['@odata.id'])
                     logging.info(
                         "Resource Block linked to Resource Zone is successfully updated"
                     )
@@ -112,10 +117,6 @@ class ResourceZones():
                 "{zones}:{zone_uri}".format(zones="ResourceZones",
                                             zone_uri=zone['@odata.id']),
                 str(json.dumps(zone)))
-            pipe.set(
-                "{zone_block}:{zone_url}".format(
-                    zone_block="ResourceZone-ResourceBlock",
-                    zone_url=zone['@odata.id']), resource_block['@odata.id'])
 
             pipe.execute()
 

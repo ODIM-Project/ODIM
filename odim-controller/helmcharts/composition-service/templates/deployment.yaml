@@ -24,6 +24,13 @@ spec:
             sources:
             - configMap:
                 name: cs-config
+        - name: odimra-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: odimra-config
+            - configMap:
+                name: odimra-platformconfig
         - name: configure-hosts
           configMap:
             name: configure-hosts
@@ -60,6 +67,8 @@ spec:
           env:
             - name: GET_HOSTS_FROM
               value: dns
+            - name: ODIM_NAMESPACE
+              value: {{ .Values.odimra.namespace | quote }}
           image: composition-service:{{ .Values.compositionservice.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
@@ -73,3 +82,5 @@ spec:
               mountPath: /var/log/odimra_logs
             - name: odimra-secret
               mountPath: /etc/odimra_certs
+            - name: odimra-config-vol
+              mountPath: /etc/odimra_config

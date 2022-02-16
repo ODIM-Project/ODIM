@@ -254,7 +254,7 @@ class ResourceBlocks():
                 if system_res:
                     # create resource block and set data into database
                     res = self.create_computer_sys_resource_block(system_res)
-                    logging.info(
+                    logging.debug(
                         "successfully Created Computer system Resource Block. {resp}"
                         .format(resp=res))
                     code = HTTPStatus.CREATED
@@ -310,17 +310,32 @@ class ResourceBlocks():
                 return
 
             if rb_data.get("Links") and rb_data["Links"].get("Zones"):
-                if len(rb_data["Links"]["Zones"]):
-                    logging.error(
-                        "The resource block {rb_id} delete is failed. The resource block is linked with resource zone"
-                        .format(rb_id=rb_data["Id"]))
-                    res = {
-                        "Error":
-                        "The resource block {rb_id} delete is failed because the resource is liked with resource zone"
-                        .format(rb_id=rb_data["Id"])
-                    }
-                    code = HTTPStatus.CONFLICT
-                    return
+                for zone_link in rb_data["Links"]["Zones"]:
+                    if zone_link and zone_link.get("@odata.id"):
+                        pass
+            
+            if rb_data.get("Links") and rb_data["Links"].get("Zones"):
+                for zone_uri in rb_data["Links"]["Zones"]:
+                    if zone_uri.get("@odata.id"):
+                        zone_key = "ResourceZones:{zuri}".format(zuri=zone_uri["@odata.id"])
+                        zone_block_key = "{zone_block}:{zone_uri}".format(zone_block="ResourceZone-ResourceBlock", zone_uri=zone_uri["@odata.id"])
+                        zone_block_link = self.redis.smembers(zone_block_key)
+                        if len(zone_block_link) <= 1:
+                            # if resource block linked zone is less than 1 then we can remove zone
+                            self.redis.delete(zone_block_key,zone_key)
+                        else:
+                            self.redis.srem(zone_block_key, rb_data["@odata.id"])
+                            # delete resource block link in ResourceZones data
+                            zone_data = self.redis.get(zone_key)
+                            if zone_data:
+                                zone_data = json.loads(zone_data)
+                                if zone_data.get("Links") and zone_data["Links"].get("ResourceBlocks"):
+                                    for rb_uri in zone_data["Links"]["ResourceBlocks"]:
+                                        if rb_uri.get("@odata.id") and rb_uri["@odata.id"] == rb_data["@odata.id"]:
+                                            zone_data["Links"]["ResourceBlocks"].remove(rb_uri)
+                                            self.redis.set(zone_key, str(json.dumps(zone_data)))
+                                            break
+
 
             if rb_data["Pool"] == "Active":
                 self.redis.srem("ActivePool", rb_data["@odata.id"])

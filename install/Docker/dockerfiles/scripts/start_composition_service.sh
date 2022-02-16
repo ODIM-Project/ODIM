@@ -42,6 +42,7 @@ start_composition_service()
 {
         registry_address="etcd:2379"
         export CONFIG_FILE_PATH=/etc/composition_service_config/config.json
+        export ODIM_CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json
 
         nohup /bin/svc-composition-service --registry=etcd --registry_address=${registry_address} --server_address=composition-service:45112 >> /var/log/odimra_logs/composition_service.log 2>&1 &
 	PID=$!

@@ -16,6 +16,7 @@ import os
 import json
 
 CONF_FILE = os.getenv("CONFIG_FILE_PATH")
+ODIM_CONF_FILE = os.getenv("ODIM_CONFIG_FILE_PATH")
 
 PLUGIN_CONFIG = {
     "Host": "",
@@ -36,7 +37,8 @@ PLUGIN_CONFIG = {
     "CertificatePath": "",
     "RootCAPath": "",
     "RSAPrivateKeyPath": "",
-    "RSAPublicKeyPath": ""
+    "RSAPublicKeyPath": "",
+    "LocalhostFQDN": ""
 }
 
 CERTIFICATES = {
@@ -72,6 +74,14 @@ def set_configuraion():
         CERTIFICATES["root_ca_certificate"] = _load_credential_from_file(
             PLUGIN_CONFIG["RootCAPath"])
 
+    if not PLUGIN_CONFIG["LocalhostFQDN"] and ODIM_CONF_FILE and os.path.exists(ODIM_CONF_FILE):
+        with open(ODIM_CONF_FILE) as f:
+            try:
+                odim_config_data = json.load(f)
+                if odim_config_data.get("LocalhostFQDN"):
+                    PLUGIN_CONFIG["LocalhostFQDN"] = odim_config_data["LocalhostFQDN"]
+            except Exception:
+                pass
 
 def _load_credential_from_file(filepath):
     with open(filepath, 'rb') as f:

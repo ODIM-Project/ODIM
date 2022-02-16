@@ -2656,6 +2656,7 @@ The following table lists all the configuration parameters required to deploy a 
 | systems                  | Name of the systems service                                  |
 | tasks                    | Name of the tasks service                                    |
 | update                   | Name of the update service                                   |
+| telemetry                | Name of the telemetry service                                |
 | kafka                    | Name of the Kafka service                                    |
 | zookeeper                | Name of the zookeeper service                                |
 | redis                    | Name of the Redis service                                    |

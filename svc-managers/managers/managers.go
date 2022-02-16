@@ -482,7 +482,7 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-    uri = strings.Replace(req.URL, "Managers/"+req.ManagerID+"/Remote", "", -1)
+    uri := strings.Replace(req.URL, "Managers/"+req.ManagerID+"/Remote", "", -1)
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
 	if err != nil {
 		errorMessage := "unable to get resource details from device: " + err.Error()

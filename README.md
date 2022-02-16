@@ -2665,7 +2665,7 @@ The following table lists all the configuration parameters required to deploy a 
 | odimra                   | Name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services |
 | thirdparty               | Name to be used for scaling up all the third-party ConfigMaps and secrets |
 
-<blockquote>NOTE: You can scale up only the account-session, aggregation, api, events, fabrics, managers, systems, tasks, update, and all services.</blockquote>
+<blockquote>NOTE: You can scale up only the account-session, aggregation, api, events, fabrics, managers, systems, tasks, update, telemetry and all services.</blockquote>
 
 ## Using your own CA certificates and keys
 

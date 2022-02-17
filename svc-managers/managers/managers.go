@@ -18,12 +18,6 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
-	"time"
-
-	log "github.com/sirupsen/logrus"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -33,7 +27,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -450,7 +448,6 @@ func fillResponse(body []byte, managerData map[string]interface{}) response.RPC 
 	if _, ok := respData["DateTime"]; !ok {
 		respData["DateTime"] = time.Now().UTC().String()
 	}
-
 	if _, ok := respData["DateTimeLocalOffset"]; !ok {
 		respData["DateTimeLocalOffset"] = "+00:00"
 	}

@@ -66,7 +66,7 @@ type Manager struct {
 	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
 	Description             string             `json:"Description,omitempty"`
-	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset",omitempty"`
+	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset,omitempty"`
 }
 
 // Status struct is to define the status of the manager

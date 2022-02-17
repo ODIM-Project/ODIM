@@ -57,10 +57,9 @@ configure_kubespray()
 	k8s_node_defaults_file=${KUBESPRAY_SRC_PATH}/roles/kubernetes/node/defaults/main.yml
 	sed -i "s/kubelet_status_update_frequency:.*/kubelet_status_update_frequency: 3s/" ${k8s_node_defaults_file}
 
-	k8s_master_defaults_file=${KUBESPRAY_SRC_PATH}/roles/kubernetes/master/defaults/main/main.yml
+	k8s_master_defaults_file=${KUBESPRAY_SRC_PATH}/roles/kubernetes/control-plane/defaults/main/main.yml
 	sed -i "s/kube_controller_node_monitor_period:.*/kube_controller_node_monitor_period: 2s/;\
 	s/kube_controller_node_monitor_grace_period:.*/kube_controller_node_monitor_grace_period: 15s/;\
-	s/kube_controller_pod_eviction_timeout:.*/kube_controller_pod_eviction_timeout: 5s/;\
 	s/kube_kubeadm_apiserver_extra_args:.*/kube_kubeadm_apiserver_extra_args: {default-not-ready-toleration-seconds: '5', default-unreachable-toleration-seconds: '5'}/" ${k8s_master_defaults_file}
 }
 

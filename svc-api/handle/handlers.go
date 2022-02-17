@@ -849,7 +849,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 			regFileID = strArray[len(strArray)-1]
 		}
 	}
-
+	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -943,6 +943,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 			regFileID = strArray[len(strArray)-1]
 		}
 	}
+	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)

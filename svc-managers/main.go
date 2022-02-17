@@ -95,7 +95,6 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		State:           "Enabled",
 		Health:          "OK",
 		Description:     "Odimra Manager",
-
 		LogServices: &dmtf.Link{
 			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
 		},

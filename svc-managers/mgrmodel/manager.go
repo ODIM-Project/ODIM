@@ -136,6 +136,13 @@ type VirtualMediaInsert struct {
 	UserName             string `json:"UserName,omitempty"`
 }
 
+// VirtualMediaInsert struct is to store the insert virtual media request payload
+type CreateBMCAccount struct {
+	UserName                string `json:"UserName" validate:"required"`
+	Password             string   `json:"Password" validate:"required"`
+	RoleId       string   `json:"RoleId" validate:"required"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)

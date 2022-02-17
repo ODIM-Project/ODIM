@@ -730,7 +730,7 @@ func TestDeletePluginData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DeletePluginData(tt.args.key); !reflect.DeepEqual(got, tt.want) {
+			if got := DeletePluginData(tt.args.key, "Plugin"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeletePluginData() = %v, want %v", got, tt.want)
 			}
 		})
@@ -765,7 +765,7 @@ func TestDeleteManagersData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DeleteManagersData(tt.args.key); !reflect.DeepEqual(got, tt.want) {
+			if got := DeleteManagersData(tt.args.key, "Managers"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeleteManagersData() = %v, want %v", got, tt.want)
 			}
 		})

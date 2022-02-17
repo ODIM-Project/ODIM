@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -122,7 +123,10 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if _, ok := managerData["Description"]; !ok {
 			managerData["Description"] = "BMC Manager"
 		}
-
+		//adding PowerState
+		if _, ok := managerData["PowerState"]; !ok {
+			managerData["PowerState"] = "On"
+		}
 		if managerType != common.ManagerTypeService && managerType != "" {
 			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
@@ -191,8 +195,12 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		Status: &mgrmodel.Status{
 			State: mgrData.State,
 		},
-		Description: mgrData.Description,
-		LogServices: mgrData.LogServices,
+		Description:         mgrData.Description,
+		LogServices:         mgrData.LogServices,
+		Model:               "ODIMRA" + " " + mgrData.FirmwareVersion,
+		DateTime:            time.Now().UTC().String(),
+		DateTimeLocalOffset: "+00:00",
+		PowerState:          "On",
 	}, nil
 }
 
@@ -423,7 +431,6 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 
 	return fillResponse(body, managerData)
 
-
 }
 
 func fillResponse(body []byte, managerData map[string]interface{}) response.RPC {
@@ -439,6 +446,16 @@ func fillResponse(body []byte, managerData map[string]interface{}) response.RPC 
 		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
+	}
+	if _, ok := respData["DateTime"]; !ok {
+		respData["DateTime"] = time.Now().UTC().String()
+	}
+
+	if _, ok := respData["DateTimeLocalOffset"]; !ok {
+		respData["DateTimeLocalOffset"] = "+00:00"
+	}
+	if _, ok := respData["SerialConsole"]; !ok {
+		respData["SerialConsole"] = dmtf.SerialConsole{}
 	}
 	respData["Links"] = managerData["Links"]
 	resp.Body = respData

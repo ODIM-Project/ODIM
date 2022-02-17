@@ -93,6 +93,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		ID:              config.Data.RootServiceUUID,
 		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
+		Health:          "OK",
 		Description:     "Odimra Manager",
 
 		LogServices: &dmtf.Link{

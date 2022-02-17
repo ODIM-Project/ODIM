@@ -26,7 +26,6 @@ import (
 
 // Manager struct for manager deta
 type Manager struct {
-
 	OdataContext            string             `json:"@odata.context"`
 	Etag                    string             `json:"@odata.etag,omitempty"`
 	OdataID                 string             `json:"@odata.id"`
@@ -40,7 +39,7 @@ type Manager struct {
 	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
 	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
 	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
-	LogServices             *dmtf.Link           `json:"LogServices,omitempty"`
+	LogServices             *dmtf.Link         `json:"LogServices,omitempty"`
 	NetworkProtocol         *OdataID           `json:"NetworkProtocol,omitempty"`
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
@@ -66,13 +65,14 @@ type Manager struct {
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
 	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
-  Description             string              `json:"Description,omitempty"`
-
+	Description             string             `json:"Description,omitempty"`
+	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset",omitempty"`
 }
 
 // Status struct is to define the status of the manager
 type Status struct {
-	State string `json:"State"`
+	State  string `json:"State"`
+	Health string `json:"Health"`
 }
 
 // OdataID is link
@@ -123,6 +123,7 @@ type RAManager struct {
 	State           string     `json:"State"`
 	Description     string     `json:"Description"`
 	LogServices     *dmtf.Link `json:"LogServices"`
+	Health          string     `json:"Health"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

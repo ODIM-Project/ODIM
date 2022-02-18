@@ -55,7 +55,7 @@ type Chassis struct {
 	Status                  *Status           `json:"Status,omitempty"`
 	Thermal                 *Link             `json:"Thermal,omitempty"`
 	Actions                 *OemActions       `json:"Actions,omitempty"`
-	Certificates            Certificates      `json:"Certificates"`
+	Certificates            *Certificates     `json:"Certificates,omitempty"`
 	Controls                *Link             `json:"Controls,omitempty"`
 	Drives                  *Link             `json:"Drives,omitempty"`
 	EnvironmentMetrics      *Link             `json:"EnvironmentMetrics,omitempty"`

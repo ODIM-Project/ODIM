@@ -28,7 +28,7 @@ type Chassis struct {
 	ID                      string            `json:"Id"`
 	Description             string            `json:"Description,omitempty"`
 	Name                    string            `json:"Name"`
-	AssetTag                string            `json:"AssetTag,omitempty"`
+	AssetTag                interface{}       `json:"AssetTag"` // omitempty is not added to make value as null if it's not present
 	ChassisType             string            `json:"ChassisType"`
 	DepthMm                 float32           `json:"DepthMm,omitempty"`
 	EnvironmentalClass      string            `json:"EnvironmentalClass,omitempty"`
@@ -36,7 +36,7 @@ type Chassis struct {
 	IndicatorLED            string            `json:"IndicatorLED,omitempty"`
 	Manufacturer            string            `json:"Manufacturer,omitempty"`
 	Model                   string            `json:"Model,omitempty"`
-	PartNumber              string            `json:"PartNumber,omitempty"`
+	PartNumber              interface{}       `json:"PartNumber"` // omitempty is not added to make value as null if it's not present
 	PowerState              string            `json:"PowerState,omitempty"`
 	SerialNumber            string            `json:"SerialNumber,omitempty"`
 	SKU                     string            `json:"SKU,omitempty"`

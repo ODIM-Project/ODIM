@@ -124,6 +124,8 @@ type RAManager struct {
 	Description     string     `json:"Description"`
 	LogServices     *dmtf.Link `json:"LogServices"`
 	Health          string     `json:"Health"`
+	Model           string     `json:"Model"`
+	PowerState      string     `json:"PowerState"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

@@ -98,6 +98,8 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		LogServices: &dmtf.Link{
 			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
 		},
+		Model:      "ODIMRA" + " " + config.Data.FirmwareVersion,
+		PowerState: "On",
 	}
 	managerInterface.AddManagertoDBInterface(mgr)
 	data := dmtf.Collection{

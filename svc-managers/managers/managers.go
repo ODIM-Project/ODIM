@@ -191,14 +191,15 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		UUID:            mgrData.UUID,
 		FirmwareVersion: mgrData.FirmwareVersion,
 		Status: &mgrmodel.Status{
-			State: mgrData.State,
+			State:  mgrData.State,
+			Health: mgrData.Health,
 		},
 		Description:         mgrData.Description,
 		LogServices:         mgrData.LogServices,
-		Model:               "ODIMRA" + " " + mgrData.FirmwareVersion,
+		Model:               mgrData.Model,
 		DateTime:            time.Now().UTC().String(),
 		DateTimeLocalOffset: "+00:00",
-		PowerState:          "On",
+		PowerState:          mgrData.PowerState,
 	}, nil
 }
 
@@ -445,12 +446,10 @@ func fillResponse(body []byte, managerData map[string]interface{}) response.RPC 
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	if _, ok := respData["DateTime"]; !ok {
-		respData["DateTime"] = time.Now().UTC().String()
-	}
-	if _, ok := respData["DateTimeLocalOffset"]; !ok {
-		respData["DateTimeLocalOffset"] = "+00:00"
-	}
+	//To populate current Datetime and DateTimeLocalOffset for Plugin manager
+	respData["DateTime"] = time.Now().UTC().String()
+	respData["DateTimeLocalOffset"] = "+00:00"
+
 	if _, ok := respData["SerialConsole"]; !ok {
 		respData["SerialConsole"] = dmtf.SerialConsole{}
 	}

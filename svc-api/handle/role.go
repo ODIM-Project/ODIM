@@ -149,7 +149,7 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	if req.Id == "Administrator" {
+	if req.Id == common.RoleAdmin{
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
 	} else {
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")

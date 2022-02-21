@@ -726,7 +726,7 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	rsp.StatusCode = http.StatusOK
 	rsp.StatusMessage = response.Success
 	commonResponse := response.Response{
-		OdataType:    "#TaskService.v1_1_4.TaskService",
+		OdataType:    "#TaskService.v1_2_0.TaskService",
 		ID:           "TaskService",
 		Name:         "TaskService",
 		Description:  "TaskService",

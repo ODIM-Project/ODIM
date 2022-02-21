@@ -93,11 +93,13 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		ID:              config.Data.RootServiceUUID,
 		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
+		Health:          "OK",
 		Description:     "Odimra Manager",
-
 		LogServices: &dmtf.Link{
 			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
 		},
+		Model:      "ODIMRA" + " " + config.Data.FirmwareVersion,
+		PowerState: "On",
 	}
 	managerInterface.AddManagertoDBInterface(mgr)
 	data := dmtf.Collection{

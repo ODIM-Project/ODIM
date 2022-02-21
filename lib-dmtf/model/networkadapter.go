@@ -21,7 +21,7 @@ type NetworkAdapter struct {
 	ODataType              string        `json:"@odata.type"`
 	ID                     string        `json:"Id"`
 	Name                   string        `json:"Name"`
-	Actions                *OemActions   `json:"Actions,omitempty"`
+	Actions                interface{}   `json:"Actions,omitempty"`
 	Assembly               *Link         `json:"Assembly,omitempty"`
 	Certificates           *Link         `json:"Certificates,omitempty"`
 	Controllers            []Controllers `json:"Controllers,omitempty"`

@@ -187,12 +187,16 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 	if serverErr != nil {
 		return mgr, fmt.Errorf("unable to retrieve server list information: %v", serverErr)
 	}
-	var chassisLink, serverLink []*mgrmodel.Link
-	for _, key := range chassisList {
-		chassisLink = append(chassisLink, &mgrmodel.Link{Oid: key})
+	var chassisLink, serverLink []*dmtf.Link
+	if len(chassisList) > 0 {
+		for _, key := range chassisList {
+			chassisLink = append(chassisLink, &dmtf.Link{Oid: key})
+		}
 	}
-	for _, key := range serverList {
-		serverLink = append(serverLink, &mgrmodel.Link{Oid: key})
+	if len(serverList) > 0 {
+		for _, key := range serverList {
+			serverLink = append(serverLink, &dmtf.Link{Oid: key})
+		}
 	}
 
 	return mgrmodel.Manager{

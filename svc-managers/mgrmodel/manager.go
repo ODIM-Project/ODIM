@@ -66,11 +66,13 @@ type Manager struct {
 	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
 	Description             string             `json:"Description,omitempty"`
+	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset,omitempty"`
 }
 
 // Status struct is to define the status of the manager
 type Status struct {
-	State string `json:"State"`
+	State  string `json:"State"`
+	Health string `json:"Health"`
 }
 
 // OdataID is link
@@ -122,6 +124,9 @@ type RAManager struct {
 	Description     string     `json:"Description"`
 	LogServices     *dmtf.Link `json:"LogServices"`
 	Links           *Links     `json:"Links,omitempty"`
+	Health          string     `json:"Health"`
+	Model           string     `json:"Model"`
+	PowerState      string     `json:"PowerState"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

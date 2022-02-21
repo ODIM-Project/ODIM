@@ -20,8 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
+	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -32,6 +31,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -122,7 +122,10 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if _, ok := managerData["Description"]; !ok {
 			managerData["Description"] = "BMC Manager"
 		}
-
+		//adding PowerState
+		if _, ok := managerData["PowerState"]; !ok {
+			managerData["PowerState"] = "On"
+		}
 		if managerType != common.ManagerTypeService && managerType != "" {
 			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
@@ -209,14 +212,19 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		UUID:            mgrData.UUID,
 		FirmwareVersion: mgrData.FirmwareVersion,
 		Status: &mgrmodel.Status{
-			State: mgrData.State,
+			State:  mgrData.State,
+			Health: mgrData.Health,
 		},
 		Links: &mgrmodel.Links{
 			ManagerForChassis: chassisLink,
 			ManagerForServers: serverLink,
 		},
-		Description: mgrData.Description,
-		LogServices: mgrData.LogServices,
+		Description:         mgrData.Description,
+		LogServices:         mgrData.LogServices,
+		Model:               mgrData.Model,
+		DateTime:            time.Now().UTC().String(),
+		DateTimeLocalOffset: "+00:00",
+		PowerState:          mgrData.PowerState,
 	}, nil
 }
 
@@ -462,6 +470,13 @@ func fillResponse(body []byte, managerData map[string]interface{}) response.RPC 
 		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
+	}
+	//To populate current Datetime and DateTimeLocalOffset for Plugin manager
+	respData["DateTime"] = time.Now().UTC().String()
+	respData["DateTimeLocalOffset"] = "+00:00"
+
+	if _, ok := respData["SerialConsole"]; !ok {
+		respData["SerialConsole"] = dmtf.SerialConsole{}
 	}
 	respData["Links"] = managerData["Links"]
 	resp.Body = respData

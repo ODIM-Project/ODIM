@@ -24,5 +24,5 @@ type UserRole struct {
 	response.Response
 	IsPredefined       bool     `json:"IsPredefined"`
 	AssignedPrivileges []string `json:"AssignedPrivileges"`
-	OEMPrivileges      []string `json:"OemPrivileges"`
+	OEMPrivileges      []string `json:"OemPrivileges,omitempty"`
 }

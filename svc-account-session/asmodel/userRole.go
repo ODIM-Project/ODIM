@@ -27,7 +27,7 @@ type Role struct {
 	ID                 string   `json:"RoleId"`
 	IsPredefined       bool     `json:"IsPredefined"`
 	AssignedPrivileges []string `json:"AssignedPrivileges"`
-	OEMPrivileges      []string `json:"OemPrivileges,omitempty"`
+	OEMPrivileges      []string `json:"OemPrivileges"`
 }
 
 // Create method is to insert the role details into database

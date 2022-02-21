@@ -179,6 +179,26 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
+	chassisList, chassisErr := mgrmodel.GetAllKeysFromTable("Chassis")
+	if chassisErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve chassis list information: %v", chassisErr)
+	}
+	serverList, serverErr := mgrmodel.GetAllKeysFromTable("ComputerSystem")
+	if serverErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve server list information: %v", serverErr)
+	}
+	var chassisLink, serverLink []*dmtf.Link
+	if len(chassisList) > 0 {
+		for _, key := range chassisList {
+			chassisLink = append(chassisLink, &dmtf.Link{Oid: key})
+		}
+	}
+	if len(serverList) > 0 {
+		for _, key := range serverList {
+			serverLink = append(serverLink, &dmtf.Link{Oid: key})
+		}
+	}
+
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
@@ -190,6 +210,10 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		FirmwareVersion: mgrData.FirmwareVersion,
 		Status: &mgrmodel.Status{
 			State: mgrData.State,
+		},
+		Links: &mgrmodel.Links{
+			ManagerForChassis: chassisLink,
+			ManagerForServers: serverLink,
 		},
 		Description: mgrData.Description,
 		LogServices: mgrData.LogServices,
@@ -422,7 +446,6 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	}
 
 	return fillResponse(body, managerData)
-
 
 }
 

@@ -26,7 +26,6 @@ import (
 
 // Manager struct for manager deta
 type Manager struct {
-
 	OdataContext            string             `json:"@odata.context"`
 	Etag                    string             `json:"@odata.etag,omitempty"`
 	OdataID                 string             `json:"@odata.id"`
@@ -40,7 +39,7 @@ type Manager struct {
 	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
 	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
 	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
-	LogServices             *dmtf.Link           `json:"LogServices,omitempty"`
+	LogServices             *dmtf.Link         `json:"LogServices,omitempty"`
 	NetworkProtocol         *OdataID           `json:"NetworkProtocol,omitempty"`
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
@@ -66,8 +65,7 @@ type Manager struct {
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
 	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
-  Description             string              `json:"Description,omitempty"`
-
+	Description             string             `json:"Description,omitempty"`
 }
 
 // Status struct is to define the status of the manager
@@ -96,11 +94,11 @@ type GraphicalConsole struct {
 
 // Links to other Resources that are related to this Resource.
 type Links struct {
-	ActiveSoftwareImage OdataID   `json:"ActiveSoftwareImage"`
-	ManagerForChassis   []OdataID `json:"ManagerForChassis"`
-	ManagerForServers   []OdataID `json:"ManagerForServers"`
-	ManagerForSwitches  []OdataID `json:"ManagerForSwitches"`
-	ManagerInChassis    OdataID   `json:"ManagerInChassis"`
+	ActiveSoftwareImage *dmtf.Link   `json:"ActiveSoftwareImage,omitempty"`
+	ManagerForChassis   []*dmtf.Link `json:"ManagerForChassis,omitempty"`
+	ManagerForServers   []*dmtf.Link `json:"ManagerForServers,omitempty"`
+	ManagerForSwitches  []*dmtf.Link `json:"ManagerForSwitches,omitempty"`
+	ManagerInChassis    *dmtf.Link   `json:"ManagerInChassis,omitempty"`
 }
 
 // Actions struct for Actions to perform
@@ -123,6 +121,7 @@ type RAManager struct {
 	State           string     `json:"State"`
 	Description     string     `json:"Description"`
 	LogServices     *dmtf.Link `json:"LogServices"`
+	Links           *Links     `json:"Links,omitempty"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

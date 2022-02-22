@@ -18,13 +18,17 @@ from config.config import PLUGIN_CONFIG
 import logging
 
 
+# Default Redis-on-disk
 class RedisClient():
-    def __init__(self):
+    def __init__(self, redis_address=None):
 
         self.host = None
         self.port = None
-        if ":" in PLUGIN_CONFIG["RedisAddress"]:
-            self.host, self.port = PLUGIN_CONFIG["RedisAddress"].split(":")
+        if redis_address and ":" in redis_address:
+            self.host, self.port = redis_address.split(":")
+        elif ":" in PLUGIN_CONFIG["RedisOnDiskAddress"]:
+            self.host, self.port = PLUGIN_CONFIG["RedisOnDiskAddress"].split(
+                ":")
         self.connection = None  # database
         self._db_connection()
 
@@ -157,3 +161,6 @@ class RedisClient():
                     e=err))
         finally:
             return pipe
+
+
+RedisDb = RedisClient

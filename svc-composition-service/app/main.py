@@ -30,8 +30,10 @@ if __name__ == "__main__":
     collect_cl_args()
 
     # Initialize resource Block
+    """
     rb = ResourceBlocks()
     rb.initialize()
+    """
 
     # create subscription
     EventSubscription()

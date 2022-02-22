@@ -14,9 +14,11 @@
 
 import logging
 import json
-from db.persistant import RedisClient
+
+from db.persistant import RedisClient, RedisDb
 from utilities.client import Client
 from config import constants
+from config.config import PLUGIN_CONFIG
 from rest.resource_zones import ResourceZones
 import copy
 import uuid
@@ -28,10 +30,13 @@ from http import HTTPStatus
 
 class ResourceBlocks():
     def __init__(self):
-        self.redis = RedisClient()
+        self.redis = RedisClient()  # redis-ondisk
+        self.redis_inmemory = RedisDb(
+            PLUGIN_CONFIG["RedisInMemoryAddress"])  # redis-inmemory
         self.client = Client()
         self.resourcezone = ResourceZones()
 
+    """
     def initialize(self):
         logging.info("Initialize Resource Blocks")
 
@@ -46,34 +51,35 @@ class ResourceBlocks():
                     if sys_uri:
                         sys_urls.append(sys_uri)
             # get systems collection data
-            response = self.client.process_get_request(constants.SYSTEMS_URL)
-            if response and response.get("Members"):
-                for member in response["Members"]:
-                    if member.get("@odata.id"):
-                        # total_systems.append(member["@odata.id"])
-                        system_uri = member["@odata.id"]
-                        if system_uri in sys_urls:
-                            continue
-                        # get systems data from systems
-                        system_res = self.client.process_get_request(
-                            system_uri)
-                        if system_res:
-                            # create resource block and set data into database
-                            resp = self.create_computer_sys_resource_block(
-                                system_res)
-                            logging.info(
-                                "successfully Created Computer system Resource Block. {resp}"
-                                .format(resp=resp))
+            system_keys = self.redis_inmemory.keys("ComputerSystem:*")
+            for system_key in system_keys:
+                system_uri = system_key.replace("ComputerSystem:", "")
+                if system_uri in sys_urls:
+                    continue
+                # get systems data from database
+                system_res = self.redis_inmemory.get(system_key)
+                if system_res:
+                    system_res = json.loads(system_res)
+                    # create resource block and set data into database
+                    self.create_computer_sys_resource_block(system_res)
+                    logging.info(
+                        "successfully Created Computer system Resource Block.")
+
         except Exception as err:
             logging.error(
                 "unable to initialize the Resource Block. Error: {e}".format(
                     e=err))
+    """
 
     def create_computer_sys_resource_block(self, system_data=None):
         res = {}
         if system_data is None:
-            return res
+            return
+        pipe = self.redis.pipeline()
         try:
+            if isinstance(system_data, str):
+                system_data = json.loads(system_data)
+
             logging.info("Initialize for creation of new Resource Block")
             data = copy.deepcopy(constants.RESOURCE_BLOCK_TEMP)
 
@@ -89,26 +95,50 @@ class ResourceBlocks():
 
             data['ComputerSystems'] = [{'@odata.id': system_data['@odata.id']}]
 
-            self.redis.set(
+            pipe.set(
                 "{block}:{block_url}".format(block="ResourceBlocks",
                                              block_url=data['@odata.id']),
                 str(json.dumps(data)))
 
-            self.redis.set(
+            pipe.set(
                 "{block_system}:{block_url}".format(
                     block_system="ResourceBlocks-ComputerSystem",
                     block_url=data['@odata.id']), system_data['@odata.id'])
 
-            self.redis.sadd("FreePool", data['@odata.id'])
+            pipe.sadd("FreePool", data['@odata.id'])
+
+            if system_data.get("Links"):
+                if system_data["Links"].get("ResourceBlocks"):
+                    system_data["Links"]["ResourceBlocks"].append(
+                        {"@odata.id": data['@odata.id']})
+                else:
+                    system_data["Links"]["ResourceBlocks"] = [{
+                        "@odata.id":
+                        data['@odata.id']
+                    }]
+            else:
+                system_data["Links"] = {
+                    "ResourceBlocks": [{
+                        "@odata.id": data['@odata.id']
+                    }]
+                }
+
+            pipe.execute()
+            self.redis_inmemory.set(
+                "ComputerSystem:{sys_uri}".format(
+                    sys_uri=system_data["@odata.id"]),
+                json.dumps(json.dumps(system_data)))
 
             res = data
             logging.debug(
-                "New ResourceBlock data: {rb_data}".format(rb_data=data))
+                "Successfully created Computer system resource Block. Data: {rb_data}"
+                .format(rb_data=data))
         except Exception as err:
             logging.error(
                 "Unable to create Computer system Resource Block. Error: {e}".
                 format(e=err))
         finally:
+            pipe.reset()
             return res
 
     def get_resource_block_collection(self, url):
@@ -126,17 +156,7 @@ class ResourceBlocks():
                 "Name": "Resource Block Collection",
                 "Members@odata.count": 0,
                 "Members": [],
-                "@odata.id": url,
-                "Oem": {
-                    "Ami": {
-                        "Actions": {
-                            "#ResourceBlock.Initialize": {
-                                "target":
-                                "/redfish/v1/CompositionService/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize"
-                            }
-                        }
-                    }
-                }
+                "@odata.id": url
             }
 
             rb_keys = self.redis.keys("ResourceBlocks:*")
@@ -196,11 +216,8 @@ class ResourceBlocks():
         res = {}
         code = HTTPStatus.OK
         try:
-            logging.info("Initialising the creation of Resource Block")
+            logging.info("Initializing the creation of Resource Block")
             if request.get("ResourceBlockType") is None:
-                logging.error(
-                    "The property 'ResourceBlockType' is missing from post body"
-                )
                 res = {
                     "Error":
                     "The property 'ResourceBlockType' is missing from post body"
@@ -218,9 +235,6 @@ class ResourceBlocks():
                         if sys_uri:
                             sys_urls.append(sys_uri)
                 if request.get("ComputerSystems") is None:
-                    logging.error(
-                        "The property 'ComputerSystems' is missing from post body"
-                    )
                     res = {
                         "Error":
                         "The property 'ComputerSystems' is missing from post body"
@@ -228,19 +242,18 @@ class ResourceBlocks():
                     code = HTTPStatus.BAD_REQUEST
                     return
                 elif not len(request["ComputerSystems"]):
-                    logging.error("The property 'ComputerSystems' is empty")
                     res = {"Error": "The property 'ComputerSystems' is empty"}
                     code = HTTPStatus.BAD_REQUEST
                     return
                 elif len(request["ComputerSystems"]) > 1:
-                    logging.debug(
-                        "Request has more than one computer system, Resource Block will be created with only one comuter system"
-                    )
+                    res = {
+                        "Error":
+                        "Request body has more than one computer system, Resource Block will be created with only one computer system"
+                    }
+                    code = HTTPStatus.BAD_REQUEST
+                    return
 
                 if request["ComputerSystems"][0]["@odata.id"] in sys_urls:
-                    logging.error(
-                        "The ComputerSystem {sys} is aready exist".format(
-                            sys=request["ComputerSystems"][0]["@odata.id"]))
                     res = {
                         "Error":
                         "The ComputerSystem {sys} is aready exist".format(
@@ -249,19 +262,18 @@ class ResourceBlocks():
                     code = HTTPStatus.BAD_REQUEST
                     return
 
-                system_res = self.client.process_get_request(
-                    request["ComputerSystems"][0]["@odata.id"])
+                system_res = self.redis_inmemory.get(
+                    "ComputerSystem:{sys_uri}".format(
+                        sys_uri=request["ComputerSystems"][0]["@odata.id"]))
                 if system_res:
+                    system_res = json.loads(system_res)
                     # create resource block and set data into database
                     res = self.create_computer_sys_resource_block(system_res)
-                    logging.debug(
-                        "successfully Created Computer system Resource Block. {resp}"
-                        .format(resp=res))
+                    logging.info(
+                        "successfully Created Computer system Resource Block.")
                     code = HTTPStatus.CREATED
                     return
                 else:
-                    logging.error("The System {uri} is not found".format(
-                        uri=request["ComputerSystems"][0]["@odata.id"]))
                     res = {
                         "Error":
                         "The System {uri} is not found".format(
@@ -285,6 +297,8 @@ class ResourceBlocks():
         code = HTTPStatus.OK
         if url is None:
             return res, HTTPStatus.NOT_FOUND
+        pipe = self.redis.pipeline()
+        inmemory_pipe = self.redis_inmemory.pipeline()
 
         try:
             data = self.redis.get(
@@ -295,58 +309,87 @@ class ResourceBlocks():
                 return
             rb_data = json.loads(data)
 
-            if rb_data["CompositionStatus"]["CompositionState"] == "Composed":
-                logging.error(
-                    "The resource block {rb_id} delete is failed. The resource block is comoposed with system {sys_id}"
-                    .format(rb_id=rb_data["Id"],
-                            sys_id=rb_data["Links"]["ComputerSystems"][0]
-                            ["@odata.id"]))
+            if rb_data["CompositionStatus"][
+                    "CompositionState"] != "Unused" and rb_data[""] != "Free":
                 res = {
                     "Error":
-                    "The resouce block {rb_id} delete is failed because the resource is in 'composed' state"
+                    "The resouce block {rb_id} deletion is failed because the resource block is in 'active/composed' state"
                     .format(rb_id=rb_data["Id"])
                 }
                 code = HTTPStatus.CONFLICT
                 return
 
-            if rb_data.get("Links") and rb_data["Links"].get("Zones"):
-                for zone_link in rb_data["Links"]["Zones"]:
-                    if zone_link and zone_link.get("@odata.id"):
-                        pass
-            
+            system_link = self.redis.get("{rb_cs}:{block_url}".format(
+                rb_cs="ResourceBlocks-ComputerSystem", block_url=url))
+
+            if system_link:
+                system_key = "ComputerSystem:{sys_uri}".format(
+                    sys_uri=system_link)
+                system_res = self.redis_inmemory.get(system_key)
+                if system_res:
+                    system_res = json.loads(system_res)
+                    if isinstance(system_res, str):
+                        system_res = json.loads(system_res)
+                    if system_res.get("Links") and system_res["Links"].get(
+                            "ResourceBlocks"):
+                        for rb in system_res["Links"]["ResourceBlocks"]:
+                            if rb.get("@odata.id") == url:
+                                system_res["Links"]["ResourceBlocks"].remove(
+                                    rb)
+                                if not system_res["Links"]["ResourceBlocks"]:
+                                    del system_res["Links"]["ResourceBlocks"]
+                                inmemory_pipe.set(
+                                    system_key,
+                                    json.dumps(json.dumps(system_res)))
+                                break
+
             if rb_data.get("Links") and rb_data["Links"].get("Zones"):
                 for zone_uri in rb_data["Links"]["Zones"]:
                     if zone_uri.get("@odata.id"):
-                        zone_key = "ResourceZones:{zuri}".format(zuri=zone_uri["@odata.id"])
-                        zone_block_key = "{zone_block}:{zone_uri}".format(zone_block="ResourceZone-ResourceBlock", zone_uri=zone_uri["@odata.id"])
+                        zone_key = "ResourceZones:{zuri}".format(
+                            zuri=zone_uri["@odata.id"])
+                        zone_block_key = "{zone_block}:{zone_uri}".format(
+                            zone_block="ResourceZone-ResourceBlock",
+                            zone_uri=zone_uri["@odata.id"])
                         zone_block_link = self.redis.smembers(zone_block_key)
                         if len(zone_block_link) <= 1:
                             # if resource block linked zone is less than 1 then we can remove zone
-                            self.redis.delete(zone_block_key,zone_key)
+                            pipe.delete(zone_block_key, zone_key)
                         else:
-                            self.redis.srem(zone_block_key, rb_data["@odata.id"])
+                            pipe.srem(zone_block_key, rb_data["@odata.id"])
                             # delete resource block link in ResourceZones data
                             zone_data = self.redis.get(zone_key)
                             if zone_data:
                                 zone_data = json.loads(zone_data)
-                                if zone_data.get("Links") and zone_data["Links"].get("ResourceBlocks"):
-                                    for rb_uri in zone_data["Links"]["ResourceBlocks"]:
-                                        if rb_uri.get("@odata.id") and rb_uri["@odata.id"] == rb_data["@odata.id"]:
-                                            zone_data["Links"]["ResourceBlocks"].remove(rb_uri)
-                                            self.redis.set(zone_key, str(json.dumps(zone_data)))
+                                if zone_data.get("Links") and zone_data[
+                                        "Links"].get("ResourceBlocks"):
+                                    for rb_uri in zone_data["Links"][
+                                            "ResourceBlocks"]:
+                                        if rb_uri.get("@odata.id") and rb_uri[
+                                                "@odata.id"] == rb_data[
+                                                    "@odata.id"]:
+                                            zone_data["Links"][
+                                                "ResourceBlocks"].remove(
+                                                    rb_uri)
+                                            if not zone_data["Links"][
+                                                    "ResourceBlocks"]:
+                                                del zone_data["Links"][
+                                                    "ResourceBlocks"]
+                                            pipe.set(
+                                                zone_key,
+                                                str(json.dumps(zone_data)))
                                             break
 
-
-            if rb_data["Pool"] == "Active":
-                self.redis.srem("ActivePool", rb_data["@odata.id"])
             elif rb_data["Pool"] == "Free":
-                self.redis.srem("FreePool", rb_data["@odata.id"])
+                pipe.srem("FreePool", rb_data["@odata.id"])
 
-            self.redis.delete("ResourceBlocks:{block_uri}".format(
+            pipe.delete("ResourceBlocks:{block_uri}".format(
                 block_uri=rb_data["@odata.id"]))
-            self.redis.delete(
-                "ResourceBlocks-ComputerSystem:{block_uri}".format(
-                    block_uri=rb_data["@odata.id"]))
+            pipe.delete("ResourceBlocks-ComputerSystem:{block_uri}".format(
+                block_uri=rb_data["@odata.id"]))
+
+            pipe.execute()
+            inmemory_pipe.execute()
             logging.info(
                 "The Resource Block {rb_uri} is deleted successfully".format(
                     rb_uri=rb_data["@odata.id"]))
@@ -361,4 +404,6 @@ class ResourceBlocks():
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
+            pipe.reset()
+            inmemory_pipe.reset()
             return res, code

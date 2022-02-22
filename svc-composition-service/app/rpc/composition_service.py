@@ -145,11 +145,13 @@ class CompositionServiceRpc(pb2_grpc.CompositionServicer):
                     headers["Allow"] = '"GET", "POST"'
                     headers["Location"] = response["@odata.id"]
                     headers["Content-type"] = "application/json; charset=utf-8"
+                """
                 # Initialize all Resource Blocks
                 elif segments[-1] == "ResourceBlock.Initialize":
                     self.resourceblock.initialize()
                     code = HTTPStatus.NO_CONTENT
                     headers["Allow"] = '"POST"'
+                """
         else:
             response = auth_resp["status_message"]
             code = auth_resp["status_code"]

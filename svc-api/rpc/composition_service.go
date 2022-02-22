@@ -217,18 +217,3 @@ func GetCompositionReservations(req compositionserviceproto.GetCompositionResour
 	}
 	return resp, nil
 }
-
-// CreateAllResourceBlocks will do the rpc call to Create all Resource Blocks
-func CreateAllResourceBlocks(req compositionserviceproto.CreateCompositionResourceRequest) (*compositionserviceproto.CompositionServiceResponse, error) {
-	conn, err := services.ODIMService.Client(services.CompositionService)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
-	}
-	defer conn.Close()
-	csService := compositionserviceproto.NewCompositionClient(conn)
-	resp, err := csService.CreateCompositionResource(context.TODO(), &req)
-	if err != nil {
-		return nil, fmt.Errorf("error: RPC error: %v", err)
-	}
-	return resp, nil
-}

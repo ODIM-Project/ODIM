@@ -169,7 +169,6 @@ func Router() *iris.Application {
 		GetActivePoolRPC:              rpc.GetActivePool,
 		GetFreePoolRPC:                rpc.GetFreePool,
 		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
-		CreateAllResourceBlocksRPC:    rpc.CreateAllResourceBlocks,
 	}
 
 	registryFile := handle.Registry{
@@ -594,7 +593,6 @@ func Router() *iris.Application {
 	compositionService.Get("/ActivePool", cs.GetActivePool)
 	compositionService.Get("/FreePool", cs.GetFreePool)
 	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
-	compositionService.Post("/ResourceBlocks/Actions/Oem/Ami/ResourceBlock.Initialize", cs.CreateAllResourceBlocks)
 	compositionService.Any("/", handle.CompositionServiceMethodNotAllowed)
 	compositionService.Any("/ResourceBlocks", handle.CompositionServiceMethodNotAllowed)
 	compositionService.Any("/ResourceBlocks/{id}", handle.CompositionServiceMethodNotAllowed)
@@ -602,11 +600,6 @@ func Router() *iris.Application {
 	compositionService.Any("/ResourceZones/{id}", handle.CompositionServiceMethodNotAllowed)
 	compositionService.Any("/FreePool", handle.CompositionServiceMethodNotAllowed)
 	compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceBlocks/{id}/Actions", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceBlocks/{id}/Actions/Oem", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceBlocks/{id}/Actions/Oem/Ami", handle.CompositionServiceMethodNotAllowed)
-	compositionService.Any("/ResourceBlocks/{id}/Actions/Oem/Ami/ResourceBlock.Initialize", handle.CompositionServiceMethodNotAllowed)
-		
 	return router
 }
 

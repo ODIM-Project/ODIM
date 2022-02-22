@@ -42,7 +42,7 @@ class ResourceZones():
 
         try:
             logging.info("Initialize for creation of Resource Zone")
-            
+
             logging.debug(
                 "Request payload is {body}".format(body=request_data))
             zone = copy.deepcopy(constants.RESOURCE_ZONE_TEMP)
@@ -194,6 +194,22 @@ class ResourceZones():
                 code = HTTPStatus.NOT_FOUND
                 return
             res = json.loads(str(data))
+            res["@Redfish.CollectionCapabilities"] = {
+                "@odata.type":
+                "#CollectionCapabilities.v1_3_0.CollectionCapabilities",
+                "Capabilities": [{
+                    "CapabilitiesObject": {
+                        "@odata.id": "/redfish/v1/Systems/Capabilities"
+                    },
+                    "UseCase": "ComputerSystemComposition",
+                    "Links": {
+                        "TargetCollection": {
+                            "@odata.id": "/redfish/v1/Systems"
+                        }
+                    }
+                }]
+            }
+
             code = HTTPStatus.OK
 
         except Exception as err:
@@ -251,6 +267,8 @@ class ResourceZones():
                                             .format(rb_uri=obj["@odata.id"]))
                                         resource_data["Links"]["Zones"].remove(
                                             zone_id)
+                                        if not resource_data["Links"]["Zones"]:
+                                            del resource_data["Links"]["Zones"]
                                         done = True
                                         break
 

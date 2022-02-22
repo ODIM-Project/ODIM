@@ -18,13 +18,16 @@ import copy
 import uuid
 from http import HTTPStatus
 from utilities.client import Client
-from db.persistant import RedisClient
+from db.persistant import RedisClient, RedisDb
+from config.config import PLUGIN_CONFIG
 
 
 class CompositonService():
     def __init__(self):
         self.client = Client()
-        self.redis = RedisClient()
+        self.redis = RedisClient()  # redis-ondisk
+        self.redis_inmemory = RedisDb(
+            PLUGIN_CONFIG["RedisInMemoryAddress"])  # redis-inmemory
 
     def get_cs(self):
         res = {
@@ -82,15 +85,18 @@ class CompositonService():
 
             for stanza in stanzas:
                 if stanza["StanzaType"] == "ComposeSystem":
-                    compose_res, compose_code = self.create_compose_system(
+                    compose_res, code = self.create_compose_system(
                         stanza["Request"])
                     stanza["Response"] = compose_res
                 elif stanza["StanzaType"] == "DecomposeSystem":
-                    decompose_res, decompose_code = self.decompose_system(
+                    decompose_res, code = self.decompose_system(
                         stanza["Request"])
                     stanza["Response"] = decompose_res
-            res = req
-            code = HTTPStatus.OK
+
+            if code != HTTPStatus.OK:
+                res = stanzas[0]["Response"]
+            else:
+                res = req
         except Exception as err:
             logging.error(
                 "Unable to process the compose action. Error: {e}".format(
@@ -105,17 +111,19 @@ class CompositonService():
             return res, code
 
     def create_compose_system(self, req):
-
         res = {}
         compose_sys = {}
-        code = HTTPStatus.CREATED
+        code = HTTPStatus.OK
         system_data = {}
         pipe = self.redis.pipeline()
+        inmemory_pipe = self.redis_inmemory.pipeline()
+        system_uri = None
+        resource_block_uri = None
         try:
             logging.info("Initialize create compose system")
 
-            if not (req.get("Links") and req["Links"].get("ResourceBlocks")):
-                logging.error("Unable to find ResourceBlocks Links")
+            if not (req.get("Links") and req["Links"].get("ResourceBlocks")
+                    and any(req["Links"]["ResourceBlocks"])):
                 res = {"Error": "Unable to find ResourceBlocks Links"}
                 code = HTTPStatus.BAD_REQUEST
                 return
@@ -123,151 +131,121 @@ class CompositonService():
             logging.debug(
                 "Create Compose system request body is: {req}".format(req=req))
 
+            rb_list = []
+
             for block_uri in req["Links"]["ResourceBlocks"]:
+                if block_uri.get("@odata.id"):
+                    rb_list.append(block_uri["@odata.id"])
 
-                rs_block = self.redis.get("ResourceBlocks:{block_uri}".format(
-                    block_uri=block_uri["@odata.id"]))
-                if rs_block is None:
-                    logging.error(
-                        "The Resource Block {id} is not found in the database".
-                        format(id=block_uri["@odata.id"]))
+            if len(rb_list) <= 1:
+                res = {
+                    "Error":
+                    "Compose system accepts two or more resource blocks. Resubmit the request with two or more resource Blocks"
+                }
+                code = HTTPStatus.BAD_REQUEST
+                return
+
+            # find the computer system from resource blocks
+
+            for rb_uri in rb_list:
+                system_uri = self.redis.get("{rb_cs}:{rb}".format(
+                    rb_cs="ResourceBlocks-ComputerSystem", rb=rb_uri))
+                if system_uri:
+                    resource_block_uri = rb_uri
+                    break
+            if not system_uri:
+                res = {
+                    "Error":
+                    "Atleast one ComputerSystem Type Resource Block must present. Resubmit with valid request"
+                }
+                code = HTTPStatus.BAD_REQUEST
+                return
+            system_key = "ComputerSystem:{sys_uri}".format(sys_uri=system_uri)
+            system_data = self.redis_inmemory.get(system_key)
+            if system_data is not None:
+                system_data = json.loads(system_data)
+                if isinstance(system_data, str):
+                    system_data = json.loads(system_data)
+            else:
+                res = {
+                    "Error":
+                    "The system {sys_uri} which is linked to resource block {ruri} is not found"
+                    .format(sys_uri=system_uri, ruri=resource_block_uri)
+                }
+                code = HTTPStatus.BAD_REQUEST
+                return
+
+            for rb_uri in rb_list:
+                rb_data = self.redis.get(
+                    "ResourceBlocks:{block_uri}".format(block_uri=rb_uri))
+                if not rb_data:
                     res = {
                         "Error":
-                        "The Resource Block {id} is not valid".format(
-                            id=block_uri["@odata.id"])
+                        "The Resource at the URI {uri} is not found".format(
+                            uri=rb_uri)
                     }
                     code = HTTPStatus.BAD_REQUEST
                     return
-                rs_block = json.loads(rs_block)
+                rb_data = json.loads(rb_data)
                 logging.debug("ResourceBlock {id} data is: {data}".format(
-                    id=block_uri["@odata.id"], data=rs_block))
+                    id=rb_uri, data=rb_data))
 
-                if "ComputerSystem" in rs_block["ResourceBlockType"]:
-
-                    system_data = self.client.process_get_request(
-                        rs_block["ComputerSystems"][0]["@odata.id"])
-                    if system_data is None:
-                        logging.error(
-                            "The ComputerSystem {sys_id} from Resource Block {id} is not found valid"
-                            .format(sys_id=rs_block["ComputerSystems"][0]
-                                    ["@odata.id"],
-                                    id=block_uri["@odata.id"]))
-                        res = {"Error": "Get ComputerSystem is failed"}
-                        code = HTTPStatus.BAD_REQUEST
-                        return
-
-                    compose_sys["Id"] = str(uuid.uuid1())
-                    compose_sys["@odata.id"] = system_data[
-                        "@odata.id"].replace(system_data["Id"],
-                                             compose_sys["Id"])
-                    compose_sys[
-                        "Name"] = "Computer system composed from physical system"
-                    compose_sys["@odata.type"] = system_data["@odata.type"]
-                    logging.debug("New Compose System Id is: {id}".format(
-                        id=compose_sys["Id"]))
-
-                    compose_sys["Processors"] = copy.deepcopy(system_data["Processors"])
-                    compose_sys["Memory"] = copy.deepcopy(system_data["Memory"])
-                    compose_sys["Storage"] = copy.deepcopy(system_data["Storage"])
-
-                    if system_data.get("Links"):
-                        compose_sys["Links"] = copy.deepcopy(
-                            system_data["Links"])
-
-                    if not compose_sys.get("Links"):
-                        compose_sys["Links"] = {
-                            "ResourceBlocks": [],
-                            "SupplyingComputerSystems": []
-                        }
-                    else:
-                        if not compose_sys["Links"].get("ResourceBlocks"):
-                            compose_sys["Links"]["ResourceBlocks"] = []
-                        if not compose_sys["Links"].get(
-                                "SupplyingComputerSystems"):
-                            compose_sys["Links"][
-                                "SupplyingComputerSystems"] = []
-
-                    compose_sys["Links"]["ResourceBlocks"].append(
-                        {"@odata.id": rs_block["@odata.id"]})
-                    compose_sys["Links"]["SupplyingComputerSystems"].append(
-                        {"@odata.id": system_data["@odata.id"]})
-
-                    """
-                    compose_sys["Actions"] = {
-                        "#ComputerSystem.AddResourceBlock": {
-                            "target":
-                            "{compose_sys_uri}/{add_resource}".format(
-                                compose_sys_uri=compose_sys["@odata.id"],
-                                add_resource=
-                                "Actions/ComputerSystem.AddResourceBlock")
-                        },
-                        "#ComputerSystem.RemoveResourceBlock": {
-                            "target":
-                            "{compose_sys_uri}/{remove_resource}".format(
-                                compose_sys_uri=compose_sys["@odata.id"],
-                                remove_resource=
-                                "Actions/ComputerSystem.RemoveResourceBlock")
-                        }
-                    }
-                    """
-                if (rs_block["CompositionStatus"]["MaxCompositions"] <=
-                        rs_block["CompositionStatus"]["NumberOfCompositions"]):
-                    logging.error(
-                        "NumberOfCompositions are excided to MaxCompositions for this Resource Block {id}"
-                        .format(id=rs_block["Id"]))
+                if rb_data["CompositionStatus"]["MaxCompositions"] <= rb_data[
+                        "CompositionStatus"]["NumberOfCompositions"]:
                     res = {
                         "Error":
-                        "NumberOfCompositions are excided to MaxCompositions for this Resource Block {id}"
-                        .format(id=rs_block["Id"])
+                        "NumberOfCompositions are excided to MaxCompositions for the Resource Block {uri}"
+                        .format(uri=rb_uri)
                     }
                     code = HTTPStatus.BAD_REQUEST
                     return
 
-                rs_block["CompositionStatus"]["NumberOfCompositions"] += 1
-
-                if (rs_block["Pool"] != "Free") or (
-                        rs_block["CompositionStatus"]["CompositionState"]
-                        == "Composed"):
-                    logging.error(
-                        "The Resource Block {rb_uri} is already used by other composed system"
-                        .format(rb_uri=block_uri["@odata.id"]))
+                if (rb_data["Pool"] != "Free") or (
+                        rb_data["CompositionStatus"]["CompositionState"] !=
+                        "Unused"):
                     res = {
                         "Error":
-                        "The Resource Block {rb_uri} is already used by other composed system"
-                        .format(rb_uri=block_uri["@odata.id"])
+                        "The Resource Block {uri} is already used by other composed system"
+                        .format(uri=rb_uri)
                     }
                     code = HTTPStatus.BAD_REQUEST
                     return
 
-                rs_block["Pool"] = "Active"
-                rs_block["CompositionStatus"]["CompositionState"] = "Composed"
-                logging.info(
-                    "The properties 'Pool' and 'CompositionState' of Resource Block {rb_uri}"
-                    .format(rb_uri=block_uri["@odata.id"]))
-                if not rs_block.get("Links"):
-                    rs_block["Links"] = {"ComputerSystems": []}
-                elif not rs_block["Links"].get("ComputerSystems"):
-                    rs_block["Links"]["ComputerSystems"] = []
-                rs_block["Links"]["ComputerSystems"].append(
-                    {"@odata.id": compose_sys["@odata.id"]})
+                rb_data["Pool"] = "Active"
+                rb_data["CompositionStatus"]["CompositionState"] = "Composed"
+                rb_data["CompositionStatus"]["NumberOfCompositions"] += 1
 
-                pipe.set(
-                    "ResourceBlocks:{rb_uri}".format(
-                        rb_uri=block_uri["@odata.id"]), json.dumps(rs_block))
-                pipe.srem("FreePool", block_uri["@odata.id"])
-                pipe.sadd("ActivePool", block_uri["@odata.id"])
+                if not rb_data.get("Links"):
+                    rb_data["Links"] = {"ComputerSystems": []}
+                elif not rb_data["Links"].get("ComputerSystems"):
+                    rb_data["Links"]["ComputerSystems"] = []
+                rb_data["Links"]["ComputerSystems"].append(
+                    {"@odata.id": system_uri})
 
-            compose_sys["SystemType"] = "Composed"
-            pipe.set(
-                "ComputerSystem:{compose_uri}".format(
-                    compose_uri=compose_sys["@odata.id"]),
-                json.dumps(json.dumps(compose_sys)))
+                pipe.set("ResourceBlocks:{rb_uri}".format(rb_uri=rb_uri),
+                         json.dumps(rb_data))
+                pipe.srem("FreePool", rb_uri)
+                pipe.sadd("ActivePool", rb_uri)
+
+                if {
+                        "@odata.id": rb_uri
+                } not in system_data["Links"]["ResourceBlocks"]:
+                    system_data["Links"]["ResourceBlocks"].append(
+                        {"@odata.id": rb_uri})
+
+            inmemory_pipe.set(system_key, json.dumps(json.dumps(system_data)))
+
+            res["@odata.id"] = system_data["@odata.id"]
+            res["@odata.type"] = system_data["@odata.type"]
+            res["Id"] = system_data["Id"]
+            res["Name"] = system_data["Name"]
+            res["SystemType"] = system_data["SystemType"]
+            res["Links"] = system_data["Links"]
+
             pipe.execute()
-            logging.info("Compose System {id} is created successfully".format(
-                id=compose_sys["Id"]))
-            res = compose_sys
-            code = HTTPStatus.CREATED
-
+            inmemory_pipe.execute()
+            code = HTTPStatus.OK
+            logging.info("Successfully composed system")
         except Exception as err:
             logging.error(
                 "Unable to create composed system. Error: {e}".format(e=err))
@@ -278,12 +256,15 @@ class CompositonService():
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
             pipe.reset()
+            inmemory_pipe.reset()
             return res, code
 
     def decompose_system(self, req):
         res = {}
         code = HTTPStatus.OK
         pipe = self.redis.pipeline()
+        inmemory_pipe = self.redis_inmemory.pipeline()
+        system_data = {}
 
         try:
             logging.info("Initialize Decompose System")
@@ -300,107 +281,88 @@ class CompositonService():
                 "DecomposeSystem request body: {req}".format(req=req))
 
             for system_id in req["Links"]["ComputerSystems"]:
-                system_data = self.redis.get("ComputerSystem:{}".format(
-                    system_id["@odata.id"]))
+                system_key = "ComputerSystem:{sys_uri}".format(
+                    sys_uri=system_id["@odata.id"])
+                system_data = self.redis_inmemory.get(system_key)
                 if system_data is None:
                     res = {
                         "Error":
-                        "The System id {sys_id} is not available".format(
-                            sys_id=system_id["@odata.id"].split('/')[-1])
+                        "The Resource at the URI {sys_id} is not found".format(
+                            sys_id=system_id["@odata.id"])
                     }
                     code = HTTPStatus.BAD_REQUEST
                     return
-                system_data = json.loads(json.loads(system_data))
-                if not (system_data.get("SystemType") == "Composed"):
-                    logging.error(
-                        "The system {sys} provided in links is not a Composed system."
-                        .format(sys=system_id["@odata.id"]))
+                system_data = json.loads(system_data)
+                if isinstance(system_data, str):
+                    system_data = json.loads(system_data)
+
+                if not (system_data.get("Links")
+                        and system_data["Links"].get("ResourceBlocks")
+                        and any(system_data["Links"]["ResourceBlocks"])):
                     res = {
                         "Error":
-                        "The system {sys} provided in links is not a Composed system. Please provide composed systems for decompose"
-                        .format(sys=system_id["@odata.id"])
+                        "Decompose System failed because No Resource Blocks linked to system"
                     }
                     code = HTTPStatus.BAD_REQUEST
                     return
-                logging.debug("ComposeSystem data: {sys_data}".format(
-                    sys_data=system_data))
+                system_rb_links = copy.deepcopy(
+                    system_data["Links"]["ResourceBlocks"])
+                for rb_uri in system_data["Links"]["ResourceBlocks"]:
+                    if not rb_uri.get("@odata.id"):
+                        continue
+                    rb_key = "{resource}:{resource_uri}".format(
+                        resource="ResourceBlocks",
+                        resource_uri=rb_uri["@odata.id"])
+                    rb_data = self.redis.get(rb_key)
+                    if rb_data is None:
+                        res = {
+                            "Error":
+                            "The Resource at the URI {uri} is not found".
+                            format(uri=rb_uri["@odata.id"])
+                        }
+                        code = HTTPStatus.BAD_REQUEST
+                        return
+                    rb_data = json.loads(rb_data)
 
-                for property, value in system_data["Links"].items():
-                    if property == "ResourceBlocks":
-                        for obj in value:
-                            if obj.get("@odata.id"):
-                                resource_data = self.redis.get(
-                                    "{resource}:{resource_uri}".format(
-                                        resource=property,
-                                        resource_uri=obj["@odata.id"]))
-                                if not resource_data:
-                                    logging.error(
-                                        "The Resource {rs_uri} is not found in db"
-                                        .format(rs_uri=obj["@odata.id"]))
-                                    continue
-                                resource_data = json.loads(resource_data)
-                                if resource_data and resource_data.get(
-                                        "Links") and resource_data[
-                                            "Links"].get("ComputerSystems"):
-                                    done = False
-                                    for sys_id in resource_data["Links"][
-                                            "ComputerSystems"]:
-                                        if sys_id["@odata.id"] == system_id[
-                                                "@odata.id"]:
-                                            logging.info(
-                                                "Removing Composed system from Resource {uri}"
-                                                .format(uri=obj["@odata.id"]))
-                                            resource_data["Links"][
-                                                "ComputerSystems"].remove(
-                                                    sys_id)
-                                            resource_data["Pool"] = "Free"
-                                            resource_data["CompositionStatus"][
-                                                "CompositionState"] = "Unused"
-                                            if resource_data["CompositionStatus"][
-                                                    "NumberOfCompositions"] > 0:
-                                                resource_data[
-                                                    "CompositionStatus"][
-                                                        "NumberOfCompositions"] -= 1
-                                            done = True
-                                            break
+                    system_uri = self.redis.get("{rb_cs}:{rb}".format(
+                        rb_cs="ResourceBlocks-ComputerSystem",
+                        rb=rb_uri["@odata.id"]))
+                    if system_uri != system_id["@odata.id"]:
+                        system_rb_links.remove(rb_uri)
 
-                                    if done:
-                                        pipe.set(
-                                            "{resource}:{resource_uri}".format(
-                                                resource=property,
-                                                resource_uri=obj["@odata.id"]),
-                                            json.dumps(resource_data))
-                                        pipe.srem("ActivePool",
-                                                  obj["@odata.id"])
-                                        pipe.sadd("FreePool", obj["@odata.id"])
-                                        logging.info(
-                                            "{resource}:{resource_uri} is updateded"
-                                            .format(
-                                                resource=property,
-                                                resource_uri=obj["@odata.id"]))
-                                    else:
-                                        logging.info(
-                                            "{resource}:{resource_uri} updated is failed"
-                                            .format(
-                                                resource=property,
-                                                resource_uri=obj["@odata.id"]))
+                    rb_data["Pool"] = "Free"
+                    rb_data["CompositionStatus"]["CompositionState"] = "Unused"
 
-                res["@odata.id"] = system_data["@odata.id"]
-                res["@odata.type"] = system_data["@odata.type"]
-                res["Id"] = system_data["Id"]
-                res["Name"] = "Computer system decomposed"
-                res["Links"] = {"ResourceBlocks": []}
-                res["Links"]["ResourceBlocks"] = system_data["Links"][
-                    "ResourceBlocks"]
-                code = HTTPStatus.OK
+                    if rb_data["CompositionStatus"]["NumberOfCompositions"] > 0:
+                        rb_data["CompositionStatus"][
+                            "NumberOfCompositions"] -= 1
 
-                pipe.delete("ComputerSystem:{system_uri}".format(
-                    system_uri=system_id["@odata.id"]))
-                logging.info(
-                    "ComputerSystem:{system_uri} is Decomposed Successfully".
-                    format(system_uri=system_data))
-                pipe.execute()
+                    if rb_data.get("Links") and rb_data["Links"].get(
+                            "ComputerSystems"):
+                        if system_id in rb_data["Links"]["ComputerSystems"]:
+                            rb_data["Links"]["ComputerSystems"].remove(
+                                system_id)
+                            if not rb_data["Links"]["ComputerSystems"]:
+                                del rb_data["Links"]["ComputerSystems"]
 
+                    pipe.set(rb_key, json.dumps(rb_data))
+
+                if system_rb_links:
+                    system_data["Links"]["ResourceBlocks"] = system_rb_links
+                else:
+                    del system_data["Links"]["ResourceBlocks"]
+                inmemory_pipe.set(system_key,
+                                  json.dumps(json.dumps(system_data)))
+
+            res["@odata.id"] = system_data["@odata.id"]
+            res["@odata.type"] = system_data["@odata.type"]
+            res["Id"] = system_data["Id"]
+            res["Name"] = system_data["Name"]
+            res["SystemType"] = system_data["SystemType"]
+            res["Links"] = system_data["Links"]
+            pipe.execute()
+            inmemory_pipe.execute()
+            logging.info("Successfully Decomposed system")
         except Exception as err:
             logging.error(
                 "Unable to decompose the composed system. Error: {e}".format(
@@ -413,6 +375,7 @@ class CompositonService():
             code = HTTPStatus.INTERNAL_SERVER_ERROR
         finally:
             pipe.reset()
+            inmemory_pipe.reset()
             return res, code
 
     def get_composition_reservations_collection(self, url):

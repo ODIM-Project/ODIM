@@ -18,11 +18,6 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
-
-	log "github.com/sirupsen/logrus"
-
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -32,7 +27,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -122,7 +121,10 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if _, ok := managerData["Description"]; !ok {
 			managerData["Description"] = "BMC Manager"
 		}
-
+		//adding PowerState
+		if _, ok := managerData["PowerState"]; !ok {
+			managerData["PowerState"] = "On"
+		}
 		if managerType != common.ManagerTypeService && managerType != "" {
 			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
@@ -189,10 +191,15 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		UUID:            mgrData.UUID,
 		FirmwareVersion: mgrData.FirmwareVersion,
 		Status: &mgrmodel.Status{
-			State: mgrData.State,
+			State:  mgrData.State,
+			Health: mgrData.Health,
 		},
-		Description: mgrData.Description,
-		LogServices: mgrData.LogServices,
+		Description:         mgrData.Description,
+		LogServices:         mgrData.LogServices,
+		Model:               mgrData.Model,
+		DateTime:            time.Now().UTC().String(),
+		DateTimeLocalOffset: "+00:00",
+		PowerState:          mgrData.PowerState,
 	}, nil
 }
 
@@ -423,7 +430,6 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 
 	return fillResponse(body, managerData)
 
-
 }
 
 func fillResponse(body []byte, managerData map[string]interface{}) response.RPC {
@@ -439,6 +445,13 @@ func fillResponse(body []byte, managerData map[string]interface{}) response.RPC 
 		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
+	}
+	//To populate current Datetime and DateTimeLocalOffset for Plugin manager
+	respData["DateTime"] = time.Now().UTC().String()
+	respData["DateTimeLocalOffset"] = "+00:00"
+
+	if _, ok := respData["SerialConsole"]; !ok {
+		respData["SerialConsole"] = dmtf.SerialConsole{}
 	}
 	respData["Links"] = managerData["Links"]
 	resp.Body = respData

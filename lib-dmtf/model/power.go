@@ -58,9 +58,9 @@ type PowerControl struct {
 
 // PowerLimit redfish model
 type PowerLimit struct {
-	CorrectionInMs int     `json:"CorrectionInMs,omitempty"`
-	LimitException string  `json:"LimitException,omitempty"`
-	LimitInWatts   float64 `json:"LimitInWatts,omitempty"`
+	CorrectionInMs interface{} `json:"CorrectionInMs"` // omitempty is not added to make value as null if it's not present
+	LimitException interface{} `json:"LimitException"` // omitempty is not added to make value as null if it's not present
+	LimitInWatts   interface{} `json:"LimitInWatts"`   // omitempty is not added to make value as null if it's not present
 }
 
 // PowerMetrics redfish model

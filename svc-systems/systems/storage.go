@@ -18,9 +18,10 @@ package systems
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -42,7 +43,11 @@ type ExternalInterface struct {
 
 // DB struct to inject the contact DB function into the handlers
 type DB struct {
-	GetResource func(string, string) (string, *errors.Error)
+	GetResource        func(string, string) (string, *errors.Error)
+	DeleteVolume       func(string) *errors.Error
+	AddSystemResetInfo func(string, string) *errors.Error
+	GetPluginData      func(string) (smodel.Plugin, *errors.Error)
+	GetTarget          func(string) (*smodel.Target, *errors.Error)
 }
 
 // GetExternalInterface retrieves all the external connections managers package functions uses
@@ -51,7 +56,11 @@ func GetExternalInterface() *ExternalInterface {
 		ContactClient:  pmbhandle.ContactPlugin,
 		DevicePassword: common.DecryptWithPrivateKey,
 		DB: DB{
-			GetResource: smodel.GetResource,
+			GetResource:        smodel.GetResource,
+			DeleteVolume:       smodel.DeleteVolume,
+			AddSystemResetInfo: smodel.AddSystemResetInfo,
+			GetPluginData:      smodel.GetPluginData,
+			GetTarget:          smodel.GetTarget,
 		},
 		GetPluginStatus: scommon.GetPluginStatus,
 	}
@@ -68,7 +77,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
-	target, gerr := smodel.GetTarget(uuid)
+	target, gerr := e.DB.GetTarget(uuid)
 	if gerr != nil {
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
@@ -120,7 +129,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
-	plugin, gerr := smodel.GetPluginData(target.PluginID)
+	plugin, gerr := e.DB.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
@@ -296,7 +305,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
 	}
 	uuid := requestData[0]
-	target, gerr := smodel.GetTarget(uuid)
+	target, gerr := e.DB.GetTarget(uuid)
 	if gerr != nil {
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
@@ -319,7 +328,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		return response
 	}
 	key := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes/%s", req.SystemID, req.StorageInstance, req.VolumeID)
-	_, dbErr := smodel.GetResource("Volumes", key)
+	_, dbErr := e.DB.GetResource("Volumes", key)
 	if dbErr != nil {
 		log.Error("error getting volumes details : " + dbErr.Error())
 		errorMessage := dbErr.Error()
@@ -348,7 +357,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	}
 	target.Password = decryptedPasswordByte
 	// Get the Plugin info
-	plugin, gerr := smodel.GetPluginData(target.PluginID)
+	plugin, gerr := e.DB.GetPluginData(target.PluginID)
 	if gerr != nil {
 		errorMessage := "error while trying to get plugin details"
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
@@ -397,7 +406,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	// delete a volume in db
-	if derr := smodel.DeleteVolume(key); derr != nil {
+	if derr := e.DB.DeleteVolume(key); derr != nil {
 		errMsg := "error while trying to delete volume: " + derr.Error()
 		log.Error(errMsg)
 		if errors.DBKeyNotFound == derr.ErrNo() {
@@ -409,8 +418,8 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	// adding volume collection uri and deleted volume uri to the AddSystemResetInfo
 	// for avoiding storing or retrieving them from DB before a BMC reset.
 	collectionKey := fmt.Sprintf("/redfish/v1/Systems/%s/Storage/%s/Volumes", req.SystemID, req.StorageInstance)
-	smodel.AddSystemResetInfo(key, "On")
-	smodel.AddSystemResetInfo(collectionKey, "On")
+	e.DB.AddSystemResetInfo(key, "On")
+	e.DB.AddSystemResetInfo(collectionKey, "On")
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.Success

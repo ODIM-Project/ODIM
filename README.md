@@ -2283,7 +2283,7 @@ All bugs or feature requests must be submitted through a PR to the development b
 
 ## Filing Resource Aggregator for ODIM defects 
 
-**Important**: In case of any unforeseen issues you experience while deploying or using Resource Aggregator for ODIM, log on to the following website and file your defect by clicking **Create**.
+In case of any unforeseen issues you experience while deploying or using Resource Aggregator for ODIM, log on to the following website and file your defect by clicking **Create**.
 
 **Prerequisite**: You must have valid LFN Jira credentials to create defects.
 

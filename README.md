@@ -2095,7 +2095,7 @@ Following are the two ways of scaling up the resources and services of Resource 
 
 5. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Please note, you can scale up only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services. 
+    Please note, you can scale up only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, `telemetry`and `all` services. 
     Replacing `<service_name>` with `all` will scale up all resource aggregator services.
 
 6. Replace <`replica_count>` with an integer indicating the number of service instances to be added.
@@ -2141,7 +2141,7 @@ Scaling down involves removing one or more worker nodes from an existing three-n
 
 3. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Please note, you can scale down only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services. 
+    Please note, you can scale down only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, `telemetry`and `all` services. 
     Replacing `<service_name>` with `all` will scale down all resource aggregator services.
 
 4. Replace `<replica_count>` with an integer indicating the number of service instances to be removed.

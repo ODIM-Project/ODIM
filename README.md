@@ -2095,7 +2095,8 @@ Following are the two ways of scaling up the resources and services of Resource 
 
 5. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Please note, you can scale up only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services.
+    Please note, you can scale up only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services. 
+    Replacing `<service_name>` with `all` will scale up all resource aggregator services.
 
 6. Replace <`replica_count>` with an integer indicating the number of service instances to be added.
 
@@ -2107,10 +2108,10 @@ Following are the two ways of scaling up the resources and services of Resource 
     kube_deploy_nodes.yaml --scale --plugin <plugin_name> --replicas <replica_count>
     ```
 
-8. Replace <plugin\_name\> with the name of the plugin whose service you want to scale up.
+8. Replace `<plugin_name>` with the name of the plugin whose service you want to scale up.
     For example: `urplugin`, `grfplugin`, `dellplugin`, `lenovoplugin`, `aciplugin`
 
-9. Replace <replica\_count\> with an integer indicating the number of plugin service instances to be added.
+9. Replace `<replica_count>` with an integer indicating the number of plugin service instances to be added.
 
 ## Scaling down the resources and services of Resource Aggregator for ODIM
 
@@ -2141,8 +2142,9 @@ Scaling down involves removing one or more worker nodes from an existing three-n
 3. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
     Please note, you can scale down only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, and `all` services. 
+    Replacing `<service_name>` with `all` will scale down all resource aggregator services.
 
-4. Replace `<replica\_count\>` with an integer indicating the number of service instances to be removed.
+4. Replace `<replica_count>` with an integer indicating the number of service instances to be removed.
 
 5. To scale down the plugin services, run the following command on the deployment node: 
 
@@ -2152,10 +2154,10 @@ Scaling down involves removing one or more worker nodes from an existing three-n
     --scale --plugin <plugin_name> --replicas <replica_count>
     ```
 
-6. Replace <plugin\_name\> with the name of the plugin whose service you want to scale down.
+6. Replace `<plugin_name>` with the name of the plugin whose service you want to scale down.
    For example: `urplugin`, `grfplugin`, `dellplugin`, `lenovoplugin`, `aciplugin`
    
-7. Replace <replica\_count\> with an integer indicating the number of plugin service instances to be removed.
+7. Replace `<replica_count>` with an integer indicating the number of plugin service instances to be removed.
 
 ## Rolling back to an earlier deployment revision
 

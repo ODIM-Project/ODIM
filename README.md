@@ -2256,7 +2256,7 @@ NOTE: When you upgrade the Resource Aggregator for ODIM deployment, the new conf
 Welcome to the GitHub open-source community for Resource Aggregator for ODIM!
 
 If you want to contribute to the project to make it better, your help is welcome and highly appreciated. 
-Contribution is a great way of extending the understanding—and value—of open-source software and development models, towards a common goal. Apart from learning more about social coding on GitHub, new technologies and their ecosystems, you can keep the discussion forums active by sharing knowledge, asking right questions, finding information through effective collaborations as well as make constructive, helpful bug reports, feature requests, and the noblest of all contributions—a good, clean pull request (PR).
+Contribution is a great way of extending the understanding and value of open-source software and development models, towards a common goal. Apart from learning more about social coding on GitHub, new technologies and their ecosystems, you can keep the discussion forums active by sharing knowledge, asking right questions, finding information through effective collaborations as well as make constructive, helpful bug reports, feature requests, and the noblest of all contributions—a good, clean pull request (PR).
 All bugs or feature requests must be submitted through a PR to the development branch and are expected to have unit tests and/or integration tests with the PR. 
 
 ## Creating a PR
@@ -2267,7 +2267,7 @@ All bugs or feature requests must be submitted through a PR to the development b
 2.	Clone the fork on your local machine. Your remote repo on GitHub is called origin.
 3.	Add the original repository as a remote called upstream.
 4.	If you created your fork a while ago, be sure to pull upstream changes into your local repository.
-5.	Create a new branch to work on. Branch from development (if it exists), else from the master branch.
+5.	Create a new branch to work on. Branch from development (if it exists), else from the main branch.
 6.	Implement/fix your feature, comment your code.
 7.	Follow the code style of the project, including indentation.
 8.	If the project has tests, run them!
@@ -2275,10 +2275,10 @@ All bugs or feature requests must be submitted through a PR to the development b
 10.	Add or change the documentation as needed.
 11.	Squash your commits into a single commit with git's interactive rebase. Create a new branch, if necessary.
 12.	Push your branch to your fork on GitHub, the remote origin.
-13.	From your fork, open a PR in the correct branch. Target the project's development branch if there is one, else go for master.
-14. Once the pull request is approved and merged, you can pull the changes from upstream to your local repository and delete your extra branch(es).
+13.	From your fork, open a PR in the correct branch. Target the project's development branch if there is one, else go for main.
+14. Once the pull request is approved and merged, pull the changes from upstream to your local repository and delete your extra branch(es).
 
-    Last but not the least, **always write your commit messages in the present tense**. Your commit message should describe what the commit is, when is it applied, and what it does to the code – not what you did to the code.
+    Last, but not the least, **always write your commit messages in the present tense**. Your commit message should describe what the commit is, when is it applied, and what it does to the code – not what you did to the code.
 
 
 
@@ -2296,19 +2296,13 @@ All bugs or feature requests must be submitted through a PR to the development b
 
 
 
-## Adding new plugins
+## Adding new plugins and services
 
-File a defect and submit a PR for adding new plugin.
+File a defect and submit a PR for adding new plugin. Run all the integration tests with their plugins and provide the logs of the result in the PR. You will be asked to run the integration tests before each release to make sure there are no issues.
 
-Run all the integration tests with their plugins and provide the logs of the result in the PR. You will be asked to run the integration tests before each release to make sure there are no issues.
+We do not maintain compiled proto modules in Resource Aggregator for ODIM. They must be generated during deployment. This applies to all contributions.
 
-
-
-## Adding new services
-
-We do not maintain compiled proto modules in Resource Aggregator for ODIM. They must be generated during deployment.
-
-<blockquote>NOTE: Comply to the coding standards of the programming language being used in the project. </blockquote>
+<blockquote>NOTE: Comply to the coding standards of the programming languages being used in the project. </blockquote>
 
 
 
@@ -2323,7 +2317,16 @@ The specification and code is licensed under the Apache 2.0 license, and is foun
 If you want to make your first contribution on GitHub, refer one of the following procedures:
 
 - https://github.com/firstcontributions/first-contributions/blob/master/README.md
+
 - https://www.dataschool.io/how-to-contribute-on-github/
+
+You can also refer the following links for exploring Wiki page and slack channel for ODIM.
+
+- https://odim.io/
+
+- https://wiki.odim.io/
+
+- https://wiki.odim.io/display/HOME/TSC+channel+on+slack
 
 
 

@@ -398,7 +398,7 @@ The following table lists the software components and their versions that are co
     ```
     docker save -o <Docker image file name> <Docker image name>
     ```
-    Example: `docker save -o calico_node.tar calico/node` 
+    Example: `docker save -o quay.io_calico_node.tar quay.io/calico/node` 
 
 4. Copy each saved tar archive to a directory called `kubernetes_images` on the deployment node. 
 

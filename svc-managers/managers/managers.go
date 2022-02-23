@@ -32,6 +32,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"regexp"
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -120,6 +121,12 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		//adding default description
 		if _, ok := managerData["Description"]; !ok {
 			managerData["Description"] = "BMC Manager"
+		}
+		//adding RemoteAccountService object to manager response
+		if _, ok := managerData["RemoteAccountService"]; !ok {
+			managerData["RemoteAccountService"] = map[string]string{
+				"@odata.id": "/redfish/v1/Managers/"+req.ManagerID+"/RemoteAccountService",
+			}
 		}
 		//adding PowerState
 		if _, ok := managerData["PowerState"]; !ok {
@@ -492,10 +499,9 @@ func (e *ExternalInterface) deviceCommunication(reqURL, uuid, systemID, httpMeth
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	var resource map[string]interface{}
+
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-    //uri := strings.Replace(req.URL, "Managers/"+req.ManagerID+"/Remote", "", -1)
     uri := replaceBMCAccReq(req.URL,req.ManagerID)
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
 	if err != nil {
@@ -506,13 +512,34 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	}
 	// Replace response body to BMC manager
 	data = replaceBMCAccResp(data,req.ManagerID)
-	//data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+req.ManagerID+"/RemoteAccountService", -1)
-
-    json.Unmarshal([]byte(data), &resource)
+    resource := convertToRedfishModel(req.URL, data)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+func convertToRedfishModel(uri, data string) interface{}{
+    URIRegexRemAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService+[\/]?$`)
+    URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+    URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+	if URIRegexRemAcc.MatchString(uri) {
+	    var resource dmtf.AccountService
+	    json.Unmarshal([]byte(data), &resource)
+        return resource
+	} else if URIRegexAcc.MatchString(uri) {
+        var resource dmtf.ManagerAccount
+	    json.Unmarshal([]byte(data), &resource)
+        return resource
+	} else if URIRegexRoles.MatchString(uri) {
+        var resource dmtf.Role
+	    json.Unmarshal([]byte(data), &resource)
+        return resource
+	} else {
+	    var resource map[string]interface{}
+	    json.Unmarshal([]byte(data), &resource)
+	    return resource
+	}
 }
 
 // CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
@@ -562,12 +589,14 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 
 	uri := replaceBMCAccReq(req.URL,req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
-	deviceRespBody := fmt.Sprint(resp.Body)
-	deviceRespBody = replaceBMCAccResp(deviceRespBody,req.ManagerID)
-	//respBody, _ := json.Marshal(deviceRespBody)
-	var resource map[string]interface{}
-	json.Unmarshal([]byte(deviceRespBody), &resource)
-	resp.Body = resource
+
+	if resp.StatusCode == 200 {
+	    body,_ := json.Marshal(resp.Body)
+	    respBody := replaceBMCAccResp(string(body),req.ManagerID)
+	    var managerAcc dmtf.ManagerAccount
+	    json.Unmarshal([]byte(respBody), &managerAcc)
+        resp.Body = managerAcc
+	}
 	return resp
 }
 

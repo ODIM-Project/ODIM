@@ -368,3 +368,70 @@ func TestVirtualMediaInsert(t *testing.T) {
 	resp, _ = mgr.VirtualMediaInsert(ctx, req)
 	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
 }
+
+func TestGetRemoteAccountService(t *testing.T) {
+	common.SetUpMockConfig()
+	var ctx context.Context
+	mgr := new(Managers)
+	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.EI = mockGetExternalInterface()
+
+	req := &managersproto.ManagerRequest{
+		ManagerID:    "uuid.1",
+		SessionToken: "validToken",
+		URL:          "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/1",
+		ResourceID:   "1",
+	}
+	var resp = &managersproto.ManagerResponse{}
+	resp, err := mgr.GetRemoteAccountService(ctx, req)
+	assert.Nil(t, err, "The two words should be the same.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+
+	// Invalid
+	req = &managersproto.ManagerRequest{
+		ManagerID:    "uuid.1",
+		SessionToken: "InvalidToken",
+		ResourceID:   "1",
+		URL:          "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/1",
+	}
+	resp = &managersproto.ManagerResponse{}
+	resp, _ = mgr.GetRemoteAccountService(ctx, req)
+	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+}
+
+func TestCreateRemoteAccountService(t *testing.T) {
+	common.SetUpMockConfig()
+	var ctx context.Context
+	mgr := new(Managers)
+	mgr.IsAuthorizedRPC = mockIsAuthorized
+	mgr.EI = mockGetExternalInterface()
+
+	req := &managersproto.ManagerRequest{
+		ManagerID:    "uuid.1",
+		SessionToken: "validToken",
+		URL:          "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		ResourceID:   "1",
+		RequestBody: []byte(`{"UserName":"Username",
+										"Password":"Password",
+										"RoleId":"Administrator"
+										}`),
+	}
+	var resp = &managersproto.ManagerResponse{}
+	resp, err := mgr.CreateRemoteAccountService(ctx, req)
+	assert.Nil(t, err, "The two words should be the same.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+
+	// Invalid
+	req = &managersproto.ManagerRequest{
+		ManagerID:    "uuid.1",
+		SessionToken: "InvalidToken",
+		ResourceID:   "1",
+		URL:          "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody:  []byte(`{"UserName":"Username",
+										"Password":"Password",
+										"RoleId":"Administrator"}`),
+	}
+	resp = &managersproto.ManagerResponse{}
+	resp, _ = mgr.CreateRemoteAccountService(ctx, req)
+	assert.Equal(t, int(resp.StatusCode), http.StatusUnauthorized, "Status code should be StatusUnauthorized.")
+}

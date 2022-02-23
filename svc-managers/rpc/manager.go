@@ -157,7 +157,7 @@ func generateResponse(input interface{}) []byte {
 	return bytes
 }
 
-//GetRemoteAccountService defines the operations which handles the RPC request response
+// GetRemoteAccountService defines the operations which handles the RPC request response
 // The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the lib-util package.
 // The function uses IsAuthorized of lib-util to validate the session token
@@ -181,7 +181,7 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 	return &resp, nil
 }
 
-//CreateRemoteAccountService defines the operations which handles the RPC request response
+// CreateRemoteAccountService defines the operations which handles the RPC request response
 // The functionality retrieves the request and return backs the response to
 // RPC according to the protoc file defined in the lib-util package.
 // The function uses IsAuthorized of lib-util to validate the session token

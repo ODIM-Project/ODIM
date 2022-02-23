@@ -232,7 +232,7 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 }
 
 // GetRemoteAccountService defines the GetRemoteAccountService iris handler.
-// The method extract the session token,uuid and request url and creates the RPC request.
+// This method extract the session token,uuid and request url and creates the RPC request.
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
@@ -261,14 +261,22 @@ func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	ctx.ResponseWriter().Header().Set("Allow", "GET")
+
+	switch req.URL {
+	case "/redfish/v1/Managers/"+req.ManagerID+"/RemoteAccountService/Accounts" :
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/Managers/"+req.ManagerID+"/RemoteAccountService/Accounts/"+req.ResourceID :
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
 }
 
-// GetRemoteAccountService defines the GetRemoteAccountService iris handler.
-// The method extract the session token,uuid and request url and creates the RPC request.
+// CreateRemoteAccountService defines the CreateRemoteAccountService iris handler.
+// This method extract the session token,uuid,request payload and url and creates the RPC request.
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
@@ -320,7 +328,6 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	//ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

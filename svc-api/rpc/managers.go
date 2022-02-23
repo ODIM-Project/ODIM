@@ -113,7 +113,7 @@ func GetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.M
 	return resp, nil
 }
 
-//CreateRemoteAccountService will do the rpc call to collect BMC accounts
+//CreateRemoteAccountService will do the rpc call to create a new BMC account
 func CreateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	conn, err := services.ODIMService.Client(services.Managers)
 	if err != nil {

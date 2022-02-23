@@ -174,23 +174,29 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
 	var mgrData mgrmodel.RAManager
-
 	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {
 		return mgr, fmt.Errorf("unable to retrieve manager information: %v", err)
 	}
+
 	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
-	chassisList, chassisErr := mgrmodel.GetAllKeysFromTable("Chassis")
+
+	chassisList, chassisErr := e.DB.GetAllKeysFromTable("Chassis")
 	if chassisErr != nil {
 		return mgr, fmt.Errorf("unable to retrieve chassis list information: %v", chassisErr)
 	}
-	serverList, serverErr := mgrmodel.GetAllKeysFromTable("ComputerSystem")
+
+	serverList, serverErr := e.DB.GetAllKeysFromTable("ComputerSystem")
 	if serverErr != nil {
 		return mgr, fmt.Errorf("unable to retrieve server list information: %v", serverErr)
 	}
-	var chassisLink, serverLink []*dmtf.Link
+	managerList, mgrErr := e.DB.GetAllKeysFromTable("Managers")
+	if mgrErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve manager list information: %v", mgrErr)
+	}
+	var chassisLink, serverLink, managerLink []*dmtf.Link
 	if len(chassisList) > 0 {
 		for _, key := range chassisList {
 			chassisLink = append(chassisLink, &dmtf.Link{Oid: key})
@@ -199,6 +205,14 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 	if len(serverList) > 0 {
 		for _, key := range serverList {
 			serverLink = append(serverLink, &dmtf.Link{Oid: key})
+		}
+	}
+	odimURI := "/redfish/v1/Managers/" + config.Data.RootServiceUUID
+	if len(managerList) > 0 {
+		for _, key := range managerList {
+			if key != odimURI {
+				managerLink = append(managerLink, &dmtf.Link{Oid: key})
+			}
 		}
 	}
 
@@ -216,8 +230,9 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 			Health: mgrData.Health,
 		},
 		Links: &mgrmodel.Links{
-			ManagerForChassis: chassisLink,
-			ManagerForServers: serverLink,
+			ManagerForChassis:  chassisLink,
+			ManagerForServers:  serverLink,
+			ManagerForManagers: managerLink,
 		},
 		Description:         mgrData.Description,
 		LogServices:         mgrData.LogServices,

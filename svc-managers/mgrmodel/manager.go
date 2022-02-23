@@ -100,6 +100,7 @@ type Links struct {
 	ManagerForChassis   []*dmtf.Link `json:"ManagerForChassis,omitempty"`
 	ManagerForServers   []*dmtf.Link `json:"ManagerForServers,omitempty"`
 	ManagerForSwitches  []*dmtf.Link `json:"ManagerForSwitches,omitempty"`
+	ManagerForManagers  []*dmtf.Link `json:"ManagerForManagers,omitempty"`
 	ManagerInChassis    *dmtf.Link   `json:"ManagerInChassis,omitempty"`
 }
 

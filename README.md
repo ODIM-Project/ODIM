@@ -1280,7 +1280,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
         vi kube_deploy_nodes.yaml
 
-11. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
+11. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
@@ -1439,7 +1439,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
             vi kube_deploy_nodes.yaml
 
-12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
+12. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
@@ -1586,7 +1586,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
 
         vi kube_deploy_nodes.yaml
 
-12. Update the following parameters in the `kube_deploy_nodes.yaml` file to their corresponding values: 
+12. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
@@ -1605,11 +1605,11 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
          fqdn:
          rootServiceUUID:
          haDeploymentEnabled: True
-       connectionMethodConf:
-       - ConnectionMethodType: Redfish
+         connectionMethodConf:
+         - ConnectionMethodType: Redfish
          ConnectionMethodVariant: Compute:BasicAuth:LENOVO_v1.0.0
-       odimraKafkaClientCertFQDNSan: lenovoplugin, lenovoplugin-events
-       odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events
+         odimraKafkaClientCertFQDNSan: lenovoplugin, lenovoplugin-events
+         odimraServerCertFQDNSan: lenovoplugin, lenovoplugin-events
       ```
 
 13. Move odimra_kafka_client.key, odimra_kafka_client.crt, odimra_server.key and odimra_server.crt stored in odimCertsPath to a different folder.
@@ -3016,7 +3016,7 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
       vi kube_deploy_nodes.yaml
        ```
 
-12. Update the following parameters in the kube\_deploy\_nodes.yaml file to their corresponding values: 
+12. Specify values for the following parameters in the `kube_deploy_nodes.yaml` file: 
 
     | Parameter                    | Value                                                        |
     | ---------------------------- | ------------------------------------------------------------ |
@@ -3027,7 +3027,6 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     
 
 Example:
-    
     odimPluginPath: /home/bruce/plugins
     odimra:
       groupID: 2021

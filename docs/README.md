@@ -7,7 +7,7 @@
 - [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
-- [HTTP request methods, responses, and status codes](#http-request-methods-responses-and-status-codes)
+- [HTTP request methods, responses, headers and status codes](#http-request-methods-responses-headers-and-status-codes)
 - [Authentication and authorization](#authentication-and-authorization)
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
   * [Role-based authorization](#role-based-authorization)
@@ -595,7 +595,7 @@ Transfer-Encoding:chunked
 
 
 
-#  HTTP request methods responses and status codes
+#  HTTP request methods responses headers and status codes
 
 Following are the Redfish-defined HTTP methods that you can use to implement various actions:
 
@@ -607,6 +607,8 @@ Following are the Redfish-defined HTTP methods that you can use to implement var
 |`PUT` \[Replace\]|Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource.|
 |`DELETE` \[Delete\]|Use this method to delete a resource.|
 
+
+
 Resource Aggregator for ODIM supports the following responses:
 
 |Responses|Description|
@@ -615,6 +617,22 @@ Resource Aggregator for ODIM supports the following responses:
 |Resource responses|Response in JSON format for an individual resource.|
 |Resource collection responses|Response in JSON format for a collection of resources.|
 |Error responses|If there is an HTTP error, a high-level JSON response is provided with additional information.|
+
+
+
+Here's the list of headers that are common across responses.
+
+```
+"Connection": "keep-alive",
+"OData-Version": "4.0",
+"X-Frame-Options": "sameorigin",
+"X-Content-Type-Options":"nosniff",
+"Content-type":"application/json; charset=utf-8",
+"Cache-Control":"no-cache, no-store, must-revalidate",
+"Transfer-Encoding":"chunked",
+```
+
+
 
 Following are the HTTP status codes with their descriptions:
 

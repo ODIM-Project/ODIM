@@ -535,11 +535,10 @@ func convertToRedfishModel(uri, data string) interface{}{
         var resource dmtf.Role
 	    json.Unmarshal([]byte(data), &resource)
         return resource
-	} else {
-	    var resource map[string]interface{}
-	    json.Unmarshal([]byte(data), &resource)
-	    return resource
 	}
+    var resource map[string]interface{}
+    json.Unmarshal([]byte(data), &resource)
+    return resource
 }
 
 // CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used

@@ -53,7 +53,7 @@ type ManagerAccount struct{
     Description  string               `json:"Description,omitempty"`
     UserName string `json:"UserName,omitempty"`
     Password string `json:"Password,omitempty"`
-    RoleId string `json:"RoleId,omitempty"`
+    RoleID string `json:"RoleId,omitempty"`
     Enabled bool `json:"Enabled,omitempty"`
     Locked bool `json:"Locked,omitempty"`
     PasswordChangeRequired bool `json:"PasswordChangeRequired,omitempty"`
@@ -78,9 +78,9 @@ type Role struct {
     ID           string               `json:"Id"`
     Name         string               `json:"Name"`
     Description  string               `json:"Description,omitempty"`
-    AlternateRoleId string `json:"AlternateRoleId,omitempty"`
+    AlternateRoleID string `json:"AlternateRoleId,omitempty"`
     AssignedPrivileges []string `json:"AssignedPrivileges,omitempty"`
     IsPredefined bool `json:"IsPredefined,omitempty"`
     Restricted bool `json:"Restricted,omitempty"`
-    RoleId string `json:"RoleId,omitempty"`
+    RoleID string `json:"RoleId,omitempty"`
 }

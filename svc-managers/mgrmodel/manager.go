@@ -141,9 +141,9 @@ type VirtualMediaInsert struct {
 
 // CreateBMCAccount struct is to store the create BMC account request payload
 type CreateBMCAccount struct {
-	UserName                string `json:"UserName" validate:"required"`
-	Password             string   `json:"Password" validate:"required"`
-	RoleID       string   `json:"RoleId" validate:"required"`
+	UserName string `json:"UserName" validate:"required"`
+	Password string `json:"Password" validate:"required"`
+	RoleID   string `json:"RoleId" validate:"required"`
 }
 
 //GetResource fetches a resource from database using table and key

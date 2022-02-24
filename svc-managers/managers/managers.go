@@ -30,9 +30,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
-	"regexp"
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -125,7 +125,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		//adding RemoteAccountService object to manager response
 		if _, ok := managerData["RemoteAccountService"]; !ok {
 			managerData["RemoteAccountService"] = map[string]string{
-				"@odata.id": "/redfish/v1/Managers/"+req.ManagerID+"/RemoteAccountService",
+				"@odata.id": "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService",
 			}
 		}
 		//adding PowerState
@@ -502,7 +502,7 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-    uri := replaceBMCAccReq(req.URL,req.ManagerID)
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
 	if err != nil {
 		errorMessage := "unable to get resource details from device: " + err.Error()
@@ -511,34 +511,34 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 	}
 	// Replace response body to BMC manager
-	data = replaceBMCAccResp(data,req.ManagerID)
-    resource := convertToRedfishModel(req.URL, data)
+	data = replaceBMCAccResp(data, req.ManagerID)
+	resource := convertToRedfishModel(req.URL, data)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
 }
 
-func convertToRedfishModel(uri, data string) interface{}{
-    URIRegexRemAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService+[\/]?$`)
-    URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
-    URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+func convertToRedfishModel(uri, data string) interface{} {
+	URIRegexRemAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService+[\/]?$`)
+	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
 	if URIRegexRemAcc.MatchString(uri) {
-	    var resource dmtf.AccountService
-	    json.Unmarshal([]byte(data), &resource)
-        return resource
+		var resource dmtf.AccountService
+		json.Unmarshal([]byte(data), &resource)
+		return resource
 	} else if URIRegexAcc.MatchString(uri) {
-        var resource dmtf.ManagerAccount
-	    json.Unmarshal([]byte(data), &resource)
-        return resource
+		var resource dmtf.ManagerAccount
+		json.Unmarshal([]byte(data), &resource)
+		return resource
 	} else if URIRegexRoles.MatchString(uri) {
-        var resource dmtf.Role
-	    json.Unmarshal([]byte(data), &resource)
-        return resource
+		var resource dmtf.Role
+		json.Unmarshal([]byte(data), &resource)
+		return resource
 	}
-    var resource map[string]interface{}
-    json.Unmarshal([]byte(data), &resource)
-    return resource
+	var resource map[string]interface{}
+	json.Unmarshal([]byte(data), &resource)
+	return resource
 }
 
 // CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
@@ -555,46 +555,46 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 		return resp
 	}
 
-    // Validating the request JSON properties for case sensitive
-    invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
-    if err != nil {
-        errMsg := "while validating request parameters for creating BMC account: " + err.Error()
-        log.Error(errMsg)
-        return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-    } else if invalidProperties != "" {
-        errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-        log.Error(errorMessage)
-        response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-        return response
-    }
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
+	if err != nil {
+		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response
+	}
 
-    // Check mandatory fields
-    statuscode, statusMessage, messageArgs, err := validateCreateRemoteAccFields(&bmcAccReq)
-    if err != nil {
-        errorMessage := "request payload validation failed: " + err.Error()
-        log.Error(errorMessage)
-        resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
-        return resp
-    }
-    requestBody, err = json.Marshal(bmcAccReq)
-    if err != nil {
-        log.Error("while marshalling the create BMC account request: " + err.Error())
-        resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-        return resp
-    }
+	// Check mandatory fields
+	statuscode, statusMessage, messageArgs, err := validateCreateRemoteAccFields(&bmcAccReq)
+	if err != nil {
+		errorMessage := "request payload validation failed: " + err.Error()
+		log.Error(errorMessage)
+		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
+		return resp
+	}
+	requestBody, err = json.Marshal(bmcAccReq)
+	if err != nil {
+		log.Error("while marshalling the create BMC account request: " + err.Error())
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return resp
+	}
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
 
-	uri := replaceBMCAccReq(req.URL,req.ManagerID)
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
 
 	if resp.StatusCode == 200 {
-	    body,_ := json.Marshal(resp.Body)
-	    respBody := replaceBMCAccResp(string(body),req.ManagerID)
-	    var managerAcc dmtf.ManagerAccount
-	    json.Unmarshal([]byte(respBody), &managerAcc)
-        resp.Body = managerAcc
+		body, _ := json.Marshal(resp.Body)
+		respBody := replaceBMCAccResp(string(body), req.ManagerID)
+		var managerAcc dmtf.ManagerAccount
+		json.Unmarshal([]byte(respBody), &managerAcc)
+		resp.Body = managerAcc
 	}
 	return resp
 }
@@ -612,12 +612,12 @@ func validateCreateRemoteAccFields(request *mgrmodel.CreateBMCAccount) (int32, s
 	return http.StatusOK, common.OK, []interface{}{}, nil
 }
 
-func replaceBMCAccReq(uri, managerID string) string{
-    uri = strings.Replace(uri, "Managers/"+managerID+"/Remote", "", -1)
-    return uri
+func replaceBMCAccReq(uri, managerID string) string {
+	uri = strings.Replace(uri, "Managers/"+managerID+"/Remote", "", -1)
+	return uri
 }
 
-func replaceBMCAccResp(data, managerID string) string{
-    data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
-    return data
+func replaceBMCAccResp(data, managerID string) string {
+	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
+	return data
 }

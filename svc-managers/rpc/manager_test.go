@@ -427,7 +427,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 		SessionToken: "InvalidToken",
 		ResourceID:   "1",
 		URL:          "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
-		RequestBody:  []byte(`{"UserName":"Username",
+		RequestBody: []byte(`{"UserName":"Username",
 										"Password":"Password",
 										"RoleId":"Administrator"}`),
 	}

@@ -29,13 +29,13 @@ import (
 
 // ManagersRPCs defines all the RPC methods in account service
 type ManagersRPCs struct {
-	GetManagersCollectionRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	GetManagersRPC           func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	GetManagersResourceRPC   func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	VirtualMediaInsertRPC    func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	VirtualMediaEjectRPC     func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	GetRemoteAccountServiceRPC   func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	CreateRemoteAccountServiceRPC   func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetManagersCollectionRPC      func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetManagersRPC                func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetManagersResourceRPC        func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	VirtualMediaInsertRPC         func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	VirtualMediaEjectRPC          func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetRemoteAccountServiceRPC    func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	CreateRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 }
 
 //GetManagersCollection fetches all managers
@@ -263,9 +263,9 @@ func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
 	}
 
 	switch req.URL {
-	case "/redfish/v1/Managers/"+req.ManagerID+"/RemoteAccountService/Accounts" :
+	case "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService/Accounts":
 		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
-	case "/redfish/v1/Managers/"+req.ManagerID+"/RemoteAccountService/Accounts/"+req.ResourceID :
+	case "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService/Accounts/" + req.ResourceID:
 		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	default:
 		ctx.ResponseWriter().Header().Set("Allow", "GET")
@@ -308,7 +308,7 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 		ManagerID:    ctx.Params().Get("id"),
 		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI,
-        RequestBody:  request,
+		RequestBody:  request,
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"

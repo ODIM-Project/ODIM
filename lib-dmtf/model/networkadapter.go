@@ -14,6 +14,7 @@
 
 package model
 
+// NetworkAdapter is the redfish network adapter model
 type NetworkAdapter struct {
 	ODataContext           string                 `json:"@odata.context,omitempty"`
 	ODataEtag              string                 `json:"@odata.etag,omitempty"`
@@ -25,6 +26,7 @@ type NetworkAdapter struct {
 	Assembly               *Link                  `json:"Assembly,omitempty"`
 	Certificates           *Link                  `json:"Certificates,omitempty"`
 	Controllers            []Controllers          `json:"Controllers,omitempty"`
+	Description            string                 `json:"Description,omitempty"`
 	EnvironmentMetrics     *Link                  `json:"EnvironmentMetrics,omitempty"`
 	Identifiers            *Identifier            `json:"Identifiers,omitempty"`
 	Location               *Location              `json:"Location,omitempty"`
@@ -35,6 +37,7 @@ type NetworkAdapter struct {
 	Model                  interface{}            `json:"Model"`
 	NetworkDeviceFunctions *Link                  `json:"NetworkDeviceFunctions,omitempty"`
 	NetworkPorts           *Link                  `json:"NetworkPorts,omitempty"`
+	Oem                    *Oem                   `json:"Oem,omitempty"`
 	PartNumber             interface{}            `json:"PartNumber"`
 	Ports                  *Link                  `json:"Ports,omitempty"`
 	Processors             *Link                  `json:"Processors,omitempty"`
@@ -43,6 +46,7 @@ type NetworkAdapter struct {
 	Status                 *Status                `json:"Status,omitempty"`
 }
 
+// Controllers are The set of network controllers ASICs that make up this NetworkAdapter
 type Controllers struct {
 	ControllerCapabilities *ControllerCapabilities `json:"ControllerCapabilities,omitempty"`
 	FirmwarePackageVersion interface{}             `json:"FirmwarePackageVersion"`
@@ -52,6 +56,7 @@ type Controllers struct {
 	Location               *Location               `json:"Location,omitempty"`
 }
 
+// ControllerCapabilities are The capabilities of a controller
 type ControllerCapabilities struct {
 	DataCenterBridging         *DataCenterBridging    `json:"DataCenterBridging,omitempty"`
 	NetworkDeviceFunctionCount interface{}            `json:"NetworkDeviceFunctionCount"`
@@ -61,35 +66,42 @@ type ControllerCapabilities struct {
 	VirtualizationOffload      *VirtualizationOffload `json:"VirtualizationOffload,omitempty"`
 }
 
+// DataCenterBridging are Data center bridging (DCB) for this controller
 type DataCenterBridging struct {
 	Capable interface{} `json:"Capable"`
 }
 
+// NPAR is NIC Partitioning (NPAR) capabilities for this controller
 type NPAR struct {
 	NparCapable interface{} `json:"NparCapable"`
 	NparEnabled interface{} `json:"NparEnabled"`
 }
 
+// NPIV is N_Port ID Virtualization (NPIV) capabilities for this controller
 type NPIV struct {
 	MaxDeviceLogins interface{} `json:"MaxDeviceLogins"`
 	MaxPortLogins   interface{} `json:"MaxPortLogins"`
 }
 
+// VirtualizationOffload is Virtualization offload for this controller
 type VirtualizationOffload struct {
 	SRIOV           *SRIOV           `json:"SRIOV,omitempty"`
 	VirtualFunction *VirtualFunction `json:"VirtualFunction,omitempty"`
 }
 
+// SRIOV is Single-root input/output virtualization (SR-IOV) capabilities
 type SRIOV struct {
 	SRIOVVEPACapable interface{} `json:"SRIOVVEPACapable"`
 }
 
+// VirtualFunction is a virtual function of a controller
 type VirtualFunction struct {
 	DeviceMaxCount         interface{} `json:"DeviceMaxCount"`
 	MinAssignmentGroupSize interface{} `json:"MinAssignmentGroupSize"`
 	NetworkPortMaxCount    interface{} `json:"NetworkPortMaxCount,"`
 }
 
+// NLinks is links to other resources that are related to this resource
 type NLinks struct {
 	NetworkDeviceFunctions []*Link `json:"NetworkDeviceFunctions,omitempty"`
 	NetworkPorts           []*Link `json:"NetworkPorts,omitempty"`
@@ -98,6 +110,7 @@ type NLinks struct {
 	Ports                  []*Link `json:"Ports,omitempty"`
 }
 
+// NetworkAdapterActions is available actions for this resource
 type NetworkAdapterActions struct {
 	ResetSettings interface{} `json:"#NetworkAdapter.ResetSettingsToDefault,omitempty"`
 	Oem           *Oem        `json:"Oem,omitempty"`

@@ -30,28 +30,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
-func mockPluginClientData(t *testing.T) error {
-	password := getEncryptedKey(t, []byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
-	plugin := smodel.Plugin{
-		IP:                "localhost",
-		Port:              "9091",
-		Username:          "admin",
-		Password:          password,
-		ID:                "GRF",
-		PreferredAuthType: "BasicAuth",
-	}
-	connPool, err := common.GetDBConnection(common.OnDisk)
-	if err != nil {
-		return fmt.Errorf("error while trying to connecting to DB: %v", err)
-	}
-	// Clear previously created key, if exists
-	connPool.Delete("Plugin", "GRF")
-	if err = connPool.Create("Plugin", "GRF", plugin); err != nil {
-		return fmt.Errorf("error while trying to create new %v resource: %v", "Plugin", err.Error())
-	}
-	return nil
-}
-
 func contactPluginClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Storage/ArrayControllers-0/Volumes" {
 		body := `{"MessageId": "` + response.Success + `"}`
@@ -77,25 +55,98 @@ func contactPluginClient(url, method, token string, odataID string, body interfa
 	return nil, fmt.Errorf("InvalidRequest")
 }
 
+func mockGetTarget(uuid string) (*smodel.Target, *errors.Error) {
+	var target *smodel.Target
+	switch uuid {
+	case "54b243cf-f1e3-5319-92d9-2d6737d6b0a":
+		target = &smodel.Target{
+			ManagerAddress: "10.24.0.12",
+			Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
+			UserName:       "admin",
+			DeviceUUID:     "54b243cf-f1e3-5319-92d9-2d6737d6b0a",
+			PluginID:       "GRF",
+		}
+	case "8e896459-a8f9-4c83-95b7-7b316b4908e1":
+		target = &smodel.Target{
+			ManagerAddress: "100.0.0.2",
+			Password:       []byte("someValidPassword"),
+			UserName:       "admin",
+			DeviceUUID:     "8e896459-a8f9-4c83-95b7-7b316b4908e1",
+			PluginID:       "Unknown-Plugin",
+		}
+	default:
+		errorMessage := fmt.Sprintf("error while trying to get compute details: no data with the with key %v found", uuid)
+		return target, errors.PackError(errors.UndefinedErrorType, errorMessage)
+	}
+	return target, nil
+}
+
+func getEncryptKey(key []byte) ([]byte, error) {
+	cryptedKey, err := common.EncryptWithPublicKey(key)
+	if err != nil {
+		return cryptedKey, fmt.Errorf("error: failed to encrypt data: %v", err)
+	}
+	return cryptedKey, nil
+}
+
+func mockGetPluginData(pluginID string) (smodel.Plugin, *errors.Error) {
+	var plugin smodel.Plugin
+	password, keyErr := getEncryptKey([]byte("$2a$10$OgSUYvuYdI/7dLL5KkYNp.RCXISefftdj.MjbBTr6vWyNwAvht6ci"))
+	if keyErr != nil {
+		return plugin, errors.PackError(errors.UndefinedErrorType, keyErr.Error())
+	}
+	switch pluginID {
+	case "GRF":
+		plugin = smodel.Plugin{
+			IP:                "localhost",
+			Port:              "9091",
+			Username:          "admin",
+			Password:          password,
+			ID:                "GRF",
+			PreferredAuthType: "BasicAuth",
+			PluginType:        "GRF",
+		}
+	default:
+		return plugin, errors.PackError(errors.UndefinedErrorType, "No data found for the key")
+	}
+	return plugin, nil
+}
+
+func mockAddSystemResetInfo(systemID, resetType string) *errors.Error {
+	return nil
+}
+
+func mockDeleteVolume(key string) *errors.Error {
+	return nil
+}
+
 func mockGetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		ContactClient:  contactPluginClient,
 		DevicePassword: stubDevicePassword,
 		DB: DB{
-			GetResource: mockGetResource,
+			GetResource:        mockGetResource,
+			DeleteVolume:       mockDeleteVolume,
+			AddSystemResetInfo: mockAddSystemResetInfo,
+			GetPluginData:      mockGetPluginData,
+			GetTarget:          mockGetTarget,
 		},
 		GetPluginStatus: mockPluginStatus,
 	}
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
-	if key == "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0" {
+	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
+	switch key {
+	case "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/0":
 		return "", nil
-	}
-	if key == "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1" {
+	case "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/ArrayControllers-0/Drives/1":
 		return "", nil
+	case "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/1/Volumes/1":
+		return reqData, nil
+	case "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1/Storage/1/Volumes/1":
+		return reqData, nil
 	}
-
 	return "body", nil
 }
 
@@ -107,34 +158,6 @@ func TestPluginContact_CreateVolume(t *testing.T) {
 	// Modify the contents with http.StatusNotImplemented to the correct status
 	// and modify all other info accordingly after implementations
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	device1 := smodel.Target{
-		ManagerAddress: "10.24.0.12",
-		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
-		UserName:       "admin",
-		DeviceUUID:     "54b243cf-f1e3-5319-92d9-2d6737d6b0a",
-		PluginID:       "GRF",
-	}
-
-	err := mockPluginClientData(t)
-	if err != nil {
-		t.Fatalf("Error in creating mock DeviceData :%v", err)
-	}
-	err = mockDeviceData("54b243cf-f1e3-5319-92d9-2d6737d6b0a", device1)
-	if err != nil {
-		t.Fatalf("Error in creating mock resource data :%v", err)
-	}
-
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()
@@ -236,43 +259,6 @@ func TestPluginContact_DeleteVolume(t *testing.T) {
 	// Modify the contents with http.StatusNotImplemented to the correct status
 	// and modify all other info accordingly after implementations
 	config.SetUpMockConfig(t)
-	defer func() {
-		err := common.TruncateDB(common.OnDisk)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		err = common.TruncateDB(common.InMemory)
-		if err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	device1 := smodel.Target{
-		ManagerAddress: "10.24.0.12",
-		Password:       []byte("imKp3Q6Cx989b6JSPHnRhritEcXWtaB3zqVBkSwhCenJYfgAYBf9FlAocE"),
-		UserName:       "admin",
-		DeviceUUID:     "54b243cf-f1e3-5319-92d9-2d6737d6b0a",
-		PluginID:       "GRF",
-	}
-	device2 := smodel.Target{
-		ManagerAddress: "100.0.0.2",
-		Password:       []byte("someValidPassword"),
-		UserName:       "admin",
-		DeviceUUID:     "8e896459-a8f9-4c83-95b7-7b316b4908e1",
-		PluginID:       "Unknown-Plugin",
-	}
-	err := mockPluginClientData(t)
-	if err != nil {
-		t.Fatalf("Error in creating mock DeviceData :%v", err)
-	}
-	mockDeviceData("54b243cf-f1e3-5319-92d9-2d6737d6b0a", device1)
-	mockDeviceData("8e896459-a8f9-4c83-95b7-7b316b4908e1", device2)
-	mockSystemData("/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1")
-	mockSystemData("/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1")
-	var reqData = `{"@odata.id":"/redfish/v1/Systems/1/Storage/1/Volumes/1"}`
-	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/54b243cf-f1e3-5319-92d9-2d6737d6b0a.1/Storage/1/Volumes/1")
-	mockSystemResourceData([]byte(reqData), "Volumes", "/redfish/v1/Systems/8e896459-a8f9-4c83-95b7-7b316b4908e1.1/Storage/1/Volumes/1")
-
 	var positiveResponse interface{}
 	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := mockGetExternalInterface()

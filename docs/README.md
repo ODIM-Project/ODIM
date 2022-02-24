@@ -6833,7 +6833,7 @@ curl -i GET \
       "MaxConcurrentSessions":13,
       "ServiceEnabled":true
    },
-   "SerialInterfacess":{
+   "SerialInterfaces":{
       "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SerialInterfaces"
    },
    "Status":{

@@ -14,13 +14,6 @@
 
 package model
 
-const (
-	// AccountServiceType has schema version for AccountService
-	AccountServiceType = "#AccountService.v1_10_0.AccountService"
-	// RoleType has schema version for Role resource
-	RoleType = "#Role.v1_3_1.Role"
-)
-
 // AccountService the supported properties,
 // this structure should be updated once ODIMRA supports more properties
 type AccountService struct {

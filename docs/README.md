@@ -6519,66 +6519,313 @@ curl -i GET \
 >**Sample response body for a system \(BMC\) manager** 
 
 ```
-{ 
+{
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.etag":"W/\"2D2866FD\"",
-   "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1",
+   "@odata.etag":"W/\"7BFAC0F7\"",
+   "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1",
    "@odata.type":"#Manager.v1_13_0.Manager",
-   "Actions":{ 
-      "#Manager.Reset":{ 
-         "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/Actions/Manager.Reset"
+   "Actions":{
+      "#Manager.Reset":{
+         "ResetType@Redfish.AllowableValues":[
+            "ForceRestart",
+            "GracefulRestart"
+         ],
+         "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Manager.Reset"
       }
    },
-   "CommandShell":{ 
-      "ConnectTypesSupported":[ 
+   "CommandShell":{
+      "ConnectTypesSupported":[
          "SSH",
          "Oem"
       ],
       "MaxConcurrentSessions":9,
       "ServiceEnabled":true
    },
-   "EthernetInterfaces":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/EthernetInterfaces"
+   "DateTime":"2022-02-22T09:35:09Z",
+   "DateTimeLocalOffset":"+08:00",
+   "Description":"BMC Manager",
+   "EthernetInterfaces":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/EthernetInterfaces"
    },
-   "FirmwareVersion":"iLO 5 v1.40",
-   "GraphicalConsole":{ 
-      "ConnectTypesSupported":[ 
+   "FirmwareVersion":"iLO 5 v2.60",
+   "GraphicalConsole":{
+      "ConnectTypesSupported":[
          "KVMIP"
       ],
       "MaxConcurrentSessions":10,
       "ServiceEnabled":true
    },
-   "HostInterfaces":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/HostInterfaces"
+   "HostInterfaces":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/HostInterfaces"
    },
    "Id":"1",
-   "Links":{ 
-      "ManagerForChassis":[ 
-         { 
-            "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c.1"
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
          }
       ],
-      "ManagerForServers":[ 
-         { 
-            "@odata.id":"/redfish/v1/Systems/88b36c7c-d708-4a4a-8af5-5d58779d377c.1"
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
          }
       ],
-      "ManagerInChassis":{ 
-         "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c.1"
+      "ManagerInChassis":{
+         "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
       }
    },
-   "LogServices":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/LogServices"
+   "LogServices":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/LogServices"
    },
    "ManagerType":"BMC",
+   "Model":"iLO 5",
    "Name":"Manager",
-   "NetworkProtocol":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/NetworkProtocol"
+   "NetworkProtocol":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/NetworkProtocol"
    },
-   "Oem":{},
-      
-   "SerialConsole":{ 
-      "ConnectTypesSupported":[ 
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeiLO.HpeiLO",
+         "@odata.type":"#HpeiLO.v2_8_0.HpeiLO",
+         "Actions":{
+            "#HpeiLO.ClearHotKeys":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ClearHotKeys"
+            },
+            "#HpeiLO.ClearRestApiState":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ClearRestApiState"
+            },
+            "#HpeiLO.DisableiLOFunctionality":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.DisableiLOFunctionality"
+            },
+            "#HpeiLO.RequestFirmwareAndOsRecovery":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.RequestFirmwareAndOsRecovery"
+            },
+            "#HpeiLO.ResetToFactoryDefaults":{
+               "ResetType@Redfish.AllowableValues":[
+                  "Default"
+               ],
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ResetToFactoryDefaults"
+            }
+         },
+         "ClearRestApiStatus":"DataPresent",
+         "ConfigurationLimitations":"None",
+         "ConfigurationSettings":"Current",
+         "FederationConfig":{
+            "IPv6MulticastScope":"Site",
+            "MulticastAnnouncementInterval":600,
+            "MulticastDiscovery":"Enabled",
+            "MulticastTimeToLive":5,
+            "iLOFederationManagement":"Enabled"
+         },
+         "Firmware":{
+            "Current":{
+               "Date":"Dec 06 2021",
+               "DebugBuild":false,
+               "MajorVersion":2,
+               "MinorVersion":60,
+               "VersionString":"iLO 5 v2.60"
+            }
+         },
+         "FrontPanelUSB":{
+            "State":"Ready"
+         },
+         "IdleConnectionTimeoutMinutes":30,
+         "IntegratedRemoteConsole":{
+            "HotKeys":[
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-T"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-U"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-V"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-W"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-X"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-Y"
+               }
+            ],
+            "LockKey":{
+               "CustomKeySequence":[
+                  "NONE",
+                  "NONE",
+                  "NONE",
+                  "NONE",
+                  "NONE"
+               ],
+               "LockOption":"Disabled"
+            },
+            "TrustedCertificateRequired":false
+         },
+         "License":{
+            "LicenseKey":"",
+            "LicenseString":"iLO Standard",
+            "LicenseType":"Expired"
+         },
+         "Links":{
+            "ActiveHealthSystem":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/ActiveHealthSystem"
+            },
+            "BackupRestoreService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/BackupRestoreService"
+            },
+            "DateTimeService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/DateTime"
+            },
+            "EmbeddedMediaService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/EmbeddedMedia"
+            },
+            "FederationDispatch":{
+               "extref":"/dispatch"
+            },
+            "FederationGroups":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/FederationGroups"
+            },
+            "FederationPeers":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/FederationPeers"
+            },
+            "GUIService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/GUIService"
+            },
+            "LicenseService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/LicenseService"
+            },
+            "RemoteSupport":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/RemoteSupportService"
+            },
+            "SNMPService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SnmpService"
+            },
+            "SecurityService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SecurityService"
+            },
+            "Thumbnail":{
+               "extref":"/images/thumbnail.bmp"
+            },
+            "VSPLogLocation":{
+               "extref":"/sol.log.gz"
+            }
+         },
+         "PersistentMouseKeyboardEnabled":false,
+         "PhysicalMonitorHealthStatusEnabled":true,
+         "RIBCLEnabled":true,
+         "RemoteConsoleThumbnailEnabled":true,
+         "RequireHostAuthentication":false,
+         "RequiredLoginForiLORBSU":false,
+         "SerialCLISpeed":9600,
+         "SerialCLIStatus":"EnabledAuthReq",
+         "SerialCLIUART":"Present",
+         "VSPDlLoggingEnabled":false,
+         "VSPLogDownloadEnabled":false,
+         "VideoPresenceDetectOverride":true,
+         "VideoPresenceDetectOverrideSupported":true,
+         "VirtualNICEnabled":true,
+         "WebGuiEnabled":true,
+         "iLOFunctionalityEnabled":true,
+         "iLOFunctionalityRequired":false,
+         "iLOIPduringPOSTEnabled":true,
+         "iLORBSUEnabled":true,
+         "iLOSelfTestResults":[
+            {
+               "Notes":"",
+               "SelfTestName":"NVRAMData",
+               "Status":"OK"
+            },
+            {
+               "Notes":"Controller firmware revision  2.11.00  ",
+               "SelfTestName":"EmbeddedFlash",
+               "Status":"OK"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"EEPROM",
+               "Status":"OK"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"HostRom",
+               "Status":"OK"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"SupportedHost",
+               "Status":"OK"
+            },
+            {
+               "Notes":"Version 1.0.4",
+               "SelfTestName":"PowerManagementController",
+               "Status":"Informational"
+            },
+            {
+               "Notes":"ProLiant DL380 Gen10 System Programmable Logic Device 0x2A",
+               "SelfTestName":"CPLDPAL0",
+               "Status":"Informational"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"ASICFuses",
+               "Status":"OK"
+            }
+         ],
+         "iLOServicePort":{
+            "MassStorageAuthenticationRequired":false,
+            "USBEthernetAdaptersEnabled":true,
+            "USBFlashDriveEnabled":true,
+            "iLOServicePortEnabled":true
+         }
+      }
+   },
+   "PowerState":"On",
+   "SerialConsole":{
+      "ConnectTypesSupported":[
          "SSH",
          "IPMI",
          "Oem"
@@ -6586,12 +6833,16 @@ curl -i GET \
       "MaxConcurrentSessions":13,
       "ServiceEnabled":true
    },
-   "Status":{ 
-      "State":"Absent"
+   "SerialInterfacess":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SerialInterfaces"
    },
-   "UUID":"a964d6a9-a45c-57aa-90ec-08b38850b2f3",
-   "VirtualMedia":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c.1/VirtualMedia"
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "UUID":"d8887d98-17ff-53a2-9977-e63b5ae66864",
+   "VirtualMedia":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/VirtualMedia"
    }
 }
 ```
@@ -6601,16 +6852,28 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
+   "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c",
    "@odata.type":"#Manager.v1_13_0.Manager",
-   "Name":"ODIMRA",
+   "Name":"odimra",
    "ManagerType":"Service",
-   "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "UUID":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
+   "Id":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "UUID":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
    "FirmwareVersion":"1.0",
    "Status":{
-      "State":"Enabled"
-   }
+      "State":"Enabled",
+      "Health":"OK"
+   },
+   "LogServices":{
+      "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c/LogServices"
+   },
+   "DateTime":"2022-02-22 09:48:42.652994406 +0000 UTC",
+   "Model":"ODIMRA 1.0",
+   "PowerState":"On",
+   "SerialConsole":{
+      
+   },
+   "Description":"Odimra Manager",
+   "DateTimeLocalOffset":"+00:00"
 }
 ```
 
@@ -6620,31 +6883,42 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
-   "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
+   "@odata.id":"/redfish/v1/Managers/ac04517b-b582-4501-b1a9-7158149cda10",
    "@odata.type":"#Manager.v1_13_0.Manager",
+   "DateTime":"2022-02-22 09:52:43.651476316 +0000 UTC",
+   "DateTimeLocalOffset":"+00:00",
+   "Description":"Plugin Manager",
    "FirmwareVersion":"v1.0.0",
-   "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
+   "Id":"ac04517b-b582-4501-b1a9-7158149cda10",
    "Links":{
       "ManagerForChassis":[
          {
-            "@odata.id":"/redfish/v1/Chassis/ff4655fe-5afa-4b1f-acb0-ddf2f2af61bf.1"
+            "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
          }
       ],
       "ManagerForServers":[
          {
-            "@odata.id":"/redfish/v1/Systems/ff4655fe-5afa-4b1f-acb0-ddf2f2af61bf.1"
+            "@odata.id":"/redfish/v1/Systems/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
          }
       ]
    },
+   "LogServices":{
+      "@odata.id":"/redfish/v1/Managers/ac04517b-b582-4501-b1a9-7158149cda10/LogServices"
+   },
    "ManagerType":"Service",
-   "Name":"GRF",
+   "Name":"ILO",
+   "SerialConsole":{
+      
+   },
    "Status":{
       "Health":"OK",
       "State":"Enabled"
    },
-   "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
+   "UUID":"ac04517b-b582-4501-b1a9-7158149cda10"
 }
 ```
+
+
 
 ## VirtualMedia
 

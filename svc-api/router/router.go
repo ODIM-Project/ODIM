@@ -127,13 +127,13 @@ func Router() *iris.Application {
 	}
 
 	manager := handle.ManagersRPCs{
-		GetManagersCollectionRPC: rpc.GetManagersCollection,
-		GetManagersRPC:           rpc.GetManagers,
-		GetManagersResourceRPC:   rpc.GetManagersResource,
-		VirtualMediaInsertRPC:    rpc.VirtualMediaInsert,
-		VirtualMediaEjectRPC:     rpc.VirtualMediaEject,
-        GetRemoteAccountServiceRPC: rpc.GetRemoteAccountService,
-        CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
+		GetManagersCollectionRPC:      rpc.GetManagersCollection,
+		GetManagersRPC:                rpc.GetManagers,
+		GetManagersResourceRPC:        rpc.GetManagersResource,
+		VirtualMediaInsertRPC:         rpc.VirtualMediaInsert,
+		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
+		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
+		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -560,13 +560,13 @@ func Router() *iris.Application {
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
-    managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
-    managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
-    managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
-    managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
-    managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)
-    managers.Any("/{id}/RemoteAccountService/Accounts", handle.ManagersMethodNotAllowed)
-    managers.Any("/{id}/RemoteAccountService/Accounts/{rid}", handle.ManagersMethodNotAllowed)
+	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
+	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
+	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/RemoteAccountService/Roles", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/RemoteAccountService/Roles/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices", handle.ManagersMethodNotAllowed)

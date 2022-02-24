@@ -291,8 +291,8 @@ func TestGetRemoteAccountService(t *testing.T) {
 	config.SetUpMockConfig(t)
 
 	req := &managersproto.ManagerRequest{
-		ManagerID:  "uuid.1",
-		URL:        "/redfish/v1/Managers/uuid.1/RemoteAccountService",
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService",
 	}
 	e := mockGetExternalInterface()
 	response := e.GetRemoteAccountService(req)
@@ -317,11 +317,11 @@ func TestGetRemoteAccountService(t *testing.T) {
 
 func TestCreateRemoteAccountService(t *testing.T) {
 	mgrcommon.Token.Tokens = make(map[string]string)
-    e := mockGetExternalInterface()
+	e := mockGetExternalInterface()
 	config.SetUpMockConfig(t)
 	req := &managersproto.ManagerRequest{
-		ManagerID:  "uuid.1",
-		URL:        "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
 		RequestBody: []byte(`{"UserName":"UserName",
                                  "Password":"Password",
                                  "RoleId":"Administrator"}`),

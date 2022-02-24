@@ -462,7 +462,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	redfishRoutes.Post("/{id}/RemoteAccountService/Accounts", mgr.CreateRemoteAccountService)
 	test := httptest.New(t, mockApp)
 
-    payload := map[string]string{"UserName": "username","Password":"Password","RoleId":"Administrator"}
+	payload := map[string]string{"UserName": "username", "Password": "Password", "RoleId": "Administrator"}
 
 	test.POST(
 		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",

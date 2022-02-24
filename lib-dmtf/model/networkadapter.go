@@ -15,32 +15,32 @@
 package model
 
 type NetworkAdapter struct {
-	ODataContext           string        `json:"@odata.context,omitempty"`
-	ODataEtag              string        `json:"@odata.etag,omitempty"`
-	ODataID                string        `json:"@odata.id"`
-	ODataType              string        `json:"@odata.type"`
-	ID                     string        `json:"Id"`
-	Name                   string        `json:"Name"`
-	Actions                *OemActions   `json:"Actions,omitempty"`
-	Assembly               *Link         `json:"Assembly,omitempty"`
-	Certificates           *Link         `json:"Certificates,omitempty"`
-	Controllers            []Controllers `json:"Controllers,omitempty"`
-	EnvironmentMetrics     *Link         `json:"EnvironmentMetrics,omitempty"`
-	Identifiers            *Identifier   `json:"Identifiers,omitempty"`
-	Location               *Location     `json:"Location,omitempty"`
-	LLDPEnabled            bool          `json:"LLDPEnabled,omitempty"`
-	Manufacturer           interface{}   `json:"Manufacturer"`
-	Measurements           []*Link       `json:"Measurements,omitempty"`
-	Metrics                *Link         `json:"Metrics,omitempty"`
-	Model                  interface{}   `json:"Model"`
-	NetworkDeviceFunctions *Link         `json:"NetworkDeviceFunctions,omitempty"`
-	NetworkPorts           *Link         `json:"NetworkPorts,omitempty"`
-	PartNumber             interface{}   `json:"PartNumber"`
-	Ports                  *Link         `json:"Ports,omitempty"`
-	Processors             *Link         `json:"Processors,omitempty"`
-	SerialNumber           interface{}   `json:"SerialNumber"`
-	SKU                    interface{}   `json:"SKU"`
-	Status                 *Status       `json:"Status,omitempty"`
+	ODataContext           string                 `json:"@odata.context,omitempty"`
+	ODataEtag              string                 `json:"@odata.etag,omitempty"`
+	ODataID                string                 `json:"@odata.id"`
+	ODataType              string                 `json:"@odata.type"`
+	ID                     string                 `json:"Id"`
+	Name                   string                 `json:"Name"`
+	Actions                *NetworkAdapterActions `json:"Actions,omitempty"`
+	Assembly               *Link                  `json:"Assembly,omitempty"`
+	Certificates           *Link                  `json:"Certificates,omitempty"`
+	Controllers            []Controllers          `json:"Controllers,omitempty"`
+	EnvironmentMetrics     *Link                  `json:"EnvironmentMetrics,omitempty"`
+	Identifiers            *Identifier            `json:"Identifiers,omitempty"`
+	Location               *Location              `json:"Location,omitempty"`
+	LLDPEnabled            bool                   `json:"LLDPEnabled,omitempty"`
+	Manufacturer           interface{}            `json:"Manufacturer"`
+	Measurements           []*Link                `json:"Measurements,omitempty"`
+	Metrics                *Link                  `json:"Metrics,omitempty"`
+	Model                  interface{}            `json:"Model"`
+	NetworkDeviceFunctions *Link                  `json:"NetworkDeviceFunctions,omitempty"`
+	NetworkPorts           *Link                  `json:"NetworkPorts,omitempty"`
+	PartNumber             interface{}            `json:"PartNumber"`
+	Ports                  *Link                  `json:"Ports,omitempty"`
+	Processors             *Link                  `json:"Processors,omitempty"`
+	SerialNumber           interface{}            `json:"SerialNumber"`
+	SKU                    interface{}            `json:"SKU"`
+	Status                 *Status                `json:"Status,omitempty"`
 }
 
 type Controllers struct {
@@ -96,4 +96,9 @@ type NLinks struct {
 	Oem                    *Oem    `json:"Oem,omitempty"`
 	PCIeDevices            []*Link `json:"PCIeDevices,omitempty"`
 	Ports                  []*Link `json:"Ports,omitempty"`
+}
+
+type NetworkAdapterActions struct {
+	ResetSettings interface{} `json:"#NetworkAdapter.ResetSettingsToDefault,omitempty"`
+	Oem           *Oem        `json:"Oem,omitempty"`
 }

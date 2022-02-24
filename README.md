@@ -4,10 +4,8 @@
 # Table of contents
 
 1. [Introduction](#introduction)
-   - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
    - [Resource Aggregator for ODIM Deployment overview](#resource-aggregator-for-odim-deployment-overview)
    - [Deployment considerations](#deployment-considerations)
-  
 2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
 3. [Predeployment procedures](#predeployment-procedures)
    - [Setting up the environment](#setting-up-the-environment)
@@ -41,7 +39,13 @@
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
    - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
-8. [Appendix](#appendix)
+8. [Contributing to the open source community](#contributing-to-the-open-source-community)
+   - [Creating a PR](#creating-a-pr)
+   - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
+   - [Adding new plugins and services](#adding-new-plugins-and-services)
+   - [Licensing](#licensing)
+   - [Reference links](#reference-links)
+9. [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing go](#downloading-and-installing-go)
@@ -93,18 +97,8 @@ Resource Aggregator for ODIM comprises the following two key components:
    -  Integration of additional third-party plugins
    
    Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
-
-## Filing Resource Aggregator for ODIM defects 
-
-**Important**: In case of any unforeseen issues you experience while deploying or using Resource Aggregator for ODIM, log on to the following website and file your defect by clicking **Create**.
-
-**Prerequisite**: You must have valid LFN Jira credentials to create defects.
-
-- Website: https://jira.lfnetworking.org/secure/Dashboard.jspa
-- Discussion Forums: https://odim.slack.com/archives/C01DG9MH479
-- Documentation:
-  - Deployment Document- https://github.com/ODIM-Project/ODIM#readme
-  - Additional documents - https://github.com/ODIM-Project/ODIM/blob/main/docs
+   
+   
 
 ## Resource Aggregator for ODIM deployment overview
 
@@ -2256,7 +2250,87 @@ NOTE: When you upgrade the Resource Aggregator for ODIM deployment, the new conf
     --upgrade odimra-config
         ```
         
+# Contributing to the open source community
+
+Welcome to the GitHub open-source community for Resource Aggregator for ODIM!
+
+If you want to contribute to the project to make it better, your help is welcome and highly appreciated. 
+Contribution is a great way of extending the understanding and value of open-source software and development models, towards a common goal. Apart from learning more about social coding on GitHub, new technologies and their ecosystems, you can keep the discussion forums active by sharing knowledge, asking right questions, finding information through effective collaborations as well as make constructive, helpful bug reports, feature requests, and the noblest of all contributions—a good, clean pull request (PR).
+All bugs or feature requests must be submitted through a PR to the development branch and are expected to have unit tests and/or integration tests with the PR. 
+
+## Creating a PR
+
+<blockquote>Prerequisite: Follow the project's contribution instructions, if any. </blockquote>
+
+1.	Create a personal fork of the project on GitHub.
+2.	Clone the fork on your local machine. Your remote repo on GitHub is called origin.
+3.	Add the original repository as a remote called upstream.
+4.	If you created your fork a while ago, be sure to pull upstream changes into your local repository.
+5.	Create a new branch to work on. Branch from development (if it exists), else from the main branch.
+6.	Implement/fix your feature, comment your code.
+7.	Follow the code style of the project, including indentation.
+8.	If the project has tests, run them!
+9.	Write or adapt tests as needed.
+10.	Add or change the documentation as needed.
+11.	Squash your commits into a single commit with git's interactive rebase. Create a new branch, if necessary.
+12.	Push your branch to your fork on GitHub, the remote origin.
+13.	From your fork, open a PR in the correct branch. Target the project's development branch if there is one, else go for main.
+14. Once the pull request is approved and merged, pull the changes from upstream to your local repository and delete your extra branch(es).
+
+    Last, but not the least, **always write your commit messages in the present tense**. Your commit message should describe what the commit is, when is it applied, and what it does to the code – not what you did to the code.
+
+
+
+## Filing Resource Aggregator for ODIM defects 
+
+In case of any unforeseen issues you experience while deploying or using Resource Aggregator for ODIM, log on to the following website and file your defect by clicking **Create**.
+
+**Prerequisite**: You must have valid LFN Jira credentials to create defects.
+
+- Website: https://jira.lfnetworking.org/secure/Dashboard.jspa
+- Discussion Forums: https://odim.slack.com/archives/C01DG9MH479
+- Documentation:
+  - Deployment Document- https://github.com/ODIM-Project/ODIM#readme
+  - Additional documents - https://github.com/ODIM-Project/ODIM/blob/main/docs
+
+
+
+## Adding new plugins and services
+
+File a defect and submit a PR for adding new plugin. Run all the integration tests with their plugins and provide the logs of the result in the PR. You will be asked to run the integration tests before each release to make sure there are no issues.
+
+We do not maintain compiled proto modules in Resource Aggregator for ODIM. They must be generated during deployment. This applies to all contributions.
+
+<blockquote>NOTE: Comply to the coding standards of the programming languages being used in the project. </blockquote>
+
+
+
+## Licensing
+
+The specification and code is licensed under the Apache 2.0 license, and is found in the LICENSE file of this repository.
+
+
+
+## Reference links
+
+If you want to make your first contribution on GitHub, refer one of the following procedures:
+
+- https://github.com/firstcontributions/first-contributions/blob/master/README.md
+
+- https://www.dataschool.io/how-to-contribute-on-github/
+
+You can also refer the following links for exploring Wiki page and slack channel for ODIM.
+
+- https://odim.io/
+
+- https://wiki.odim.io/
+
+- https://wiki.odim.io/display/HOME/TSC+channel+on+slack
+
+
+
 # Appendix
+
 ## Setting proxy configuration
 
 1. Open the `/etc/environment` file to edit. 

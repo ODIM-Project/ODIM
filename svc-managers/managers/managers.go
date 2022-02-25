@@ -30,6 +30,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -120,6 +121,12 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		//adding default description
 		if _, ok := managerData["Description"]; !ok {
 			managerData["Description"] = "BMC Manager"
+		}
+		//adding RemoteAccountService object to manager response
+		if _, ok := managerData["RemoteAccountService"]; !ok {
+			managerData["RemoteAccountService"] = map[string]string{
+				"@odata.id": "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService",
+			}
 		}
 		//adding PowerState
 		if _, ok := managerData["PowerState"]; !ok {
@@ -484,4 +491,133 @@ func (e *ExternalInterface) deviceCommunication(reqURL, uuid, systemID, httpMeth
 		RequestBody:           requestBody,
 	}
 	return e.Device.DeviceRequest(deviceInfoRequest)
+}
+
+// GetRemoteAccountService is used to fetch resource data for BMC account service.
+// ManagerRequest holds the UUID, URL and ResourceId ,
+// There will be two return values for the function. One is the RPC response, which contains the
+// status code, status message, headers and body and the second value is error.
+func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
+	if err != nil {
+		errorMessage := "unable to get resource details from device: " + err.Error()
+		log.Error(errorMessage)
+		errArgs := []interface{}{}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	}
+	// Replace response body to BMC manager
+	data = replaceBMCAccResp(data, req.ManagerID)
+	resource := convertToRedfishModel(req.URL, data)
+	resp.Body = resource
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	return resp
+}
+
+func convertToRedfishModel(uri, data string) interface{} {
+	URIRegexRemAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService+[\/]?$`)
+	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+	if URIRegexRemAcc.MatchString(uri) {
+		var resource dmtf.AccountService
+		json.Unmarshal([]byte(data), &resource)
+		return resource
+	} else if URIRegexAcc.MatchString(uri) {
+		var resource dmtf.ManagerAccount
+		json.Unmarshal([]byte(data), &resource)
+		return resource
+	} else if URIRegexRoles.MatchString(uri) {
+		var resource dmtf.Role
+		json.Unmarshal([]byte(data), &resource)
+		return resource
+	}
+	var resource map[string]interface{}
+	json.Unmarshal([]byte(data), &resource)
+	return resource
+}
+
+// CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var requestBody = req.RequestBody
+	var bmcAccReq mgrmodel.CreateBMCAccount
+	// Updating the default values
+	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
+	if err != nil {
+		errorMessage := "while unmarshaling the create remote account service request: " + err.Error()
+		log.Error(errorMessage)
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		return resp
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
+	if err != nil {
+		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response
+	}
+
+	// Check mandatory fields
+	statuscode, statusMessage, messageArgs, err := validateCreateRemoteAccFields(&bmcAccReq)
+	if err != nil {
+		errorMessage := "request payload validation failed: " + err.Error()
+		log.Error(errorMessage)
+		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
+		return resp
+	}
+	requestBody, err = json.Marshal(bmcAccReq)
+	if err != nil {
+		log.Error("while marshalling the create BMC account request: " + err.Error())
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return resp
+	}
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
+
+	if resp.StatusCode == 200 {
+		body, _ := json.Marshal(resp.Body)
+		respBody := replaceBMCAccResp(string(body), req.ManagerID)
+		var managerAcc dmtf.ManagerAccount
+		json.Unmarshal([]byte(respBody), &managerAcc)
+		resp.Body = managerAcc
+	}
+	return resp
+}
+
+// validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
+func validateCreateRemoteAccFields(request *mgrmodel.CreateBMCAccount) (int32, string, []interface{}, error) {
+	validate := validator.New()
+	// if any of the mandatory fields missing in the struct, then it will return an error
+	err := validate.Struct(request)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			return http.StatusBadRequest, response.PropertyMissing, []interface{}{err.Field()}, fmt.Errorf(err.Field() + " field is missing")
+		}
+	}
+	return http.StatusOK, common.OK, []interface{}{}, nil
+}
+
+func replaceBMCAccReq(uri, managerID string) string {
+	uri = strings.Replace(uri, "Managers/"+managerID+"/Remote", "", -1)
+	return uri
+}
+
+func replaceBMCAccResp(data, managerID string) string {
+	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
+	return data
 }

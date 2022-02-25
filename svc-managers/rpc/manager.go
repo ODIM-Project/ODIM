@@ -156,3 +156,51 @@ func generateResponse(input interface{}) []byte {
 	}
 	return bytes
 }
+
+// GetRemoteAccountService defines the operations which handles the RPC request response
+// The functionality retrieves the request and return backs the response to
+// RPC according to the protoc file defined in the lib-util package.
+// The function uses IsAuthorized of lib-util to validate the session token
+// which is present in the request.
+func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return &resp, nil
+	}
+	data := m.EI.GetRemoteAccountService(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return &resp, nil
+}
+
+// CreateRemoteAccountService defines the operations which handles the RPC request response
+// The functionality retrieves the request and return backs the response to
+// RPC according to the protoc file defined in the lib-util package.
+// The function uses IsAuthorized of lib-util to validate the session token
+// which is present in the request.
+func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return &resp, nil
+	}
+	data := m.EI.CreateRemoteAccountService(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return &resp, nil
+}

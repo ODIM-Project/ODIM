@@ -298,3 +298,48 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 	response = e.VirtualMediaActions(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 }
+
+func TestGetRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+
+	config.SetUpMockConfig(t)
+
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService",
+	}
+	e := mockGetExternalInterface()
+	response := e.GetRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/1",
+	}
+	response = e.GetRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/RemoteAccountService/Roles/1",
+	}
+	response = e.GetRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+}
+
+func TestCreateRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+	e := mockGetExternalInterface()
+	config.SetUpMockConfig(t)
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody: []byte(`{"UserName":"UserName",
+                                 "Password":"Password",
+                                 "RoleId":"Administrator"}`),
+	}
+	response := e.CreateRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+}

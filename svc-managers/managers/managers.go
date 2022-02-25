@@ -18,6 +18,10 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -29,9 +33,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
@@ -173,14 +174,48 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
 	var mgrData mgrmodel.RAManager
-
 	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {
 		return mgr, fmt.Errorf("unable to retrieve manager information: %v", err)
 	}
+
 	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
+
+	chassisList, chassisErr := e.DB.GetAllKeysFromTable("Chassis")
+	if chassisErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve chassis list information: %v", chassisErr)
+	}
+
+	serverList, serverErr := e.DB.GetAllKeysFromTable("ComputerSystem")
+	if serverErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve server list information: %v", serverErr)
+	}
+	managerList, mgrErr := e.DB.GetAllKeysFromTable("Managers")
+	if mgrErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve manager list information: %v", mgrErr)
+	}
+	var chassisLink, serverLink, managerLink []*dmtf.Link
+	if len(chassisList) > 0 {
+		for _, key := range chassisList {
+			chassisLink = append(chassisLink, &dmtf.Link{Oid: key})
+		}
+	}
+	if len(serverList) > 0 {
+		for _, key := range serverList {
+			serverLink = append(serverLink, &dmtf.Link{Oid: key})
+		}
+	}
+	odimURI := "/redfish/v1/Managers/" + config.Data.RootServiceUUID
+	if len(managerList) > 0 {
+		for _, key := range managerList {
+			if key != odimURI {
+				managerLink = append(managerLink, &dmtf.Link{Oid: key})
+			}
+		}
+	}
+
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
@@ -193,6 +228,11 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		Status: &mgrmodel.Status{
 			State:  mgrData.State,
 			Health: mgrData.Health,
+		},
+		Links: &mgrmodel.Links{
+			ManagerForChassis:  chassisLink,
+			ManagerForServers:  serverLink,
+			ManagerForManagers: managerLink,
 		},
 		Description:         mgrData.Description,
 		LogServices:         mgrData.LogServices,

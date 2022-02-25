@@ -189,7 +189,7 @@ func (m *Managers) GetRemoteAccountService(ctx context.Context, req *managerspro
 func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var resp managersproto.ManagerResponse
 	sessionToken := req.SessionToken
-	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		resp.StatusCode = authResp.StatusCode
 		resp.StatusMessage = authResp.StatusMessage

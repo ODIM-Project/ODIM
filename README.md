@@ -1425,7 +1425,11 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     cd ODIM
     ```
 
-9. Save the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
+9. Copy the proxy configuration file `install/templates/dellplugin_proxy_server.conf.j2` to `~/plugins/dellplugin`.
+
+    ```
+    cp install/templates/dellplugin_proxy_server.conf.j2 ~/plugins/dellplugin
+    ```
 
     **Important**: Do NOT change the value of any parameter in this file. 
 
@@ -1572,7 +1576,11 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
    cd ODIM
    ```
 
-9. Save the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
+9. Copy the proxy configuration file `install/templates/lenovoplugin_proxy_server.conf.j2` to `~/plugins/lenovoplugin`.
+
+   ```
+   cp install/templates/lenovoplugin_proxy_server.conf.j2 ~/plugins/lenovoplugin
+   ```
 
    **Important**: Do NOT change the value of any parameter in this file. 
 
@@ -3000,7 +3008,11 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     cd ODIM
     ```
 
-9. Save the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.
+9. Copy the proxy configuration file `install/templates/grfplugin_proxy_server.conf.j2` to `~/plugins/grfplugin`.
+
+    ```
+    cp install/templates/grfplugin_proxy_server.conf.j2 ~/plugins/grfplugin
+    ```
 
     **Important**: Do NOT change the value of any parameter in this file. 
 

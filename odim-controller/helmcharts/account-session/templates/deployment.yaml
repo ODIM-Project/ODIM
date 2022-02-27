@@ -23,7 +23,7 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: account-session
+              app: account-session      
       hostname: account-session
       volumes:
         - name: odimra-config-vol
@@ -59,12 +59,14 @@ spec:
             - key: odimra_rsaprivate
               path: odimra_rsa.private
               mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt
               mode: 0444
             - key: odimra_kafka_clientkey
               path: odimra_kafka_client.key
               mode: 0444
+            {{- end }}
         - name: odimra-log
           persistentVolumeClaim:
             claimName: odimra-log-claim

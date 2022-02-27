@@ -18,8 +18,8 @@ package scommon
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,6 +29,16 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
+
+// Schema is used to define the allowed values for search/filter
+type Schema struct {
+	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
+	ConditionKeys []string                       `json:"conditionKeys"`
+	QueryKeys     []string                       `json:"queryKeys"`
+}
+
+// SF holds the schema data for search/filter
+var SF Schema
 
 //PluginContactRequest  hold the request of contact plugin
 type PluginContactRequest struct {
@@ -113,7 +123,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 		"Password":       decryptedPasswordByte,
 	}
 	//replace the uuid:system id with the system to the @odata.id from request url
-	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
 	body, _, _, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
@@ -132,12 +142,12 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest, saveRequired bool) (stri
 	 */
 	//replacing the uuid while saving the data
 	//to replace the id of system
-	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+":", -1)
+	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+".", -1)
 	// to replace the id in managers
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+".", -1)
 	// to replace id in chassis
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+".", -1)
 
 	if saveRequired && checkRetrievalInfo(contactRequest.OID) {
 		oidKey = keyFormation(contactRequest.OID, req.SystemID, req.UUID)
@@ -169,7 +179,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis")) {
-			key = append(key, DeviceUUID+":"+id)
+			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
 		key = append(key, id)
@@ -203,7 +213,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -213,11 +223,11 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
-	log.Println("Response", string(body))
-	log.Println("response.StatusCode", response.StatusCode)
+	log.Info("Response" + string(body))
+	log.Info("response.StatusCode" + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
 		resp.StatusCode = int32(response.StatusCode)
 		log.Println(errorMessage)
@@ -234,7 +244,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 
 func checkRetrievalInfo(oid string) bool {
 	//skiping the Retrieval if parent oid contains links in other resource of config
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(oid, resourceName) {
 			return false
 		}
@@ -261,10 +271,10 @@ func GetPluginStatus(plugin smodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + ": " + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -278,4 +288,23 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 		return req.ContactClient(reqURL, req.HTTPMethodType, "", oid, req.DeviceInfo, req.BasicAuth)
 	}
 	return req.ContactClient(reqURL, req.HTTPMethodType, req.Token, oid, req.DeviceInfo, nil)
+}
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+func TrackConfigFileChanges(configFilePath string) {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	select {
+	case <-eventChan: // new data arrives through eventChan channel
+		config.TLSConfMutex.RLock()
+		schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
+		if err != nil {
+			log.Error("error while trying to read search/filter schema json" + err.Error())
+		}
+		config.TLSConfMutex.RUnlock()
+		err = json.Unmarshal(schemaFile, &SF)
+		if err != nil {
+			log.Error("error while trying to fetch search/filter schema json" + err.Error())
+		}
+	}
 }

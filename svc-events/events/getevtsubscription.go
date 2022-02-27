@@ -32,7 +32,6 @@ import (
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
@@ -44,16 +43,9 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	var subscriptions *evresponse.SubscriptionResponse
 
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(req.EventSubscriptionID)
+	subscriptionDetails, err := p.GetEvtSubscriptions(req.EventSubscriptionID)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()
@@ -62,7 +54,7 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 	if len(subscriptionDetails) < 1 {
 		log.Printf("Subscription details not found for ID: %v", req.EventSubscriptionID)
 		errorMessage := fmt.Sprintf("Subscription details not found for ID: %v", req.EventSubscriptionID)
-		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 	}
 
 	for _, evtSubscription := range subscriptionDetails {
@@ -83,7 +75,7 @@ func (p *PluginContact) GetEventSubscriptionsDetails(req *eventsproto.EventReque
 			return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"EventSubscription", req.EventSubscriptionID}, nil)
 		}
 		commonResponse := response.Response{
-			OdataType:    "#EventDestination.v1_7_0.EventDestination",
+			OdataType:    common.EventDestinationType,
 			ID:           evtSubscription.SubscriptionID,
 			Name:         evtSubscription.Name,
 			OdataContext: "/redfish/v1/$metadata#EventDestination.EventDestination",
@@ -124,17 +116,10 @@ func (p *PluginContact) GetEventSubscriptionsCollection(req *eventsproto.EventRe
 		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		return authResp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	listMembers := []evresponse.ListMember{}
 	searchKey := "*"
 
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptionDetails, err := p.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		log.Printf("error getting eventsubscription details : %v", err)
 		errorMessage := err.Error()

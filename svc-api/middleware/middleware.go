@@ -18,7 +18,7 @@ package middleware
 import (
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 //SessionDelMiddleware is used to delete session created for basic auth
@@ -31,7 +31,7 @@ func SessionDelMiddleware(ctx iris.Context) {
 		resp, err := rpc.DeleteSessionRequest(sessionID, sessionToken)
 		if err != nil && resp == nil {
 			errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return
 		}
 	}

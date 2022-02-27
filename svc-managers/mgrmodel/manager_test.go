@@ -32,7 +32,7 @@ func TestGenericSave(t *testing.T) {
 
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
+	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
@@ -61,7 +61,7 @@ func TestManager_Update(t *testing.T) {
 			"State": "Absent",
 		},
 	}
-	err = UpdateManagersData(key, m)
+	err = UpdateData(key, m, "Managers")
 
 	data, err := GetResource(table, key)
 	assert.Nil(t, err, "There should be no error getting data")
@@ -82,7 +82,7 @@ func TestGetResourceNegativeTestCases(t *testing.T) {
 	}()
 	// without db configuration
 	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
+	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 
 	_, err := GetResource(table, key)
 	assert.NotNil(t, err, "There should be an error")
@@ -90,7 +90,7 @@ func TestGetResourceNegativeTestCases(t *testing.T) {
 	// if key not present
 	common.SetUpMockConfig()
 	table = "Ethernet"
-	key = "/redfish/v1/Managers/uuid:1/Ethernets/1"
+	key = "/redfish/v1/Managers/uuid.1/Ethernets/1"
 
 	_, err = GetResource(table, key)
 	assert.NotNil(t, err, "There should be an error")
@@ -108,7 +108,7 @@ func TestGetAllkeysFromTable(t *testing.T) {
 
 	body := []byte(`body`)
 	table := "EthernetInterfaces"
-	key := "/redfish/v1/Managers/uuid:1/EthernetInterfaces/1"
+	key := "/redfish/v1/Managers/uuid.1/EthernetInterfaces/1"
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
@@ -128,7 +128,7 @@ func TestGetManagerByURL(t *testing.T) {
 
 	body := []byte(`body`)
 	table := "Managers"
-	key := "/redfish/v1/Managers/uuid:1"
+	key := "/redfish/v1/Managers/uuid.1"
 	err := GenericSave(body, table, key)
 	assert.Nil(t, err, "There should be no error")
 
@@ -147,7 +147,7 @@ func TestGetManagerByURLNegativeTestCase(t *testing.T) {
 	}()
 	// if key not present
 	common.SetUpMockConfig()
-	key := "/redfish/v1/Managers/uuid1:1"
+	key := "/redfish/v1/Managers/uuid1.1"
 	_, err := GetManagerByURL(key)
 	assert.NotNil(t, err, "There should be an error")
 
@@ -170,7 +170,7 @@ func TestAddManagertoDB(t *testing.T) {
 		UUID:            "3bd1f589-117a-4cf9-89f2-da44ee8e012b",
 		State:           "Enabled",
 	}
-	err := mngr.AddManagertoDB()
+	err := AddManagertoDB(mngr)
 	assert.Nil(t, err, "There should be no error")
 
 	data, err := GetManagerByURL("/redfish/v1/Managers/" + mngr.UUID)

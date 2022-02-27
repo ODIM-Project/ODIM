@@ -62,7 +62,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while deleting user: no data with the with key xyz found",
+				ErrorMessage:  "Unable to delete user: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Account", "xyz"},
 			},
 		},
@@ -73,7 +73,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: SomeOne does not have the privilege to delete user",
+				ErrorMessage:  "SomeOne does not have the privilege to delete user",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -101,14 +101,6 @@ func TestDelete(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNoContent,
 				StatusMessage: response.AccountRemoved,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Transfer-Encoding": "chunked",
-					"Content-type":      "application/json; charset=utf-8",
-					"OData-Version":     "4.0",
-					"X-Frame-Options":   "sameorigin",
-				},
 			},
 		},
 		{
@@ -124,10 +116,7 @@ func TestDelete(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -144,10 +133,7 @@ func TestDelete(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -211,10 +197,7 @@ func TestDeleteDefaultAdminAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.ResourceCannotBeDeleted,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 	}

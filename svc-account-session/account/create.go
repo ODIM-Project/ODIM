@@ -22,8 +22,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -35,6 +35,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Create defines creation of a new account. The function is supposed to be used as part of RPC.
@@ -51,13 +52,13 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	var createAccount asmodel.Account
 	err := json.Unmarshal(req.RequestBody, &createAccount)
 	if err != nil {
-		errMsg := "error: unable to parse the create account request" + err.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to parse the create account request" + err.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + createAccount.UserName,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           createAccount.UserName,
@@ -68,12 +69,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, createAccount)
 	if err != nil {
-		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While validating request parameters: " + err.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
-		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		errorMessage := "One or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp, fmt.Errorf(errorMessage)
 	}
@@ -85,7 +86,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	}
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := "error: user does not have the privilege to create a new user"
+		errorMessage := "User does not have the privilege to create a new user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -100,15 +101,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	invalidParams := validateRequest(user)
 	if invalidParams != "" {
-		errorMessage := "error: Mandatory fields " + invalidParams + " are empty"
+		errorMessage := "Mandatory fields " + invalidParams + " are empty"
 		resp.StatusCode = http.StatusBadRequest
 		resp.StatusMessage = response.PropertyMissing
 		args := response.Args{
@@ -123,15 +121,12 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 	if _, gerr := e.GetRoleDetailsByID(user.RoleID); gerr != nil {
-		errorMessage := "error: invalid RoleID present " + gerr.Error()
-		log.Printf(errorMessage)
+		errorMessage := "Invalid RoleID present " + gerr.Error()
+		log.Error(errorMessage)
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Role", user.RoleID}, nil), fmt.Errorf(errorMessage)
 	}
 	if err := validatePassword(user.UserName, user.Password); err != nil {
@@ -150,10 +145,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return resp, err
 
 	}
@@ -164,7 +156,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	user.Password = hashedPassword
 	user.AccountTypes = []string{"Redfish"}
 	if cerr := e.CreateUser(user); cerr != nil {
-		errorMessage := "error while trying to add new user: " + cerr.Error()
+		errorMessage := "Unable to add new user: " + cerr.Error()
 		if errors.DBKeyAlreadyExist == cerr.ErrNo() {
 			resp.StatusCode = http.StatusConflict
 			resp.StatusMessage = response.ResourceAlreadyExists
@@ -183,11 +175,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, fmt.Errorf(errorMessage)
 	}
 
@@ -195,13 +183,8 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 	resp.StatusMessage = response.Created
 
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
-		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName + "/",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link":     "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
+		"Location": "/redfish/v1/AccountService/Accounts/" + user.UserName,
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -212,7 +195,7 @@ func (e *ExternalInterface) Create(req *accountproto.CreateAccountRequest, sessi
 		AccountTypes: user.AccountTypes,
 		Links: asresponse.Links{
 			Role: asresponse.Role{
-				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID + "/",
+				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID,
 			},
 		},
 	}

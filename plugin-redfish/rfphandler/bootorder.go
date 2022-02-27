@@ -16,21 +16,12 @@
 package rfphandler
 
 import (
-	/*
-		"crypto/rand"
-		"crypto/rsa"
-		"crypto/sha512"
-		"crypto/x509"
-		"encoding/pem"
-		"encoding/json"
-	*/
-	"fmt"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -44,7 +35,7 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -60,9 +51,10 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		errorMessage := "Unable to collect data from request: " + err.Error()
+		log.Error(errorMessage)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errorMessage)
 		return
 	}
 
@@ -71,45 +63,11 @@ func SetDefaultBootOrder(ctx iris.Context) {
 		Username: deviceDetails.Username,
 		Password: string(deviceDetails.Password),
 	}
-	/*
-		priv := []byte(rfpmodel.PluginPrivateKey)
-		block, _ := pem.Decode(priv)
-		enc := x509.IsEncryptedPEMBlock(block)
-		b := block.Bytes
-		if enc {
-			log.Println("is encrypted pem block")
-			b, err = x509.DecryptPEMBlock(block, nil)
-			if err != nil {
-				log.Println("Error: " + err.Error())
-			}
-		}
-		key, err := x509.ParsePKCS1PrivateKey(b)
-		if err != nil {
-			log.Println("Error: " + err.Error())
-		}
 
-		hash := sha512.New()
-
-		plainText, err := rsa.DecryptOAEP(
-			hash,
-			rand.Reader,
-			key,
-			device.Password,
-			nil,
-		)
-		if err != nil {
-			log.Println("Error while trying decrypt data: ", err)
-			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("Error while trying to decypt data")
-			return
-		}
-
-		device.Password = plainText
-	*/
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -118,20 +76,19 @@ func SetDefaultBootOrder(ctx iris.Context) {
 	//Subscribe to Events
 	resp, err := redfishClient.SetDefaultBootOrder(device, uri)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to set default boot order, got: " + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to set default boot order: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying to set default boot order: " + errorMessage)
+		body = []byte("While trying to set default boot order, got: " + err.Error())
+		log.Error(string(body))
 	}
 
 	ctx.StatusCode(resp.StatusCode)

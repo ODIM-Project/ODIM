@@ -82,7 +82,7 @@ func mockDupMgrAddrPluginData(t *testing.T, pluginID string) error {
 func TestExternalInterface_Plugin(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
@@ -157,22 +157,16 @@ func TestExternalInterface_Plugin(t *testing.T) {
 			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/4298f256-c279-44e2-94f2-3987bb7d8f53",
 		},
 	}
-
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		SubscribeToEMB:      mockSubscribeEMB,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		GetConnectionMethod: mockGetConnectionMethod,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
+	reqPluginWithDuplciateUUID := AddResourceRequest{
+		ManagerAddress: "localhost:9091",
+		UserName:       "admin",
+		Password:       "password",
+		ConnectionMethod: &ConnectionMethod{
+			OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7e821c50-ecc7-4f45-ba15-2a31b389df1e",
+		},
 	}
+
+	p := getMockExternalInterface()
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var queueList []string
 	var pluginContactRequest getResourceRequest
@@ -264,6 +258,19 @@ func TestExternalInterface_Plugin(t *testing.T) {
 				StatusCode: http.StatusConflict,
 			},
 		},
+
+		{
+			name: "Adding plugin with duplicate managre uuid",
+			p:    p,
+			args: args{
+				taskID:     "123",
+				req:        reqPluginWithDuplciateUUID,
+				cmVariants: getConnectionMethodVariants("Compute:BasicAuth:STGtest_v1.0.0"),
+			},
+			want: response.RPC{
+				StatusCode: http.StatusConflict,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -277,7 +284,7 @@ func TestExternalInterface_Plugin(t *testing.T) {
 func TestExternalInterface_PluginXAuth(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {
@@ -334,21 +341,7 @@ func TestExternalInterface_PluginXAuth(t *testing.T) {
 		},
 	}
 
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		SubscribeToEMB:      mockSubscribeEMB,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		GetConnectionMethod: mockGetConnectionMethod,
-		GetPluginMgrAddr:    stubPluginMgrAddrData,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-	}
+	p := getMockExternalInterface()
 	var queueList []string
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var pluginContactRequest getResourceRequest

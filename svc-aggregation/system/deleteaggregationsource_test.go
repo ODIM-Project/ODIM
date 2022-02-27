@@ -40,15 +40,16 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
 func deleteComputeforTest(index int, key string) *errors.Error {
-	if key == "/redfish/v1/Systems/del-comp-internal-err:1" {
+	if key == "/redfish/v1/Systems/del-comp-internal-err.1" {
 		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
 	}
-	if key != "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/Systems/" &&
-		key != "/redfish/v1/Systems/del-sys-internal-err:1" && key != "/redfish/v1/Systems/sys-not-found:1" {
+	if key != "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1" && key != "/redfish/v1/Systems/" &&
+		key != "/redfish/v1/Systems/del-sys-internal-err.1" && key != "/redfish/v1/Systems/sys-not-found.1" {
 		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
 	}
 	return nil
@@ -65,9 +66,9 @@ func deleteSystemforTest(key string) *errors.Error {
 }
 
 func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
-	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1" {
+	if uuid == "/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
-	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode:1" {
+	} else if uuid == "/redfish/v1/Systems/unexpected-statuscode.1" {
 		return &eventsproto.EventSubResponse{
 			StatusCode: http.StatusCreated,
 		}, nil
@@ -95,7 +96,7 @@ func mockManagersData(id string, data map[string]interface{}) error {
 
 func mockContactClientForDelete(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9092/ODIM/v1/Status" || (strings.Contains(url, "/ODIM/v1/Status") && credentials["UserName"] == "noStatusUser") {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -108,20 +109,11 @@ func mockSystemOperationInfo() *errors.Error {
 	systemOperation := agmodel.SystemOperation{
 		Operation: "InventoryRediscovery ",
 	}
-	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
 }
 
 func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
-	d := &ExternalInterface{
-		DeleteComputeSystem:     deleteComputeforTest,
-		DeleteSystem:            deleteSystemforTest,
-		DeleteEventSubscription: mockDeleteSubscription,
-		ContactClient:           mockContactClientForDelete,
-		EventNotification:       mockEventNotification,
-		DecryptPassword:         stubDevicePassword,
-		GetConnectionMethod:     mockGetConnectionMethod,
-		UpdateConnectionMethod:  mockUpdateConnectionMethod,
-	}
+	d := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}
@@ -137,6 +129,21 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		}
 	}()
 
+	mockPluginData(t, "GRF_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	reqManagerGRF := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
 	reqSuccess := agmodel.AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
@@ -155,9 +162,13 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 		PluginID:       "GRF_v1.0.0",
 	}
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device)
-	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
 
-	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
+	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -193,13 +204,8 @@ func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 }
 
 func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
-	d := &ExternalInterface{
-		EventNotification:      mockEventNotification,
-		ContactClient:          mockContactClientForDelete,
-		DecryptPassword:        stubDevicePassword,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-	}
+	d := getMockExternalInterface()
+	d.ContactClient = mockContactClientForDelete
 	common.MuxLock.Lock()
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
@@ -339,15 +345,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 }
 
 func TestExternalInterface_DeleteBMC(t *testing.T) {
-	d := &ExternalInterface{
-		DeleteComputeSystem:     deleteComputeforTest,
-		DeleteSystem:            deleteSystemforTest,
-		DeleteEventSubscription: mockDeleteSubscription,
-		EventNotification:       mockEventNotification,
-		DecryptPassword:         stubDevicePassword,
-		GetConnectionMethod:     mockGetConnectionMethod,
-		UpdateConnectionMethod:  mockUpdateConnectionMethod,
-	}
+	d := getMockExternalInterface()
 	config.SetUpMockConfig(t)
 	defer func() {
 		err := common.TruncateDB(common.OnDisk)
@@ -359,6 +357,21 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
+	mockPluginData(t, "GRF_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	reqManagerGRF := agmodel.AggregationSource{
+		HostName: "100.0.0.1:50000",
+		UserName: "admin",
+		Password: []byte("admin12345"),
+		Links: map[string]interface{}{
+			"ConnectionMethod": map[string]interface{}{
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	}
 	reqSuccess := agmodel.AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
@@ -396,10 +409,14 @@ func TestExternalInterface_DeleteBMC(t *testing.T) {
 
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db831", device1)
 	mockDeviceData("ef83e569-7336-492a-aaee-31c02d9db832", device2)
-	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
-	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832:1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
+	mockSystemData("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db832.1")
 
-	err := agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
+	err := agmodel.AddAggregationSource(reqManagerGRF, "/redfish/v1/AggregationService/AggregationSources/123456")
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	err = agmodel.AddAggregationSource(reqSuccess, "/redfish/v1/AggregationService/AggregationSources/ef83e569-7336-492a-aaee-31c02d9db831")
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}

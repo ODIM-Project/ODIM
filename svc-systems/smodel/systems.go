@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -16,13 +17,16 @@
 package smodel
 
 import (
-	"fmt"
-	"log"
-
 	"encoding/json"
+	"fmt"
+	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+
+	"github.com/gomodule/redigo/redis"
+	log "github.com/sirupsen/logrus"
 )
 
 //Target is for sending the requst to south bound/plugin
@@ -44,6 +48,7 @@ type Plugin struct {
 	ID                string
 	PluginType        string
 	PreferredAuthType string
+	ManagerUUID       string
 }
 
 // Volume is for sending a volume's request to south bound
@@ -92,6 +97,79 @@ func GetResource(Table, key string) (string, *errors.Error) {
 		return "", errors.PackError(errors.UndefinedErrorType, errs)
 	}
 	return resource, nil
+}
+
+func Find(table, key string, r interface{}) *errors.Error {
+	conn, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return err
+	}
+	resourceData, err := conn.Read(table, key)
+	if err != nil {
+		return errors.PackError(err.ErrNo(), "error while trying to get resource details: ", err.Error())
+	}
+
+	var resourceAsString string
+	if errs := json.Unmarshal([]byte(resourceData), &resourceAsString); errs != nil {
+		return errors.PackError(errors.UndefinedErrorType, errs)
+	}
+
+	if errs := json.Unmarshal([]byte(resourceAsString), r); errs != nil {
+		return errors.PackError(errors.UndefinedErrorType, errs)
+	}
+	return nil
+}
+
+func FindAll(table, key string) ([][]byte, error) {
+	cp, cpErr := common.GetDBConnection(common.OnDisk)
+	if cpErr != nil {
+		return nil, cpErr
+	}
+
+	affectedKeys, err := scan(cp, strings.Join([]string{table, key}, ":"))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(affectedKeys) == 0 {
+		return [][]byte{}, nil
+	}
+
+	conn := cp.ReadPool.Get()
+	defer conn.Close()
+
+	return redis.ByteSlices(conn.Do("MGET", affectedKeys...))
+}
+
+func scan(cp *persistencemgr.ConnPool, key string) ([]interface{}, error) {
+	conn := cp.ReadPool.Get()
+	defer conn.Close()
+
+	var (
+		cursor int64
+		items  []interface{}
+	)
+
+	results := make([]interface{}, 0)
+
+	for {
+		values, err := redis.Values(conn.Do("SCAN", cursor, "MATCH", key))
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = redis.Scan(values, &cursor, &items)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, items...)
+
+		if cursor == 0 {
+			break
+		}
+	}
+
+	return results, nil
 }
 
 //GetAllKeysFromTable fetches all keys in a given table
@@ -161,7 +239,7 @@ func GenericSave(body []byte, table string, key string) error {
 		if errors.DBKeyAlreadyExist == err.ErrNo() {
 			return fmt.Errorf("error while trying to create new %v resource: %v", table, err.Error())
 		}
-		log.Printf("warning: skipped saving of duplicate data with key %v", key)
+		log.Warn("Skipped saving of duplicate data with key " + key)
 	}
 	return nil
 }

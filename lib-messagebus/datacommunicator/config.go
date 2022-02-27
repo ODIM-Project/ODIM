@@ -19,8 +19,10 @@ package datacommunicator
 // -----------------------------------------------------------------------------
 import (
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
+
 	"github.com/BurntSushi/toml"
-	"log"
 )
 
 // MQCONFIGFILE define the file name and location of the Client config file for
@@ -49,7 +51,8 @@ import (
 // structure format. These configurations are embedded into MQF structure for direct
 // access to the data.
 type MQF struct {
-	KafkaF `toml:"KAFKA"`
+	KafkaF       *KafkaF       `toml:"KAFKA"`
+	RedisStreams *RedisStreams `toml:"RedisStreams"`
 }
 
 // KafkaF defines the KAFKA Server connection configurations. This structure
@@ -57,10 +60,8 @@ type MQF struct {
 // encoding capability.
 type KafkaF struct {
 
-	// KServer defines the Kafka Server URI/Nodename. DEFAULT = localhost
-	KServer string `toml:"KServers"`
-	// KLport defines the Server listening port for Kafka. DEFAULT = 9092
-	KLport int `toml:"KLPort"`
+	// KServersInfo defines the list of Kafka Server URI/Nodename:port. DEFAULT = [localhost:9092]
+	KServersInfo []string `toml:"KServersInfo"`
 	// KTimeout defines the timeout for Kafka Server connection.
 	// DEFAULT = 10 (in seconds)
 	KTimeout int `toml:"KTimeout"`
@@ -72,39 +73,43 @@ type KafkaF struct {
 	KAFKACAFile string `toml:"KAFKACAFile"`
 }
 
-// Create both MQF and KafkaPacket Objects. MQF will be used to store
+// RedisStreams  defines the Redis  connection configurations.
+type RedisStreams struct {
+	RedisServerAddress string `toml:"RedisServerAddress"`
+	RedisServerPort    string `toml:"RedisServerPort"`
+	SentinalAddress    string `toml:"SentinalAddress"`
+}
+
+// MQ Create both MQF and KafkaPacket Objects. MQF will be used to store
 // all config information including Server URL, Port, User credentials
 // and other configuration information, which is for Future Expansion.
-var mq MQF
+var MQ MQF
 
 // SetConfiguration defines the function to read the client side configuration file any
 // configuration data, which need / should be provided by MQ user would be taken
 // directly from the user by asking to fill a structure.  THIS DATA DETAILS
 // SHOULD BE DEFINED AS PART OF INTERFACE DEFINITION.
 func SetConfiguration(filePath string) error {
-	if _, err := toml.DecodeFile(filePath, &mq); err != nil {
+	if _, err := toml.DecodeFile(filePath, &MQ); err != nil {
 		return fmt.Errorf("Configuration File - %v Read Error: %v", filePath, err)
 	}
-	if mq.KafkaF.KServer == "" {
-		return fmt.Errorf("no value found for KServers in messagebus config file")
+	if MQ.KafkaF != nil {
+		if len(MQ.KafkaF.KServersInfo) <= 0 {
+			return fmt.Errorf("no value found for KServersInfo in messagebus config file")
+		}
+		if MQ.KafkaF.KTimeout == 0 {
+			log.Warn("no value found for KTimeout in messagebus config file, using default time 10 seconds")
+			MQ.KafkaF.KTimeout = 10
+		}
+		if MQ.KafkaF.KAFKACertFile == "" {
+			return fmt.Errorf("no value found for KAFKACertFile in messagebus config file")
+		}
+		if MQ.KafkaF.KAFKAKeyFile == "" {
+			return fmt.Errorf("no value found for KAFKAKeyFile in messagebus config file")
+		}
+		if MQ.KafkaF.KAFKACAFile == "" {
+			return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
+		}
 	}
-	if mq.KafkaF.KLport == 0 {
-		log.Println("no value found for KLport in messagebus config file, using default port 9092")
-		mq.KafkaF.KLport = 9092
-	}
-	if mq.KafkaF.KTimeout == 0 {
-		log.Println("no value found for KTimeout in messagebus config file, using default time 10 seconds")
-		mq.KafkaF.KTimeout = 10
-	}
-	if mq.KafkaF.KAFKACertFile == "" {
-		return fmt.Errorf("no value found for KAFKACertFile in messagebus config file")
-	}
-	if mq.KafkaF.KAFKAKeyFile == "" {
-		return fmt.Errorf("no value found for KAFKAKeyFile in messagebus config file")
-	}
-	if mq.KafkaF.KAFKACAFile == "" {
-		return fmt.Errorf("no value found for KAFKACAFile in messagebus config file")
-	}
-
 	return nil
 }

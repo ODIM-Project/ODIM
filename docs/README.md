@@ -4,9 +4,10 @@
 - [Introduction](#introduction)
   * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
+- [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
-- [HTTP request methods, responses, and status codes](#http-request-methods--responses--and-status-codes)
+- [HTTP request methods, responses, headers and status codes](#http-request-methods-responses-headers-and-status-codes)
 - [Authentication and authorization](#authentication-and-authorization)
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
   * [Role-based authorization](#role-based-authorization)
@@ -32,6 +33,10 @@
   * [Deleting a user account](#deleting-a-user-account)
 - [Resource aggregation and management](#resource-aggregation-and-management)
   * [Viewing the aggregation service root](#viewing-the-aggregation-service-root)
+  * [Connection methods](#connection-methods)
+    + [Viewing a collection of connection methods](#viewing-a-collection-of-connection-methods)
+    + [Viewing a connection method](#viewing-a-connection-method)
+      - [Connection method variants](#connection-method-variants)
   * [Adding a plugin as an aggregation source](#adding-a-plugin-as-an-aggregation-source)
   * [Adding a server as an aggregation source](#adding-a-server-as-an-aggregation-source)
   * [Viewing a collection of aggregation sources](#viewing-a-collection-of-aggregation-sources)
@@ -59,32 +64,54 @@
   * [Network interfaces](#network-interfaces)
   * [Ethernet interfaces](#ethernet-interfaces)
   * [Single Ethernet interface](#single-ethernet-interface)
+  * [PCIeDevice](#pciedevice)
   * [Storage](#storage)
+  * [StoragePools](#StoragePools)
+    * [Collection of StoragePools](#StoragePools-collection)
+    * [Single StoragePool](#Single-StoragePool)
+    * [Collection of AllocatedVolumes](#AllocatedVolumes-Collection)
+    * [Single AllocatedVolume](#single-AllocatedVolume)
+    * [Collection of ProvidingDrives](#ProvidingDrives-Collection)
+    * [Single ProvidingDrive](#single-ProvidingDrive)
   * [Storage subsystem](#storage-subsystem)
-  * [Storage drive](#storage-drive)
+  * [Drives](#drives)
+    + [Single drive](#single-drive)
   * [Volumes](#volumes)
-    + [A collection of volumes](#a-collection-of-volumes)
+    + [Collection of volumes](#collection-of-volumes)
     + [Single volume](#single-volume)
     + [Creating a volume](#creating-a-volume)
     + [Deleting a volume](#deleting-a-volume)
   * [SecureBoot](#secureboot)
   * [Processors](#processors)
   * [Single processor](#single-processor)
-  * [Collection of chassis](#collection-of-chassis)
-  * [Single chassis](#single-chassis)
-  * [Thermal metrics](#thermal-metrics)
-  * [Network adapters](#network-adapters)
-  * [Power](#power)
+  * [Chassis](#chassis)
+    + [Collection of chassis](#collection-of-chassis)
+    + [Single chassis](#single-chassis)
+    + [Thermal metrics](#thermal-metrics)
+    + [Collection of network adapters](#collection-of-network-adapters)
+    + [Single network adapter](#single-network-adapter)
+    + [Power](#power)
+    + [Creating a rack group](#creating-a-rack-group)
+    + [Creating a rack](#creating-a-rack)
+    + [Attaching chassis to a rack](#attaching-chassis-to-a-rack)
+    + [Detaching chassis from a rack](#detaching-chassis-from-a-rack)
+    + [Deleting a rack](#deleting-a-rack)
+    + [Deleting a rack group](#deleting-a-rack-group)
   * [Searching the inventory](#searching-the-inventory)
     + [Request URI parameters](#request-uri-parameters)
 - [Actions on a computer system](#actions-on-a-computer-system)
   * [Resetting a computer system](#resetting-a-computer-system)
   * [Changing the boot order of a computer system to default settings](#changing-the-boot-order-of-a-computer-system-to-default-settings)
   * [Changing BIOS settings](#changing-bios-settings)
-  * [Changing the boot order settings](#changing-the-boot-order-settings)
+  * [Changing the boot settings](#changing-the-boot-settings)
 - [Managers](#managers)
   * [Collection of managers](#collection-of-managers)
   * [Single manager](#single-manager)
+  * [VirtualMedia](#virtualmedia)
+    + [Viewing the VirtualMedia collection](#viewing-the-virtualmedia-collection)
+    + [Viewing a VirtualMedia Instance](#viewing-a-virtualmedia-instance)
+    + [Inserting VirtualMedia](#inserting-virtualmedia)
+    + [Ejecting VirtualMedia](#ejecting-virtualmedia)
 - [Software and firmware inventory](#software-and-firmware-inventory)
   * [Viewing the update service root](#viewing-the-update-service-root)
   * [Viewing the firmware inventory](#viewing-the-firmware-inventory)
@@ -93,6 +120,7 @@
   * [Viewing a specific software resource](#viewing-a-specific-software-resource)
   * [Actions](#actions)
     + [Simple update](#simple-update)
+      - [Request parameters](#request-parameters)
     + [Start update](#start-update)
 - [Host to fabric networking](#host-to-fabric-networking)
   * [Collection of fabrics](#collection-of-fabrics)
@@ -117,7 +145,7 @@
   * [Deleting an endpoint](#deleting-an-endpoint)
   * [Deleting an address pool](#deleting-an-address-pool)
 - [Tasks](#tasks)
-  * [viewing the task service root](#viewing-the-task-service-root)
+  * [Viewing the task service root](#viewing-the-task-service-root)
   * [Viewing a collection of tasks](#viewing-a-collection-of-tasks)
   * [Viewing information about a specific task](#viewing-information-about-a-specific-task)
   * [Viewing a task monitor](#viewing-a-task-monitor)
@@ -125,6 +153,8 @@
 - [Events](#events)
   * [Viewing the event service root](#viewing-the-event-service-root)
   * [Creating an event subscription](#creating-an-event-subscription)
+    + [Sample event](#sample-event)
+    + [Creating event subscription with eventformat type “MetricReport”](#creating-event-subscription-with-eventformat-type---metricreport)
   * [Submitting a test event](#submitting-a-test-event)
   * [Event subscription use cases](#event-subscription-use-cases)
     + [Subscribing to resource addition notification](#subscribing-to-resource-addition-notification)
@@ -137,30 +167,48 @@
   * [Viewing a collection of registries](#viewing-a-collection-of-registries)
   * [Viewing a single registry](#viewing-a-single-registry)
   * [Viewing a file in a registry](#viewing-a-file-in-a-registry)
-
-
-
-
-
+- [Redfish Telemetry](#redfish-telemetry-service)
+  * [Viewing the telemetry service root](#viewing-the-telemetry-service-root)
+  * [Collection of metric definitions](#collection-of-metric-definitions)
+  * [Single metric definition](#single-metric-definition)
+  * [Collection of Metric Report Definitions](#collection-of-metric-report-definitions)
+  * [Single metric report definition](#single-metric-report-definition)
+  * [Collection of metric reports](#collection-of-metric-reports)
+  * [Single metric report](#single-metric-report)
+  * [Collection of Triggers](#collection-of-triggers)
+  * [Single Trigger](#single-trigger)
+  * [Updating a trigger](#updating-a-trigger)
+- [Audit Logging](#audit-logging)
+- [Security logging](#security-logging)
 
 # Introduction 
 
- Welcome to Resource Aggregator for Open Distributed Infrastructure Management!
+Resource Aggregator for Open Distributed Infrastructure Management (ODIMRA) is a modular, open framework for simplified management and orchestration of distributed physical infrastructure. It provides a unified management platform for converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
 
-Resource Aggregator for Open Distributed Infrastructure Management (ODIM) is a modular, open framework for
-simplified management and orchestration of distributed workloads. It provides a unified management platform for
-converging multivendor hardware equipment. By exposing a standards-based programming interface, it enables easy and
-secure management of wide range of multivendor IT infrastructure distributed across multiple data centers.
-Resource Aggregator for ODIM framework comprises the following two components.
+ODIMRA framework comprises the following two components.
 
 - The resource aggregation function (the resource aggregator)
+
+  The resource aggregation function is the single point of contact between the northbound clients and the southbound infrastructure. Its primary function is to build and maintain a central resource inventory. It exposes Redfish-compliant APIs to allow northbound infrastructure management systems to:
+
+    - Get a unified view of the southbound compute, local storage, and Ethernet switch fabrics available in the resource inventory
+    - Gather crucial configuration information about southbound resources
+    - Manipulate groups of resources in a single action
+    - Listen to similar events from multiple southbound resources
+  
 - One or more plugins
 
-This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs
-are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.8.0](http://redfish.dmtf.org/schemas/DSP0266_1.8.0.pdf). 
-Redfish® is an open industry standard specification, API, and schema, which specifies a RESTful interface and uses JSON and OData. The Redfish
-standards are designed to deliver simple and secure management for converged, hybrid IT in a multivendor environment.
-These APIs are fully Redfish-compliant.
+  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. HPE Resource Aggregator for ODIM supports:
+
+
+  - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
+  - Plugin for unmanaged racks (URP): Plugin that acts as a resource manager for unmanaged racks
+  - Integration of additional third-party plugins: Dell, Lenovo and Cisco ACI plugins
+
+This guide provides reference information for the northbound APIs exposed by the resource aggregator. These APIs are designed as per DMTF's [Redfish® Scalable Platforms API (Redfish) specification 1.14.0](https://www.dmtf.org/sites/default/files/standards/documents/DSP0266_1.14.0.pdf) and are fully Redfish-compliant.
+
+Redfish® is an open industry standard specification, API, and schema. It specifies a RESTful interface and uses JSON and OData. The Redfish standards are designed to deliver simple and secure environment for managing multivendor, converged, and hybrid IT infrastructure.
+
 
 ##  Resource Aggregator for ODIM logical architecture
 
@@ -171,60 +219,44 @@ The following figure shows these functional layers of Resource Aggregator for OD
 
 ![ODIM_architecture](images/arch.png)
 
-- **API layer**
+**API layer**
 
 
-This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from
-the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The
-northbound clients communicate with this layer through a REST-based protocol that is fully compliant with
-DMTF's Redfish® specifications (Schema 2019.3 and Specification 1.8.0).
-The API layer sends user requests to the plugins through the aggregation, event, and fabric services.
+This layer hosts a REST server which is open-source and secure. It learns about the southbound resources from the plugin layer and exposes the corresponding Redfish data model payloads to the northbound clients. The northbound clients communicate with this layer through a REST-based protocol that is fully compliant with DMTF's Redfish® specifications (Schema 2021.2 and Specification 1.14.0).
+The API layer sends user requests to the plugins through the aggregation, the event, and the fabric services.
 
-- **Services layer**
+**Services layer**
 
+The services layer is where all the services are hosted. This layer implements service logic for all use cases through an extensible domain model (Redfish Data Model). All resource information is stored in this data model and is used to service the API requests coming from the API layer. Any responses from the plugin layer might update the domain model. It maintains the state for event subscriptions, credentials, and tasks.
 
-The services layer is where all the services are hosted. This layer implements service logic for all use cases
-through an extensible domain model (Redfish Data Model). Requests coming from the API layer and the
-responses coming from the plugin layer are mapped to the actual end resources in this layer. It maintains the state
-for event subscriptions, credentials, and tasks. It also hosts a message bus called the Plug-in Message Bus (PMB).
 
 ![Redfish_data_model](images/redfish_data_model.png)
 
-- **Event message bus layer**
+**Event message bus layer**
 
 
-This layer hosts a message broker which acts as a communication channel between the upper layers and the
-plugin layer. It supports common messaging architecture and real-time streaming. Resource Aggregator for
-ODIM uses Kafka as the event message bus.
+This layer hosts a message broker which acts as a communication channel between the plugin layer and the upper layers. It supports common messaging architecture to forward events received from the plugin layer to the upper layers. During the run-time, Resource Aggregator for ODIM uses either Kafka or the Redis stream service as the event message bus. 
 The services and the event message bus layers host Redis data store.
 
-- **Plugin layer**
+**Plugin layer**
 
 
-This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper
-layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use
-to communicate with the resources. It uses REST-based communication which is based on OpenAPI Specification
-v3.0 to interact with the other layers. It collects events to be exposed to fault management systems and uses the
-event message bus to publish events. The messaging mechanism is based on OpenMessaging Specification.
-The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict
-language binding. To know how to develop plugins, refer to *Resource Aggregator for Open Distributed
-Infrastructure Management Plugin Developer's Guide*.
+This layer connects the actual managed resources to the aggregator layers and is de-coupled from the upper layers. A plugin abstracts vendor-specific access protocols to a common interface which the aggregator layers use to communicate with the resources. It uses REST-based communication to interact with the other layers. It collects events to be exposed to fault management systems and uses the event message bus to publish events. 
+The plugin layer allows developers to create plugins on any tool set of their choice without enforcing any strict language binding. To know how to develop plugins, refer to [Resource Aggregator for Open Distributed Infrastructure Management Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
 
 
 # API usage and access guidelines
 
-To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web
-browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line
-utility). You can also easily write simple REST clients for RESTful APIs using modern scripting languages.
+To access the RESTful APIs exposed by the resource aggregator, you need an HTTPS-capable client, such as a web browser with a REST Client plugin extension, or a Desktop REST Client application, or curl (a popular, free command-line utility). You can also easily write simple REST clients for RESTful APIs using modern scripting languages.
 
-<aside class="notice">
+<blockquote>
 Tip: It is good to use a tool, such as curl or any Desktop REST Client application initially to perform requests. Later,
 you will want to write your own scripting code to perform requests.
-</aside>
+</blockquote>
+This guide contains sample request and response payloads. For information on response payload parameters, refer to [Redfish® Scalable Platforms API (Redfish) schema 2021.2](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2021.2.pdf).
 
-
-This guide contains sample request and response payloads. For information on response payload parameters, refer to 
-[Redfish® Scalable Platforms API (Redfish) schema 2019.3](https://www.dmtf.org/sites/default/files/standards/documents/DSP2046_2019.3.pdf).
+> **IMPORTANT:**
+The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
 
 **HTTP headers**
 
@@ -232,8 +264,7 @@ Include the following HTTP headers:
 
 - `Content-Type:application/json` for all RESTful API operations that include a request body in JSON
     format.
-- Authentication header (BasicAuth or XAuthToken) for all RESTful API operations except for HTTP GET on the
-    Redfish service root and HTTP POST on sessions.
+- Authentication header (BasicAuth or XAuthToken) for all RESTful API operations except for HTTP GET on the Redfish service root and HTTP POST on sessions.
 
 **Base URL**
 
@@ -241,21 +272,20 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 
 `https://{odimra_host}:{port}/`
 
-- {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the
-    resource aggregator.
-	
+- {odimra_host} is the fully qualified domain name (FQDN) used for generating certificates while deploying the resource aggregator.
+
 	>**NOTE:** Ensure that FQDN is provided in the `/etc/hosts` file or in the DNS server.
 
 
-- {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you
-    have changed the default port in the `odim_config.json` file, use that as the port.
+- {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port.
+>**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
+
 
 **curl usage**
 
 The examples shown in this guide use curl to make HTTP requests.
 
-[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. odimra
-supports HTTPS.
+[curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. The resource aggregator for ODIM supports HTTPS.
 
 **curl command options (flags):**
 
@@ -269,24 +299,17 @@ supports HTTPS.
 For a complete list of curl flags, see information provided at [https://curl.haxx.se](https://curl.haxx.se).
 
 
->**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command, before running a curl command.<br>
+>**IMPORTANT:** If you have set proxy configuration, set no_proxy using the following command before running a curl command.<br>
     ```
-    $ export no_proxy="127.0.0.1,localhost,{odimra_host}"
+    export no_proxy="127.0.0.1,localhost,{odimra_host}"
      ```
-
-   
-
-<br>
 
 **Including HTTP certificate**
 
-Without CA certificate, curl fails to verify that HTTP connections are secure and curl commands may fail with the SSL
-certificate problem. Provide the root CA certificate to curl for secure SSL communication.
+Without CA certificate, curl fails to verify that HTTP connections are secure and curl commands may fail with the SSL certificate problem. Provide the root CA certificate to curl for secure SSL communication.
 
 
-
-
-1. If you are running curl commands on the server where the resource aggregator is   deployed, provide the `rootCA.crt` file as shown in the curl command:
+1. If you are running curl commands on the server where the resource aggregator is deployed, provide the `rootCA.crt` file as shown in the curl command:
    ```
    curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
    ```
@@ -300,24 +323,25 @@ certificate problem. Provide the root CA certificate to curl for secure SSL comm
     5. Scroll to the end of the file, add the following line, and save:
        `{odim_server_ipv4_address} {FQDN}`
     6. Check if curl is working using the curl command:
-        ```curl
+        ```
         curl -v --cacert {path}/rootCA.crt 'https://{odimra_host}:{port}/redfish/v1'
         ```
 
-		 
-
 >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
 
+# Support for URL Encoding
 
+The URL encoding mechanism translates the characters in the URLs to a representation that are universally accepted by all web browsers and servers. 
 
+Resource Aggregator for ODIM supports all standard URL encoded characters for all the APIs. When Resource Aggregator for ODIM gets an encoded URL path, the non-ASCII characters in its path are internally translated and sent to the web browsers. In other words, if you replace a character in a URL with its standard encoding notation, Resource Aggregator for ODIM accepts the encoded notation, decodes it to the actual character acceptable by the web browser and sends responses.
 
+**Example**: In the URL`/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1`, if you replace the  `/` character with %2F and send the request, Resource Aggregator for ODIM accepts the URL, decodes the encoded notation internally and sends an accurate response.
 
+<blockquote>Tip: You can visit https://www.w3schools.com/tags/ref_urlencode.ASP or browse the Internet to view the standard ASCII Encoding Reference of the URL characters.</blockquote>
 
-#  List of supported APIs
+# List of supported APIs
 
 Resource Aggregator for ODIM supports the following Redfish APIs:
-
-
 
 |Redfish Service Root||
 |-------|--------------------|
@@ -353,6 +377,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|`POST`|
 |/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|`POST`|
 |/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|`POST`|
+|/redfish/v1/AggregationService/ConnectionMethods|GET|
+|/redfish/v1/AggregationService/ConnectionMethods/\{connectionmethodsId\}|GET|
 
 |Systems||
 |-------|--------------------|
@@ -366,25 +392,33 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Bios|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|`GET` , `POST`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes/\{volumeId\}|`GET`, `DELETE`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageControllerId}/StoragePools/{storagepool_Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|`GET`|
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|`GET`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|`GET`|
 |/redfish/v1/Systems?filter=\{searchKeys\}%20\{conditionKeys\}%20\{value/regEx\}|`GET`|
-| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
+|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |`GET`, `PATCH`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|`POST`|
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|`POST`|
 
 |Chassis||
 |-------|--------------------|
-|/redfish/v1/Chassis|`GET`|
-|/redfish/v1/Chassis/\{chassisId\}|`GET`|
+|/redfish/v1/Chassis|`GET`, `POST`|
+|/redfish/v1/Chassis/\{chassisId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Chassis/\{chassisId\}/Thermal|`GET`|
 |/redfish/v1/Chassis/\{ChassisId\}/Power|`GET`|
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|`GET`|
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login` |
 
 |Managers||
 |-------|--------------------|
@@ -394,6 +428,10 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Managers/\{managerId\}/HostInterfaces|`GET`|
 |/redfish/v1/Managers/\{managerId\}/LogServices|`GET`|
 |/redfish/v1/Managers/\{managerId\}/NetworkProtocol|`GET`|
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia|`GET`|
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}| `GET`  |
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia|`POST`|
+|/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia|`POST`|
 
 |UpdateService||
 |-------|--------------------|
@@ -418,8 +456,8 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Fabrics/\{fabricId\}|`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Switches|`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}|`GET`|
-| /redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
-| /redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
+|/redfish/v1/Fabrics/\{fabricId\}/Switches/\{switchId\}/Ports<br> |`GET`|
+|/redfish/v1/Fabrics/\{fabricId\} /Switches/\{switchId\}/Ports/\{portid\}<br> |`GET`|
 |/redfish/v1/Fabrics/\{fabricId\}/Zones|`GET`, `POST`|
 |/redfish/v1/Fabrics/\{fabricId\}/Zones/\{zoneId\}|`GET`, `PATCH`, `DELETE`|
 |/redfish/v1/Fabrics/\{fabricId\}/AddressPools|`GET`, `POST`|
@@ -432,14 +470,20 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/TaskService|`GET`|
 |/redfish/v1/TaskService/Tasks|`GET`|
 |/redfish/v1/TaskService/Tasks/\{taskId\}|`GET`, `DELETE`|
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
-| /redfish/v1/ TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
+| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks |`GET`|
+| /redfish/v1/TaskService/Tasks/\{taskId\}/SubTasks/ \{subTaskId\} |`GET`|
 
-
-
->**NOTE:** Subtask URIs are not available in the current Redfish standard (1.8.0). They will be available in the next Redfish standard.
-
-
+| TelemetryService                                             |                |
+| ------------------------------------------------------------ | -------------- |
+| /redfish/v1/TelemetryService                                 | `GET`          |
+| /redfish/v1/TelemetryService/MetricDefinitions               | `GET`          |
+| /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionId} | `GET`          |
+| /redfish/v1/TelemetryService/MetricReportDefinitions         | `GET`          |
+| /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionId} | `GET`          |
+| redfish/v1/TelemetryService/MetricReports                    | `GET`          |
+| /redfish/v1/TelemetryService/MetricReports/{MetricReportId}  | `GET`          |
+| /redfish/v1/TelemetryService/Triggers                        | `GET`          |
+| /redfish/v1/TelemetryService/Triggers/{TriggerId}            | `GET`, `PATCH` |
 
 |Task monitor||
 |-------|--------------------|
@@ -453,9 +497,9 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 
 
 >**NOTE:**
-`ComputerSystemId` is the unique identifier of a system. It is specified by Resource Aggregator for ODIM.
-`ComputerSystemId` is represented as `<UUID:n>` in Resource Aggregator for ODIM. `<UUID:n>` is the
-universally unique identifier of a system (Example: ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1).
+`ComputerSystemId` is the unique identifier of a system specified by Resource Aggregator for ODIM.
+It is represented as `<UUID.n>` in Resource Aggregator for ODIM. `<UUID.n>` is the
+universally unique identifier of a system. Example: *ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1*.
 
 
 ## Viewing the list of supported Redfish services
@@ -477,8 +521,6 @@ universally unique identifier of a system (Example: ba0a6871-7bc4-5f7a-903d-67f3
 curl -i GET 'https://{odimra_host}:{port}/redfish/v1'
 ```
 
-
-
 >**Sample response header**
 
 
@@ -496,13 +538,13 @@ Transfer-Encoding:chunked
 ```
 
 >**Sample response body**
- 
+
 
 ```
 {
    "@odata.context": "/redfish/v1/$metadata#ServiceRoot.ServiceRoot",
    "@odata.id": "/redfish/v1/",
-   "@odata.type": "#ServiceRoot.v1_5_0.ServiceRoot",
+   "@odata.type": "#ServiceRoot.v1_11_0.ServiceRoot",
    "Id": "RootService",
    "Registries": {
       "@odata.id": "/redfish/v1/Registries"
@@ -518,6 +560,9 @@ Transfer-Encoding:chunked
    },
    "Tasks": {
       "@odata.id": "/redfish/v1/TaskService"
+   },
+   "TelemetryService": {
+      "@odata.id": "/redfish/v1/TelemetryService"
    },
    "AggregationService": {
       "@odata.id": "/redfish/v1/AggregationService"
@@ -543,16 +588,14 @@ Transfer-Encoding:chunked
    "Oem":{
 
    },
-   "RedfishVersion": "1.8.0",
+   "RedfishVersion": "1.14.0",
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
 
 
 
-
-
-#  HTTP request methods, responses, and status codes
+#  HTTP request methods responses headers and status codes
 
 Following are the Redfish-defined HTTP methods that you can use to implement various actions:
 
@@ -564,6 +607,8 @@ Following are the Redfish-defined HTTP methods that you can use to implement var
 |`PUT` \[Replace\]|Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource.|
 |`DELETE` \[Delete\]|Use this method to delete a resource.|
 
+
+
 Resource Aggregator for ODIM supports the following responses:
 
 |Responses|Description|
@@ -572,6 +617,22 @@ Resource Aggregator for ODIM supports the following responses:
 |Resource responses|Response in JSON format for an individual resource.|
 |Resource collection responses|Response in JSON format for a collection of resources.|
 |Error responses|If there is an HTTP error, a high-level JSON response is provided with additional information.|
+
+
+
+Here's the list of headers that are common across responses.
+
+```
+"Connection": "keep-alive",
+"OData-Version": "4.0",
+"X-Frame-Options": "sameorigin",
+"X-Content-Type-Options":"nosniff",
+"Content-type":"application/json; charset=utf-8",
+"Cache-Control":"no-cache, no-store, must-revalidate",
+"Transfer-Encoding":"chunked",
+```
+
+
 
 Following are the HTTP status codes with their descriptions:
 
@@ -597,7 +658,7 @@ Following are the HTTP status codes with their descriptions:
 
 
 >**NOTE:**
-This guide provides success codes (200, 201, 202, 204) for all the referenced API operations. For failed operations, refer to the error codes listed in this section.
+This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
 
@@ -625,7 +686,7 @@ To authenticate requests with the Redfish services, implement any one of the fol
      1. Generate a base64 encoded string of `{valid_username_of_odim_userAccount}:{valid_password_of_odim_userAccount}` using the following command:
 
          ```
-        $ echo -n '{username}:{password}' | base64 -w0
+        echo -n '{username}:{password}' | base64 -w0
         ```
 
         Initially, use the username and the password of the default administrator account. Later, you can create additional [user accounts](#user-accounts) and use their details to implement authentication.
@@ -655,10 +716,6 @@ To authenticate requests with the Redfish services, implement any one of the fol
 
       An `X-AUTH-TOKEN` is valid and a session is open only for 30 minutes, unless you continue to send requests to a Redfish service using this token. An idle session is automatically terminated after the time-out interval.
 
-
-
-
-
 ## Role-based authorization
 
 In Resource Aggregator for ODIM, the roles and privileges control which users have what access to resources. If you perform an HTTP operation on a resource without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -683,10 +740,8 @@ With Resource Aggregator for ODIM, there are two kinds of defined roles:
 
     User-defined roles are the custom roles that you can create and assign to a user. The privileges of a user-defined role are configurable—you can choose a privilege or a set of privileges to assign to this role at the time of role creation.
 
-
 <blockquote>
-**NOTE:**
-
+NOTE:
 -   Redfish predefined roles cannot be modified.
 
 -   Before assigning a user-defined role to a user at the time of user account creation, ensure that it is created first.
@@ -732,21 +787,19 @@ This privilege is required to view any resource or a collection of resources exp
 Resource Aggregator for ODIM has a default user account that has all the privileges of an administrator role.
 
 
-
-
-#  Sessions
+# Sessions
 
 A session represents a window of user's login with a Redfish service and contains details about the user and the user activity. You can run multiple sessions simultaneously.
 
 Resource Aggregator for ODIM offers Redfish `SessionService` interface for creating and managing sessions. It exposes APIs to achieve the following:
 
--   Fetching the `SessionService` root
+-   Fetching the `SessionService` root.
 
--   Creating a session
+-   Creating a session.
 
--   Listing active sessions
+-   Listing active sessions.
 
--   Deleting a session
+-   Deleting a session.
 
 
 **Supported APIs**
@@ -754,7 +807,7 @@ Resource Aggregator for ODIM offers Redfish `SessionService` interface for creat
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/SessionService|GET|`Login` |
-|/redfish/v1/SessionService/Sessions|POST, GET|`Login`,|
+|/redfish/v1/SessionService/Sessions|POST, GET|`Login`|
 |redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
 >**NOTE:**
@@ -776,7 +829,6 @@ Before accessing these endpoints, ensure that the user has the required privileg
 
 >**curl command**
 
-
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/SessionService'
@@ -788,7 +840,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#SessionService.v1_1_6.SessionService",
+   "@odata.type":"#SessionService.v1_1_8.SessionService",
    "@odata.id":"/redfish/v1/SessionService",
    "Id":"Sessions",
    "Name":"Session Service",
@@ -803,9 +855,6 @@ curl -i GET \
    }
 }
 ```
-
-
-
 
 ##  Creating a session
 
@@ -846,8 +895,6 @@ curl -i POST \
 
 
 
-
-
 **Request parameters**
 
 |Parameter|Type|Description|
@@ -878,12 +925,12 @@ Transfer-Encoding:chunked
 
 ```
 {
-	"@odata.type": "#SessionService.v1_1_6.SessionService",
+	"@odata.type": "#SessionService.v1_1_8.SessionService",
 	"@odata.id": "/redfish/v1/SessionService/Sessions/1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
 	"Message": "The resource has been created successfully",
-	"MessageId": "Base.1.6.1.Created",
+	"MessageId": "Base.1.11.0.Created",
 	"Severity": "OK",
 	"UserName": "abc"
 }
@@ -910,7 +957,6 @@ Transfer-Encoding:chunked
 curl -i GET \
                -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
               'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
-
 
 ```
 
@@ -942,7 +988,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Session.v1_2_1.Session",
+   "@odata.type":"#Session.v1_3_0.Session",
    "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
    "Id":"4ee42139-22db-4e2a-97e4-020013248768",
    "Name":"User Session",
@@ -1034,7 +1080,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#AccountService.v1_6_0.AccountService",
+   "@odata.type":"#AccountService.v1_10_0.AccountService",
    "@odata.id":"/redfish/v1/AccountService",
    "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
    "Id":"AccountService",
@@ -1121,7 +1167,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1221,7 +1267,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Role.v1_2_4.Role",
+   "@odata.type":"#Role.v1_3_1.Role",
    "@odata.id":"/redfish/v1/AccountService/Roles/CLIENT11",
    "Id":"CLIENT11",
    "Name":"User Role",
@@ -1337,12 +1383,11 @@ Resource Aggregator for ODIM exposes Redfish `AccountsService` APIs to create an
 
 **Supported APIs**:
 
-
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
-|/redfish/v1/AccountService|GET|`Login` |
 |/redfish/v1/AccountService/Accounts|POST, GET|`Login`, `ConfigureUsers` |
 |/redfish/v1/AccountService/Accounts/\{accountId\}|GET, DELETE, PATCH|`Login`, `ConfigureUsers`, `ConfigureSelf` |
+
 
 >**NOTE:**
 Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -1350,9 +1395,10 @@ Before accessing these endpoints, ensure that the user has the required privileg
 
 
 
+
 ## Creating a user account
 
-
+|||
 |-------|--------------------|
 |**Method** | `POST` |
 |**URI** |`/redfish/v1/AccountService/Accounts` |
@@ -1360,8 +1406,6 @@ Before accessing these endpoints, ensure that the user has the required privileg
 |**Returns** |<ul><li>`Location` header that contains a link to the newly created account.</li><li>JSON schema representing the newly created account.</li></ul> |
 |**Response Code** |`201 Created` |
 |**Authentication** |Yes|
-
-
 
 >**curl command**
 
@@ -1376,6 +1420,7 @@ curl -i POST \
 
 
 ```
+
 
 
 >**Sample request body**
@@ -1423,13 +1468,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The resource has been created successfully",
-   "MessageId":"Base.1.6.1.Created",
+   "MessageId":"Base.1.11.0.Created",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -1495,7 +1540,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
@@ -1544,8 +1589,6 @@ curl -i -X PATCH \
 ```
 
 
-
-
 >**Sample request body**
 
 ```
@@ -1574,13 +1617,13 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#ManagerAccount.v1_4_0.ManagerAccount",
+   "@odata.type":"#ManagerAccount.v1_8_0.ManagerAccount",
    "@odata.id":"/redfish/v1/AccountService/Accounts/monitor32",
    "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
    "Id":"monitor32",
    "Name":"Account Service",
    "Message":"The account was successfully modified.",
-   "MessageId":"Base.1.6.1.AccountModified",
+   "MessageId":"Base.1.11.0.AccountModified",
    "Severity":"OK",
    "UserName":"monitor32",
    "RoleId":"CLIENT11",
@@ -1621,7 +1664,8 @@ curl  -i -X DELETE \
 
 #  Resource aggregation and management
 
-The resource aggregator allows users to add and group southbound infrastructure into collections for easy management. It exposes Redfish aggregation service endpoints to achieve the following:
+
+The resource aggregator allows you to add southbound infrastructure to its database, create resource collections, and perform actions in combination on these collections. It exposes Redfish aggregation service endpoints to achieve the following:
 
 -   Adding a resource and building its inventory.
 
@@ -1632,7 +1676,6 @@ The resource aggregator allows users to add and group southbound infrastructure 
 -   Removing a resource from the inventory which is no longer managed.
 
 
-Using these endpoints, you can add or remove only one resource at a time. You can group the resources into one collection and perform actions \(`reset` and `setdefaultbootorder`\) in combination on that group.
 
 All aggregation actions are performed as [tasks](#tasks) in Resource Aggregator for ODIM. The actions performed on a group of resources \(resetting or changing the boot order to default settings\) are carried out as a set of subtasks.
 
@@ -1651,6 +1694,8 @@ All aggregation actions are performed as [tasks](#tasks) in Resource Aggregator 
 |/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.Reset|POST|`ConfigureComponents`, `ConfigureManager` |
 |/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Aggregate.SetDefaultBootOrder|POST|`ConfigureComponents`, `ConfigureManager` |
 |/redfish/v1/AggregationService/Aggregates/\{aggregateId\}/Actions/Aggregate.RemoveElements|POST|`ConfigureComponents`, `ConfigureManager` |
+|/redfish/v1/AggregationService/ConnectionMethods|GET|`Login`|
+|/redfish/v1/AggregationService/ConnectionMethods/\{connectionmethodsId\}|GET|`Login`|
 
 >**Note:**
 Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -1702,7 +1747,7 @@ Transfer-Encoding":chunked
    "@odata.context":"/redfish/v1/$metadata#AggregationService.AggregationService",
    "Id":"AggregationService",
    "@odata.id":"/redfish/v1/AggregationService",
-   "@odata.type":"#AggregationService.v1_0_0.AggregationService",
+   "@odata.type":"#AggregationService.v1_0_1.AggregationService",
    "Name":"AggregationService",
    "Description":"AggregationService",
    "Actions":{
@@ -1721,6 +1766,9 @@ Transfer-Encoding":chunked
    "AggregationSources":{
       "@odata.id":"/redfish/v1/AggregationService/AggregationSources"
    },
+   "ConnectionMethods":{
+      "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods"
+   },
    "ServiceEnabled":true,
    "Status":{
       "Health":"OK",
@@ -1731,8 +1779,151 @@ Transfer-Encoding":chunked
 ```
 
 
+## Connection methods
+
+Connection methods indicate protocols, providers, or other methods that are used to communicate with an endpoint. 
+The `ConnectionMethod` schema describes these connection methods for the Redfish aggregation service. 
+
+###  Viewing a collection of connection methods
 
 
+|||
+|--------|---------|
+|**Method**| `GET` |
+|**URI** |`/redfish/v1/AggregationService/ConnectionMethods` |
+|**Description** |This operation lists all connection methods associated with the Redfish aggregation service.|
+|**Returns** |A list of links to all the available connection method resources.|
+|**Response Code** |On success, `200 Ok` |
+|**Authentication** |Yes|
+
+
+
+>**curl command** 
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods'
+
+
+```
+
+>**Sample response body**
+
+```
+{
+   ​   "@odata.type":"#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
+   ​   "Name":"Connection Methods",
+   ​   "Members@odata.count":3,
+   ​   "Members":[
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/aa166b6b-a367-40ba-ac2e-402f9a0c818f"         ​
+      },
+      ​      {
+         ​         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/7cb9fc3b-8b75-45da-8aad-5ff595968b71"         ​
+      }      ​
+   ]   ​
+}
+```
+
+### Viewing a connection method
+
+|||
+|--------|---------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/AggregationService/ConnectionMethods/ {connectionmethodsId}` |
+|**Description** |This operation retrieves information about a specific connection method.|
+|**Returns** |JSON schema representing this connection method.|
+|**Response Code** |On success, `200 Ok` |
+|**Authentication**|Yes|
+
+>**curl command**
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/ConnectionMethods/{connectionmethodsId}'
+
+
+```
+
+>**Sample response body**
+
+```
+{
+   ​   "@odata.type":"#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "@odata.context":"/redfish/v1/$metadata#ConnectionMethod.v1_0_0.ConnectionMethod",
+   ​   "Id":"c27575d2-052d-4ce9-8be1-978cab002a0f",
+   ​   "Name":"Connection Method",
+   ​   "ConnectionMethodType":"Redfish",
+   ​   "ConnectionMethodVariant":"Compute:BasicAuth:GRF_v1.0.0",
+   ​   "Links":{
+      ​      "AggregationSources":[
+         {
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
+         },
+         {
+            "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
+         }
+      ]      ​
+   }   ​
+}​
+```
+
+>**Connection method properties**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|ConnectionMethodType|String| The type of this connection method.<br> For possible property values, see "Connection method types" table.<br> |
+|ConnectionMethodVariant|String|The variant of connection method. For more information, see [Connection method variants](#connection-method-variants).|
+|Links \{|Object|Links to other resources that are related to this connection method.|
+|AggregationSources \[ \{<br> @odata.id<br> \} \]<br> |Array|An array of links to the `AggregationSources` resources that use this connection method.|
+
+ >**Connection method types**
+
+|String|Description|
+|------|-----------|
+| IPMI15<br> | IPMI 1.5 connection method.<br> |
+| IPMI20<br> | IPMI 2.0 connection method.<br> |
+| NETCONF<br> | Network Configuration Protocol.<br> |
+| OEM<br> | OEM connection method.<br> |
+| Redfish<br> | Redfish connection method.<br> |
+| SNMP<br> | Simple Network Management Protocol.<br> |
+
+#### Connection method variants
+
+A connection method variant provides details about a plugin and is displayed in the following format:
+
+*`PluginType:PrefferedAuthType:PluginID_Firmwareversion`*. 
+
+It consists of the following parameters:
+
+- **PluginType:**
+   The string that represents the type of the plugin.<br>Possible values: Compute, Storage, and Fabric. 
+- **PrefferedAuthType:**   
+   Preferred authentication method to connect to the plugin - BasicAuth or XAuthToken.  
+- **PluginID\_Firmwareversion:**
+   The id of the plugin along with the version of the firmware. To know the plugin Ids for all the supported plugins, see "Mapping of plugins and plugin Ids" table.<br>
+   Supported values: GRF\_v1.0.0 and URP\_v1.0.0.<br>  
+
+
+Examples:
+1. `Compute:BasicAuth:GRF_v1.0.0`
+2. `Compute:BasicAuth:URP_v1.0.0`
+
+
+>**Mapping of plugins and plugin Ids**
+
+|Plugin Id|Plugin name|
+|---------|-----------|
+|GRF|Generic Redfish Plugin|
+|URP|Unmanaged Rack Plugin|
 
 
 ##  Adding a plugin as an aggregation source
@@ -1740,13 +1931,19 @@ Transfer-Encoding":chunked
 | | |
 |-------|------|
 |<strong>Method</strong> | `POST` |
-|<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationSources` |
-|<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. This operation is performed in the background as a Redfish task.|
+|<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
+|<strong>Description</strong> | This operation creates an aggregation source for a plugin and adds it in the inventory. It is performed in the background as a Redfish task.|
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added plugin in the JSON response body.</li><li> A link \(having the aggregation source Id\) to the added plugin in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>  |
 |<strong>Response Code</strong> |`202 Accepted` On success, `201 Created`|
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
+**Usage information**
+
+Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the plugin. To know about connection methods, see [Connection methods](#connection-methods).
+				
+A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
+To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
+		
 
 After the plugin is successfully added as an aggregation source, it will also be available as a manager resource at:
 
@@ -1755,7 +1952,7 @@ After the plugin is successfully added as an aggregation source, it will also be
  
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can add a plugin. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -1771,19 +1968,19 @@ curl -i POST \
   "UserName":"{plugin_userName}",
   "Password":"{plugin_password}", 
   "Links":{
-      "Oem":{
-         "PluginID":"{Redfish_PluginId}",
-         "PreferredAuthType":"{Preferred_aunthentication_type}",
-         "PluginType":"{plugin_type}"
+     "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/{ConnectionMethodId}"
       }
    }
 }' \
- 'https://{odim_host}:{port}/redfish/v1/AggregationService/Actions/AggregationSources'
+ 'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
 
 
 ```
 
->**Sample request body**
+
+
+>**Sample request body for adding the GRF plugin**
 
 ```
 {
@@ -1791,10 +1988,23 @@ curl -i POST \
    "UserName":"admin",
    "Password":"GRFPlug!n12$4",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF",
-         "PreferredAuthType":"BasicAuth",
-         "PluginType":"Compute"
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+      }
+   }
+}
+```
+
+>**Sample request body for adding URP**
+
+```
+{
+   "HostName":"{plugin_host}:45007",
+   "UserName":"admin",
+   "Password":"Plug!n12$4",
+   "Links":{
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a171e66c-b4a8-137f-981b-1c07ddfeacbb"
       }
    }
 }
@@ -1804,14 +2014,13 @@ curl -i POST \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
+|HostName|String \(required\)<br> |FQDN of the resource aggregator server and port of a system where the plugin is installed. The default port for the Generic Redfish Plugin is `45001`.<br>The default port for the URP is `45003`.<br> If you are using a different port, ensure that the port is greater than `45000`.<br> IMPORTANT: If you have set the `VerifyPeer` property to false in the plugin `config.json` file \(/etc/plugin\_config/config.json\), you can use IP address of the system where the plugin is installed as `HostName`.<br>|
 |UserName|String \(required\)<br> |The plugin username.|
 |Password|String \(required\)<br> |The plugin password.|
-|PluginID|String \(required\)<br> |The id of the plugin you want to add. Example: GRF \(Generic Redfish Plugin\), ILO<br> |
-|PreferredAuthType|String \(required\)<br> |Preferred authentication method to connect to the plugin - `BasicAuth` or `XAuthToken`.|
-|PluginType|String \(required\)<br> |The string that represents the type of the plugin. Allowed values: `Compute`, and `Fabric` <br> |
+|Links\{|Object \(required\)<br> |Links to other resources that are related to this resource.|
+|ConnectionMethod|Array (required)|Links to the connection method that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response. Choose a connection method having the details of the plugin of your choice.<br>For example, the `ConnectionMethodVariant` property for the GRF plugin displays the following value:<br>`Compute:BasicAuth:GRF_v1.0.0` <br>For more information, see the "connection method properties" table in [Viewing a connection method](#viewing-a-connection-method)</li></ul>|
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header \(HTTP 202 status\)**
 
 ```
 Connection:keep-alive
@@ -1824,25 +2033,25 @@ Content-Length:491 bytes
 
 ```
 
->**Sample response header** \(HTTP 201 status\)
+>**Sample response header \(HTTP 201 status\)**
 
 ```
 "cache-control":"no-cache
 connection":"keep-alive
 content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
-link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a/>; rel=describedby
-location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a
+link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1/>; rel=describedby
+location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1
 odata-version:4.0
 transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body \(HTTP 202 status\)**
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6812a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-4c7d-942f-55eaf7d6812a",
@@ -1857,11 +2066,13 @@ x-frame-options":"sameorigin"
 }
 ```
 
->  Sample response body \(HTTP 201 status\)
+
+
+>**Sample response body \(HTTP 201 status\)**
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"be626e78-7a8a-4b99-afd2-b8ed45ef3d5a",
@@ -1869,15 +2080,12 @@ x-frame-options":"sameorigin"
    "HostName":"{plugin_host}:45001",
    "UserName":"admin",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF",
-         "PreferredAuthType":"BasicAuth",
-         "PluginType":"Compute"
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 } 
 ```
-
 
 
 
@@ -1895,19 +2103,28 @@ x-frame-options":"sameorigin"
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources` |
 |<strong>Description</strong> | This operation creates an aggregation source for a Base Management Controller \(BMC\), discovers information, and performs a detailed inventory of it.<br> The `AggregationSource` schema provides information about a BMC such as the IP address, the username, the password, and more.<br> This operation is performed in the background as a Redfish task.<br> |
 |<strong>Returns</strong> |<ul><li>`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".</li><li>Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".</li><li>On successful completion:<ul><li>The aggregation source Id, the IP address, the username, and other details of the added BMC in the JSON response body.</li><li>A link \(having the aggregation source Id\) to the added BMC in the `Location` header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 201 status\)".</li></ul></li></ul>|
-|<strong>Response Code</strong> |On success, `202 Accepted` On successful completion of the task, `201 Created` <br> |
+|<strong>Response Code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `201 Created` <br> |
 |<strong>Authentication</strong> |Yes|
 
-To know the progress of this operation, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\). When the task is successfully complete, you will receive aggregation source Id of the added BMC. Save it as it is required to identify it in the resource inventory later.
+**Usage information**
+
+Perform HTTP POST on the mentioned URI with a request body specifying a connection method to use for adding the BMC. To know about connection methods, see [Connection methods](#connection-methods).
+				
+A Redfish task will be created and you will receive a link to the [task monitor](#viewing-a-task-monitor) associated with it.
+
+To know the progress of this operation, perform HTTP `GET` on the task monitor returned in the response header (until the task is complete).
+When the task is successfully complete, you will receive aggregation source Id of the added BMC. Save it as it is required to identify it in the resource inventory later.
 
 After the server is successfully added as an aggregation source, it will also be available as a computer system resource at `/redfish/v1/Systems/` and a manager resource at `/redfish/v1/Managers/`.
 
-To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [collection of computer systems](#).
+<blockquote>NOTE: Along with the UUID of the server, check the BMC address to ensure the server isn't already present.</blockquote>
+
+To view the list of links to computer system resources, perform HTTP `GET` on `/redfish/v1/Systems/`. Each link contains `ComputerSystemId` of a specific BMC. For more information, see [Collection of computer systems](#collection-of-computer-systems).
 
  `ComputerSystemId` is unique information about the BMC specified by Resource Aggregator for ODIM. It is represented as `<UUID:n>`, where `UUID` is the aggregation source Id of the BMC. Save it as it is required to perform subsequent actions such as `delete, reset`, and `setdefaultbootorder` on this BMC.
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can add a server. If you perform this operation without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -1924,15 +2141,17 @@ curl -i -X POST \
     "UserName": "{BMC_UserName}", 
     "Password": "{BMC_Password}", 
     "Links":{     
-        "Oem": { 
-                  "PluginID": "GRF" 
-    } 
+        "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/{ConnectionMethodId}"
+      }
 }
 }' \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/AggregationSources'
 
 
 ```
+
+
 
 >**Sample request body**
 
@@ -1942,8 +2161,8 @@ curl -i -X POST \
    "UserName":"admin",
    "Password":"{BMC_password}",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF"
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 }
@@ -1957,9 +2176,9 @@ curl -i -X POST \
 |UserName|String \(required\)<br> |The username of the BMC administrator account.|
 |Password|String \(required\)<br> |The password of the BMC administrator account.|
 |Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
-|Oem\{ PluginID \} \} |String \(required\)<br> |The plugin Id of the plugin.<br> NOTE: Before specifying the plugin Id, ensure that the installed plugin is added in the resource inventory. To know how to add a plugin, see [Adding a Plugin](#adding-a-plugin-as-an-aggregation-source).|
+|ConnectionMethod|Array (required)|Links to the connection methods that are used to communicate with this endpoint: `/redfish/v1/AggregationService/AggregationSources`. To know which connection method to use, do the following:<ul><li>Perform HTTP `GET` on: `/redfish/v1/AggregationService/ConnectionMethods`.<br>You will receive a list of  links to available connection methods.</li><li>Perform HTTP `GET` on each link. Check the value of the `ConnectionMethodVariant` property in the JSON response.</li><li>The `ConnectionMethodVariant` property displays the details of a plugin. Choose a connection method having the details of the plugin of your choice.<br> Example: For GRF plugin, the `ConnectionMethodVariant` property displays the following value:<br>`Compute:BasicAuth:GRF:1.0.0`</li></ul>|
 
->**Sample response header** \(HTTP 202 status\)
+>**Sample response header \(HTTP 202 status\)**
 
 ```
 Connection:keep-alive
@@ -1972,7 +2191,7 @@ Content-Length:491 bytes
 
 ```
 
->**Sample response header** \(HTTP 201 status\)
+>**Sample response header \(HTTP 201 status\)**
 
 ```
 "cache-control":"no-cache
@@ -1986,11 +2205,11 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
->**Sample response body** \(HTTP 202 status\)
+>**Sample response body \(HTTP 202 status\)**
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
@@ -2005,20 +2224,21 @@ x-frame-options":"sameorigin"
 }
 ```
 
->**Sample response body** \(HTTP 201 status\)
 
+
+>** Sample response body \(HTTP 201 status\)**
 ```
  {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "Name":"Aggregation Source",
    "HostName":"10.24.0.4",
    "UserName":"admin",
-   "Links":{
-      "Oem":{
-         "PluginID":"GRF"
+    "Links":{
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
       }
    }
 }
@@ -2050,7 +2270,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSourceCollection.v1_0_0.AggregationSourceCollection",
+   "@odata.type":"#AggregationSourceCollection.AggregationSourceCollection",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSource",
    "@odata.context":"/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
    "Name":"Aggregation Source",
@@ -2060,7 +2280,7 @@ curl -i GET \
          "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c"
       },
       {
-         "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660"
+         "@odata.id":"/redfish/v1/AggregationService/AggregationSources/3536bb46-a023-4e3a-ac1a-7528cc18b660.1"
       }
    ]   
 }
@@ -2093,7 +2313,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
    "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
@@ -2101,10 +2321,10 @@ curl -i GET \
    "HostName":"10.24.0.4",
    "UserName":"admin",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF"
-      }     
-   }   
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+      }
+   }
 }
 ```
 
@@ -2154,18 +2374,18 @@ curl -i PATCH \
 
 ```
 {
-   "@odata.type":"#AggregationSource.v1_0_0.AggregationSource",
-   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c",
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
-   "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c",
+   "Id":"839c212d-9ab2-4868-8767-1bdcc0ce862c.1",
    "Name":"Aggregation Source",
    "HostName":"10.24.0.4",
    "UserName":"admin",
    "Links":{
-      "Oem":{
-         "PluginID":"GRF"
-      }     
-   }   
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/a172e66c-b4a8-437c-981b-1c07ddfeacab"
+      }
+   } 
 }
 ```
 
@@ -2182,10 +2402,12 @@ curl -i PATCH \
 |--------|--------------------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.Reset` |
-|<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. This operation is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)". IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
+|<strong>Description</strong> |This action shuts down, powers up, and restarts one or more servers. It is performed in the background as a Redfish task and is further divided into subtasks to reset each server individually.<br> |
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation \(task\) in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br><br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".<br><blockquote>IMPORTANT: Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>-  On successful completion of the reset operation, a message in the response body, saying that the reset operation is completed successfully. See "Sample response body \(HTTP 200 status\)".|
 |<strong>Response code</strong> |On success, `202 Accepted`<br> On successful completion of the task, `200 OK`|
 |<strong>Authentication</strong> |Yes|
+
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2194,7 +2416,7 @@ To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in 
 You can perform reset on a group of servers by specifying multiple target URIs in the request.
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2228,8 +2450,8 @@ curl -i POST \
    "DelayBetweenBatchesInSeconds":1,
    "ResetType":"ForceRestart",
    "TargetURIs":[
-      "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1",
-      "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9:1"
+      "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1",
+      "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b9.1"
    ]
 }
 
@@ -2274,7 +2496,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4103-8757-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4103-8757-4c7d-942f-55eaf7d6412a",
@@ -2314,7 +2536,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -2325,7 +2547,7 @@ Content-Length:491 bytes
 ```
 { 
    "error":{ 
-      "code":"Base.1.6.1.Success",
+      "code":"Base.1.11.0.Success",
       "message":"Request completed successfully"
    }
 }
@@ -2340,9 +2562,11 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder` |
 |<strong>Description</strong> |This action changes the boot order of one or more servers to default settings. This operation is performed in the background as a Redfish task and is further divided into subtasks to change the boot order of each server individually.<br> |
-|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-  Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".IMPORTANT:<br>Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.<br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See "Sample response body \(HTTP 200 status\)".<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br><br>-  Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See the task URI and the task Id highlighted in bold in "Sample response body \(HTTP 202 status\)".<blockquote><br>IMPORTANT:<br>Note down the task Id. If the task completes with an error, it is required to know which subtask has failed. To get the list of subtasks, perform HTTP `GET` on `/redfish/v1/TaskService/Tasks/{taskId}`.</blockquote><br>- On successful completion of this operation, a message in the response body, saying that the operation is completed successfully. See "Sample response body \(HTTP 200 status\)".<br>|
 |<strong>Response code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
+
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
@@ -2351,7 +2575,7 @@ To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in 
 You can perform `setDefaultBootOrder` action on a group of servers by specifying multiple server URIs in the request.
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2384,10 +2608,10 @@ curl -i POST \
 {
    "Systems":[
       {
-         "@odata.id":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+         "@odata.id":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
       },
       {
-         "@odata.id":"/redfish/v1/Systems/76632110-1c75-5a86-9cc2-471325983653:1"
+         "@odata.id":"/redfish/v1/Systems/76632110-1c75-5a86-9cc2-471325983653.1"
       }
    ]
 }
@@ -2417,7 +2641,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
@@ -2457,7 +2681,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -2484,14 +2708,16 @@ Content-Length:491 bytes
 |<strong>Method</strong> | `DELETE` |
 |<strong>URI</strong> |`/redfish/v1/AggregationService/AggregationSources/{AggregationSourceId}` |
 |<strong>Description</strong> |This operation removes a specific aggregation source \(plugin, BMC, or any manager\) from the inventory. Deleting an aggregation source also deletes all event subscriptions associated with the BMC. This operation is performed in the background as a Redfish task.<br> |
-|<strong>Returns</strong> |`Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".<br>|
+|<strong>Returns</strong> |- `Location` URI of the task monitor associated with this operation in the response header. See `Location` URI highlighted in bold in "Sample response header \(HTTP 202 status\)".<br>-   Link to the task and the task Id in the sample response body. To get more information on the task, perform HTTP `GET` on the task URI. See "Sample response body \(HTTP 202 status\)".<br>|
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `204 No Content` <br> |
 |<strong>Authentication</strong> |Yes|
+
+**Usage information**
 
 To know the progress of this action, perform `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can delete a server. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2523,7 +2749,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-2c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8757-2c7d-942f-55eaf7d6412a",
@@ -2545,7 +2771,7 @@ Content-Length:491 bytes
 
 An aggregate is a user-defined collection of resources.
 
-The aggregate schema provides a mechanism to formally group the southbound resources of your choice into a specific group. The advantage of creating aggregates is that they are more persistent than the random groupings—The aggregates are available and accessible in the Resource Aggregator for ODIM environment until you delete them.
+The aggregate schema provides a mechanism to formally group the southbound resources of your choice. The advantage of creating aggregates is that they are more persistent than the random groupings—the aggregates are available and accessible in the environment of Resource Aggregator for ODIM until you delete them.
 
 The resource aggregator allows you to:
 
@@ -2592,7 +2818,7 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1"      
    ]   
 }
 ```
@@ -2621,7 +2847,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2630,8 +2856,8 @@ Transfer-Encoding:chunked
       "MessageId":"Base.1.6.1.Created",
       "Severity":"OK",
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"      
    ]   
 }
 ```
@@ -2705,7 +2931,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2714,8 +2940,8 @@ curl -i GET \
    "MessageId":"Base.1.6.1.Success",
    "Severity":"OK",
    "Elements":[
-      "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-      "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1:1"      
+      "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+      "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"      
    ]
 }
 ```
@@ -2777,8 +3003,8 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1.1"      
    ]   
 }
 ```
@@ -2793,7 +3019,7 @@ curl -i POST \
 
 ```
 {
-      "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+      "@odata.type":"#Aggregate.v1_0_1.Aggregate",
       "@odata.id":"/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
@@ -2802,8 +3028,8 @@ curl -i POST \
       "MessageId":"Base.1.6.1.Created",
       "Severity":"OK",
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/4da0b6cd-42b7-4fd5-8ccf-97d0f58ae8b1.1"      
    ]   
 }
 ```
@@ -2820,14 +3046,14 @@ curl -i POST \
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of the reset operation \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can reset servers. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2884,7 +3110,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
@@ -2924,7 +3150,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -2955,14 +3181,14 @@ Content-Length:491 bytes
 |<strong>Response Code</strong> |`202 Accepted` On successful completion, `200 OK` <br> |
 |<strong>Authentication</strong> |Yes|
 
-
+**Usage information**
 
 To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
 To get the list of subtask URIs, perform HTTP `GET` on the task URI returned in the JSON response body. See "Sample response body \(HTTP 202 status\)". The JSON response body of each subtask contains a link to the task monitor associated with it. To know the progress of `SetDefaultBootOrder` action \(subtask\) on a specific server, perform HTTP `GET` on the task monitor associated with the respective subtask. See the link to the task monitor highlighted in bold in "Sample response body \(subtask\)".
 
 
-NOTE:
+**NOTE:**
 
 Only a user with `ConfigureComponents` privilege can change the boot order of one or more servers to default settings. If you perform this action without necessary privileges, you will receive an HTTP `403 Forbidden` error.
 
@@ -2995,7 +3221,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8057-4c7d-942f-55eaf7d6412a",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"task85de4003-8057-4c7d-942f-55eaf7d6412a",
@@ -3035,7 +3261,7 @@ Content-Length:491 bytes
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -3089,8 +3315,8 @@ curl -i POST \
 ```
 {
       "Elements":[
-            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1:1",
-            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1:1"      
+            "/redfish/v1/Systems/8da0b6cd-42b7-4fd5-8ccf-97d0f58ae8c1.1",
+            "/redfish/v1/Systems/7da0b6cd-42b7-4fd5-8ccf-97d0f58ae8e1.1"      
    ]   
 }
 ```
@@ -3105,7 +3331,7 @@ curl -i POST \
 
 ```
 {
-   "@odata.type":"#Aggregate.v1_0_0.Aggregate",
+   "@odata.type":"#Aggregate.v1_0_1.Aggregate",
    "@odata.id":"/redfish/v1/AggregationService/Aggregates/e02faf78-f919-4612-b031-bec7ae59910d",
    "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
    "Id":"e02faf78-f919-4612-b031-bec7ae59910d",
@@ -3122,9 +3348,19 @@ curl -i POST \
 
 
 
+
+
+
+
+
+
 #  Resource inventory
 
-Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems`, `Chassis`, and `Managers` endpoints. It also offers the capability to search inventory information based on one or more configuration parameters and exposes APIs to manage the added resources.
+Resource Aggregator for ODIM allows you to view the inventory of compute and local storage resources through Redfish `Systems`, `Chassis`, and `Managers` endpoints. 
+It also offers the capability to:	
+- Search inventory information based on one or more configuration parameters.	
+- Manage the resources added in the inventory. 
+
 
 To discover crucial configuration information about a resource, including chassis, perform `GET` on these endpoints.
 
@@ -3142,7 +3378,14 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/\{ComputerSystemId\}/EthernetInterfaces/\{Id\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Bios|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/SecureBoot|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives|GET|`Login` |
+|/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Drives/\{driveId\}|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Storage/\{storageSubsystemId\}/Volumes|GET, POST|`Login`, `ConfigureComponents` |
@@ -3150,16 +3393,17 @@ To discover crucial configuration information about a resource, including chassi
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors|GET|`Login` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Processors/\{Id\}|GET|`Login` |
 |/redfish/v1/Systems?$filter=\{searchKeys\}%20\{conditionKeys\}%20\{value\}|GET|`Login` |
-| /redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
+|/redfish/v1/Systems/\{ComputerSystemId\}/Bios/Settings<br> |GET, PATCH|`Login`, `ConfigureComponents` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.Reset|POST|`ConfigureComponents` |
 |/redfish/v1/Systems/\{ComputerSystemId\}/Actions/ComputerSystem.SetDefaultBootOrder|POST|`ConfigureComponents` |
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
-|/redfish/v1/Chassis|GET|`Login` |
-|/redfish/v1/Chassis/\{chassisId\}|GET|`Login` |
-|/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login` |
+|/redfish/v1/Chassis|GET, POST|`Login`, `ConfigureComponents` |
+|/redfish/v1/Chassis/\{chassisId\}|GET, PATCH, DELETE|`Login`, `ConfigureComponents`|
+|/redfish/v1/Chassis/\{chassisId\}/Thermal|GET|`Login`|
 |/redfish/v1/Chassis/\{chassisId\}/NetworkAdapters|GET|`Login` |
+|/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{networkadapterId}|GET|`Login`|
 
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
@@ -3212,19 +3456,15 @@ curl -i GET \
    "Name":"Computer Systems",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Systems/ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1"
+         "@odata.id":"/redfish/v1/Systems/ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1"
       },
       { 
-         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":2
 }
 ```
-
-
-
-
 
 
 
@@ -3255,9 +3495,9 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
    "@odata.etag":"W/\"8C36EBD2\"",
-   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1",
-   "@odata.type":"#ComputerSystem.v1_4_0.ComputerSystem",
-   "Id":"e24fb205-6669-4080-b53c-67d4923aa73e:1",
+   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1",
+   "@odata.type":"#ComputerSystem.v1_16_0.ComputerSystem",
+   "Id":"e24fb205-6669-4080-b53c-67d4923aa73e.1",
    "Actions":{ 
       "#ComputerSystem.Reset":{ 
          "ResetType@Redfish.AllowableValues":[ 
@@ -3268,17 +3508,17 @@ curl -i GET \
             "Nmi",
             "PushPowerButton"
          ],
-         "target":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Actions/ComputerSystem.Reset"
+         "target":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Actions/ComputerSystem.Reset"
       }
    },
    "AssetTag":"",
    "Bios":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Bios"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Bios"
    },
    "BiosVersion":"U32 v2.00 (02/02/2019)",
    "Boot":{ 
       "BootOptions":{ 
-         "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/BootOptions"
+         "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/BootOptions"
       },
       "BootOrder":[ 
          "Boot000A",
@@ -3330,31 +3570,31 @@ curl -i GET \
       ]
    },
    "EthernetInterfaces":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/EthernetInterfaces"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/EthernetInterfaces"
    },
    "HostName":"",
    "IndicatorLED":"Off",
    "Links":{ 
       "ManagedBy":[ 
          { 
-            "@odata.id":"/redfish/v1/Managers/e24fb205-6669-4080-b53c-67d4923aa73e:1"
+            "@odata.id":"/redfish/v1/Managers/e24fb205-6669-4080-b53c-67d4923aa73e.1"
          }
       ],
       "Chassis":[ 
          { 
-            "@odata.id":"/redfish/v1/Chassis/e24fb205-6669-4080-b53c-67d4923aa73e:1"
+            "@odata.id":"/redfish/v1/Chassis/e24fb205-6669-4080-b53c-67d4923aa73e.1"
          }
       ]
    },
    "LogServices":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/LogServices"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/LogServices"
    },
    "Manufacturer":"HPE",
    "Memory":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Memory"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory"
    },
    "MemoryDomains":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/MemoryDomains"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/MemoryDomains"
    },
    "MemorySummary":{ 
       "Status":{ 
@@ -3366,7 +3606,7 @@ curl -i GET \
    "Model":"ProLiant DL360 Gen10",
    "Name":"Computer System",
    "NetworkInterfaces":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/NetworkInterfaces"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/NetworkInterfaces"
    },
    "Oem":{ 
       
@@ -3451,28 +3691,28 @@ curl -i GET \
          "IsColdBooting":false,
          "Links":{ 
             "PCIDevices":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCIDevices"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIDevices"
             },
             "PCISlots":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/PCISlots"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCISlots"
             },
             "NetworkAdapters":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/BaseNetworkAdapters"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/BaseNetworkAdapters"
             },
             "SmartStorage":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/SmartStorage"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/SmartStorage"
             },
             "USBPorts":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/USBPorts"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/USBPorts"
             },
             "USBDevices":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/USBDevices"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/USBDevices"
             },
             "EthernetInterfaces":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/EthernetInterfaces"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/EthernetInterfaces"
             },
             "WorkloadPerformanceAdvisor":{ 
-               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/WorkloadPerformanceAdvisor"
+               "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/WorkloadPerformanceAdvisor"
             }
          },
          "PCAPartNumber":"847479-001",
@@ -3498,7 +3738,7 @@ curl -i GET \
          "ServerFQDN":"",
          "SmartStorageConfig":[ 
             { 
-               "@odata.id":"/redfish/v1/systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/smartstorageconfig"
+               "@odata.id":"/redfish/v1/systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/smartstorageconfig"
             }
          ],
          "SystemROMAndiLOEraseComponentStatus":{ 
@@ -3524,6 +3764,42 @@ curl -i GET \
          "VirtualProfile":"Inactive"
       }
    },
+   "PCIeDevices":[
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/1"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/2"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/3"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/4"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/5"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/6"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/7"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/8"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/9"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/10"
+    },
+    {
+    "@odata.id": "/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/PCIeDevices/11"
+    }
+   ],
+   "PCIeDevices@odata.count": 11,
    "PowerState":"On",
    "ProcessorSummary":{ 
       "Count":2,
@@ -3533,11 +3809,11 @@ curl -i GET \
       }
    },
    "Processors":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Processors"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Processors"
    },
    "SKU":"867959-B21",
    "SecureBoot":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/SecureBoot"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/SecureBoot"
    },
    "SerialNumber":"MXQ91100T9",
    "Status":{ 
@@ -3546,7 +3822,7 @@ curl -i GET \
       "State":"Starting"
    },
    "Storage":{ 
-      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Storage"
+      "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Storage"
    },
    "SystemType":"Physical",
    "TrustedModules":[ 
@@ -3625,8 +3901,8 @@ curl -i GET \
 { 
    "@odata.context":"/redfish/v1/$metadata#Memory.Memory",
    "@odata.etag":"W/\"E6EC3A2C\"",
-   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e:1/Memory/proc1dimm1",
-   "@odata.type":"#Memory.v1_7_1.Memory",
+   "@odata.id":"/redfish/v1/Systems/e24fb205-6669-4080-b53c-67d4923aa73e.1/Memory/proc1dimm1",
+   "@odata.type":"#Memory.v1_13_0.Memory",
    "Id":"proc1dimm1",
    "BaseModuleType":"RDIMM",
    "BusWidthBits":72,
@@ -3812,8 +4088,8 @@ curl -i GET \
 {
 	"@odata.context": "/redfish/v1/$metadata#EthernetInterface.EthernetInterface",
 	"@odata.etag": "W/\"5DEAF04A\"",
-	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1/EthernetInterfaces/1",
-	"@odata.type": "#EthernetInterface.v1_4_1.EthernetInterface",
+	"@odata.id": "/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1/EthernetInterfaces/1",
+	"@odata.type": "#EthernetInterface.v1_7_0.EthernetInterface",
 	"Id": "1",
 	"FullDuplex": true,
 	"IPv4Addresses": [],
@@ -3838,7 +4114,67 @@ curl -i GET \
 
 
 
+##  PCIeDevice
 
+|||
+|---------|-------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}` |
+|**Description** | This operation fetches information about a specific PCIe device.<br> |
+|**Returns** |Properties of a PCIe device attached to a computer system such as type, the version of the PCIe specification in use by this device, and more.|
+|**Response code** |`200 OK` |
+|**Authentication** |Yes|
+
+
+>**curl command**
+
+```
+curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/PCIeDevices/{PCIeDeviceId}'
+
+
+```
+> Sample response body
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#PCIeDevice.PCIeDevice",
+    "@odata.etag": "W/\"33150E20\"",
+    "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79.1/PCIeDevices/1",
+    "@odata.type": "#PCIeDevice.v1_7_0.PCIeDevice",
+    "Id": "1",
+    "Name": "HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
+    "Oem": {
+        "Hpe": {
+            "@odata.context": "/redfish/v1/$metadata#HpeServerPciDevice.HpeServerPciDevice",
+            "@odata.etag": "W/\"33150E20\"",
+            "@odata.id": "/redfish/v1/Systems/1b77fcdd-b6a2-44b4-83f9-cfb4926fcd79:1/PCIDevices/1",
+            "@odata.type": "#HpeServerPciDevice.v2_0_0.HpeServerPciDevice",
+            "BusNumber": 2,
+            "ClassCode": 2,
+            "DeviceID": 5719,
+            "DeviceInstance": 1,
+            "DeviceLocation": "Embedded",
+            "DeviceNumber": 0,
+            "DeviceSubInstance": 1,
+            "DeviceType": "Embedded LOM",
+            "FunctionNumber": 0,
+            "Id": "1",
+            "LocationString": "Embedded LOM 1",
+            "Name": "HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
+            "SegmentNumber": 0,
+            "StructuredName": "NIC.LOM.1.1",
+            "SubclassCode": 0,
+            "SubsystemDeviceID": 8894,
+            "SubsystemVendorID": 4156,
+            "UEFIDevicePath": "PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)",
+            "VendorID": 5348
+        }
+    }
+}
+
+```
 
 
 
@@ -3868,6 +4204,369 @@ curl -i GET \
 
 
 
+## StoragePools 
+
+The StoragePools schema represents storage pools, allocated volumes and drives.
+
+### StoragePools Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools` |
+| **Description**    | This operation returns a collection of StoragePool resource instances. |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools'
+
+```
+
+> **Sample response body**
+
+```
+{
+	"@odata.etag": "\"2a840a57e9592422136\"",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools",
+	"@odata.type": "#StoragePoolCollection.StoragePoolCollection",
+	"Description": "A collection of StoragePool resource instances.",
+	"Members": [{
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27"
+	}],
+	"Members@odata.count": 1,
+	"Name": "StoragePoolCollection"
+}
+```
+
+
+
+### Single StoragePool
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}` |
+| **Description**    | This operation represents a single StoragePool instance.     |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}'
+
+```
+
+> **Sample response body**
+
+```
+{
+	"@odata.etag": "\"7a55c980802224f456c\"",
+	"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27",
+	"@odata.type": "#StoragePool.v1_5_0.StoragePool",
+	"AllocatedVolumes": {
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes"
+	},
+	"Capacity": {
+		"Data": {
+			"AllocatedBytes": 998999326720,
+			"ConsumedBytes": 998999326720
+		},
+		"Metadata": {},
+		"Snapshot": {}
+	},
+	"CapacitySources": [{
+		"@odata.etag": "\"31ecba89b48925a6bf3\"",
+		"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1",
+		"@odata.type": "#Capacity.v1_1_3.CapacitySource",
+		"Description": "The resource is used to represent a capacity for a Redfish implementation.",
+		"Id": "1",
+		"Name": "CapacitySources_1",
+		"ProvidingDrives": {
+			"@odata.id": "/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives"
+		}
+	}],
+	"CapacitySources@odata.count": 1,
+	"Description": "The resource is used to represent a storage pool for a Redfish implementation.",
+	"Id": "Pool_1_27",
+	"Name": "Pool_1_27",
+	"Status": {
+		"State": "Enabled"
+	},
+	"SupportedRAIDTypes": ["RAID0"]
+}
+```
+
+
+
+### AllocatedVolumes Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes` |
+| **Description**    | This operation returns a collection of volume resource instances. |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"2cbdffec21f02963c79\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes",
+   "@odata.type":"#VolumeCollection.VolumeCollection",
+   "Description":"A collection of volume resource instances.",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"VolumeCollection"
+}
+```
+
+
+
+### Single AllocatedVolume
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}` |
+| **Description**    | This operation represents a single volume instance.          |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/AllocatedVolumes/{allocatedvolumes_Id}'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"915af5f726a127f66c2\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27",
+   "@odata.type":"#Volume.v1_6_2.Volume",
+   "AccessCapabilities":[
+   ],
+   "Actions":{
+      "#Volume.Initialize":{
+         "InitializeType@Redfish.AllowableValues":[
+            "Fast"
+         ],
+         "target":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/AllocatedVolumes/27/Actions/Volume.Initialize",
+         "title":"Initialize"
+      }
+   },
+   "BlockSizeBytes":512,
+   "Capacity":{
+      "Data":{
+         
+      },
+      "Metadata":{
+         
+      },
+      "Snapshot":{
+         
+      }
+   },
+   "CapacityBytes":998999326720,
+   "Description":"This resource is used to represent a volume for a Redfish implementation.",
+   "DisplayName":"VD_1",
+   "Id":"27",
+   "Links":{
+      "Drives":[
+         {
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0"
+         }
+      ]
+   },
+   "Name":"VD_1",
+   "Oem":{
+      "Lenovo":{
+         "@odata.type":"#LenovoStorageVolume.v1_0_0.LenovoStorageVolume",
+         "AccessPolicy":"",
+         "Bootable":true,
+         "DriveCachePolicy":"",
+         "…"
+      }
+   },
+   "RAIDType":"RAID0",
+   "ReadCachePolicy":null,
+   "ReadCachePolicy@Redfish.AllowableValues":[
+      "Off",
+      "ReadAhead"
+   ],
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "StripSizeBytes":0,
+   "WriteCachePolicy":null,
+   "WriteCachePolicy@Redfish.AllowableValues":[
+      "WriteThrough",
+      "UnprotectedWriteBack",
+      "ProtectedWriteBack"
+   ]
+}
+```
+
+
+
+### ProvidingDrives Collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives` |
+| **Description**    | This operation returns a collection of drives.               |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives'
+
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"252e43d3e5862ae3d30\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/StoragePools/Pool_1_27/CapacitySources/1/ProvidingDrives",
+   "@odata.type":"#DriveCollection.DriveCollection",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0"
+      }
+   ],
+   "Members@odata.count":1,
+   "Name":"DriveCollection"
+}
+```
+
+
+
+### Single ProvidingDrive
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}` |
+| **Description**    | This operation represents a single drive instance.           |
+| **Response code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+> **curl command**
+
+```curl -i GET \
+ curl -i GET \
+         -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{StorageControllerId}/StoragePools/{storagepool_Id}/CapacitySources/{capacitysources_Id}/ProvidingDrives/{providingdrives_id}'
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.etag":"\"a81c2a4f4e972e18b6306\"",
+   "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Drives/Disk.0",
+   "@odata.type":"#Drive.v1_13_1.Drive",
+   "AssetTag":"",
+   "BlockSizeBytes":512,
+   "CapableSpeedGbs":6,
+   "CapacityBytes":1000204886016,
+   "Description":"This resource is used to represent a drive for a Redfish implementation.",
+   "EncryptionAbility":"None",
+   "EncryptionStatus":"Unencrypted",
+   "FailurePredicted":false,
+   "HotspareType":"None",
+   "Id":"Disk.0",
+   "Identifiers":[
+      {
+         "DurableName":"",
+         "DurableNameFormat":"UUID"
+      }
+   ],
+   "Links":{
+      "Chassis":{
+         "@odata.id":"/redfish/v1/Chassis/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1"
+      },
+      "PCIeFunctions":[
+         
+      ],
+      "Volumes":[
+         {
+            "@odata.id":"/redfish/v1/Systems/8b9da958-52d7-4f33-a01a-74b6ab4d3886.1/Storage/RAID_Slot4/Volumes/27"
+         }
+      ]
+   },
+   "Manufacturer":"Seagate",
+   "MediaType":"HDD",
+   "Model":"ST1000NX0423",
+   "Name":"1.00TB 7.2K 6Gbps SATA 2.5 HDD",
+   "NegotiatedSpeedGbs":6,
+   "Oem":{
+      "Lenovo":{
+         "@odata.type":"#LenovoDrive.v1_0_0.LenovoDrive",
+         "DriveStatus":"Online",
+         "Temperature":27
+      }
+   },
+   "PartNumber":"D7A01874",
+   "PhysicalLocation":{
+      "Info":"Slot 0",
+      "Info@Redfish.Deprecated":"The property is deprecated. Please use PartLocation instead.",
+      "InfoFormat":"Slot Number",
+      "InfoFormat@Redfish.Deprecated":"The property is deprecated. Please use PartLocation instead.",
+      "PartLocation":{
+         "LocationOrdinalValue":0,
+         "LocationType":"Bay",
+         "ServiceLabel":"Drive 0"
+      }
+   },
+   "PredictedMediaLifeLeftPercent":null,
+   "Protocol":"SATA",
+   "Revision":"LEK9",
+   "RotationSpeedRPM":7200,
+   "SKU":"00YK025",
+   "SerialNumber":"W473AMB3",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "StatusIndicator":null
+}
+```
+
 
 
 ##  Storage subsystem
@@ -3892,12 +4591,62 @@ curl -i GET \
 
 ```
 
+> Sample response body 
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#Storage.Storage",
+    "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0",
+    "@odata.type": "#Storage.v1_11_1.Storage",
+    "Description": "HPE Smart Storage Array Controller View",
+    "Drives": [
+        {
+            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Drives/0"
+        },
+        {
+            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Drives/1"
+        }
+    ],
+    "Id": "ArrayController-0",
+    "Name": "HpeSmartStorageArrayController",
+    "StorageControllers": [
+        {
+            "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0#/StorageControllers/0",
+            "FirmwareVersion": "1.98",
+            "Manufacturer": "HPE",
+            "MemberId": "0",
+            "Model": "HPE Smart Array P408i-a SR Gen10",
+            "Name": "HpeSmartStorageArrayController",
+            "PartNumber": "836260-001",
+            "PhysicalLocation": {
+                "PartLocation": {
+                    "LocationOrdinalValue": 0,
+                    "LocationType": "Slot",
+                    "ServiceLabel": "Slot=0"
+                }
+            },
+            "SerialNumber": "PEYHC0DRHBV3CZ ",
+            "Status": {
+                "Health": "OK",
+                "State": "Enabled"
+            }
+        }
+    ],
+    "Volumes": {
+        "@odata.id": "/redfish/v1/Systems/49999b11-3e20-41e8-b6ca-2e466e6d8ccf.1/Storage/ArrayControllers-0/Volumes"
+    }
+}
+
+```
 
 
 
+## Drives
+
+The drive schema represents a single physical drive for a system, including links to associated volumes.
 
 
-##  Storage drive
+###  Single drive
 
 |||
 |---------|-------|
@@ -3909,233 +4658,6 @@ curl -i GET \
 |**Authentication** |Yes|
 
 >**curl command**
-
-## Volumes
-
-
-
-### A collection of volumes
-
-| | | 
-|----------|-----------|
-|<strong>Method</strong> |`GET` |
-|<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  |This endpoint retrieves a collection of volumes in a specific storage subsystem.|
-|<strong>Returns</strong> |A list of links to volumes.|
-|<strong>Response Code</strong> |On success, `200 OK` |
-|<strong>Authentication</strong> |Yes|
-
- 
-
- 
-
-```
-curl -i GET \
-             -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
-
-
-```
-
-> Sample response body 
-
-```
-{
-   ​   "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
-   ​   "@odata.etag":"W/\"AA6D42B0\"",
-   ​   "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes",
-   ​   "@odata.type":"#VolumeCollection.VolumeCollection",
-   ​   "Description":"Volume Collection view",
-   ​   "Members":​[
-      ​      {
-         ​         "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes/1"         ​
-      }      ​
-   ],
-   ​   "Members@odata.count":1,
-   ​   "Name":"Volume Collection"   ​
-}
-```
-
-
-
-### Single volume
-
-
-| | | 
-|----------|-----------|
-|<strong>Method</strong> |`GET` |
-|<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
-|<strong>Description</strong>   |This endpoint retrieves information about a specific volume in a storage subsystem.|
-|<strong>Returns</strong>  |JSON schema representing this volume.|
-|<strong>Response Code</strong>  |On success, `200 OK` |
-|<strong>Authentication</strong>  |Yes|
-
- 
-
- 
-
-```
-curl -i GET \
-             -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/{volumeId}'
-
-
-```
-
-> Sample response body 
-
-```
-{
-   "@odata.context":"/redfish/v1/$metadata#Volume.Volume",
-   "@odata.etag":"W/\"46916D5D\"",
-   "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Volumes/1",
-   "@odata.type":"#Volume.v1_4_1.Volume",
-   "CapacityBytes":1200209526784,
-   "Encrypted":false,
-   "Id":"1",
-   "Identifiers":[
-      {
-         "DurableName":"600508B1001C2AFE083D7F9026B2E994",
-         "DurableNameFormat":"NAA"
-      }
-   ],
-   "Links":{
-      "Drives":[
-         {
-            "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
-         }
-      ]
-   },
-   "Name":"Drive_Volume_Link",
-   "RAIDType":"RAID0",
-   "Status":{
-      "Health":"OK",
-      "State":"Enabled"
-   }
-}
-```
-
-
-### Creating a volume
-
-| | | 
-|----------|-----------|
-|<strong>Method</strong> | `POST` |
-|<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.|
-|<strong>Response Code</strong>   |On success, `200 Ok` |
-|<strong>Authentication</strong>|Yes|
-
-
-
-```
-curl -i -X POST \
-   -H "X-Auth-Token:{X-Auth-Token}" \
-   -H "Content-Type:application/json" \
-   -d \
-'{
-   "Name":"Volume_Demo",
-   "RAIDType":"RAID1",
-   "Drives":[
-      {
-         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Drives/1"
-      }
-   ],
-   "@Redfish.OperationApplyTime":"OnReset"
-}}' \
- 'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
-
-
-```
-
-> Sample request body 
-
-```
-{
-   "Name":"Volume_Demo",
-   "RAIDType":"RAID1",
-   "Drives":[
-      {
-         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
-      },
-      {
-         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/1"
-      }
-   ],
-   "@Redfish.OperationApplyTime":"OnReset"
-}}
-```
-
-### Request parameters 
-
-|Parameter|Type|Description|
-|---------|----|-----------|
-|Name|String \(required\)<br> |Name of the new volume.|
-|RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
-|Drives\[\{|Array \(required\)<br> |An array of links to drive resources that the new volume contains.|
-|@odata.id \}\]<br> |String|A link to a drive resource.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
-
-> Sample response body 
-
-```
- {
-   ​   "error":{
-      ​      "@Message.ExtendedInfo":[
-         ​         {
-            ​            "MessageId":"iLO.2.13.SystemResetRequired"            ​
-         }         ​
-      ],
-      ​      "code":"iLO.0.10.ExtendedInfo",
-      ​      "message":"See @Message.ExtendedInfo for more information."      ​
-   }   ​
-}
-```
-
-
-
-
-
-### Deleting a volume
-
-
-| | | 
-|----------|-----------|
-|<strong>Method</strong>  | `DELETE` |
-|<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
-|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br> |
-|<strong>Response Code</strong>|On success, `204 No Content` |
-|<strong>Authentication</strong>  |Yes|
-
-
-
-```
-curl -i -X DELETE \
-   -H "X-Auth-Token:{X-Auth-Token}" \
-   -H "Content-Type:application/json" \
- 'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}'
-
-
-```
-
-> Sample request body 
-
-```
-{
-  
-   "@Redfish.OperationApplyTime":"OnReset"
-}
-```
-
-### Request parameters
-
-|Parameter|Type|Description|
-|---------|----|-----------|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset`. Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you reset the system.<br> |
-
 
 
 ```
@@ -4151,9 +4673,10 @@ curl -i GET \
 
 ## Volumes
 
+The volume schema represents a volume, virtual disk, LUN, or other logical storage entity for any system.
 
 
-### A collection of volumes
+### Collection of volumes
 
 | | |
 |----------|-----------|
@@ -4182,12 +4705,12 @@ curl -i GET \
 {
       "@odata.context":"/redfish/v1/$metadata#VolumeCollection.VolumeCollection",
       "@odata.etag":"W/\"AA6D42B0\"",
-      "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes",
+      "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407.1/Storage/ArrayControllers-0/Volumes",
       "@odata.type":"#VolumeCollection.VolumeCollection",
       "Description":"Volume Collection view",
       "Members":[
             {
-                  "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407:1/Storage/ArrayControllers-0/Volumes/1"         
+                  "@odata.id":"/redfish/v1/Systems/eb452cf4-306c-4b21-96fb-698a067da407.1/Storage/ArrayControllers-0/Volumes/1"         
       }      
    ],
       "Members@odata.count":1,
@@ -4209,9 +4732,9 @@ curl -i GET \
 |<strong>Response code</strong>  |On success, `200 OK` |
 |<strong>Authentication</strong>  |Yes|
 
- 
+
 >**curl command**
- 
+
 
 ```
 curl -i GET \
@@ -4227,8 +4750,8 @@ curl -i GET \
 {
    "@odata.context":"/redfish/v1/$metadata#Volume.Volume",
    "@odata.etag":"W/\"46916D5D\"",
-   "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Volumes/1",
-   "@odata.type":"#Volume.v1_4_1.Volume",
+   "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Volumes/1",
+   "@odata.type":"#Volume.v1_6_2.Volume",
    "CapacityBytes":1200209526784,
    "Encrypted":false,
    "Id":"1",
@@ -4241,7 +4764,7 @@ curl -i GET \
    "Links":{
       "Drives":[
          {
-            "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
+            "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
          }
       ]
    },
@@ -4261,7 +4784,7 @@ curl -i GET \
 |----------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong>  |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes` |
-|<strong>Description</strong>  | This operation creates a volume in a specific storage subsystem.|
+|<strong>Description</strong>| This operation creates a volume in a specific storage subsystem.|
 |<strong>Response code</strong>   |On success, `200 Ok` |
 |<strong>Authentication</strong>|Yes|
 
@@ -4284,7 +4807,7 @@ curl -i -X POST \
       }
    ],
    "@Redfish.OperationApplyTime":"OnReset"
-}}' \
+}' \
  'https://{odim_host}:{port}/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes'
 
 
@@ -4298,14 +4821,14 @@ curl -i -X POST \
    "RAIDType":"RAID1",
    "Drives":[
       {
-         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/0"
+         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/0"
       },
       {
-         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f:1/Storage/ArrayControllers-0/Drives/1"
+         "@odata.id":"/redfish/v1/Systems/363bef34-7f89-48ac-8970-ee8955f1b56f.1/Storage/ArrayControllers-0/Drives/1"
       }
    ],
    "@Redfish.OperationApplyTime":"OnReset"
-}}
+}
 ```
 
 **Request parameters** 
@@ -4314,9 +4837,9 @@ curl -i -X POST \
 |---------|----|-----------|
 |Name|String \(required\)<br> |Name of the new volume.|
 |RAIDType|String \(required\)<br> |The RAID type of the volume you want to create.|
-|Drives\[\{|Array \(required\)<br> |An array of links to drive resources that the new volume contains.|
+|Drives\[\{|Array \(required\)<br> |An array of links to drive resources to contain the new volume.|
 |@odata.id \}\]<br> |String|A link to a drive resource.|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset` and `Immediate`. `OnReset` indicates that the operation will be carried out only after you reset the system.|
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values: `OnReset` and `Immediate`.<br> `OnReset` indicates that the new volume will be available only after you have successfully reset the system. To know how to reset a system, see [Resetting a computer system](#resetting-a-computer-system).<br>`Immediate` indicates that the created volume will be available in the system immediately after the operation is successfully completed.|
 
 >**Sample response body** 
 
@@ -4345,7 +4868,7 @@ curl -i -X POST \
 |----------|-----------|
 |<strong>Method</strong>  | `DELETE` |
 |<strong>URI</strong>   |`/redfish/v1/Systems/{ComputerSystemId}/Storage/{storageSubsystemId}/Volumes/{volumeId}` |
-|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.<br> |
+|<strong>Description</strong>  | This operation removes a volume in a specific storage subsystem.|
 |<strong>Response code</strong>|On success, `204 No Content` |
 |<strong>Authentication</strong>  |Yes|
 
@@ -4373,7 +4896,7 @@ curl -i -X DELETE \
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported value is: `OnReset`. Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you reset the system.<br> |
+|@Redfish.OperationApplyTimeSupport|Redfish annotation \(optional\)<br> | It enables you to control when the operation is carried out.<br> Supported values are: `OnReset` and `Immediate`. `OnReset` indicates that the volume will be deleted only after you have successfully reset the system.<br> `Immediate` indicates that the volume will be deleted immediatley after the operation is completed successfully.|
 
 
 
@@ -4454,10 +4977,17 @@ curl -i GET \
 ```
 
 
+## Chassis
+
+Chassis represents the physical components of a system—sheet-metal confined spaces, logical zones such as racks, enclosures, chassis and all other containers, and subsystems \(like sensors\).
+
+To view, create, and manage racks or rack groups, ensure that the URP \(Unmanaged Rack Plugin\) is running and is added into the Resource Aggregator for ODIM framework. To know how to add a plugin, see [Adding a plugin as an aggregation source](#adding-a-plugin-as-an-aggregation-source).
+
+>**NOTE:**
+URP is installed automatically during the deployment of the resource aggregator.
 
 
-
-##  Collection of chassis
+### Collection of chassis
 
 |||
 |-------|-------|
@@ -4489,10 +5019,10 @@ curl -i GET \
    "Name":"Computer System Chassis",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1"
+         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1"
       },
       { 
-         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":2
@@ -4517,10 +5047,10 @@ curl -i GET \
    "Name":"Computer System Chassis",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c:1"
+         "@odata.id":"/redfish/v1/Chassis/ba0a6871-7bc4-5f7a-903d-67f3c205b08c.1"
       },
       { 
-         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Chassis/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":2
@@ -4531,13 +5061,13 @@ curl -i GET \
 
 
 
-## Single chassis
+### Single chassis
 
 |||
 |---------|-------|
 |**Method** |`GET` |
 |**URI** |`/redfish/v1/Chassis/{ChassisId}` |
-|**Description** |This operation fetches information on a specific chassis.|
+|**Description** |This operation fetches information on a specific computer system chassis, rack group, or a rack.|
 |**Returns** |JSON schema representing this chassis instance.|
 |**Response code** |On success, `200 OK` |
 |**Authentication** |Yes|
@@ -4555,23 +5085,25 @@ curl -i GET \
 
 >**Sample response body** 
 
+1. **Computer system chassis**
+
 ```
 { 
    "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
    "@odata.etag":"W/\"50540B90\"",
-   "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1",
-   "@odata.type":"#Chassis.v1_6_0.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
    "Id":"192083d2-c60a-4318-967b-cb5890c6dfe4:1",
    "ChassisType":"RackMount",
    "Links":{ 
       "ManagedBy":[ 
          { 
-            "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c:1"
+            "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c.1"
          }
       ],
       "ComputerSystems":[ 
          { 
-            "@odata.id":"/redfish/v1/Systems/192083d2-c60a-4318-967b-cb5890c6dfe4:1"
+            "@odata.id":"/redfish/v1/Systems/192083d2-c60a-4318-967b-cb5890c6dfe4.1"
          }
       ]
    },
@@ -4579,7 +5111,7 @@ curl -i GET \
    "Model":"ProLiant DL380 Gen10",
    "Name":"Computer System Chassis",
    "NetworkAdapters":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/NetworkAdapters"
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/NetworkAdapters"
    },
    "Oem":{ 
       
@@ -4614,7 +5146,7 @@ curl -i GET \
          },
          "Links":{ 
             "Devices":{ 
-               "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Devices"
+               "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Devices"
             }
          },
          "MCTPEnabledOnServer":true,
@@ -4652,7 +5184,7 @@ curl -i GET \
       }
    },
    "Power":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Power"
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Power"
    },
    "SKU":"868704-B21",
    "SerialNumber":"2M291101JX",
@@ -4661,19 +5193,77 @@ curl -i GET \
       "State":"Disabled"
    },
    "Thermal":{ 
-      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4:1/Thermal"
+      "@odata.id":"/redfish/v1/Chassis/192083d2-c60a-4318-967b-cb5890c6dfe4.1/Thermal"
+   }
+}
+```
+
+2. **Rack group chassis**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/f4e24c1c-dd2f-5a17-91b7-71620eb070df",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "Id":"f4e24c1c-dd2f-5a17-91b7-71620eb070df",
+   "Description":"My RackGroup",
+   "Name":"RG8",
+   "ChassisType":"RackGroup",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+3. **Rack chassis**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
    }
 }
 ```
 
 
 
-
-
-
-
-
-##  Thermal metrics
+###  Thermal metrics
 
 |||
 |---------|-------|
@@ -4698,13 +5288,13 @@ curl -i GET \
 
 
 
-##  Network adapters
+### Collection of network adapters
 
 |||
 |---------|-------|
 |**Method** |`GET` |
-|**URI** |`/redfish/v1/Chassis/{ChassisId}/NetworkAdapters` |
-|**Description** | Use this endpoint to discover information on network adapters. Some examples of network adapters include Ethernet, fibre channel, and converged network adapters.<br> A `NetworkAdapter` represents the physical network adapter capable of connecting to a computer network.<br> |
+|**URI** |`/redfish/v1/Chassis/{ChassisId}/NetworkAdapters|
+|**Description** | This endpoint lists network adapters contained in a chassis. A `NetworkAdapter` represents the physical network adapter capable of connecting to a computer network.<br> Some examples include Ethernet, fibre channel, and converged network adapters.|
 |**Returns** |Links to network adapter instances available in this chassis.|
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
@@ -4722,11 +5312,169 @@ curl -i GET \
 ```
 
 
+### Single network adapter
+
+|||
+|---------|-------|
+|**Method** |`GET` |
+|**URI** |`/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{NetworkAdapterId}` |
+|**Description** | This endpoint retrieves information on a specific network adapter.|
+|**Returns** |JSON schema representing this network adapter.|
+|**Response code** | `200 OK` |
+|**Authentication** |Yes|
+
+
+
+>**curl command**
+
+
+```
+curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/Chassis/{ChassisId}/NetworkAdapters/{NetworkAdapterId}'
+
+
+```
+
+
+>**Sample response body**
+
+```
+
+{
+   "@odata.context":"/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
+   "@odata.etag":"W/\"F303ECE9\"",
+   "@odata.id":"/redfish/v1/Chassis/a022faa5-107c-496d-874e-89c9f3e2df1c.1/NetworkAdapters/{rid}",
+   "@odata.type":"#NetworkAdapter.v1_8_0.NetworkAdapter",
+   "Description":"The network adapter resource instances available in this chassis.",
+   "Name":"Network Adapter View",
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapter.HpeBaseNetworkAdapter",
+         "@odata.etag":"W/\"7A9A9CE7\"",
+         "@odata.id":"/redfish/v1/Systems/1/BaseNetworkAdapters/1/",
+         "@odata.type":"#HpeBaseNetworkAdapter.v2_0_0.HpeBaseNetworkAdapter",
+         "Id":"1",
+         "FcPorts":[
+            
+         ],
+         "Firmware":{
+            "Current":{
+               "VersionString":"20.14.54"
+            }
+         },
+         "Name":"HPE Ethernet 1Gb 4-port 331i Adapter - NIC",
+         "PhysicalPorts":[
+            {
+               "FullDuplex":true,
+               "IPv4Addresses":[
+                  
+               ],
+               "IPv6Addresses":[
+                  
+               ],
+               "LinkStatus":null,
+               "MacAddress":"80:30:e0:2c:92:a4",
+               "Name":"",
+               "Oem":{
+                  "Hpe":{
+                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
+                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
+                     "BadReceives":0,
+                     "BadTransmits":0,
+                     "GoodReceives":0,
+                     "GoodTransmits":0
+                  }
+               },
+               "SpeedMbps":0
+            },
+            {
+               "FullDuplex":true,
+               "IPv4Addresses":[
+                  
+               ],
+               "IPv6Addresses":[
+                  
+               ],
+               "LinkStatus":null,
+               "MacAddress":"80:30:e0:2c:92:a5",
+               "Name":"",
+               "Oem":{
+                  "Hpe":{
+                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
+                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
+                     "BadReceives":0,
+                     "BadTransmits":0,
+                     "GoodReceives":0,
+                     "GoodTransmits":0
+                  }
+               },
+               "SpeedMbps":0
+            },
+            {
+               "FullDuplex":true,
+               "IPv4Addresses":[
+                  
+               ],
+               "IPv6Addresses":[
+                  
+               ],
+               "LinkStatus":null,
+               "MacAddress":"80:30:e0:2c:92:a6",
+               "Name":"",
+               "Oem":{
+                  "Hpe":{
+                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
+                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
+                     "BadReceives":0,
+                     "BadTransmits":0,
+                     "GoodReceives":0,
+                     "GoodTransmits":0
+                  }
+               },
+               "SpeedMbps":0
+            },
+            {
+               "FullDuplex":true,
+               "IPv4Addresses":[
+                  
+               ],
+               "IPv6Addresses":[
+                  
+               ],
+               "LinkStatus":null,
+               "MacAddress":"80:30:e0:2c:92:a7",
+               "Name":"",
+               "Oem":{
+                  "Hpe":{
+                     "@odata.context":"/redfish/v1/$metadata#HpeBaseNetworkAdapterExt.HpeBaseNetworkAdapterExt",
+                     "@odata.type":"#HpeBaseNetworkAdapterExt.v2_0_0.HpeBaseNetworkAdapterExt",
+                     "BadReceives":0,
+                     "BadTransmits":0,
+                     "GoodReceives":0,
+                     "GoodTransmits":0
+                  }
+               },
+               "SpeedMbps":0
+            }
+         ],
+         "Status":{
+            "State":null
+         },
+         "StructuredName":"NIC.LOM.1.1",
+         "UEFIDevicePath":"PciRoot(0x0)/Pci(0x1C,0x0)/Pci(0x0,0x0)"
+      }
+   }
+}
+
+
+```
 
 
 
 
-##  Power
+
+###  Power
 
 |||
 |---------|-------|
@@ -4748,7 +5496,472 @@ curl -i GET \
 
 ```
 
+### Creating a rack group
 
+|||
+|---------|-------|
+|Method | `POST` |
+|URI |`/redfish/v1/Chassis`|
+|Description |This operation creates a rack group.|
+|Returns |<ul><li>`Location` header that contains a link to the created rack group \(highlighted in bold in the sample response header\).</li><li>JSON schema representing the created rack group.<br></li></ul>|
+|Response code |On success, `201 Created`|
+|Authentication |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "ChassisType": "RackGroup",
+  "Description": "My RackGroup",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/{managerId}"
+      }
+    ]
+  },
+  "Name": "RG5"
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "ChassisType": "RackGroup",
+  "Description": "My RackGroup",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+      }
+    ]
+  },
+  "Name": "RG5"
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|ChassisType|String \(required\)<br> |The type of chassis. The type to be used to create a rack group is RackGroup.<br> |
+|Description|String \(optional\)<br> |Description of this rack group.|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack group.|
+|ManagedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP \(Unmanaged Rack Plugin\) manager. Provide the link to the URP manager.<br> |
+|Name|String \(required\)<br> |Name for this rack group.|
+
+
+>**Sample response header**
+
+```
+Connection:keep-alive
+Content-Type:application/json; charset=UTF-8
+Date:Wed,06 Jan 2021 09:37:43 GMT+15m 26s
+**Location:/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d**
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Content-Length:462 bytes
+```
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "Id":"c2459269-011c-58d3-a217-ef914c4c295d",
+   "Description":"My RackGroup",
+   "Name":"RG5",
+   "ChassisType":"RackGroup",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+### Creating a rack
+
+|||
+|---------|-------|
+|**Method** | `POST` |
+|**URI** |`/redfish/v1/Chassis`|
+|**Description**|This operation creates a rack.|
+|**Returns** |<ul><li>`Location` header that contains a link to the created rack \(highlighted in bold in the sample response header\).</li><li>JSON schema representing the created rack.<br></li></ul>|
+|**Response code** |On success, `201 Created`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "ChassisType": "Rack",
+  "Description": "rack number one",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/{managerId}"
+      }
+    ],
+    "ContainedBy": [
+      {
+	    "@odata.id":"/redfish/v1/Chassis/{chassisId}"
+	  }
+    ]
+  },
+  "Name": "RACK#1"
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "ChassisType": "Rack",
+  "Description": "rack number one",
+  "Links": {
+    "ManagedBy": [
+      {
+        "@odata.id": "/redfish/v1/Managers/675560ae-e903-41d9-bfb2-561951999999"
+      }
+    ],
+    "ContainedBy": [
+      {
+	    "@odata.id":"/redfish/v1/Chassis/1be678f0-86dd-58ac-ac38-16bf0f6dafee"
+	  }
+    ]
+  },
+  "Name": "RACK#1"
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|ChassisType|String \(required\)<br> |The type of chassis. The type to be used to create a rack is Rack.<br> |
+|Description|String \(optional\)<br> |Description of this rack.|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
+|ManagedBy \[\{<br> @odata.id<br> \}\]<br> |Array \(required\)<br> |An array of links to the manager resources that manage this chassis. The manager resource for racks and rack groups is the URP \(Unmanaged Rack Plugin\) manager. Provide the link to the URP manager.<br> |
+|ContainedBy \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the rack groups for containing this rack.|
+|Name|String \(required\)<br> |Name for this rack group.|
+
+
+>**Sample response header**
+
+```
+Connection:keep-alive
+Content-Type:application/json; charset=UTF-8
+Date:Wed,06 Jan 2021 09:37:43 GMT+15m 26s
+**Location:/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2**
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Content-Length:462 bytes
+```
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+
+### Attaching chassis to a rack
+
+|||
+|---------|-------|
+|**Method** | `PATCH` |
+|**URI** |`/redfish/v1/Chassis/{rackId}`|
+|**Description** |This operation attaches chassis to a specific rack.|
+|**Returns** |JSON schema for the modified rack having links to the attached chassis.|
+|**Response code** |On success, `200 Ok`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i PATCH \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "Links": {
+    "Contains": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/{chassisId}"
+      }
+    ]
+  }
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "Links": {
+    "Contains": [
+      {
+        "@odata.id": "/redfish/v1/Chassis/46db63a9-2dcb-43b3-bdf2-54ce9c42e9d9.1"
+      }
+    ]
+  }
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
+|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the computer system chassis resources to be attached to this rack.|
+
+
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "Contains":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/4159c951-d0d0-4263-858b-0294f5be6377.1"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+
+### Detaching chassis from a rack
+
+|||
+|---------|-------|
+|**Method** | `PATCH` |
+|**URI** |`/redfish/v1/Chassis/{rackId}`|
+|**Description** |This operation detaches chassis from a specific rack.|
+|**Returns** |JSON schema representing the modified rack.|
+|**Response code** |On success, `200 Ok`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i PATCH \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "Links": {
+    "Contains": []
+  }
+}
+' \
+ 'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
+
+
+```
+
+>**Sample request body**
+
+```
+{
+  "Links": {
+    "Contains": []
+  }
+}
+```
+
+**Request parameters**
+
+|Parameter|Type|Description|
+|---------|----|-----------|
+|Links\{|Object \(required\)<br> |Links to the resources that are related to this rack.|
+|Contains \[\{<br> @odata.id<br> \}\]<br> \}<br> |Array \(required\)<br> |An array of links to the computer system chassis resources to be attached to this rack. To detach chassis from this rack, provide an empty array as value.|
+
+
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Chassis.Chassis",
+   "@odata.id":"/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "@odata.type":"#Chassis.v1_17_0.Chassis",
+   "Id":"b6766cb7-5721-5077-ae0e-3bf3683ad6e2",
+   "Description":"rack no 1",
+   "Name":"RACK#1",
+   "ChassisType":"Rack",
+   "Links":{
+      "ComputerSystems":[
+         
+      ],
+      "ManagedBy":[
+         {
+            "@odata.id":"/redfish/v1/Managers/99999999-9999-9999-9999-999999999999"
+         }
+      ],
+      "ContainedBy":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d"
+         }
+      ]
+   },
+   "PowerState":"On",
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   }
+}
+```
+
+### Deleting a rack
+
+|||
+|---------|-------|
+|**Method** | `DELETE` |
+|**URI** |`/redfish/v1/Chassis/{rackId}`|
+|**Description** |This operation deletes a specific rack.<br>**IMPORTANT:**<br> If you try to delete a nonempty rack, you will receive an HTTP `409 Conflict` error. Ensure to detach the chassis attached to a rack before deleting it.<br>|
+|**Response code** |On success, `204 No Content`|
+|**Authentication** |Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i DELETE \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   'https://{odim_host}:{port}/redfish/v1/Chassis/{rackId}'
+```
+
+
+>**Sample request body**
+
+None.
+
+### Deleting a rack group
+
+|||
+|---------|-------|
+|**Method**| `DELETE` |
+|**URI**|`/redfish/v1/Chassis/{rackGroupId}``|
+|**Description**|This operation deletes a specific rack group.<br>**IMPORTANT:**<br>If you try to delete a nonempty rack group, you will receive an HTTP `409 Conflict` error. Ensure to remove all the racks contained in a rack group before deleting it.<br>|
+|**Response code**|On success, `204 No Content`|
+|**Authentication**|Yes|
+
+ 
+
+>**curl command**
+
+```
+curl -i DELETE \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   'https://{odim_host}:{port}/redfish/v1/Chassis/{rackGroupId}'
+```
+
+
+>**Sample request body**
+
+None.
 
 
 
@@ -4863,10 +6076,6 @@ This filter searches a server having total physical memory of 384 GB and two Int
 
 
 
-
- 
-
-
 >**Sample response body**
 
 ```
@@ -4878,16 +6087,12 @@ This filter searches a server having total physical memory of 384 GB and two Int
    "Name":"Computer Systems",
    "Members":[ 
       { 
-         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73:1"
+         "@odata.id":"/redfish/v1/Systems/7ff3bd97-c41c-5de0-937d-85d390691b73.1"
       }
    ],
    "Members@odata.count":1
 }
 ```
-
-
-
-
 
 
 
@@ -5034,9 +6239,7 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 }
 ```
 
-
 **Request parameters**
-
 
 `Attributes` are the list of BIOS attributes specific to the manufacturer or provider. To get a full list of attributes, perform `GET` on:
 
@@ -5065,19 +6268,15 @@ Refer to [Resetting Servers](#resetting-servers) to know about `ResetType.`
 
 
 
-
-
-
-
-## Changing the boot order settings
+## Changing the boot settings
 
 |||
 |---------|-------|
 |**Method** |`PATCH` |
 |**URI** |`/redfish/v1/Systems/{ComputerSystemId}` |
-|**Description** |This action changes the boot order settings of a specific system.|
+|**Description** |This action changes the boot settings of a specific system such as boot source override target, boot order, and more.<br>**IMPORTANT**<br><ul><li>Ensure that the system is powered off before changing the boot order.</li><li>Power on the system once the operation is successful. The changes will be seen in the system only after a successful reset.</li></ul><br> To know how to power off, power on, or restart a system, see [Resetting a computer system](#resetting-a-computer-system).|
 |**Returns** |Message Id of the actual message in the JSON response body. To get the complete message, look up the specified registry file \(registry file name can be obtained by concatenating `RegistryPrefix` and version number present in the Message Id\). See [Message Registries](#message-registries). For example,`MessageId` in the sample response body is `Base.1.0.Success`. The registry to look up is `Base.1.0`.<br> |
-|**Response code** |`200 OK` |
+|**Response code** |`200 OK`|
 |**Authentication** |Yes|
 
 >**curl command**
@@ -5125,6 +6324,8 @@ Some of the attributes include:
 -   `BootSourceOverrideTarget` 
 
 -   `UefiTargetBootSourceOverride` 
+
+-   `Bootorder`
 
 
 For possible values, see values listed under `{attribute}.AllowableValues`. 
@@ -5196,7 +6397,7 @@ If you attempt to update `BootSourceOverrideTarget` to `UefiTarget`, when `UefiT
 
 
 
-#  Managers
+# Managers
 
 Resource Aggregator for ODIM exposes APIs to retrieve information about managers. Examples of managers include:
 
@@ -5222,6 +6423,7 @@ Resource Aggregator for ODIM exposes APIs to retrieve information about managers
 |/redfish/v1/Managers/\{managerId\}/HostInterfaces|`GET`|
 |/redfish/v1/Managers/\{managerId\}/LogServices|`GET`|
 |/redfish/v1/Managers/\{managerId\}/NetworkProtocol|`GET`|
+|/redfish/v1/Managers/\{managerId\}/VirtualMedia|`GET`|
 
 
 
@@ -5262,13 +6464,13 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d"
       },
       {
-         "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c:1"
+         "@odata.id":"/redfish/v1/Managers/141cbba9-1e99-4272-b855-1781730bfe1c.1"
       },
       {
          "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6"
       },
       {
-         "@odata.id":"/redfish/v1/Managers/0e778112-4684-433d-9998-ca6f399c031f:1"
+         "@odata.id":"/redfish/v1/Managers/0e778112-4684-433d-9998-ca6f399c031f.1"
       },
       {
          "@odata.id":"/redfish/v1/Managers/a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
@@ -5314,69 +6516,316 @@ curl -i GET \
 
 
 
->**Sample response body** for a system \(BMC\) manager 
+>**Sample response body for a system \(BMC\) manager** 
 
 ```
-{ 
+{
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.etag":"W/\"2D2866FD\"",
-   "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1",
-   "@odata.type":"#Manager.v1_3_3.Manager",
-   "Actions":{ 
-      "#Manager.Reset":{ 
-         "target":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/Actions/Manager.Reset"
+   "@odata.etag":"W/\"7BFAC0F7\"",
+   "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1",
+   "@odata.type":"#Manager.v1_13_0.Manager",
+   "Actions":{
+      "#Manager.Reset":{
+         "ResetType@Redfish.AllowableValues":[
+            "ForceRestart",
+            "GracefulRestart"
+         ],
+         "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Manager.Reset"
       }
    },
-   "CommandShell":{ 
-      "ConnectTypesSupported":[ 
+   "CommandShell":{
+      "ConnectTypesSupported":[
          "SSH",
          "Oem"
       ],
       "MaxConcurrentSessions":9,
       "ServiceEnabled":true
    },
-   "EthernetInterfaces":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/EthernetInterfaces"
+   "DateTime":"2022-02-22T09:35:09Z",
+   "DateTimeLocalOffset":"+08:00",
+   "Description":"BMC Manager",
+   "EthernetInterfaces":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/EthernetInterfaces"
    },
-   "FirmwareVersion":"iLO 5 v1.40",
-   "GraphicalConsole":{ 
-      "ConnectTypesSupported":[ 
+   "FirmwareVersion":"iLO 5 v2.60",
+   "GraphicalConsole":{
+      "ConnectTypesSupported":[
          "KVMIP"
       ],
       "MaxConcurrentSessions":10,
       "ServiceEnabled":true
    },
-   "HostInterfaces":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/HostInterfaces"
+   "HostInterfaces":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/HostInterfaces"
    },
    "Id":"1",
-   "Links":{ 
-      "ManagerForChassis":[ 
-         { 
-            "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
          }
       ],
-      "ManagerForServers":[ 
-         { 
-            "@odata.id":"/redfish/v1/Systems/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
          }
       ],
-      "ManagerInChassis":{ 
-         "@odata.id":"/redfish/v1/Chassis/88b36c7c-d708-4a4a-8af5-5d58779d377c:1"
+      "ManagerInChassis":{
+         "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
       }
    },
-   "LogServices":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/LogServices"
+   "LogServices":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/LogServices"
    },
    "ManagerType":"BMC",
+   "Model":"iLO 5",
    "Name":"Manager",
-   "NetworkProtocol":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/NetworkProtocol"
+   "NetworkProtocol":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/NetworkProtocol"
    },
-   "Oem":{},
-      
-   "SerialConsole":{ 
-      "ConnectTypesSupported":[ 
+   "Oem":{
+      "Hpe":{
+         "@odata.context":"/redfish/v1/$metadata#HpeiLO.HpeiLO",
+         "@odata.type":"#HpeiLO.v2_8_0.HpeiLO",
+         "Actions":{
+            "#HpeiLO.ClearHotKeys":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ClearHotKeys"
+            },
+            "#HpeiLO.ClearRestApiState":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ClearRestApiState"
+            },
+            "#HpeiLO.DisableiLOFunctionality":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.DisableiLOFunctionality"
+            },
+            "#HpeiLO.RequestFirmwareAndOsRecovery":{
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.RequestFirmwareAndOsRecovery"
+            },
+            "#HpeiLO.ResetToFactoryDefaults":{
+               "ResetType@Redfish.AllowableValues":[
+                  "Default"
+               ],
+               "target":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/Actions/Oem/Hpe/HpeiLO.ResetToFactoryDefaults"
+            }
+         },
+         "ClearRestApiStatus":"DataPresent",
+         "ConfigurationLimitations":"None",
+         "ConfigurationSettings":"Current",
+         "FederationConfig":{
+            "IPv6MulticastScope":"Site",
+            "MulticastAnnouncementInterval":600,
+            "MulticastDiscovery":"Enabled",
+            "MulticastTimeToLive":5,
+            "iLOFederationManagement":"Enabled"
+         },
+         "Firmware":{
+            "Current":{
+               "Date":"Dec 06 2021",
+               "DebugBuild":false,
+               "MajorVersion":2,
+               "MinorVersion":60,
+               "VersionString":"iLO 5 v2.60"
+            }
+         },
+         "FrontPanelUSB":{
+            "State":"Ready"
+         },
+         "IdleConnectionTimeoutMinutes":30,
+         "IntegratedRemoteConsole":{
+            "HotKeys":[
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-T"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-U"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-V"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-W"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-X"
+               },
+               {
+                  "KeySequence":[
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE",
+                     "NONE"
+                  ],
+                  "Name":"Ctrl-Y"
+               }
+            ],
+            "LockKey":{
+               "CustomKeySequence":[
+                  "NONE",
+                  "NONE",
+                  "NONE",
+                  "NONE",
+                  "NONE"
+               ],
+               "LockOption":"Disabled"
+            },
+            "TrustedCertificateRequired":false
+         },
+         "License":{
+            "LicenseKey":"",
+            "LicenseString":"iLO Standard",
+            "LicenseType":"Expired"
+         },
+         "Links":{
+            "ActiveHealthSystem":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/ActiveHealthSystem"
+            },
+            "BackupRestoreService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/BackupRestoreService"
+            },
+            "DateTimeService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/DateTime"
+            },
+            "EmbeddedMediaService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/EmbeddedMedia"
+            },
+            "FederationDispatch":{
+               "extref":"/dispatch"
+            },
+            "FederationGroups":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/FederationGroups"
+            },
+            "FederationPeers":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/FederationPeers"
+            },
+            "GUIService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/GUIService"
+            },
+            "LicenseService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/LicenseService"
+            },
+            "RemoteSupport":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/RemoteSupportService"
+            },
+            "SNMPService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SnmpService"
+            },
+            "SecurityService":{
+               "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SecurityService"
+            },
+            "Thumbnail":{
+               "extref":"/images/thumbnail.bmp"
+            },
+            "VSPLogLocation":{
+               "extref":"/sol.log.gz"
+            }
+         },
+         "PersistentMouseKeyboardEnabled":false,
+         "PhysicalMonitorHealthStatusEnabled":true,
+         "RIBCLEnabled":true,
+         "RemoteConsoleThumbnailEnabled":true,
+         "RequireHostAuthentication":false,
+         "RequiredLoginForiLORBSU":false,
+         "SerialCLISpeed":9600,
+         "SerialCLIStatus":"EnabledAuthReq",
+         "SerialCLIUART":"Present",
+         "VSPDlLoggingEnabled":false,
+         "VSPLogDownloadEnabled":false,
+         "VideoPresenceDetectOverride":true,
+         "VideoPresenceDetectOverrideSupported":true,
+         "VirtualNICEnabled":true,
+         "WebGuiEnabled":true,
+         "iLOFunctionalityEnabled":true,
+         "iLOFunctionalityRequired":false,
+         "iLOIPduringPOSTEnabled":true,
+         "iLORBSUEnabled":true,
+         "iLOSelfTestResults":[
+            {
+               "Notes":"",
+               "SelfTestName":"NVRAMData",
+               "Status":"OK"
+            },
+            {
+               "Notes":"Controller firmware revision  2.11.00  ",
+               "SelfTestName":"EmbeddedFlash",
+               "Status":"OK"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"EEPROM",
+               "Status":"OK"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"HostRom",
+               "Status":"OK"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"SupportedHost",
+               "Status":"OK"
+            },
+            {
+               "Notes":"Version 1.0.4",
+               "SelfTestName":"PowerManagementController",
+               "Status":"Informational"
+            },
+            {
+               "Notes":"ProLiant DL380 Gen10 System Programmable Logic Device 0x2A",
+               "SelfTestName":"CPLDPAL0",
+               "Status":"Informational"
+            },
+            {
+               "Notes":"",
+               "SelfTestName":"ASICFuses",
+               "Status":"OK"
+            }
+         ],
+         "iLOServicePort":{
+            "MassStorageAuthenticationRequired":false,
+            "USBEthernetAdaptersEnabled":true,
+            "USBFlashDriveEnabled":true,
+            "iLOServicePortEnabled":true
+         }
+      }
+   },
+   "PowerState":"On",
+   "SerialConsole":{
+      "ConnectTypesSupported":[
          "SSH",
          "IPMI",
          "Oem"
@@ -5384,62 +6833,275 @@ curl -i GET \
       "MaxConcurrentSessions":13,
       "ServiceEnabled":true
    },
-   "Status":{ 
-      "State":"Absent"
+   "SerialInterfaces":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/SerialInterfaces"
    },
-   "UUID":"a964d6a9-a45c-57aa-90ec-08b38850b2f3",
-   "VirtualMedia":{ 
-      "@odata.id":"/redfish/v1/Managers/88b36c7c-d708-4a4a-8af5-5d58779d377c:1/VirtualMedia"
+   "Status":{
+      "Health":"OK",
+      "State":"Enabled"
+   },
+   "UUID":"d8887d98-17ff-53a2-9977-e63b5ae66864",
+   "VirtualMedia":{
+      "@odata.id":"/redfish/v1/Managers/b91d2658-0a5f-4478-bd11-3e494687afc5.1/VirtualMedia"
    }
 }
 ```
 
->**Sample response body** for Resource Aggregator for ODIM manager 
+>**Sample response body for Resource Aggregator for ODIM manager**
 
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.id":"/redfish/v1/Managers/a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "@odata.type":"#Manager.v1_3_3.Manager",
-   "Name":"ODIMRA",
+   "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "@odata.type":"#Manager.v1_13_0.Manager",
+   "Name":"odimra",
    "ManagerType":"Service",
-   "Id":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
-   "UUID":"a64fc187-e0e9-4f68-82a8-67a616b84b1d",
+   "Id":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "UUID":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
    "FirmwareVersion":"1.0",
    "Status":{
-      "State":"Enabled"
-   }
+      "State":"Enabled",
+      "Health":"OK"
+   },
+   "LogServices":{
+      "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c/LogServices"
+   },
+   "DateTime":"2022-02-22 09:48:42.652994406 +0000 UTC",
+   "Model":"ODIMRA 1.0",
+   "PowerState":"On",
+   "SerialConsole":{
+      
+   },
+   "Description":"Odimra Manager",
+   "DateTimeLocalOffset":"+00:00"
 }
 ```
 
->**Sample response body** for a plugin manager
+>**Sample response body for a plugin manager**
 
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
    "@odata.etag":"W/\"AA6D42B0\"",
-   "@odata.id":"/redfish/v1/Managers/536cee48-84b2-43dd-b6e2-2459ac0eeac6",
-   "@odata.type":"#Manager.v1_3_3.Manager",
-   "FirmwareVersion":"1.0",
-   "Id":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b",
+   "@odata.id":"/redfish/v1/Managers/ac04517b-b582-4501-b1a9-7158149cda10",
+   "@odata.type":"#Manager.v1_13_0.Manager",
+   "DateTime":"2022-02-22 09:52:43.651476316 +0000 UTC",
+   "DateTimeLocalOffset":"+00:00",
+   "Description":"Plugin Manager",
+   "FirmwareVersion":"v1.0.0",
+   "Id":"ac04517b-b582-4501-b1a9-7158149cda10",
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
+         }
+      ],
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/b91d2658-0a5f-4478-bd11-3e494687afc5.1"
+         }
+      ]
+   },
+   "LogServices":{
+      "@odata.id":"/redfish/v1/Managers/ac04517b-b582-4501-b1a9-7158149cda10/LogServices"
+   },
    "ManagerType":"Service",
-   "Name":"GRF",
+   "Name":"ILO",
+   "SerialConsole":{
+      
+   },
    "Status":{
       "Health":"OK",
       "State":"Enabled"
    },
-   "UUID":"a9cf0e1e-c36d-4d5b-9a31-cc07b611c01b"
+   "UUID":"ac04517b-b582-4501-b1a9-7158149cda10"
 }
 ```
 
 
 
+## VirtualMedia
+
+VirtualMedia enables you to connect remote storage media (such as CD-ROM, USB mass storage, ISO image, and floppy disk) to a target server on a network. The target server can access the remote media, read from and write to it as if it were physically connected to the server USB port.
+
+Resource Aggregator for ODIM exposes Redfish `VirtualMedia` APIs to connect the remote storage media to your servers.
+
+**Supported APIs**:
+
+| API URI                                                      | Operation Applicable | Required privileges   |
+| ------------------------------------------------------------ | -------------------- | --------------------- |
+| /redfish/v1/Managers/{ManagerId}/VirtualMedia                | GET                  | `Login`               |
+| /redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID} | GET                  | `Login`               |
+| /redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia | POST                 | `ConfigureComponents` |
+| /redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia | POST                 | `ConfigureComponents` |
+
+>**NOTE:**
+>Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+
+### Viewing the VirtualMedia collection
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/Managers/{ManagerId}/VirtualMedia`              |
+| **Description**    | This operation lists all virtualmedia collections available in Resource Aggregator for ODIM. |
+| **Returns**        | A list of links to all the available virtualmedia collections. |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/VirtualMedia'
+```
+
+>**Sample response body**
+
+```
+{
+  "@odata.context":"/redfish/v1/$metadata#VirtualMediaCollection.VirtualMediaCollection",
+   "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/",
+   "@odata.type":"#VirtualMediaCollection.VirtualMediaCollection",
+   "Description":"Virtual Media Services Settings",
+   "Name":"Virtual Media Services",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/1/"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/1/VirtualMedia/2/"
+      }
+   ],
+   "Members@odata.count":2
+}
+```
+
+### Viewing a VirtualMedia Instance
+
+| <strong>Method</strong>         | `GET`                                                        |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}` |
+| <strong>Description</strong>    | This action retrieves information about a specific virtualmedia instance. |
+| <strong>Returns</strong>        | JSON schema representing this virtualmedia instance.         |
+| <strong>Response Code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i GET \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ 'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}'
+```
 
 
+>**Sample response body**
+
+```
+{
+    "error": {
+        "@Message.ExtendedInfo": [
+            {
+                "MessageId": "Base.1.4.Success"
+            }
+        ],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+```
+
+## Inserting VirtualMedia
+
+| **Method**         | `POST`                                                       |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia` |
+| **Description**    | This operation inserts the virtual media on to the manager.  |
+| **Returns**        | A message stating the virtual media insertion was successful. |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   -d \
+	'{
+  "Image":"http://<ip address>/<image path>",
+  "Inserted":true,
+  "WriteProtected":true
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia'
+
+```
+
+>**Sample response body**
+
+```
+{
+    "error": {
+        "@Message.ExtendedInfo": [
+            {
+                "MessageId": "Base.1.4.Success"
+            }
+        ],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+ 
+```
+
+## Ejecting VirtualMedia
+
+| **Method**         | `POST`                                                       |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia` |
+| **Description**    | This operation ejects the virtual media from the manager.    |
+| **Returns**        | A message stating the virtual media ejection was successful. |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i POST \
+   -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+   -H "Content-Type:application/json" \
+   
+ 'https://{odimra_host}:{port}/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia'
+```
+
+<blockquote>NOTE: No payload is required for this operation. </blockquote>
+
+>**Sample response body**
 
 
+```
+{
+    "error": {
+        "@Message.ExtendedInfo": [
+            {
+                "MessageId": "Base.1.4.Success"
+            }
+        ],
+        "code": "iLO.0.10.ExtendedInfo",
+        "message": "See @Message.ExtendedInfo for more information."
+    }
+}
+ 
+```
 
+**Request parameters**
 
+| Parameter      | Type               | Description           |
+| -------------- | ------------------ | --------------------- |
+| Image          | String (Required)  | Image path            |
+| Inserted       | Boolean (Optional) | Default value is true |
+| WriteProtected | Boolean (Optional) | Default value is true |
 
 
 
@@ -5494,32 +7156,38 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#UpdateService.v1_8_1.UpdateService",
-   "@odata.id":"/redfish/v1/UpdateService",
-   "@odata.context":"/redfish/v1/$metadata#UpdateService.UpdateService",
-   "Id":"UpdateService",
-   "Name":"Update Service",
-   "Status":{
-      "State":"Enabled",
-      "Health":"OK",
-      "HealthRollup":"OK"
-   },
-   "ServiceEnabled":true,
-   "HttpPushUri":"",
-   "FirmwareInventory":{
-      "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory"
-   },
-   "SoftwareInventory":{
-      "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory"
-   },
-   "Action":{
-      "#UpdateService.SimpleUpdate":{
-         "target":"/redfish/v1/UpdateService/Actions/SimpleUpdate"
-      },
-      "#UpdateService.StartUpdate":{
-         "target":"/redfish/v1/UpdateService/Actions/StartUpdate"
-      }
-   }
+    "@odata.type": "#UpdateService.v1_10_0.UpdateService",
+    "@odata.id": "/redfish/v1/UpdateService",
+    "@odata.context": "/redfish/v1/$metadata#UpdateService.UpdateService",
+    "Id": "UpdateService",
+    "Name": "Update Service",
+    "Status": {
+        "State": "Enabled",
+        "Health": "OK",
+        "HealthRollup": "OK"
+    },
+    "ServiceEnabled": true,
+    "HttpPushUri": "",
+    "FirmwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory"
+    },
+    "SoftwareInventory": {
+        "@odata.id": "/redfish/v1/UpdateService/SoftwareInventory"
+    },
+    "Actions": {
+        "#UpdateService.SimpleUpdate": {
+            "target": "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+            "@Redfish.OperationApplyTimeSupport": {
+                "@odata.type": "#Settings.v1_3_3.OperationApplyTimeSupport",
+                "SupportedValues": [
+                    "OnStartUpdateRequest"
+                ]
+            }
+        },
+        "#UpdateService.StartUpdate": {
+            "target": "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate"
+        }
+    }
 }
 ```
 
@@ -5555,28 +7223,28 @@ curl -i GET \
    ​   "Name":"FirmwareInventory",
    ​   "Members":​[
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:10"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.10"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:9"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.9"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:6"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.6"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:17"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.17"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:13"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.13"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:5"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.5"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:8"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.8"         ​
       },
       ​      {
-         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803:12"         ​
+         ​         "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/4c12d2f7-a8e2-430f-bff2-737a80e73803.12"         ​
       }      ​
    ],
    ​   "Members@odata.count":8​
@@ -5613,7 +7281,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/FirmwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -5699,7 +7367,7 @@ curl -i GET \
    "@odata.context":"/redfish/v1/$metadata#SoftwareInventory.SoftwareInventory",
    "@odata.etag":"W/\"0539D502\"",
    "@odata.id":"/redfish/v1/UpdateService/SoftwareInventory/3",
-   "@odata.type":"#SoftwareInventory.v1_0_0.SoftwareInventory",
+   "@odata.type":"#SoftwareInventory.v1_5_0.SoftwareInventory",
    "Description":"PlatformDefinitionTable",
    "Id":"3",
    "Name":"Intelligent Platform Abstraction Data",
@@ -5728,13 +7396,14 @@ curl -i GET \
 |-------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate` |
-|<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br> |
+|<strong>Description</strong> |This operation creates an update request for updating a software or a firmware component or directly updates a software or a firmware component. The first example in "Sample request body" is used to create an update request and the second one is used to directly update a software or a firmware component of servers.<br>It is performed in the background as a Redfish task. |
 |<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
- 
->**curl command**
+**Usage information** 
+To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
 
+> **curl command**
 
 ```
 curl -i POST \
@@ -5744,23 +7413,24 @@ curl -i POST \
 '{
 "ImageURI": "<URI_of_the_firmware_image>",
 "Password": "<password>",
-"Targets": [],
+"Targets": ["/redfish/v1/Systems/{ComputerSystemId}"],
+"@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 "TransferProtocol": "",
 "Username": "<username>"
 }' \
- 'https://{odim_host}:{port}/redfish/v1/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
+ 'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate'
 
 
 ```
 
->**Sample request body**
+> Sample request body
 
 **Example 1:** 
 
 ```
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
-  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
+  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a.1"]
 }
 ```
 
@@ -5769,15 +7439,12 @@ curl -i POST \
 ```
 {
   "ImageURI":"http://{IP_address}/ISO/resource.bin",
-  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a:1"],
-  "@Redfish.OperationApplyTimeSupport": {
-            "@odata.type": "#Settings.v1_2_0.OperationApplyTimeSupport",
-              "SupportedValues": ["OnStartUpdate"]
-            }
+  "Targets": ["/redfish/v1/Systems/65d01621-4f88-49de-98bc-fcd1419bff3a.1"],
+  "@Redfish.OperationApplyTime": "OnStartUpdateRequest"
 }
 ```
 
-**Request parameters**
+#### Request parameters
 
 |Parameter|Type|Description|
 |---------|----|-----------|
@@ -5801,7 +7468,40 @@ curl -i POST \
 | SFTP \(v1.1+\)<br> |Secure File Transfer Protocol.|
 |TFTP|Trivial File Transfer Protocol.|
 
->**Sample response body**
+
+>**Sample response header \(HTTP 202 status\)**
+
+```
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
+Content-Length:491 bytes
+
+```
+
+>**Sample response body \(HTTP 202 status\)**
+
+```
+{
+   "@odata.type":"#Task.v1_5_1.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
+   "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
+   "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
+   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageArgs":[
+      "task4aac9e1e-df58-4fff-b781-52373fcb5699"
+   ],
+   "NumberOfArgs":1,
+   "Severity":"OK"
+}
+```
+
+>**Sample response body \(HTTP 200 status\)**
 
 ```
 {
@@ -5823,28 +7523,58 @@ curl -i POST \
 |-------|-----------|
 |<strong>Method</strong> | `POST` |
 |<strong>URI</strong> |`/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate` |
-|<strong>Description</strong> |This operation starts updating software or firmware components for which an update request has been created. <blockquote>IMPORTANT:<br>Before performing this operation, ensure that you have created an update request first. To know how to create an update request, see [Simple update](#Simple update).<br></blockquote>|
+|<strong>Description</strong> |This operation starts updating software or firmware components for which an update request has been created.<br>It is performed in the background as a Redfish task.<br><blockquote>IMPORTANT:<br>Before performing this operation, ensure that you have created an update request first. To know how to create an update request, see [Simple update](#Simple update).<br></blockquote>|
 |<strong>Response code</strong> |On success, `200 Ok` |
 |<strong>Authentication</strong> |Yes|
 
- >**curl command**
+**Usage information** 
+To know the progress of this action, perform HTTP `GET` on the [task monitor](#viewing-a-task-monitor) returned in the response header \(until the task is complete\).
+
 
 ```
 curl -i POST \
    -H "X-Auth-Token:{X-Auth-Token}" \
    -H "Content-Type:application/json" \
- 'https://{odim_host}:{port}/redfish/v1/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate'
-
-
+ 'https://{odim_host}:{port}/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate'
 ```
 
->**Sample request body**
-
+> Sample request body
 
 None
 
+>**Sample response header \(HTTP 202 status\)**
 
->**Sample response body**
+```
+Connection:keep-alive
+Content-Type:application/json; charset=utf-8
+Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
+Odata-Version:4.0
+X-Frame-Options:sameorigin
+Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
+Content-Length:491 bytes
+
+```
+
+>**Sample response body \(HTTP 202 status\)**
+
+```
+{
+   "@odata.type":"#Task.v1_5_1.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task4aac9e1e-df58-4fff-b781-52373fcb5699",
+   "@odata.context":"/redfish/v1/$metadata#Task.Task",
+   "Id":"task4aac9e1e-df58-4fff-b781-52373fcb5699",
+   "Name":"Task task4aac9e1e-df58-4fff-b781-52373fcb5699",
+   "Message":"The task with id task4aac9e1e-df58-4fff-b781-52373fcb5699 has started.",
+   "MessageId":"TaskEvent.1.0.1.TaskStarted",
+   "MessageArgs":[
+      "task4aac9e1e-df58-4fff-b781-52373fcb5699"
+   ],
+   "NumberOfArgs":1,
+   "Severity":"OK"
+}
+```
+
+>**Sample response body \(HTTP 200 status\)**
 
 ```
 {
@@ -5891,14 +7621,17 @@ When deleting fabric entities, ensure to delete them in the following order:
 5.  Zone-specific address pools
 
 
-**Supported endpoints**
-
 <blockquote>
 IMPORTANT:
 
 Before using the `Fabrics` APIs, ensure that the fabric manager is installed, its plugin is deployed, and added into the Resource Aggregator for ODIM framework.
 
 </blockquote>
+
+
+**Supported endpoints**
+
+
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/Fabrics|GET|`Login` |
@@ -5950,18 +7683,10 @@ curl -i GET \
    ],
    "Members@odata.count":1,
    "Name":"Fabric Collection",
-   "RedfishVersion":"1.8.0",
+   "RedfishVersion":"1.14.0",
    "@odata.type":"#FabricCollection.FabricCollection"
 }
 ```
-
-
-
-
-
-
-
-
 
 
 
@@ -5994,7 +7719,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5",
-   "@odata.type":"#Fabric.v1_0_4.Fabric",
+   "@odata.type":"#Fabric.v1_2_2.Fabric",
    "AddressPools":{ 
       "@odata.id":"/redfish/v1/Fabrics/f4d1578a-d16f-43f2-bb81-cd6db8866db5/AddressPools"
    },
@@ -6073,14 +7798,6 @@ curl -i GET \
 
 
 
-
-
-
-
-
-
-
-
 ## Single switch
 
 |||
@@ -6107,7 +7824,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
-   "@odata.type":"#Switch.v1_2_0.Switch",
+   "@odata.type":"#Switch.v1_6_0.Switch",
    "Id":"fb7dc9fd-d0f1-474e-b849-77262f5d73b7",
    "Manufacturer":"Aruba",
    "Model":"Aruba 8325",
@@ -6173,10 +7890,6 @@ curl -i GET \
 
 
 
-
-
-
-
 ## Single port
 
 |||
@@ -6203,14 +7916,14 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Switches/a4ca3161-db95-487d-a930-1b13dc697ed0/Ports/80b5f999-25e9-4b37-992c-de2f065ee0e3",
-   "@odata.type":"#Port.v1_1_3.Port",
+   "@odata.type":"#Port.v1_5_0.Port",
    "CurrentSpeedGbps":0,
    "Description":"single port",
    "Id":"80b5f999-25e9-4b37-992c-de2f065ee0e3",
    "Links":{ 
       "ConnectedPorts":[ 
          { 
-            "@odata.id":"/redfish/v1/Systems/768f9da7-56fc-4f13-b6f8-a1cd241e2313:1/EthernetInterfaces/3"
+            "@odata.id":"/redfish/v1/Systems/768f9da7-56fc-4f13-b6f8-a1cd241e2313.1/EthernetInterfaces/3"
          }
       ],
       "ConnectedSwitches":[ 
@@ -6229,12 +7942,6 @@ curl -i GET \
    "Width":1
 }
 ```
-
-
-
-
-
-
 
 
 
@@ -6305,21 +8012,11 @@ curl -i GET \
 	],
 	"Members@odata.count": 12,
 	"Name": "AddressPool Collection",
-	"RedfishVersion": "1.8.0",
+	"RedfishVersion": "1.14.0",
 	"@odata.type": "#AddressPoolCollection.AddressPoolCollection"
 }
 	
 ```
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -6363,13 +8060,13 @@ curl -i GET \
       "EbgpAsNumberUpperAddress":65100
    },
    "IPv4":{ 
-      "IPv4FabricLinkLowerAddress":"172.10.20.1",
-      "IPv4FabricLinkUpperAddress":"172.10.20.10",
+      "IPv4FabricLinkLowerAddress":"192.168.256.258",
+      "IPv4FabricLinkUpperAddress":"192.168.256.268",
       "IPv4GatewayAddress":"",
       "IPv4HostLowerAddress":"",
       "IPv4HostUpperAddress":"",
-      "IPv4LoopbackLowerAddress":"172.10.20.1",
-      "IPv4LoopbackUpperAddress":"172.10.20.10",
+      "IPv4LoopbackLowerAddress":"192.168.256.278",
+      "IPv4LoopbackUpperAddress":"192.168.256.288",
       "NativeVlan":0,
       "VlanIdentifierLowerAddress":0,
       "VlanIdentifierUpperAddress":0
@@ -6443,8 +8140,6 @@ curl -i GET \
 
 
 
-
-
 ##  Single endpoint
 
 |||
@@ -6471,7 +8166,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/8f6d8828-a21a-464f-abf9-ed062fa08cd9/Endpoints/b21f3e57-e46d-4a8e-92c8-8658edd107cb",
-   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "@odata.type":"#Endpoint.v1_6_1.Endpoint",
    "Description":"NK Endpoint Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"b21f3e57-e46d-4a8e-92c8-8658edd107cb",
@@ -6505,8 +8200,6 @@ curl -i GET \
    ]
 }
 ```
-
-
 
 
 
@@ -6568,8 +8261,6 @@ curl -i GET \
 
 
 
-
-
 ## Single zone
 
 
@@ -6597,7 +8288,7 @@ curl -i GET \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/77205057-3ef1-4c18-945c-2bf7893ea4a6/Zones/f310bf40-5163-4cbf-be5b-ac574fe87863",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "DefaultRoutingEnabled":false,
    "Description":"",
    "Id":"f310bf40-5163-4cbf-be5b-ac574fe87863",
@@ -6631,12 +8322,6 @@ curl -i GET \
 
 
 
-
-
-
-
-
-
 ## Creating a zone-specific address pool
 
 |||
@@ -6667,20 +8352,16 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "10.18.102.2/24",
-         "10.18.102.3/24"
+         "192.168.256.288/24",
+         "192.168.256.289/24"  
       ],
-      "AnycastGatewayIPAddress":"10.18.102.1"
+      "AnycastGatewayIPAddress":"192.168.256.287"
    }
 }
 '
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
 
 ```
-
-
-
-
 
 
 
@@ -6698,10 +8379,10 @@ curl -i POST \
    },
    "BgpEvpn":{
       "GatewayIPAddressList":[
-         "10.18.102.2/24",
-         "10.18.102.3/24"
+         "192.168.256.288/24",
+         "192.168.256.289/24"
       ],
-      "AnycastGatewayIPAddress":"10.18.102.1"
+      "AnycastGatewayIPAddress":"192.168.256.287"
    }
 }
 ```
@@ -6739,18 +8420,18 @@ Transfer-Encoding:chunked
 
 ```
 
->**Sample response body**
+>- **Sample response body**
 
 ```
 {
   "@odata.id": "/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf",
-  "@odata.type": "#AddressPool.vxx.AddressPool",
+  "@odata.type": "#AddressPool.v1_2_0.AddressPool",
   "BgpEvpn": {
-    "AnycastGatewayIPAddress": "10.18.102.1",
+    "AnycastGatewayIPAddress": "192.168.256.287",
     "AnycastGatewayMACAddress": "",
     "GatewayIPAddressList": [
-      "10.18.102.2/24",
-      "10.18.102.3/24"
+      "192.168.256.288/24",
+      "192.168.256.289/24"
     ],
     "RouteDistinguisherList": "",
     "RouteTargetList": [
@@ -6798,8 +8479,6 @@ Transfer-Encoding:chunked
 
 
 
-
-
 ## Creating an address pool for zone of zones
 
 |||
@@ -6807,7 +8486,7 @@ Transfer-Encoding:chunked
 |**Method** |`POST` |
 |**URI** |`/redfish/v1/Fabrics/{fabricID}/AddressPools` |
 |**Description** |This operation creates an address pool for a zone of zones in a specific fabric.|
-|**Returns** |<ul><li>Link to the created address pool in the `Location` header.</li><li>JSON schema representing the created address pool.</li></ul>|
+|**Returns** |- Link to the created address pool in the `Location` header.<br />- JSON schema representing the created address pool.|
 |**Response code** | `201 Created` |
 |**Authentication** |Yes|
 
@@ -6827,12 +8506,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "192.12.1.10",
-              "Upper": "192.12.1.15"
+              "Lower": "192.168.256.288",
+              "Upper": "192.168.256.293"
     },
     "EbgpAddressRange": {
-              "Lower": "172.12.1.10",
-              "Upper": "172.12.1.15"
+              "Lower": "192.168.260.288",
+              "Upper": "192.168.260.295"
     }
   },
   "Ebgp": {
@@ -6844,16 +8523,12 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["192.168.18.122/31", "192.168.18.123/31"]
+    "GatewayIPAddressList": ["192.168.261.290/31", "192.168.261.291/31"]
   }
 }'
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools'
 
 ```
-
-
-
-
 
 
 
@@ -6868,12 +8543,12 @@ curl -i POST \
         "Upper": 3002
     },
     "IbgpAddressRange": {
-              "Lower": "192.12.1.10",
-              "Upper": "192.12.1.15"
+              "Lower": "192.168.256.288",
+              "Upper": "192.168.256.293"
     },
     "EbgpAddressRange": {
-              "Lower": "172.12.1.10",
-              "Upper": "172.12.1.15"
+             "Lower": "192.168.260.288",
+              "Upper": "192.168.260.295"
     }
   },
   "Ebgp": {
@@ -6885,7 +8560,7 @@ curl -i POST \
   "BgpEvpn": {
     "RouteDistinguisherList": ["65002:102"],  
     "RouteTargetList": ["65002:102", "65002:102"],
-    "GatewayIPAddressList": ["192.168.18.122/31", "192.168.18.123/31"]
+    "GatewayIPAddressList": ["192.168.261.290/31", "192.168.261.291/31"]
   }
 }
 
@@ -6937,13 +8612,13 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d",
-   "@odata.type":"#AddressPool.vxx.AddressPool",
+   "@odata.type":"#AddressPool.v1_2_0.AddressPool",
    "BgpEvpn":{
       "AnycastGatewayIPAddress":"",
       "AnycastGatewayMACAddress":"",
       "GatewayIPAddressList":[
-         "192.168.18.122/31",
-         "192.168.18.123/31"
+         "192.168.261.290/31",
+         "192.168.261.291/31"
       ],
       "RouteDistinguisherList":[
          "65002:102"
@@ -6962,16 +8637,16 @@ Transfer-Encoding:chunked
    },
    "IPv4":{
       "EbgpAddressRange":{
-         "Lower":"172.12.1.10",
-         "Upper":"172.12.1.15"
+         "Lower":"192.168.261.280",
+         "Upper":"192.168.261.285"
       },
       "FabricLinkAddressRange":{
          "Lower":"",
          "Upper":""
       },
       "IbgpAddressRange":{
-         "Lower":"192.12.1.10",
-         "Upper":"192.12.1.15"
+         "Lower":"192.168.261.290",
+         "Upper":"192.168.261.295"
       },
       "LoopbackAddressRange":{
          "Lower":"",
@@ -7078,7 +8753,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"",
    "Id":"a2dc8760-ea05-4cab-8f95-866c1c380f98",
    "Links":{
@@ -7220,7 +8895,7 @@ Transfer-Encoding:chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
-   "@odata.type":"#Endpoint.v1_3_1.Endpoint",
+   "@odata.type":"#Endpoint.v1_6_1.Endpoint",
    "Description":"Host 2 Endpoint 1 Collection Description",
    "EndpointProtocol":"Ethernet",
    "Id":"fe34aff2-e81f-4167-a0c3-9bf5a67e2a97",
@@ -7377,7 +9052,7 @@ Transfer-Encoding: chunked
 ```
 {
    "@odata.id":"/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"",
    "Id":"06d344bb-cce1-4b0c-8414-6f6df1ea373f",
    "Links":{
@@ -7443,10 +9118,6 @@ curl -i -X PATCH \
 
 
 
-
-
-
-
 >**Sample request body** \(assigning links for a zone of endpoints\)
 
 ```
@@ -7498,7 +9169,7 @@ curl -i -X PATCH \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"NK Zone Collection Description",
    "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
    "Links":{ 
@@ -7531,7 +9202,7 @@ curl -i -X PATCH \
 ```
 { 
    "@odata.id":"/redfish/v1/Fabrics/143476dc-0ac1-4352-96f3-e0782aeed84a/Zones/57c325f0-eda4-4754-b8da-826d5e266c04",
-   "@odata.type":"#Zone.v1_3_0.Zone",
+   "@odata.type":"#Zone.v1_6_1.Zone",
    "Description":"NK Zone Collection Description",
    "Id":"57c325f0-eda4-4754-b8da-826d5e266c04",
    "Links":{ 
@@ -7580,10 +9251,6 @@ curl -i -X DELETE \
 
 
 
-
-
-
-
 ## Deleting an endpoint
 
 |||
@@ -7607,8 +9274,6 @@ curl -i DELETE \
 
 
 
-
-
 ## Deleting an address pool
 
 |||
@@ -7628,26 +9293,6 @@ curl -i -X DELETE \
  'https://{odimra_host}:{port}/redfish/v1/Fabrics/{fabricID}/AddressPools/{addresspoolid}'
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Tasks
@@ -7676,7 +9321,6 @@ To view the tasks and the task monitor, ensure that the user has `Login` privile
 
 ##  Viewing the task service root
 
-
 |||
 |-----------|----------|
 |**Method** | `GET` |
@@ -7685,7 +9329,6 @@ To view the tasks and the task monitor, ensure that the user has `Login` privile
 |**Returns** |<ul><li> Links to tasks</li><li>Properties of `TaskService`.<br> Following are a few important properties of `TaskService` returned in the JSON response:<br><ul><li>`CompletedTaskOverWritePolicy` : This property indicates the overwrite policy for completed tasks and is set to `oldest` by default - Older completed tasks will be removed automatically.</li><li>`LifeCycleEventOnTaskStateChange`: This property indicates if the task state change event will be sent to the clients who have subscribed to it. It is set to `true` by default.</li></ul></li></ul> |
 |**Response code** | `200 OK` |
 |**Authentication** |Yes|
-
 
 >**curl command**
 
@@ -7719,7 +9362,7 @@ Transfer-Encoding":chunked
 
 ```
 {
-   "@odata.type":"#TaskService.v1_1_4.TaskService",
+   "@odata.type":"#TaskService.v1_2_0.TaskService",
    "@odata.id":"/redfish/v1/TaskService",
    "@odata.context":"/redfish/v1/$metadata#TaskService.TaskService",
    "Description":"TaskService",
@@ -7742,7 +9385,6 @@ Transfer-Encoding":chunked
    }
 }
 ```
-
 
 
 
@@ -7793,8 +9435,6 @@ curl -i GET \
 
 
 
- 
-
 ## Viewing information about a specific task
 
 |||
@@ -7821,45 +9461,39 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "@odata.type":"#Task.v1_5_1.Task",
+   "@odata.id":"/redfish/v1/TaskService/Tasks/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
-   "Name":"Task task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "Id":"task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
+   "Name":"Task task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "TaskState":"Completed",
-   "StartTime":"2020-04-17T06:52:15.632439043Z",
-   "EndTime":"2020-04-17T06:52:15.947796761Z",
+   "StartTime":"2021-01-21T07:09:03.366954469Z",
+   "EndTime":"2021-01-21T07:10:30.311241695Z",
    "TaskStatus":"OK",
    "SubTasks":"",
-   "TaskMonitor":"/taskmon/task6e3cdbd8-65ca-4842-9437-0f29d5c6bce3",
+   "TaskMonitor":"/taskmon/task2e4b6684-5c6b-4872-bb64-72cf27f3a78f",
    "PercentComplete":100,
    "Payload":{
-      "HttpHeaders":{
-         "Cache-Control":"no-cache",
-         "Connection":"keep-alive",
-         "Content-type":"application/json; charset=utf-8",
-         "Location":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1",
-         "OData-Version":"4.0",
-         "Transfer-Encoding":"chunked"
-      },
+      "HttpHeaders":[
+         "Transfer-Encoding: chunked",
+         "Cache-Control: no-cache",
+         "Connection: keep-alive",
+         "Content-type: application/json; charset=utf-8",
+         "Link: </redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d.1/>; rel=describedby",
+         "Location: /redfish/v1/AggregationService/AggregationSources/7b08ecbd-d23e-4dd5-ad99-58ac2be7576d.1",
+         "OData-Version: 4.0"
+      ],
       "HttpOperation":"POST",
-      "JsonBody":{
-         "code":"Base.1.6.1.Success",
-         "message":"Request completed successfully."
-      },
-      "TargetUri":"/redfish/v1/Systems/2412b8c8-3b02-40cd-926e-8e85cb406e63:1"
+      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\",\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
+      "TargetUri":"/redfish/v1/AggregationService/AggregationSources"
    },
    "Messages":[
-
+      
    ]
 }
 ```
 
 
-
-
-
- 
 
 
 ##  Viewing a task monitor
@@ -7903,7 +9537,7 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2a.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70",
@@ -7955,13 +9589,7 @@ Content-Length:491 bytes
 
 
 
-
-
-
-
- 
-
-##  Deleting a task
+## Deleting a task
 
 |||
 |-----------|----------|
@@ -7969,7 +9597,7 @@ Content-Length:491 bytes
 |**URI** |`/redfish/v1/TaskService/Tasks/{TaskID}` |
 |**Description** |This operation deletes a specific task. Deleting a running task aborts the operation being carried out.<br>**NOTE:**<br> Only a user having `ConfigureComponents` privilege is authorized to delete a task. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.|
 |**Returns** |JSON schema representing the deleted task.|
-|**Response code** |`202 Accepted` |
+|**Response code** |`204 No Content` |
 |**Authentication** |Yes|
 
 
@@ -7983,63 +9611,10 @@ curl -i DELETE \
 
 ```
 
->**Sample response body** 
-
-```
-{
-   "@odata.type":"#Task.v1_4_2a.Task",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task52589fad-22fb-4505-86fd-cf845d500a33",
-   "@odata.context":"/redfish/v1/$metadata#Task.Task",
-   "Id":"task52589fad-22fb-4505-86fd-cf845d500a33",
-   "Name":"Task task52589fad-22fb-4505-86fd-cf845d500a33",
-   "Message":"The task with id task52589fad-22fb-4505-86fd-cf845d500a33 has started.",
-   "MessageId":"TaskEvent.1.0.1.TaskStarted",
-   "MessageArgs":[
-      "task52589fad-22fb-4505-86fd-cf845d500a33"
-   ],
-   "NumberOfArgs":1,
-   "Severity":"OK",
-   "TaskState":"Completed",
-   "StartTime":"2020-04-13T10:29:21.406470494Z",
-   "EndTime":"2020-04-13T10:29:21.927909927Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task52589fad-22fb-4505-86fd-cf845d500a33",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":{
-         "Content-type":"application/json; charset=utf-8",
-         "Location":"/redfish/v1/Managers/a6ddc4c0-2568-4e16-975d-fa771b0be853"
-      },
-      "HttpOperation":"POST",
-      "JsonBody":{
-         "code":"Base.1.6.1.Success",
-         "message":"Request completed successfully."
-      },
-      "TargetUri":"/redfish/v1/AggregationService/Actions/AggregationService.Add"
-   },
-   "Messages":[
-
-   ]
-}
-```
 
 
 
-
-
- 
-
-
-
-
-
-
-
-
-
-
-#  Events
+# Events
 
 Resource Aggregator for ODIM offers an event interface that allows northbound clients to interact and receive notifications such as alerts and alarms from multiple resources, including Resource Aggregator for ODIM itself. It exposes Redfish `EventService` APIs for managing events.
 
@@ -8052,9 +9627,9 @@ Use these APIs to subscribe a northbound client to southbound events by creating
 |API URI|Operation Applicable|Required privileges|
 |-------|--------------------|-------------------|
 |/redfish/v1/EventService|GET|`Login` |
-|/redfish/v1/EventService/Subscriptions|POST, GET|`Login`, `ConfigureManager` |
+|/redfish/v1/EventService/Subscriptions|GET, POST|`Login`, `ConfigureManager`, `ConfigureComponents` |
 |/redfish/v1/EventService/Actions/EventService.SubmitTestEvent|POST|`ConfigureManager` |
-|/redfish/v1/EventService/Subscriptions/\{subscriptionId\}|GET, DELETE|`Login`, `ConfigureManager` |
+|/redfish/v1/EventService/Subscriptions/\{subscriptionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
 
 >**Note:**
 Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
@@ -8103,7 +9678,7 @@ Transfer-Encoding:chunked
    "@odata.context":"/redfish/v1/$metadata#EventService.EventService",
    "Id":"EventService",
    "@odata.id":"/redfish/v1/EventService",
-   "@odata.type":"#EventService.v1_5_0.EventService",
+   "@odata.type":"#EventService.v1_7_2.EventService",
    "Name":"EventService",
    "Description":"EventService",
    "Actions":{
@@ -8216,15 +9791,7 @@ Transfer-Encoding:chunked
 
 
 
-
-
-
-
-
-
-
-
-## Creating an event subscription
+### Creating an event subscription
 
 |||
 |-----------|-----------|
@@ -8283,7 +9850,6 @@ curl -i POST \
 ```
 
 
-
 >**Sample request body**
 
 ```
@@ -8317,7 +9883,86 @@ curl -i POST \
 
 ```
 
- 
+### Sample event
+
+Here is a sample of standard Redfish event delivered to a destination.
+
+~~~
+{
+   "@odata.context":"/redfish/v1/$metadata#Event.Event",
+   "@odata.type":"#Event.v1_7_0.Event",
+   "Events":[
+      {
+         "EventId":"ffa39cd4-4d95-4296-9ffd-e67c1135e96f",
+         "EventTimestamp":"2022-02-01T16:40:35Z",
+         "EventType":"ResourceAdded",
+         "Message":"The resource has been created successfully.",
+         "MessageId":"ResourceEvent.1.2.0.ResourceAdded",
+         "OriginOfCondition":{
+            "@odata.id":"/redfish/v1/Managers/dd187ab4-310c-4be0-beeb-0412a6b00806.1"
+         },
+         "Severity":"OK"
+      }
+   ],
+   "Name":"Resource Event"
+}
+~~~
+
+
+
+###  Creating event subscription with eventformat type - MetricReport
+
+If `EventFormatType` is empty, default value will be `Event`.
+
+If `EventTypes` list is empty and `EventFormatType` is `MetricReport`, `EventTypes` will default to `[“MetrciReport”]`.
+
+If both values are empty, `EventFormatType` will default to `Event` and `EventTypes` will default to all supported values apart from `MetricReport`.
+
+>**curl command**
+
+```
+curl -i POST \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+   -H "Content-Type:application/json; charset=utf-8" \
+   -d \
+
+'{
+  "Name": "ODIMRA_NBI_client ",
+  "Destination": "https://{Valid_IP_Address}:{Port}/EventListener ",
+  "EventTypes": ["MetricReport"],
+  "Context": "TelemetryDemo",
+  "Protocol": "Redfish",
+  "SubscriptionType": "RedfishEvent",
+  "EventFormatType": "MetricReport"
+ }' \
+ 'https://{odimra_host}:{port}/redfish/v1/EventService/Subscriptions'
+```
+
+>**Sample request body**
+
+```
+{ 
+   "Name":"ODIMRA_NBI_client",
+   "Destination":"https://{valid_destination_IP_Address}:{Port}/EventListener",
+   "EventTypes":[ 
+      "Alert"
+   ],
+   "MessageIds":[ 
+
+   ],
+   "ResourceTypes":[ 
+      "ComputerSystem"
+   ],
+   "Name": "ODIMRA_NBI_client ",
+   "Destination": "https://{Valid_IP_Address}:{Port}/EventListener ",
+   "EventTypes": ["MetricReport"],
+   "Context": "TelemetryDemo",
+   "Protocol": "Redfish",
+   "SubscriptionType": "RedfishEvent",
+   "EventFormatType": "MetricReport"
+}
+
+```
 
 **Request parameters**
 
@@ -8328,12 +9973,12 @@ curl -i POST \
 |EventTypes|Array \(string \(enum\)\)|Read-only \(Optional\)<br> |The types of events that are sent to the destination. For possible values, see "Event types" table.|
 |ResourceTypes|Array \(string, null\)|Read-only \(Optional\)<br> |The list of resource type values \(Schema names\) that correspond to the `OriginResources`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |Context|String|Read/write Required \(null\)<br> |A string that is stored with the event destination subscription.|
-|MessageId|String|Read-only \(Optional\)<br> |The key used to find the message in a Message Registry.|
+|MessageIds|Array|Read-only \(Optional\)<br> |The key used to find the message in a Message Registry.|
 |Protocol|String \(enum\)|Read-only \(Required on create\)<br> |The protocol type of the event connection. For possible values, see "Protocol" table.|
 |SubscriptionType|String \(enum\)|Read-only Required \(null\)<br> |Indicates the subscription type for events. For possible values, see "Subscription type" table.|
 |EventFormatType|String \(enum\)|Read-only \(Optional\)<br> |Indicates the content types of the message that this service can send to the event destination. For possible values, see "EventFormat" type table.|
 |SubordinateResources|Boolean|Read-only \(null\)|Indicates whether the service supports the `SubordinateResource` property on event subscriptions or not. If it is set to `true`, the service creates subscription for an event originating from the specified `OriginResoures` and also from its subordinate resources. For example, by setting this property to `true`, you can receive specified events from a compute node: `/redfish/v1/Systems/{ComputerSystemId}` and from its subordinate resources such as:<br> `/redfish/v1/Systems/{ComputerSystemId}/Memory`,<br> `/redfish/v1/Systems/{ComputerSystemId}/EthernetInterfaces`,<br> `/redfish/v1/Systems/{ComputerSystemId}/Bios`,<br> `/redfish/v1/Systems/{ComputerSystemId}/Storage`|
-|OriginResources|Array| Required \(null\)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource will be sent to the subscriber. For possible values, see "Origin resources" table.|
+|OriginResources|Array| Optional \(null\)<br> |Resources for which the service only sends related events. If this property is absent or the array is empty, events originating from any resource will be sent to the subscriber. For possible values, see "Origin resources" table.|
 
 **Origin resources**
 
@@ -8344,6 +9989,7 @@ curl -i POST \
 |/redfish/v1/Systems|All computer system resources available in Resource Aggregator for ODIM for which the service sends only related events. By setting `EventType` property in the request payload to `ResourceAdded` or `ResourceRemoved` and `OriginResources` property to `/redfish/v1/Systems`, you can receive notifications when a system is added or removed in Resource Aggregator for ODIM.|
 |/redfish/v1/Chassis|All chassis resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/Fabrics|All fabric resources available in Resource Aggregator for ODIM for which the service sends only related events.|
+|/redfish/v1/Managers|All manager resources available in Resource Aggregator for ODIM for which the service sends only related events.|
 |/redfish/v1/TaskService/Tasks|All tasks scheduled by or being executed by Redfish `TaskService`. By subscribing to Redfish tasks, you can receive task status change notifications on the subscribed destination client.<br> By specifying the task URIs as `OriginResources` and `EventTypes` as `StatusChange`, you can receive notifications automatically when the tasks are complete.<br> To check the status of a specific task manually, perform HTTP `GET` on its task monitor until the task is complete.<br> |
 
 **Event types**
@@ -8355,12 +10001,14 @@ curl -i POST \
 |ResourceRemoved|A resource has been removed.|
 |ResourceUpdated|The value of this resource has been updated.|
 |StatusChange|The status of this resource has changed.|
+|MetricReport|Collects resource metrics.|
 
 **EventFormat type**
 
 |String|Description|
 |------|-----------|
 |Event|The subscription destination will receive JSON bodies of the Resource Type Event.|
+|MetricReport|Collects resource metrics.|
 
 **Subscription type**
 
@@ -8373,8 +10021,6 @@ curl -i POST \
 |String|Description|
 |------|-----------|
 |Redfish|The destination follows the Redfish specification for event notifications.|
-
-
 
  
 
@@ -8390,8 +10036,6 @@ Date:Fri, 08 Nov 2019 07:49:42 GMT+7m 9s
 Content-Length:0 byte
 
 ```
-
- 
 
 >**Sample response header** \(HTTP 201 status\) 
 
@@ -8410,7 +10054,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#Task.v1_4_2.Task",
+   "@odata.type":"#Task.v1_5_1.Task",
    "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
    "@odata.context":"/redfish/v1/$metadata#Task.Task",
    "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72ad",
@@ -8426,6 +10070,7 @@ Transfer-Encoding:chunked
 ```
 
 >**Sample response body** \(subtask\) 
+
 
 ```
 {
@@ -8450,7 +10095,7 @@ Transfer-Encoding:chunked
       "HttpHeaders":null,
       "HttpOperation":"POST",
       "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d:1"
+      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
    },
    "Messages":null
 }
@@ -8499,7 +10144,6 @@ curl -i POST \
    "EventTimestamp":"{Event_Time_Stamp}",
    "EventType":"{Event_Type_String}",
    "Message":"{Message_String}",
-   "ResourceTypes":[{resource_type_string}],
    "MessageArgs":[ 
 
    ],
@@ -8514,12 +10158,6 @@ curl -i POST \
 
 
 
-
-
-
-
- 
-
 > Sample event payload 
 
 ```
@@ -8529,13 +10167,12 @@ curl -i POST \
    "EventTimestamp":"2020-02-17T17:17:42-0600",
    "EventType":"Alert",
    "Message":"The LAN has been disconnected",
-   "ResourceTypes":["EthernetInterface"],
    "MessageArgs":[ 
        "EthernetInterface 1",
-            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
+            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1"
    ],
    "MessageId":"Alert.1.0.LanDisconnect",
-   "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1/EthernetInterfaces/1",
+   "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1/EthernetInterfaces/1",
    "Severity":"Critical"
 }
 
@@ -8552,7 +10189,6 @@ curl -i POST \
 |EventTimestamp|String|Optional|The date and time stamp for the event to add. When the event is received, it translates as the time the event occurred.|
 |EventType|String \(enum\)|Optional|The type for the event to add. For possible property values, see "EventType" in [Creating an event subscription](#creating-an-event-subscription).|
 |Message|String|Optional|The human-readable message for the event to add.|
-|ResourceTypes|Array \(string, null\)|Read-only  <br> |The list of resource type values \(Schema names\) that correspond to `OriginOfCondition`. For possible values, perform `GET` on `redfish/v1/EventService` and check values listed under `ResourceTypes` in the JSON response.<br> Examples: "ComputerSystem", "Storage", "Task"<br> |
 |MessageArgs \[ \]|Array \(string\)|Optional|An array of message arguments for the event to add. The message arguments are substituted for the arguments in the message when looked up in the message registry. It helps in trouble ticketing when there are bad events. For example, `MessageArgs` in "Sample event payload" has the following two substitution variables:<br><ul><li>`EthernetInterface 1`</li><li>`/redfish/v1/Systems/{ComputerSystemId}`</li></ul><br>`Description` and `Message` values in "Sample message registry" are substituted with the above-mentioned variables. They translate to "A LAN Disconnect on `EthernetInterface 1` was detected on system `/redfish/v1/Systems/{ComputerSystemId}.` |
 |MessageId|String|Required|The Message Id for the event to add. It is the key used to find the message in a message registry. It has `RegistryPrefix` concatenated with the version, and the unique identifier for the message registry entry. The `RegistryPrefix` concatenated with the version is the name of the message registry. To get the names of available message registries, perform HTTP `GET` on `/redfish/v1/Registries`. The message registry mentioned in the sample request payload is `Alert.1.0`.|
 |OriginOfCondition|String|Optional|The URL in the `OriginOfCondition` property of the event to add. It is not a reference object. It is the resource that originated the condition that caused the event to be generated. For possible values, see "Origin resources" in [Creating an event subscription](#creating-an-event-subscription).|
@@ -8589,7 +10225,7 @@ Transfer-Encoding:chunked
 { 
    "@odata.context":"/redfish/v1/$metadata#Event.Event",
    "@odata.id":"/redfish/v1/EventService/Events/1",
-   "@odata.type":"#Event.v1_1_0.Event ",
+   "@odata.type":"#Event.v1_7_0.Event",
    "Id":"1",
    "Name":"Event Array",
    "Context":"ODIMRA_Event",
@@ -8602,9 +10238,9 @@ Transfer-Encoding:chunked
          "MessageId":"Alert.1.0.LanDisconnect",
          "MessageArgs":[ 
             "EthernetInterface 1",
-            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1"
+            "/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1"
          ],
-         "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7:1/EthernetInterfaces/1",
+         "OriginOfCondition":"/redfish/v1/Systems/8fbda4f3-f55f-4fe4-8db8-4aec1dc3a7d7.1/EthernetInterfaces/1",
          "Context":"Event Subscription"
 }
 ]
@@ -8615,7 +10251,7 @@ Transfer-Encoding:chunked
 
 ```
 {
-"@odata.type": "#MessageRegistry.v1_0_0.MessageRegistry",
+"@odata.type": "#MessageRegistry.v1_4_2.MessageRegistry",
 "Id": “Alert.1.0.0",
 "Name": "Base Message Registry",
 "Language": "en",
@@ -8756,10 +10392,6 @@ To get notified of the task completion status, subscribe to `StatusChange` event
 
 
 
-
-
-
-
 ## Viewing a collection of event subscriptions
 
 |||
@@ -8838,7 +10470,7 @@ curl -i GET \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "@odata.context":"/redfish/v1/$metadata#EventDestination.EventDestination",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
@@ -8857,14 +10489,10 @@ curl -i GET \
       "ComputerSystem"
    ],
    "OriginResources":[
-      "@odata.id":"/redfish/v1/Systems/936f4838-9ce5-4e2a-9e2d-34a45422a389:1"
+      "@odata.id":"/redfish/v1/Systems/936f4838-9ce5-4e2a-9e2d-34a45422a389.1"
    ]
 }
 ```
-
-
-
-
 
 
 ##  Deleting an event subscription
@@ -8893,7 +10521,7 @@ curl -i -X DELETE \
 
 ```
 {
-   "@odata.type":"#EventDestination.v1_7_0.EventDestination",
+   "@odata.type":"#EventDestination.v1_11_0.EventDestination",
    "@odata.id":"/redfish/v1/EventService/Subscriptions/57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Id":"57e22fcc-8b1a-460c-ac1f-b3377e22f1cf",
    "Name":"Event Subscription",
@@ -8902,10 +10530,6 @@ curl -i -X DELETE \
    "Severity":"OK"
 }
 ```
-
-
-
-
 
 
 
@@ -9054,8 +10678,6 @@ curl -i GET \
 
 
 
-
-
 ##  Viewing a single registry
 
 |||
@@ -9127,5 +10749,641 @@ curl -i GET \
 ```
 
 
+
+# Redfish Telemetry Service
+
+Telemetry refers to the metrics obtained from remote systems for analysis and monitoring. 
+The Redfish Telemetry model is designed to obtain characteristics of metrics, send specific metric reports periodically and specify triggers against metrics.
+
+Resource Aggregator for ODIM exposes the Redfish `TelemetryService` APIs to:
+
+- Define characteristics and details of one or more metrics (metadata)
+- Generate metric reports at regular intervals, specifying their content and timeframe
+- Transmit metric reports with metric readings and any metadata associated with the readings
+- Specify trigger thresholds for a list of metrics
+
+**Supported APIs**
+
+| API URI                                                      | Operation Applicable | Required privileges     |
+| ------------------------------------------------------------ | -------------------- | ----------------------- |
+| /redfish/v1/TelemetryService                                 | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricDefinitions               | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID} | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReportDefinitions         | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID} | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReports                   | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/MetricReports/{MetricReportID}  | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/Triggers                        | GET                  | `Login`                 |
+| /redfish/v1/TelemetryService/Triggers/{TriggerID}            | GET, PATCH           | `Login`,`ConfigureSelf` |
+
+>**NOTE:**
+>Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+
+## Viewing the telemetry service root
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService`                               |
+| **Description**    | This operation retrieves JSON schema representing the Redfish `TelemetryService` root. |
+| **Returns**        | Properties for the Redfish `TelemetryService` and links to its list of resources. |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.id":"/redfish/v1/TelemetryService",
+   "@odata.type":"#TelemetryService.v1_3_1.TelemetryService",
+   "Id":"TelemetryService",
+   "Name":"Telemetry Service",
+   "Status":{
+      "State":"Enabled",
+      "Health":"OK"
+   },
+   "ServiceEnabled":true,
+   "SupportedCollectionFunctions":[
+      "Average",
+      "Minimum",
+      "Maximum"
+   ],
+   "MetricDefinitions":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions"
+   },
+   "MetricReportDefinitions":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions"
+   },
+   "MetricReports":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReports"
+   },
+   "Triggers":{
+      "@odata.id":"/redfish/v1/TelemetryService/Triggers"
+   }
+}
+```
+
+## Collection of metric definitions
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricDefinitions`             |
+| **Description**    | This operation lists the metadata information for the metrics collection in Redfish implementation. |
+| **Returns**        | JSON schema containing the definition, metadata or the characteristics of the metrics collection |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricDefinitions/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricDefinitionCollection.MetricDefinitionCollection",
+    "@odata.etag": "W/\"1E796226\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions",
+    "@odata.type": "#MetricDefinitionCollection.MetricDefinitionCollection",
+    "Description": "Metric Definitions view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/MemoryBusUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/IOBusUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUICUtil"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/JitterCount"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/AvgCPU0Freq"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPU0Power"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/AvgCPU1Freq"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPU1Power"
+        }
+    ],
+    "Members@odata.count": 9,
+    "Name": "Metric Definitions"
+}
+```
+
+## Single metric definition
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID}` |
+| **Description**    | This operation lists the metadata information for a metric in Redfish implementation. |
+| **Returns**        | JSON schema containing the definition, metadata or the characteristics of a metric |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricDefinitions/{MetricDefinitionID}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
+    "@odata.etag": "W/\"AB720077\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
+    "@odata.type": "#MetricDefinition.v1_2_0.MetricDefinition",
+    "Calculable": "NonSummable",
+    "CalculationAlgorithm": "Average",
+    "Description": "Metric definition for CPU Utilization",
+    "Id": "CPUUtil",
+    "Implementation": "PhysicalSensor",
+    "IsLinear": true,
+    "MaxReadingRange": 100,
+    "MetricDataType": "Decimal",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil"
+    ],
+    "MetricType": "Numeric",
+    "MinReadingRange": 0,
+    "Name": "Metric definition for CPU Utilization",
+    "Units": "%",
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a.1",
+                "ba5cd083-b360-4994-bc30-12b450859b27.1"
+            ]
+        }
+    ]
+}
+```
+
+## Collection of Metric Report Definitions
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReportDefinitions`       |
+| **Description**    | This operation represents a set of metric properties of collected in multiple metric reports. |
+| **Returns**        | JSON schema defining the content and time of the metric reports |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReportDefinitions/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
+    "@odata.etag": "W/\"BFD5C070\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions",
+    "@odata.type": "#MetricReportDefinitionCollection.MetricReportDefinitionCollection",
+    "Description": " MetricReportDefinitions view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom4"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/MemoryBusUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/MemoryBusUtilCustom2"
+        },
+    ],
+    "Members@odata.count": 6,
+    "Name": "MetricReportDefinitions"
+}
+```
+
+## Single metric report definition 
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID}` |
+| **Description**    | This operation represents metric properties of a single metric report. |
+| **Returns**        | JSON schema defining the content and periodicity of the metric report |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReportDefinitions/{MetricReportDefinitionID}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricReportDefinition.MetricReportDefinition",
+    "@odata.etag": "W/\"9A613B5C\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom1",
+    "@odata.type": "#MetricReportDefinition.v1_4_1.MetricReportDefinition",
+    "Description": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
+    "Id": "CPUUtilCustom1",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil",
+        "SystemUsage/CPUUtil"
+    ],
+    "MetricReport": {
+        "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+    },
+    "MetricReportDefinitionType": "OnRequest",
+    "Metrics": [
+        {
+            "CollectionDuration": "PT20S",
+            "CollectionFunction": "Average",
+            "CollectionTimeScope": "Interval",
+            "MetricId": "CPUUtil"
+        }
+    ],
+    "Name": "Metric report of CPU Utilization for 10 minutes with sensing interval of 20 seconds.",
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a.1"
+            ]
+        }
+    ]
+}
+```
+
+## Collection of metric reports
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReports`                 |
+| **Description**    | This operation retrieves collection of reports with metric readings and any metadata associated with the readings. |
+| **Returns**        | Links of the metric reports.                                 |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReports/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#MetricReportCollection.MetricReportCollection",
+    "@odata.etag": "W/\"BFD5C070\"",
+    "@odata.id": "/redfish/v1/TelemetryService/MetricReports",
+    "@odata.type": "#MetricReportCollection.MetricReportCollection",
+    "Description": " Metric Reports view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom1"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom2"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom3"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/MetricReports/MemoryBusUtilCustom4"
+        },        
+    ],
+    "Members@odata.count": 7,
+    "Name": "Metric Reports"
+}
+ 
+```
+
+## Single metric report 
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/MetricReports/{MetricReportID}` |
+| **Description**    | This operation retrieves a report with metric readings and any metadata associated with the readings. |
+| **Returns**        | Link to the metric report.                                   |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/MetricReports/{MetricReportID}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#MetricReport.MetricReport",
+   "@odata.id":"/redfish/v1/TelemetryService/MetricReports/CPUUtilCustom2",
+   "@odata.type":"#MetricReport.v1_0_0.MetricReport",
+   "Description":"Metric report of CPU Utilization for 60 minutes with sensing interval of 20 seconds.",
+   "Id":"CPUUtilCustom2",
+   "MetricReportDefinition":{
+      "@odata.id":"/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom2"
+   },
+   "MetricValues":[
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:05Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:25Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:46:45Z"
+      },
+      {
+         "MetricDefinition":{
+            "@odata.id":"/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil"
+         },
+         "MetricId":"CPUUtil",
+         "MetricProperty":"/redfish/v1/Systems/9616fec9-c76a-4d26-ab53-196d08ce825a.1#SystemUsage/CPUUtil",
+         "MetricValue":"1",
+         "Timestamp":"2021-08-28T13:47:05Z"
+      },
+      "Name":"Metric report of CPU Utilization for 60 minutes with sensing interval of 20 seconds."
+   }
+```
+
+<blockquote> NOTE:  After you remove a system and perform a `GET ` operation on the Metric Report Collection, the collection of all individual metric reports is still displayed in the response body. When you perform a `GET` operation on that individual {MetricReportID}, you get a `404-Not Found` error message. After this, when you perform a GET operation on the Metric Report Collection again, the instance of that individual metric report is erased. 
+This is an implementation choice in Resource Aggregator for ODIM, because Telemetry service is defined for a collection of BMCs and not for an individual BMC as per the DMTF Redfish specification.</blockquote>
+
+## Collection of triggers
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/Triggers`                      |
+| **Description**    | This operation retrieves the collection of triggers that apply to multiple metric properties. |
+| **Returns**        | Links to a collection of triggers                            |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#TriggersCollection.TriggersCollection",
+    "@odata.etag": "W/\"DA402EBA\"",
+    "@odata.id": "/redfish/v1/TelemetryService/Triggers",
+    "@odata.type": "#TriggersCollection.TriggersCollection",
+    "Description": " Triggers view",
+    "Members": [
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/MemoryBusUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/IOBusUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUICUtilTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/JitterCountTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers"
+        },
+        {
+            "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPU1PowerTriggers"
+        }
+    ],
+    "Members@odata.count": 7,
+    "Name": "Triggers"
+}
+```
+
+## Single trigger 
+
+| **Method**         | `GET`                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **URI**            | `/redfish/v1/TelemetryService/Triggers/{TriggersID}`         |
+| **Description**    | This endpoint retrieves a trigger that apply to the listed metrics. |
+| **Returns**        | Link of a single trigger                                     |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | No                                                           |
+
+
+>**curl command**
+
+```
+curl -i GET \
+              'https://{odimra_host}:{port}/redfish/v1/TelemetryService/Triggers/'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+    "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
+    "@odata.etag": "W/\"BFAAE441\"",
+    "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
+    "@odata.type": "#Triggers.v1_2_0.Triggers",
+    "Description": "Triggers for CPU Utilization",
+    "Id": "CPUUtilTriggers",
+    "MetricProperties": [
+        "/redfish/v1/Systems/{SystemID}#SystemUsage/CPUUtil"
+    ],
+    "MetricType": "Numeric",
+    "Name": "Triggers for CPU Utilization",
+    "NumericThresholds": {
+        "LowerCritical": {
+            "Activation": "Decreasing",
+            "DwellTime": "PT0S",
+            "Reading": 0
+        },
+        "UpperCritical": {
+            "Activation": "Increasing",
+            "DwellTime": "PT0S",
+            "Reading": 0
+        }
+    },
+    "Status": {
+        "Health": "OK",
+        "State": "Enabled"
+    },
+    "TriggerActions": [
+        "LogToLogService"
+    ],
+    "Wildcards": [
+        {
+            "Name": "SystemID",
+            "Values": [
+                "9616fec9-c76a-4d26-ab53-196d08ce825a.1",
+                "ba5cd083-b360-4994-bc30-12b450859b27.1"
+            ]
+        }
+    ]
+}
+```
+
+## Updating a trigger
+
+| **Method**         | `PATCH`                                              |
+| ------------------ | ---------------------------------------------------- |
+| **URI**            | `/redfish/v1/TelemetryService/Triggers/{TriggersID}` |
+| **Description**    | This operation updates triggers of each metric.      |
+| **Returns**        |                                                      |
+| **Response Code**  | `200 OK`                                             |
+| **Authentication** | No                                                   |
+
+
+>**curl command**
+
+```
+curl -i -X PATCH \
+   -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+  "EventTriggers": ["Alert"]
+}' \
+ 'https://10.24.1.33:30080/redfish/v1/TelemetryService/Triggers/{TriggersID}'
+
+```
+
+
+>**Sample request body**
+
+```
+{
+  "EventTriggers": ["Alert"]
+}
+```
+
+
+
+
+# Audit Logging
+
+Audit logs has information on each API and is stored in the api.log file in odimra logs.  Each log consists of a priority value followed by the date and time of the log, hostname from which the APIs were sent, user account and role details, API request method and resource, response body, response code and the message.
+
+**Samples**
+
+- <110> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=200] Operation Successful
+
+- <110> 2022-01-17T13:57:48Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="POST" resource="/redfish/v1/AggregationService/AggregationSources" requestBody="{"HostName":"192.168.260.280","Links":{"ConnectionMethod":{"@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/337ea3cb-3acc-49e2-b33f-3f5ce2a5ada4"}},"Password":"null","UserName":"admin"}"][response@1 responseCode=202] Operation successful
+
+- <107> 2009-11-10T23:00:00Z 192.168.260.290 [account@1 user="admin" roleID="Administrator"][request@1 method="GET" resource="/redfish/v1/Systems" requestBody=""][response@1 responseCode=404] Operation failed
+
+  <blockquote> Note: <110> and <107> are priority values. </107> is the audit information log and <107> is the audit error log. </blockquote>
+
+# Security Logging
+
+Security logging gives information on the successful and failed user authentication and authorization attempts. The logs are stored in api.log and account_session.log file in odimra logs.
+
+**Samples**
+
+- <86> 2022-01-28T04:44:09Z [account@1 user="admin" roleID="Administrator"] Authentication/Authorization successful for session token 388281e8-4a45-45e5-862b-6b1ccfd6e6a3
+
+- <84> 2022-01-28T04:43:39Z [account@1 user="admin1" roleID="null"] Authentication failed , Invalid username or password
+
+  <blockquote> Note: <86> and <84> are priority values. <86> is security information log and <84> is the warning log.</blockquote>
 
 

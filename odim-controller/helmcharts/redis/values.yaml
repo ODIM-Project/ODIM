@@ -1,0 +1,4 @@
+odimra:
+  namespace:
+  groupID:
+  redisImageTag: "2.0"

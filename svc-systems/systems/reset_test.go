@@ -71,14 +71,14 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) r
 
 func mockContactClient(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Reset" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.SetDefaultBootOrder" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -184,16 +184,16 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279:1")
+	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c7279.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
-	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c727:1")
+	err = mockSystemData("/redfish/v1/Systems/7a2c6100-67da-5fd6-ab82-6870d29c727.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
 	var positiveResponse interface{}
-	json.Unmarshal([]byte(`{"MessageId": "Base.1.0.Success"}`), &positiveResponse)
+	json.Unmarshal([]byte(`{"MessageId": "`+response.Success+`"}`), &positiveResponse)
 	pluginContact := PluginContact{
 		ContactClient:  mockContactClient,
 		DevicePassword: stubDevicePassword,
@@ -212,11 +212,11 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				&systemsproto.ComputerSystemResetRequest{
-					SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b:1",
+					SystemID:    "24b243cf-f1e3-5318-92d9-2d6737d6b0b.1",
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
-			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b:1"}, nil),
+			want: common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error while trying to get compute details: no data with the with key 24b243cf-f1e3-5318-92d9-2d6737d6b0b found", []interface{}{"ComputerSystem", "/redfish/v1/Systems/24b243cf-f1e3-5318-92d9-2d6737d6b0b.1"}, nil),
 		}, {
 			name: "invalid uuid without system id",
 			p:    &pluginContact,
@@ -233,14 +233,13 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				&systemsproto.ComputerSystemResetRequest{
-					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c727:1",
+					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c727.1",
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusInternalServerError,
 				StatusMessage: response.InternalError,
-				Header:        map[string]string{"Content-type": "application/json; charset=utf-8"},
 				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 		},
@@ -250,21 +249,14 @@ func TestPluginContact_ComputerSystemReset(t *testing.T) {
 			p:    &pluginContact,
 			args: args{
 				&systemsproto.ComputerSystemResetRequest{
-					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279:1",
+					SystemID:    "7a2c6100-67da-5fd6-ab82-6870d29c7279.1",
 					RequestBody: []byte(`{"ResetType": "ForceRestart"}`),
 				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: map[string]interface{}{"MessageId": "Base.1.0.Success"},
+				Body:          map[string]interface{}{"MessageId": response.Success},
 			},
 		},
 	}

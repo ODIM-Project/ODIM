@@ -17,9 +17,10 @@ package mgrcommon
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -54,6 +55,8 @@ type ResourceInfoRequest struct {
 	SystemID              string
 	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
+	HTTPMethod            string
+	RequestBody           []byte
 }
 
 // PluginToken interface to hold the token
@@ -64,6 +67,12 @@ type PluginToken struct {
 
 // Token variable hold the all the XAuthToken  against the plguin ID
 var Token PluginToken
+
+// DBInterface hold interface for db functions
+type DBInterface struct {
+	AddManagertoDBInterface func(mgrmodel.RAManager) error
+	GenericSave             func([]byte, string, string) error
+}
 
 // StoreToken to store the token ioto the  map
 func (p *PluginToken) StoreToken(plguinID, token string) {
@@ -77,6 +86,64 @@ func (p *PluginToken) GetToken(pluginID string) string {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 	return p.Tokens[pluginID]
+}
+
+// DeviceCommunication to connect with device with all the params
+func DeviceCommunication(req ResourceInfoRequest) response.RPC {
+	var resp response.RPC
+	target, gerr := mgrmodel.GetTarget(req.UUID)
+	if gerr != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
+	}
+	// Get the Plugin info
+	plugin, gerr := mgrmodel.GetPluginData(target.PluginID)
+	if gerr != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
+	}
+	var contactRequest PluginContactRequest
+	contactRequest.ContactClient = req.ContactClient
+	contactRequest.Plugin = plugin
+	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		token := GetPluginToken(contactRequest)
+		if token == "" {
+			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
+		}
+		contactRequest.Token = token
+	} else {
+		contactRequest.BasicAuth = map[string]string{
+			"UserName": plugin.Username,
+			"Password": string(plugin.Password),
+		}
+	}
+	decryptedPasswordByte, err := req.DecryptDevicePassword(target.Password)
+	if err != nil {
+		errorMessage := "error while trying to decrypt device password: " + err.Error()
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
+	}
+	contactRequest.DeviceInfo = map[string]interface{}{
+		"ManagerAddress": target.ManagerAddress,
+		"UserName":       target.UserName,
+		"Password":       decryptedPasswordByte,
+		"PostBody":       req.RequestBody,
+	}
+	//replace the uuid:id with the manager id
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
+	contactRequest.HTTPMethodType = req.HTTPMethod
+	//target.PostBody = req.RequestBody
+	body, _, getResp, err := ContactPlugin(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
+	if err != nil {
+		resp.StatusCode = getResp.StatusCode
+		json.Unmarshal(body, &resp.Body)
+		return resp
+	}
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	err = json.Unmarshal(body, &resp.Body)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	return resp
 }
 
 //GetResourceInfoFromDevice will contact to the and gets the Particual resource info from device
@@ -121,7 +188,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		"Password":       decryptedPasswordByte,
 	}
 	//replace the uuid:system id with the system to the @odata.id from request url
-	contactRequest.OID = strings.Replace(req.URL, req.UUID+":"+req.SystemID, req.SystemID, -1)
+	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = http.MethodGet
 	body, _, getResp, err := ContactPlugin(contactRequest, "error while getting the details "+contactRequest.OID+": ")
 	if err != nil {
@@ -133,12 +200,12 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 			return "", fmt.Errorf("error while trying to get data from plugin: %v", err)
 		}
 	}
-	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+":", -1)
+	var updatedData = strings.Replace(string(body), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+req.UUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/systems/"+req.UUID+".", -1)
 	// to replace the id in managers
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.UUID+".", -1)
 	// to replace id in chassis
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.UUID+".", -1)
 
 	return updatedData, nil
 }
@@ -157,7 +224,7 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = errors.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -167,13 +234,13 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
 	if !(response.StatusCode == http.StatusOK || response.StatusCode == http.StatusCreated) {
 		resp.StatusCode = int32(response.StatusCode)
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 	data := string(body)
@@ -203,10 +270,10 @@ func getPluginStatus(plugin mgrmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Error("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -244,7 +311,7 @@ func createToken(req PluginContactRequest) string {
 	contactRequest.OID = "/ODIM/v1/Sessions"
 	_, token, _, err := ContactPlugin(contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 	}
 	if token != "" {
 		Token.StoreToken(req.Plugin.ID, token)
@@ -269,4 +336,35 @@ func RetryManagersOperation(req PluginContactRequest, errorMessage string) ([]by
 	req.Token = token
 	return ContactPlugin(req, errorMessage)
 
+}
+
+// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+func TrackConfigFileChanges(configFilePath string, dbInterface DBInterface) {
+	eventChan := make(chan interface{})
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+	select {
+	case <-eventChan: // new data arrives through eventChan channel
+		config.TLSConfMutex.RLock()
+		mgr := mgrmodel.RAManager{
+			Name:            "odimra",
+			ManagerType:     "Service",
+			FirmwareVersion: config.Data.FirmwareVersion,
+			ID:              config.Data.RootServiceUUID,
+			UUID:            config.Data.RootServiceUUID,
+			State:           "Enabled",
+		}
+		config.TLSConfMutex.RUnlock()
+		err := dbInterface.AddManagertoDBInterface(mgr)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+}
+
+// TranslateToSouthBoundURL translates the url to southbound URL
+func TranslateToSouthBoundURL(url string) string {
+	for key, value := range config.Data.URLTranslation.SouthBoundURL {
+		url = strings.Replace(url, key, value, -1)
+	}
+	return url
 }

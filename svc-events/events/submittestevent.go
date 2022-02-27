@@ -24,13 +24,14 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+
+	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
@@ -38,7 +39,8 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	var resp response.RPC
 	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
+		log.Error("error while trying to authenticate session: status code: " +
+			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		return authResp
 	}
 	// First get the UserName from SessionToken
@@ -46,13 +48,13 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errMsg, nil, nil)
 	}
 
 	testEvent, statusMessage, errMsg, msgArgs := validAndGenSubTestReq(req.PostBody)
 	if statusMessage != response.Success {
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, statusMessage, errMsg, msgArgs, nil)
 	}
 
@@ -61,7 +63,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	err = json.Unmarshal(req.PostBody, &eventObj)
 	if err != nil {
 		errMsg := "unable to parse the event request" + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -69,46 +71,40 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, eventObj)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
 
 	// Find out all the subscription destinations of the requesting user
-	subscriptions, err := evmodel.GetEvtSubscriptions(sessionUserName)
+	subscriptions, err := p.GetEvtSubscriptions(sessionUserName)
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
-		log.Printf(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	// we need common.MessageData to find the correct destination to send test event
 	var message common.MessageData
 	message.Events = append(message.Events, *testEvent)
 	messageBytes, _ := json.Marshal(message)
+	eventUniqueID := uuid.NewV4().String()
 	for _, sub := range subscriptions {
 
 		for _, origin := range sub.OriginResources {
 			if sub.Destination != "" {
-				if filterEventsToBeForwarded(sub, messageBytes, []string{origin}) {
-					log.Printf("Destination: %v\n", sub.Destination)
-					go postEvent(sub.Destination, messageBytes)
+				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
+					log.Info("Destination: " + sub.Destination)
+					go p.postEvent(sub.Destination, eventUniqueID, messageBytes)
 				}
 			}
 		}
 	}
 
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	resp.Body = response.ErrorClass{
@@ -202,6 +198,7 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["OriginOfCondition"]; ok {
 		switch v := val.(type) {
 		case string:
+			// As per EventService spec in the SubmitTestEvent schema OriginOfCondition is a string. However we need to convert this to an object as the event publisher will drop these events.
 			testEvent.OriginOfCondition = &common.Link{
 				Oid: v,
 			}

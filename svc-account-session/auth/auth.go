@@ -16,37 +16,43 @@
 package auth
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	authproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/auth"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-// Auth functinality will do the following
+// Auth functionality will do the following
 // 1. It will check whether the session taken is valid
-// 2. fetch the previleges from DB against session token
+// 2. fetch the privileges from DB against session token
 //    and check the service has the previlege
 func Auth(req *authproto.AuthRequest) (int32, string) {
 	go expiredSessionCleanUp()
 	if req.SessionToken == "" {
-		log.Printf("error while validating the token, is empty")
+		CustomAuthLog("", "Invalid session token ", http.StatusUnauthorized)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	if len(req.Privileges) == 0 {
-		log.Printf("error while validating the privileges, is empty")
+		CustomAuthLog(req.SessionToken, "Received empty privileges, unable to proceed ", http.StatusForbidden)
 		return http.StatusUnauthorized, response.NoValidSession
 	}
 	session, err := CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		log.Printf("error while trying to check session timeout: %v", err.Error())
-		return err.GetAuthStatusCodeAndMessage()
+		status, message := err.GetAuthStatusCodeAndMessage()
+		if status == http.StatusUnauthorized {
+			CustomAuthLog("", "Received invalid session token "+req.SessionToken, http.StatusUnauthorized)
+		} else {
+			log.Error("SessionToken validation failed, unable to proceed " + err.Error())
+		}
+		return status, message
 	}
 	session.LastUsedTime = time.Now()
 	// Update Session
 	if err = session.Update(); err != nil {
-		log.Printf("error while trying to update session: %v", err.Error())
+		log.Error("SessionToken update failed with error: " + err.Error())
 		return err.GetAuthStatusCodeAndMessage()
 	}
 
@@ -54,12 +60,35 @@ func Auth(req *authproto.AuthRequest) (int32, string) {
 	// if any of the privilege isn't assigned to service then return failure
 	for _, privilege := range req.Privileges {
 		if !session.Privileges[privilege] {
+			CustomAuthLog(req.SessionToken, "User does not have sufficient privileges", http.StatusForbidden)
 			return http.StatusForbidden, response.InsufficientPrivilege
 		}
 	}
 
 	// TODO: Need to check OEM Privileges
 
-	log.Println("Authorization successful")
+	CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
 	return http.StatusOK, response.Success
+}
+
+// CustomAuthLog function takes session token, message and response status code
+// Gets the user id and role id for the session token provided
+// logs the messages in custom log format
+func CustomAuthLog(sessionToken, msg string, respStatusCode int32) {
+	userID := ""
+	roleID := ""
+	if sessionToken != "" {
+		currentSession, err := CheckSessionTimeOut(sessionToken)
+		if err == nil {
+			userID = currentSession.UserName
+			roleID = currentSession.RoleID
+		}
+	}
+	logProperties := make(map[string]interface{})
+	logProperties["SessionToken"] = sessionToken
+	logProperties["SessionUserID"] = userID
+	logProperties["SessionRoleID"] = roleID
+	logProperties["Message"] = msg
+	logProperties["ResponseStatusCode"] = respStatusCode
+	customLogs.AuthLog(logProperties)
 }

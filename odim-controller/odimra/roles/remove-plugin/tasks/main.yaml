@@ -1,0 +1,45 @@
+---
+- name: Include user defined configurations
+  include_vars: "{{ helm_config_file }}"
+
+- name: Removing {{ release_name }} plugin deployment
+  command: "{{ helm_bin_path }} uninstall {{ release_name }}  -n {{ helm_name_space }}"
+
+- name: Removing {{ release_name }} docker image
+  shell: "sleep 30; {{ docker_bin_path }} rmi $({{ docker_bin_path }} images {{ release_name }} -q | sort -u) -f"
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube_node'] }}"
+
+- name: Invoke hook script of {{ release_name }} for uninstall operation
+  include_tasks: roles/remove-plugin/tasks/plugins.yaml
+  loop:
+    "{{ groups['kube_node'] }}"
+
+- name: Remove proxy conf file of {{ release_name }} and reload nginx
+  block:
+    - name: Remove nginx conf file of {{ release_name }}
+      file:
+        path: "/opt/nginx/servers/{{ release_name }}_proxy_server.conf"
+        state: absent
+      delegate_to: "{{ item }}"
+      loop:
+        "{{ groups['kube_node'] }}"
+
+    - name: Reload nginx to remove {{ release_name }} conf
+      systemd:
+        name: nginx.service
+        state: reloaded
+      delegate_to: "{{ item }}"
+      loop:
+        "{{ groups['kube_node'] }}"
+      ignore_errors: true
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Remove {{ release_name }} content on all nodes
+  file:
+    path: "{{ helm_charts_path }}/{{ release_name }}"
+    state: absent
+  delegate_to: "{{ item }}"
+  loop:
+    "{{ groups['kube_node'] }}"

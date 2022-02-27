@@ -18,8 +18,8 @@ package ucommon
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 )
 
@@ -46,6 +47,7 @@ type PluginContactRequest struct {
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
+	MsgArgs       []interface{}
 }
 
 //ResourceInfoRequest  hold the request of getting  Resource
@@ -190,34 +192,43 @@ func getResourceName(oDataID string, memberFlag bool) string {
 // ContactPlugin is commons which handles the request and response of Contact Plugin usage
 func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, string, ResponseStatus, error) {
 	var resp ResponseStatus
-	var response *http.Response
 	var err error
-	response, err = callPlugin(req)
+	pluginResponse, err := callPlugin(req)
 	if err != nil {
 		if getPluginStatus(req.Plugin) {
-			response, err = callPlugin(req)
+			pluginResponse, err = callPlugin(req)
 		}
 		if err != nil {
 			errorMessage = errorMessage + err.Error()
-			resp.StatusCode = http.StatusInternalServerError
-			resp.StatusMessage = errors.InternalError
-			log.Println(errorMessage)
+			resp.StatusCode = http.StatusServiceUnavailable
+			resp.StatusMessage = response.CouldNotEstablishConnection
+			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
+	defer pluginResponse.Body.Close()
+	body, err := ioutil.ReadAll(pluginResponse.Body)
 	if err != nil {
 		errorMessage := "error while trying to read response body: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = errors.InternalError
-		log.Println(errorMessage)
+		log.Warn(errorMessage)
 		return nil, "", resp, fmt.Errorf(errorMessage)
 	}
 
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		resp.StatusCode = int32(response.StatusCode)
-		log.Println(errorMessage)
+	if pluginResponse.StatusCode != http.StatusCreated && pluginResponse.StatusCode != http.StatusOK {
+		if pluginResponse.StatusCode == http.StatusUnauthorized {
+			errorMessage += "error: invalid resource username/password"
+			resp.StatusCode = int32(pluginResponse.StatusCode)
+			resp.StatusMessage = response.ResourceAtURIUnauthorized
+			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
+			log.Warn(errorMessage)
+			return nil, "", resp, fmt.Errorf(errorMessage)
+		}
+		errorMessage += string(body)
+		resp.StatusCode = int32(pluginResponse.StatusCode)
+		resp.StatusMessage = response.InternalError
+		log.Warn(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -226,12 +237,12 @@ func ContactPlugin(req PluginContactRequest, errorMessage string) ([]byte, strin
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
-	return []byte(data), response.Header.Get("X-Auth-Token"), resp, nil
+	return []byte(data), pluginResponse.Header.Get("X-Auth-Token"), resp, nil
 }
 
 func checkRetrievalInfo(oid string) bool {
 	//skiping the Retrieval if parent oid contains links in other resource of config
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(oid, resourceName) {
 			return false
 		}
@@ -258,10 +269,10 @@ func getPluginStatus(plugin umodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Warn("Error While getting the status for plugin " + plugin.ID + " " + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin " + plugin.ID + " " + strconv.FormatBool(status))
 	return status
 }
 

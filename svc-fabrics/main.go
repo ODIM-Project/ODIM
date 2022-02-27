@@ -14,8 +14,9 @@
 package main
 
 import (
-	"log"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -26,28 +27,41 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-fabrics/rpc"
 )
 
+var log = logrus.New()
+
 func main() {
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Fabric Service should not be run as the root user")
+		log.Fatal("Fabric Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
 	if err := services.InitializeService(services.Fabrics); err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	fabrics.Token.Tokens = make(map[string]string)
+
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+
 	registerHandlers()
-	if err := services.Service.Run(); err != nil {
-		log.Fatal("failed to run a service: ", err)
+	if err := services.ODIMService.Run(); err != nil {
+		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
 
@@ -56,5 +70,5 @@ func registerHandlers() {
 
 	fabrics.IsAuthorizedRPC = services.IsAuthorized
 	fabrics.ContactClientRPC = pmbhandle.ContactPlugin
-	fabricsproto.RegisterFabricsHandler(services.Service.Server(), fabrics)
+	fabricsproto.RegisterFabricsServer(services.ODIMService.Server(), fabrics)
 }

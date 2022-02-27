@@ -18,7 +18,7 @@ After=network-online.target
 [Service]
 Type=forking
 Restart=always
-ExecStart=/bin/sh -c 'cd /bin ; export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json; sudo -E -u odimra nohup ./svc-update --registry=consul --registry_address=consul:8500 --server_address=odimra:45108 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s>> /var/log/odimra_logs/update.log 2>&1 &'
+ExecStart=/bin/sh -c 'cd /bin ; export CONFIG_FILE_PATH=/etc/odimra_config/odimra_config.json; sudo -E -u odimra nohup ./svc-update  --registry=etcd --registry_address=etcd:2379 --server_address=odimra:45108 --client_request_timeout=`expr $(cat $CONFIG_FILE_PATH | grep SouthBoundRequestTimeoutInSecs | cut -d : -f2 | cut -d , -f1 | tr -d " ")`s>> /var/log/odimra_logs/update.log 2>&1 &'
 KillMode=process
 KillSignal=SIGTERM
 User=root

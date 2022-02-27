@@ -33,25 +33,47 @@ import (
 )
 
 var connector = &system.ExternalInterface{
-	ContactClient:           mockContactClient,
-	Auth:                    mockIsAuthorized,
-	CreateTask:              createTaskForTesting,
-	CreateChildTask:         mockCreateChildTask,
-	UpdateTask:              mockUpdateTask,
-	DecryptPassword:         stubDevicePassword,
-	GetPluginStatus:         GetPluginStatusForTesting,
-	CreateSubcription:       EventFunctionsForTesting,
-	PublishEvent:            PostEventFunctionForTesting,
-	EncryptPassword:         stubDevicePassword,
-	DeleteComputeSystem:     deleteComputeforTest,
-	DeleteSystem:            deleteSystemforTest,
-	DeleteEventSubscription: mockDeleteSubscription,
-	EventNotification:       mockEventNotification,
-	SubscribeToEMB:          mockSubscribeEMB,
-	GetSessionUserName:      getSessionUserNameForTesting,
-	GetAllKeysFromTable:     mockGetAllKeysFromTable,
-	GetConnectionMethod:     mockGetConnectionMethod,
-	UpdateConnectionMethod:  mockUpdateConnectionMethod,
+	ContactClient:            mockContactClient,
+	Auth:                     mockIsAuthorized,
+	CreateTask:               createTaskForTesting,
+	CreateChildTask:          mockCreateChildTask,
+	UpdateTask:               mockUpdateTask,
+	DecryptPassword:          stubDevicePassword,
+	GetPluginStatus:          GetPluginStatusForTesting,
+	CreateSubcription:        EventFunctionsForTesting,
+	PublishEvent:             PostEventFunctionForTesting,
+	EncryptPassword:          stubDevicePassword,
+	DeleteComputeSystem:      deleteComputeforTest,
+	DeleteSystem:             deleteSystemforTest,
+	DeleteEventSubscription:  mockDeleteSubscription,
+	EventNotification:        mockEventNotification,
+	SubscribeToEMB:           mockSubscribeEMB,
+	GetSessionUserName:       getSessionUserNameForTesting,
+	GetAllKeysFromTable:      mockGetAllKeysFromTable,
+	GetConnectionMethod:      mockGetConnectionMethod,
+	UpdateConnectionMethod:   mockUpdateConnectionMethod,
+	GetAggregationSourceInfo: mockGetAggregationSourceInfo,
+	GenericSave:              mockGenericSave,
+	CheckActiveRequest:       mockCheckActiveRequest,
+	DeleteActiveRequest:      mockDeleteActiveRequest,
+}
+
+func mockGetAggregationSourceInfo(reqURI string) (agmodel.AggregationSource, *errors.Error) {
+	var aggSource agmodel.AggregationSource
+	if reqURI == "/redfish/v1/AggregationService/AggregationSources/36474ba4-a201-46aa-badf-d8104da418e8" {
+		aggSource = agmodel.AggregationSource{
+			HostName: "9.9.9.0",
+			UserName: "admin",
+			Password: []byte("admin12345"),
+			Links: map[string]interface{}{
+				"ConnectionMethod": map[string]interface{}{
+					"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				},
+			},
+		}
+		return aggSource, nil
+	}
+	return aggSource, errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+reqURI+" found")
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
@@ -75,11 +97,11 @@ func mockGetConnectionMethod(ConnectionMethodURI string) (agmodel.ConnectionMeth
 }
 
 func deleteComputeforTest(index int, key string) *errors.Error {
-	if key == "/redfish/v1/systems/del-comp-internal-err:1" {
+	if key == "/redfish/v1/systems/del-comp-internal-err.1" {
 		return errors.PackError(errors.UndefinedErrorType, "some internal error happed")
 	}
-	if key != "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1" && key != "/redfish/v1/systems/" &&
-		key != "/redfish/v1/systems/del-sys-internal-err:1" && key != "/redfish/v1/systems/sys-not-found:1" {
+	if key != "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1" && key != "/redfish/v1/systems/" &&
+		key != "/redfish/v1/systems/del-sys-internal-err.1" && key != "/redfish/v1/systems/sys-not-found.1" {
 		return errors.PackError(errors.DBKeyNotFound, "error while trying to get compute details: no data with the with key "+key+" found")
 	}
 	return nil
@@ -96,9 +118,9 @@ func deleteSystemforTest(key string) *errors.Error {
 }
 
 func mockDeleteSubscription(uuid string) (*eventsproto.EventSubResponse, error) {
-	if uuid == "/redfish/v1/systems/delete-subscription-error:1" {
+	if uuid == "/redfish/v1/systems/delete-subscription-error.1" {
 		return nil, fmt.Errorf("error while trying to delete event subcription")
-	} else if uuid == "/redfish/v1/systems/unexpected-statuscode:1" {
+	} else if uuid == "/redfish/v1/systems/unexpected-statuscode.1" {
 		return &eventsproto.EventSubResponse{
 			StatusCode: http.StatusCreated,
 		}, nil
@@ -127,7 +149,7 @@ func mockManagersData(id string, data map[string]interface{}) error {
 
 func mockContactClientForDelete(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	if url == "https://localhost:9092/ODIM/v1/Status" || (strings.Contains(url, "/ODIM/v1/Status") && credentials["UserName"] == "noStatusUser") {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -264,7 +286,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 	uid := uuid.NewV4().String()
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Reset" || url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Add" ||
 		url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.SetDefaultBootOrder" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -332,7 +354,7 @@ func mockContactClient(url, method, token string, odataID string, body interface
 		}, nil
 
 	} else if url == "https://localhost:9091/ODIM/v1/validate" || url == "https://localhost:9091/ODIM/v1/Sessions" || url == host+"/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		if bData.UserName == "incorrectusername" || bytes.Compare(bData.Password, []byte("incorrectPassword")) == 0 {
 			return &http.Response{
 				StatusCode: http.StatusUnauthorized,
@@ -372,4 +394,22 @@ func TestGetAggregator(t *testing.T) {
 			}
 		})
 	}
+}
+
+var activeReqFlag bool
+
+func mockGenericSave(data []byte, table, key string) error {
+	common.MuxLock.Lock()
+	activeReqFlag = true
+	common.MuxLock.Unlock()
+	return nil
+}
+
+func mockCheckActiveRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteActiveRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
 }

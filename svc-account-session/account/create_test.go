@@ -48,7 +48,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to create a new user",
+				ErrorMessage:  "User does not have the privilege to create a new user",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -136,7 +136,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "error: Mandatory fields UserName Password RoleID are empty",
+				ErrorMessage:  "Mandatory fields UserName Password RoleID are empty",
 				MessageArgs:   []interface{}{"UserName Password RoleID"},
 			},
 		},
@@ -147,7 +147,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceAlreadyExists,
-				ErrorMessage:  "error while trying to add new user: error: data with key existingUser already exists",
+				ErrorMessage:  "Unable to add new user: error: data with key existingUser already exists",
 				MessageArgs:   []interface{}{"ManagerAccount", "Id", "existingUser"},
 			},
 		},
@@ -158,7 +158,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
+				ErrorMessage:  "Invalid RoleID present error while trying to get role details: error: Invalid RoleID xyz present",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
@@ -229,7 +229,7 @@ func TestCreate(t *testing.T) {
 	})
 
 	successResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser",
@@ -258,13 +258,8 @@ func TestCreate(t *testing.T) {
 				StatusCode:    http.StatusCreated,
 				StatusMessage: response.Created,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser/",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/testUser/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/testUser",
 				},
 				Body: asresponse.Account{
 					Response:     successResponse,
@@ -273,7 +268,7 @@ func TestCreate(t *testing.T) {
 					AccountTypes: []string{"Redfish"},
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/",
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator",
 						},
 					},
 				},
@@ -295,10 +290,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgum.CreateGenericErrorResponse(),
+				Body:          errArgum.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -317,10 +309,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusConflict,
 				StatusMessage: response.ResourceAlreadyExists,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -339,10 +328,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -361,10 +347,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -383,10 +366,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -405,10 +385,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg2.CreateGenericErrorResponse(),
+				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -427,10 +404,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg3.CreateGenericErrorResponse(),
+				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -449,10 +423,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg4.CreateGenericErrorResponse(),
+				Body:          errArg4.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -471,10 +442,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg5.CreateGenericErrorResponse(),
+				Body:          errArg5.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -493,10 +461,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg6.CreateGenericErrorResponse(),
+				Body:          errArg6.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},
@@ -515,10 +480,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg7.CreateGenericErrorResponse(),
+				Body:          errArg7.CreateGenericErrorResponse(),
 			},
 			wantErr: true,
 		},

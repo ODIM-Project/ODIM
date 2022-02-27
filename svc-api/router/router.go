@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -16,11 +17,21 @@
 package router
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
-	iris "github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 //Router method to register API handlers.
@@ -95,6 +106,9 @@ func Router() *iris.Application {
 		GetChassisCollectionRPC: rpc.GetChassisCollection,
 		GetChassisResourceRPC:   rpc.GetChassisResource,
 		GetChassisRPC:           rpc.GetChassis,
+		CreateChassisRPC:        rpc.CreateChassis,
+		DeleteChassisRPC:        rpc.DeleteChassis,
+		UpdateChassisRPC:        rpc.UpdateChassis,
 	}
 
 	evt := handle.EventsRPCs{
@@ -113,9 +127,13 @@ func Router() *iris.Application {
 	}
 
 	manager := handle.ManagersRPCs{
-		GetManagersCollectionRPC: rpc.GetManagersCollection,
-		GetManagersRPC:           rpc.GetManagers,
-		GetManagersResourceRPC:   rpc.GetManagersResource,
+		GetManagersCollectionRPC:      rpc.GetManagersCollection,
+		GetManagersRPC:                rpc.GetManagers,
+		GetManagersResourceRPC:        rpc.GetManagersResource,
+		VirtualMediaInsertRPC:         rpc.VirtualMediaInsert,
+		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
+		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
+		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -128,6 +146,19 @@ func Router() *iris.Application {
 		GetSoftwareInventoryCollectionRPC: rpc.DoGetSoftwareInventoryCollection,
 	}
 
+	telemetry := handle.TelemetryRPCs{
+		GetTelemetryServiceRPC:                 rpc.DoGetTelemetryService,
+		GetMetricDefinitionCollectionRPC:       rpc.DoGetMetricDefinitionCollection,
+		GetMetricReportDefinitionCollectionRPC: rpc.DoGetMetricReportDefinitionCollection,
+		GetMetricReportCollectionRPC:           rpc.DoGetMetricReportCollection,
+		GetTriggerCollectionRPC:                rpc.DoGetTriggerCollection,
+		GetMetricDefinitionRPC:                 rpc.DoGetMetricDefinition,
+		GetMetricReportDefinitionRPC:           rpc.DoGetMetricReportDefinition,
+		GetMetricReportRPC:                     rpc.DoGetMetricReport,
+		GetTriggerRPC:                          rpc.DoGetTrigger,
+		UpdateTriggerRPC:                       rpc.DoUpdateTrigger,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -136,6 +167,61 @@ func Router() *iris.Application {
 
 	router := iris.New()
 
+	var reqBody map[string]interface{}
+	// Parses the URL and performs URL decoding for path
+	// Getting the request body copy
+	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		rawURI := r.RequestURI
+		parsedURI, err := url.Parse(rawURI)
+		if err != nil {
+			errMessage := "while trying to parse the URL: " + err.Error()
+			log.Error(errMessage)
+			return
+		}
+		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
+		r.RequestURI = path
+		r.URL.Path = parsedURI.Path
+
+		// Validating session token
+		sessionToken := r.Header.Get("X-Auth-Token")
+		if sessionToken == "" {
+			authRequired := true
+			for _, item := range common.URIWithNoAuth {
+				if item == r.URL.Path {
+					authRequired = false
+					break
+				}
+			}
+			if authRequired {
+				logProperties := make(map[string]interface{})
+				logProperties["SessionToken"] = sessionToken
+				logProperties["Message"] = "X-Auth-Token is missing in the request header"
+				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
+				customLogs.AuthLog(logProperties)
+			}
+		}
+
+		// getting the request body for audit logs
+		if r.Body != nil {
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				log.Error("while reading request body ", err.Error())
+			}
+			r.Body = ioutil.NopCloser(bytes.NewReader(body))
+
+			if len(body) > 0 {
+				err = json.Unmarshal(body, &reqBody)
+				if err != nil {
+					log.Error("while unmarshalling request body", err.Error())
+				}
+			}
+		}
+		next(w, r)
+	})
+	router.Done(func(ctx iris.Context) {
+		customLogs.AuditLog(ctx, reqBody)
+		reqBody = make(map[string]interface{})
+	})
 	taskmon := router.Party("/taskmon")
 	taskmon.SetRegisterRule(iris.RouteSkip)
 	taskmon.Get("/{TaskID}", ts.GetTaskMonitor)
@@ -150,9 +236,9 @@ func Router() *iris.Application {
 	v1.Get("/", serviceRoot.GetServiceRoot)
 	v1.Get("/odata", handle.GetOdata)
 	v1.Get("/$metadata", handle.GetMetadata)
-	v1.Get("/registries/{id}", registryFile.GetMessageRegistryFile)
-	v1.Any("/registries", handle.RegMethodNotAllowed)
-	v1.Any("/registries/{id}", handle.RegMethodNotAllowed)
+	v1.Any("/", handle.SRMethodNotAllowed)
+	v1.Any("/odata", handle.SRMethodNotAllowed)
+	v1.Any("/$metadata", handle.SRMethodNotAllowed)
 
 	registry := v1.Party("/Registries")
 	registry.SetRegisterRule(iris.RouteSkip)
@@ -169,6 +255,8 @@ func Router() *iris.Application {
 	session.Post("/Sessions", s.CreateSession)
 	session.Delete("/Sessions/{sessionID}", middleware.SessionDelMiddleware, s.DeleteSession)
 	session.Any("/", handle.SsMethodNotAllowed)
+	session.Any("/Sessions", handle.SsMethodNotAllowed)
+	session.Any("/Sessions/{sessionID}", handle.SsMethodNotAllowed)
 
 	account := v1.Party("/AccountService", middleware.SessionDelMiddleware)
 	account.SetRegisterRule(iris.RouteSkip)
@@ -179,6 +267,8 @@ func Router() *iris.Application {
 	account.Patch("/Accounts/{id}", a.UpdateAccount)
 	account.Delete("/Accounts/{id}", a.DeleteAccount)
 	account.Any("/", handle.AsMethodNotAllowed)
+	account.Any("/Accounts", handle.AsMethodNotAllowed)
+	account.Any("/Accounts/{id}", handle.AsMethodNotAllowed)
 
 	role := account.Party("/Roles", middleware.SessionDelMiddleware)
 	role.SetRegisterRule(iris.RouteSkip)
@@ -187,6 +277,8 @@ func Router() *iris.Application {
 	role.Post("/", r.CreateRole)
 	role.Patch("/{id}", r.UpdateRole)
 	role.Delete("/{id}", r.DeleteRole)
+	role.Any("/", handle.RoleMethodNotAllowed)
+	role.Any("/{id}", handle.RoleMethodNotAllowed)
 
 	task := v1.Party("/TaskService", middleware.SessionDelMiddleware)
 	task.SetRegisterRule(iris.RouteSkip)
@@ -264,6 +356,20 @@ func Router() *iris.Application {
 	storage.Any("/{rid}", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes", handle.SystemsMethodNotAllowed)
 	storage.Any("/{id2}/Volumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{rid}/StoragePools", system.GetSystemResource)
+	storage.Get("/{id2}/StoragePools/{rid}", system.GetSystemResource)
+	storage.Any("/{rid}/StoragePools", handle.SystemsMethodNotAllowed)
+	storage.Any("/{id2}/StoragePools/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{rid}/AllocatedVolumes", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{rid}/AllocatedVolumes", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/AllocatedVolumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingVolumes", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{id4}/ProvidingVolumes/{rid}", handle.SystemsMethodNotAllowed)
+	storage.Get("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", system.GetSystemResource)
+	storage.Any("/{id2}/StoragePools/{id3}/CapacitySources/{rid}/ProvidingDrives", handle.SystemsMethodNotAllowed)
 
 	systemsAction := systems.Party("/{id}/Actions", middleware.SessionDelMiddleware)
 	systemsAction.SetRegisterRule(iris.RouteSkip)
@@ -278,6 +384,7 @@ func Router() *iris.Application {
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
 	aggregation.Any("/Actions/AggregationService.SetDefaultBootOrder/", handle.AggMethodNotAllowed)
 	aggregation.Any("/", handle.AggMethodNotAllowed)
+
 	aggregationSource := aggregation.Party("/AggregationSources", middleware.SessionDelMiddleware)
 	aggregationSource.Post("/", pc.AddAggregationSource)
 	aggregationSource.Get("/", pc.GetAllAggregationSource)
@@ -312,7 +419,10 @@ func Router() *iris.Application {
 	chassis := v1.Party("/Chassis", middleware.SessionDelMiddleware)
 	chassis.SetRegisterRule(iris.RouteSkip)
 	chassis.Get("/", cha.GetChassisCollection)
+	chassis.Post("/", cha.CreateChassis)
 	chassis.Get("/{id}", cha.GetChassis)
+	chassis.Patch("/{id}", cha.UpdateChassis)
+	chassis.Delete("/{id}", cha.DeleteChassis)
 	chassis.Get("/{id}/NetworkAdapters", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{rid}", cha.GetChassisResource)
 	chassis.Get("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions", cha.GetChassisResource)
@@ -327,6 +437,31 @@ func Router() *iris.Application {
 	chassis.Any("/{id}/NetworkAdapters/{id2}/NetworkPorts", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/NetworkAdapters/{id2}/NetworkDeviceFunctions/{rid}", handle.ChassisMethodNotAllowed)
 	chassis.Any("/{id}/NetworkAdapters/{id2}/NetworkPorts/{rid}", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/Assembly", cha.GetChassisResource)
+	chassis.Any("/{id}/Assembly", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/PCIeSlots", cha.GetChassisResource)
+	chassis.Get("/{id}/PCIeSlots/{rid}", cha.GetChassisResource)
+	chassis.Any("/{id}/PCIeSlots", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/PCIeSlots/{rid}", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/PCIeDevices", cha.GetChassisResource)
+	chassis.Get("/{id}/PCIeDevices/{rid}", cha.GetChassisResource)
+	chassis.Any("/{id}/PCIeDevices", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/PCIeDevices/{rid}", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/Sensors", cha.GetChassisResource)
+	chassis.Get("/{id}/Sensors/{rid}", cha.GetChassisResource)
+	chassis.Any("/{id}/Sensors", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/Sensors/{rid}", handle.ChassisMethodNotAllowed)
+	chassis.Get("/{id}/LogServices", cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}", cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries", cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", cha.GetChassisResource)
+	// TODO
+	// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", cha.GetChassisResource)
+	chassis.Any("/{id}/LogServices", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/LogServices/{rid}", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/LogServices/{rid}/Entries", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/LogServices/{rid}/Entries/{rid2}", handle.ChassisMethodNotAllowed)
+	chassis.Any("/{id}/LogServices/{rid}/Actions", handle.ChassisMethodNotAllowed)
 
 	chassisPower := chassis.Party("/{id}/Power")
 	chassisPower.SetRegisterRule(iris.RouteSkip)
@@ -363,18 +498,18 @@ func Router() *iris.Application {
 
 	fabrics := v1.Party("/Fabrics", middleware.SessionDelMiddleware)
 	fabrics.SetRegisterRule(iris.RouteSkip)
-	fabrics.Get("/", fab.GetFabricResource)
-	fabrics.Get("/{id}", fab.GetFabricResource)
-	fabrics.Get("/{id}/Switches", fab.GetFabricResource)
-	fabrics.Get("/{id}/Switches/{switchID}", fab.GetFabricResource)
-	fabrics.Get("/{id}/Switches/{switchID}/Ports", fab.GetFabricResource)
-	fabrics.Get("/{id}/Switches/{switchID}/Ports/{port_uuid}", fab.GetFabricResource)
-	fabrics.Get("/{id}/Zones/", fab.GetFabricResource)
-	fabrics.Get("/{id}/Endpoints/", fab.GetFabricResource)
-	fabrics.Get("/{id}/AddressPools/", fab.GetFabricResource)
-	fabrics.Get("/{id}/Zones/{zone_uuid}", fab.GetFabricResource)
-	fabrics.Get("/{id}/Endpoints/{endpoint_uuid}", fab.GetFabricResource)
-	fabrics.Get("/{id}/AddressPools/{addresspool_uuid}", fab.GetFabricResource)
+	fabrics.Get("/", fab.GetFabricCollection)
+	fabrics.Get("/{id}", fab.GetFabric)
+	fabrics.Get("/{id}/Switches", fab.GetFabricSwitchCollection)
+	fabrics.Get("/{id}/Switches/{switchID}", fab.GetFabricSwitch)
+	fabrics.Get("/{id}/Switches/{switchID}/Ports", fab.GetSwitchPortCollection)
+	fabrics.Get("/{id}/Switches/{switchID}/Ports/{port_uuid}", fab.GetSwitchPort)
+	fabrics.Get("/{id}/Zones/", fab.GetFabricZoneCollection)
+	fabrics.Get("/{id}/Endpoints/", fab.GetFabricEndPointCollection)
+	fabrics.Get("/{id}/AddressPools/", fab.GetFabricAddressPoolCollection)
+	fabrics.Get("/{id}/Zones/{zone_uuid}", fab.GetFabricZone)
+	fabrics.Get("/{id}/Endpoints/{endpoint_uuid}", fab.GetFabricEndPoints)
+	fabrics.Get("/{id}/AddressPools/{addresspool_uuid}", fab.GetFabricAddressPool)
 	fabrics.Put("/{id}/Zones/{zone_uuid}", fab.UpdateFabricResource)
 	fabrics.Put("/{id}/Endpoints/{endpoint_uuid}", fab.UpdateFabricResource)
 	fabrics.Put("/{id}/AddressPools/{addresspool_uuid}", fab.UpdateFabricResource)
@@ -384,10 +519,22 @@ func Router() *iris.Application {
 	fabrics.Patch("/{id}/Zones/{zone_uuid}", fab.UpdateFabricResource)
 	fabrics.Patch("/{id}/Endpoints/{endpoint_uuid}", fab.UpdateFabricResource)
 	fabrics.Patch("/{id}/AddressPools/{addresspool_uuid}", fab.UpdateFabricResource)
+	fabrics.Patch("/{id}/Switches/{switchID}/Ports/{port_uuid}", fab.UpdateFabricResource)
 	fabrics.Delete("/{id}/Zones/{zone_uuid}", fab.DeleteFabricResource)
 	fabrics.Delete("/{id}/Endpoints/{endpoint_uuid}", fab.DeleteFabricResource)
 	fabrics.Delete("/{id}/AddressPools/{addresspool_uuid}", fab.DeleteFabricResource)
 	fabrics.Any("/", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Switches", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Switches/{switchID}", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Switches/{switchID}/Ports", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Switches/{switchID}/Ports/{port_uuid}", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Zones/", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Endpoints/", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/AddressPools/", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Zones/{zone_uuid}", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/Endpoints/{endpoint_uuid}", handle.FabricsMethodNotAllowed)
+	fabrics.Any("/{id}/AddressPools/{addresspool_uuid}", handle.FabricsMethodNotAllowed)
 
 	managers := v1.Party("/Managers", middleware.SessionDelMiddleware)
 	managers.SetRegisterRule(iris.RouteSkip)
@@ -399,19 +546,39 @@ func Router() *iris.Application {
 	managers.Get("/{id}/NetworkProtocol/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces/{rid}", manager.GetManagersResource)
+
+	managers.Get("/{id}/SerialInterfaces", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia/{rid}", manager.GetManagersResource)
+	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", manager.VirtualMediaEject)
+	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
+	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
+	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
+	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts/{rid}", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Roles", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Roles/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Entries", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Entries/{rid2}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Actions", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/VirtualMedia", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/VirtualMedia/{rid}", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", handle.ManagersMethodNotAllowed)
 	managers.Any("/", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}", handle.ManagersMethodNotAllowed)
 
@@ -424,5 +591,19 @@ func Router() *iris.Application {
 	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
 	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)
 	updateService.Get("/SoftwareInventory/{softwareInventory_id}", update.GetSoftwareInventory)
+
+	telemetryService := v1.Party("/TelemetryService", middleware.SessionDelMiddleware)
+	telemetryService.SetRegisterRule(iris.RouteSkip)
+	telemetryService.Get("/", telemetry.GetTelemetryService)
+	telemetryService.Get("/MetricDefinitions", telemetry.GetMetricDefinitionCollection)
+	telemetryService.Get("/MetricReportDefinitions", telemetry.GetMetricReportDefinitionCollection)
+	telemetryService.Get("/MetricReports", telemetry.GetMetricReportCollection)
+	telemetryService.Get("/Triggers", telemetry.GetTriggerCollection)
+	telemetryService.Get("/MetricDefinitions/{id}", telemetry.GetMetricDefinition)
+	telemetryService.Get("/MetricReportDefinitions/{id}", telemetry.GetMetricReportDefinition)
+	telemetryService.Get("/MetricReports/{id}", telemetry.GetMetricReport)
+	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
+	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
+
 	return router
 }

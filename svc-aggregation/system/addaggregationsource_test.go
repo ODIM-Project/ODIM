@@ -38,7 +38,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -54,6 +54,22 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 	mockPluginData(t, "GRF_v1.0.0")
 	mockPluginData(t, "XAuthPlugin_v1.0.0")
 	mockPluginData(t, "XAuthPluginFail_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
@@ -70,16 +86,6 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 	})
-	reqPluginID, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
-		UserName: "admin",
-		Password: "password",
-		Links: &Links{
-			ConnectionMethod: &ConnectionMethod{
-				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
-			},
-		},
-	})
 	reqSuccessXAuth, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.2",
 		UserName: "admin",
@@ -91,7 +97,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceBasicAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
+		HostName: "100.0.0.12",
 		UserName: "admin1",
 		Password: "incorrectPassword",
 		Links: &Links{
@@ -101,7 +107,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceXAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.2",
+		HostName: "100.0.0.13",
 		UserName: "username",
 		Password: "password",
 		Links: &Links{
@@ -110,21 +116,17 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 			},
 		},
 	})
-	p := &ExternalInterface{
-		ContactClient:          mockContactClient,
-		Auth:                   mockIsAuthorized,
-		CreateChildTask:        mockCreateChildTask,
-		UpdateTask:             mockUpdateTask,
-		CreateSubcription:      EventFunctionsForTesting,
-		PublishEvent:           PostEventFunctionForTesting,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		DeleteComputeSystem:    deleteComputeforTest,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetPluginMgrAddr:       stubPluginMgrAddrData,
-	}
+	reqBMC, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.15",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
+			},
+		},
+	})
+	p := getMockExternalInterface()
 	type args struct {
 		taskID string
 		req    *aggregatorproto.AggregatorRequest
@@ -198,7 +200,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 				taskID: "123",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  reqPluginID,
+					RequestBody:  reqBMC,
 				},
 			},
 			want: response.RPC{
@@ -249,18 +251,12 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			time.Sleep(2 * time.Second)
 			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
@@ -269,7 +265,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -294,21 +290,7 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 			},
 		},
 	})
-	p := &ExternalInterface{
-		ContactClient:          mockContactClient,
-		Auth:                   mockIsAuthorized,
-		CreateChildTask:        mockCreateChildTask,
-		UpdateTask:             mockUpdateTask,
-		CreateSubcription:      EventFunctionsForTesting,
-		PublishEvent:           PostEventFunctionForTesting,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		DeleteComputeSystem:    deleteComputeforTest,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetPluginMgrAddr:       stubPluginMgrAddrData,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		taskID string
 		req    *aggregatorproto.AggregatorRequest
@@ -335,18 +317,12 @@ func TestExternalInterface_AddBMCForPasswordEncryptFail(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			time.Sleep(2 * time.Second)
 			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
@@ -356,7 +332,7 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -364,7 +340,22 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 	mockPluginData(t, "GRF_v1.0.0")
-
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",
@@ -375,20 +366,8 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 			},
 		},
 	})
-	p := &ExternalInterface{
-		ContactClient:          mockContactClientForDuplicate,
-		Auth:                   mockIsAuthorized,
-		CreateChildTask:        mockCreateChildTask,
-		UpdateTask:             mockUpdateTask,
-		CreateSubcription:      EventFunctionsForTesting,
-		PublishEvent:           PostEventFunctionForTesting,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		DeleteComputeSystem:    deleteComputeforTest,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-	}
+	p := getMockExternalInterface()
+	p.ContactClient = mockContactClientForDuplicate
 	type args struct {
 		taskID string
 		req    *aggregatorproto.AggregatorRequest
@@ -417,17 +396,11 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			if got := p.AddAggregationSource("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
@@ -436,7 +409,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "ILO_v1.0.0")
 	if err != nil {
@@ -524,22 +497,7 @@ func TestExternalInterface_Manager(t *testing.T) {
 		},
 	})
 
-	p := &ExternalInterface{
-		ContactClient:          mockContactClient,
-		Auth:                   mockIsAuthorized,
-		CreateChildTask:        mockCreateChildTask,
-		UpdateTask:             mockUpdateTask,
-		CreateSubcription:      EventFunctionsForTesting,
-		PublishEvent:           PostEventFunctionForTesting,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		SubscribeToEMB:         mockSubscribeEMB,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetAllKeysFromTable:    mockGetAllKeysFromTable,
-		GetPluginMgrAddr:       stubPluginMgrAddrData,
-	}
+	p := getMockExternalInterface()
 
 	type args struct {
 		taskID string
@@ -633,17 +591,11 @@ func TestExternalInterface_Manager(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
@@ -652,7 +604,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	err := mockPluginData(t, "XAuthPlugin_v1.0.0")
 	if err != nil {
@@ -738,22 +690,7 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		},
 	})
 
-	p := &ExternalInterface{
-		ContactClient:          mockContactClient,
-		Auth:                   mockIsAuthorized,
-		CreateChildTask:        mockCreateChildTask,
-		UpdateTask:             mockUpdateTask,
-		CreateSubcription:      EventFunctionsForTesting,
-		PublishEvent:           PostEventFunctionForTesting,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		SubscribeToEMB:         mockSubscribeEMB,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetAllKeysFromTable:    mockGetAllKeysFromTable,
-		GetPluginMgrAddr:       stubPluginMgrAddrData,
-	}
+	p := getMockExternalInterface()
 
 	type args struct {
 		taskID string
@@ -851,17 +788,11 @@ func TestExternalInterface_ManagerXAuth(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.AddAggregationSource(tt.args.taskID, "validUserName", tt.args.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
 	}
 }
 
@@ -870,7 +801,7 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -888,58 +819,129 @@ func TestExternalInterface_ManagerWithMultipleRequest(t *testing.T) {
 			},
 		},
 	})
+	reqWithoutPort, _ := json.Marshal(AggregationSource{
+		HostName: "localhost",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73",
+			},
+		},
+	})
 
-	p := &ExternalInterface{
-		ContactClient:          testContactClientWithDelay,
-		Auth:                   mockIsAuthorized,
-		CreateChildTask:        mockCreateChildTask,
-		UpdateTask:             mockUpdateTask,
-		CreateSubcription:      EventFunctionsForTesting,
-		PublishEvent:           PostEventFunctionForTesting,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		SubscribeToEMB:         mockSubscribeEMB,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-		GetAllKeysFromTable:    mockGetAllKeysFromTable,
-		GetPluginMgrAddr:       stubPluginMgrAddrData,
-	}
+	p := getMockExternalInterface()
 
 	type args struct {
 		taskID string
 		req    *aggregatorproto.AggregatorRequest
 	}
-	req := &aggregatorproto.AggregatorRequest{
-		SessionToken: "validToken",
-		RequestBody:  reqSuccess,
-	}
+
 	tests := []struct {
 		name string
 		p    *ExternalInterface
 		args args
 		want response.RPC
+		req  *aggregatorproto.AggregatorRequest
 	}{
 		{
-			name: "multiple request",
+			name: "adding same BMC multiple times",
 			want: response.RPC{
 				StatusCode: http.StatusConflict,
+			},
+			req: &aggregatorproto.AggregatorRequest{
+				SessionToken: "validToken",
+				RequestBody:  reqSuccess,
+			},
+		},
+		{
+			name: "adding same BMC without port multiple times",
+			want: response.RPC{
+				StatusCode: http.StatusConflict,
+			},
+			req: &aggregatorproto.AggregatorRequest{
+				SessionToken: "validToken",
+				RequestBody:  reqWithoutPort,
 			},
 		},
 	}
 	for _, tt := range tests {
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = make(map[string]interface{})
-		ActiveReqSet.UpdateMu.Unlock()
 		t.Run(tt.name, func(t *testing.T) {
-			go p.AddAggregationSource("123", "validUserName", req)
+			go p.AddAggregationSource("123", "validUserName", tt.req)
 			time.Sleep(time.Second)
-			if got := p.AddAggregationSource("123", "validUserName", req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
+			if got := p.AddAggregationSource("123", "validUserName", tt.req); !reflect.DeepEqual(got.StatusCode, tt.want.StatusCode) {
 				t.Errorf("ExternalInterface.AddAggregationSource() = %v, want %v", got, tt.want)
 			}
 		})
-		ActiveReqSet.UpdateMu.Lock()
-		ActiveReqSet.ReqRecord = nil
-		ActiveReqSet.UpdateMu.Unlock()
+	}
+}
+
+var activeReqFlag bool
+
+func mockGenericSave(data []byte, table, key string) error {
+	common.MuxLock.Lock()
+	activeReqFlag = true
+	common.MuxLock.Unlock()
+	return nil
+}
+
+func mockCheckActiveRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteActiveRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
+}
+
+func mockCheckMetricRequest(managerAddress string) (bool, *errors.Error) {
+	return activeReqFlag, nil
+}
+
+func mockDeleteMetricRequest(managerAddress string) *errors.Error {
+	activeReqFlag = false
+	return nil
+}
+
+func mockGetAllMatchingDetails(table, pattern string, dbtype common.DbType) ([]string, *errors.Error) {
+	return []string{
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUICUtilCustom1",
+		"Triggers:/redfish/v1/TelemetryService/Triggers/CPU0PowerTriggers",
+		"MetricReportDefinitions:/redfish/v1/TelemetryService/MetricReportDefinitions/CPUUtilCustom3",
+	}, nil
+}
+
+func mockDelete(table, key string, dbtype common.DbType) *errors.Error {
+	return nil
+}
+
+func getMockExternalInterface() *ExternalInterface {
+	return &ExternalInterface{
+		ContactClient:           mockContactClient,
+		Auth:                    mockIsAuthorized,
+		CreateChildTask:         mockCreateChildTask,
+		UpdateTask:              mockUpdateTask,
+		CreateSubcription:       EventFunctionsForTesting,
+		PublishEvent:            PostEventFunctionForTesting,
+		GetPluginStatus:         GetPluginStatusForTesting,
+		SubscribeToEMB:          mockSubscribeEMB,
+		EncryptPassword:         stubDevicePassword,
+		DecryptPassword:         stubDevicePassword,
+		GetConnectionMethod:     mockGetConnectionMethod,
+		UpdateConnectionMethod:  mockUpdateConnectionMethod,
+		GetAllKeysFromTable:     mockGetAllKeysFromTable,
+		GetPluginMgrAddr:        stubPluginMgrAddrData,
+		GenericSave:             mockGenericSave,
+		CheckActiveRequest:      mockCheckActiveRequest,
+		DeleteActiveRequest:     mockDeleteActiveRequest,
+		DeleteComputeSystem:     deleteComputeforTest,
+		DeleteSystem:            deleteSystemforTest,
+		DeleteEventSubscription: mockDeleteSubscription,
+		EventNotification:       mockEventNotification,
+		GetAllMatchingDetails:   mockGetAllMatchingDetails,
+		CheckMetricRequest:      mockCheckMetricRequest,
+		DeleteMetricRequest:     mockDeleteMetricRequest,
+		GetResource:             mockGetResource,
+		Delete:                  mockDelete,
 	}
 }

@@ -59,7 +59,7 @@ func TestCreate(t *testing.T) {
 	common.SetUpMockConfig()
 	defer truncateDB(t)
 	commonResponse := response.Response{
-		OdataType: "#Role.v1_2_4.Role",
+		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/testRole",
 		Name:      "User Role",
 		ID:        "testRole",
@@ -79,7 +79,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to create a new role",
+				ErrorMessage:  "User does not have the privilege to create a new role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -90,7 +90,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyMissing,
-				ErrorMessage:  "error: Both AssignedPrivileges and OemPrivileges cannot be empty.",
+				ErrorMessage:  "Both AssignedPrivileges and OemPrivileges cannot be empty.",
 				MessageArgs:   []interface{}{"AssignedPrivileges/OemPrivileges"},
 			},
 		},
@@ -112,7 +112,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.PropertyValueNotInList,
-				ErrorMessage:  "error: Invalid Request",
+				ErrorMessage:  "Invalid create role request",
 				MessageArgs:   []interface{}{"@testRole", "RoleId"},
 			},
 		},
@@ -123,7 +123,7 @@ func TestCreate(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: cannot create pre-defined roles",
+				ErrorMessage:  "Cannot create pre-defined roles",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -131,7 +131,7 @@ func TestCreate(t *testing.T) {
 
 	errArgu := response.Args{
 		Code:    response.GeneralError,
-		Message: "error: role with name testRole already exists",
+		Message: "Role with name testRole already exists",
 	}
 	reqBodyCreateRole, _ := json.Marshal(asmodel.Role{
 		ID:                 "testRole",
@@ -183,14 +183,6 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusCreated,
 				StatusMessage: response.ResourceCreated,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
 				Body: asresponse.UserRole{
 					IsPredefined:       false,
 					AssignedPrivileges: []string{common.PrivilegeLogin},
@@ -214,15 +206,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -240,15 +224,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -266,15 +242,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgsInvalid.CreateGenericErrorResponse(),
+				Body:          errArgsInvalid.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -292,15 +260,7 @@ func TestCreate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgsMiss.CreateGenericErrorResponse(),
+				Body:          errArgsMiss.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -317,15 +277,7 @@ func TestCreate(t *testing.T) {
 			}, want: response.RPC{
 				StatusCode:    http.StatusConflict,
 				StatusMessage: response.GeneralError,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgu.CreateGenericErrorResponse(),
+				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -342,15 +294,7 @@ func TestCreate(t *testing.T) {
 			}, want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Allow":             `"GET"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: errArgsInvalidRole.CreateGenericErrorResponse(),
+				Body:          errArgsInvalidRole.CreateGenericErrorResponse(),
 			},
 		},
 	}

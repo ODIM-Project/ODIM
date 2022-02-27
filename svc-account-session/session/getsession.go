@@ -16,7 +16,7 @@
 package session
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -29,23 +29,41 @@ import (
 )
 
 //GetSessionUserName is a RPC handle to get the session username from the session Token
-func GetSessionUserName(req *sessionproto.SessionRequest, resp *sessionproto.SessionUserName) error {
+func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
+	var resp sessionproto.SessionUserName
 	resp.UserName = ""
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while authorizing session token: " + err.Error()
-		log.Printf(errorMessage)
-		return err
+		return &resp, err
 	}
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + errs.Error()
-		log.Printf(errorMessage)
-		return errs
+		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		log.Error(errorMessage)
+		return &resp, errs
 	}
 	resp.UserName = currentSession.UserName
-	return nil
+	return &resp, nil
+}
+
+//GetSessionUserRoleID is a RPC handle to get the session user's role id from the session Token
+func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+	var resp sessionproto.SessionUsersRoleID
+	resp.RoleID = ""
+	// Validating the session
+	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
+	if err != nil {
+		return &resp, err
+	}
+
+	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
+		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		log.Error(errorMessage)
+		return &resp, errs
+	}
+	resp.RoleID = currentSession.RoleID
+	return &resp, nil
 }
 
 // GetSession is a method to get session
@@ -54,7 +72,7 @@ func GetSessionUserName(req *sessionproto.SessionRequest, resp *sessionproto.Ses
 // respond RPC response and error if there is.
 func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#Session.v1_2_1.Session",
+		OdataType: common.SessionType,
 		OdataID:   "/redfish/v1/SessionService/Sessions/" + req.SessionId,
 		ID:        req.SessionId,
 		Name:      "User Session",
@@ -77,38 +95,36 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while authorizing session token: " + err.Error()
+		errorMessage := "Unable to authorize session token: " + err.Error()
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
+			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
 		return resp
 	}
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + errs.Error()
+		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
 	sessionTokens, errs := asmodel.GetAllSessionKeys()
 	if errs != nil {
-		errorMessage := "error:  while trying to get all session keys in delete session: " + errs.Error()
+		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			log.Printf("error while trying to get session details with the token %v: %v", token, err)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 			continue
 		}
 		if session.ID == req.SessionId {
@@ -117,11 +133,8 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				resp.StatusCode = http.StatusOK
 				resp.StatusMessage = response.Success
 				resp.Header = map[string]string{
-					"Cache-Control":     "no-cache",
-					"Link":              "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
-					"Transfer-Encoding": "chunked",
-					"X-Auth-Token":      token,
-					"Content-type":      "application/json; charset=utf-8",
+					"Link":         "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
+					"X-Auth-Token": token,
 				}
 
 				respBody := asresponse.Session{
@@ -132,27 +145,25 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				resp.Body = respBody
 				return resp
 			}
-			errorMessage := "error: the session doesn't have the privileges for the action"
+			errorMessage := "The session doesn't have the requisite privileges for the action"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = getHeader()
-			log.Printf(errorMessage)
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 	sessionTokens = nil
-	errorMessage := "error: no session with id " + req.SessionId + " found."
-	log.Printf("error: Status Not Found")
+	errorMessage := "No session with id " + req.SessionId + " found."
+	log.Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage
 	errorArgs[0].StatusMessage = resp.StatusMessage
 	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
-	resp.Header = getHeader()
 	return resp
 }
 
@@ -164,7 +175,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	commonResponse := response.Response{
 		OdataType:    "#SessionCollection.SessionCollection",
-		OdataID:      "/redfish/v1/SessionService/Sessions/",
+		OdataID:      "/redfish/v1/SessionService/Sessions",
 		OdataContext: "/redfish/v1/$metadata#SessionCollection.SessionCollection",
 		Name:         "Session Service",
 	}
@@ -186,24 +197,23 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	// Validating the session
 	currentSession, gerr := auth.CheckSessionTimeOut(req.SessionToken)
 	if gerr != nil {
-		errorMessage := "error while authorizing session token: " + gerr.Error()
+		errorMessage := "Unable to authorize session token: " + gerr.Error()
 		resp.StatusCode, resp.StatusMessage = gerr.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
+			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		}
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
 		return resp
 	}
 
 	err := UpdateLastUsedTime(req.SessionToken)
 	if err != nil {
-		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
+		errorMessage := "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
@@ -214,17 +224,15 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
+		auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		return resp
 	}
 
 	sessionTokens, errs := asmodel.GetAllSessionKeys()
 	if errs != nil {
-		errorMessage := "error:  while trying to get all session keys in delete session: " + errs.Error()
+		errorMessage := "Unable to get all session keys in delete session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
@@ -232,13 +240,13 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			log.Printf("error while trying to get session details with the token %v: %v", token, err)
+			log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 
 		if checkPrivilege(req.SessionToken, session, currentSession) {
 			member := asresponse.ListMember{
-				OdataID: "/redfish/v1/SessionService/Sessions/" + session.ID + "/",
+				OdataID: "/redfish/v1/SessionService/Sessions/" + session.ID,
 			}
 			listMembers = append(listMembers, member)
 		}
@@ -252,7 +260,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	resp.Header = getHeader()
 	resp.Body = respBody
 	return resp
 }
@@ -263,7 +270,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 // respond RPC response and error if there are.
 func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
 		ID:        "Sessions",
 		Name:      "Session Service",
@@ -301,13 +308,7 @@ func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 		},
 	}
 	resp.Header = map[string]string{
-		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
 		"Link": "	</redfish/v1/SchemaStore/en/SessionService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
 	}
 
 	resp.Body = sessionService

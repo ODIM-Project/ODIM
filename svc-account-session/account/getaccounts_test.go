@@ -61,7 +61,7 @@ func TestGetAllAccounts(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "user SomeOne does not have the privilege to view all users",
+				ErrorMessage:  "User SomeOne does not have the privilege to view all users",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -87,20 +87,14 @@ func TestGetAllAccounts(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "POST", "HEAD"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
 				},
 				Body: asresponse.List{
 					Response:     successResponse,
 					MembersCount: 1,
 					Members: []asresponse.ListMember{
 						asresponse.ListMember{
-							OdataID: "/redfish/v1/AccountService/Accounts/testUser1/",
+							OdataID: "/redfish/v1/AccountService/Accounts/testUser1",
 						},
 					},
 				},
@@ -119,10 +113,7 @@ func TestGetAllAccounts(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -138,7 +129,7 @@ func TestGetAllAccounts(t *testing.T) {
 
 func TestGetAccount(t *testing.T) {
 	successResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/testUser1",
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           "testUser1",
@@ -164,7 +155,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: testUser2 does not have the privilege to view other user's details",
+				ErrorMessage:  "testUser2 does not have the privilege to view other user's details",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -175,7 +166,7 @@ func TestGetAccount(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get  account: error while trying to get user: no data with the with key testUser4 found",
+				ErrorMessage:  "Unable to get account: error while trying to get user: no data with the with key testUser4 found",
 				MessageArgs:   []interface{}{"Account", "testUser4"},
 			},
 		},
@@ -200,13 +191,7 @@ func TestGetAccount(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "POST", "HEAD"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -214,7 +199,7 @@ func TestGetAccount(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/"},
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator"},
 					},
 				},
 			},
@@ -234,13 +219,7 @@ func TestGetAccount(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":             `"GET", "POST", "HEAD"`,
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -248,7 +227,7 @@ func TestGetAccount(t *testing.T) {
 					RoleID:   "Administrator",
 					Links: asresponse.Links{
 						Role: asresponse.Role{
-							OdataID: "/redfish/v1/AccountService/Roles/Administrator/"},
+							OdataID: "/redfish/v1/AccountService/Roles/Administrator"},
 					},
 				},
 			},
@@ -267,10 +246,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -287,10 +263,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -307,10 +280,7 @@ func TestGetAccount(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg1.CreateGenericErrorResponse(),
+				Body:          errArg1.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -330,7 +300,7 @@ func TestGetAccount(t *testing.T) {
 
 func TestGetAccountService(t *testing.T) {
 	successResponse := response.Response{
-		OdataType:    "#AccountService.v1_6_0.AccountService",
+		OdataType:    common.AccountServiceType,
 		OdataID:      "/redfish/v1/AccountService",
 		OdataContext: "/redfish/v1/$metadata#AccountService.AccountService",
 		ID:           "AccountService",
@@ -351,13 +321,7 @@ func TestGetAccountService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
-					"Content-type":  "application/json; charset=utf-8",
 					"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
 				},
 				Body: asresponse.AccountService{
 					Response: successResponse,
@@ -382,13 +346,7 @@ func TestGetAccountService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
-					"Content-type":  "application/json; charset=utf-8",
 					"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
 				},
 				Body: asresponse.AccountService{
 					Response: successResponse,

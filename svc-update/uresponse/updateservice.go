@@ -36,10 +36,25 @@ type SoftwareInventory struct {
 	OdataID string `json:"@odata.id"`
 }
 
+type ClientCertificates struct {
+	OdataID string `json:"@odata.id"`
+}
+
+type RemoteServerCertificates struct {
+	OdataID string `json:"@odata.id"`
+}
+
 // UpdateServiceSimpleUpdate defines Target information for the upgrade
 type UpdateServiceSimpleUpdate struct {
-	Target     string `json:"target"`
-	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
+	Target                           string                           `json:"target"`
+	ActionInfo                       string                           `json:"@Redfish.ActionInfo,omitempty"`
+	RedfishOperationApplyTimeSupport RedfishOperationApplyTimeSupport `json:"@Redfish.OperationApplyTimeSupport,omitempty"`
+}
+
+// RedfishOperationApplyTimeSupport struct defines the apply time for the action in place
+type RedfishOperationApplyTimeSupport struct {
+	OdataType       string   `json:"@odata.type,omitempty"`
+	SupportedValues []string `json:"SupportedValues,omitempty"`
 }
 
 // UpdateServiceStartUpdate defines Target information for the upgrade
@@ -48,8 +63,8 @@ type UpdateServiceStartUpdate struct {
 	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
 }
 
-// Action defines the links to the actions available under the service
-type Action struct {
+// Actions defines the links to the actions available under the service
+type Actions struct {
 	UpdateServiceSimpleUpdate UpdateServiceSimpleUpdate `json:"#UpdateService.SimpleUpdate"`
 	UpdateServiceStartUpdate  UpdateServiceStartUpdate  `json:"#UpdateService.StartUpdate"`
 }
@@ -57,13 +72,32 @@ type Action struct {
 // UpdateService defines the service properties of update service
 type UpdateService struct {
 	response.Response
-	Status            Status            `json:"Status"`
-	ServiceEnabled    bool              `json:"ServiceEnabled"`
-	HttpPushUri       string            `json:"HttpPushUri"`
-	FirmwareInventory FirmwareInventory `json:"FirmwareInventory"`
-	SoftwareInventory SoftwareInventory `json:"SoftwareInventory"`
-	Action            Action            `json:"Action"`
-	OEM               *OEM              `json:"Oem,omitempty"`
+	Status                        Status                    `json:"Status"`
+	ServiceEnabled                bool                      `json:"ServiceEnabled"`
+	HttpPushUri                   string                    `json:"HttpPushUri"`
+	FirmwareInventory             FirmwareInventory         `json:"FirmwareInventory"`
+	SoftwareInventory             SoftwareInventory         `json:"SoftwareInventory"`
+	Actions                       Actions                   `json:"Actions"`
+	OEM                           *OEM                      `json:"Oem,omitempty"`
+	ClientCertificates            *ClientCertificates       `json:"ClientCertificates,omitempty"`
+	HttpPushUriOptions            *HttpPushUriOptions       `json:"HttpPushUriOptions,omitempty"`
+	HttpPushUriOptionsBusy        bool                      `json:"HttpPushUriOptionsBusy,omitempty"`
+	HttpPushUriTargets            []string                  `json:"HttpPushUriTargets,omitempty"`
+	HttpPushUriTargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
+	MaxImageSizeBytes             int                       `json:"MaxImageSizeBytes,omitempty"`
+	MultipartHttpPushUri          string                    `json:"MultipartHttpPushUri,omitempty"`
+	VerifyRemoteServerCertificate bool                      `json:"VerifyRemoteServerCertificate,omitempty"`
+	RemoteServerCertificates      *RemoteServerCertificates `json:"RemoteServerCertificates,omitempty"`
+}
+
+type HttpPushUriOptions struct {
+	HttpPushUriApplyTime *HttpPushUriApplyTime `json:"HttpPushUriApplyTime,omitempty"`
+}
+
+type HttpPushUriApplyTime struct {
+	ApplyTime                          string `json:"ApplyTime,omitempty"`
+	MaintenanceWindowDurationInSeconds int    `json:"MaintenanceWindowDurationInSeconds,omitempty"`
+	MaintenanceWindowStartTime         string `json:"MaintenanceWindowStartTime,omitempty"`
 }
 
 // OEM defines the ACME defined properties under the service

@@ -83,16 +83,126 @@ func TestGetFabricResource(t *testing.T) {
 	fabrics.GetFabricResourceRPC = mockGetFabricResource
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1/Fabrics")
-	redfishRoutes.Get("/", fabrics.GetFabricResource)
+	redfishRoutes.Get("/", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}", fabrics.GetFabric)
+	redfishRoutes.Get("/{id}/Switches/{switchID}", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Switches/{switchID}/Ports", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Switches", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Switches/{switchID}/Ports/{port_uuid}", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Zones/", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Endpoints/", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/AddressPools/", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Zones/{zone_uuid}", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/Endpoints/{endpoint_uuid}", fabrics.GetFabricCollection)
+	redfishRoutes.Get("/{id}/AddressPools/{addresspool_uuid}", fabrics.GetFabricCollection)
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Fabrics/",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
+	test.GET(
+		"/redfish/v1/Fabrics/1",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
+	test.GET(
+		"/redfish/v1/Fabrics/1/",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2/Ports",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2/Ports",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2/Ports",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2/Ports/3",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2/Ports/3",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Switches/2/Ports/3",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Zones/",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Zones/",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Zones/",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Endpoints/",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Endpoints/",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Endpoints/",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/AddressPools/",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/AddressPools/",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/AddressPools/",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Zones/2",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Zones/2",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Zones/2",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Endpoints/2",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Endpoints/2",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/Endpoints/2",
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	test.GET(
+		"/redfish/v1/Fabrics/1/AddressPools/2",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Fabrics/1/AddressPools/2",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Fabrics/1/AddressPools/2",
 	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -105,7 +215,7 @@ func TestDeleteFabricResource(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Fabrics/",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -123,7 +233,7 @@ func TestUpdateFabricResource(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.PATCH(
 		"/redfish/v1/Fabrics/",
-	).WithHeader("X-Auth-Token", "ValidToken").WithJSON("").Expect().Status(http.StatusBadRequest)
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON("").Expect().Status(http.StatusBadRequest).Headers().Equal(header)
 	test.PATCH(
 		"/redfish/v1/Fabrics/",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)

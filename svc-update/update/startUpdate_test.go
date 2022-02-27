@@ -23,36 +23,36 @@ import (
 )
 
 func TestStartUpdate(t *testing.T) {
-
-	output := map[string]interface{}{"Attributes": "sample"}
+	var respArgs response.Args
+	respArgs = response.Args{
+		Code:    response.Success,
+		Message: "Request completed successfully",
+	}
+	body := respArgs.CreateGenericErrorResponse()
 	tests := []struct {
 		name string
-		req  *updateproto.UpdateRequest
+		args args
 		want response.RPC
 	}{
 		{
 			name: "Valid Request",
-			req: &updateproto.UpdateRequest{
-				SessionToken: "token",
+			args: args{
+				taskID: "someID", sessionUserName: "someUser",
+				req: &updateproto.UpdateRequest{
+					SessionToken: "validToken",
+				},
 			},
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
-				},
-				Body: output,
+				Body:          body,
 			},
 		},
 	}
 	e := mockGetExternalInterface()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := e.StartUpdate(tt.req); !reflect.DeepEqual(got, tt.want) {
+			if got := e.StartUpdate(tt.args.taskID, tt.args.sessionUserName, tt.args.req); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("StartUpdate() = %v, want %v", got, tt.want)
 			}
 		})

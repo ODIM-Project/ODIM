@@ -16,9 +16,8 @@
 package rfphandler
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -40,7 +39,7 @@ func GetResource(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -52,9 +51,10 @@ func GetResource(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		errMsg := "Unable to collect data from request: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errMsg)
 		return
 	}
 
@@ -67,8 +67,8 @@ func GetResource(ctx iris.Context) {
 	//device.Password = plainText
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -77,8 +77,8 @@ func GetResource(ctx iris.Context) {
 	//Fetching generic resource details from the device
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
-		errMsg := "error: authentication failed: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Authentication failed: " + err.Error()
+		log.Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -89,7 +89,11 @@ func GetResource(ctx iris.Context) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf(err.Error())
+		errMsg := "While trying to read the response body, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
 	}
 
 	if resp.StatusCode == http.StatusUnauthorized {
@@ -98,7 +102,8 @@ func GetResource(ctx iris.Context) {
 		return
 	}
 	if resp.StatusCode >= 300 {
-		fmt.Printf("Could not retreive generic resource for %s: \n%s\n\n", device.Host, body)
+		log.Error("Could not retrieve generic resource for" + device.Host + ": \n" + string(body) + ":\n" + uri)
+
 	}
 	respData := string(body)
 	//replacing the resposne with north bound translation URL

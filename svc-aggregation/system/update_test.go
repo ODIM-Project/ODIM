@@ -68,7 +68,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 	host := strings.Split(url, "/ODIM")[0]
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Reset" || url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Add" ||
 		url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.SetDefaultBootOrder" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -197,7 +197,7 @@ func testUpdateContactClient(url, method, token string, odataID string, body int
 		}, nil
 
 	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" || url == host+"/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		if bData.UserName == "incorrectusername" || bytes.Compare(bData.Password, []byte("incorrectPassword")) == 0 {
 			return &http.Response{
 				StatusCode: http.StatusUnauthorized,
@@ -274,7 +274,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	dbErr := testSystemIndex("123456:1", map[string]interface{}{
+	dbErr := testSystemIndex("123456.1", map[string]interface{}{
 		"UUID": "1s7sda8asd-asdas8as012",
 	})
 	if err != nil {
@@ -318,7 +318,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	missingparamReq, _ := json.Marshal(map[string]interface{}{})
 
 	commonResponse1 := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123455",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123455",
@@ -328,14 +328,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse1.CreateGenericResponse(response.Success)
 	commonResponse1.Message = ""
 	commonResponse1.MessageID = ""
@@ -347,7 +340,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		Links:    reqManagerGRF.Links,
 	}
 	commonResponse2 := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123456",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123456",
@@ -357,14 +350,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp2.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse2.CreateGenericResponse(response.Success)
 	commonResponse2.Message = ""
 	commonResponse2.MessageID = ""
@@ -378,30 +364,23 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	errMsg := "error: while trying to fetch Aggregation Source data: no data with the with key /redfish/v1/AggregationService/AggregationSources/123466 found"
 	resp3 := common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"AggregationSource", "/redfish/v1/AggregationService/AggregationSources/123466"}, nil)
 	param := "HostName "
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp4 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "UserName "
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp5 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "Password "
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp6 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 	param = "HostName UserName Password "
 	errMsg = "error while trying to authenticate the compute server: error: invalid resource username/password"
 	resp7 := common.GeneralError(http.StatusUnauthorized, response.ResourceAtURIUnauthorized, errMsg, []interface{}{"https://localhost:9091/ODIM/v1/validate"}, nil)
-	errMsg = "error:  field " + param + " Missing"
+	errMsg = "field " + param + " Missing"
 	resp8 := common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
 
 	common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{param}, nil)
-	p := &ExternalInterface{
-		ContactClient:          testUpdateContactClient,
-		Auth:                   mockIsAuthorized,
-		GetPluginStatus:        GetPluginStatusForTesting,
-		EncryptPassword:        stubDevicePassword,
-		DecryptPassword:        stubDevicePassword,
-		GetConnectionMethod:    mockGetConnectionMethod,
-		UpdateConnectionMethod: mockUpdateConnectionMethod,
-	}
+	p := getMockExternalInterface()
+	p.ContactClient = testUpdateContactClient
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}

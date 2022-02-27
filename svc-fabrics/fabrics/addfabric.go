@@ -21,7 +21,7 @@ import (
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"strings"
@@ -37,7 +37,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 	pluginDetails, err := fabmodel.GetAllFabricPluginDetails()
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
@@ -46,7 +46,7 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 		plugin, errs := fabmodel.GetPluginData(pluginkey)
 		if errs != nil {
-			log.Printf(errs.Error())
+			log.Error(errs.Error())
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errs.Error(),
 				[]interface{}{}, nil)
 		}
@@ -58,19 +58,23 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 			if err != nil {
 				errorMessage = "Can't lookup the ip from host name" + err.Error()
 			}
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errs.Error(),
 				[]interface{}{"IP Address", plugin.IP}, nil)
 		}
 		deviceIPAddress := fmt.Sprintf("%v", addr[0])
 
-		if deviceIPAddress == address {
+		// plugins deployed in k8s will use servicename for connecting,
+		// and the same is used while adding plugin, hence will check
+		// for both resolved IP address as well service name, when
+		// comparing with the stored plugin address.
+		if deviceIPAddress == address || plugin.IP == address {
 			pluginID = plugin.ID
 			break
 		}
 	}
 	if pluginID == "" {
-		log.Printf("error: plugin ID is empty")
+		log.Error("error: plugin ID is empty")
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "error: no match found for plugin ID",
 			[]interface{}{"IP Address", address}, nil)
 	}
@@ -81,19 +85,11 @@ func AddFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 
 	err = fab.AddFabricData(uuid)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-	log.Println("Fabric Added")
+	log.Info("Fabric Added")
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp

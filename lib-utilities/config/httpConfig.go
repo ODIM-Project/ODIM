@@ -19,7 +19,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"sync"
@@ -44,7 +44,7 @@ type HTTPConfig struct {
 
 var (
 	// TLSConfMutex is used for avoiding race conditions
-	TLSConfMutex = &sync.Mutex{}
+	TLSConfMutex = &sync.RWMutex{}
 	// configuredCipherSuiteList contains the list of configured cipher suites
 	configuredCipherSuiteList = make([]uint16, 0)
 	// configuredTLSMinVersion is the configured TLS minimum version
@@ -74,13 +74,13 @@ func (config *HTTPConfig) GetHTTPClientObj() (*http.Client, error) {
 	if err := config.LoadCertificates(tlsConfig); err != nil {
 		return nil, err
 	}
-	Client.SetTLSConfig(tlsConfig)
-
-	TLSConfMutex.Lock()
-	DefaultHTTPTransport.TLSClientConfig = tlsConfig
-	DefaultHTTPClient.Transport = DefaultHTTPTransport
-	TLSConfMutex.Unlock()
-
+	if DefaultHTTPClient == nil || DefaultHTTPClient.Transport == nil || DefaultHTTPTransport.TLSClientConfig == nil {
+		TLSConfMutex.Lock()
+		Client.SetTLSConfig(tlsConfig)
+		DefaultHTTPTransport.TLSClientConfig = tlsConfig
+		DefaultHTTPClient.Transport = DefaultHTTPTransport
+		TLSConfMutex.Unlock()
+	}
 	return DefaultHTTPClient, nil
 }
 
@@ -139,6 +139,8 @@ func (host Host) SetTLSConfig(tlsConfig *tls.Config) {
 
 // SetDefaultTLSConf is for updating TLS conf with default values
 func SetDefaultTLSConf() {
+	TLSConfMutex.RLock()
+	defer TLSConfMutex.RUnlock()
 	verifyPeer = DefaultTLSServerVerify
 	configuredTLSMinVersion = DefaultTLSMinVersion
 	configuredTLSMaxVersion = DefaultTLSMaxVersion
@@ -153,7 +155,7 @@ func SetVerifyPeer(val bool) {
 // SetTLSMinVersion is for setting configuredTLSMinVersion
 func SetTLSMinVersion(version string) error {
 	if version == "" {
-		log.Println("warn: TLS MinVersion is not provided, setting default value")
+		log.Warn("TLS MinVersion is not provided, setting default value")
 		configuredTLSMinVersion = DefaultTLSMinVersion
 		return nil
 	}
@@ -167,7 +169,7 @@ func SetTLSMinVersion(version string) error {
 // SetTLSMaxVersion is for setting configuredTLSMaxVersion
 func SetTLSMaxVersion(version string) error {
 	if version == "" {
-		log.Println("warn: TLS MaxVersion is not provided, setting default value")
+		log.Warn("TLS MaxVersion is not provided, setting default value")
 		configuredTLSMaxVersion = DefaultTLSMaxVersion
 		return nil
 	}
@@ -180,6 +182,7 @@ func SetTLSMaxVersion(version string) error {
 
 // SetPreferredCipherSuites is for setting configuredCipherSuiteList
 func SetPreferredCipherSuites(cipherList []string) error {
+
 	if len(cipherList) == 0 {
 		configuredCipherSuiteList = DefaultCipherSuiteList
 		return nil
@@ -198,17 +201,17 @@ func SetPreferredCipherSuites(cipherList []string) error {
 // ValidateConfiguredTLSVersions is for valdiating TLS versions configured
 func ValidateConfiguredTLSVersions() error {
 	if configuredTLSMinVersion < DefaultTLSMinVersion {
-		log.Println("warn: TLS MinVersion set is lower than suggested version")
+		log.Warn("TLS MinVersion set is lower than suggested version")
 	}
 	if configuredTLSMinVersion > DefaultTLSMinVersion {
-		log.Println("warn: TLS MinVersion set is higher than supported version, setting default value")
+		log.Warn("TLS MinVersion set is higher than supported version, setting default value")
 		configuredTLSMinVersion = DefaultTLSMinVersion
 	}
 	if configuredTLSMaxVersion < configuredTLSMinVersion {
 		return fmt.Errorf("error: TLS MaxVersion cannot be lower than MinVersion")
 	}
 	if configuredTLSMaxVersion > DefaultTLSMaxVersion {
-		log.Println("warn: TLS MaxVersion set is higher than supported version, setting default value")
+		log.Warn("TLS MaxVersion set is higher than supported version, setting default value")
 		configuredTLSMaxVersion = DefaultTLSMaxVersion
 	}
 	return nil

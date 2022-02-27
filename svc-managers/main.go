@@ -14,9 +14,14 @@
 package main
 
 import (
-	"log"
+	"encoding/json"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
+	"fmt"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -27,34 +32,47 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/rpc"
 )
 
+var log = logrus.New()
+
 func main() {
 
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Manager Service should not be run as the root user")
+		log.Fatal("Manager Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Fatal("fatal: error while trying set up configuration: %v" + err.Error())
 	}
+
+	config.CollectCLArgs()
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalln(err)
+		log.Fatal(err.Error())
 	}
 
-	err := addManagertoDB()
-	if err != nil {
-		log.Fatalln(err)
+	var managerInterface = mgrcommon.DBInterface{
+		AddManagertoDBInterface: mgrmodel.AddManagertoDB,
+		GenericSave:             mgrmodel.GenericSave,
 	}
+	err := addManagertoDB(managerInterface)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	go mgrcommon.TrackConfigFileChanges(configFilePath, managerInterface)
 
 	err = services.InitializeService(services.Managers)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+		log.Fatal("fatal: error while trying to initialize service: %v" + err.Error())
 	}
 	mgrcommon.Token.Tokens = make(map[string]string)
 	registerHandlers()
-	if err = services.Service.Run(); err != nil {
-		log.Fatal("failed to run a service: ", err)
+	if err = services.ODIMService.Run(); err != nil {
+		log.Fatal("failed to run a service: " + err.Error())
 	}
 }
 
@@ -64,10 +82,10 @@ func registerHandlers() {
 	manager.IsAuthorizedRPC = services.IsAuthorized
 	manager.EI = managers.GetExternalInterface()
 
-	managersproto.RegisterManagersHandler(services.Service.Server(), manager)
+	managersproto.RegisterManagersServer(services.ODIMService.Server(), manager)
 }
 
-func addManagertoDB() error {
+func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	mgr := mgrmodel.RAManager{
 		Name:            "odimra",
 		ManagerType:     "Service",
@@ -75,7 +93,31 @@ func addManagertoDB() error {
 		ID:              config.Data.RootServiceUUID,
 		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
+		Health:          "OK",
+		Description:     "Odimra Manager",
+		LogServices: &dmtf.Link{
+			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		},
+		Model:      "ODIMRA" + " " + config.Data.FirmwareVersion,
+		PowerState: "On",
 	}
-	return mgr.AddManagertoDB()
+	managerInterface.AddManagertoDBInterface(mgr)
+	data := dmtf.Collection{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		ODataType:    "#LogServiceCollection.LogServiceCollection",
+		ODataEtag:    "W570254F2",
+		Description:  "Logs view",
+		Members:      []*dmtf.Link{},
+		MembersCount: 0,
+		Name:         "Logs",
+	}
+	dbdata, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("unable to marshal manager data: %v", err)
+	}
+	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
+	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
+	return nil
 
 }

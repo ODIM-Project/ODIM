@@ -21,9 +21,10 @@ import (
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabresponse"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -62,63 +63,9 @@ type PluginToken struct {
 
 // Zones struct to check request body cases
 type Zones struct {
-	Name     string `json:"Name"`
-	ZoneType string `json:"ZoneType"`
-	Links    Links  `json:"Links"`
-}
-
-// Links struct to check request body cases in Zones
-type Links struct {
-	AddressPools     []OdataID `json:"AddressPools"`
-	ContainedByZones []OdataID `json:"ContainedByZones"`
-	Endpoints        []OdataID `json:"Endpoints"`
-	ConnectedPorts   []OdataID `json:"ConnectedPorts"`
-}
-
-// OdataID struct to check request body cases
-type OdataID struct {
-	OdataID string `json:"@odata.id"`
-}
-
-// AddressPools struct to check request body cases
-type AddressPools struct {
-	Name        string  `json:"Name"`
-	Description string  `json:"Description"`
-	IPv4        IPv4    `json:"IPv4"`
-	Ebgp        Ebgp    `json:"Ebgp"`
-	BgpEvpn     BgpEvpn `json:"BgpEvpn"`
-}
-
-// IPv4 struct to check request body cases in AddressPools
-type IPv4 struct {
-	VlanIdentifierAddressRange AddressRangeInt    `json:"VlanIdentifierAddressRange"`
-	IbgpAddressRange           AddressRangeString `json:"IbgpAddressRange"`
-	EbgpAddressRange           AddressRangeString `json:"EbgpAddressRange"`
-}
-
-//AddressRangeString struct to check request body cases
-type AddressRangeString struct {
-	Lower string `json:"Lower"`
-	Upper string `json:"Upper"`
-}
-
-//AddressRangeInt struct to check request body cases
-type AddressRangeInt struct {
-	Lower int `json:"Lower"`
-	Upper int `json:"Upper"`
-}
-
-//Ebgp struct to check request body cases
-type Ebgp struct {
-	AsNumberRange AddressRangeInt `json:"AsNumberRange"`
-}
-
-//BgpEvpn struct to check request body cases
-type BgpEvpn struct {
-	GatewayIPAddressList    []string `json:"GatewayIPAddressList"`
-	RouteDistinguisherList  []string `json:"RouteDistinguisherList"`
-	RouteTargetList         []string `json:"RouteTargetList"`
-	AnycastGatewayIPAddress string   `json:"AnycastGatewayIPAddress"`
+	Name     string     `json:"Name"`
+	ZoneType string     `json:"ZoneType"`
+	Links    dmtf.Links `json:"Links"`
 }
 
 //Endpoints struct to check request body cases
@@ -126,13 +73,13 @@ type Endpoints struct {
 	Name        string       `json:"Name"`
 	Description string       `json:"Description"`
 	Redundancy  []Redundancy `json:"Redundancy"`
-	Links       Links        `json:"Links"`
+	Links       dmtf.Links   `json:"Links"`
 }
 
 //Redundancy struct to check request body cases
 type Redundancy struct {
-	Mode          string    `json:"Mode"`
-	RedundencySet []OdataID `json:"RedundencySet"`
+	Mode          string      `json:"Mode"`
+	RedundencySet []dmtf.Link `json:"RedundencySet"`
 }
 
 // Token variable hold the all the XAuthToken  against the plguin ID
@@ -162,7 +109,7 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage = errorMessage + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = response.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 	}
@@ -173,12 +120,12 @@ func contactPlugin(req pluginContactRequest, errorMessage string) ([]byte, strin
 			errorMessage := "error while trying to read response body: " + err.Error()
 			resp.StatusCode = http.StatusInternalServerError
 			resp.StatusMessage = response.InternalError
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		resp.StatusCode = int32(pluginResponse.StatusCode)
-		log.Println(errorMessage)
-		return body, "", resp, fmt.Errorf(errorMessage)
+		log.Info("Read response successfully")
+		return body, "", resp, fmt.Errorf("Read response successfully")
 	}
 	body, err := ioutil.ReadAll(pluginResponse.Body)
 	resp.StatusCode = int32(pluginResponse.StatusCode)
@@ -216,10 +163,10 @@ func getPluginStatus(plugin fabmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
@@ -245,7 +192,7 @@ func (f *Fabrics) createToken(plugin fabmodel.Plugin) string {
 	contactRequest.URL = "/ODIM/v1/Sessions"
 	_, token, _, err := contactPlugin(contactRequest, "error while logging in to plugin: ")
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 	}
 	if token != "" {
 		Token.storeToken(plugin.ID, token)
@@ -278,7 +225,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	authResp := f.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		errMsg := "error while trying to authenticate session"
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return contactRequest, authResp, fmt.Errorf(errMsg)
 	}
 
@@ -286,13 +233,13 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		resp = getFabricCollection()
 		return contactRequest, resp, nil
 	}
-	log.Println("request url", req.URL)
+	log.Info("Request url" + req.URL)
 	fabID := getFabricID(req.URL)
-	log.Println("Fabric UUID", fabID)
+	log.Info("Fabric UUID" + fabID)
 	fabric, err := fabmodel.GetManagingPluginIDForFabricID(fabID)
 	if err != nil {
 		errMsg := fmt.Sprintf("error while trying to get fabric Data: %v", err.Error())
-		log.Println(errMsg)
+		log.Error(errMsg)
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg,
 			[]interface{}{"Plugin", "Fabric"}, nil)
 		return contactRequest, resp, err
@@ -301,7 +248,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	plugin, errs := fabmodel.GetPluginData(fabric.PluginID)
 	if errs != nil {
 		errMsg := fmt.Sprintf("error while trying to get plugin Data: %v", errs.Error())
-		log.Println(errMsg)
+		log.Error(errMsg)
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg,
 			[]interface{}{"Plugin", "Fabric"}, nil)
 		return contactRequest, resp, errs
@@ -313,7 +260,7 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 		token := f.getPluginToken(plugin)
 		if token == "" {
 			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			resp = common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage,
 				[]interface{}{}, nil)
 			return contactRequest, resp, fmt.Errorf(errorMessage)
@@ -348,8 +295,9 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 	if !(req.Method == http.MethodGet || req.Method == http.MethodDelete) {
 		err := json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
 		if err != nil {
-			log.Println("error while trying to get JSON request body: ", err)
-			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, "error while trying to get JSON request body: "+err.Error(),
+			log.Error("error while trying to get JSON request body: " + err.Error())
+			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON,
+				"error while trying to get JSON request body: "+err.Error(),
 				[]interface{}{}, nil)
 			return contactRequest, resp, fmt.Errorf("error while trying to get JSON request body: %v", err)
 		}
@@ -360,21 +308,28 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqURI string) response.RPC {
 	var resp response.RPC
 	var errorMessage = fmt.Sprintf("error while performing %s operation on %s: ", pluginRequest.HTTPMethodType, reqURI)
-	var header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	//contactPlugin
 	body, _, getResponse, err := contactPlugin(pluginRequest, errorMessage)
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(pluginRequest.Plugin.PreferredAuthType, "XAuthToken") {
 			if body, _, getResponse, err = f.retryFabricsOperation(pluginRequest, errorMessage); err != nil {
+				data := string(body)
+				//replacing the resposne with north bound translation URL
+				for key, value := range config.Data.URLTranslation.NorthBoundURL {
+					data = strings.Replace(data, key, value, -1)
+				}
 				resp.StatusCode = getResponse.StatusCode
-				json.Unmarshal(body, &resp.Body)
-				resp.Header = header
+				json.Unmarshal([]byte(data), &resp.Body)
 				return resp
 			}
 		} else {
+			data := string(body)
+			//replacing the resposne with north bound translation URL
+			for key, value := range config.Data.URLTranslation.NorthBoundURL {
+				data = strings.Replace(data, key, value, -1)
+			}
 			resp.StatusCode = getResponse.StatusCode
-			json.Unmarshal(body, &resp.Body)
-			resp.Header = header
+			json.Unmarshal([]byte(data), &resp.Body)
 			return resp
 		}
 	}
@@ -401,12 +356,7 @@ func fillResponse(body []byte, location string, method string, statusCode int32)
 	}
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 	}
 	if location != "" {
 		resp.Header["Location"] = location
@@ -446,12 +396,7 @@ func getFabricCollection() response.RPC {
 	fabricCollection.Members = members
 	fabricCollection.MembersCount = len(members)
 	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Allow": `"GET"`,
 	}
 	resp.Body = fabricCollection
 	resp.StatusCode = http.StatusOK
@@ -467,7 +412,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	if strings.Contains(req.URL, "/Zones") {
 		fabricRequest = &Zones{}
 	} else if strings.Contains(req.URL, "/AddressPools") {
-		fabricRequest = &AddressPools{}
+		fabricRequest = &dmtf.AddressPool{}
 	} else if strings.Contains(req.URL, "/Endpoints") {
 		fabricRequest = &Endpoints{}
 	}
@@ -476,7 +421,7 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	err := json.Unmarshal(req.RequestBody, &fabricRequest)
 	if err != nil {
 		errMsg := "unable to parse the fabrics request" + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	}
 
@@ -484,11 +429,11 @@ func validateReqParamsCase(req *fabricsproto.FabricRequest) (response.RPC, error
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, fabricRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil), fmt.Errorf(errMsg)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return response, fmt.Errorf(errorMessage)
 	}

@@ -16,7 +16,9 @@ package tmessagebus
 
 import (
 	"encoding/json"
-	"log"
+	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -25,28 +27,31 @@ import (
 )
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
-func Publish(taskURI string, messageID string, eventType string) {
-
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+func Publish(taskURI, messageID, eventType, taskMessage string) {
+	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Println("Unable to connect to kafka", err)
+		log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
+
 	var eventID = uuid.NewV4().String()
-	defer k.Close()
 	var event = common.Event{
-		EventID:   eventID,
-		MessageID: messageID,
-		EventType: eventType,
+		EventID:        eventID,
+		MessageID:      messageID,
+		EventTimestamp: time.Now().Format(time.RFC3339),
+		EventType:      eventType,
+		Message:        taskMessage,
 		OriginOfCondition: &common.Link{
 			Oid: taskURI,
 		},
+		Severity: "OK",
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
-		Name:      "Resource Event",
+		Name:      "Task Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
-		OdataType: "#Event.v1_4_0.Event",
+		OdataType: common.EventType,
 		Events:    events,
 	}
 	data, _ := json.Marshal(messageData)
@@ -55,9 +60,9 @@ func Publish(taskURI string, messageID string, eventType string) {
 		Request: data,
 	}
 
-	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
-		log.Println("unable to publish the event to message bus: ", err)
+	if err := k.Distribute(mbevent); err != nil {
+		log.Error("unable to publish the event to message bus: " + err.Error())
 		return
 	}
-	log.Println("info: TaskURI:", taskURI, ", EventID:", eventID, ", MessageID:", messageID)
+	log.Error("info: TaskURI:" + taskURI + ", EventID:" + eventID + ", MessageID:" + messageID)
 }

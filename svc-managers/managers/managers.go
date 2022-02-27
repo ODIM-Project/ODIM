@@ -18,9 +18,10 @@ package managers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
+	"time"
+  "regexp"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -31,19 +32,13 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrresponse"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/go-playground/validator.v9"		
 )
 
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
 func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	managers := mgrresponse.ManagersCollection{
 		OdataContext: "/redfish/v1/$metadata#ManagerCollection.ManagerCollection",
 		OdataID:      "/redfish/v1/Managers",
@@ -56,7 +51,7 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 	// Add servers as manager in manager collection
 	managersCollectionKeysArray, err := e.DB.GetAllKeysFromTable("Managers")
 	if err != nil || len(managersCollectionKeysArray) == 0 {
-		log.Printf("odimra Doesnt have Servers")
+		log.Error("odimra Doesnt have Servers")
 	}
 
 	for _, key := range managersCollectionKeysArray {
@@ -72,19 +67,10 @@ func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequ
 // GetManagers will fetch individual manager details with the given ID
 func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
 	if req.ManagerID == config.Data.RootServiceUUID {
 		manager, err := e.getManagerDetails(req.ManagerID)
 		if err != nil {
-			log.Printf("error getting manager details : %v", err.Error())
+			log.Error("error getting manager details : " + err.Error())
 			errArgs := []interface{}{"Managers", req.ManagerID}
 			errorMessage := err.Error()
 			resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -93,8 +79,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		}
 		resp.Body = manager
 	} else {
-
-		requestData := strings.Split(req.ManagerID, ":")
+		requestData := strings.SplitN(req.ManagerID, ".", 2)
 		if len(requestData) <= 1 {
 			resp = e.getPluginManagerResoure(requestData[0], req.URL)
 			return resp
@@ -102,7 +87,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		uuid := requestData[0]
 		data, err := e.DB.GetManagerByURL(req.URL)
 		if err != nil {
-			log.Printf("error getting manager details : %v", err.Error())
+			log.Error("error getting manager details : " + err.Error())
 			var errArgs = []interface{}{}
 			var statusCode int
 			var StatusMessage string
@@ -124,7 +109,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		jerr := json.Unmarshal([]byte(data), &managerData)
 		if jerr != nil {
 			errorMessage := "error unmarshalling manager details: " + jerr.Error()
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 				nil, nil)
 			return resp
@@ -134,11 +119,24 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 		if val, ok := managerData["ManagerType"]; ok {
 			managerType = val.(string)
 		}
-
+		//adding default description
+		if _, ok := managerData["Description"]; !ok {
+			managerData["Description"] = "BMC Manager"
+		}
+		//adding RemoteAccountService object to manager response
+		if _, ok := managerData["RemoteAccountService"]; !ok {
+			managerData["RemoteAccountService"] = map[string]string{
+				"@odata.id": "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService",
+			}
+		}
+		//adding PowerState
+		if _, ok := managerData["PowerState"]; !ok {
+			managerData["PowerState"] = "On"
+		}
 		if managerType != common.ManagerTypeService && managerType != "" {
 			deviceData, err := e.getResourceInfoFromDevice(req.URL, uuid, requestData[1])
 			if err != nil {
-				log.Printf("warning: Device %v is unreachable: %v", req.URL, err)
+				log.Error("Device " + req.URL + " is unreachable: " + err.Error())
 				// Updating the state
 				managerData["Status"] = map[string]string{
 					"State": "Absent",
@@ -147,16 +145,16 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 				jerr := json.Unmarshal([]byte(deviceData), &managerData)
 				if jerr != nil {
 					errorMessage := "error unmarshaling manager details: " + jerr.Error()
-					log.Println(errorMessage)
+					log.Error(errorMessage)
 					resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 						nil, nil)
 					return resp
 				}
 			}
-			err = e.DB.UpdateManagersData(req.URL, managerData)
+			err = e.DB.UpdateData(req.URL, managerData, "Managers")
 			if err != nil {
 				errorMessage := "error while saving manager details: " + err.Error()
-				log.Println(errorMessage)
+				log.Error(errorMessage)
 				resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 					nil, nil)
 				return resp
@@ -164,7 +162,7 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 			dataBytes, err := json.Marshal(managerData)
 			if err != nil {
 				errorMessage := "error while marshalling manager details: " + err.Error()
-				log.Println(errorMessage)
+				log.Error(errorMessage)
 				resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
 					nil, nil)
 				return resp
@@ -183,26 +181,72 @@ func (e *ExternalInterface) GetManagers(req *managersproto.ManagerRequest) respo
 func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, error) {
 	var mgr mgrmodel.Manager
 	var mgrData mgrmodel.RAManager
-
 	data, err := e.DB.GetManagerByURL("/redfish/v1/Managers/" + id)
 	if err != nil {
 		return mgr, fmt.Errorf("unable to retrieve manager information: %v", err)
 	}
+
 	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
+
+	chassisList, chassisErr := e.DB.GetAllKeysFromTable("Chassis")
+	if chassisErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve chassis list information: %v", chassisErr)
+	}
+
+	serverList, serverErr := e.DB.GetAllKeysFromTable("ComputerSystem")
+	if serverErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve server list information: %v", serverErr)
+	}
+	managerList, mgrErr := e.DB.GetAllKeysFromTable("Managers")
+	if mgrErr != nil {
+		return mgr, fmt.Errorf("unable to retrieve manager list information: %v", mgrErr)
+	}
+	var chassisLink, serverLink, managerLink []*dmtf.Link
+	if len(chassisList) > 0 {
+		for _, key := range chassisList {
+			chassisLink = append(chassisLink, &dmtf.Link{Oid: key})
+		}
+	}
+	if len(serverList) > 0 {
+		for _, key := range serverList {
+			serverLink = append(serverLink, &dmtf.Link{Oid: key})
+		}
+	}
+	odimURI := "/redfish/v1/Managers/" + config.Data.RootServiceUUID
+	if len(managerList) > 0 {
+		for _, key := range managerList {
+			if key != odimURI {
+				managerLink = append(managerLink, &dmtf.Link{Oid: key})
+			}
+		}
+	}
+
 	return mgrmodel.Manager{
 		OdataContext:    "/redfish/v1/$metadata#Manager.Manager",
 		OdataID:         "/redfish/v1/Managers/" + id,
-		OdataType:       "#Manager.v1_3_3.Manager",
+		OdataType:       common.ManagerType,
 		Name:            mgrData.Name,
 		ManagerType:     mgrData.ManagerType,
 		ID:              mgrData.ID,
 		UUID:            mgrData.UUID,
 		FirmwareVersion: mgrData.FirmwareVersion,
 		Status: &mgrmodel.Status{
-			State: mgrData.State,
+			State:  mgrData.State,
+			Health: mgrData.Health,
 		},
+		Links: &mgrmodel.Links{
+			ManagerForChassis:  chassisLink,
+			ManagerForServers:  serverLink,
+			ManagerForManagers: managerLink,
+		},
+		Description:         mgrData.Description,
+		LogServices:         mgrData.LogServices,
+		Model:               mgrData.Model,
+		DateTime:            time.Now().UTC().String(),
+		DateTimeLocalOffset: "+00:00",
+		PowerState:          mgrData.PowerState,
 	}, nil
 }
 
@@ -214,23 +258,35 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+	var tableName string
+	var resource map[string]interface{}
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
 
-	requestData := strings.Split(req.ManagerID, ":")
+	urlData := strings.Split(req.URL, "/")
 	if len(requestData) <= 1 {
-		resp = e.getPluginManagerResoure(requestData[0], req.URL)
+		resourceName := urlData[len(urlData)-1]
+
+		tableName = common.ManagersResource[resourceName]
+		data, err := e.DB.GetResource(tableName, req.URL)
+		if err != nil {
+			if req.ManagerID != config.Data.RootServiceUUID {
+				return e.getPluginManagerResoure(requestData[0], req.URL)
+			}
+			errorMessage := "unable to get odimra managers details: " + err.Error()
+			log.Error(errorMessage)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
+		}
+
+		json.Unmarshal([]byte(data), &resource)
+		resp.Body = resource
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+
 		return resp
+
 	}
 	uuid := requestData[0]
-	urlData := strings.Split(req.URL, "/")
-	var tableName string
+
 	if req.ResourceID == "" {
 		resourceName := urlData[len(urlData)-1]
 		tableName = common.ManagersResource[resourceName]
@@ -244,19 +300,19 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 			var err error
 			if data, err = e.getResourceInfoFromDevice(req.URL, uuid, requestData[1]); err != nil {
 				errorMessage := "unable to get resource details from device: " + err.Error()
-				log.Println(errorMessage)
+				log.Error(errorMessage)
 				errArgs := []interface{}{tableName, req.ManagerID}
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 			}
 		} else {
 			errorMessage := "unable to get managers details: " + err.Error()
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, []interface{}{}, nil)
 		}
 	}
 
-	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
+
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -264,11 +320,98 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	return resp
 }
 
+// VirtualMediaActions is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var requestBody = req.RequestBody
+	//InsertMedia payload validation
+	if strings.Contains(req.URL, "VirtualMedia.InsertMedia") {
+		var vmiReq mgrmodel.VirtualMediaInsert
+		// Updating the default values
+		vmiReq.Inserted = true
+		vmiReq.WriteProtected = true
+		err := json.Unmarshal(req.RequestBody, &vmiReq)
+		if err != nil {
+			errorMessage := "while unmarshaling the virtual media insert request: " + err.Error()
+			log.Error(errorMessage)
+			resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+			return resp
+		}
+
+		// Validating the request JSON properties for case sensitive
+		invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, vmiReq)
+		if err != nil {
+			errMsg := "while validating request parameters for virtual media insert: " + err.Error()
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		} else if invalidProperties != "" {
+			errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+			log.Error(errorMessage)
+			response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+			return response
+		}
+
+		// Check mandatory fields
+		statuscode, statusMessage, messageArgs, err := validateFields(&vmiReq)
+		if err != nil {
+			errorMessage := "request payload validation failed: " + err.Error()
+			log.Error(errorMessage)
+			resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
+			return resp
+		}
+		requestBody, err = json.Marshal(vmiReq)
+		if err != nil {
+			log.Error("while marshalling the virtual media insert request: " + err.Error())
+			resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+			return resp
+		}
+	}
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	resp = e.deviceCommunication(req.URL, uuid, requestData[1], http.MethodPost, requestBody)
+
+	// If the virtualmedia action is success then updating DB
+	if resp.StatusCode == http.StatusOK {
+		vmURI := strings.Replace(req.URL, "/Actions/VirtualMedia.InsertMedia", "", -1)
+		vmURI = strings.Replace(vmURI, "/Actions/VirtualMedia.EjectMedia", "", -1)
+		deviceData, err := e.getResourceInfoFromDevice(vmURI, uuid, requestData[1])
+		if err != nil {
+			log.Error("while trying get on URI " + vmURI + " : " + err.Error())
+		} else {
+			var vmData map[string]interface{}
+			jerr := json.Unmarshal([]byte(deviceData), &vmData)
+			if jerr != nil {
+				log.Error("while unmarshaling virtual media details: " + jerr.Error())
+			} else {
+				err = e.DB.UpdateData(vmURI, vmData, "VirtualMedia")
+				if err != nil {
+					log.Error("while saving virtual media details: " + err.Error())
+				}
+			}
+		}
+	}
+	return resp
+}
+
+// validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
+func validateFields(request *mgrmodel.VirtualMediaInsert) (int32, string, []interface{}, error) {
+	validate := validator.New()
+	// if any of the mandatory fields missing in the struct, then it will return an error
+	err := validate.Struct(request)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			return http.StatusBadRequest, response.PropertyMissing, []interface{}{err.Field()}, fmt.Errorf(err.Field() + " field is missing")
+		}
+	}
+	return http.StatusOK, common.OK, []interface{}{}, nil
+}
+
 func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) response.RPC {
 	var resp response.RPC
 	data, dberr := e.DB.GetManagerByURL("/redfish/v1/Managers/" + managerID)
 	if dberr != nil {
-		log.Printf("unable to get manager details : %v", dberr.Error())
+		log.Error("unable to get manager details : " + dberr.Error())
 		var errArgs = []interface{}{"Managers", managerID}
 		errorMessage := dberr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -279,16 +422,15 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 	jerr := json.Unmarshal([]byte(data), &managerData)
 	if jerr != nil {
 		errorMessage := "unable to unmarshal manager details: " + jerr.Error()
-		log.Println(errorMessage)
-		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
-			nil, nil)
+		log.Error(errorMessage)
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		return resp
 	}
 	var pluginID = managerData["Name"].(string)
 	// Get the Plugin info
 	plugin, gerr := e.DB.GetPluginData(pluginID)
 	if gerr != nil {
-		log.Printf("unable to get manager details : %v", gerr.Error())
+		log.Error("unable to get manager details : " + gerr.Error())
 		var errArgs = []interface{}{"Plugin", pluginID}
 		errorMessage := gerr.Error()
 		resp = common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage,
@@ -315,52 +457,51 @@ func (e *ExternalInterface) getPluginManagerResoure(managerID, reqURI string) re
 		}
 
 	}
+
 	req.OID = reqURI
 	var errorMessage = "unable to get the details " + reqURI + ": "
-	var header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	body, _, getResponse, err := mgrcommon.ContactPlugin(req, errorMessage)
 	if err != nil {
 		if getResponse.StatusCode == http.StatusUnauthorized && strings.EqualFold(req.Plugin.PreferredAuthType, "XAuthToken") {
 			if body, _, getResponse, err = mgrcommon.RetryManagersOperation(req, errorMessage); err != nil {
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal(body, &resp.Body)
-				resp.Header = header
 				return resp
 			}
 		} else {
 			resp.StatusCode = getResponse.StatusCode
 			json.Unmarshal(body, &resp.Body)
-			resp.Header = header
 			return resp
 		}
 	}
-	return fillResponse(body)
+
+	return fillResponse(body, managerData)
 
 }
 
-func fillResponse(body []byte) response.RPC {
+func fillResponse(body []byte, managerData map[string]interface{}) response.RPC {
 	var resp response.RPC
 	data := string(body)
-	//replacing the resposne with north bound translation URL
+	//replacing the response with north bound translation URL
 	for key, value := range config.Data.URLTranslation.NorthBoundURL {
 		data = strings.Replace(data, key, value, -1)
 	}
 	var respData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &respData)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
 			[]interface{}{}, nil)
 	}
-	resp.Body = respData
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+	//To populate current Datetime and DateTimeLocalOffset for Plugin manager
+	respData["DateTime"] = time.Now().UTC().String()
+	respData["DateTimeLocalOffset"] = "+00:00"
+
+	if _, ok := respData["SerialConsole"]; !ok {
+		respData["SerialConsole"] = dmtf.SerialConsole{}
 	}
+	respData["Links"] = managerData["Links"]
+	resp.Body = respData
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
@@ -377,4 +518,146 @@ func (e *ExternalInterface) getResourceInfoFromDevice(reqURL, uuid, systemID str
 	}
 	return e.Device.GetDeviceInfo(getDeviceInfoRequest)
 
+}
+
+func (e *ExternalInterface) deviceCommunication(reqURL, uuid, systemID, httpMethod string, requestBody []byte) response.RPC {
+	var deviceInfoRequest = mgrcommon.ResourceInfoRequest{
+		URL:                   reqURL,
+		UUID:                  uuid,
+		SystemID:              systemID,
+		ContactClient:         e.Device.ContactClient,
+		DecryptDevicePassword: e.Device.DecryptDevicePassword,
+		HTTPMethod:            httpMethod,
+		RequestBody:           requestBody,
+	}
+	return e.Device.DeviceRequest(deviceInfoRequest)
+}
+
+// GetRemoteAccountService is used to fetch resource data for BMC account service.
+// ManagerRequest holds the UUID, URL and ResourceId ,
+// There will be two return values for the function. One is the RPC response, which contains the
+// status code, status message, headers and body and the second value is error.
+func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
+	if err != nil {
+		errorMessage := "unable to get resource details from device: " + err.Error()
+		log.Error(errorMessage)
+		errArgs := []interface{}{}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	}
+	// Replace response body to BMC manager
+	data = replaceBMCAccResp(data, req.ManagerID)
+	resource := convertToRedfishModel(req.URL, data)
+	resp.Body = resource
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	return resp
+}
+
+func convertToRedfishModel(uri, data string) interface{} {
+	URIRegexRemAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService+[\/]?$`)
+	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+	if URIRegexRemAcc.MatchString(uri) {
+		var resource dmtf.AccountService
+		json.Unmarshal([]byte(data), &resource)
+		return resource
+	} else if URIRegexAcc.MatchString(uri) {
+		var resource dmtf.ManagerAccount
+		json.Unmarshal([]byte(data), &resource)
+		return resource
+	} else if URIRegexRoles.MatchString(uri) {
+		var resource dmtf.Role
+		json.Unmarshal([]byte(data), &resource)
+		return resource
+	}
+	var resource map[string]interface{}
+	json.Unmarshal([]byte(data), &resource)
+	return resource
+}
+
+// CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var requestBody = req.RequestBody
+	var bmcAccReq mgrmodel.CreateBMCAccount
+	// Updating the default values
+	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
+	if err != nil {
+		errorMessage := "while unmarshaling the create remote account service request: " + err.Error()
+		log.Error(errorMessage)
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		return resp
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
+	if err != nil {
+		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response
+	}
+
+	// Check mandatory fields
+	statuscode, statusMessage, messageArgs, err := validateCreateRemoteAccFields(&bmcAccReq)
+	if err != nil {
+		errorMessage := "request payload validation failed: " + err.Error()
+		log.Error(errorMessage)
+		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
+		return resp
+	}
+	requestBody, err = json.Marshal(bmcAccReq)
+	if err != nil {
+		log.Error("while marshalling the create BMC account request: " + err.Error())
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return resp
+	}
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
+
+	if resp.StatusCode == 200 {
+		body, _ := json.Marshal(resp.Body)
+		respBody := replaceBMCAccResp(string(body), req.ManagerID)
+		var managerAcc dmtf.ManagerAccount
+		json.Unmarshal([]byte(respBody), &managerAcc)
+		resp.Body = managerAcc
+	}
+	return resp
+}
+
+// validateFields will validate the request payload, if any mandatory fields are missing then it will generate an error
+func validateCreateRemoteAccFields(request *mgrmodel.CreateBMCAccount) (int32, string, []interface{}, error) {
+	validate := validator.New()
+	// if any of the mandatory fields missing in the struct, then it will return an error
+	err := validate.Struct(request)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			return http.StatusBadRequest, response.PropertyMissing, []interface{}{err.Field()}, fmt.Errorf(err.Field() + " field is missing")
+		}
+	}
+	return http.StatusOK, common.OK, []interface{}{}, nil
+}
+
+func replaceBMCAccReq(uri, managerID string) string {
+	uri = strings.Replace(uri, "Managers/"+managerID+"/Remote", "", -1)
+	return uri
+}
+
+func replaceBMCAccResp(data, managerID string) string {
+	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
+	return data
 }

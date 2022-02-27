@@ -1,0 +1,82 @@
+---
+- name: Include user defined configurations
+  include_vars: "files/helm_config_values.yaml"
+
+- set_fact:
+    proxy_env:
+      http_proxy: "{{ httpProxy | default('') }}"
+      https_proxy: "{{ httpsProxy | default('') }}"
+      no_proxy: "{{ noProxy | default('') }}"
+
+- name: Get the current user
+  local_action: command whoami
+  become: false
+  register: get_user
+
+- name: Set current_user fact
+  set_fact:
+    current_user: "{{ get_user.stdout }}"
+
+- name: Remove any docker packages already present
+  apt:
+    pkg: "{{ docker_pkgs_wo_version }}"
+    force_apt_get: yes
+    force: yes
+    purge: yes
+    state: absent
+  environment: "{{ proxy_env }}"
+
+- name: Install docker dependent packages
+  apt:
+    pkg: "{{ docker_dep_pkgs }}"
+    force_apt_get: yes
+  environment: "{{ proxy_env }}"
+
+- name: Add GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: Add docker repository to apt
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: Install docker packages
+  apt:
+    pkg: "{{ docker_pkgs }}"
+    force_apt_get: yes
+  environment: "{{ proxy_env }}"
+
+- name: Enable docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Check if K8 image path exists
+  stat:
+    path: "{{ kubernetesImagePath }}"
+  register: k8_file_details
+  delegate_to: localhost
+  when: kubernetesImagePath is defined
+
+- name: Copy Kubernetes Images
+  copy:
+    src: "{{ item }}"
+    dest: "{{ docker_images_path }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  loop: "{{ files }}"
+  vars:
+    files:
+      - "{{ kubernetesImagePath }}/"
+  when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true
+ 
+- name: Load Kubernetes Images
+  command: "{{ docker_bin_path }} load -i {{ docker_images_path }}/{{ item.value }}.tar"
+  loop: "{{ kubernetes_images | dict2items }}"
+  when: kubernetesImagePath is defined and k8_file_details.stat.exists and k8_file_details.stat.isdir == true

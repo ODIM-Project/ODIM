@@ -1,0 +1,190 @@
+{
+    "@Redfish.Copyright": "Copyright 2014-2020 DMTF in cooperation with the Storage Networking Industry Association (SNIA). All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "JobEvent.1.0.0",
+    "Name": "Job Event Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for job related events.",
+    "RegistryPrefix": "JobEvent",
+    "RegistryVersion": "1.0.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "JobStarted": {
+            "Description": "A job has started.",
+            "LongDescription": "This message shall be used to indicate that a job has started as the `JobState` property transitions to `Starting` or `Running`.",
+            "Message": "The job with Id '%1' has started.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job that started."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has started."
+            ],
+            "Resolution": "None."
+        },
+        "JobCompletedOK": {
+            "Description": "A job has completed.",
+            "LongDescription": "This message shall be used to indicate that a job has completed and the `JobState` property transitioned to `Completed`.",
+            "Message": "The job with Id '%1' has completed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has completed."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "JobStarted"
+                ]
+            }
+        },
+        "JobCompletedException": {
+            "Description": "A job has completed with warnings or errors.",
+            "LongDescription": "This message shall be used to indicate that a job has completed and the `JobState` property transitioned to `Exception`.",
+            "Message": "The job with Id '%1' has completed with warnings or errors.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has completed with warnings or errors."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "JobStarted",
+                    "JobSuspended"
+                ]
+            }
+        },
+        "JobCancelled": {
+            "Description": "A job has been cancelled.",
+            "LongDescription": "This message shall be used to indicate that a job has been cancelled and the `JobState` property transitioned to `Cancelled`.",
+            "Message": "The job with Id '%1' has been cancelled.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has been cancelled."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "JobStarted"
+                ]
+            }
+        },
+        "JobRemoved": {
+            "Description": "A job has been removed.",
+            "LongDescription": "This message shall be used to indicate that a job has been removed.",
+            "Message": "The job with Id '%1' has been removed.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has been removed."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsAll": true
+            }
+        },
+        "JobSuspended": {
+            "Description": "A job has been susepended.",
+            "LongDescription": "This message shall be used to indicate that a job has been susepended and the `JobState` property transitioned to `Suspended`, `Interrupted`, or `UserIntervention`.",
+            "Message": "The job with Id '%1' has been susepended.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has been susepended."
+            ],
+            "Resolution": "None."
+        },
+        "JobResumed": {
+            "Description": "A job has resumed.",
+            "LongDescription": "This message shall be used to indicate that a job has resumed and the `JobState` property transitioned to `Running` from `Suspended`, `Interrupted`, or `UserIntervention`.",
+            "Message": "The job with Id '%1' has resumed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has resumed."
+            ],
+            "Resolution": "None.",
+            "ClearingLogic": {
+                "ClearsIf": "SameOriginOfCondition",
+                "ClearsMessage": [
+                    "JobSuspended"
+                ]
+            }
+        },
+        "JobProgressChanged": {
+            "Description": "A job has changed progress.",
+            "LongDescription": "This message shall be used to indicate that a job has changed progress.",
+            "Message": "The job with Id '%1' has changed to progress %2 percent complete.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "number"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the job.",
+                "The percent completion of the job."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the value of the `Id` property of the job resource that has changed progress.",
+                "This argument shall contain the percent completion of the job that has changed progress and shall be a value from 0 to 100."
+            ],
+            "Resolution": "None."
+        }
+    }
+}

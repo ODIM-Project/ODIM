@@ -19,13 +19,14 @@ package account
 // IMPORT Section
 // ---------------------------------------------------------------------------------------
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Delete defines deletion of an existing account.
@@ -55,15 +56,12 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
-		errorMessage := "error: " + session.UserName + " does not have the privilege to delete user"
+		errorMessage := session.UserName + " does not have the privilege to delete user"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -78,15 +76,12 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 
 	if derr := asmodel.DeleteUser(accountID); derr != nil {
-		errorMessage := "error while deleting user: " + derr.Error()
+		errorMessage := "Unable to delete user: " + derr.Error()
 		if errors.DBKeyNotFound == derr.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -105,24 +100,11 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.AccountRemoved
-
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
-		"X-Frame-Options":   "sameorigin",
-	}
-
 	return resp
 }

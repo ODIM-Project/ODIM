@@ -17,7 +17,7 @@ package auth
 
 import (
 	"encoding/base64"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 
@@ -36,18 +36,18 @@ var Lock sync.Mutex
 func CheckSessionCreationCredentials(userName, password string) (*asmodel.User, *errors.Error) {
 	go expiredSessionCleanUp()
 	if userName == "" || password == "" {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: username or password missing")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
 	}
 	user, err := asmodel.GetUserDetails(userName)
 	if err != nil {
-		return nil, errors.PackError(err.ErrNo(), "error while trying to get user with username ", userName, ": ", err.Error())
+		return nil, errors.PackError(err.ErrNo(), "error: Invalid username or password :", err.Error())
 	}
 	hash := sha3.New512()
 	hash.Write([]byte(password))
 	hashSum := hash.Sum(nil)
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	if user.Password != hashedPassword {
-		return nil, errors.PackError(errors.UndefinedErrorType, "error: password mismatch ")
+		return nil, errors.PackError(errors.UndefinedErrorType, "error: Invalid username or password ")
 	}
 	return &user, nil
 }
@@ -77,21 +77,21 @@ func expiredSessionCleanUp() {
 	if time.Since(lastExpiredSessionCleanUpTime).Minutes() > config.Data.AuthConf.ExpiredSessionCleanUpTimeInMins {
 		sessionTokens, err := asmodel.GetAllSessionKeys()
 		if err != nil {
-			log.Printf("error while trying to get all session tokens from DB: %v", err)
+			log.Error("Unable to get all session tokens from DB: %v" + err.Error())
 			return
 		}
 
 		for _, token := range sessionTokens {
 			session, err := asmodel.GetSession(token)
 			if err != nil {
-				log.Printf("error while trying to get session details with the token %v: %v", token, err)
+				log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 				continue
 			}
 			// checking for the timed out sessions
 			if time.Since(session.LastUsedTime).Minutes() > config.Data.AuthConf.SessionTimeOutInMins {
 				err = session.Delete()
 				if err != nil {
-					log.Printf("error while trying to expired session with token %v: %v", token, err)
+					log.Printf("Unable to delete expired session with token " + token + ": " + err.Error())
 					continue
 				}
 			}

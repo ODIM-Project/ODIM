@@ -20,7 +20,7 @@ package update
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -41,7 +41,7 @@ import (
 // error will be passed back.
 func (e *ExternalInterface) GetUpdateService() response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#UpdateService.v1_8_1.UpdateService",
+		OdataType:    common.UpdateServiceType,
 		OdataID:      "/redfish/v1/UpdateService",
 		OdataContext: "/redfish/v1/$metadata#UpdateService.UpdateService",
 		ID:           "UpdateService",
@@ -63,13 +63,7 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
-		"Content-type":  "application/json; charset=utf-8",
 		"Link": "	</redfish/v1/SchemaStore/en/UpdateService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -91,12 +85,16 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 		SoftwareInventory: uresponse.SoftwareInventory{
 			OdataID: "/redfish/v1/UpdateService/SoftwareInventory",
 		},
-		Action: uresponse.Action{
+		Actions: uresponse.Actions{
 			UpdateServiceSimpleUpdate: uresponse.UpdateServiceSimpleUpdate{
-				Target: "/redfish/v1/UpdateService/Actions/SimpleUpdate",
+				Target: "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
+				RedfishOperationApplyTimeSupport: uresponse.RedfishOperationApplyTimeSupport{
+					OdataType:       common.SettingsType,
+					SupportedValues: []string{"OnStartUpdateRequest"},
+				},
 			},
 			UpdateServiceStartUpdate: uresponse.UpdateServiceStartUpdate{
-				Target: "/redfish/v1/UpdateService/Actions/StartUpdate",
+				Target: "/redfish/v1/UpdateService/Actions/UpdateService.StartUpdate",
 			},
 		},
 	}
@@ -109,26 +107,18 @@ func (e *ExternalInterface) GetUpdateService() response.RPC {
 // resources from the added BMC's
 func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	firmwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
 		OdataID:      "/redfish/v1/UpdateService/FirmwareInventory",
-		OdataType:    "#FirmwareInventoryCollection.FirmwareInventoryCollection",
+		OdataType:    "#SoftwareInventoryCollection.SoftwareInventoryCollection",
 		Description:  "FirmwareInventory view",
 		Name:         "FirmwareInventory",
 	}
-	var members []dmtf.Link
 
+	members := []dmtf.Link{}
 	firmwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("FirmwareInventory", common.InMemory)
 	if err != nil || len(firmwareCollectionKeysArray) == 0 {
-		log.Printf("odimra Doesnt have Servers")
+		log.Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range firmwareCollectionKeysArray {
@@ -149,23 +139,15 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
-	requestData := strings.Split(req.ResourceID, ":")
+	requestData := strings.Split(req.ResourceID, ".")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"FirmwareInventory", req.ResourceID}, nil)
 	}
 	data, gerr := e.DB.GetResource("FirmwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Printf("error getting firmware inventory details : %v", gerr.Error())
+		log.Warn("Unable to get firmware inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{
@@ -202,14 +184,6 @@ func (e *ExternalInterface) GetFirmwareInventory(req *updateproto.UpdateRequest)
 // resources from the added BMC's
 func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	softwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#SoftwareInventoryCollection.SoftwareCollection",
 		OdataID:      "/redfish/v1/UpdateService/SoftwareInventory",
@@ -217,11 +191,11 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 		Description:  "SoftwareInventory view",
 		Name:         "SoftwareInventory",
 	}
-	var members []dmtf.Link
 
+	members := []dmtf.Link{}
 	softwareCollectionKeysArray, err := e.DB.GetAllKeysFromTable("SoftwareInventory", common.InMemory)
 	if err != nil || len(softwareCollectionKeysArray) == 0 {
-		log.Printf("odimra Doesnt have Servers")
+		log.Warn("odimra doesnt have servers")
 	}
 
 	for _, key := range softwareCollectionKeysArray {
@@ -242,23 +216,15 @@ func (e *ExternalInterface) GetAllSoftwareInventory(req *updateproto.UpdateReque
 // status code, status message, headers and body and the second value is error.
 func (e *ExternalInterface) GetSoftwareInventory(req *updateproto.UpdateRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 
-	requestData := strings.Split(req.ResourceID, ":")
+	requestData := strings.Split(req.ResourceID, ".")
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"SoftwareInventory", req.ResourceID}, nil)
 	}
 	data, gerr := e.DB.GetResource("SoftwareInventory", req.URL, common.InMemory)
 	if gerr != nil {
-		log.Printf("error getting software inventory details : %v", gerr.Error())
+		log.Warn("Unable to get software inventory details : " + gerr.Error())
 		errorMessage := gerr.Error()
 		if errors.DBKeyNotFound == gerr.ErrNo() {
 			var getDeviceInfoRequest = ucommon.ResourceInfoRequest{

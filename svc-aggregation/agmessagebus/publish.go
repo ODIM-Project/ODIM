@@ -16,36 +16,49 @@ package agmessagebus
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
+	"time"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 //Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(systemID, eventType, collectionType string) {
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Println("Unable to connect to kafka", err)
+		log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
 
-	defer k.Close()
+	var message string
+	switch eventType {
+	case "ResourceAdded":
+		message = "The resource has been created successfully."
+	case "ResourceRemoved":
+		message = "The resource has been removed successfully."
+	}
+
 	var event = common.Event{
-		EventID:   uuid.NewV4().String(),
-		MessageID: "ResourceEvent.1.0.3." + eventType,
-		EventType: eventType,
+		EventID:        uuid.NewV4().String(),
+		MessageID:      "ResourceEvent.1.2.0." + eventType,
+		EventTimestamp: time.Now().Format(time.RFC3339),
+		EventType:      eventType,
+		Message:        message,
 		OriginOfCondition: &common.Link{
 			Oid: systemID,
 		},
+		Severity: "OK",
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
 		Name:      "Resource Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
-		OdataType: "#Event.v1_4_0.Event",
+		OdataType: common.EventType,
 		Events:    events,
 	}
 	data, _ := json.Marshal(messageData)
@@ -54,10 +67,32 @@ func Publish(systemID, eventType, collectionType string) {
 		Request: data,
 	}
 
-	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
-		log.Println("Unable Publish events to kafka", err)
+	if err := k.Distribute(mbevent); err != nil {
+		log.Error("Unable Publish events to kafka" + err.Error())
 		return
 	}
-	log.Println("Event Published")
+	log.Info("Event Published")
 
+}
+
+// PublishCtrlMsg publishes ODIM control messages to the message bus
+func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
+	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	conn, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
+	if err != nil {
+		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
+	}
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %s", err.Error())
+	}
+	ctrlMsg := common.ControlMessageData{
+		MessageType: msgType,
+		Data:        data,
+	}
+	if err := conn.Distribute(ctrlMsg); err != nil {
+		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
+	}
+	return nil
 }

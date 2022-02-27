@@ -14,7 +14,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -22,39 +21,47 @@ import (
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-update/rpc"
+	"github.com/sirupsen/logrus"
 )
 
+var log = logrus.New()
+
 func main() {
+	//log.SetFormatter(&log.TextFormatter{})
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("System Service should not be run as the root user")
+		log.Error("Update Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Error("fatal: error while trying set up configuration: " + err.Error())
 	}
+
+	config.CollectCLArgs()
 
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Error("error while trying to check DB connection health: " + err.Error())
 	}
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
 
-	err := services.InitializeService(services.Update)
-	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
-	}
 	registerHandlers()
 	// Run server
-	if err := services.Service.Run(); err != nil {
-		log.Fatal(err)
+	if err := services.ODIMService.Run(); err != nil {
+		log.Error(err)
 	}
 
 }
 
 func registerHandlers() {
-	err := services.InitializeService(services.Update)
-	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+	if err := services.InitializeService(services.Update); err != nil {
+		log.Error("fatal: error while trying to initialize service: " + err.Error())
 	}
 	updater := rpc.GetUpdater()
-	updateproto.RegisterUpdateHandler(services.Service.Server(), updater)
+	updateproto.RegisterUpdateServer(services.ODIMService.Server(), updater)
 }

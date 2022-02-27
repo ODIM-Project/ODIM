@@ -19,8 +19,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -35,69 +36,72 @@ type Fabrics struct {
 
 // GetFabricResource defines the operation which handled the RPC request response
 // for getting the specified fabric resource information
-func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.FabricRequest, resp *fabricsproto.FabricResponse) error {
+func (f *Fabrics) GetFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 	fab := fabrics.Fabrics{
 		Auth:          f.IsAuthorizedRPC,
 		ContactClient: f.ContactClientRPC,
 	}
+	resp := &fabricsproto.FabricResponse{}
 	data := fab.GetFabricResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-	return nil
+	return resp, nil
 }
 
 // UpdateFabricResource defines  the operation which handles the RPC request response
 // for creating/updating the specific fabric resource
-func (f *Fabrics) UpdateFabricResource(ctx context.Context, req *fabricsproto.FabricRequest, resp *fabricsproto.FabricResponse) error {
+func (f *Fabrics) UpdateFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 	fab := fabrics.Fabrics{
 		Auth:          f.IsAuthorizedRPC,
 		ContactClient: f.ContactClientRPC,
 	}
+	resp := &fabricsproto.FabricResponse{}
 	data := fab.UpdateFabricResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.Body = generateResponse(data.Body)
 	resp.StatusMessage = data.StatusMessage
 
-	return nil
+	return resp, nil
 
 }
 
 // AddFabric defines  the operation which handles the RPC request response for Add fabric
-func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest, resp *fabricsproto.FabricResponse) error {
-
+func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) (*fabricsproto.FabricResponse, error) {
+	resp := &fabricsproto.FabricResponse{}
 	data := fabrics.AddFabric(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
 
-	return nil
+	return resp, nil
 
 }
 
 // DeleteFabricResource defines the operation which handled the RPC request response
 // for deleting the specified fabric resource information
-func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.FabricRequest, resp *fabricsproto.FabricResponse) error {
+func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {
 	fab := fabrics.Fabrics{
 		Auth:          f.IsAuthorizedRPC,
 		ContactClient: f.ContactClientRPC,
 	}
+	resp := &fabricsproto.FabricResponse{}
 	data := fab.DeleteFabricResource(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
 
-	return nil
+	return resp, nil
 }
 
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }

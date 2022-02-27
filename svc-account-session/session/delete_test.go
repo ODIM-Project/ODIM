@@ -77,7 +77,7 @@ func TestDeleteSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error: while trying to delete session: error while trying to get the session from DB: no data with the with key  found",
+				ErrorMessage:  "Unable to delete session: error while trying to get the session from DB: no data with the with key  found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -121,10 +121,7 @@ func TestDeleteSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgUnauth.CreateGenericErrorResponse(),
+				Body:          errArgUnauth.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -138,7 +135,6 @@ func TestDeleteSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        getHeader(),
 				Body:          eArgs.CreateGenericErrorResponse(),
 			},
 		},
@@ -154,7 +150,6 @@ func TestDeleteSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNoContent,
 				StatusMessage: response.ResourceRemoved,
-				Header:        getHeader(),
 			},
 		},
 		{
@@ -168,7 +163,6 @@ func TestDeleteSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        getHeader(),
 				Body:          errArgIns.CreateGenericErrorResponse(),
 			},
 		},

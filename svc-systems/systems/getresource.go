@@ -20,7 +20,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"regexp"
@@ -40,21 +40,11 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
-// Schema is used to define the allowed values for search/filter
-type Schema struct {
-	SearchKeys    []map[string]map[string]string `json:"searchKeys"`
-	ConditionKeys []string                       `json:"conditionKeys"`
-	QueryKeys     []string                       `json:"queryKeys"`
-}
-
-// SF holds the schema data for search/filter
-var SF Schema
-
 func setRegexFlag(val string) bool {
 	var re = regexp.MustCompile(`(?m)[\[\]!@#$%^&*(),.?":{}|<>]`)
 
 	for i, match := range re.FindAllString(val, -1) {
-		log.Println(match, " found at ", i)
+		log.Info("Matched entry no.: " + string(rune(i)) + " match=" + match)
 		return true
 	}
 	return false
@@ -74,7 +64,7 @@ func ifMatches(strPara string, operator string, resp response.RPC) (response.RPC
 
 		resp, err := errorResp(e, resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 	}
@@ -85,14 +75,14 @@ func validate(strPara string, resp response.RPC) (response.RPC, error) {
 	if strings.Contains(strPara, "and") {
 		resp, err := ifMatches(strPara, "and", resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 	}
 	if strings.Contains(strPara, "or") {
 		resp, err := ifMatches(strPara, "or", resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 	}
@@ -131,18 +121,18 @@ func GetMembers(allowed map[string]map[string]bool, expression []string, resp re
 
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
-	for _, value := range SF.SearchKeys {
+	for _, value := range scommon.SF.SearchKeys {
 		for k := range value {
 			allowed["searchKeys"][k] = true
 		}
 	}
-	for _, value := range SF.ConditionKeys {
+	for _, value := range scommon.SF.ConditionKeys {
 		allowed["conditionKeys"][value] = true
 	}
 	var members []dmtf.Link
 	var regexFlag, typeFlag, arrayFlag bool
 	for amp, pam := range expression {
-		for _, value := range SF.SearchKeys {
+		for _, value := range scommon.SF.SearchKeys {
 			for k, v := range value {
 				if k == pam {
 					if v["type"] != "string" && v["type"] != "[]string" {
@@ -253,7 +243,7 @@ func getAllSystemIDs(resp response.RPC) ([]dmtf.Link, response.RPC, error) {
 	var mems []dmtf.Link
 	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
 	if err != nil {
-		log.Printf("error getting all keys of systemcollection table : %v", err)
+		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
 			return nil, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil), err
@@ -312,7 +302,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 	allowed["queryKeys"] = make(map[string]bool)
 	allowed["logicalOperators"] = make(map[string]bool)
 
-	for _, value := range SF.QueryKeys {
+	for _, value := range scommon.SF.QueryKeys {
 		value = "$" + value
 		allowed["queryKeys"][value] = true
 	}
@@ -344,7 +334,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 	var respMembers []dmtf.Link
 	var err error
 
-	if strings.Contains(strPara, "(") || strings.Contains(strPara, ")") {
+	if checkParentheses(strPara) {
 		if strings.Count(strPara, "(") != strings.Count(strPara, ")") {
 			errorMessage := " not a valid search/filter expression"
 			return common.GeneralError(http.StatusBadRequest, response.QueryCombinationInvalid, errorMessage, []interface{}{"ComputerSystem", ""}, nil), fmt.Errorf(errorMessage)
@@ -422,14 +412,14 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 			var inter [][]dmtf.Link
 			resp, err = validate(strPara, resp)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return resp, err
 			}
 			if strings.Contains(strPara, " and ") {
 				for _, e := range strings.Split(strPara, " and ") {
 					resp, err = errorResp(e, resp)
 					if err != nil {
-						log.Println(err.Error())
+						log.Error(err.Error())
 						return resp, err
 					}
 					_ = json.Unmarshal([]byte(e), &ww)
@@ -441,7 +431,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 				for _, e := range strings.Split(strPara, " or ") {
 					resp, err = errorResp(e, resp)
 					if err != nil {
-						log.Println(err.Error())
+						log.Error(err.Error())
 						return resp, err
 					}
 					_ = json.Unmarshal([]byte(e), &ww)
@@ -468,14 +458,14 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 		var inter [][]dmtf.Link
 		resp, err = validate(strPara, resp)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return resp, err
 		}
 		if strings.Contains(strPara, " and ") {
 			for _, each := range strings.Split(strPara, " and ") {
 				resp, err = errorResp(each, resp)
 				if err != nil {
-					log.Println(err.Error())
+					log.Error(err.Error())
 					return resp, err
 				}
 				ww, resp, err = GetMembers(allowed, strings.Split(each, " "), resp)
@@ -490,7 +480,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 			for _, each := range strings.Split(strPara, " or ") {
 				resp, err = errorResp(each, resp)
 				if err != nil {
-					log.Println(err.Error())
+					log.Error(err.Error())
 					return resp, err
 				}
 				ww, resp, err = GetMembers(allowed, strings.Split(each, " "), resp)
@@ -529,7 +519,7 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 	}
 	systemCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
-		OdataID:      "/redfish/v1/Systems/",
+		OdataID:      "/redfish/v1/Systems",
 		OdataType:    "#ComputerSystemCollection.ComputerSystemCollection",
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",
@@ -552,72 +542,107 @@ func SearchAndFilter(paramStr []string, resp response.RPC) (response.RPC, error)
 // There will be two return values for the fuction. One is the RPC response, which contains the
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) response.RPC {
+	log.Debug("Entering the GetSystemResource with URL : ", req.URL)
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
-	var saveRequired bool
-	// check the whether SystemResetInfo available in db. If it is available, then don't save the data in DB.
-	_, err := smodel.GetSystemResetInfo(req.URL)
-	if err != nil { // if err means, url is not available in SystemResetInfo, so data can be saved in DB.
-		saveRequired = true
-	}
-
-	requestData := strings.Split(req.RequestParam, ":")
+	// Splitting the SystemID to get UUID
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
 	}
 	uuid := requestData[0]
 
-	urlData := strings.Split(req.URL, "/")
-	//generating serachUrl which will be a part of key and also used in formatting  response
-	var tableName string
-	if req.ResourceID == "" {
-		resourceName := urlData[len(urlData)-1]
-		tableName = common.SystemResource[resourceName]
-	} else {
-		tableName = urlData[len(urlData)-2]
-	}
-
-	data, err := smodel.GetResource(tableName, req.URL)
-	if err != nil {
-		log.Printf("error getting system details : %v", err.Error())
-		errorMessage := err.Error()
-		if errors.DBKeyNotFound == err.ErrNo() {
-			var getDeviceInfoRequest = scommon.ResourceInfoRequest{
-				URL:             req.URL,
-				UUID:            uuid,
-				SystemID:        requestData[1],
-				ContactClient:   p.ContactClient,
-				DevicePassword:  p.DevicePassword,
-				GetPluginStatus: p.GetPluginStatus,
-			}
-			var err error
-			if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
-				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
-			}
-			if saveRequired && strings.Contains(req.URL, "/Storage") {
-				rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
-			}
-
-		} else {
-			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	var respData string
+	var saveRequired bool
+	// Getting the reset flag details for the requested URL
+	deviceLoadFlag := getDeviceLoadInfo(req.URL, req.RequestParam)
+	// deviceLoadFlag is true means flag is set for requested URL or the SystemID URL, load from device
+	// deviceLoadFlag is false indicates flag is not set, load from DB
+	if deviceLoadFlag {
+		log.Debug("SystemReset flag is found for the URL ", req.URL)
+		var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+			URL:             req.URL,
+			UUID:            uuid,
+			SystemID:        requestData[1],
+			ContactClient:   p.ContactClient,
+			DevicePassword:  p.DevicePassword,
+			GetPluginStatus: p.GetPluginStatus,
 		}
+		log.Debug("Getting resource data from device for URL ", req.URL)
+		var err error
+		if respData, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+		}
+	} else {
+		saveRequired = true
+		urlData := strings.Split(req.URL, "/")
+		//generating search URL which will be a part of key and also used in formatting response
+		var tableName string
+		if req.ResourceID == "" {
+			resourceName := urlData[len(urlData)-1]
+			tableName = common.SystemResource[resourceName]
+		} else {
+			tableName = urlData[len(urlData)-2]
+		}
+
+		log.Debug("Getting the details from DB for URL ", req.URL)
+		data, err := smodel.GetResource(tableName, req.URL)
+		if err != nil {
+			log.Error("getting system details from DB: " + err.Error())
+			errorMessage := err.Error()
+			if errors.DBKeyNotFound == err.ErrNo() {
+				var getDeviceInfoRequest = scommon.ResourceInfoRequest{
+					URL:             req.URL,
+					UUID:            uuid,
+					SystemID:        requestData[1],
+					ContactClient:   p.ContactClient,
+					DevicePassword:  p.DevicePassword,
+					GetPluginStatus: p.GetPluginStatus,
+				}
+				var err error
+				log.Debug("Getting the details from device for URL ", req.URL)
+				if data, err = scommon.GetResourceInfoFromDevice(getDeviceInfoRequest, saveRequired); err != nil {
+					return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"ComputerSystem", req.URL}, nil)
+				}
+				if saveRequired && strings.Contains(req.URL, "/Storage") {
+					rediscoverStorageInventory(uuid, "/redfish/v1/Systems/"+requestData[1]+"/Storage")
+				}
+			} else {
+				return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+			}
+		}
+		respData = data
 	}
 	var resource map[string]interface{}
-	json.Unmarshal([]byte(data), &resource)
+	json.Unmarshal([]byte(respData), &resource)
 	resp.Body = resource
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-
+	log.Debug("Exiting the GetSystemResource with response ", resp)
 	return resp
+}
+
+// getDeviceLoadInfo accepts URL and System ID as parameters and returns int
+// returns true if exact URL entry is found in the DeviceLoad
+// returns true if System ID entry is found in the DeviceLoad
+// returns false if no entry is found in the DeviceLoad for the requested URL and System ID
+func getDeviceLoadInfo(URL, systemID string) bool {
+	systemURL := "/redfish/v1/Systems/" + systemID
+	var resetFlag bool
+	if _, err := smodel.GetSystemResetInfo(URL); err == nil {
+		resetFlag = true
+	} else if _, err := smodel.GetSystemResetInfo(systemURL); err == nil {
+		resetFlag = true
+	}
+	if resetFlag {
+		resetFlag = false
+		for _, resourceName := range common.RediscoverResources {
+			if strings.Contains(URL, resourceName) {
+				resetFlag = true
+			}
+		}
+	}
+	return resetFlag
 }
 
 // rediscoverSystemInventory will be triggered when ever the a valid storage URI or underneath URI's
@@ -625,16 +650,24 @@ func (p *PluginContact) GetSystemResource(req *systemsproto.GetSystemsRequest) r
 // and rediscover all of them
 func rediscoverStorageInventory(systemID, systemURL string) {
 	systemURL = strings.TrimSuffix(systemURL, "/")
-	aggregator := aggregatorproto.NewAggregatorService(services.Aggregator, services.Service.Client())
-	_, err := aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
+
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		log.Error("failed to get client connection object for aggregator service")
+		return
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	_, err = aggregator.RediscoverSystemInventory(context.TODO(), &aggregatorproto.RediscoverSystemInventoryRequest{
 		SystemID:  systemID,
 		SystemURL: systemURL,
 	})
 	if err != nil {
-		log.Println("Error while rediscoverStorageInventroy")
+		log.Error("Error while rediscoverStorageInventroy")
 		return
 	}
-	log.Println("info: rediscovery of system storage started.")
+	log.Info("rediscovery of system storage started.")
 	return
 }
 
@@ -645,26 +678,18 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	allowed["searchKeys"] = make(map[string]bool)
 	allowed["conditionKeys"] = make(map[string]bool)
 	allowed["queryKeys"] = make(map[string]bool)
-	for _, value := range SF.SearchKeys {
+	for _, value := range scommon.SF.SearchKeys {
 		for k := range value {
 			allowed["searchKeys"][k] = true
 		}
 	}
-	for _, value := range SF.ConditionKeys {
+	for _, value := range scommon.SF.ConditionKeys {
 		allowed["conditionKeys"][value] = true
 	}
-	for _, value := range SF.QueryKeys {
+	for _, value := range scommon.SF.QueryKeys {
 		allowed["queryKeys"][value] = true
 	}
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	paramStr := strings.SplitN(req.URL, "?", 2)
 	if len(paramStr) > 1 {
 		resp, retError := SearchAndFilter(paramStr, resp)
@@ -675,7 +700,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	}
 	systemKeys, err := smodel.GetAllKeysFromTable("ComputerSystem")
 	if err != nil {
-		log.Printf("error getting all keys of systemcollection table : %v", err)
+		log.Error("error getting all keys of systemcollection table : " + err.Error())
 		errorMessage := err.Error()
 		if errorMessage == "error while trying to get resource details: no data with the with table name SystemCollection found" {
 			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", ""}, nil)
@@ -684,7 +709,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 	}
 	systemCollection := sresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#ComputerSystemCollection.ComputerSystemCollection",
-		OdataID:      "/redfish/v1/Systems/",
+		OdataID:      "/redfish/v1/Systems",
 		OdataType:    "#ComputerSystemCollection.ComputerSystemCollection",
 		Description:  "Computer Systems view",
 		Name:         "Computer Systems",
@@ -712,16 +737,7 @@ func GetSystemsCollection(req *systemsproto.GetSystemsRequest) response.RPC {
 // status code, status message, headers and body and the second value is error.
 func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response.RPC {
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
-	requestData := strings.Split(req.RequestParam, ":")
+	requestData := strings.SplitN(req.RequestParam, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -748,7 +764,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 	} else {
 		data, err = smodel.GetSystemByUUID(req.URL)
 		if err != nil {
-			log.Printf("error getting system details : %v", err.Error())
+			log.Error("error getting system details : " + err.Error())
 			errorMessage := err.Error()
 			if errors.DBKeyNotFound == err.ErrNo() {
 				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"ComputerSystem", req.RequestParam}, nil)
@@ -756,7 +772,7 @@ func (p *PluginContact) GetSystems(req *systemsproto.GetSystemsRequest) response
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		}
 	}
-	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`:`, -1)
+	data = strings.Replace(data, `"Id":"`, `"Id":"`+uuid+`.`, -1)
 	var resource map[string]interface{}
 	json.Unmarshal([]byte(data), &resource)
 	resp.Body = resource
@@ -834,13 +850,15 @@ func getRangeData(key, expr string, match int, regexFlag bool) ([]string, error)
 }
 
 func parseRegexData(data []string, regex string) ([]string, error) {
+	regex = strings.Replace(regex, "(", "\\(", -1)
+	regex = strings.Replace(regex, ")", "\\)", -1)
 	regex = "(?i)" + regex
 	var list = make([]string, 0)
 	for i := 0; i < len(data); i++ {
 		values := strings.Split(data[i], "::")
 		found, err := regexp.MatchString(regex, values[0])
 		if err != nil {
-			log.Println("regular expression error: ", err)
+			log.Error("regular expression error: " + err.Error())
 			return list, err
 		}
 		if found {
@@ -849,4 +867,16 @@ func parseRegexData(data []string, regex string) ([]string, error) {
 
 	}
 	return list, nil
+}
+
+// this function checks query has open bracket["("] as prefix to ignore the brackets inside the string
+// for e.g if query is ProcessorSummary/Model eq Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz
+// here Inter(R) has bracket inbetween the string, so ignore this string for the first if search criteria
+func checkParentheses(strPara string) bool {
+	for _, val := range strings.Split(strPara, " ") {
+		if strings.HasPrefix(val, "(") {
+			return true
+		}
+	}
+	return false
 }

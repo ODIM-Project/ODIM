@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fabrics
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: fabrics
+spec:
+  ports:
+    - port: 45106
+  selector:
+    app: fabrics

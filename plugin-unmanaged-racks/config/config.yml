@@ -1,0 +1,78 @@
+# Copyright (c) 2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+####################################################################################################
+# URP Server                                                                                       #
+#--------------------------------------------------------------------------------------------------#
+# Following section configures server where URP's REST API is exposed                              #
+####################################################################################################
+Host: odimra.local
+Port: 45003
+
+RSAPrivateKeyPath: "/etc/plugincert/odimra_rsa.private"
+RSAPublicKeyPath: "/etc/plugincert/odimra_rsa.public"
+
+PKIRootCACertificatePath: "/etc/plugincert/rootCA.crt"
+PKIPrivateKeyPath: "/etc/plugincert/odimra_server.key"
+PKICertificatePath: "/etc/plugincert/odimra_server.crt"
+
+TLSConf:
+  ### Supported TLS versions:
+  #	VersionTLS12 = 0x0303
+  #	VersionTLS13 = 0x0304
+  ###########################
+  MinVersion: 0x0303
+  MaxVersion: 0x0303
+
+####################################################################################################
+#  Basic Authentication                                                                            #
+####################################################################################################
+UserName: admin
+Password: O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==
+
+####################################################################################################
+# REDFISH                                                                                          #
+####################################################################################################
+RootServiceUUID: 99999999-9999-9999-9999-999999999999           # exposed on plugin's service root
+FirmwareVersion: v1.0.0                                         # exposed on plugin's manager
+
+####################################################################################################
+# ODIM's NB interface                                                                              #
+####################################################################################################
+OdimURL: https://odimra.local:45000
+# OdimUserName is a username being known for ODIM's NB API
+OdimUserName: admin
+###
+# OdimPassword variable contains encoded and encrypted password matching to the OdimUserName
+# Raw password would be encoded and encrypted using following command:
+# echo -n "MySecretPassword" |openssl pkeyutl -encrypt -inkey private.key -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+##
+OdimPassword: #password#
+
+####################################################################################################
+# REDIS/Sentinel Configuration                                                                              #
+####################################################################################################
+# If you are running raw Redis, stay with 'SentinelMasterName' commented, otherwise
+# uncomment it and set proper Sentinel master name.
+# Uncommented 'SentinelMasterName' property, forces URP to initialize failover redis client which
+# will work only if your Redis has been configured with Sentinel support.
+#
+# SentinelMasterName: mymaster
+#
+RedisAddress: odimra.local:6380
+
+####################################################################################################
+# Logging                                                                                          #
+####################################################################################################
+LogLevel: debug

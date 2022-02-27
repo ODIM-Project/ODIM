@@ -46,7 +46,6 @@ func TestSetConfiguration(t *testing.T) {
 	var sampleConfig = `{
         "RootServiceUUID": "a9762fb2-b9dd-4ce8-818a-af6833ba19f6",
         "LocalhostFQDN": "test.odim.local",
-        "MessageQueueConfigFilePath": "/tmp/testFile.dat",
         "SearchAndFilterSchemaPath": "/tmp/testFile.dat",
         "RegistryStorePath": "/tmp",
         "KeyCertConf": {
@@ -71,6 +70,11 @@ func TestSetConfiguration(t *testing.T) {
                 "MaxIdleConns": 10,
                 "MaxActiveConns": 120
         },
+       	"MessageBusConf": {
+      			"MessageBusConfigFilePath": "/tmp/testFile.dat",
+	                "MessageBusType": "Kafka",
+      			"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	      },
         "FirmwareVersion": "1.0",
         "SouthBoundRequestTimeoutInSecs": 10,
         "ServerRediscoveryBatchSize": 30,
@@ -84,16 +88,22 @@ func TestSetConfiguration(t *testing.T) {
                 }
         },
         "AddComputeSkipResources": {
-                "SystemCollection": [
+                "SkipResourceListUnderSystem": [
                         "Chassis",
+                        "LogServices",
+						"Managers"
+                ],
+				"SkipResourceListUnderManager": [
+                        "Chassis",
+                        "Systems",
                         "LogServices"
                 ],
-                "ChassisCollection": [
+                "SkipResourceListUnderChassis": [
                         "Managers",
                         "Systems",
                         "Devices"
                 ],
-                "OtherCollection": [
+                "SkipResourceListUnderOthers": [
                         "Power",
                         "Thermal",
                         "SmartStorage",
@@ -141,7 +151,12 @@ func TestSetConfiguration(t *testing.T) {
 				"ConnectionMethodType":"Redfish",
 				"ConnectionMethodVariant":"Storage:STG_v1.0.0"
 			}
-		]
+		],
+    "EventConf": {
+  		"DeliveryRetryAttempts" : 1,
+  		"DeliveryRetryIntervalSeconds" : 1,
+  		"RetentionOfUndeliveredEventsInMinutes" : 1
+    }
 }`
 
 	tests := []struct {
@@ -217,10 +232,6 @@ func TestValidateConfigurationGroup1(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "Invalid value for MessageQueueConfigFilePath",
-			wantErr: true,
-		},
-		{
 			name:    "Invalid value for SearchAndFilterSchemaPath",
 			wantErr: true,
 		},
@@ -253,16 +264,14 @@ func TestValidateConfigurationGroup1(t *testing.T) {
 			Data.SouthBoundRequestTimeoutInSecs = 10
 			Data.LocalhostFQDN = "test.odim.local"
 		case 3:
-			Data.MessageQueueConfigFilePath = sampleFileForTest
-		case 4:
 			Data.SearchAndFilterSchemaPath = sampleFileForTest
-		case 5:
+		case 4:
 			Data.RegistryStorePath = cwdDir
-		case 6:
+		case 5:
 			Data.EnabledServices = []string{"API"}
-		case 7:
+		case 6:
 			Data.SupportedPluginTypes = []string{"plugin"}
-		case 8:
+		case 7:
 			Data.DBConf = &DBConf{
 				Protocol: "tcp",
 			}
@@ -324,6 +333,18 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			name:    "Invalid value for RSAPrivateKeyPath",
 			wantErr: true,
 		},
+		{
+			name:    "Invalid value for MessageBusConfigFilePath",
+			wantErr: true,
+		},
+		{
+			name:    "Invalid value for MessageBusType",
+			wantErr: true,
+		},
+		{
+			name:    "Invalid value for MessageBusQueue",
+			wantErr: true,
+		},
 	}
 	for num, tt := range tests {
 		switch num {
@@ -350,6 +371,14 @@ func TestValidateConfigurationGroup2(t *testing.T) {
 			Data.KeyCertConf.RSAPublicKeyPath = sampleFileForTest
 		case 9:
 			Data.KeyCertConf.RSAPrivateKeyPath = sampleFileForTest
+		case 10:
+			Data.MessageBusConf = &MessageBusConf{
+				MessageBusConfigFilePath: sampleFileForTest,
+			}
+		case 11:
+			Data.MessageBusConf.MessageBusType = "Kafka"
+		case 12:
+			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
@@ -404,15 +433,19 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Invalid value for AddComputeSkipResources.ChassisCollection",
+			name:    "Invalid value for AddComputeSkipResources.SkipResourceListUnderChassis",
 			wantErr: false,
 		},
 		{
-			name:    "Invalid value for AddComputeSkipResources.OtherCollection",
+			name:    "Invalid value for AddComputeSkipResources.SkipResourceListUnderOthers",
 			wantErr: false,
 		},
 		{
 			name:    "Invalid value for URLTranslation",
+			wantErr: false,
+		},
+		{
+			name:    "Invalid value for AddComputeSkipResources.SkipResourceListUnderManager",
 			wantErr: false,
 		},
 	}
@@ -449,22 +482,60 @@ func TestValidateConfigurationGroup3(t *testing.T) {
 			Data.APIGatewayConf.CertificatePath = sampleFileForTest
 		case 8:
 			Data.AddComputeSkipResources = &AddComputeSkipResources{
-				SystemCollection: []string{"Chassis", "LogServices"},
+				SkipResourceListUnderSystem: []string{"Chassis", "LogServices", "Manager"},
 			}
 		case 9:
-			Data.AddComputeSkipResources.ChassisCollection = []string{"Managers", "Systems", "Devices"}
+			Data.AddComputeSkipResources.SkipResourceListUnderChassis = []string{"Managers", "Systems", "Devices"}
 		case 10:
-			Data.AddComputeSkipResources.OtherCollection = []string{"Power", "Thermal", "SmartStorage"}
+			Data.AddComputeSkipResources.SkipResourceListUnderOthers = []string{"Power", "Thermal", "SmartStorage"}
 		case 11:
 			Data.URLTranslation = &URLTranslation{
 				NorthBoundURL: map[string]string{},
 				SouthBoundURL: map[string]string{},
 			}
 			Data.PluginStatusPolling = &PluginStatusPolling{}
+		case 12:
+			Data.AddComputeSkipResources.SkipResourceListUnderManager = []string{"Chassis", "Systems", "LogServices"}
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
 				t.Errorf("TestValidateConfigurationGroup3() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+	os.Remove(sampleFileForTest)
+}
+
+func TestValidateConfigurationForEventConf(t *testing.T) {
+	sampleFileForTest := filepath.Join(cwdDir, sampleFileName)
+	createFile(t, sampleFileForTest, sampleFileContent)
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "Empty event conf",
+			wantErr: false,
+		},
+		{
+			name:    "Zero value configured, setting to default",
+			wantErr: false,
+		},
+	}
+	for num, tt := range tests {
+		switch num {
+		case 0:
+			Data.EventConf = &EventConf{}
+		case 1:
+			Data.EventConf = &EventConf{
+				DeliveryRetryAttempts:                 0,
+				DeliveryRetryIntervalSeconds:          0,
+				RetentionOfUndeliveredEventsInMinutes: 0,
+			}
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ValidateConfiguration(); (err != nil) != tt.wantErr {
+				t.Errorf("TestValidateConfigurationForEventConf()  = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

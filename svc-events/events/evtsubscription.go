@@ -25,14 +25,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -51,11 +53,32 @@ import (
 
 //PluginContact struct to inject the pmb client function into the handlers
 type PluginContact struct {
-	ContactClient      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth               func(string, []string, []string) response.RPC
-	UpdateTask         func(common.TaskData) error
-	CreateChildTask    func(string, string) (string, error)
-	GetSessionUserName func(sessionToken string) (string, error)
+	ContactClient                    func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth                             func(string, []string, []string) response.RPC
+	CreateTask                       func(string) (string, error)
+	UpdateTask                       func(common.TaskData) error
+	CreateChildTask                  func(string, string) (string, error)
+	GetSessionUserName               func(sessionToken string) (string, error)
+	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
+	SaveEventSubscription            func(evmodel.Subscription) error
+	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
+	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
+	GetTarget                        func(string) (*evmodel.Target, error)
+	GetAllKeysFromTable              func(string) ([]string, error)
+	GetAllFabrics                    func() ([]string, error)
+	GetAllMatchingDetails            func(string, string, common.DbType) ([]string, *errors.Error)
+	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
+	GetFabricData                    func(string) (evmodel.Fabric, error)
+	DeleteEvtSubscription            func(string) error
+	DeleteDeviceSubscription         func(hostIP string) error
+	UpdateEventSubscription          func(evmodel.Subscription) error
+	SaveUndeliveredEvents            func(string, []byte) error
+	SaveDeviceSubscription           func(evmodel.DeviceSubscription) error
+	GetUndeliveredEvents             func(string) (string, error)
+	DeleteUndeliveredEvents          func(string) error
+	GetUndeliveredEventsFlag         func(string) (bool, error)
+	SetUndeliveredEventsFlag         func(string) error
+	DeleteUndeliveredEventsFlag      func(string) error
 }
 
 func fillTaskData(taskID, targetURI, request string, resp errResponse.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
@@ -91,7 +114,7 @@ func UpdateTaskData(taskData common.TaskData) error {
 		if taskData.PercentComplete == 0 {
 			return fmt.Errorf("error while starting the task: %v", err)
 		}
-		log.Printf("error: task update for %v failed with err: %v\n", taskData.TaskID, err)
+		log.Error("error: task update for " + taskData.TaskID + " failed with err: " + err.Error())
 		runtime.Goexit()
 	}
 	return nil
@@ -115,21 +138,13 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		targetURI             = "/redfish/v1/EventService/Subscriptions"
 	)
 
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-
 	if err = json.Unmarshal(req.PostBody, &postRequest); err != nil {
 		// Update the task here with error response
 		errorMessage := "Error while Unmarshaling the Request: " + err.Error()
 		if strings.Contains(err.Error(), "evmodel.OdataIDLink") {
 			errorMessage = "Error processing subscription request: @odata.id key(s) is missing in origin resources list"
 		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 
 		resp = common.GeneralError(http.StatusBadRequest, errResponse.MalformedJSON, errorMessage, []interface{}{}, nil)
 		// Fill task and update
@@ -141,11 +156,11 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	invalidProperties, err := common.RequestParamsCaseValidator(req.PostBody, postRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, errResponse.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
@@ -156,7 +171,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	if err != nil {
 		// Update the task here with error response
 		errorMessage := "error: request payload validation failed: " + err.Error()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 
 		resp = common.GeneralError(statuscode, statusMessage, errorMessage, messageArgs, nil)
 		// Fill task and update
@@ -167,7 +182,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	//validate destination URI in the request
 	if !common.URIValidator(postRequest.Destination) {
 		errorMessage := "error: request body contains invalid value for Destination field, " + postRequest.Destination
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 
 		resp = common.GeneralError(http.StatusBadRequest, errResponse.PropertyValueFormatError, errorMessage, []interface{}{postRequest.Destination, "Destination"}, nil)
 		// Fill task and update
@@ -177,12 +192,12 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 	// check any of the subscription present for the destination from the request
 	// if errored out or no subscriptions then add subscriptions else return an error
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(postRequest.Destination)
+	subscriptionDetails, err := p.GetEvtSubscriptions(postRequest.Destination)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		errorMessage := "Error while get subscription details: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 		return resp
 	}
@@ -191,7 +206,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 			errorMessage := "Subscription already present for the requested destination"
 			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceInUse, http.StatusConflict,
 				[]interface{}{}, &resp)
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Exception, common.Critical, percentComplete, http.MethodPost))
 			return resp
 		}
@@ -250,9 +265,9 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	}()
 
 	for _, origin := range originResources {
-		_, _, err := getTargetDetails(origin)
+		_, _, err := p.getTargetDetails(origin)
 		if err != nil {
-			collection, collectionName, collectionFlag, _ := checkCollection(origin)
+			collection, collectionName, collectionFlag, _ := p.checkCollection(origin)
 			wg.Add(1)
 			// for origin is collection
 			go p.createEventSubscrption(taskID, subTaskChan, sessionUserName, targetURI, postRequest, origin, result, &wg, collectionFlag, collectionName)
@@ -282,7 +297,19 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 
 	result.Lock.Lock()
 	originResourceProcessedCount := len(result.Response)
+	i := 0
+	var resourceID string
+
 	for originResource, evtResponse := range result.Response {
+		OriginResource := strings.SplitAfter(originResource, "/")
+		originResourceID := OriginResource[len(OriginResource)-1]
+		if i == 0 {
+			resourceID = originResourceID
+		}
+		if originResourceID == resourceID && i > 0 {
+			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
+		}
+		i = i + 1
 		if evtResponse.StatusCode == http.StatusCreated {
 			successfulSubscriptionList = append(successfulSubscriptionList, originResource)
 			successfulResponses[originResource] = evtResponse
@@ -328,10 +355,10 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 			Hosts:                hosts,
 		}
 
-		if err = evmodel.SaveEventSubscription(evtSubscription); err != nil {
+		if err = p.SaveEventSubscription(evtSubscription); err != nil {
 			// Update the task here with error response
 			errorMessage := "error while trying to save event subscription data: " + err.Error()
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 
 			resp = common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errorMessage, []interface{}{}, nil)
 			// Fill task and update
@@ -341,7 +368,8 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 		}
 		locationHeader = resp.Header["Location"]
 	}
-	log.Println("Process Count,", originResourceProcessedCount, "successOriginResourceCount", successOriginResourceCount)
+	log.Info("Process Count," + strconv.Itoa(originResourceProcessedCount) +
+		"successOriginResourceCount" + strconv.Itoa(successOriginResourceCount))
 	percentComplete = 100
 	if originResourceProcessedCount == successOriginResourceCount {
 		p.UpdateTask(fillTaskData(taskID, targetURI, string(req.PostBody), resp, common.Completed, common.OK, percentComplete, http.MethodPost))
@@ -392,18 +420,18 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		if strings.Contains(origin, "Fabrics") {
 			return p.createFabricSubscription(postRequest, origin, collectionName, collectionFlag)
 		}
-		target, resp, err = getTargetDetails(origin)
+		target, resp, err = p.getTargetDetails(origin)
 		if err != nil {
 			return "", resp
 		}
 
 		var errs *errors.Error
-		plugin, errs = evmodel.GetPluginData(target.PluginID)
+		plugin, errs = p.GetPluginData(target.PluginID)
 		if errs != nil {
 			errorMessage := "error while getting plugin data: " + errs.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
 
@@ -447,7 +475,8 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		return "", resp
 	}
 	if collectionFlag {
-		err = saveDeviceSubscriptionDetails(evmodel.Subscription{
+		log.Info("Saving device subscription details of collection subscription")
+		err = p.saveDeviceSubscriptionDetails(evmodel.Subscription{
 			Location:       "",
 			EventHostIP:    collectionName,
 			OriginResource: origin,
@@ -456,7 +485,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 			errorMessage := "error while trying to save event subscription of device data: " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
 
@@ -477,7 +506,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.PostBody = target
 
-	log.Println("Subscription Request", reqData)
+	log.Info("Subscription Request: " + reqData)
 	response, err := p.callPlugin(contactRequest)
 	if err != nil {
 		if evcommon.GetPluginStatus(plugin) {
@@ -487,36 +516,36 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 			errorMessage := "error while unmarshaling the body : " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
 	}
 	defer response.Body.Close()
-	log.Println("Subscription Response StatusCode:", response.StatusCode)
+	log.Info("Subscription Response StatusCode: " + strconv.Itoa(int(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			errorMessage := "error while trying to read response body: " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
-		log.Println("Subscription Response:", body)
+		log.Info("Subscription Response: " + string(body))
 		var res interface{}
 		err = json.Unmarshal(body, &res)
 		if err != nil {
 			errorMessage := "error while unmarshaling the body : " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
 
 		errorMessage := "error while trying to create event subscription"
 		resp.Response = res
 		resp.StatusCode = response.StatusCode
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 	// if Subscription location is empty then don't store event details in DB
@@ -525,32 +554,37 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		errorMessage := "Subscription Location is missing in the response header"
 		evcommon.GenEventErrorResponse(errorMessage, errors.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 	// get the ip address from the host name
-	addr, errorMessage := getIPFromHostName(target.ManagerAddress)
+	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
 	if errorMessage != "" {
-		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
+		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			&resp, []interface{}{"ManagerAddress", target.ManagerAddress})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
-	deviceIPAddress := fmt.Sprintf("%v", addr[0])
+	log.Info("Saving device subscription details : ", deviceIPAddress)
 	evtSubscription := evmodel.Subscription{
 		Location:       locationHdr,
 		EventHostIP:    deviceIPAddress,
 		OriginResource: origin,
 	}
-	if !(strings.Contains(locationHdr, target.ManagerAddress)) {
+
+	host, _, err := net.SplitHostPort(target.ManagerAddress)
+	if err != nil {
+		host = target.ManagerAddress
+	}
+	if !(strings.Contains(locationHdr, host)) {
 		evtSubscription.Location = "https://" + target.ManagerAddress + locationHdr
 	}
-	err = saveDeviceSubscriptionDetails(evtSubscription)
+	err = p.saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription of device data: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 
@@ -561,7 +595,7 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 	resp.Response = outBody
@@ -579,13 +613,21 @@ func (p *PluginContact) eventSubscription(postRequest evmodel.RequestBody, origi
 func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *evmodel.EvtSubPost, plugin *evmodel.Plugin, target *evmodel.Target, collectionFlag bool, collectionName string) (errResponse.RPC, error) {
 	var resp errResponse.RPC
 	var err error
-	var host, originResource string
+	var host, originResource, searchKey string
 	// if Origin is collection then setting host with collection name
 	if collectionFlag {
 		host = collectionName
-
+		searchKey = collectionName
 	} else {
-		host = target.ManagerAddress
+		host, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
+		if errorMessage != "" {
+			evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+				[]interface{}{"ManagerAddress", target.ManagerAddress}, &resp)
+			log.Error(errorMessage)
+			return resp, err
+		}
+		log.Info("After look up, manager address is: ", host)
+		searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
 	}
 	// uniqueMap is to ignore duplicate eventTypes
 	// evevntTypes from request  and eventTypes from the all destinations stored in the DB
@@ -603,16 +645,14 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 	)
 
 	originResource = origin
-	searchKey := host
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptionDetails, err := p.GetEvtSubscriptions(searchKey)
 	if err != nil && !strings.Contains(err.Error(), "No data found for the key") {
 		errorMessage := "Error while get subscription details: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, err
 	}
-
 	// if there is no subscription happened then create event subscription
 	if len(subscriptionDetails) < 1 {
 		return resp, nil
@@ -638,24 +678,24 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 				// if there is only one host in Hosts entry then
 				// delete the subscription from redis
 				if len(evtSubscriptions.Hosts) == 1 {
-					err = evmodel.DeleteEvtSubscription(evtSubscriptions.SubscriptionID)
+					err = p.DeleteEvtSubscription(evtSubscriptions.SubscriptionID)
 					if err != nil {
 						errorMessage := "Error while Updating event subscription : " + err.Error()
 						evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
 							[]interface{}{"Subscription", "invalid value " + origin}, &resp)
-						log.Printf(errorMessage)
+						log.Error(errorMessage)
 						return resp, err
 					}
 				} else {
 					// Delete the host and origin resource from the respective entry
 					evtSubscriptions.Hosts = removeElement(evtSubscriptions.Hosts, host)
 					evtSubscriptions.OriginResources = removeElement(evtSubscriptions.OriginResources, originResource)
-					err = evmodel.UpdateEventSubscription(evtSubscriptions)
+					err = p.UpdateEventSubscription(evtSubscriptions)
 					if err != nil {
 						errorMessage := "Error while Updating event subscription : " + err.Error()
 						evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
 							[]interface{}{"Subscription", "invalid value " + origin}, &resp)
-						log.Printf(errorMessage)
+						log.Error(errorMessage)
 						return resp, err
 					}
 				}
@@ -686,7 +726,7 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 		return resp, nil
 	}
 	if !collectionFlag {
-		log.Println("Delete Subscription from device")
+		log.Info("Delete Subscription from device")
 		if strings.Contains(originResource, "Fabrics") {
 			resp, err = p.DeleteFabricsSubscription(originResource, plugin)
 			if err != nil {
@@ -763,7 +803,7 @@ func (p *PluginContact) PluginCall(req evcommon.PluginContactRequest) (errRespon
 			errorMessage := "Error : " + err.Error()
 			evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				[]interface{}{}, &resp)
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return resp, "", "", err
 		}
 	}
@@ -773,7 +813,7 @@ func (p *PluginContact) PluginCall(req evcommon.PluginContactRequest) (errRespon
 		errorMessage := "error while trying to read response body: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, "", "", err
 	}
 	if !(response.StatusCode == http.StatusCreated || response.StatusCode == http.StatusOK) {
@@ -791,14 +831,14 @@ func (p *PluginContact) PluginCall(req evcommon.PluginContactRequest) (errRespon
 // CreateDefaultEventSubscription is creates the  subscription with event types which will be required to rediscover the inventory
 // after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
 func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTypes, messageIDs, resourceTypes []string, protocol string) errResponse.RPC {
-	log.Printf("info: creation of default subscriptions for %v are started.", originResources)
+	log.Info("Creation of default subscriptions started for: " + strings.Join(originResources, "::"))
 	var resp errResponse.RPC
 	var response evresponse.EventResponse
 	var partialResultFlag bool
 	if protocol == "" {
 		protocol = "Redfish"
 	}
-	var hosts []string
+	var host string
 	bubbleUpStatusCode := http.StatusCreated
 	for i := 0; i < len(originResources); i++ {
 		var postRequest evmodel.RequestBody
@@ -809,11 +849,9 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 		postRequest.Context = "Creating the Default Event Subscription"
 		postRequest.Protocol = protocol
 		postRequest.SubscriptionType = evmodel.SubscriptionType
-
-		var host string
+		postRequest.SubordinateResources = true
 		host, response = p.eventSubscription(postRequest, originResources[i], "", false)
-		hosts = append(hosts, host)
-		go p.checkCollectionSubscription(originResources[i], protocol)
+		p.checkCollectionSubscription(originResources[i], protocol)
 		if response.StatusCode != http.StatusCreated {
 			partialResultFlag = true
 			if response.StatusCode > bubbleUpStatusCode {
@@ -829,37 +867,34 @@ func (p *PluginContact) CreateDefaultEventSubscription(originResources, eventTyp
 	}
 	subscriptionID := uuid.New().String()
 	evtSubscription := evmodel.Subscription{
-		SubscriptionID:   subscriptionID,
-		EventTypes:       eventTypes,
-		MessageIds:       messageIDs,
-		ResourceTypes:    resourceTypes,
-		OriginResources:  originResources,
-		Hosts:            hosts,
-		Protocol:         protocol,
-		SubscriptionType: evmodel.SubscriptionType,
+		SubscriptionID:       subscriptionID,
+		EventTypes:           eventTypes,
+		MessageIds:           messageIDs,
+		ResourceTypes:        resourceTypes,
+		OriginResources:      originResources,
+		Hosts:                []string{host},
+		Protocol:             protocol,
+		SubscriptionType:     evmodel.SubscriptionType,
+		SubordinateResources: true,
 	}
-	err := evmodel.SaveEventSubscription(evtSubscription)
+	err := p.SaveEventSubscription(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription data: " + err.Error()
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	resp.Body = response.Response
 	resp.StatusCode = http.StatusCreated
-	log.Printf("info: creation of default subscriptions for %v are completed.", originResources)
+	log.Info("Creation of default subscriptions completed for : " + strings.Join(originResources, "::"))
 	return resp
 }
 
 func validateFields(request *evmodel.RequestBody) (int32, string, []interface{}, error) {
+	validEventFormatTypes := map[string]bool{"Event": true, "MetricReport": true}
+	validEventTypes := map[string]bool{"Alert": true, "MetricReport": true, "ResourceAdded": true, "ResourceRemoved": true, "ResourceUpdated": true, "StatusChange": true, "Other": true}
 
 	validate := validator.New()
 
@@ -871,11 +906,30 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 		}
 	}
 	if request.EventFormatType == "" {
-		request.EventFormatType = evmodel.EventFormatType
-	} else if request.EventFormatType == "MetricReport" {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"EventFormatType"}, fmt.Errorf("Unsupported EventFormatType")
-	} else if request.EventFormatType != evmodel.EventFormatType {
-		return http.StatusBadRequest, errResponse.PropertyMissing, []interface{}{"EventFormatType"}, fmt.Errorf("Invalid EventFormatType")
+		request.EventFormatType = "Event"
+	}
+
+	if _, ok := validEventFormatTypes[request.EventFormatType]; !ok {
+		return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.EventFormatType, "EventFormatType"}, fmt.Errorf("Invalid EventFormatType")
+	}
+
+	if len(request.EventTypes) == 0 && request.EventFormatType == "MetricReport" {
+		request.EventTypes = []string{"MetricReport"}
+	}
+
+	for _, eventType := range request.EventTypes {
+		if _, ok := validEventTypes[eventType]; !ok {
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{eventType, "EventTypes"}, fmt.Errorf("Invalid EventTypes")
+		}
+	}
+
+	if request.EventFormatType == "MetricReport" {
+		if len(request.EventTypes) > 1 {
+			return http.StatusBadRequest, errResponse.PropertyValueFormatError, []interface{}{request.EventFormatType, "EventTypes"}, fmt.Errorf("Unsupported EventType")
+		}
+		if request.EventTypes[0] != "MetricReport" {
+			return http.StatusBadRequest, errResponse.PropertyValueNotInList, []interface{}{request.EventTypes[0], "EventType"}, fmt.Errorf("Unsupported EventType")
+		}
 	}
 
 	if request.SubscriptionType == "" {
@@ -915,9 +969,9 @@ func validateFields(request *evmodel.RequestBody) (int32, string, []interface{},
 // saveDeviceSubscriptionDetails will first check if already origin resource details present
 // if its present then Update location
 // otherwise add an entry to redis
-func saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
-	searchKey := evtSubscription.EventHostIP
-	deviceSubscription, _ := evmodel.GetDeviceSubscriptions(searchKey)
+func (p *PluginContact) saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
+	searchKey := evcommon.GetSearchKey(evtSubscription.EventHostIP, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, _ := p.GetDeviceSubscriptions(searchKey)
 
 	var newDevSubscription = evmodel.DeviceSubscription{
 		EventHostIP:     evtSubscription.EventHostIP,
@@ -939,37 +993,37 @@ func saveDeviceSubscriptionDetails(evtSubscription evmodel.Subscription) error {
 				save = false
 			}
 		}
-		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
+		err := p.UpdateDeviceSubscriptionLocation(newDevSubscription)
 		if err != nil {
 			return err
 		}
 	}
 	if save {
-		return evmodel.SaveDeviceSubscription(newDevSubscription)
+		return p.SaveDeviceSubscription(newDevSubscription)
 	}
 	return nil
 }
 
-func getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse, error) {
+func (p *PluginContact) getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse, error) {
 	var resp evresponse.EventResponse
 
 	uuid, err := getUUID(origin)
 	if err != nil {
 		evcommon.GenEventErrorResponse(err.Error(), errResponse.ResourceNotFound, http.StatusNotFound,
 			&resp, []interface{}{"System", origin})
-		log.Printf(err.Error())
+		log.Error(err.Error())
 		return nil, resp, err
 	}
 
 	// Get target device Credentials from using device UUID
-	target, err := evmodel.GetTarget(uuid)
+	target, err := p.GetTarget(uuid)
 	if err != nil {
 		// Frame the RPC response body and response Header below
 
 		errorMessage := "error while getting Systems(Target device Credentials) table details: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			&resp, []interface{}{"Systems", origin})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return nil, resp, err
 	}
 	decryptedPasswordByte, err := common.DecryptWithPrivateKey(target.Password)
@@ -978,7 +1032,7 @@ func getTargetDetails(origin string) (*evmodel.Target, evresponse.EventResponse,
 		errorMessage := "error while trying to decrypt device password: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return nil, resp, err
 	}
 	target.Password = decryptedPasswordByte
@@ -990,8 +1044,15 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 	var resp errResponse.RPC
 	var err error
 	var deviceSubscription *evmodel.DeviceSubscription
-
-	deviceSubscription, err = evmodel.GetDeviceSubscriptions(target.ManagerAddress)
+	addr, errorMessage := evcommon.GetIPFromHostName(target.ManagerAddress)
+	if errorMessage != "" {
+		evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
+			[]interface{}{"ManagerAddress", target.ManagerAddress}, &resp)
+		log.Error(errorMessage)
+		return resp, err
+	}
+	searchKey := evcommon.GetSearchKey(addr, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err = p.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		// if its first subscription then no need to check events subscribed
 		if strings.Contains(err.Error(), "No data found for the key") {
@@ -1001,7 +1062,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 		evcommon.GenErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			[]interface{}{}, &resp)
 
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp, err
 	}
 
@@ -1043,7 +1104,7 @@ func (p *PluginContact) DeleteSubscriptions(originResource, token string, plugin
 // GetUUID fetches the UUID from the Origin Resource
 func getUUID(origin string) (string, error) {
 	var uuid string
-	requestData := strings.Split(origin, ":")
+	requestData := strings.SplitN(origin, ".", 2)
 	if len(requestData) <= 1 {
 		return "", fmt.Errorf("error: SystemUUID not found")
 	}
@@ -1066,14 +1127,14 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 
 	reqBody, err = json.Marshal(request)
 	if err != nil {
-		log.Println("error while trying to marshal create event request: ", err.Error())
+		log.Error("error while trying to marshal create event request: " + err.Error())
 	}
 	reqJSON = string(reqBody)
 
 	if taskID != "" {
 		subTaskURI, err = p.CreateChildTask(reqSessionToken, taskID)
 		if err != nil {
-			log.Printf("Error while creating the SubTask")
+			log.Error("Error while creating the SubTask")
 		}
 		trimmedURI := strings.TrimSuffix(subTaskURI, "/")
 		subTaskID = trimmedURI[strings.LastIndex(trimmedURI, "/")+1:]
@@ -1083,13 +1144,6 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 
 	host, response := p.eventSubscription(request, originResource, collectionName, collectionFlag)
 	resp.Body = response.Response
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	resp.StatusCode = int32(response.StatusCode)
 	result.AddResponse(originResource, host, response)
 	percentComplete = 100
@@ -1104,10 +1158,10 @@ func (p *PluginContact) createEventSubscrption(taskID string, subTaskChan chan<-
 }
 
 // checkCollection verifies if the given origin is collection and extracts all the suboridinate resources
-func checkCollection(origin string) ([]string, string, bool, error) {
+func (p *PluginContact) checkCollection(origin string) ([]string, string, bool, error) {
 	switch origin {
 	case "/redfish/v1/Systems":
-		collection, err := evmodel.GetAllKeysFromTable("ComputerSystem")
+		collection, err := p.GetAllKeysFromTable("ComputerSystem")
 		return collection, "SystemsCollection", true, err
 	case "/redfish/v1/Chassis":
 		return []string{}, "ChassisCollection", true, nil
@@ -1115,7 +1169,7 @@ func checkCollection(origin string) ([]string, string, bool, error) {
 		//TODO:After Managers implemention need to get all Managers data
 		return []string{}, "ManagerCollection", true, nil
 	case "/redfish/v1/Fabrics":
-		collection, err := evmodel.GetAllFabrics()
+		collection, err := p.GetAllFabrics()
 		return collection, "FabricsCollection", true, err
 	case "/redfish/v1/TaskService/Tasks":
 		return []string{}, "TasksCollection", true, nil
@@ -1136,7 +1190,6 @@ func (p *PluginContact) callPlugin(req evcommon.PluginContactRequest) (*http.Res
 // If its' exists it will  update the existing subscription information with newly added server origin
 func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	//Creating key to get all the System Collection subscription
-
 	var searchKey string
 	var bmcFlag bool
 	if strings.Contains(origin, "Fabrics") {
@@ -1145,15 +1198,15 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 		bmcFlag = true
 		searchKey = "/redfish/v1/Systems"
 	}
-	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptions, err := p.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return
 	}
 	var chassisSubscriptions, managersSubscriptions []evmodel.Subscription
 	if bmcFlag {
-		chassisSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Chassis")
+		chassisSubscriptions, _ = p.GetEvtSubscriptions("/redfish/v1/Chassis")
 		subscriptions = append(subscriptions, chassisSubscriptions...)
-		managersSubscriptions, _ = evmodel.GetEvtSubscriptions("/redfish/v1/Managers")
+		managersSubscriptions, _ = p.GetEvtSubscriptions("/redfish/v1/Managers")
 		subscriptions = append(subscriptions, managersSubscriptions...)
 	}
 	// Checking the collection based subscription
@@ -1167,7 +1220,6 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 			}
 		}
 	}
-
 	if len(collectionSubscription) <= 0 {
 		return
 	}
@@ -1203,13 +1255,19 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	removeDuplicatesFromSlice(&messageIDs, &messageIDsCount)
 	removeDuplicatesFromSlice(&resourceTypes, &resourceTypesCount)
 
+	subordinateFlag := false
+	if strings.Contains(origin, "Fabrics") {
+		subordinateFlag = true
+	}
+
 	subscriptionPost := evmodel.RequestBody{
-		EventTypes:    eventTypes,
-		MessageIds:    messageIDs,
-		ResourceTypes: resourceTypes,
-		Context:       context,
-		Destination:   destination,
-		Protocol:      protocol,
+		EventTypes:           eventTypes,
+		MessageIds:           messageIDs,
+		ResourceTypes:        resourceTypes,
+		Context:              context,
+		Destination:          destination,
+		Protocol:             protocol,
+		SubordinateResources: subordinateFlag,
 	}
 	subscriptionPost.OriginResources = []evmodel.OdataIDLink{
 		evmodel.OdataIDLink{
@@ -1224,18 +1282,18 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	}
 	for _, evtSubscription := range collectionSubscription {
 		evtSubscription.Hosts = append(evtSubscription.Hosts, host)
-		err = evmodel.UpdateEventSubscription(evtSubscription)
+		err = p.UpdateEventSubscription(evtSubscription)
 		if err != nil {
-			log.Println("Error while Updating event subscription : ", err)
+			log.Error("Error while Updating event subscription : " + err.Error())
 		}
 	}
 	// Get Device Subscription Details if collection is bmc and update chassis and managers uri
 	if bmcFlag {
-		searchKey = host
-		deviceSubscription, _ := evmodel.GetDeviceSubscriptions(searchKey)
+		searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
+		deviceSubscription, _ := p.GetDeviceSubscriptions(searchKey)
 		data := strings.Split(origin, "/redfish/v1/Systems/")
-		chassisList, _ := evmodel.GetAllMatchingDetails("Chassis", data[1], common.InMemory)
-		managersList, _ := evmodel.GetAllMatchingDetails("Managers", data[1], common.InMemory)
+		chassisList, _ := p.GetAllMatchingDetails("Chassis", data[1], common.InMemory)
+		managersList, _ := p.GetAllMatchingDetails("Managers", data[1], common.InMemory)
 		var newDevSubscription = evmodel.DeviceSubscription{
 			EventHostIP:     deviceSubscription.EventHostIP,
 			Location:        deviceSubscription.Location,
@@ -1244,9 +1302,9 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, chassisList...)
 		newDevSubscription.OriginResources = append(newDevSubscription.OriginResources, managersList...)
 
-		err := evmodel.UpdateDeviceSubscriptionLocation(newDevSubscription)
+		err := p.UpdateDeviceSubscriptionLocation(newDevSubscription)
 		if err != nil {
-			log.Println("Error while Updating Device subscription : ", err)
+			log.Error("Error while Updating Device subscription : " + err.Error())
 		}
 	}
 
@@ -1257,7 +1315,7 @@ func createEventSubscriptionResponse() interface{} {
 	return errors.ErrorClass{
 		MessageExtendedInfo: []errors.MsgExtendedInfo{
 			errors.MsgExtendedInfo{
-				MessageID: "Base.1.6.1.Created",
+				MessageID: response.Created,
 			},
 		},
 		Code:    errResponse.Created,
@@ -1270,24 +1328,23 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 	var err error
 	var plugin *evmodel.Plugin
 	var contactRequest evcommon.PluginContactRequest
-	log.Println(origin)
 	// Extract the fabric id from the Origin
 	fabricID := getFabricID(origin)
-	fabric, dberr := evmodel.GetFabricData(fabricID)
+	fabric, dberr := p.GetFabricData(fabricID)
 	if dberr != nil {
 		errorMessage := "error while getting fabric data: " + dberr.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			&resp, []interface{}{"Fabrics", fabricID})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 	var gerr *errors.Error
-	plugin, gerr = evmodel.GetPluginData(fabric.PluginID)
+	plugin, gerr = p.GetPluginData(fabric.PluginID)
 	if gerr != nil {
 		errorMessage := "error while getting plugin data: " + gerr.Error() + fabric.PluginID
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusNotFound,
 			&resp, []interface{}{"Plugin", fabric.PluginID})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 	contactRequest.Plugin = plugin
@@ -1296,7 +1353,7 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 		if token == "" {
 			evcommon.GenEventErrorResponse("error: Unable to create session with plugin "+plugin.ID, errResponse.NoValidSession, http.StatusUnauthorized,
 				&resp, []interface{}{})
-			log.Println("error: Unable to create session with plugin ", plugin.ID)
+			log.Error("error: Unable to create session with plugin " + plugin.ID)
 			return "", resp
 		}
 		contactRequest.Token = token
@@ -1338,14 +1395,13 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 	if len(subscriptionPost.ResourceTypes) == 0 {
 		subscriptionPost.ResourceTypes = emptySlice
 	}
-	addr, errorMessage := getIPFromHostName(plugin.IP)
+	deviceIPAddress, errorMessage := evcommon.GetIPFromHostName(plugin.IP)
 	if errorMessage != "" {
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
 			&resp, []interface{}{"ManagerAddress", plugin.IP})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
-	deviceIPAddress := fmt.Sprintf("%v", addr[0])
 	var target = evmodel.Target{
 		ManagerAddress: deviceIPAddress,
 	}
@@ -1365,7 +1421,6 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 	contactRequest.URL = "/ODIM/v1/Subscriptions"
 	contactRequest.HTTPMethodType = http.MethodPost
 	err = json.Unmarshal([]byte(reqData), &contactRequest.PostBody)
-	fmt.Println("==========Fabric Subscription request============", reqData)
 
 	response, err := p.callPlugin(contactRequest)
 	if err != nil {
@@ -1375,7 +1430,7 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 		if err != nil {
 			evcommon.GenEventErrorResponse(err.Error(), errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(err.Error())
+			log.Error(err.Error())
 			return "", resp
 		}
 	}
@@ -1388,31 +1443,31 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 		}
 	}
 
-	log.Println("Subscription Response Status Code", response.StatusCode)
+	log.Info("Subscription Response Status Code: " + string(rune(response.StatusCode)))
 	if response.StatusCode != http.StatusCreated {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			errorMessage := "error while trying to read response body: " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
 		errorMessage := "error while trying to create event subscription"
 		var res interface{}
-		log.Println("Subscription Response ", string(body))
+		log.Error("Subscription Response " + string(body))
 		err = json.Unmarshal(body, &res)
 		if err != nil {
 			errorMessage := "error while unmarshaling the body : " + err.Error()
 			evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 				&resp, []interface{}{})
-			log.Printf(errorMessage)
+			log.Error(errorMessage)
 			return "", resp
 		}
 
 		resp.Response = res
 		resp.StatusCode = response.StatusCode
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 
@@ -1422,12 +1477,12 @@ func (p *PluginContact) createFabricSubscription(postRequest evmodel.RequestBody
 	}
 
 	evtSubscription.Location = response.Header.Get("location")
-	err = saveDeviceSubscriptionDetails(evtSubscription)
+	err = p.saveDeviceSubscriptionDetails(evtSubscription)
 	if err != nil {
 		errorMessage := "error while trying to save event subscription of device data: " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return "", resp
 	}
 
@@ -1467,7 +1522,7 @@ func (p *PluginContact) createToken(plugin *evmodel.Plugin) string {
 	contactRequest.URL = "/ODIM/v1/Sessions"
 	_, _, token, err := p.PluginCall(contactRequest)
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 	}
 	pluginToken := evcommon.PluginToken{
 		Tokens: make(map[string]string),
@@ -1505,7 +1560,7 @@ func (p *PluginContact) retryEventSubscriptionOperation(req evcommon.PluginConta
 		errorMessage := "error while unmarshaling the body : " + err.Error()
 		evcommon.GenEventErrorResponse(errorMessage, errResponse.InternalError, http.StatusInternalServerError,
 			&resp, []interface{}{})
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return nil, resp, err
 	}
 	return response, resp, err
@@ -1528,16 +1583,4 @@ func isHostPresent(hosts []string, hostip string) bool {
 		rear--
 	}
 	return false
-}
-
-func getIPFromHostName(fqdn string) ([]net.IP, string) {
-	addr, err := net.LookupIP(fqdn)
-	var errorMessage string
-	if err != nil || len(addr) < 1 {
-		errorMessage = "Can't lookup the ip from host name"
-		if err != nil {
-			errorMessage = "Can't lookup the ip from host name" + err.Error()
-		}
-	}
-	return addr, errorMessage
 }

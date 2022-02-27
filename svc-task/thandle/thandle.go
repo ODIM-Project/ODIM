@@ -19,10 +19,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -55,23 +56,24 @@ type TasksRPC struct {
 	UpdateTaskStatusModel            func(t *tmodel.Task, db common.DbType) error
 	PersistTaskModel                 func(t *tmodel.Task, db common.DbType) error
 	ValidateTaskUserNameModel        func(userName string) error
-	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string)
+	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
 
 //CreateTask is a rpc handler which intern call actual CreatTask to create new task
-func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest, rsp *taskproto.CreateTaskResponse) error {
+func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
+	var rsp taskproto.CreateTaskResponse
 	// Check for completed task if there are any, get the oldest Completed
 	//Task and Delete from the db along with it subtask as well.
 	// Search for the Completed tasks
 	go func() {
 		err := ts.OverWriteCompletedTaskUtilHelper(req.UserName)
 		if err != nil {
-			log.Printf("error: failed to over write the completed task: %v", err)
+			log.Error("error: failed to over write the completed task: " + err.Error())
 		}
 	}()
 	taskURI, err := ts.CreateTaskUtilHelper(req.UserName)
 	rsp.TaskURI = taskURI
-	return err
+	return &rsp, err
 }
 
 //OverWriteCompletedTaskUtil is helper method to find and delete eligible completed task
@@ -80,7 +82,7 @@ func (ts *TasksRPC) OverWriteCompletedTaskUtil(userName string) error {
 
 	taskList, err := ts.GetCompletedTasksIndexModel(userName)
 	if err != nil {
-		log.Printf("error while getting the completed task: %v", err)
+		log.Error("error while getting the completed task: " + err.Error())
 		return err
 	}
 	inputTimeStringformat := "2006-01-02 15:04:05 +0000 UTC"
@@ -92,11 +94,10 @@ func (ts *TasksRPC) OverWriteCompletedTaskUtil(userName string) error {
 		timeToLeaveString, _ := time.ParseDuration("24h")
 		timeToLeaveNano := timeToLeaveString.Nanoseconds()
 		taskID = (strings.Split(value, "::"))[2]
-		log.Printf(taskID)
 		if elapsedTimeNano > timeToLeaveNano {
 			err = ts.deleteCompletedTask(taskID)
 			if err != nil {
-				log.Printf("error while deleting the completed task: %v", err)
+				log.Error("error while deleting the completed task: " + err.Error())
 
 			}
 		}
@@ -107,67 +108,66 @@ func (ts *TasksRPC) OverWriteCompletedTaskUtil(userName string) error {
 func (ts *TasksRPC) deleteCompletedTask(taskID string) error {
 	task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 	if err != nil {
-		log.Printf("error getting taskID - %v status : %v", taskID, err)
+		log.Error("error getting taskID - " + taskID + " status : " + err.Error())
 		return nil
 	}
 	for _, subTaskID := range task.ChildTaskIDs {
 		subTask, err := ts.GetTaskStatusModel(subTaskID, common.InMemory)
 		if err != nil {
-			log.Printf("error getting task status : %v", err)
+			log.Error("error getting task status : " + err.Error())
 			continue
 		}
 		err = ts.DeleteTaskFromDBModel(subTask)
 		if err != nil {
-			log.Printf("error while deleting subtask: %v", err)
+			log.Error("error while deleting subtask: " + err.Error())
 		}
 	}
 	err = ts.DeleteTaskFromDBModel(task)
 	if err != nil {
-		log.Printf("error while deleting the main task: %v", err)
+		log.Error("error while deleting the main task: " + err.Error())
 		return err
 	}
-	//CompletedTaskIndex has only completed task which has subtasks associated with them. So delete index only when condition is met.
-	if task.TaskState == "Completed" && len(task.ChildTaskIDs) != 0 {
-		err = ts.DeleteTaskIndex(taskID)
-		if err != nil {
-			log.Printf("error while deleting the main task: %v", err)
-			return err
-		}
+	err = ts.DeleteTaskIndex(taskID)
+	if err != nil {
+		log.Error("error while deleting the main task: " + err.Error())
+		return err
 	}
 	return nil
 }
 
 //CreateChildTask is a rpc handler which intern call actual CreateChildTask to create sub task under parent task.
-func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTaskRequest, rsp *taskproto.CreateTaskResponse) error {
-
+func (ts *TasksRPC) CreateChildTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
+	var rsp taskproto.CreateTaskResponse
 	taskURI, err := ts.CreateChildTaskUtil(req.UserName, req.ParentTaskID)
 	rsp.TaskURI = taskURI
-	return err
+	return &rsp, err
 }
 
 //UpdateTask is a rpc handler which interr call actual CreatTask to create new task
-func (ts *TasksRPC) UpdateTask(ctx context.Context, req *taskproto.UpdateTaskRequest, rsp *taskproto.UpdateTaskResponse) error {
+func (ts *TasksRPC) UpdateTask(ctx context.Context, req *taskproto.UpdateTaskRequest) (*taskproto.UpdateTaskResponse, error) {
+	var rsp taskproto.UpdateTaskResponse
 	endTime, err := ptypes.Timestamp(req.EndTime)
 	if err != nil {
-		log.Printf("error: while trying to convert Protobuff timestamp to time.Time: %v", err)
-		return err
+		log.Error("error: while trying to convert Protobuff timestamp to time.Time: " + err.Error())
+		return &rsp, err
 	}
-	return ts.updateTaskUtil(req.TaskID, req.TaskState, req.TaskStatus, req.PercentComplete, req.PayLoad, endTime)
+	return &rsp, ts.updateTaskUtil(req.TaskID, req.TaskState, req.TaskStatus, req.PercentComplete, req.PayLoad, endTime)
 }
 
 //DeleteTask is an API end point to delete the given task.
-func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
-	constructCommonResponseHeader(rsp)
-	task, err := ts.validateAndAutherize(req, rsp)
+func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
+	constructCommonResponseHeader(&rsp)
+	task, err := ts.validateAndAutherize(req, &rsp)
 	if err != nil {
-		return nil
+		return &rsp, nil
 	}
 	privileges := []string{common.PrivilegeConfigureManager}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while authentication")
-		fillProtoResponse(rsp, authResp)
-		return nil
+		log.Error("error while authentication")
+		fillProtoResponse(&rsp, authResp)
+		return &rsp, nil
 
 	}
 	rsp.Header["Allow"] = "DELETE"
@@ -175,13 +175,13 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		delErr := ts.deleteCompletedTask(req.TaskID)
 		if delErr != nil {
 			errorMessage := "Error while deleting the completed task: " + delErr.Error()
-			log.Printf(errorMessage)
-			fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
-			return nil
+			log.Error(errorMessage)
+			fillProtoResponse(&rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+			return &rsp, nil
 		}
 		rsp.StatusCode = http.StatusNoContent
 		rsp.Body = nil
-		return nil
+		return &rsp, nil
 	}
 	// Critical Logic follows
 
@@ -189,16 +189,16 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	for iter := 0; iter < 5; iter++ {
 		err = ts.TransactionModel(req.TaskID, ts.taskCancelCallBack)
 		if err != nil {
-			log.Printf("error while requesting for task cancellation retrying: %v", err)
+			log.Error("error while requesting for task cancellation retrying: " + err.Error())
 			continue
 		}
 		break
 	}
 	if err != nil {
 		errorMessage := "error max retries exceeded for TaskCancel Transaction: " + err.Error()
-		fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
-		log.Printf(errorMessage)
-		return nil
+		fillProtoResponse(&rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+		log.Error(errorMessage)
+		return &rsp, nil
 	}
 
 	// Critical Logic Ends
@@ -217,7 +217,7 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2a.Task",
+		OdataType:    "#Task.v1_5_1.Task",
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",
@@ -250,22 +250,19 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		PercentComplete: task.PercentComplete,
 	}
 	if task.ParentID == "" {
-		taskResponse.SubTasks = "/redfish/v1/Tasks/" + task.ID + "/SubTasks"
+		var subTask = tresponse.ListMember{
+			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
+		}
+		taskResponse.SubTasks = &subTask
 	}
 	//  return tasks in case of Success
 	//Frame the response body below to send back to the user
 	rsp.Body = generateResponse(taskResponse) // cannot convert task response directly to []byte that's why it needs to be marshalled and send as response in byte format
-	return nil
+	return &rsp, nil
 }
 func constructCommonResponseHeader(rsp *taskproto.TaskResponse) {
 	rsp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Date":              time.Now().Format(http.TimeFormat),
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Date": time.Now().Format(http.TimeFormat),
 	}
 
 }
@@ -275,21 +272,21 @@ func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *tas
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
 		fillProtoResponse(rsp, authResp)
-		log.Printf(authErrorMessage)
+		log.Error(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
 	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
-		log.Printf(authErrorMessage)
+		log.Error(authErrorMessage)
 		return nil, fmt.Errorf(authErrorMessage)
 
 	}
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.TaskID, common.InMemory)
 	if err != nil {
-		log.Printf("error getting task status : %v", err)
+		log.Error("error getting task status : " + err.Error())
 		fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.TaskID}, nil))
 		return nil, err
 	}
@@ -301,7 +298,7 @@ func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *tas
 		authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
 			fillProtoResponse(rsp, authResp)
-			log.Printf(authErrorMessage)
+			log.Error(authErrorMessage)
 			return nil, fmt.Errorf(authErrorMessage)
 		}
 	}
@@ -311,7 +308,7 @@ func (ts *TasksRPC) validateAndAutherize(req *taskproto.GetTaskRequest, rsp *tas
 func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 	task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 	if err != nil {
-		log.Printf("error getting task status : %v", err)
+		log.Error("error getting task status : " + err.Error())
 		return nil
 	}
 	if task.TaskState == common.Completed || task.TaskState == common.Exception || task.TaskState == common.Pending {
@@ -319,7 +316,7 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 		for _, subTaskID := range task.ChildTaskIDs {
 			subTask, err := ts.GetTaskStatusModel(subTaskID, common.InMemory)
 			if err != nil {
-				log.Printf("error getting task status : %v", err)
+				log.Error("error getting task status : " + err.Error())
 				continue
 			}
 			ts.DeleteTaskFromDBModel(subTask)
@@ -330,7 +327,7 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 	for _, subTaskID := range task.ChildTaskIDs {
 		subTask, err := ts.GetTaskStatusModel(subTaskID, common.InMemory)
 		if err != nil {
-			log.Printf("error getting task status : %v", err)
+			log.Error("error getting task status : " + err.Error())
 			continue
 		}
 		// Just changing the TaskState to Cancelling state,
@@ -342,7 +339,7 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 			subTask.TaskState = common.Cancelling
 			err := ts.UpdateTaskStatusModel(subTask, common.InMemory)
 			if err != nil {
-				log.Printf("error while updating the task: %v", err)
+				log.Error("error while updating the task: " + err.Error())
 				return err
 			}
 			go ts.asyncTaskDelete(subTaskID)
@@ -353,7 +350,7 @@ func (ts *TasksRPC) taskCancelCallBack(taskID string) error {
 		task.TaskState = common.Cancelling
 		err := ts.UpdateTaskStatusModel(task, common.InMemory)
 		if err != nil {
-			log.Printf("error while updating the task: %v", err)
+			log.Error("error while updating the task: " + err.Error())
 			return err
 		}
 		go ts.asyncTaskDelete(taskID)
@@ -371,13 +368,13 @@ func (ts *TasksRPC) asyncTaskDelete(taskID string) {
 	for {
 		task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 		if err != nil {
-			log.Printf("error getting task status : %v", err)
+			log.Error("error getting task status : " + err.Error())
 			return
 		}
 		if task.TaskState == common.Cancelled {
 			err = ts.DeleteTaskFromDBModel(task)
 			if err != nil {
-				log.Printf("error unable to delete the task from db: %v", err)
+				log.Error("error unable to delete the task from db: " + err.Error())
 				return
 			}
 			break
@@ -388,11 +385,12 @@ func (ts *TasksRPC) asyncTaskDelete(taskID string) {
 }
 
 //GetSubTasks is an API end point to get all available tasks
-func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
-	constructCommonResponseHeader(rsp)
-	task, err := ts.validateAndAutherize(req, rsp)
+func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
+	constructCommonResponseHeader(&rsp)
+	task, err := ts.validateAndAutherize(req, &rsp)
 	if err != nil {
-		return nil
+		return &rsp, nil
 	}
 	var listMembers []tresponse.ListMember
 	for _, subTaskID := range task.ChildTaskIDs {
@@ -424,40 +422,41 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 	}
 
 	rsp.Body = generateResponse(taskResp)
-	return nil
+	return &rsp, nil
 }
 
 //GetSubTask is an API end point to get the subtask details
-func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
-	constructCommonResponseHeader(rsp)
+func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
+	constructCommonResponseHeader(&rsp)
 	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf(authErrorMessage)
-		fillProtoResponse(rsp, authResp)
-		return nil
+		log.Error(authErrorMessage)
+		fillProtoResponse(&rsp, authResp)
+		return &rsp, nil
 	}
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
-		log.Printf(authErrorMessage)
-		return nil
+		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		log.Error(authErrorMessage)
+		return &rsp, nil
 	}
 	// get task status from database using task id
 	task, err := ts.GetTaskStatusModel(req.SubTaskID, common.InMemory)
 	if err != nil {
-		log.Printf("error getting sub task status : %v", err)
-		fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.SubTaskID}, nil))
-		return nil
+		log.Error("error getting sub task status : " + err.Error())
+		fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, err.Error(), []interface{}{"Task", req.SubTaskID}, nil))
+		return &rsp, nil
 	}
 	//Compare the task username with requesting session user name
 	if sessionUserName != task.UserName {
 		privileges := []string{common.PrivilegeConfigureUsers}
 		authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 		if authResp.StatusCode != http.StatusOK {
-			log.Printf(authErrorMessage)
-			fillProtoResponse(rsp, authResp)
-			return nil
+			log.Error(authErrorMessage)
+			fillProtoResponse(&rsp, authResp)
+			return &rsp, nil
 		}
 	}
 
@@ -529,11 +528,12 @@ func (ts *TasksRPC) GetSubTask(ctx context.Context, req *taskproto.GetTaskReques
 	// cannot convert task response directly to []byte that's why it needs to be marshalled and send as response in byte format
 	rsp.Body = generateResponse(taskResponse)
 
-	return nil
+	return &rsp, nil
 }
 
 //TaskCollection is an API end point to get all available tasks
-func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
+func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
 
 	commonResponse := response.Response{
 		Name:         "Task Collection",
@@ -541,28 +541,28 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		OdataID:      "/redfish/v1/TaskService/Tasks",
 		OdataType:    "#TaskCollection.TaskCollection",
 	}
-	constructCommonResponseHeader(rsp)
+	constructCommonResponseHeader(&rsp)
 	privileges := []string{common.PrivilegeLogin}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		fillProtoResponse(rsp, authResp)
-		log.Printf(authErrorMessage)
-		return nil
+		fillProtoResponse(&rsp, authResp)
+		log.Error(authErrorMessage)
+		return &rsp, nil
 	}
 	// Get all task in in-memory db
 	tasks, err := ts.GetAllTaskKeysModel()
 	if err != nil {
 		errorMessage := "error: while trying to get all task keys from db: " + err.Error()
-		fillProtoResponse(rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
-		log.Printf(errorMessage)
-		return nil
+		fillProtoResponse(&rsp, common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil))
+		log.Error(errorMessage)
+		return &rsp, nil
 	}
 	statusConfigureUsers := ts.AuthenticationRPC(req.SessionToken, []string{common.PrivilegeConfigureUsers})
 	sessionUserName, err := ts.GetSessionUserNameRPC(req.SessionToken)
 	if err != nil {
-		fillProtoResponse(rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
-		log.Printf(authErrorMessage)
-		return nil
+		fillProtoResponse(&rsp, common.GeneralError(http.StatusUnauthorized, response.NoValidSession, authErrorMessage, nil, nil))
+		log.Error(authErrorMessage)
+		return &rsp, nil
 
 	}
 	var listMembers = []tresponse.ListMember{}
@@ -573,9 +573,9 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		if authResp.StatusCode == http.StatusOK && statusConfigureUsers.StatusCode != http.StatusOK {
 			task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 			if err != nil {
-				log.Printf("error getting task status : %v", err)
-				fillProtoResponse(rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, authErrorMessage, nil, nil))
-				return nil
+				log.Error("error getting task status : " + err.Error())
+				fillProtoResponse(&rsp, common.GeneralError(http.StatusNotFound, response.ResourceNotFound, authErrorMessage, nil, nil))
+				return &rsp, nil
 			}
 			//Check if the task belongs to user
 			if task.UserName == sessionUserName {
@@ -601,7 +601,7 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 		Members:      listMembers,
 	}
 	rsp.Body = generateResponse(taskResp)
-	return nil
+	return &rsp, nil
 }
 
 //GetTasks is an API end point to get the task status and response body.
@@ -613,11 +613,12 @@ func (ts *TasksRPC) TaskCollection(ctx context.Context, req *taskproto.GetTaskRe
 // response body.
 //If the Username doesnot match with the task username then it returns with
 // StatusForbidden.
-func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
-	constructCommonResponseHeader(rsp)
-	task, err := ts.validateAndAutherize(req, rsp)
+func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
+	constructCommonResponseHeader(&rsp)
+	task, err := ts.validateAndAutherize(req, &rsp)
 	if err != nil {
-		return nil
+		return &rsp, nil
 	}
 	rsp.Header["Link"] = "</redfish/v1/SchemaStore/en/TaskCollection.json/>; rel=describedby"
 	//Build the respose Body
@@ -634,7 +635,7 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest,
 	}
 
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2a.Task",
+		OdataType:    "#Task.v1_5_1.Task",
 		ID:           task.ID,
 		Name:         task.Name,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",
@@ -669,7 +670,10 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest,
 		PercentComplete: task.PercentComplete,
 	}
 	if task.ParentID == "" && len(task.ChildTaskIDs) != 0 {
-		taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
+		var subTask = tresponse.ListMember{
+			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
+		}
+		taskResponse.SubTasks = &subTask
 	}
 	// Check the state of the task
 	if task.TaskState == "Completed" || task.TaskState == "Cancelled" || task.TaskState == "Killed" || task.TaskState == "Exception" {
@@ -684,7 +688,7 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest,
 	}
 	rsp.StatusMessage = "Success"
 	rsp.Body = generateResponse(taskResponse) // cannot convert task response directly to []byte that's why it needs to be marshalled and send as response in byte format
-	return nil
+	return &rsp, nil
 }
 
 // GetTaskService is an API handler to get Task service details
@@ -692,18 +696,19 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest,
 //	taskproto.GetTaskRequest(exctracts SessionToken from it)
 //Returns:
 //	401 Unauthorized or 200 OK with respective response body and response header.
-func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest, rsp *taskproto.TaskResponse) error {
+func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRequest) (*taskproto.TaskResponse, error) {
+	var rsp taskproto.TaskResponse
 	// Fill the response header first
-	constructCommonResponseHeader(rsp)
+	constructCommonResponseHeader(&rsp)
 	rsp.Header["Link"] = "</redfish/v1/SchemaStore/en/TaskService.json>; rel=describedby"
 	// Validate the token, if user has ConfigureUsers privelege then proceed.
 	//Else send 401 Unautherised
 	privileges := []string{common.PrivilegeConfigureUsers}
 	authResp := ts.AuthenticationRPC(req.SessionToken, privileges)
 	if authResp.StatusCode != http.StatusOK {
-		fillProtoResponse(rsp, authResp)
-		log.Printf(authErrorMessage)
-		return nil
+		fillProtoResponse(&rsp, authResp)
+		log.Error(authErrorMessage)
+		return &rsp, nil
 	}
 
 	// Check whether the Task Service is enbaled in configuration file.
@@ -721,7 +726,7 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	rsp.StatusCode = http.StatusOK
 	rsp.StatusMessage = response.Success
 	commonResponse := response.Response{
-		OdataType:    "#TaskService.v1_1_4.TaskService",
+		OdataType:    "#TaskService.v1_2_0.TaskService",
 		ID:           "TaskService",
 		Name:         "TaskService",
 		Description:  "TaskService",
@@ -746,13 +751,13 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 		},
 	}
 	rsp.Body = generateResponse(taskServiceResponse)
-	return nil
+	return &rsp, nil
 }
 
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }
@@ -774,14 +779,14 @@ func fillProtoResponse(resp *taskproto.TaskResponse, data response.RPC) {
 func (ts *TasksRPC) CreateTaskUtil(userName string) (string, error) {
 
 	if userName == "" {
-		log.Printf("error invalid input argument for userName")
+		log.Error("error invalid input argument for userName")
 		return "", fmt.Errorf("error invalid username")
 	}
 	// Validate given username exist in the db
 	err := ts.ValidateTaskUserNameModel(userName)
 	if err != nil {
-		log.Printf("error invalid user : %v", err)
-		return "", fmt.Errorf("error invalid user: %v", err)
+		log.Error("error invalid user : " + err.Error())
+		return "", fmt.Errorf("error invalid user: " + err.Error())
 	}
 	// Frame the model
 	currentTime := time.Now()
@@ -803,7 +808,7 @@ func (ts *TasksRPC) CreateTaskUtil(userName string) (string, error) {
 	// Persist in the in-memory DB
 	err = ts.PersistTaskModel(&task, common.InMemory)
 	if err != nil {
-		log.Printf("error while trying to insert the task details: %v", err)
+		log.Error("error while trying to insert the task details: " + err.Error())
 		return "", err
 	}
 	// return the Task URI
@@ -823,20 +828,20 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 	var childTask *tmodel.Task
 	var taskURI string
 	if parentTaskID == "" {
-		log.Printf("error empty/invalid input Parent Task ID")
+		log.Error("error empty/invalid input Parent Task ID")
 		return "", fmt.Errorf("error parent task ID is empty")
 	}
 	// Retrieve the task details from db
 	parentTask, err := ts.GetTaskStatusModel(parentTaskID, common.InMemory)
 	if err != nil {
-		log.Printf("error while retrieving the task details from DB: %v", err)
-		return "", fmt.Errorf("error while retrieing the task detais from DB: %v", err)
+		log.Error("error while retrieving the task details from DB: " + err.Error())
+		return "", fmt.Errorf("error while retrieing the task detais from DB: " + err.Error())
 	}
 	// Create the child/sub task with parent task's UserName
 	taskURI, err = ts.CreateTaskUtilHelper(parentTask.UserName)
 	if err != nil {
-		log.Printf("error while creating the child/sub task: %v", err)
-		return "", fmt.Errorf("error while creating child/sub task: %v", err)
+		log.Error("error while creating the child/sub task: " + err.Error())
+		return "", fmt.Errorf("error while creating child/sub task: " + err.Error())
 	}
 	var childTaskID string
 	strArray := strings.Split(taskURI, "/")
@@ -848,24 +853,24 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 	// Get the Child task to update with Parent task ID
 	childTask, err = ts.GetTaskStatusModel(childTaskID, common.InMemory)
 	if err != nil {
-		log.Printf("error while retrieving the child/sub task from DB: %v", err)
-		return "", fmt.Errorf("error while retrieving the child/sub task from DB: %v", err)
+		log.Error("error while retrieving the child/sub task from DB: " + err.Error())
+		return "", fmt.Errorf("error while retrieving the child/sub task from DB: " + err.Error())
 	}
 	childTask.ParentID = parentTaskID
 	childTask.URI = "/redfish/v1/TaskService/Tasks/" + parentTaskID + "/" + childTaskID
 	// Store the updated task in to In Memory DB
 	err = ts.UpdateTaskStatusModel(childTask, common.InMemory)
 	if err != nil {
-		log.Printf("error while updating the child/sub task details in to DB: %v", err)
-		return "", fmt.Errorf("error while updating the child/sub task details: %v", err)
+		log.Error("error while updating the child/sub task details in to DB: " + err.Error())
+		return "", fmt.Errorf("error while updating the child/sub task details: " + err.Error())
 	}
 	// Add the child/sub task id in to ChildTaskIDs(array) of the parent task
 	parentTask.ChildTaskIDs = append(parentTask.ChildTaskIDs, childTaskID)
 	// Update the parent task in to In Memory DB
 	err = ts.UpdateTaskStatusModel(parentTask, common.InMemory)
 	if err != nil {
-		log.Printf("error while updating the task details in to DB: %v", err)
-		return "", fmt.Errorf("error while trying to update the task details in InMemory DB: %v", err)
+		log.Error("error while updating the task details in to DB: " + err.Error())
+		return "", fmt.Errorf("error while trying to update the task details in InMemory DB: " + err.Error())
 	}
 	return "/redfish/v1/TaskService/Tasks/" + childTaskID, err
 }
@@ -884,11 +889,11 @@ func (ts *TasksRPC) CreateChildTaskUtil(userName string, parentTaskID string) (s
 func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus string, percentComplete int32, payLoad *taskproto.Payload, endTime time.Time) error {
 
 	var task *tmodel.Task
-	var taskEvenMessageID string
+	var taskEvenMessageID, taskMessage string
 	// Retrieve the task details using taskID
 	task, err := ts.GetTaskStatusModel(taskID, common.InMemory)
 	if err != nil {
-		return fmt.Errorf("error while retrieving the task details from db: %v", err)
+		return fmt.Errorf("error while retrieving the task details from db: " + err.Error())
 	}
 	//If the task is already in cancelled state, then updates are not allowed to it.
 	if task.TaskState == common.Cancelled {
@@ -908,7 +913,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		if taskStatus == "Critical" || taskStatus == "Warning" || taskStatus == "OK" {
 			task.TaskStatus = taskStatus
 		} else {
-			log.Printf("error invalid task status provided as input argument")
+			log.Error("error invalid task status provided as input argument")
 			return fmt.Errorf("error invalid taskStatus provided as input argument")
 		}
 		if endTime == (time.Time{}) {
@@ -925,7 +930,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState + taskStatus
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState + taskStatus
+		taskMessage = fmt.Sprintf("The task with Id %v has completed.", taskID)
 	case "Killed":
 		/*This state shall represent that the operation is complete because the task
 		was killed by an operator. Deprecated v1.2+. This value has been deprecated
@@ -936,7 +942,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		if taskStatus == "Critical" || taskStatus == "Warning" {
 			task.TaskStatus = taskStatus
 		} else {
-			log.Printf("error invalid tast status provided as input argument")
+			log.Error("error invalid tast status provided as input argument")
 			return fmt.Errorf("error invalid taskStatus provided as input argument")
 		}
 		if endTime == (time.Time{}) {
@@ -948,7 +954,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.TaskAborted"
+		taskEvenMessageID = common.TaskEventType + ".TaskAborted"
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 	case "Cancelled":
 		/* This state shall represent that the operation was cancelled either
 		through a Delete on a Task Monitor or Task Resource or by an internal
@@ -958,7 +965,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		if taskStatus == "Critical" || taskStatus == "Warning" {
 			task.TaskStatus = taskStatus
 		} else {
-			log.Printf("error invalid tast status provided as input argument")
+			log.Error("error invalid tast status provided as input argument")
 			return fmt.Errorf("error invalid taskStatus provided as input argument")
 		}
 		if endTime == (time.Time{}) {
@@ -970,7 +977,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.EndTime = endTime
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("Work on the task with Id %v has been halted prior to completion due to an explicit request.", taskID)
 	case "Exception":
 		/* This state shall represent that the operation is complete and
 		completed with errors.
@@ -979,7 +987,7 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		if taskStatus == "Critical" || taskStatus == "Warning" {
 			task.TaskStatus = taskStatus
 		} else {
-			log.Printf("error invalid tast status provided as input argument")
+			log.Error("error invalid tast status provided as input argument")
 			return fmt.Errorf("error invalid taskStatus provided as input argument")
 		}
 		if endTime == (time.Time{}) {
@@ -996,14 +1004,16 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState + taskStatus
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState + taskStatus
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 	case "Cancelling":
 		/*This state shall represent that the operation is in the process of being
 		cancelled.
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("Work on the task with Id %v has been halted prior to completion due to an explicit request.", taskID)
 		// TODO
 	case "Interrupted":
 		/* This state shall represent that the operation has been interrupted but is
@@ -1015,7 +1025,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		}
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors..", taskID)
 		// TODO
 	case "New":
 		/* This state shall represent that this task is newly created but the
@@ -1024,7 +1035,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		task.TaskState = taskState
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
 		// TODO
 	case "Pending":
 		/*This state shall represent that the operation is pending some condition and
@@ -1032,14 +1044,16 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 		// TODO
 	case "Running":
 		// This state shall represent that the operation is executing.
 		task.TaskState = taskState
 		task.PercentComplete = percentComplete
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.TaskProgressChanged"
+		taskEvenMessageID = common.TaskEventType + ".TaskProgressChanged"
+		taskMessage = fmt.Sprintf("The task with Id %v has changed to progress %v percent complete.", taskID, percentComplete)
 		// TODO
 	case "Service":
 		/* This state shall represent that the operation is now running as a service
@@ -1047,13 +1061,15 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
 		// TODO
 	case "Starting":
 		// This state shall represent that the operation is starting.
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has started.", taskID)
 		// TODO
 	case "Stopping":
 		/* This state shall represent that the operation is stopping but is not yet
@@ -1061,7 +1077,8 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has been paused.", taskID)
 		// TODO
 	case "Suspended":
 		/*This state shall represent that the operation has been suspended but is
@@ -1069,21 +1086,22 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 		*/
 		task.TaskState = taskState
 		// Constuct the appropriate messageID for task status change nitification
-		taskEvenMessageID = "TaskEvent.1.0.1.Task" + taskState
+		taskEvenMessageID = common.TaskEventType + ".Task" + taskState
+		taskMessage = fmt.Sprintf("The task with Id %v has completed with errors.", taskID)
 		// TODO
 	default:
-		log.Printf("error invalid task state")
+		log.Error("error invalid task state")
 		return fmt.Errorf("error invalid input argument for taskState")
 	}
 	// Update the task data in the InMemory DB
 	err = ts.UpdateTaskStatusModel(task, common.InMemory)
 	if err != nil {
-		log.Printf("error while updating the task in to In-memory DB: %v", err)
-		return fmt.Errorf("error while updating the task in to In-memory DB: %v", err)
+		log.Error("error while updating the task in to In-memory DB: " + err.Error())
+		return fmt.Errorf("error while updating the task in to In-memory DB: " + err.Error())
 	}
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
-	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType)
+	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
 	return err
 }

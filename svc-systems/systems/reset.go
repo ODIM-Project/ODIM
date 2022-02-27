@@ -17,7 +17,7 @@ package systems
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
@@ -44,7 +44,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	err := json.Unmarshal(req.RequestBody, &resetCompSys)
 	if err != nil {
 		errMsg := "error: unable to parse the computer system reset request" + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
@@ -52,17 +52,17 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetCompSys)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
 		return resp
 	}
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -123,15 +123,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
-	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

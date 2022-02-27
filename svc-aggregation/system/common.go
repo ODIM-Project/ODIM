@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"reflect"
@@ -29,6 +28,9 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -41,6 +43,19 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-aggregation/agmodel"
 )
 
+const (
+	// SystemUUID is used to replace with system id in wildcard property
+	SystemUUID = "SystemID"
+	// ChassisUUID is used to replace with chassis id in wildcard property
+	ChassisUUID = "ChassisID"
+)
+
+// WildCard is used to reduce the size the of list of metric properties
+type WildCard struct {
+	Name   string
+	Values []string
+}
+
 //Device struct to define the response from plugin for UUID
 type Device struct {
 	ServerIP   string `json:"ServerIP"`
@@ -50,27 +65,36 @@ type Device struct {
 
 // ExternalInterface struct holds the function pointers all outboud services
 type ExternalInterface struct {
-	ContactClient           func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	Auth                    func(string, []string, []string) response.RPC
-	GetSessionUserName      func(string) (string, error)
-	CreateChildTask         func(string, string) (string, error)
-	CreateTask              func(string) (string, error)
-	UpdateTask              func(common.TaskData) error
-	CreateSubcription       func([]string)
-	PublishEvent            func([]string, string)
-	PublishEventMB          func(string, string, string)
-	GetPluginStatus         func(agmodel.Plugin) bool
-	SubscribeToEMB          func(string, []string)
-	EncryptPassword         func([]byte) ([]byte, error)
-	DecryptPassword         func([]byte) ([]byte, error)
-	DeleteComputeSystem     func(int, string) *errors.Error
-	DeleteSystem            func(string) *errors.Error
-	DeleteEventSubscription func(string) (*eventsproto.EventSubResponse, error)
-	EventNotification       func(string, string, string)
-	GetAllKeysFromTable     func(string) ([]string, error)
-	GetConnectionMethod     func(string) (agmodel.ConnectionMethod, *errors.Error)
-	UpdateConnectionMethod  func(agmodel.ConnectionMethod, string) *errors.Error
-	GetPluginMgrAddr        func(string) (agmodel.Plugin, *errors.Error)
+	ContactClient            func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
+	Auth                     func(string, []string, []string) response.RPC
+	GetSessionUserName       func(string) (string, error)
+	CreateChildTask          func(string, string) (string, error)
+	CreateTask               func(string) (string, error)
+	UpdateTask               func(common.TaskData) error
+	CreateSubcription        func([]string)
+	PublishEvent             func([]string, string)
+	PublishEventMB           func(string, string, string)
+	GetPluginStatus          func(agmodel.Plugin) bool
+	SubscribeToEMB           func(string, []string)
+	EncryptPassword          func([]byte) ([]byte, error)
+	DecryptPassword          func([]byte) ([]byte, error)
+	DeleteComputeSystem      func(int, string) *errors.Error
+	DeleteSystem             func(string) *errors.Error
+	DeleteEventSubscription  func(string) (*eventsproto.EventSubResponse, error)
+	EventNotification        func(string, string, string)
+	GetAllKeysFromTable      func(string) ([]string, error)
+	GetConnectionMethod      func(string) (agmodel.ConnectionMethod, *errors.Error)
+	UpdateConnectionMethod   func(agmodel.ConnectionMethod, string) *errors.Error
+	GetPluginMgrAddr         func(string) (agmodel.Plugin, *errors.Error)
+	GetAggregationSourceInfo func(string) (agmodel.AggregationSource, *errors.Error)
+	GenericSave              func([]byte, string, string) error
+	CheckActiveRequest       func(string) (bool, *errors.Error)
+	DeleteActiveRequest      func(string) *errors.Error
+	GetAllMatchingDetails    func(string, string, common.DbType) ([]string, *errors.Error)
+	CheckMetricRequest       func(string) (bool, *errors.Error)
+	DeleteMetricRequest      func(string) *errors.Error
+	GetResource              func(string, string) (string, *errors.Error)
+	Delete                   func(string, string, common.DbType) *errors.Error
 }
 
 type responseStatus struct {
@@ -102,6 +126,7 @@ type getResourceRequest struct {
 	UpdateFlag        bool
 	TargetURI         string
 	UpdateTask        func(common.TaskData) error
+	BMCAddress        string
 }
 
 type respHolder struct {
@@ -147,9 +172,6 @@ type ActiveRequestsSet struct {
 	UpdateMu sync.Mutex
 }
 
-// ActiveReqSet is the global instance for tracking ongoing requests
-var ActiveReqSet ActiveRequestsSet
-
 var southBoundURL = "southboundurl"
 var northBoundURL = "northboundurl"
 
@@ -181,6 +203,17 @@ func getIPAndPortFromAddress(address string) (string, string) {
 	return ip, port
 }
 
+func getKeyFromManagerAddress(managerAddress string) string {
+	ipAddr, host, port, err := agcommon.LookupHost(managerAddress)
+	if err != nil {
+		ipAddr = host
+	}
+	if port != "" {
+		return net.JoinHostPort(host, port)
+	}
+	return ipAddr
+}
+
 func fillTaskData(taskID, targetURI, request string, resp response.RPC, taskState string, taskStatus string, percentComplete int32, httpMethod string) common.TaskData {
 	return common.TaskData{
 		TaskID:          taskID,
@@ -200,7 +233,7 @@ func genError(errorMessage string, respPtr *response.RPC, httpStatusCode int32, 
 	respPtr.StatusMessage = StatusMessage
 	respPtr.Body = errors.CreateErrorResponse(respPtr.StatusMessage, errorMessage)
 	respPtr.Header = header
-	log.Printf(errorMessage)
+	log.Error(errorMessage)
 }
 
 // UpdateTaskData update the task with the given data
@@ -262,13 +295,13 @@ func contactPlugin(req getResourceRequest, errorMessage string) ([]byte, string,
 			resp.StatusCode = int32(pluginResp.StatusCode)
 			resp.StatusMessage = response.ResourceAtURIUnauthorized
 			resp.MsgArgs = []interface{}{"https://" + req.Plugin.IP + ":" + req.Plugin.Port + req.OID}
-			log.Println(errorMessage)
+			log.Error(errorMessage)
 			return nil, "", resp, fmt.Errorf(errorMessage)
 		}
 		errorMessage += string(body)
 		resp.StatusCode = int32(pluginResp.StatusCode)
 		resp.StatusMessage = response.InternalError
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		return body, "", resp, fmt.Errorf(errorMessage)
 	}
 
@@ -290,7 +323,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
-			key = append(key, DeviceUUID+":"+id)
+			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
 		key = append(key, id)
@@ -298,8 +331,8 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	return strings.Join(key, "/")
 }
 
-func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
-	var resourceURI string
+func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, string, int32, error) {
+	var computeSystemID, resourceURI string
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -309,8 +342,8 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusCode = getResponse.StatusCode
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
-		log.Println(err)
-		return "", progress, err
+		log.Error(err)
+		return computeSystemID, resourceURI, progress, err
 	}
 	h.SystemURL = make([]string, 0)
 	h.PluginResponse = string(body)
@@ -322,8 +355,8 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying unmarshal systems collection: ", err.Error())
-		return "", progress, err
+		log.Error("error while trying unmarshal systems collection: " + err.Error())
+		return computeSystemID, resourceURI, progress, err
 	}
 	systemMembers := systemsMap["Members"]
 	// Loop through System collection members and discover all of them
@@ -333,15 +366,15 @@ func (h *respHolder) getAllSystemInfo(taskID string, progress int32, alottedWork
 		estimatedWork := alottedWork / int32(len(systemMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		if resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
+		if computeSystemID, resourceURI, progress, err = h.getSystemInfo(taskID, progress, estimatedWork, req); err != nil {
 			errorMessage += oDataID + ":err-" + err.Error() + "; "
 			foundErr = true
 		}
 	}
 	if foundErr {
-		return resourceURI, progress, fmt.Errorf("%s]", errorMessage)
+		return computeSystemID, resourceURI, progress, fmt.Errorf("%s]", errorMessage)
 	}
-	return resourceURI, progress, nil
+	return computeSystemID, resourceURI, progress, nil
 }
 
 //Registries Discovery function
@@ -351,7 +384,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 	registryStore := config.Data.RegistryStorePath
 	regFiles, err := ioutil.ReadDir(registryStore)
 	if err != nil {
-		log.Printf("error while reading the files from directory %v: %v", registryStore, err)
+		log.Error("error while reading the files from directory " + registryStore + ": " + err.Error())
 		log.Fatal(err)
 	}
 	//Construct the list of file names available
@@ -367,7 +400,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = getResponse.StatusMessage
 		h.StatusCode = getResponse.StatusCode
 		h.lock.Unlock()
-		log.Println(err)
+		log.Error(err)
 		return progress
 	}
 	registriesMap := make(map[string]interface{})
@@ -378,7 +411,7 @@ func (h *respHolder) getAllRegistries(taskID string, progress int32, alottedWork
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying to unmarshal Registries collection: ", err)
+		log.Error("error while trying to unmarshal Registries collection: " + err.Error())
 		return progress
 
 	}
@@ -520,7 +553,7 @@ func isFileExist(existingFiles []string, substr string) bool {
 	return fileExist
 }
 
-func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := req.OID
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get the"+resourceName+"collection details: ")
 	if err != nil {
@@ -530,7 +563,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusCode = getResponse.StatusCode
 		h.MsgArgs = getResponse.MsgArgs
 		h.lock.Unlock()
-		log.Println(err)
+		log.Error(err)
 		return progress
 	}
 
@@ -542,7 +575,7 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		log.Println("error while trying to unmarshal"+resourceName+": ", err)
+		log.Error("error while trying to unmarshal " + resourceName + ": " + err.Error())
 		return progress
 
 	}
@@ -553,12 +586,13 @@ func (h *respHolder) getAllRootInfo(taskID string, progress int32, alottedWork i
 		estimatedWork := alottedWork / int32(len(resourceMembers.([]interface{})))
 		oDataID := object.(map[string]interface{})["@odata.id"].(string)
 		req.OID = oDataID
-		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req)
+		progress = h.getIndivdualInfo(taskID, progress, estimatedWork, req, resourceList)
 	}
 	return progress
 }
 
-func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, int32, error) {
+func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) (string, string, int32, error) {
+	var computeSystemID, oidKey string
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get system collection details: ")
 	if err != nil {
 		h.lock.Lock()
@@ -570,7 +604,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		}
 		h.StatusCode = getResponse.StatusCode
 		h.lock.Unlock()
-		return "", progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 
 	var computeSystem map[string]interface{}
@@ -581,22 +615,22 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		return "", progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 
 	oid := computeSystem["@odata.id"].(string)
-	computeSystemID := computeSystem["Id"].(string)
+	computeSystemID = computeSystem["Id"].(string)
 	computeSystemUUID := computeSystem["UUID"].(string)
-	oidKey := keyFormation(oid, computeSystemID, req.DeviceUUID)
+	oidKey = keyFormation(oid, computeSystemID, req.DeviceUUID)
 	if !req.UpdateFlag {
 		indexList, err := agmodel.GetString("UUID", computeSystemUUID)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			h.lock.Lock()
 			h.StatusCode = http.StatusInternalServerError
 			h.StatusMessage = response.InternalError
 			h.lock.Unlock()
-			return oidKey, progress, err
+			return computeSystemID, oidKey, progress, err
 		}
 		if len(indexList) > 0 {
 			h.lock.Lock()
@@ -605,7 +639,7 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 			h.ErrorMessage = "Resource already exists"
 			h.MsgArgs = []interface{}{"ComputerSystem", "ComputerSystem", "ComputerSystem"}
 			h.lock.Unlock()
-			return oidKey, progress, fmt.Errorf(h.ErrorMessage)
+			return computeSystemID, oidKey, progress, fmt.Errorf(h.ErrorMessage)
 		}
 
 	}
@@ -618,15 +652,14 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
 		h.lock.Unlock()
-		return oidKey, progress, err
+		return computeSystemID, oidKey, progress, err
 	}
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -639,17 +672,17 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {
-		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
 		h.StatusMessage = response.InternalError
 		h.StatusCode = http.StatusInternalServerError
-		return oidKey, progress, err
+		return computeSystemID, oidKey, progress, err
 	}
-	return oidKey, progress, nil
+	return computeSystemID, oidKey, progress, nil
 }
 
 // getStorageInfo is used to rediscover storage data from a system
@@ -681,17 +714,17 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 
 	// Read system data from DB
 	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
-	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+":", -1)
+	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
 	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
 	if dbErr != nil {
-		log.Println("error while getting the systems data", dbErr.Error())
+		log.Error("error while getting the systems data" + dbErr.Error())
 		return "", progress, err
 	}
 	// unmarshall the systems data
 	var systemData map[string]interface{}
 	err = json.Unmarshal([]byte(data), &systemData)
 	if err != nil {
-		log.Println("Error while unmarshaling system's data", err)
+		log.Error("Error while unmarshaling system's data" + err.Error())
 		return "", progress, err
 	}
 
@@ -715,10 +748,9 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	h.TraversedLinks[req.OID] = true
 	h.SystemURL = append(h.SystemURL, oidKey)
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(computeSystem, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SystemCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.SkipResourceListUnderSystem, h.TraversedLinks)
 	req.SystemID = computeSystemID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -729,12 +761,10 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 		progress = h.getResourceDetails("", progress, estimatedWork, req)
 	}
 	json.Unmarshal([]byte(updatedResourceData), &computeSystem)
-	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
+	searchForm := createServerSearchIndex(computeSystem, systemURI, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
-	} else {
-		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID, req.BMCAddress)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
@@ -770,7 +800,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 
 	// saving the firmware version
 	if !strings.Contains(oidKey, "/Storage") {
-		if firmwareVersion := getFirmwareVersion(oidKey); firmwareVersion != "" {
+		if firmwareVersion := getFirmwareVersion(oidKey, deviceUUID); firmwareVersion != "" {
 			searchForm["FirmwareVersion"] = firmwareVersion
 		}
 	}
@@ -787,15 +817,16 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 		storageCollection := agcommon.GetStorageResources(strings.TrimSuffix(storageCollectionOdataID, "/"))
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
+			var capacity []float64
+			var types []string
+			var quantity int
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
 				storageRes := agcommon.GetStorageResources(strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
-					quantity := len(drives.([]interface{}))
-					var capacity []float64
-					var types []string
+					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
 						driveRes := agcommon.GetStorageResources(strings.TrimSuffix(driveODataID, "/"))
@@ -810,7 +841,6 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 							types = append(types, mediaType.(string))
 						}
 					}
-
 					searchForm["Storage/Drives/Quantity"] = quantity
 					searchForm["Storage/Drives/Capacity"] = capacity
 					searchForm["Storage/Drives/Type"] = types
@@ -820,7 +850,7 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 	}
 	return searchForm
 }
-func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest) int32 {
+func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork int32, req getResourceRequest, resourceList []string) int32 {
 	resourceName := getResourceName(req.OID, false)
 	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
 	if err != nil {
@@ -860,10 +890,9 @@ func (h *respHolder) getIndivdualInfo(taskID string, progress int32, alottedWork
 	}
 	h.TraversedLinks[req.OID] = true
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resource, retrievalLinks, false)
-
-	removeRetrievalLinks(retrievalLinks, oid, config.Data.AddComputeSkipResources.ChassisCollection, h.TraversedLinks)
-
+	removeRetrievalLinks(retrievalLinks, oid, resourceList, h.TraversedLinks)
 	req.SystemID = resourceID
 	req.ParentOID = oid
 	for resourceOID, oemFlag := range retrievalLinks {
@@ -894,11 +923,18 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.ErrorMessage = "error while trying unmarshal : " + err.Error()
 		h.StatusCode = http.StatusInternalServerError
 		h.StatusMessage = response.InternalError
-		log.Println(h.ErrorMessage)
+		log.Error(h.ErrorMessage)
 		h.lock.Unlock()
 		return progress
 	}
-	oidKey := keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+
+	oidKey := req.OID
+	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+".", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+".", -1)
+	} else {
+		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
+	}
 	var memberFlag bool
 	if _, ok := resourceData["Members"]; ok {
 		memberFlag = true
@@ -917,11 +953,12 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 		h.ErrorMessage = "error while trying to save data: " + err.Error()
 		h.StatusCode = http.StatusInternalServerError
 		h.StatusMessage = response.InternalError
-		log.Println(h.ErrorMessage)
+		log.Error(h.ErrorMessage)
 		h.lock.Unlock()
 		return progress
 	}
 	var retrievalLinks = make(map[string]bool)
+
 	getLinks(resourceData, retrievalLinks, req.OemFlag)
 	/* Loop through  Collection members and discover all of them*/
 	for oid, oemFlag := range retrievalLinks {
@@ -1002,7 +1039,7 @@ func checkRetrieval(oid, parentoid string, traversedLinks map[string]bool) bool 
 	}
 	//skiping the Retrieval if parent oid contains links in other resource of config
 	// TODO : beyond second level Retrieval need to be taken from config it will be implemented in RUCE-1239
-	for _, resourceName := range config.Data.AddComputeSkipResources.OtherCollection {
+	for _, resourceName := range config.Data.AddComputeSkipResources.SkipResourceListUnderOthers {
 		if strings.Contains(parentoid, resourceName) {
 			return false
 		}
@@ -1053,19 +1090,29 @@ func updateManagerName(data []byte, pluginID string) []byte {
 	return data
 }
 
-func getFirmwareVersion(oid string) string {
-	// replace the system with the manager
-	managerID := strings.Replace(oid, "Systems", "Managers", -1)
-	data, dbErr := agmodel.GetResource("Managers", managerID)
-	if dbErr != nil {
-		log.Println("error while getting the managers data", dbErr.Error())
+func getFirmwareVersion(oid, deviceUUID string) string {
+	strArray := strings.Split(oid, "/")
+	id := strArray[len(strArray)-1]
+	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+".", -1)
+	key = strings.Replace(key, "Systems", "Managers", -1)
+	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
+	if dberr != nil {
+		log.Error("while getting the managers data" + dberr.Error())
+		return ""
+	} else if len(keys) == 0 {
+		log.Error("Manager data is not available")
+		return ""
+	}
+	data, dberr := agmodel.GetResource("Managers", keys[0])
+	if dberr != nil {
+		log.Error("while getting the managers data: ", dberr.Error())
 		return ""
 	}
 	// unmarshall the managers data
 	var managersData map[string]interface{}
 	err := json.Unmarshal([]byte(data), &managersData)
 	if err != nil {
-		log.Println("Error while unmarshaling  the data", err)
+		log.Error("Error while unmarshaling  the data" + err.Error())
 		return ""
 	}
 	var firmwareVersion string
@@ -1078,8 +1125,16 @@ func getFirmwareVersion(oid string) string {
 
 // CreateDefaultEventSubscription will create default events subscriptions
 func CreateDefaultEventSubscription(systemID []string) {
-	log.Printf("info: creation of default subscriptions for %v are initiated.", systemID)
-	events := eventsproto.NewEventsService(services.Events, services.Service.Client())
+	log.Error("Creation of default subscriptions for " + strings.Join(systemID, ", ") + " are initiated.")
+
+	conn, connErr := services.ODIMService.Client(services.Events)
+	if connErr != nil {
+		log.Error("error while connecting: " + connErr.Error())
+		return
+	}
+	defer conn.Close()
+	events := eventsproto.NewEventsClient(conn)
+
 	_, err := events.CreateDefaultEventSubscription(context.TODO(), &eventsproto.DefaultEventSubRequest{
 		SystemID:      systemID,
 		EventTypes:    []string{"Alert"},
@@ -1088,7 +1143,7 @@ func CreateDefaultEventSubscription(systemID []string) {
 		Protocol:      "Redfish",
 	})
 	if err != nil {
-		log.Printf("error while creating default events: %v", err)
+		log.Error("error while creating default events: " + err.Error())
 		return
 	}
 }
@@ -1100,13 +1155,27 @@ func PublishEvent(systemIDs []string, collectionName string) {
 	}
 }
 
+// PublishPluginStatusOKEvent is for notifying active status of a plugin
+// and indicating to resubscribe the EMB of the plugin
+func PublishPluginStatusOKEvent(plugin string, msgQueues []string) {
+	data := common.SubscribeEMBData{
+		PluginID:  plugin,
+		EMBQueues: msgQueues,
+	}
+	if err := agmessagebus.PublishCtrlMsg(common.SubscribeEMB, data); err != nil {
+		log.Error("failed to publish resubscribe to " + plugin + " EMB event: " + err.Error())
+		return
+	}
+	log.Info("Published event to resubscribe to " + plugin + " EMB")
+}
+
 func getIDsFromURI(uri string) (string, string, error) {
 	lastChar := uri[len(uri)-1:]
 	if lastChar == "/" {
 		uri = uri[:len(uri)-1]
 	}
 	uriParts := strings.Split(uri, "/")
-	ids := strings.Split(uriParts[len(uriParts)-1], ":")
+	ids := strings.SplitN(uriParts[len(uriParts)-1], ".", 2)
 	if len(ids) != 2 {
 		return "", "", fmt.Errorf("error: no system id is found in %v", uri)
 	}
@@ -1126,12 +1195,14 @@ func (e *ExternalInterface) rollbackInMemory(resourceURI string) {
 func updateResourceDataWithUUID(resourceData, uuid string) string {
 	//replacing the uuid while saving the data
 	//to replace the id of system
-	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+":", -1)
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/systems/"+uuid+":", -1)
+	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+".", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+".", -1)
 	// to replace the id in managers
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+".", -1)
 	// to replace id in chassis
-	return strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+".", -1)
+
+	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+".", -1)
 
 }
 
@@ -1184,7 +1255,7 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 		_, token, getResponse, err := contactPlugin(pluginContactRequest, "error while creating the session: ")
 		if err != nil {
 			errMsg := err.Error()
-			log.Println(errMsg)
+			log.Error(errMsg)
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 		}
 		pluginContactRequest.Token = token
@@ -1201,7 +1272,10 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	body, _, getResponse, err := contactPlugin(pluginContactRequest, "error while getting the details "+pluginContactRequest.OID+": ")
 	if err != nil {
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
+		if getResponse.StatusCode == http.StatusNotFound {
+			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, nil), getResponse.StatusCode, queueList
+		}
 		return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo), getResponse.StatusCode, queueList
 	}
 	// extracting the EMB Type and EMB Queue name
@@ -1209,15 +1283,15 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 	err = json.Unmarshal(body, &statusResponse)
 	if err != nil {
 		errMsg := err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		getResponse.StatusCode = http.StatusInternalServerError
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), getResponse.StatusCode, queueList
 	}
 
-	// check the firmaware version of plugin is matched with connection method variant version
+	// check the firmware version of plugin is matched with connection method variant version
 	if statusResponse.Version != cmVariants.FirmwareVersion {
-		errMsg := "firmaware is not supported by connection method"
-		log.Println(errMsg)
+		errMsg := fmt.Sprintf("Provided firmware version %s does not match supported firmware version %s of the plugin %s", cmVariants.FirmwareVersion, statusResponse.Version, cmVariants.PluginID)
+		log.Error(errMsg)
 		getResponse.StatusCode = http.StatusBadRequest
 		return common.GeneralError(http.StatusBadRequest, response.PropertyValueNotInList, errMsg, []interface{}{"FirmwareVersion", statusResponse.Version}, taskInfo), getResponse.StatusCode, queueList
 	}
@@ -1233,11 +1307,342 @@ func getConnectionMethodVariants(connectionMethodVariant string) connectionMetho
 	// Split the connectionmethodvariant and get the PluginType, PreferredAuthType, PluginID and FirmwareVersion.
 	// Example: Compute:BasicAuth:GRF_v1.0.0
 	cm := strings.Split(connectionMethodVariant, ":")
-	firmawareVesrion := strings.Split(cm[2], "_")
+	firmwareVersion := strings.Split(cm[2], "_")
 	return connectionMethodVariants{
 		PluginType:        cm[0],
 		PreferredAuthType: cm[1],
 		PluginID:          cm[2],
-		FirmwareVersion:   firmawareVesrion[1],
+		FirmwareVersion:   firmwareVersion[1],
 	}
+}
+
+func (e *ExternalInterface) getTelemetryService(taskID, targetURI string, percentComplete int32, pluginContactRequest getResourceRequest, resp response.RPC, saveSystem agmodel.SaveSystem) int32 {
+	deviceInfo := map[string]interface{}{
+		"ManagerAddress": saveSystem.ManagerAddress,
+		"UserName":       saveSystem.UserName,
+		"Password":       saveSystem.Password,
+	}
+	// Populate the resource MetricDefinitions for telemetry service
+	pluginContactRequest.DeviceInfo = deviceInfo
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricDefinitions"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	// total estimated work for metric is 10 percent
+	var metricEstimatedWork = int32(3)
+	progress := percentComplete
+	progress, err := e.storeTelemetryCollectionInfo("MetricDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task := fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReportDefinitions for telemetry service
+	progress = percentComplete
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReportDefinitions"
+	progress, err = e.storeTelemetryCollectionInfo("MetricReportDefinitionsCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the MetricReports for telemetry service
+	var metricReportEstimatedWork int32
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/MetricReports"
+	progress = percentComplete
+	progress, err = e.storeTelemetryCollectionInfo("MetricReportsCollection", taskID, progress, metricReportEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress + metricReportEstimatedWork
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
+	// Populate the Triggers for telemetry service
+	pluginContactRequest.OID = "/redfish/v1/TelemetryService/Triggers"
+	progress = percentComplete
+	progress, err = e.storeTelemetryCollectionInfo("TriggersCollection", taskID, progress, metricEstimatedWork, pluginContactRequest)
+	if err != nil {
+		log.Error(err)
+	}
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+	return percentComplete
+}
+
+func (e *ExternalInterface) storeTelemetryCollectionInfo(resourceName, taskID string, progress, alottedWork int32, req getResourceRequest) (int32, error) {
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get the "+req.OID+" details: ")
+	if err != nil {
+		return progress, err
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress, fmt.Errorf(getResponse.StatusMessage)
+	}
+	var resourceData dmtf.Collection
+	err = json.Unmarshal(body, &resourceData)
+	if err != nil {
+		return progress, err
+	}
+
+	data, dbErr := e.GetResource(resourceName, req.OID)
+	if dbErr != nil {
+		// if no resource found then save the metric data into db.
+		if err = e.GenericSave(body, resourceName, req.OID); err != nil {
+			return progress, err
+		}
+		if resourceName != "MetricReportsCollection" {
+			// get and store of individual telemetry info
+			progress = e.getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+		}
+		return progress, nil
+	}
+	var telemetryInfo dmtf.Collection
+	if err := json.Unmarshal([]byte(data), &telemetryInfo); err != nil {
+		return progress, err
+	}
+	result := getSuperSet(telemetryInfo.Members, resourceData.Members)
+	telemetryInfo.Members = result
+	telemetryInfo.MembersCount = len(result)
+	telemetryData, err := json.Marshal(telemetryInfo)
+	if err != nil {
+		return progress, err
+	}
+	err = e.GenericSave(telemetryData, resourceName, req.OID)
+	if err != nil {
+		return progress, err
+	}
+	if resourceName != "MetricReportsCollection" {
+		// get and store of individual telemetry info
+		progress = e.getIndividualTelemetryInfo(taskID, progress, alottedWork, req, resourceData)
+	}
+	return progress, nil
+}
+
+func getSuperSet(telemetryInfo, resourceData []*dmtf.Link) []*dmtf.Link {
+	telemetryInfo = append(telemetryInfo, resourceData...)
+	existing := map[string]bool{}
+	result := []*dmtf.Link{}
+
+	for v := range telemetryInfo {
+		if !existing[telemetryInfo[v].Oid] {
+			existing[telemetryInfo[v].Oid] = true
+			result = append(result, telemetryInfo[v])
+		}
+	}
+	return result
+}
+
+func (e *ExternalInterface) getIndividualTelemetryInfo(taskID string, progress, alottedWork int32, req getResourceRequest, resourceData dmtf.Collection) int32 {
+	// Loop through all the resource members collection and discover all of them
+	for _, member := range resourceData.Members {
+		estimatedWork := alottedWork / int32(len(resourceData.Members))
+		req.OID = member.Oid
+		progress = e.getTeleInfo(taskID, progress, estimatedWork, req)
+	}
+	return progress
+}
+
+func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int32, req getResourceRequest) int32 {
+	resourceName := getResourceName(req.OID, false)
+	body, _, getResponse, err := contactPlugin(req, "error while trying to get "+resourceName+" details: ")
+	if err != nil {
+		return progress
+	}
+	if getResponse.StatusCode != http.StatusOK {
+		return progress
+	}
+	//replacing the uuid while saving the data
+	updatedResourceData := updateResourceDataWithUUID(string(body), req.DeviceUUID)
+
+	updatedResourceData, err = e.createWildCard(updatedResourceData, resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+
+	exist, dErr := e.CheckMetricRequest(req.OID)
+	if dErr != nil {
+		log.Info("Unable to collect the active request details from DB: ", dErr.Error())
+		return progress
+	}
+	if exist {
+		log.Info("An active request already exists for metric request")
+		return progress
+	}
+	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return progress
+	}
+
+	defer func() {
+		err := e.DeleteMetricRequest(req.OID)
+		if err != nil {
+			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
+		}
+	}()
+
+	// persist the response with table resource
+	err = e.GenericSave([]byte(updatedResourceData), resourceName, req.OID)
+	if err != nil {
+		return progress
+	}
+	progress = progress + alottedWork
+	var task = fillTaskData(taskID, req.TargetURI, req.TaskRequest, response.RPC{}, common.Running, common.OK, progress, http.MethodPost)
+	req.UpdateTask(task)
+	return progress
+}
+
+// createWildCard is used to form the create the wild card
+// first check the whether resource already present, if its not then create new wild card
+func (e *ExternalInterface) createWildCard(resourceData, resourceName, oid string) (string, error) {
+	var resourceDataMap map[string]interface{}
+	err := json.Unmarshal([]byte(resourceData), &resourceDataMap)
+	if err != nil {
+		log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+		return "", err
+	}
+	data, _ := e.GetResource(resourceName, oid)
+	return formWildCard(data, resourceDataMap)
+}
+
+// formWildCard is used to form the wild card
+// if the data not present in the db(means first time add server) then create empty wild and update it with metric properties
+// if the wild card data already present then update it with new properties
+func formWildCard(dbData string, resourceDataMap map[string]interface{}) (string, error) {
+	var systemID, chassisID string
+	var wildCards []WildCard
+	var dbMetricProperities []interface{}
+
+	if len(dbData) < 1 {
+		wildCards = getEmptyWildCard()
+	} else {
+		var dbDataMap map[string]interface{}
+		err := json.Unmarshal([]byte(dbData), &dbDataMap)
+		if err != nil {
+			log.Error("Failed to unmarshal the resource data, got: " + err.Error())
+			return "", err
+		}
+		if dbDataMap["Wildcards"] == nil {
+			return "", fmt.Errorf("wild card map is empty")
+		}
+		wildCards = getWildCard(dbDataMap["Wildcards"].([]interface{}))
+		dbMetricProperities = dbDataMap["MetricProperties"].([]interface{})
+	}
+	metricProperties := resourceDataMap["MetricProperties"].([]interface{})
+	for _, mProperty := range metricProperties {
+		property := mProperty.(string)
+		for i, wCard := range wildCards {
+			if wCard.Name == SystemUUID && strings.Contains(property, "/Systems/") {
+				property, systemID = getUpdatedProperty(property, SystemUUID)
+				if !checkWildCardPresent(systemID, wildCards[i].Values) {
+					wildCards[i].Values = append(wildCards[i].Values, systemID)
+				}
+				break
+			}
+			if wCard.Name == ChassisUUID && strings.Contains(property, "/Chassis/") {
+				property, chassisID = getUpdatedProperty(property, ChassisUUID)
+				if !checkWildCardPresent(chassisID, wCard.Values) {
+					wildCards[i].Values = append(wildCards[i].Values, chassisID)
+				}
+				break
+			}
+		}
+		if !checkMetricPropertyPresent(property, dbMetricProperities) {
+			dbMetricProperities = append(dbMetricProperities, property)
+		}
+	}
+	var wCards []WildCard
+	for _, wCard := range wildCards {
+		if len(wCard.Values) > 0 {
+			wCards = append(wCards, wCard)
+		}
+	}
+	if len(wCards) > 0 {
+		resourceDataMap["Wildcards"] = wCards
+		resourceDataMap["MetricProperties"] = dbMetricProperities
+	}
+	resourceDataByte, err := json.Marshal(resourceDataMap)
+	if err != nil {
+		return "", err
+	}
+	return string(resourceDataByte), nil
+}
+
+// checkWildCardPresent will check the wild card present in the array
+// if its present returns true, else false.
+func checkWildCardPresent(val string, values []string) bool {
+	if len(values) < 1 {
+		return false
+	}
+	front := 0
+	rear := len(values) - 1
+	for front <= rear {
+		if values[front] == val || values[rear] == val {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
+}
+
+// getUpdatedProperty function get the uuid from the property and update the property with wild card name
+func getUpdatedProperty(property, wildCardName string) (string, string) {
+	prop := strings.Split(property, "/")[4]
+	uuid := strings.Split(prop, "#")[0]
+	property = strings.Replace(property, uuid, "{"+wildCardName+"}", -1)
+	return property, uuid
+}
+
+// getWildCard function will convert array of interface to array of string
+func getWildCard(wCard []interface{}) []WildCard {
+	var wildCard []WildCard
+	for _, val := range wCard {
+		card := val.(map[string]interface{})
+		b, err := json.Marshal(card)
+		if err != nil {
+			continue
+		}
+		var wc WildCard
+		json.Unmarshal(b, &wc)
+		wildCard = append(wildCard, wc)
+	}
+	return wildCard
+}
+
+// checkMetricPropertyPresent will check the metric property present in the array
+// if its present returns true, else false.
+func checkMetricPropertyPresent(val string, values []interface{}) bool {
+	if len(values) < 1 {
+		return false
+	}
+	front := 0
+	rear := len(values) - 1
+	for front <= rear {
+		if values[front].(string) == val || values[rear].(string) == val {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
+}
+
+// getEmptyWildCard function is for create empty wild card field with default SystemID and ChassisID name and empty values
+func getEmptyWildCard() []WildCard {
+	var wildCards []WildCard
+	var w WildCard
+	w.Name = SystemUUID
+	w.Values = []string{}
+	wildCards = append(wildCards, w)
+	w.Name = ChassisUUID
+	w.Values = []string{}
+	wildCards = append(wildCards, w)
+	return wildCards
 }

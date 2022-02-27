@@ -88,7 +88,7 @@ func TestCreateSession(t *testing.T) {
 		return
 	}
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService/Sessions",
 		ID:        "Sessions",
 		Name:      "Session Service",
@@ -99,7 +99,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session creation credentials: error: username or password missing",
+				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -111,7 +111,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session creation credentials: error: password mismatch ",
+				ErrorMessage:  "Unable to authorize session creation credentials: error: Invalid username or password ",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -122,7 +122,7 @@ func TestCreateSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "user doesn't have required privilege to create a session",
+				ErrorMessage:  "User doesn't have required privilege to create a session",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -169,10 +169,7 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgUnauth.CreateGenericErrorResponse(),
+				Body:          errArgUnauth.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -185,10 +182,7 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgUnauth1.CreateGenericErrorResponse(),
+				Body:          errArgUnauth1.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -201,10 +195,7 @@ func TestCreateSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg2.CreateGenericErrorResponse(),
+				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 		},
 	}

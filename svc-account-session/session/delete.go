@@ -16,7 +16,7 @@
 package session
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -25,14 +25,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
-
-func getHeader() map[string]string {
-	return map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
-}
 
 // DeleteSession is a method to delete a sessiom
 // it will accepts the SessionCreateRequest which will have sessionid and sessiontoken
@@ -54,23 +46,22 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	}
 	currentSession, serr := asmodel.GetSession(req.SessionToken)
 	if serr != nil {
-		errorMessage := "error: while trying to delete session: " + serr.Error()
-		log.Printf(errorMessage)
+		errorMessage := "Unable to delete session: " + serr.Error()
+		log.Error(errorMessage)
 		return common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
 	}
 
 	sessionTokens, err := asmodel.GetAllSessionKeys()
 	if err != nil {
-		errorMessage := "error:  while trying to get all session keys in delete session: " + err.Error()
+		errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			log.Printf("error while trying to get session details with the token %v: %v", token, err)
+			log.Error("Unable to get session details with the token " + token + ": " + err.Error())
 			continue
 		}
 		if session.ID == req.SessionId {
@@ -79,24 +70,21 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 				if req.SessionToken != session.Token {
 					err := UpdateLastUsedTime(req.SessionToken)
 					if err != nil {
-						errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
+						errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
 						resp.CreateInternalErrorResponse(errorMessage)
-						resp.Header = getHeader()
-						log.Printf(errorMessage)
+						log.Error(errorMessage)
 						return resp
 					}
 				}
 				if err := session.Delete(); err != nil {
-					errorMessage := "error:  while trying to get all session keys in delete session: " + err.Error()
+					errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
 					resp.CreateInternalErrorResponse(errorMessage)
-					resp.Header = getHeader()
-					log.Printf(errorMessage)
+					log.Error(errorMessage)
 					return resp
 				}
-				log.Printf("Successfully Deleted: %v", err)
+				log.Info("Successfully Deleted: ")
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
-				resp.Header = getHeader()
 				return resp
 			}
 			errorMessage := "Insufficient privileges"
@@ -104,14 +92,13 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 			resp.StatusMessage = response.InsufficientPrivilege
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
-			resp.Header = getHeader()
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Printf(errorMessage)
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 	sessionTokens = nil
-	log.Printf("error: Status Not Found")
+	log.Error("error: Status Not Found")
 	errorMessage := "error: Session ID not found"
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
@@ -119,7 +106,6 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	errorArgs[0].StatusMessage = resp.StatusMessage
 	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
-	resp.Header = getHeader()
 	return resp
 }
 

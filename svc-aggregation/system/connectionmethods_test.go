@@ -32,6 +32,8 @@ func mockGetAllKeysFromTable(table string) ([]string, error) {
 		return []string{"/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}, nil
 	} else if table == "Plugin" {
 		return []string{"/redfish/v1/AggregationService/AggregationSources/5de0bd97-c41c-5de0-937d-85d390691b73"}, nil
+	} else if table == "AggregationSource" {
+		return []string{"/redfish/v1/AggregationService/AggregationSources/058c1876-6f24-439a-8968-2af261540813"}, nil
 	}
 	return []string{}, fmt.Errorf("Table not found")
 }
@@ -91,24 +93,12 @@ func TestGetConnectionCollection(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
-	commonResponse.CreateGenericResponse(response.Success)
 	resp1.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: 1,
 		Members:      []agresponse.ListMember{agresponse.ListMember{OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"}},
 	}
-	p := &ExternalInterface{
-		Auth:                mockIsAuthorized,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-		GetConnectionMethod: mockGetConnectionMethod,
-	}
+	p := getMockExternalInterface()
 	tests := []struct {
 		name string
 		e    *ExternalInterface
@@ -134,11 +124,7 @@ func TestGetConnectionCollection(t *testing.T) {
 }
 
 func TestExternalInterface_GetConnectionMethod(t *testing.T) {
-	p := &ExternalInterface{
-		Auth:                mockIsAuthorized,
-		GetAllKeysFromTable: mockGetAllKeysFromTable,
-		GetConnectionMethod: mockGetConnectionMethod,
-	}
+	p := getMockExternalInterface()
 	type args struct {
 		req *aggregatorproto.AggregatorRequest
 	}

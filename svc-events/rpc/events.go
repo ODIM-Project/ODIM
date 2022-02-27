@@ -19,62 +19,87 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/events"
+	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
 	"github.com/ODIM-Project/ODIM/svc-events/evresponse"
 )
 
 //Events struct helps to register service
 type Events struct {
-	ContactClientRPC      func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
-	IsAuthorizedRPC       func(sessionToken string, privileges []string, oemPrivileges []string) response.RPC
-	GetSessionUserNameRPC func(sessionToken string) (string, error)
-	CreateTaskRPC         func(string) (string, error)
-	UpdateTaskRPC         func(task common.TaskData) error
-	CreateChildTaskRPC    func(sessionid, taskid string) (string, error)
+	Connector *events.PluginContact
 }
 
+// GetPluginContactInitializer intializes all the required connection functions for the events execution
+func GetPluginContactInitializer() *Events {
+	connector := &events.PluginContact{
+		ContactClient:                    pmbhandle.ContactPlugin,
+		Auth:                             services.IsAuthorized,
+		CreateTask:                       services.CreateTask,
+		UpdateTask:                       events.UpdateTaskData,
+		CreateChildTask:                  services.CreateChildTask,
+		GetSessionUserName:               services.GetSessionUserName,
+		GetEvtSubscriptions:              evmodel.GetEvtSubscriptions,
+		SaveEventSubscription:            evmodel.SaveEventSubscription,
+		GetPluginData:                    evmodel.GetPluginData,
+		GetDeviceSubscriptions:           evmodel.GetDeviceSubscriptions,
+		GetTarget:                        evmodel.GetTarget,
+		GetAllKeysFromTable:              evmodel.GetAllKeysFromTable,
+		GetAllFabrics:                    evmodel.GetAllFabrics,
+		GetAllMatchingDetails:            evmodel.GetAllMatchingDetails,
+		UpdateDeviceSubscriptionLocation: evmodel.UpdateDeviceSubscriptionLocation,
+		GetFabricData:                    evmodel.GetFabricData,
+		DeleteEvtSubscription:            evmodel.DeleteEvtSubscription,
+		UpdateEventSubscription:          evmodel.UpdateEventSubscription,
+		DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
+		SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
+		SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
+		GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
+		GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
+		SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
+		DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
+		DeleteUndeliveredEvents:          evmodel.DeleteUndeliveredEvents,
+	}
+	return &Events{
+		Connector: connector,
+	}
+}
 func generateResponse(input interface{}) []byte {
 	bytes, err := json.Marshal(input)
 	if err != nil {
-		log.Println("error in unmarshalling response object from util-libs", err.Error())
+		log.Error("error in unmarshalling response object from util-libs" + err.Error())
 	}
 	return bytes
 }
 
 //GetEventService handles the RPC to get EventService details.
-func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 
 	// Fill the response header first
 	resp.Header = map[string]string{
-		"Allow":             "GET",
-		"Cache-Control":     "no-cache",
-		"Connection":        "Keep-alive",
-		"Link":              "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
+		"Link": "</redfish/v1/SchemaStore/en/EventService.json>; rel=describedby",
 	}
 	// Validate the token, if user has Login privelege then proceed.
 	//Else send 401 Unautherised
 	var oemprivileges []string
 	privileges := []string{common.PrivilegeLogin}
-	authResp := e.IsAuthorizedRPC(req.SessionToken, privileges, oemprivileges)
+	authResp := e.Connector.Auth(req.SessionToken, privileges, oemprivileges)
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusMessage = authResp.StatusMessage
 		resp.StatusCode = authResp.StatusCode
-		return nil
+		return &resp, nil
 	}
 	// Check whether the Event Service is enbaled in configuration file.
 	//If so set ServiceEnabled to true.
@@ -93,7 +118,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	}
 	// Construct the response below
 	eventServiceResponse := evresponse.EventServiceResponse{
-		OdataType:    "#EventService.v1_5_0.EventService",
+		OdataType:    common.EventServiceType,
 		ID:           "EventService",
 		Name:         "EventService",
 		Description:  "EventService",
@@ -111,8 +136,8 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 			},
 			Oem: evresponse.Oem{},
 		},
-		DeliveryRetryAttempts:        evcommon.DeliveryRetryAttempts,
-		DeliveryRetryIntervalSeconds: evcommon.DeliveryRetryIntervalSeconds,
+		DeliveryRetryAttempts:        config.Data.EventConf.DeliveryRetryAttempts,
+		DeliveryRetryIntervalSeconds: config.Data.EventConf.DeliveryRetryIntervalSeconds,
 		EventFormatTypes:             []string{"Event"},
 		EventTypesForSubscription: []string{
 			"StatusChange",
@@ -153,52 +178,42 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 	resp.StatusMessage = "Success"
 	resp.Body = generateResponse(eventServiceResponse)
 
-	return nil
+	return &resp, nil
 }
 
 //CreateEventSubscription defines the operations which handles the RPC request response
 // for the Create event subscription RPC call to events micro service.
 // The functionality is to create the subscrription with Resource provided in origin resources.
-func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
 	var taskID string
-	pc := events.PluginContact{
-		ContactClient:      e.ContactClientRPC,
-		Auth:               e.IsAuthorizedRPC,
-		UpdateTask:         e.UpdateTaskRPC,
-		CreateChildTask:    e.CreateChildTaskRPC,
-		GetSessionUserName: e.GetSessionUserNameRPC,
-	}
 	// Athorize the request here
-	authResp := e.IsAuthorizedRPC(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := e.Connector.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Printf("error while trying to authenticate session: status code: %v, status message: %v", authResp.StatusCode, authResp.StatusMessage)
 		resp.Body = generateResponse(authResp.Body)
 		resp.StatusCode = authResp.StatusCode
-		return nil
+		return &resp, nil
 	}
-	sessionUserName, err := pc.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.Connector.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while trying to get the session username: " + err.Error()
 		resp.Body = generateResponse(common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil))
 		resp.StatusCode = http.StatusUnauthorized
-		log.Printf(errorMessage)
-		return err
+		log.Error(errorMessage)
+		return &resp, err
 	}
 	// Create the task and get the taskID
 	// Contact Task Service using RPC and get the taskID
-	taskURI, err := e.CreateTaskRPC(sessionUserName)
+	taskURI, err := e.Connector.CreateTask(sessionUserName)
 	if err != nil {
 		// print err here as we are unbale to contact svc-task service
 		errorMessage := "error while trying to create the task: " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error   headers
-		}
-		log.Printf(errorMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		log.Error(errorMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	strArray := strings.Split(taskURI, "/")
 	if strings.HasSuffix(taskURI, "/") {
@@ -207,114 +222,97 @@ func (e *Events) CreateEventSubscription(ctx context.Context, req *eventsproto.E
 		taskID = strArray[len(strArray)-1]
 	}
 	//Spawn the thread to process the action asynchronously
-	go pc.CreateEventSubscription(taskID, sessionUserName, req)
+	go e.Connector.CreateEventSubscription(taskID, sessionUserName, req)
 	// Return 202 accepted
 	resp.StatusCode = http.StatusAccepted
 	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
-		"Location":     "/taskmon/" + taskID,
+		"Location": "/taskmon/" + taskID,
 	}
 	resp.StatusMessage = response.TaskStarted
-	generateTaskRespone(taskID, taskURI, resp)
-	return nil
+	generateTaskRespone(taskID, taskURI, &resp)
+	return &resp, nil
 }
 
 //SubmitTestEvent defines the operations which handles the RPC request response
 // for the SubmitTestEvent RPC call to events micro service.
 // The functionality is to submit a test event.
-func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) SubmitTestEvent(ctx context.Context, req *eventsproto.EventSubRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient:      e.ContactClientRPC,
-		Auth:               e.IsAuthorizedRPC,
-		GetSessionUserName: e.GetSessionUserNameRPC,
-	}
-
-	data := pc.SubmitTestEvent(req)
+	data := e.Connector.SubmitTestEvent(req)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for submit test event: " + err.Error()
-		log.Printf(resp.StatusMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 //GetEventSubscriptionsCollection defines the operations which handles the RPC request response
 // for the get event subscriptions collection RPC call to events micro service.
 // The functionality is to get the collection of subscrription details.
-func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) GetEventSubscriptionsCollection(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
-
-	data := pc.GetEventSubscriptionsCollection(req)
+	data := e.Connector.GetEventSubscriptionsCollection(req)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Printf(resp.StatusMessage)
-		return nil
+		log.Error(resp.StatusMessage)
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 //GetEventSubscription defines the operations which handles the RPC request response
 // for the get event subscription RPC call to events micro service.
 // The functionality is to get the subscrription details.
-func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.EventRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) GetEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
-
-	data := pc.GetEventSubscriptionsDetails(req)
+	data := e.Connector.GetEventSubscriptionsDetails(req)
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
 		errorMessage := "error while trying marshal the response body for get event subsciption : " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Printf(resp.StatusMessage)
-		return nil
+		log.Error(resp.StatusMessage)
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 // DeleteEventSubscription defines the operations which handles the RPC request response
 // for the delete event subscription RPC call to events micro service.
 // The functionality is to delete the subscrription details.
-func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest, resp *eventsproto.EventSubResponse) error {
+func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.EventRequest) (*eventsproto.EventSubResponse, error) {
+	var resp eventsproto.EventSubResponse
 	var err error
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
 	var data response.RPC
 	if req.UUID == "" {
 		// Delete Event Subscription when admin requested
-		data = pc.DeleteEventSubscriptionsDetails(req)
+		data = e.Connector.DeleteEventSubscriptionsDetails(req)
 	} else {
 		// Delete Event Subscription to Device when Server get Deleted
-		data = pc.DeleteEventSubscriptions(req)
+		data = e.Connector.DeleteEventSubscriptions(req)
 	}
 	resp.Body, err = json.Marshal(data.Body)
 	if err != nil {
@@ -322,40 +320,38 @@ func (e *Events) DeleteEventSubscription(ctx context.Context, req *eventsproto.E
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = response.InternalError
 		resp.Body, _ = json.Marshal(common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil).Body)
-		log.Printf(resp.StatusMessage)
-		return nil
+		log.Error(resp.StatusMessage)
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
-	return nil
+	return &resp, nil
 }
 
 //CreateDefaultEventSubscription defines the operations which handles the RPC request response
 // after computer system restarts ,This will  triggered from   aggregation service whenever a computer system is added
-func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *eventsproto.DefaultEventSubRequest, resp *eventsproto.DefaultEventSubResponse) error {
-	pc := events.PluginContact{
-		ContactClient: e.ContactClientRPC,
-		Auth:          e.IsAuthorizedRPC,
-	}
-	pc.CreateDefaultEventSubscription(req.SystemID, req.EventTypes, req.MessageIDs, req.ResourceTypes, req.Protocol)
-	return nil
+func (e *Events) CreateDefaultEventSubscription(ctx context.Context, req *eventsproto.DefaultEventSubRequest) (*eventsproto.DefaultEventSubResponse, error) {
+	var resp eventsproto.DefaultEventSubResponse
+	e.Connector.CreateDefaultEventSubscription(req.SystemID, req.EventTypes, req.MessageIDs, req.ResourceTypes, req.Protocol)
+	return &resp, nil
 }
 
 //SubsribeEMB defines the operations which handles the RPC request response
 // it subscribe to the given event message bus queues
-func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest, resp *eventsproto.SubscribeEMBResponse) error {
-	log.Println("Subscribing on emb for plugin ", req.PluginID)
+func (e *Events) SubsribeEMB(ctx context.Context, req *eventsproto.SubscribeEMBRequest) (*eventsproto.SubscribeEMBResponse, error) {
+	var resp eventsproto.SubscribeEMBResponse
+	log.Info("Subscribing on emb for plugin " + req.PluginID)
 	for i := 0; i < len(req.EMBQueueName); i++ {
 		evcommon.EMBTopics.ConsumeTopic(req.EMBQueueName[i])
 	}
 	resp.Status = true
-	return nil
+	return &resp, nil
 }
 
 func generateTaskRespone(taskID, taskURI string, resp *eventsproto.EventSubResponse) {
 	commonResponse := response.Response{
-		OdataType:    "#Task.v1_4_2.Task",
+		OdataType:    common.TaskType,
 		ID:           taskID,
 		Name:         "Task " + taskID,
 		OdataContext: "/redfish/v1/$metadata#Task.Task",

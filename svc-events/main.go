@@ -14,74 +14,89 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
-	evt "github.com/ODIM-Project/ODIM/svc-events/events"
 	"github.com/ODIM-Project/ODIM/svc-events/rpc"
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.New()
 
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("Event Service should not be run as the root user")
+		log.Fatal("Event Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Fatal("fatal: error while trying set up configuration: " + err.Error())
 	}
 
-	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
-	}
+	config.CollectCLArgs()
 
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
+	}
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
 	if err := services.InitializeService(services.Events); err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
+		log.Fatal("fatal: error while trying to initialize the service: " + err.Error())
 	}
 
 	// Intializing the TopicsList
 	evcommon.EMBTopics.TopicsList = make(map[string]bool)
 	// Intializing plugin token
 	evcommon.Token.Tokens = make(map[string]string)
-	registerHandler()
+
+	// register handlers
+	events := rpc.GetPluginContactInitializer()
+	eventsproto.RegisterEventsServer(services.ODIMService.Server(), events)
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	consumer.In, consumer.Out = common.CreateJobQueue()
-
+	jobQueueSize := 10
+	consumer.In, consumer.Out = common.CreateJobQueue(jobQueueSize)
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as PublishEventsToDestination method after reading the data from the channel.
-	common.RunReadWorkers(consumer.Out, evt.PublishEventsToDestination, 1)
+	common.RunReadWorkers(consumer.Out, events.Connector.PublishEventsToDestination, 5)
+
+	// CreateJobQueue defines the queue which will act as an infinite buffer
+	// In channel is an entry or input channel and the Out channel is an exit or output channel
+	ctrlMsgProcQueueSize := 1
+	consumer.CtrlMsgRecvQueue, consumer.CtrlMsgProcQueue = common.CreateJobQueue(ctrlMsgProcQueueSize)
+	// RunReadWorkers will create a worker pool for doing a specific task
+	// which is passed to it as ProcessCtrlMsg method after reading the data from the channel.
+	common.RunReadWorkers(consumer.CtrlMsgProcQueue, evcommon.ProcessCtrlMsg, 1)
+
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	eventChan := make(chan interface{})
+	// TrackConfigFileChanges monitors the odim config changes using fsnotfiy
+	go common.TrackConfigFileChanges(configFilePath, eventChan)
+
+	// Subscribe to intercomm messagebus queue
+	go consumer.SubscribeCtrlMsgQueue(config.Data.MessageBusConf.MessageBusQueue[0])
+
+	// Subscribe to EMBs of all the available plugins
 	startUPInterface := evcommon.StartUpInteraface{
 		DecryptPassword: common.DecryptWithPrivateKey,
 		EMBConsume:      consumer.Consume,
 	}
-	go startUPInterface.GetAllPluginStatus()
-	// Run server
-	if err := services.Service.Run(); err != nil {
-		log.Fatal(err)
-	}
-}
+	go startUPInterface.SubscribePluginEMB()
 
-func registerHandler() {
-	events := new(rpc.Events)
-	events.IsAuthorizedRPC = services.IsAuthorized
-	events.GetSessionUserNameRPC = services.GetSessionUserName
-	events.ContactClientRPC = pmbhandle.ContactPlugin
-	events.CreateTaskRPC = services.CreateTask
-	events.UpdateTaskRPC = evt.UpdateTaskData
-	events.CreateChildTaskRPC = services.CreateChildTask
-	eventsproto.RegisterEventsHandler(services.Service.Server(), events)
+	// Run server
+	if err := services.ODIMService.Run(); err != nil {
+		log.Fatal(err.Error())
+	}
 }

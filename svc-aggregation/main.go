@@ -14,8 +14,9 @@
 package main
 
 import (
-	"log"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
@@ -37,43 +38,42 @@ type Schema struct {
 	QueryKeys     []string `json:"queryKeys"`
 }
 
+var log = logrus.New()
+
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Aggregation Service should not be run as the root user")
 	}
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("error while trying to set configuration: %v", err)
+		log.Fatal("error while trying to set configuration: " + err.Error())
 	}
 
-	if err := dc.SetConfiguration(config.Data.MessageQueueConfigFilePath); err != nil {
-		log.Fatalf("error while trying to set messagebus configuration: %v", err)
-	}
+	config.CollectCLArgs()
 
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+		log.Fatal("error while trying to set messagebus configuration: " + err.Error())
+	}
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
 
-	//initialize global record used for tracking ongoing requests
-	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
-
-	var connectionMethoodInterface = agcommon.DBInterface{
+	var connectionMethodInterface = agcommon.DBInterface{
 		GetAllKeysFromTableInterface: agmodel.GetAllKeysFromTable,
 		GetConnectionMethodInterface: agmodel.GetConnectionMethod,
 		AddConnectionMethodInterface: agmodel.AddConnectionMethod,
 		DeleteInterface:              agmodel.Delete,
 	}
-	if err := connectionMethoodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
-		log.Fatalf("error while trying add connection method: %v", err)
+	if err := connectionMethodInterface.AddConnectionMethods(config.Data.ConnectionMethodConf); err != nil {
+		log.Fatal("error while trying add connection method: " + err.Error())
 	}
 
-	err := services.InitializeService(services.Aggregator)
-	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize service: %v", err)
+	if err := services.InitializeService(services.Aggregator); err != nil {
+		log.Fatal("fatal: error while trying to initialize service: " + err.Error())
 	}
 
 	aggregator := rpc.GetAggregator()
-	aggregatorproto.RegisterAggregatorHandler(services.Service.Server(), aggregator)
+	aggregatorproto.RegisterAggregatorServer(services.ODIMService.Server(), aggregator)
 
 	// Rediscover the Resources by looking in OnDisk DB, populate the resources in InMemory DB
 	//This happens only if the InMemory DB lost it contents due to DB reboot or host VM reboot.
@@ -87,13 +87,16 @@ func main() {
 		UpdateTask:      system.UpdateTaskData,
 	}
 	go p.RediscoverResources()
+
 	agcommon.ConfigFilePath = os.Getenv("CONFIG_FILE_PATH")
 	if agcommon.ConfigFilePath == "" {
-		log.Fatalln("error: no value get the environment variable CONFIG_FILE_PATH")
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
 	}
-	go agcommon.TrackConfigFileChanges(connectionMethoodInterface)
-	if err = services.Service.Run(); err != nil {
-		log.Fatalf("failed to run a service: %v", err)
-	}
+	go agcommon.TrackConfigFileChanges(connectionMethodInterface)
 
+	go system.PerformPluginHealthCheck()
+
+	if err := services.ODIMService.Run(); err != nil {
+		log.Fatal("failed to run a service: " + err.Error())
+	}
 }

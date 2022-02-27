@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -15,52 +16,68 @@ package main
 
 import (
 	"encoding/json"
-	"log"
-	"os"
-
 	"io/ioutil"
+	"os"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
+	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/rpc"
+	"github.com/ODIM-Project/ODIM/svc-systems/scommon"
+	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/systems"
+
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.New()
 
 func main() {
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
-		log.Fatalln("System Service should not be run as the root user")
+		log.Fatal("System Service should not be run as the root user")
 	}
 
 	if err := config.SetConfiguration(); err != nil {
-		log.Fatalf("fatal: error while trying set up configuration: %v", err)
+		log.Fatal("Error while trying set up configuration: " + err.Error())
 	}
 
+	config.CollectCLArgs()
+
 	if err := common.CheckDBConnection(); err != nil {
-		log.Fatalf("error while trying to check DB connection health: %v", err)
+		log.Fatal("error while trying to check DB connection health: " + err.Error())
 	}
+
+	chassis.Token.Tokens = make(map[string]string)
 
 	schemaFile, err := ioutil.ReadFile(config.Data.SearchAndFilterSchemaPath)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to read search/filter schema json: %v", err)
+		log.Fatal("Error while trying to read search/filter schema json: " + err.Error())
 	}
-	err = json.Unmarshal(schemaFile, &systems.SF)
+	err = json.Unmarshal(schemaFile, &scommon.SF)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to fetch search/filter schema json: %v", err)
+		log.Fatal("Error while trying to fetch search/filter schema json: " + err.Error())
 	}
+
+	configFilePath := os.Getenv("CONFIG_FILE_PATH")
+	if configFilePath == "" {
+		log.Fatal("error: no value get the environment variable CONFIG_FILE_PATH")
+	}
+	go scommon.TrackConfigFileChanges(configFilePath)
 
 	err = services.InitializeService(services.Systems)
 	if err != nil {
-		log.Fatalf("fatal: error while trying to initialize the service: %v", err)
+		log.Fatal("Error while trying to initialize the service: " + err.Error())
 	}
 
 	registerHandler()
 	// Run server
-	if err := services.Service.Run(); err != nil {
-		log.Fatal(err)
+	if err := services.ODIMService.Run(); err != nil {
+		log.Fatal(err.Error())
 	}
 }
 
@@ -68,8 +85,17 @@ func registerHandler() {
 	systemRPC := new(rpc.Systems)
 	systemRPC.IsAuthorizedRPC = services.IsAuthorized
 	systemRPC.EI = systems.GetExternalInterface()
-	systemsproto.RegisterSystemsHandler(services.Service.Server(), systemRPC)
-	chassisRPC := new(rpc.ChassisRPC)
-	chassisRPC.IsAuthorizedRPC = services.IsAuthorized
-	chassisproto.RegisterChassisHandler(services.Service.Server(), chassisRPC)
+	systemsproto.RegisterSystemsServer(services.ODIMService.Server(), systemRPC)
+
+	pcf := plugin.NewClientFactory(config.Data.URLTranslation)
+	chassisRPC := rpc.NewChassisRPC(
+		services.IsAuthorized,
+		chassis.NewCreateHandler(pcf),
+		chassis.NewGetCollectionHandler(pcf, smodel.GetAllKeysFromTable),
+		chassis.NewDeleteHandler(pcf, smodel.Find),
+		chassis.NewGetHandler(pcf, smodel.Find),
+		chassis.NewUpdateHandler(pcf),
+	)
+
+	chassisproto.RegisterChassisServer(services.ODIMService.Server(), chassisRPC)
 }

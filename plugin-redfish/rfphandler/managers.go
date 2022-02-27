@@ -16,17 +16,15 @@
 package rfphandler
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"strings"
-
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
-	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpresponse"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfputilities"
 	iris "github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"strings"
 )
 
 //GetManagersCollection  Fetches details of the given resource from the device
@@ -38,7 +36,7 @@ func GetManagersCollection(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -48,17 +46,17 @@ func GetManagersCollection(ctx iris.Context) {
 	// if any error come while getting the device then request will be for  plugins manager
 	ctx.ReadJSON(&deviceDetails)
 	if deviceDetails.Host == "" {
-		var members = []rfpresponse.Link{
-			rfpresponse.Link{
+		var members = []*dmtf.Link{
+			&dmtf.Link{
 				Oid: "/ODIM/v1/Managers/" + pluginConfig.Data.RootServiceUUID,
 			},
 		}
 
-		managers := rfpresponse.ManagersCollection{
-			OdataContext: "/ODIM/v1/$metadata#ManagerCollection.ManagerCollection",
-			//Etag:         "W/\"AA6D42B0\"",
-			OdataID:      uri,
-			OdataType:    "#ManagerCollection.ManagerCollection",
+		managers := dmtf.Collection{
+			ODataContext: "/ODIM/v1/$metadata#ManagerCollection.ManagerCollection",
+			//ODataEtag:         "W/\"AA6D42B0\"",
+			ODataID:      uri,
+			ODataType:    "#ManagerCollection.ManagerCollection",
 			Description:  "Managers view",
 			Name:         "Managers",
 			Members:      members,
@@ -83,7 +81,7 @@ func GetManagersInfo(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -93,17 +91,17 @@ func GetManagersInfo(ctx iris.Context) {
 	// if any error come while getting the device then request will be for  plugins manager
 	ctx.ReadJSON(&deviceDetails)
 	if deviceDetails.Host == "" {
-		managers := rfpresponse.Manager{
-			OdataContext: "/ODIM/v1/$metadata#Manager.Manager",
+		managers := dmtf.Manager{
+			ODataContext: "/ODIM/v1/$metadata#Manager.Manager",
 			//Etag:            "W/\"AA6D42B0\"",
-			OdataID:         uri,
-			OdataType:       "#Manager.v1_3_3.Manager",
+			ODataID:         uri,
+			ODataType:       "#Manager.v1_13_0.Manager",
 			Name:            pluginConfig.Data.PluginConf.ID,
 			ManagerType:     "Service",
 			ID:              pluginConfig.Data.RootServiceUUID,
 			UUID:            pluginConfig.Data.RootServiceUUID,
 			FirmwareVersion: pluginConfig.Data.FirmwareVersion,
-			Status: &rfpresponse.ManagerStatus{
+			Status: &dmtf.Status{
 				State: "Enabled",
 			},
 		}
@@ -128,8 +126,8 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	}
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
@@ -138,8 +136,8 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	//Fetching generic resource details from the device
 	resp, err := redfishClient.GetWithBasicAuth(device, uri)
 	if err != nil {
-		errMsg := "error: authentication failed: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "Authentication failed: " + err.Error()
+		log.Error(errMsg)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
 			ctx.WriteString(errMsg)
@@ -150,16 +148,20 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf(err.Error())
+		errMsg := "While trying to read the response body, got: " + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
 	}
 
 	if resp.StatusCode == 401 {
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Authtication with the device failed")
+		ctx.WriteString("Authentication with the device failed")
 		return
 	}
 	if resp.StatusCode >= 300 {
-		fmt.Printf("Could not retreive generic resource for %s: \n%s\n\n", device.Host, body)
+		log.Error("Could not retrieve generic resource for " + device.Host + ": \n" + string(body) + ":\n" + uri)
 	}
 	respData := string(body)
 	//replacing the resposne with north bound translation URL
@@ -168,4 +170,55 @@ func getInfoFromDevice(uri string, deviceDetails rfpmodel.Device, ctx iris.Conte
 	}
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write([]byte(respData))
+}
+
+//VirtualMediaActions performs insert and eject virtual media operations on the device based on the request
+func VirtualMediaActions(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+	//replacing the request url with south bound translation URL
+	for key, value := range pluginConfig.Data.URLTranslation.SouthBoundURL {
+		uri = strings.Replace(uri, key, value, -1)
+	}
+	var deviceDetails rfpmodel.Device
+	//Get device details from request
+	err := ctx.ReadJSON(&deviceDetails)
+	if err != nil {
+		log.Error("While trying to collect data from request, got: " + err.Error())
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.WriteString("Error: bad request.")
+		return
+	}
+	device := &rfputilities.RedfishDevice{
+		Host:     deviceDetails.Host,
+		Username: deviceDetails.Username,
+		Password: string(deviceDetails.Password),
+		PostBody: deviceDetails.PostBody,
+	}
+
+	redfishClient, err := rfputilities.GetRedfishClient()
+	if err != nil {
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.WriteString(errMsg)
+		return
+	}
+	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
+	if err != nil {
+		errorMessage := "While trying to create volume, got:" + err.Error()
+		log.Error(errorMessage)
+		if resp == nil {
+			ctx.StatusCode(http.StatusInternalServerError)
+			ctx.WriteString(errorMessage)
+			return
+		}
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		body = []byte("While trying to read response body, got: " + err.Error())
+		log.Error(string(body))
+	}
+	ctx.StatusCode(resp.StatusCode)
+	ctx.Write(body)
 }

@@ -1,0 +1,13 @@
+- set_fact:
+    plugin_name: "{{ item.path.split('/')[-1] }}"
+
+- name: Check if {{ plugin_name }}.sh exists
+  stat:
+    path: "{{ helm_charts_path }}/{{ plugin_name }}/{{ plugin_name }}.sh"
+  register: stat_result
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Invoking {{ plugin_name }}.sh for uninstall operation
+  command: "/bin/bash {{ helm_charts_path }}/{{ plugin_name }}/{{ plugin_name }}.sh uninstall"
+  when: stat_result.stat.exists and stat_result.stat.isreg
+  ignore_errors: "{{ ignore_err }}"

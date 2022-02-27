@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -15,12 +16,14 @@ package handle
 
 import (
 	"errors"
+	"fmt"
+	errorResponse "github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/httptest"
 	"net/http"
 	"testing"
-
-	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
-	iris "github.com/kataras/iris/v12"
 )
 
 func mockGetChassisResource(chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
@@ -41,7 +44,7 @@ func TestChassisRPCs_GetChassisResource(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
 }
 func TestChassisRPCs_GetChassisResourceWithRPCError(t *testing.T) {
@@ -53,7 +56,7 @@ func TestChassisRPCs_GetChassisResourceWithRPCError(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -66,7 +69,7 @@ func TestChassisRPCs_GetChassisResourceWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Power",
+		"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Power",
 	).Expect().Status(http.StatusUnauthorized)
 }
 
@@ -125,3 +128,173 @@ func TestChassisRPCs_GetChassisWithRPCError(t *testing.T) {
 		"/redfish/v1/Chassis/",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
+
+func TestChassisRPCs_CreateChassisWithNoInputBody(t *testing.T) {
+	sut := ChassisRPCs{}
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes(nil).
+		Expect()
+
+	resp.Status(http.StatusBadRequest)
+	resp.JSON().Schema(redfishErrorSchema)
+	resp.Headers().Equal(map[string][]string{
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache, no-store, must-revalidate"},
+		"Transfer-Encoding":      {"chunked"},
+	})
+}
+
+func TestChassisRPCs_CreateChassisWithRPCError(t *testing.T) {
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+			return nil, fmt.Errorf("RPC ERROR")
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"chassis":"creationRequest"}`)).
+		Expect()
+
+	resp.Status(http.StatusInternalServerError)
+	resp.JSON().Schema(redfishErrorSchema)
+	resp.Headers().Equal(map[string][]string{
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache, no-store, must-revalidate"},
+		"Transfer-Encoding":      {"chunked"},
+	})
+}
+
+func TestChassisRPCs_CreateChassis(t *testing.T) {
+	expectedRPCResponse := chassisproto.GetChassisResponse{
+		StatusCode: http.StatusOK,
+		Header: map[string]string{
+			"Location": "/redfish/odim/blebleble",
+		},
+		Body: []byte(`{"chassis":"body"}`),
+	}
+
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+			return &expectedRPCResponse, nil
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"chassis":"creationRequest"}`)).
+		Expect()
+
+	resp.Status(http.StatusOK)
+	resp.Body().Contains(string(expectedRPCResponse.Body))
+	resp.Headers().Equal(map[string][]string{
+		"Connection":             {"keep-alive"},
+		"Odata-Version":          {"4.0"},
+		"X-Frame-Options":        {"sameorigin"},
+		"Content-Type":           {"application/json; charset=utf-8"},
+		"X-Content-Type-Options": {"nosniff"},
+		"Cache-Control":          {"no-cache, no-store, must-revalidate"},
+		"Transfer-Encoding":      {"chunked"},
+		"Location":               {"/redfish/odim/blebleble"},
+	})
+}
+func TestChassisRPCs_CreateChassisWithMalformedBody(t *testing.T) {
+	expectedRPCResponse := chassisproto.GetChassisResponse{
+		StatusCode: http.StatusBadRequest,
+		Body: []byte(`{
+  "error": {
+    "code": "` + response.GeneralError + `",
+    "message": "An error has occurred. See ExtendedInfo for more information.",
+    "@Message.ExtendedInfo": [
+      {
+        "@odata.type": "#Message.v1_1_2.Message",
+        "MessageId": "` + errorResponse.MalformedJSON + `",
+        "Message": "The request body submitted was malformed JSON and could not be parsed by the receiving service.error while trying to read obligatory json body: invalid character '[' looking for beginning of object key string",
+        "Severity": "Critical",
+        "Resolution": "Ensure that the request body is valid JSON and resubmit the request."
+      }
+    ]
+  }
+}
+`),
+	}
+
+	sut := ChassisRPCs{
+		CreateChassisRPC: func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
+			return &expectedRPCResponse, nil
+		},
+	}
+
+	app := iris.New()
+	app.Any("/", sut.CreateChassis)
+
+	resp := httptest.New(t, app).POST("/").
+		WithBytes([]byte(`{"Sample":"Body","Links":{[],},}`)).
+		Expect()
+	resp.Status(http.StatusBadRequest)
+	resp.Body().Contains(string(expectedRPCResponse.Body))
+
+}
+
+var redfishErrorSchema = `
+{
+   "$schema": "http://json-schema.org/draft-04/schema#",
+   "type": "object",
+   "properties": {
+      "error": {
+		"type":"object",
+		"properties": {
+          "@Message.ExtendedInfo": {
+			 "type": "array",
+			 "items": {
+				"type": "object",
+				"properties": {
+					"@odata.type": {
+						"type": "string"
+					},
+					"Message": {
+						"type": "string"
+					},
+					"MessageId": {
+						"type": "string"
+					},
+					"Resolution": {
+						"type": "string"
+					},
+					"Severity": {
+						"type": "string",
+						"enum": ["Critical", "Warning"]
+					}
+				},
+				"required": ["@odata.type", "Message", "MessageId", "Resolution", "Severity"]
+			 }
+		  },
+			
+		  "code": {
+			 "type": "string"
+		  },
+			
+		  "message": {
+			 "type": "string"
+		  }
+        },
+		"required":["code", "message"]
+      }
+   },
+   "required": ["error"]
+}`

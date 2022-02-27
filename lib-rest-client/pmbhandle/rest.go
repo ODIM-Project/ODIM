@@ -18,21 +18,21 @@ package pmbhandle
 import (
 	"bytes"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 )
 
 //ContactPlugin is used to send a request to plugin to add a resource
-func ContactPlugin(url, method, token string, odataID string, body interface{}, basicAuth map[string]string) (*http.Response, error) {
+func ContactPlugin(url, method, token string, odataID string, body interface{}, collaboratedInfo map[string]string) (*http.Response, error) {
 	jsonStr, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		return nil, err
 	}
 
@@ -41,8 +41,8 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 
 	// TODO: it can be saved inside inMemory db for use
 	req.Header.Set("Content-Type", "application/json")
-	if basicAuth != nil {
-		req.SetBasicAuth(basicAuth["UserName"], basicAuth["Password"])
+	if collaboratedInfo != nil {
+		req.SetBasicAuth(collaboratedInfo["UserName"], collaboratedInfo["Password"])
 	}
 	if token != "" {
 		req.Header.Set("X-Auth-Token", token)
@@ -57,13 +57,16 @@ func ContactPlugin(url, method, token string, odataID string, body interface{}, 
 	if err != nil {
 		return nil, err
 	}
+	config.TLSConfMutex.RLock()
+	httpClient.Transport.(*http.Transport).TLSClientConfig.ServerName = collaboratedInfo["ServerName"]
 	resp, err := httpClient.Do(req)
+	config.TLSConfMutex.RUnlock()
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode >= 300 {
-		log.Printf("warning: got %v, while fetching %v with method %v", resp.Status, url, method)
+		log.Warn("got " + resp.Status + " while fetching " + url + " with method " + method)
 	}
 
 	return resp, nil

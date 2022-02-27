@@ -1,27 +1,15 @@
 // (C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
 //
-
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
-
 // not use this file except in compliance with the License. You may obtain
-
 // a copy of the License at
-
 //
-
 //    http://www.apache.org/licenses/LICENSE-2.0
-
 //
-
 // Unless required by applicable law or agreed to in writing, software
-
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-
 // License for the specific language governing permissions and limitations
-
 // under the License.
 
 package rpc
@@ -44,9 +32,8 @@ func TestAggregator_GetAggregationService(t *testing.T) {
 	config.SetUpMockConfig(t)
 	config.Data.EnabledServices = append(config.Data.EnabledServices, "AggregationService")
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -58,8 +45,7 @@ func TestAggregator_GetAggregationService(t *testing.T) {
 			name: "positive GetAggregationService",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -67,27 +53,25 @@ func TestAggregator_GetAggregationService(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.GetAggregationService(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.GetAggregationService() got = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.GetAggregationService(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAggregationService() got = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
 }
 
 func TestAggregator_Reset(t *testing.T) {
-	successReq, _ := json.Marshal(`map[string]interface{}{"parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}`)
+	successReq, _ := json.Marshal(`map[string]interface{}{"parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1"}}}`)
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -99,8 +83,7 @@ func TestAggregator_Reset(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -108,8 +91,7 @@ func TestAggregator_Reset(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -117,8 +99,7 @@ func TestAggregator_Reset(t *testing.T) {
 			name: "get session username fails",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -126,8 +107,7 @@ func TestAggregator_Reset(t *testing.T) {
 			name: "unable to create task",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -135,15 +115,14 @@ func TestAggregator_Reset(t *testing.T) {
 			name: "task with slash",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.Reset(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.Reset(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.Reset() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -198,11 +177,10 @@ func TestAggregator_reset(t *testing.T) {
 }
 
 func TestAggregator_SetDefaultBootOrder(t *testing.T) {
-	successReq, _ := json.Marshal(`map[string]interface{}{"parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1"}}}`)
+	successReq, _ := json.Marshal(`map[string]interface{}{"parameters": []Parameters{{Name: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1"}}}`)
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -214,8 +192,7 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -223,8 +200,7 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -232,8 +208,7 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 			name: "get session username fails",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -241,8 +216,7 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 			name: "unable to create task",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -250,15 +224,14 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 			name: "task with slash",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.SetDefaultBootOrder(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.SetDefaultBootOrder(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.SetDefaultBootOrder() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -267,9 +240,8 @@ func TestAggregator_SetDefaultBootOrder(t *testing.T) {
 
 func TestAggregator_RediscoverSystemInventory(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.RediscoverSystemInventoryRequest
-		resp *aggregatorproto.RediscoverSystemInventoryResponse
+		ctx context.Context
+		req *aggregatorproto.RediscoverSystemInventoryRequest
 	}
 	tests := []struct {
 		name    string
@@ -290,7 +262,7 @@ func TestAggregator_RediscoverSystemInventory(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.RediscoverSystemInventory(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.RediscoverSystemInventory(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.RediscoverSystemInventory() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -351,14 +323,11 @@ func TestAggregator_ValidateManagerAddress(t *testing.T) {
 func TestAggregator_AddAggreagationSource(t *testing.T) {
 	config.SetUpMockConfig(t)
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	mockPluginData(t, "ILO_v1.0.0")
 
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
-	system.ActiveReqSet.UpdateMu.Lock()
-	system.ActiveReqSet.ReqRecord = make(map[string]interface{})
-	system.ActiveReqSet.UpdateMu.Unlock()
 	defer func() {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
@@ -385,9 +354,8 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 	})
 	missingparamReq, _ := json.Marshal(system.AggregationSource{})
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -399,8 +367,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -408,8 +375,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -417,8 +383,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "get session username fails",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -426,8 +391,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "unable to create task",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -435,8 +399,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "task with slash",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -444,8 +407,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "with invalid request",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
 			},
 			wantErr: false,
 		},
@@ -453,8 +415,7 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "Invalid Manager Address",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
 			},
 			wantErr: false,
 		},
@@ -462,15 +423,14 @@ func TestAggregator_AddAggreagationSource(t *testing.T) {
 			name: "with missing parameters",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.AddAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.AddAggregationSource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.AddAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -488,7 +448,7 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -497,9 +457,8 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -511,8 +470,7 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
 			},
 			wantErr: false,
 		},
@@ -520,15 +478,14 @@ func TestAggregator_GetAllAggregationSource(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetAllAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.GetAllAggregationSource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.GetAllAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -546,7 +503,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -555,9 +512,8 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -569,8 +525,7 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSources/123454564"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSources/123454564"},
 			},
 			wantErr: false,
 		},
@@ -578,15 +533,14 @@ func TestAggregator_GetAggregationSource(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSources/123454564"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSources/123454564"},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.GetAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.GetAggregationSource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.GetAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -603,7 +557,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -627,9 +581,8 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 	})
 	missingparamReq, _ := json.Marshal(system.AggregationSource{})
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -641,8 +594,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -650,8 +602,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
 			},
 			wantErr: false,
 		},
@@ -659,8 +610,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 			name: "with invalid request",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
 			},
 			wantErr: false,
 		},
@@ -668,8 +618,7 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 			name: "Invalid Manager Address",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
 			},
 			wantErr: false,
 		},
@@ -677,15 +626,14 @@ func TestAggregator_UpdateAggreagationSource(t *testing.T) {
 			name: "with missing parameters",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.UpdateAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.UpdateAggregationSource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.UpdateAggreagationSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -700,7 +648,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 		Password: []byte("admin12345"),
 		Links: map[string]interface{}{
 			"ConnectionMethod": map[string]interface{}{
-				"OdataID": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
+				"@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/c41cbd97-937d-1b73-c41c-1b7385d3906",
 			},
 		},
 	}
@@ -713,9 +661,8 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name    string
@@ -727,8 +674,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 			},
 			wantErr: false,
 		},
@@ -737,8 +683,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 			},
 			wantErr: false,
 		},
@@ -746,8 +691,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "get session username fails",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noDetailsToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 			},
 			wantErr: false,
 		},
@@ -755,8 +699,7 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "unable to create task",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "noTaskToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 			},
 			wantErr: false,
 		},
@@ -764,15 +707,14 @@ func TestAggregator_DeleteAggregationSource(t *testing.T) {
 			name: "task with slash",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "taskWithSlashToken", URL: "/redfish/v1/AggregationService/AggregationSources/123455"},
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.a.DeleteAggregationSource(tt.args.ctx, tt.args.req, tt.args.resp); (err != nil) != tt.wantErr {
+			if _, err := tt.a.DeleteAggregationSource(tt.args.ctx, tt.args.req); (err != nil) != tt.wantErr {
 				t.Errorf("Aggregator.DeleteAggregationSource() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -799,22 +741,22 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"})
-	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1")
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"})
+	err := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
 
-	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1"})
-	err = mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1")
+	reqData1, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1"})
+	err = mockSystemResourceData(reqData1, "ComputerSystem", "/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1")
 	if err != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err)
 	}
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	})
 	successReq1, _ := json.Marshal(agmodel.Aggregate{
@@ -827,9 +769,8 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 	})
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -841,8 +782,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq},
 			},
 			wantStatusCode: http.StatusCreated,
 		},
@@ -850,8 +790,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 			name: "positive case with empty elements",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq1},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: successReq1},
 			},
 			wantStatusCode: http.StatusCreated,
 		},
@@ -859,8 +798,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", RequestBody: successReq},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -868,8 +806,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 			name: "with invalid request",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: []byte("someData")},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
@@ -877,8 +814,7 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 			name: "Invalid System",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: invalidReqBody},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
@@ -886,16 +822,15 @@ func TestAggregator_CreateAggregate(t *testing.T) {
 			name: "with missing parameters",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", RequestBody: missingparamReq},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.CreateAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.CreateAggregate() status code = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.CreateAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.CreateAggregate() status code = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -908,8 +843,8 @@ func TestAggregator_GetAllAggregates(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -917,9 +852,8 @@ func TestAggregator_GetAllAggregates(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -931,8 +865,7 @@ func TestAggregator_GetAllAggregates(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -940,16 +873,15 @@ func TestAggregator_GetAllAggregates(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.GetAllAggregates(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.GetAllAggregates() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.GetAllAggregates(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAllAggregates() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -962,8 +894,8 @@ func TestAggregator_GetAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -971,9 +903,8 @@ func TestAggregator_GetAggregate(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -985,8 +916,7 @@ func TestAggregator_GetAggregate(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -994,8 +924,7 @@ func TestAggregator_GetAggregate(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1003,16 +932,15 @@ func TestAggregator_GetAggregate(t *testing.T) {
 			name: "Invalid aggregate id",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/1"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/1"},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.GetAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.GetAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.GetAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAggregate() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1025,8 +953,8 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1034,9 +962,8 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1048,8 +975,7 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 			},
 			wantStatusCode: http.StatusNoContent,
 		},
@@ -1057,8 +983,7 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1066,16 +991,15 @@ func TestAggregator_DeleteAggregate(t *testing.T) {
 			name: "Invalid aggregate id",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/1"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/Aggregates/1"},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.DeleteAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.DeleteAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.DeleteAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.DeleteAggregate() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1088,8 +1012,8 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1097,28 +1021,28 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 		t.Fatalf("error: %v", err)
 	}
 
-	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1"})
-	err1 := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1")
+	reqData, _ := json.Marshal(map[string]interface{}{"@odata.id": "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1"})
+	err1 := mockSystemResourceData(reqData, "ComputerSystem", "/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1")
 	if err1 != nil {
 		t.Fatalf("Error in creating mock resource data :%v", err1)
 	}
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
 		},
 	})
 
 	badReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
 		},
 	})
 
 	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
-			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d:1",
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
+			"/redfish/v1/Systems/8c624444-87f4-4cfa-b5f9-074cd8cd114d.1",
 		},
 	})
 
@@ -1135,9 +1059,8 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1154,7 +1077,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -1167,7 +1089,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1179,7 +1100,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
 					RequestBody:  badReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusConflict,
 		},
@@ -1191,7 +1111,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
 					RequestBody:  duplicateReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
@@ -1203,7 +1122,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
 					RequestBody:  emptyReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
@@ -1216,7 +1134,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.AddElements",
 					RequestBody:  invalidReqBody,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
@@ -1229,7 +1146,6 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.AddElements",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
@@ -1241,15 +1157,14 @@ func TestAggregator_AddElementsToAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  missingparamReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.AddElementsToAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.AddElementsToAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.AddElementsToAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.AddElementsToAggregate() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1262,8 +1177,8 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1273,20 +1188,20 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 
 	successReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	})
 
 	badReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	})
 
 	duplicateReq, _ := json.Marshal(agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 		},
 	})
 
@@ -1303,9 +1218,8 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(agmodel.Aggregate{})
 
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1322,7 +1236,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -1335,7 +1248,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1347,7 +1259,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  badReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
@@ -1359,7 +1270,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  duplicateReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
@@ -1371,7 +1281,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  emptyReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
@@ -1384,7 +1293,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  invalidReqBody,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
@@ -1397,7 +1305,6 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.RemoveElements",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
@@ -1409,15 +1316,14 @@ func TestAggregator_RemoveElementsFromAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.RemoveElements",
 					RequestBody:  missingparamReq},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.RemoveElementsFromAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.RemoveElementsFromAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.RemoveElementsFromAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.RemoveElementsFromAggregate() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1430,8 +1336,8 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1454,9 +1360,8 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 	missingparamReq, _ := json.Marshal(system.ResetRequest{})
 
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1473,7 +1378,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
@@ -1486,7 +1390,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1499,7 +1402,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
@@ -1512,7 +1414,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1525,7 +1426,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusInternalServerError,
 		},
@@ -1538,7 +1438,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.Reset",
 					RequestBody:  successReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
@@ -1551,7 +1450,6 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
 					RequestBody:  badReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
@@ -1564,15 +1462,14 @@ func TestAggregator_ResetElementsOfAggregate(t *testing.T) {
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.Reset",
 					RequestBody:  missingparamReq,
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.ResetElementsOfAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.ResetElementsOfAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.ResetElementsOfAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.ResetElementsOfAggregate() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1585,8 +1482,8 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 	}()
 	req := agmodel.Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := agmodel.CreateAggregate(req, "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73")
@@ -1595,9 +1492,8 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 	}
 
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1613,7 +1509,6 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
@@ -1625,7 +1520,6 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 					SessionToken: "invalidToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1637,7 +1531,6 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 					SessionToken: "noDetailsToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1649,7 +1542,6 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 					SessionToken: "noTaskToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusInternalServerError,
 		},
@@ -1661,7 +1553,6 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 					SessionToken: "taskWithSlashToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/7ff3bd97-c41c-5de0-937d-85d390691b73/Actions/Aggregate.SetDefaultBootOrder",
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
@@ -1673,15 +1564,14 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 					SessionToken: "validToken",
 					URL:          "/redfish/v1/AggregationService/Aggregates/12345/Actions/Aggregate.SetDefaultBootOrder",
 				},
-				resp: &aggregatorproto.AggregatorResponse{},
 			},
 			wantStatusCode: http.StatusAccepted,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.SetDefaultBootOrderElementsOfAggregate(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.SetDefaultBootOrderElementsOfAggregate() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.SetDefaultBootOrderElementsOfAggregate(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.SetDefaultBootOrderElementsOfAggregate() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1690,9 +1580,8 @@ func TestAggregator_SetDefaultBootOrderElementsOfAggregate(t *testing.T) {
 func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 	config.Data.EnabledServices = append(config.Data.EnabledServices, "AggregationService")
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1704,8 +1593,7 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 			name: "positive case",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken"},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -1713,16 +1601,15 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 			name: "auth fail",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken"},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.GetAllConnectionMethods(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.GetAllConnectionMethods() got = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.GetAllConnectionMethods(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetAllConnectionMethods() got = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}
@@ -1730,9 +1617,8 @@ func TestAggregator_GetAllConnectionMethods(t *testing.T) {
 
 func TestAggregator_GetConnectionMethod(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		req  *aggregatorproto.AggregatorRequest
-		resp *aggregatorproto.AggregatorResponse
+		ctx context.Context
+		req *aggregatorproto.AggregatorRequest
 	}
 	tests := []struct {
 		name           string
@@ -1744,8 +1630,7 @@ func TestAggregator_GetConnectionMethod(t *testing.T) {
 			name: "Positive cases",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 			},
 			wantStatusCode: http.StatusOK,
 		},
@@ -1753,8 +1638,7 @@ func TestAggregator_GetConnectionMethod(t *testing.T) {
 			name: "Invalid Token",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "invalidToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/7ff3bd97-c41c-5de0-937d-85d390691b73"},
 			},
 			wantStatusCode: http.StatusUnauthorized,
 		},
@@ -1762,16 +1646,15 @@ func TestAggregator_GetConnectionMethod(t *testing.T) {
 			name: "Invalid aggregate id",
 			a:    &Aggregator{connector: connector},
 			args: args{
-				req:  &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/1"},
-				resp: &aggregatorproto.AggregatorResponse{},
+				req: &aggregatorproto.AggregatorRequest{SessionToken: "validToken", URL: "/redfish/v1/AggregationService/ConnectionMethods/1"},
 			},
 			wantStatusCode: http.StatusNotFound,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.a.GetConnectionMethod(tt.args.ctx, tt.args.req, tt.args.resp); tt.args.resp.StatusCode != tt.wantStatusCode {
-				t.Errorf("Aggregator.GetConnectionMethod() error = %v, wantStatusCode %v", tt.args.resp.StatusCode, tt.wantStatusCode)
+			if resp, _ := tt.a.GetConnectionMethod(tt.args.ctx, tt.args.req); resp.StatusCode != tt.wantStatusCode {
+				t.Errorf("Aggregator.GetConnectionMethod() error = %v, wantStatusCode %v", resp.StatusCode, tt.wantStatusCode)
 			}
 		})
 	}

@@ -16,36 +16,38 @@
 package errors
 
 const (
+	// BaseVersion defines the latest version of Base
+	BaseVersion = "Base.1.11.0."
 	// InsufficientPrivileges defines the status message at the time of Insufficient Privileges
-	InsufficientPrivileges = "Base.1.0.InsufficientPrivileges"
+	InsufficientPrivileges = BaseVersion + "InsufficientPrivilege"
 	// InternalError defines the status message at the time of Internal Error
-	InternalError = "Base.1.0.InternalError"
+	InternalError = BaseVersion + "InternalError"
 	// PropertyMissing defines the status message at the time of Property Missing
-	PropertyMissing = "Base.1.0.PropertyMissing"
+	PropertyMissing = BaseVersion + "PropertyMissing"
 	// ResourceNotFound defines the status message at the time of Resource Not Found
-	ResourceNotFound = "Base.1.0.ResourceNotFound"
+	ResourceNotFound = BaseVersion + "ResourceNotFound"
 	// MalformedJSON defines the status message at the time of Malformed JSON
-	MalformedJSON = "Base.1.0.MalformedJSON"
+	MalformedJSON = BaseVersion + "MalformedJSON"
 	// ResourceCannotBeModified defines the status message at the time of Resource Cannot Be Modified
-	ResourceCannotBeModified = "Base.1.0.ResourceCannotBeModified"
+	ResourceCannotBeModified = BaseVersion + "ResourceCannotBeModified"
 	// PropertyValueNotInList defines the status message at the time of Property Value Not In List
-	PropertyValueNotInList = "Base.1.0.PropertyValueNotInList"
+	PropertyValueNotInList = BaseVersion + "PropertyValueNotInList"
 	// NoValidSession defines the status message at the time of No Valid Session
-	NoValidSession = "Base.1.0.NoValidSession"
+	NoValidSession = BaseVersion + "NoValidSession"
 	// UnauthorizedLoginAttempt defines the status message at the time of Unauthorized Login Attempt
-	UnauthorizedLoginAttempt = "Base.1.0.UnauthorizedLoginAttempt"
+	UnauthorizedLoginAttempt = BaseVersion + "UnauthorizedLoginAttempt"
 	// Unauthorized defines the status message at the time of Unauthorized service wants to perform task
-	Unauthorized = "Base.1.0.Unauthorized"
+	Unauthorized = BaseVersion + "Unauthorized"
 	// ResourceInUse defines events aleady subscribed
-	ResourceInUse = "Base.1.0.ResourceInUse"
+	ResourceInUse = BaseVersion + "ResourceInUse"
 	// PropertyValueFormatError defines the status message  given the correct value type but the value of that property was not supported
-	PropertyValueFormatError = "Base.1.0.PropertyValueFormatError"
+	PropertyValueFormatError = BaseVersion + "PropertyValueFormatError"
 	// ResourceAtURIUnauthorized defines the authorization failure with plugin or other resources
-	ResourceAtURIUnauthorized = "Base.1.6.1.ResourceAtUriUnauthorized"
+	ResourceAtURIUnauthorized = BaseVersion + "ResourceAtUriUnauthorized"
 	// CouldNotEstablishConnection defines the connection failure with plugin or other resources
-	CouldNotEstablishConnection = "Base.1.6.1.CouldNotEstablishConnection"
+	CouldNotEstablishConnection = BaseVersion + "CouldNotEstablishConnection"
 	// ResourceCannotBeDeleted defines the  status message at the time of Resource deletion
-	ResourceCannotBeDeleted = "Base.1.6.1.ResourceCannotBeDeleted"
+	ResourceCannotBeDeleted = BaseVersion + "ResourceCannotBeDeleted"
 )
 
 // enum defined for error types

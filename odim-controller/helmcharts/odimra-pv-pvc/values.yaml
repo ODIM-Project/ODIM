@@ -1,0 +1,10 @@
+odimra:
+  appsLogPath:
+  etcdConfPath:
+  etcdDataPath:
+  redisOndiskDataPath:
+  redisInmemoryDataPath:
+  kafkaConfPath:
+  kafkaDataPath:
+  zookeeperConfPath:
+  zookeeperDataPath:

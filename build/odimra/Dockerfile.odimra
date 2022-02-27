@@ -41,11 +41,14 @@ COPY --from=build-stage /odimra/svc-account-session/svc-account-session /bin/
 COPY --from=build-stage /odimra/svc-aggregation/svc-aggregation /bin/
 COPY --from=build-stage /odimra/svc-events/svc-events /bin/
 COPY --from=build-stage /odimra/svc-fabrics/svc-fabrics /bin/
+COPY --from=build-stage /odimra/svc-telemetry/svc-telemetry /bin/
 COPY --from=build-stage /odimra/svc-systems/svc-systems /bin/
 COPY --from=build-stage /odimra/svc-task/svc-task /bin/
 COPY --from=build-stage /odimra/svc-managers/svc-managers /bin/
 COPY --from=build-stage /odimra/svc-update/svc-update /bin/
 COPY --from=build-stage /odimra/plugin-redfish/plugin-redfish /bin/
+COPY --from=build-stage /odimra/plugin-dell/plugin-dell /bin/
+COPY --from=build-stage /odimra/plugin-lenovo/plugin-lenovo /bin/
 
 COPY odimra/odimra_config/odimra_config.json /var/odimra_config/
 COPY odimra/odimra_config/platformconfig.toml /var/odimra_config/

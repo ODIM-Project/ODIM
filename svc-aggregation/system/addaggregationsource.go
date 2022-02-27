@@ -18,8 +18,9 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -39,7 +40,7 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	err := e.UpdateTask(task)
 	if err != nil {
 		errMsg := "error while starting the task: " + err.Error()
-		log.Printf("error while starting the task: %v", errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.UpdateTask, TaskRequest: string(req.RequestBody)}
@@ -48,25 +49,25 @@ func (e *ExternalInterface) AddAggregationSource(taskID string, sessionUserName 
 	err = json.Unmarshal(req.RequestBody, &aggregationSourceRequest)
 	if err != nil {
 		errMsg := "unable to parse the add request" + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	// Validating the request JSON properties for case sensitive
 	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, aggregationSourceRequest)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	} else if invalidProperties != "" {
 		errorMessage := "error: one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		resp := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, taskInfo)
 		return resp
 	}
 
 	if aggregationSourceRequest.Links == nil || aggregationSourceRequest.Links.ConnectionMethod == nil {
 		errMsg := "error: mandatory ConnectionMethod block missing in the request"
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ConnectionMethod"}, taskInfo)
 	}
 	return e.addAggregationSource(taskID, targetURI, string(req.RequestBody), percentComplete, aggregationSourceRequest, taskInfo)
@@ -80,38 +81,57 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		Password:         aggregationSourceRequest.Password,
 		ConnectionMethod: aggregationSourceRequest.Links.ConnectionMethod,
 	}
-	ActiveReqSet.UpdateMu.Lock()
-	if _, exist := ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress]; exist {
-		ActiveReqSet.UpdateMu.Unlock()
+
+	ipAddr := getKeyFromManagerAddress(addResourceRequest.ManagerAddress)
+	indexList, err := agmodel.GetString("BMCAddress", ipAddr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+	if len(indexList) > 0 {
+		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)
+	}
+	exist, dErr := e.CheckActiveRequest(ipAddr)
+	if dErr != nil {
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+	if exist {
 		var errMsg string
 		mIP, _ := getIPAndPortFromAddress(addResourceRequest.ManagerAddress)
-		errMsg = fmt.Sprintf("error: An active request already exists for adding aggregation source IP %v", mIP)
-		log.Println(errMsg)
+		errMsg = fmt.Sprintf("An active request already exists for adding aggregation source IP %v", mIP)
+		log.Error(errMsg)
 		args := response.Args{
 			Code:    response.GeneralError,
 			Message: errMsg,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
-	ActiveReqSet.ReqRecord[addResourceRequest.ManagerAddress] = addResourceRequest.ConnectionMethod.OdataID
-	ActiveReqSet.UpdateMu.Unlock()
+	err = e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
 
 	defer func() {
-		// check if there is an entry added for the server in ongoing requests tracker and remove it
-		ActiveReqSet.UpdateMu.Lock()
-		delete(ActiveReqSet.ReqRecord, addResourceRequest.ManagerAddress)
-		ActiveReqSet.UpdateMu.Unlock()
+		err := e.DeleteActiveRequest(ipAddr)
+		if err != nil {
+			log.Printf("Unable to collect the active request details from DB: %v", err.Error())
+		}
 	}()
 
 	connectionMethod, err1 := e.GetConnectionMethod(addResourceRequest.ConnectionMethod.OdataID)
 	if err1 != nil {
-		errMsg := "error while getting connection method id: " + err1.Error()
-		log.Println(errMsg)
+		errMsg := "Unable to get connection method id: " + err1.Error()
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"connectionmethod id", addResourceRequest.ConnectionMethod.OdataID}, taskInfo)
 	}
 	cmVariants := getConnectionMethodVariants(connectionMethod.ConnectionMethodVariant)
@@ -120,6 +140,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	pluginContactRequest.GetPluginStatus = e.GetPluginStatus
 	pluginContactRequest.TargetURI = targetURI
 	pluginContactRequest.UpdateTask = e.UpdateTask
+	pluginContactRequest.TaskRequest = reqBody
 	var aggregationSourceUUID string
 	var cipherText []byte
 
@@ -128,11 +149,12 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	// else return the response
 	statusResp, statusCode, queueList := checkStatus(pluginContactRequest, addResourceRequest, cmVariants, taskInfo)
 	if statusCode == http.StatusOK {
+
 		// check if AggregationSource has any values, if its there means its managing the bmcs
 		if len(connectionMethod.Links.AggregationSources) > 0 {
 			errMsg := "Cant proceed to add aggregation source, since connection method is already managing other aggregation sources"
-			log.Println(errMsg)
-			return common.GeneralError(http.StatusNotAcceptable, response.InternalError, errMsg, nil, taskInfo)
+			log.Error(errMsg)
+			return common.GeneralError(http.StatusConflict, response.ResourceInUse, errMsg, nil, taskInfo)
 		}
 		resp, aggregationSourceUUID, cipherText = e.addPluginData(addResourceRequest, taskID, targetURI, pluginContactRequest, queueList, cmVariants)
 	} else if statusCode == http.StatusNotFound {
@@ -154,7 +176,7 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	dbErr := agmodel.AddAggregationSource(aggregationSourceData, aggregationSourceURI)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 
@@ -162,24 +184,19 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	dbErr = e.UpdateConnectionMethod(connectionMethod, addResourceRequest.ConnectionMethod.OdataID)
 	if dbErr != nil {
 		errMsg := dbErr.Error()
-		log.Println(errMsg)
+		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      aggregationSourceURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           aggregationSourceUUID,
 		Name:         "Aggregation Source",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "<" + aggregationSourceURI + "/>; rel=describedby",
-		"Location":          aggregationSourceURI,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link":     "<" + aggregationSourceURI + "/>; rel=describedby",
+		"Location": aggregationSourceURI,
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	commonResponse.Message = ""

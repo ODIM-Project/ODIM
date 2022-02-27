@@ -1,0 +1,23 @@
+! Configuration File for keepalived
+ 
+global_defs {
+        router_id {{ item.routerID }}
+        script_user root
+        enable_script_security
+}
+ 
+vrrp_instance ODIM_VI {
+        state MASTER
+        interface {{ item.interfaceName }}
+        virtual_router_id {{ item.virtualRouterID }}
+        priority {{ item.priority }}
+        advert_int 1
+        authentication {
+                auth_type PASS
+                auth_pass odim-ra
+        }
+        virtual_ipaddress {
+		{{ item.virtualIP }}
+        }
+        notify /opt/keepalived/bin/action_script.sh
+}

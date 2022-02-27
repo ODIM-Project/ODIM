@@ -32,10 +32,10 @@ sed -i "s#\"PrivateKeyPath\".*#\"PrivateKeyPath\": \"$t/odimra_server.key\",#"  
 sed -i "s#\"CertificatePath\".*#\"CertificatePath\": \"$t/odimra_server.crt\"#" /etc/plugin_config/config_redfish_plugin.json
 sed -i "s#\"LBHost\".*#\"LBHost\": \"$ip\",#" /etc/plugin_config/config_redfish_plugin.json
 sed -i "s#\"LBPort\".*#\"LBPort\": \"45002\"#" /etc/plugin_config/config_redfish_plugin.json
-sed -i "s#\"MessageQueueConfigFilePath\".*#\"MessageQueueConfigFilePath\": \"/etc/plugin_config/platformconfig.toml\",#" /etc/plugin_config/config_redfish_plugin.json
+sed -i "s#\"MessageBusConfigFilePath\".*#\"MessageBusConfigFilePath\": \"/etc/plugin_config/platformconfig.toml\",#" /etc/plugin_config/config_redfish_plugin.json
 
 ########changes in platformconfig.toml file ######
-sed -i "s#.*KServers.*#KServers      = \"kafka\"#" /etc/plugin_config/platformconfig.toml
+sed -i "s#.*KServersInfo.*#KServersInfo      = [\"kafka:9092\"]#" /etc/plugin_config/platformconfig.toml
 sed -i "s#.*KAFKACertFile.*#KAFKACertFile      = \"$t/odimra_kafka_client.crt\"#" /etc/plugin_config/platformconfig.toml
 sed -i "s#.*KAFKAKeyFile.*#KAFKAKeyFile      = \"$t/odimra_kafka_client.key\"#" /etc/plugin_config/platformconfig.toml
 sed -i "s#.*KAFKACAFile.*#KAFKACAFile      = \"$t/rootCA.crt\"#" /etc/plugin_config/platformconfig.toml

@@ -1,0 +1,128 @@
+---
+- set_fact:
+    proxy_env:
+      http_proxy: "{{ httpProxy | default('') }}"
+      https_proxy: "{{ httpsProxy | default('') }}"
+      no_proxy: "{{ noProxy | default('') }}"
+
+- name: Install packages required by nginx
+  apt:
+    pkg: "{{ nginx_dep_pkgs }}"
+    force_apt_get: yes
+  environment: "{{ proxy_env }}"
+
+- name: Remove nginx if already installed
+  apt:
+    pkg:
+    - nginx
+    - nginx-common
+    - nginx-core
+    force_apt_get: yes
+    autoremove: yes
+    purge: yes
+    state: absent
+
+- name: Clean up previously installed data
+  file:
+    path: /var/www/html
+    state: absent
+  ignore_errors: true
+
+- name: Create directories required for nginx
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0750
+    recurse: yes
+  loop:
+    - /opt/nginx/servers
+    - /opt/nginx/certs
+    - "{{ odimra.nginxLogPath }}"
+
+- name: Create nginx log files
+  file:
+    path: "{{ item }}"
+    state: touch
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0640
+  loop:
+    - "{{ odimra.nginxLogPath }}/error.log"
+    - "{{ odimra.nginxLogPath }}/access.log"
+
+- name: Copy nginx cert and key files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ current_user }}"
+    group: "{{ current_user }}"
+    mode: 0400
+  with_items:
+    - { src: "{{ odimCertsPath }}/rootCA.crt", dest: "/opt/nginx/certs/rootCA.crt" }
+    - { src: "{{ odimCertsPath }}/nginx_server.crt", dest: "/opt/nginx/certs/server.crt" }
+    - { src: "{{ odimCertsPath }}/nginx_server.key", dest: "/opt/nginx/certs/server.key" }
+
+- name: Install nginx packages
+  apt:
+    pkg: "{{ nginx_pkgs }}"
+    force_apt_get: yes
+  environment: "{{ proxy_env }}"
+
+- name: Replace nginx configuration file
+  template:
+    src: "roles/configure-proxy/templates/nginx.conf.j2"
+    dest: /etc/nginx/nginx.conf
+  with_items:
+    - logPath: "{{ odimra.nginxLogPath }}"
+      user: "{{ odim_owner_name }}"
+      group: "{{ odim_owner_name }}"
+
+- set_fact:
+    cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+
+- set_fact:
+    serverlist: ["server {{ cur_host_ip }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s;"]
+
+- set_fact:
+    serverlist: "{{ serverlist + [server] }}"
+  with_items: "{{ groups.all }}"
+  vars:
+    server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
+  when: hostvars[item].ansible_host != cur_host_ip
+
+- name: Prepare and copy proxy conf for API service
+  template:
+    src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
+    dest: /opt/nginx/servers/api_proxy_server.conf
+  with_items:
+    - selfNodeIP: "{{ cur_host_ip }}"
+      virtualIP: "{{ odimra.virtualIP }}"
+      apiProxyPort: "{{ odimra.apiProxyPort }}"
+      apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+  when: odimPluginPath is defined
+
+- name: Configure proxy configurations of plugins
+  include_tasks: roles/configure-proxy/tasks/plugins.yaml
+  loop: "{{ plugin_packages.files }}"
+
+- name: Remove configured default nginx server
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/www/html
+    - /etc/nginx/sites-enabled/default
+  ignore_errors: true
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes

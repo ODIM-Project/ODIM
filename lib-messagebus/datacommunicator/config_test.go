@@ -24,8 +24,7 @@ import (
 var cwdDir, _ = os.Getwd()
 
 const sampleFileContent = `[KAFKA]
-KServers   = "someServer"
-KLPort     = 0
+KServersInfo   = ["someServer:0"]
 KTimeout   = 0
 KAFKACertFile       = "someCertFile"
 KAFKAKeyFile        = "someKeyFlie"

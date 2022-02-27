@@ -19,7 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -40,7 +40,8 @@ type Account struct{}
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountRequest, resp *accountproto.AccountResponse) error {
+func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountRequest) (*accountproto.AccountResponse, error) {
+	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -53,20 +54,19 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
+
 	sess, errs := auth.CheckSessionTimeOut(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 	err := session.UpdateLastUsedTime(req.SessionToken)
 	if err != nil {
@@ -76,12 +76,8 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		log.Error(errorMessage)
+		return &resp, nil
 	}
 
 	acc := account.GetExternalInterface()
@@ -91,14 +87,14 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for create account: " + jsonErr.Error()
-		log.Printf(resp.StatusMessage)
-		return nil
+		log.Error(resp.StatusMessage)
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 // GetAllAccounts defines the operations which handles the RPC request response
@@ -107,7 +103,8 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountRequest, resp *accountproto.AccountResponse) error {
+func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -126,14 +123,12 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage, resp)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -144,11 +139,8 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		log.Error(errorMessage)
+		return &resp, nil
 	}
 
 	data := account.GetAllAccounts(sess)
@@ -156,14 +148,14 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get all accounts: " + err.Error()
-		log.Printf(resp.StatusMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return err
+	return &resp, err
 }
 
 // GetAccount defines the operations which handles the RPC request response
@@ -172,7 +164,8 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRequest, resp *accountproto.AccountResponse) error {
+func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRequest) (*accountproto.AccountResponse, error) {
+	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -191,14 +184,12 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -209,11 +200,8 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		log.Error(errorMessage)
+		return &resp, nil
 	}
 
 	data := account.GetAccount(sess, req.AccountID)
@@ -221,14 +209,14 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
-		log.Printf(resp.StatusMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		log.Error(resp.StatusMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 // GetAccountServices defines the operations which handles the RPC request response
@@ -237,7 +225,8 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.AccountRequest, resp *accountproto.AccountResponse) error {
+func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
+	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -256,14 +245,12 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -274,11 +261,8 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	data := account.GetAccountService()
@@ -287,13 +271,13 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
 		log.Printf(resp.StatusMessage)
-		return fmt.Errorf(resp.StatusMessage)
+		return &resp, fmt.Errorf(resp.StatusMessage)
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return err
+	return &resp, err
 }
 
 // Update defines the operations which handles the RPC request response
@@ -302,7 +286,8 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest, resp *accountproto.AccountResponse) error {
+func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountRequest) (*accountproto.AccountResponse, error) {
+	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -321,14 +306,12 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -339,11 +322,8 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		log.Error(errorMessage)
+		return &resp, nil
 	}
 
 	acc := account.GetExternalInterface()
@@ -354,13 +334,13 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for create account: " + err.Error()
 		log.Printf(resp.StatusMessage)
-		return nil
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }
 
 // Delete defines the operations which handles the RPC request response
@@ -369,7 +349,8 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 // RPC according to the protoc file defined in the util-lib package.
 // The function also checks for the session time out of the token
 // which is present in the request.
-func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountRequest, resp *accountproto.AccountResponse) error {
+func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountRequest) (*accountproto.AccountResponse, error) {
+	var resp accountproto.AccountResponse
 	errorArgs := []response.ErrArgs{
 		response.ErrArgs{
 			StatusMessage: "",
@@ -388,14 +369,12 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body)
+			log.Error(errorMessage)
 		} else {
 			resp.Body, _ = json.Marshal(common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body)
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		return &resp, nil
 	}
 
 	err := session.UpdateLastUsedTime(req.SessionToken)
@@ -406,11 +385,8 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body, _ = json.Marshal(args.CreateGenericErrorResponse())
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
-		return nil
+		log.Error(errorMessage)
+		return &resp, nil
 	}
 
 	data := account.Delete(sess, req.AccountID)
@@ -419,12 +395,12 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for delete account: " + jsonErr.Error()
-		log.Printf(resp.StatusMessage)
-		return nil
+		log.Error(resp.StatusMessage)
+		return &resp, nil
 	}
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Header = data.Header
 
-	return nil
+	return &resp, nil
 }

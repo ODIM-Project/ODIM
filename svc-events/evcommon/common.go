@@ -17,16 +17,21 @@ package evcommon
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
+	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-events/consumer"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
@@ -34,23 +39,27 @@ import (
 )
 
 const (
-	// DeliveryRetryAttempts is of retry attempts for event posting
-	DeliveryRetryAttempts = 3
-
-	// DeliveryRetryIntervalSeconds is of retry interval in seconds for event posting
-	DeliveryRetryIntervalSeconds = 60
+	// SaveUndeliveredEventsFlag holds the value to check if  UndeliveredEvents need to be saved in DB
+	SaveUndeliveredEventsFlag = false
 )
 
 //StartUpInteraface Holds the function pointer of  external interface functions
 type StartUpInteraface struct {
-	DecryptPassword func([]byte) ([]byte, error)
-	EMBConsume      func(string)
+	DecryptPassword                  func([]byte) ([]byte, error)
+	EMBConsume                       func(string)
+	GetAllPlugins                    func() ([]evmodel.Plugin, *errors.Error)
+	GetAllSystems                    func() ([]string, error)
+	GetSingleSystem                  func(string) (string, error)
+	GetPluginData                    func(string) (*evmodel.Plugin, *errors.Error)
+	GetEvtSubscriptions              func(string) ([]evmodel.Subscription, error)
+	GetDeviceSubscriptions           func(string) (*evmodel.DeviceSubscription, error)
+	UpdateDeviceSubscriptionLocation func(evmodel.DeviceSubscription) error
 }
 
 // EmbTopic hold the list all consuming topics after
 type EmbTopic struct {
 	TopicsList map[string]bool
-	lock       sync.Mutex
+	lock       sync.RWMutex
 	EMBConsume func(string)
 }
 
@@ -106,8 +115,8 @@ func (p *PluginToken) GetToken(pluginID string) string {
 
 // ConsumeTopic check the existing topic list if it is not present then it will add topic name to list and consume that topic
 func (e *EmbTopic) ConsumeTopic(topicName string) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
+	e.lock.RLock()
+	defer e.lock.RUnlock()
 	if ok := e.TopicsList[topicName]; !ok {
 		go consumer.Consume(topicName)
 		e.TopicsList[topicName] = true
@@ -126,19 +135,25 @@ func (st *StartUpInteraface) GetAllPluginStatus() {
 	for {
 		pluginList, err := evmodel.GetAllPlugins()
 		if err != nil {
-			log.Println(err)
+			log.Error(err.Error())
 			return
 		}
 		for i := 0; i < len(pluginList); i++ {
 			go st.getPluginStatus(pluginList[i])
 		}
-		time.Sleep(time.Minute * time.Duration(config.Data.PluginStatusPolling.PollingFrequencyInMins))
+		var pollingTime int
+		config.TLSConfMutex.RLock()
+		pollingTime = config.Data.PluginStatusPolling.PollingFrequencyInMins
+		config.TLSConfMutex.RUnlock()
+		time.Sleep(time.Minute * time.Duration(pollingTime))
 	}
 
 }
+
 func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 	PluginsMap := make(map[string]bool)
 	StartUpResourceBatchSize := config.Data.PluginStatusPolling.StartUpResouceBatchSize
+	config.TLSConfMutex.RLock()
 	var pluginStatus = common.PluginStatus{
 		Method: http.MethodGet,
 		RequestBody: common.StatusRequest{
@@ -154,34 +169,36 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		PluginPrefferedAuthType: plugin.PreferredAuthType,
 		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
 	}
+	config.TLSConfMutex.RUnlock()
 	status, _, topicsList, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
 		PluginStartUp = false
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin " + plugin.ID + " is " + strconv.FormatBool(status))
 	PluginsMap[plugin.ID] = status
 	var allServers []SavedSystems
 	for pluginID, status := range PluginsMap {
 		if status && !PluginStartUp {
 			allServers, err = st.getAllServers(pluginID)
 			if err != nil {
-				log.Println("Error While getting the servers", pluginID, err)
+				log.Error("Error While getting the servers" + pluginID + err.Error())
 				continue
 			}
 			for {
 				if len(allServers) < StartUpResourceBatchSize {
-					err = callPluginStartUp(allServers, pluginID)
+					err = st.callPluginStartUp(allServers, pluginID)
 					if err != nil {
-						log.Println("Error While trying call plugin startup", pluginID, err)
+						log.Error("Error While trying call plugin startup" +
+							pluginID + err.Error())
 					}
 					break
 				}
 				batchServers := allServers[:StartUpResourceBatchSize]
-				err = callPluginStartUp(batchServers, pluginID)
+				err = st.callPluginStartUp(batchServers, pluginID)
 				if err != nil {
-					log.Println("Error While trying call plugin startup", pluginID, err)
+					log.Error("Error While trying call plugin startup" + pluginID + err.Error())
 					continue
 				}
 				allServers = allServers[StartUpResourceBatchSize:]
@@ -190,7 +207,9 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 		}
 	}
 	// Adding the topics to the list
+	EMBTopics.lock.Lock()
 	EMBTopics.EMBConsume = st.EMBConsume
+	EMBTopics.lock.Unlock()
 	for j := 0; j < len(topicsList); j++ {
 		EMBTopics.ConsumeTopic(topicsList[j])
 	}
@@ -199,13 +218,13 @@ func (st *StartUpInteraface) getPluginStatus(plugin evmodel.Plugin) {
 
 func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, error) {
 	var matchedServers []SavedSystems
-	allServers, err := evmodel.GetAllSystems()
+	allServers, err := st.GetAllSystems()
 	if err != nil {
 		return matchedServers, err
 	}
 	for i := 0; i < len(allServers); i++ {
 		var s SavedSystems
-		singleServer, err := evmodel.GetSingleSystem(allServers[i])
+		singleServer, err := st.GetSingleSystem(allServers[i])
 		if err != nil {
 			// skip to next member in the array.
 			continue
@@ -216,7 +235,7 @@ func (st *StartUpInteraface) getAllServers(pluginID string) ([]SavedSystems, err
 			if err != nil {
 				// Frame the RPC response body and response Header below
 				errorMessage := "error while trying to decrypt device password for the host: " + s.ManagerAddress + ":" + err.Error()
-				log.Printf(errorMessage)
+				log.Error(errorMessage)
 				continue
 			}
 			s.Password = decryptedPasswordByte
@@ -245,25 +264,26 @@ func GetPluginStatus(plugin *evmodel.Plugin) bool {
 	}
 	status, _, _, err := pluginStatus.CheckStatus()
 	if err != nil && !status {
-		log.Println("Error While getting the status for plugin ", plugin.ID, err)
+		log.Error("Error While getting the status for plugin " + plugin.ID + err.Error())
 		return status
 	}
-	log.Println("Status of plugin", plugin.ID, status)
+	log.Info("Status of plugin" + plugin.ID + strconv.FormatBool(status))
 	return status
 }
 
-func callPluginStartUp(servers []SavedSystems, pluginID string) error {
+func (st *StartUpInteraface) callPluginStartUp(servers []SavedSystems, pluginID string) error {
 	var startUpMap []StartUpMap
-	plugin, errs := evmodel.GetPluginData(pluginID)
+	plugin, errs := st.GetPluginData(pluginID)
 	if errs != nil {
 		return errs
 	}
 	for _, server := range servers {
 		var s StartUpMap
 		var err error
-		s.Location, s.EventTypes, err = getSubscribedEventsDetails(server.ManagerAddress)
+		s.Location, s.EventTypes, err = st.getSubscribedEventsDetails(server.ManagerAddress)
 		if err != nil {
-			log.Println("Error while retrieving the Subsction details from DB for device: ", server.ManagerAddress, err)
+			log.Error("Error while retrieving the Subsction details from DB for device: " +
+				server.ManagerAddress + err.Error())
 			continue
 		}
 		s.Device = server
@@ -303,7 +323,7 @@ func callPluginStartUp(servers []SavedSystems, pluginID string) error {
 	//return updateDeviceSubscriptionLocation(startUpMap[0].Device.ManagerAddress, response.Header.Get("location"))
 	bodyBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Println(err)
+		log.Error(err.Error())
 		return err
 	}
 	var r map[string]string
@@ -323,16 +343,24 @@ func callPlugin(req PluginContactRequest) (*http.Response, error) {
 
 }
 
-func getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
+func (st *StartUpInteraface) getSubscribedEventsDetails(serverAddress string) (string, []string, error) {
 	var location string
 	var eventTypes []string
 	var emptyListFlag bool
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(serverAddress)
+
+	deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
+	if errorMessage != "" {
+		return "", nil, fmt.Errorf(errorMessage)
+	}
+	searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
+	deviceSubscription, err := st.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		return "", nil, err
 	}
 	location = deviceSubscription.Location
-	subscriptionDetails, err := evmodel.GetEvtSubscriptions(serverAddress)
+
+	searchKey = GetSearchKey(deviceIPAddress, evmodel.SubscriptionIndex)
+	subscriptionDetails, err := st.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return "", nil, err
 	}
@@ -380,10 +408,15 @@ func getTypes(subscription string) []string {
 func updateDeviceSubscriptionLocation(r map[string]string) error {
 	for serverAddress, location := range r {
 		if location != "" {
-			deviceSubscription, err := evmodel.GetDeviceSubscriptions(serverAddress)
+			deviceIPAddress, errorMessage := GetIPFromHostName(serverAddress)
+			if errorMessage != "" {
+				continue
+			}
+			searchKey := GetSearchKey(deviceIPAddress, evmodel.DeviceSubscriptionIndex)
+			deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
 			if err != nil {
-				log.Println("Error getting the device event subscription from DB ",
-					" for server address : ", serverAddress, err)
+				log.Error("Error getting the device event subscription from DB " +
+					" for server address : " + serverAddress + err.Error())
 				continue
 			}
 			var updatedDeviceSubscription evmodel.DeviceSubscription
@@ -393,8 +426,8 @@ func updateDeviceSubscriptionLocation(r map[string]string) error {
 			updatedDeviceSubscription.OriginResources = deviceSubscription.OriginResources
 			err = evmodel.UpdateDeviceSubscriptionLocation(updatedDeviceSubscription)
 			if err != nil {
-				log.Println("Error updating the subscription location in to DB for ",
-					"server address : ", serverAddress, err)
+				log.Error("Error updating the subscription location in to DB for " +
+					"server address : " + serverAddress + err.Error())
 				continue
 			}
 		}
@@ -418,14 +451,6 @@ func GenErrorResponse(errorMessage string, statusMessage string, httpStatusCode 
 		},
 	}
 	respPtr.Body = args.CreateGenericErrorResponse()
-	respPtr.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"allow":             "POST,GET,DELETE",
-	}
 }
 
 // GenEventErrorResponse generates the error response in event service
@@ -444,4 +469,99 @@ func GenEventErrorResponse(errorMessage string, StatusMessage string, httpStatus
 	}
 	respPtr.Response = args.CreateGenericErrorResponse()
 
+}
+
+// GetIPFromHostName - look up the ip from the fqdn
+func GetIPFromHostName(fqdn string) (string, string) {
+	host, _, err := net.SplitHostPort(fqdn)
+	if err != nil {
+		host = fqdn
+	}
+	addr, err := net.LookupIP(host)
+	var errorMessage string
+	if err != nil || len(addr) < 1 {
+		errorMessage = "Can't lookup the ip from host name"
+		if err != nil {
+			errorMessage = "Can't lookup the ip from host name" + err.Error()
+		}
+	}
+	return fmt.Sprintf("%v", addr[0]), errorMessage
+}
+
+// GetSearchKey will return search key with regular expression for filtering
+func GetSearchKey(key, index string) string {
+	searchKey := key
+	if index == evmodel.SubscriptionIndex {
+		searchKey = `[^0-9]` + key + `[^0-9]`
+	} else if index == evmodel.DeviceSubscriptionIndex {
+		searchKey = key + `[^0-9]`
+	}
+	return searchKey
+}
+
+// ProcessCtrlMsg is for processing the ODIM control message
+// and to perform required action
+func ProcessCtrlMsg(data interface{}) bool {
+	if data == nil {
+		log.Warn("received control message event with empty data")
+		return false
+	}
+	event := data.(common.ControlMessageData)
+	msg, _ := json.Marshal(event.Data)
+	log.Info("received control message event of type:", event.MessageType)
+	if event.MessageType == common.SubscribeEMB {
+		var message common.SubscribeEMBData
+		if err := json.Unmarshal([]byte(msg), &message); err != nil {
+			return false
+		}
+		for _, topic := range message.EMBQueues {
+			EMBTopics.ConsumeTopic(topic)
+		}
+	}
+	return true
+}
+
+// SubscribePluginEMB is for subscribing to plugin EMB
+func (st *StartUpInteraface) SubscribePluginEMB() {
+	time.Sleep(time.Second * 2)
+	pluginList, err := evmodel.GetAllPlugins()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	for i := 0; i < len(pluginList); i++ {
+		go st.getPluginEMB(pluginList[i])
+	}
+}
+
+func (st *StartUpInteraface) getPluginEMB(plugin evmodel.Plugin) {
+	config.TLSConfMutex.RLock()
+	var pluginStatus = common.PluginStatus{
+		Method: http.MethodGet,
+		RequestBody: common.StatusRequest{
+			Comment: "",
+		},
+		ResponseWaitTime:        config.Data.PluginStatusPolling.ResponseTimeoutInSecs,
+		Count:                   config.Data.PluginStatusPolling.MaxRetryAttempt,
+		RetryInterval:           config.Data.PluginStatusPolling.RetryIntervalInMins,
+		PluginIP:                plugin.IP,
+		PluginPort:              plugin.Port,
+		PluginUsername:          plugin.Username,
+		PluginUserPassword:      string(plugin.Password),
+		PluginPrefferedAuthType: plugin.PreferredAuthType,
+		CACertificate:           &config.Data.KeyCertConf.RootCACertificate,
+	}
+	config.TLSConfMutex.RUnlock()
+	status, _, topicsList, err := pluginStatus.CheckStatus()
+	if err != nil && !status {
+		log.Error("status check of plugin " + plugin.ID + " failed: " + err.Error())
+		return
+	}
+	EMBTopics.lock.Lock()
+	EMBTopics.EMBConsume = st.EMBConsume
+	EMBTopics.lock.Unlock()
+	for j := 0; j < len(topicsList); j++ {
+		EMBTopics.ConsumeTopic(topicsList[j])
+	}
+	return
 }

@@ -17,12 +17,13 @@ package handle
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	roleproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/role"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	iris "github.com/kataras/iris/v12"
-	"log"
-	"net/http"
+	log "github.com/sirupsen/logrus"
 )
 
 // RoleRPCs defines all the RPC methods in role
@@ -39,12 +40,13 @@ type RoleRPCs struct {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
+	defer ctx.Next()
 	req := roleproto.GetRoleRequest{SessionToken: ctx.Request().Header.Get("X-Auth-Token")}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -52,13 +54,15 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 	resp, err := r.GetAllRolesRPC(req)
 	if err != nil {
 		errorMessage := "RPC error: " + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -70,13 +74,15 @@ func (r *RoleRPCs) GetAllRoles(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) CreateRole(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	//Read Body from Request
 	err := ctx.ReadJSON(&req)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("Error while trying to collect data from request: " + err.Error())
 		errorMessage := "error while trying to get JSON body from the account create request body: " + err.Error()
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
@@ -85,9 +91,9 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -102,9 +108,10 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 	resp, err := r.CreateRoleRPC(roleRequest)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -120,12 +127,13 @@ func (r *RoleRPCs) CreateRole(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) GetRole(ctx iris.Context) {
+	defer ctx.Next()
 	req := roleproto.GetRoleRequest{SessionToken: ctx.Request().Header.Get("X-Auth-Token")}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -134,13 +142,18 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 	resp, err := r.GetRoleRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	if req.Id == common.RoleAdmin {
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
+	} else {
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -152,6 +165,7 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
+	defer ctx.Next()
 
 	var req roleproto.UpdateRoleRequest
 
@@ -159,9 +173,10 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 	var roleReq interface{}
 	err := ctx.ReadJSON(&roleReq)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		log.Error("Error while trying to collect data from request: " + err.Error())
 		errorMessage := "error while trying to get JSON body from the role update request body: " + err.Error()
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(response.Body)
 		return
@@ -170,9 +185,9 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -181,9 +196,10 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 	resp, err := r.UpdateRoleRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -195,15 +211,16 @@ func (r *RoleRPCs) UpdateRole(ctx iris.Context) {
 
 // DeleteRole ...
 func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
+	defer ctx.Next()
 
 	var req roleproto.DeleteRoleRequest
 
 	req.SessionToken = ctx.Request().Header.Get("X-Auth-Token")
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -212,9 +229,10 @@ func (r *RoleRPCs) DeleteRole(ctx iris.Context) {
 	resp, err := r.DeleteRoleRPC(req)
 	if err != nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}

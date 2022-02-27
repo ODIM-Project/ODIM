@@ -18,8 +18,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 
@@ -35,11 +35,11 @@ type configModel struct {
 	ServerRediscoveryBatchSize     int                      `json:"ServerRediscoveryBatchSize"`
 	FirmwareVersion                string                   `json:"FirmwareVersion"`
 	RootServiceUUID                string                   `json:"RootServiceUUID"` //static uuid used for root service
-	MessageQueueConfigFilePath     string                   `json:"MessageQueueConfigFilePath"`
 	SearchAndFilterSchemaPath      string                   `json:"SearchAndFilterSchemaPath"`
 	RegistryStorePath              string                   `json:"RegistryStorePath"`
 	LocalhostFQDN                  string                   `json:"LocalhostFQDN"`
 	EnabledServices                []string                 `json:"EnabledServices"`
+	MessageBusConf                 *MessageBusConf          `json:"MessageBusConf"`
 	DBConf                         *DBConf                  `json:"DBConf"`
 	KeyCertConf                    *KeyCertConf             `json:"KeyCertConf"`
 	AuthConf                       *AuthConf                `json:"AuthConf"`
@@ -51,6 +51,7 @@ type configModel struct {
 	TLSConf                        *TLSConf                 `json:"TLSConf"`
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
+	EventConf                      *EventConf               `json:"EventConf"`
 }
 
 // DBConf holds all DB related configurations
@@ -65,8 +66,15 @@ type DBConf struct {
 	RedisHAEnabled       bool   `json:"RedisHAEnabled"`
 	InMemorySentinelPort string `json:"InMemorySentinelPort"`
 	OnDiskSentinelPort   string `json:"OnDiskSentinelPort"`
-	InMemoryMasterSet    string `json:"InMemoryMasterSet"`
-	OnDiskMasterSet      string `json:"OnDiskMasterSet"`
+	InMemoryPrimarySet   string `json:"InMemoryPrimarySet"`
+	OnDiskPrimarySet     string `json:"OnDiskPrimarySet"`
+}
+
+// MessageBusConf holds all message bus configurations
+type MessageBusConf struct {
+	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"`
+	MessageBusType           string   `json:"MessageBusType"`
+	MessageBusQueue          []string `json:"MessageBusQueue"`
 }
 
 // KeyCertConf is for holding all security oriented configuration
@@ -107,11 +115,12 @@ type APIGatewayConf struct {
 	Certificate     []byte
 }
 
-// AddComputeSkipResources stores all resource which need to igonered while adding Computer System
+// AddComputeSkipResources stores list of resources which need to ignored while inserting the contents to DB while adding Computer System
 type AddComputeSkipResources struct {
-	SystemCollection  []string `json:"SystemCollection"`  // holds the value of  system resource which need to be ignored
-	ChassisCollection []string `json:"ChassisCollection"` // holds the value of  chassis resource which need to be ignored
-	OtherCollection   []string `json:"OtherCollection"`   // holds the value resource name  for which next level retrieval to be ignored
+	SkipResourceListUnderSystem  []string `json:"SkipResourceListUnderSystem"`  // holds the list of resources which needs to be ignored for storing in DB under system resource
+	SkipResourceListUnderManager []string `json:"SkipResourceListUnderManager"` // holds the list of resources which needs to be ignored for storing in DB under manager resource
+	SkipResourceListUnderChassis []string `json:"SkipResourceListUnderChassis"` // holds the list of resources which needs to be ignored for storing in DB under chassis resource
+	SkipResourceListUnderOthers  []string `json:"SkipResourceListUnderOthers"`  // holds the list of resources which needs to be ignored for storing in DB under a generic resource apart from system,manager and chassis
 }
 
 // URLTranslation ...
@@ -150,19 +159,26 @@ type ConnectionMethodConf struct {
 	ConnectionMethodVariant string `json:"ConnectionMethodVariant"`
 }
 
+// EventConf stores all inforamtion related to event delivery configurations
+type EventConf struct {
+	DeliveryRetryAttempts                 int `json:"DeliveryRetryAttempts"`                 // holds value of retrying event posting to destination
+	DeliveryRetryIntervalSeconds          int `json:"DeliveryRetryIntervalSeconds"`          // holds value of retrying events posting in interval
+	RetentionOfUndeliveredEventsInMinutes int `json:"RetentionOfUndeliveredEventsInMinutes"` // holds value of how long we can retain the events
+}
+
 // SetConfiguration will extract the config data from file
 func SetConfiguration() error {
 	configFilePath := os.Getenv("CONFIG_FILE_PATH")
 	if configFilePath == "" {
-		return fmt.Errorf("error: no value set to environment variable CONFIG_FILE_PATH")
+		return fmt.Errorf("No value set to environment variable CONFIG_FILE_PATH")
 	}
 	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		return fmt.Errorf("error: failed to read the config file: %v", err)
+		return fmt.Errorf("Failed to read the config file: %v", err)
 	}
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
-		return fmt.Errorf("error: failed to unmarshal config data: %v", err)
+		return fmt.Errorf("Failed to unmarshal config data: %v", err)
 	}
 
 	return ValidateConfiguration()
@@ -180,6 +196,9 @@ func ValidateConfiguration() error {
 	if err = checkDBConf(); err != nil {
 		return err
 	}
+	if err = checkMessageBusConf(); err != nil {
+		return err
+	}
 	if err = checkKeyCertConf(); err != nil {
 		return err
 	}
@@ -190,6 +209,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkConnectionMethodConf(); err != nil {
+		return err
+	}
+	if err = checkEventConf(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -203,7 +225,7 @@ func ValidateConfiguration() error {
 
 func checkMiscellaneousConf() error {
 	if Data.FirmwareVersion == "" {
-		log.Println("warn: no value set for FirmwareVersion, setting default value")
+		log.Warn("No value set for FirmwareVersion, setting default value")
 		Data.FirmwareVersion = DefaultFirmwareVersion
 	}
 	if Data.RootServiceUUID == "" {
@@ -214,9 +236,6 @@ func checkMiscellaneousConf() error {
 	}
 	if Data.LocalhostFQDN == "" {
 		return fmt.Errorf("error: no value set for localhostFQDN")
-	}
-	if _, err := os.Stat(Data.MessageQueueConfigFilePath); err != nil {
-		return fmt.Errorf("error: value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageQueueConfigFilePath, err)
 	}
 	if _, err := os.Stat(Data.SearchAndFilterSchemaPath); err != nil {
 		return fmt.Errorf("error: value check failed for SearchAndFilterSchemaPath:%s with %v", Data.SearchAndFilterSchemaPath, err)
@@ -238,7 +257,7 @@ func checkDBConf() error {
 		return fmt.Errorf("error: DBConf is not provided")
 	}
 	if Data.DBConf.Protocol != DefaultDBProtocol {
-		log.Println("warn: incorrect value configured for DB Protocol, setting default value")
+		log.Warn("Incorrect value configured for DB Protocol, setting default value")
 		Data.DBConf.Protocol = DefaultDBProtocol
 	}
 	if Data.DBConf.InMemoryHost == "" {
@@ -254,17 +273,40 @@ func checkDBConf() error {
 		return fmt.Errorf("error: no value configured for DB OnDiskPort")
 	}
 	if Data.DBConf.MaxActiveConns == 0 {
-		log.Println("warn: no value configured for MaxActiveConns, setting default value")
+		log.Warn("No value configured for MaxActiveConns, setting default value")
 		Data.DBConf.MaxActiveConns = DefaultDBMaxActiveConns
 	}
 	if Data.DBConf.MaxIdleConns == 0 {
-		log.Println("warn: no value configured for MaxIdleConns, setting default value")
+		log.Warn("No value configured for MaxIdleConns, setting default value")
 		Data.DBConf.MaxIdleConns = DefaultDBMaxIdleConns
 	}
 	if Data.DBConf.RedisHAEnabled {
 		if err := checkDBHAConf(); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func checkMessageBusConf() error {
+	if Data.MessageBusConf == nil {
+		return fmt.Errorf("error: MessageBusConf is not provided")
+	}
+	if Data.MessageBusConf.MessageBusType == "" {
+		log.Warn("No value set for MessageBusType, setting default value")
+		Data.MessageBusConf.MessageBusType = "Kafka"
+	}
+	if Data.MessageBusConf.MessageBusType == "Kafka" {
+		if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+			return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
+		}
+		if len(Data.MessageBusConf.MessageBusQueue) <= 0 {
+			log.Warn("No value set for MessageBusQueue, setting default value")
+			Data.MessageBusConf.MessageBusQueue = []string{"REDFISH-EVENTS-TOPIC"}
+		}
+	}
+	if !AllowedMessageBusTypes[Data.MessageBusConf.MessageBusType] {
+		return fmt.Errorf("error: invalid value configured for MessageBusType")
 	}
 	return nil
 }
@@ -276,11 +318,11 @@ func checkDBHAConf() error {
 	if Data.DBConf.OnDiskSentinelPort == "" {
 		return fmt.Errorf("error: no value configured for DB OnDiskSentinelPort")
 	}
-	if Data.DBConf.InMemoryMasterSet == "" {
-		return fmt.Errorf("error: no value configured for DB InMemoryMasterSet")
+	if Data.DBConf.InMemoryPrimarySet == "" {
+		return fmt.Errorf("error: no value configured for DB InMemoryPrimarySet")
 	}
-	if Data.DBConf.OnDiskMasterSet == "" {
-		return fmt.Errorf("error: no value configured for DB OnDiskMasterSet")
+	if Data.DBConf.OnDiskPrimarySet == "" {
+		return fmt.Errorf("error: no value configured for DB OnDiskPrimarySet")
 	}
 	return nil
 }
@@ -310,7 +352,7 @@ func checkKeyCertConf() error {
 
 func checkAuthConf() {
 	if Data.AuthConf == nil {
-		log.Println("warn: no value found for AuthConf, setting default value")
+		log.Warn("No value found for AuthConf, setting default value")
 		Data.AuthConf = &AuthConf{
 			SessionTimeOutInMins:            DefaultSessionTimeOutInMins,
 			ExpiredSessionCleanUpTimeInMins: DefaultExpiredSessionCleanUpTimeInMins,
@@ -323,11 +365,11 @@ func checkAuthConf() {
 		return
 	}
 	if Data.AuthConf.SessionTimeOutInMins == 0 {
-		log.Println("warn: no value set for SessionTimeOutInMin, setting default value")
+		log.Warn("No value set for SessionTimeOutInMin, setting default value")
 		Data.AuthConf.SessionTimeOutInMins = DefaultSessionTimeOutInMins
 	}
 	if Data.AuthConf.ExpiredSessionCleanUpTimeInMins == 0 {
-		log.Println("warn: no value set for ExpiredSessionCleanUpTimeInMins, setting default value")
+		log.Warn("No value set for ExpiredSessionCleanUpTimeInMins, setting default value")
 		Data.AuthConf.ExpiredSessionCleanUpTimeInMins = DefaultExpiredSessionCleanUpTimeInMins
 	}
 	checkPasswordRulesConf()
@@ -335,7 +377,7 @@ func checkAuthConf() {
 
 func checkPasswordRulesConf() {
 	if Data.AuthConf.PasswordRules == nil {
-		log.Println("warn: PasswordRules configuration is found empty, setting default value")
+		log.Warn("PasswordRules configuration is found empty, setting default value")
 		Data.AuthConf.PasswordRules = &PasswordRules{
 			MinPasswordLength:       DefaultMinPasswordLength,
 			MaxPasswordLength:       DefaultMaxPasswordLength,
@@ -344,15 +386,15 @@ func checkPasswordRulesConf() {
 		return
 	}
 	if Data.AuthConf.PasswordRules.MinPasswordLength <= 0 {
-		log.Println("warn: no value set for MinPasswordLength, setting default value")
+		log.Warn("No value set for MinPasswordLength, setting default value")
 		Data.AuthConf.PasswordRules.MinPasswordLength = DefaultMinPasswordLength
 	}
 	if Data.AuthConf.PasswordRules.MaxPasswordLength <= 0 {
-		log.Println("warn: no value set for MaxPasswordLength, setting default value")
+		log.Warn("No value set for MaxPasswordLength, setting default value")
 		Data.AuthConf.PasswordRules.MaxPasswordLength = DefaultMaxPasswordLength
 	}
 	if Data.AuthConf.PasswordRules.AllowedSpecialCharcters == "" {
-		log.Println("warn: no value set for AllowedSpecialCharcters, setting default value")
+		log.Warn("No value set for AllowedSpecialCharcters, setting default value")
 		Data.AuthConf.PasswordRules.AllowedSpecialCharcters = DefaultAllowedSpecialCharcters
 	}
 }
@@ -379,31 +421,36 @@ func checkAPIGatewayConf() error {
 
 func checkAddComputeSkipResources() {
 	if Data.AddComputeSkipResources == nil {
-		log.Println("warn: no value found for AddComputeRetrival, setting default value")
+		log.Warn("No value found for AddComputeRetrival, setting default value")
 		Data.AddComputeSkipResources = &AddComputeSkipResources{
-			SystemCollection:  DefaultSystemCollection,
-			ChassisCollection: DefaultChassisCollection,
-			OtherCollection:   DefaultOtherCollection,
+			SkipResourceListUnderSystem:  DefaultSkipListUnderSystem,
+			SkipResourceListUnderManager: DefaultSkipListUnderManager,
+			SkipResourceListUnderChassis: DefaultSkipListUnderChassis,
+			SkipResourceListUnderOthers:  DefaultSkipListUnderOthers,
 		}
 		return
 	}
-	if len(Data.AddComputeSkipResources.SystemCollection) == 0 {
-		log.Println("warn: no value found for SystemCollection, setting default value")
-		Data.AddComputeSkipResources.SystemCollection = DefaultSystemCollection
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderSystem) == 0 {
+		log.Warn("No value found for SkipResourceListUnderSystem, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderSystem = DefaultSkipListUnderSystem
 	}
-	if len(Data.AddComputeSkipResources.ChassisCollection) == 0 {
-		log.Println("warn: no value found for ChassisCollection, setting default value")
-		Data.AddComputeSkipResources.ChassisCollection = DefaultChassisCollection
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderManager) == 0 {
+		log.Warn("No value found for SkipResourceListUnderManager, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderManager = DefaultSkipListUnderManager
 	}
-	if len(Data.AddComputeSkipResources.OtherCollection) == 0 {
-		log.Println("warn: no value found for OtherCollection, setting default value")
-		Data.AddComputeSkipResources.OtherCollection = DefaultOtherCollection
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderChassis) == 0 {
+		log.Warn("No value found for SkipResourceListUnderChassis, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderChassis = DefaultSkipListUnderChassis
+	}
+	if len(Data.AddComputeSkipResources.SkipResourceListUnderOthers) == 0 {
+		log.Warn("No value found for SkipResourceListUnderOthers, setting default value")
+		Data.AddComputeSkipResources.SkipResourceListUnderOthers = DefaultSkipListUnderOthers
 	}
 }
 
 func checkURLTranslation() {
 	if Data.URLTranslation == nil {
-		log.Println("warn: URL translation not provided, setting default value")
+		log.Warn("URL translation not provided, setting default value")
 		Data.URLTranslation = &URLTranslation{
 			NorthBoundURL: map[string]string{
 				"ODIM": "redfish",
@@ -415,13 +462,13 @@ func checkURLTranslation() {
 		return
 	}
 	if len(Data.URLTranslation.NorthBoundURL) <= 0 {
-		log.Println("warn: NorthBoundURL is empty, setting default value")
+		log.Warn("NorthBoundURL is empty, setting default value")
 		Data.URLTranslation.NorthBoundURL = map[string]string{
 			"ODIM": "redfish",
 		}
 	}
 	if len(Data.URLTranslation.SouthBoundURL) <= 0 {
-		log.Println("warn: SouthBoundURL is empty, setting default value")
+		log.Warn("SouthBoundURL is empty, setting default value")
 		Data.URLTranslation.SouthBoundURL = map[string]string{
 			"redfish": "ODIM",
 		}
@@ -430,7 +477,7 @@ func checkURLTranslation() {
 
 func checkPluginStatusPolling() {
 	if Data.PluginStatusPolling == nil {
-		log.Println("warn: PluginStatusPolling not provided, setting default value")
+		log.Warn("PluginStatusPolling not provided, setting default value")
 		Data.PluginStatusPolling = &PluginStatusPolling{
 			PollingFrequencyInMins:  DefaultPollingFrequencyInMins,
 			MaxRetryAttempt:         DefaultMaxRetryAttempt,
@@ -441,30 +488,30 @@ func checkPluginStatusPolling() {
 		return
 	}
 	if Data.PluginStatusPolling.PollingFrequencyInMins <= 0 {
-		log.Println("warn: no value found for PollingFrequencyInMins, setting default value")
+		log.Warn("No value found for PollingFrequencyInMins, setting default value")
 		Data.PluginStatusPolling.PollingFrequencyInMins = DefaultPollingFrequencyInMins
 	}
 	if Data.PluginStatusPolling.MaxRetryAttempt <= 0 {
-		log.Println("warn: no value found for MaxRetryAttempt, setting default value")
+		log.Warn("No value found for MaxRetryAttempt, setting default value")
 		Data.PluginStatusPolling.MaxRetryAttempt = DefaultMaxRetryAttempt
 	}
 	if Data.PluginStatusPolling.RetryIntervalInMins <= 0 {
-		log.Println("warn: no value found for RetryIntervalInMins, setting default value")
+		log.Warn("No value found for RetryIntervalInMins, setting default value")
 		Data.PluginStatusPolling.RetryIntervalInMins = DefaultRetryIntervalInMins
 	}
 	if Data.PluginStatusPolling.ResponseTimeoutInSecs <= 0 {
-		log.Println("warn: no value found for ResponseTimeoutInSecs, setting default value")
+		log.Warn("No value found for ResponseTimeoutInSecs, setting default value")
 		Data.PluginStatusPolling.ResponseTimeoutInSecs = DefaultResponseTimeoutInSecs
 	}
 	if Data.PluginStatusPolling.StartUpResouceBatchSize <= 0 {
-		log.Println("warn: no value found for StartUpResouceBatchSize, setting default value")
+		log.Warn("No value found for StartUpResouceBatchSize, setting default value")
 		Data.PluginStatusPolling.StartUpResouceBatchSize = DefaultStartUpResouceBatchSize
 	}
 }
 
 func checkExecPriorityDelayConf() {
 	if Data.ExecPriorityDelayConf == nil {
-		log.Println("warn: ExecPriorityDelayConf not provided, setting default value")
+		log.Warn("ExecPriorityDelayConf not provided, setting default value")
 		Data.ExecPriorityDelayConf = &ExecPriorityDelayConf{
 			MinResetPriority:    DefaultMinResetPriority,
 			MaxResetPriority:    DefaultMinResetPriority + 1,
@@ -473,23 +520,23 @@ func checkExecPriorityDelayConf() {
 		return
 	}
 	if Data.ExecPriorityDelayConf.MinResetPriority <= 0 {
-		log.Println("warn: no value found for MinResetPriority, setting default value")
+		log.Warn("No value found for MinResetPriority, setting default value")
 		Data.ExecPriorityDelayConf.MinResetPriority = DefaultMinResetPriority
 	}
 	if Data.ExecPriorityDelayConf.MaxResetPriority <= Data.ExecPriorityDelayConf.MinResetPriority {
-		log.Println("warn: no value found for MaxResetPriority, setting default value")
+		log.Warn("no value found for MaxResetPriority, setting default value")
 		Data.ExecPriorityDelayConf.MaxResetPriority = Data.ExecPriorityDelayConf.MinResetPriority + 1
 	}
 	if Data.ExecPriorityDelayConf.MaxResetDelayInSecs <= 0 ||
 		Data.ExecPriorityDelayConf.MaxResetDelayInSecs > DefaultMaxResetDelay {
-		log.Println("warn: no value found for MaxResetDelayInSecs, setting default value")
+		log.Warn("No value found for MaxResetDelayInSecs, setting default value")
 		Data.ExecPriorityDelayConf.MaxResetDelayInSecs = DefaultMaxResetDelay
 	}
 }
 
 func checkTLSConf() error {
 	if Data.TLSConf == nil {
-		log.Println("warn: TLSConf not provided, setting default value")
+		log.Warn("TLSConf not provided, setting default value")
 		Data.TLSConf = &TLSConf{}
 		SetDefaultTLSConf()
 		return nil
@@ -524,4 +571,24 @@ func checkConnectionMethodConf() error {
 		return fmt.Errorf("error: ConnectionMethodConf is not provided")
 	}
 	return err
+}
+
+func checkEventConf() error {
+	if Data.EventConf == nil {
+		log.Warn("EventConf not provided, setting default value")
+		Data.EventConf = &EventConf{
+			DeliveryRetryAttempts:        DefaultDeliveryRetryAttempts,
+			DeliveryRetryIntervalSeconds: DefaultDeliveryRetryIntervalSeconds,
+		}
+		return nil
+	}
+	if Data.EventConf.DeliveryRetryAttempts <= 0 {
+		log.Warn("No value found for DeliveryRetryAttempts, setting default value")
+		Data.EventConf.DeliveryRetryAttempts = DefaultDeliveryRetryAttempts
+	}
+	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
+		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
+		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
+	}
+	return nil
 }

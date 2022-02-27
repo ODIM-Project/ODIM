@@ -16,6 +16,7 @@
 package agresponse
 
 import (
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
@@ -28,19 +29,20 @@ type ResetResponse struct {
 
 //AggregationServiceResponse is used to give back the response
 type AggregationServiceResponse struct {
-	OdataContext       string  `json:"@odata.context"`
-	Etag               string  `json:"@odata.etag,omitempty"`
-	ID                 string  `json:"Id"`
-	OdataID            string  `json:"@odata.id"`
-	OdataType          string  `json:"@odata.type"`
-	Name               string  `json:"Name"`
-	Description        string  `json:"Description"`
-	Actions            Actions `json:"Actions"`
-	Aggregates         OdataID `json:"Aggregates"`
-	AggregationSources OdataID `json:"AggregationSources"`
-	ConnectionMethods  OdataID `json:"ConnectionMethods"`
-	ServiceEnabled     bool    `json:"ServiceEnabled"`
-	Status             Status  `json:"Status"`
+	OdataContext       string    `json:"@odata.context,omitempty"`
+	Etag               string    `json:"@odata.etag,omitempty"`
+	ID                 string    `json:"Id"`
+	OdataID            string    `json:"@odata.id"`
+	OdataType          string    `json:"@odata.type"`
+	Name               string    `json:"Name"`
+	Description        string    `json:"Description,omitempty"`
+	Actions            Actions   `json:"Actions,omitempty"`
+	Aggregates         OdataID   `json:"Aggregates,omitempty"`
+	AggregationSources OdataID   `json:"AggregationSources,omitempty"`
+	ConnectionMethods  OdataID   `json:"ConnectionMethods,omitempty"`
+	ServiceEnabled     bool      `json:"ServiceEnabled,omitempty"`
+	Status             Status    `json:"Status,omitempty"`
+	Oem                *dmtf.Oem `json:"Oem,omitempty"`
 }
 
 //Actions struct definition
@@ -58,8 +60,7 @@ type Status struct {
 
 //Action struct definition
 type Action struct {
-	Target     string `json:"target"`
-	ActionInfo string `json:"@Redfish.ActionInfo"`
+	Target string `json:"target"`
 }
 
 //OdataID struct definition for @odata.id

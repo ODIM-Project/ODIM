@@ -26,30 +26,53 @@ import (
 
 // Manager struct for manager deta
 type Manager struct {
-	OdataContext       string            `json:"@odata.context"`
-	Etag               string            `json:"@odata.etag,omitempty"`
-	OdataID            string            `json:"@odata.id"`
-	OdataType          string            `json:"@odata.type"`
-	Name               string            `json:"Name"`
-	ManagerType        string            `json:"ManagerType"`
-	ID                 string            `json:"Id"`
-	UUID               string            `json:"UUID"`
-	FirmwareVersion    string            `json:"FirmwareVersion"`
-	Status             *Status           `json:"Status,omitempty"`
-	HostInterfaces     *OdataID          `json:"HostInterfaces,omitempty"`
-	EthernetInterfaces *OdataID          `json:"EthernetInterfaces,omitempty"`
-	LogServices        *OdataID          `json:"LogServices,omitempty"`
-	NetworkProtocol    *OdataID          `json:"NetworkProtocol,omitempty"`
-	VirtualMedia       *OdataID          `json:"VirtualMedia,omitempty"`
-	CommandShell       *CommandShell     `json:"CommandShell,omitempty"`
-	GraphicalConsole   *GraphicalConsole `json:"GraphicalConsole,omitempty"`
-	Links              *Links            `json:"Links,omitempty"`
-	Actions            *Actions          `json:"Actions,omitempty"`
+	OdataContext            string             `json:"@odata.context"`
+	Etag                    string             `json:"@odata.etag,omitempty"`
+	OdataID                 string             `json:"@odata.id"`
+	OdataType               string             `json:"@odata.type"`
+	Name                    string             `json:"Name"`
+	ManagerType             string             `json:"ManagerType"`
+	ID                      string             `json:"Id"`
+	UUID                    string             `json:"UUID"`
+	FirmwareVersion         string             `json:"FirmwareVersion"`
+	Status                  *Status            `json:"Status,omitempty"`
+	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
+	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
+	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
+	LogServices             *dmtf.Link         `json:"LogServices,omitempty"`
+	NetworkProtocol         *OdataID           `json:"NetworkProtocol,omitempty"`
+	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
+	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
+	GraphicalConsole        *GraphicalConsole  `json:"GraphicalConsole,omitempty"`
+	Links                   *Links             `json:"Links,omitempty"`
+	Actions                 *Actions           `json:"Actions,omitempty"`
+	AutoDSTEnabled          bool               `json:"AutoDSTEnabled,omitempty"`
+	DateTime                string             `json:"DateTime,omitempty"`
+	LastResetTime           string             `json:"LastResetTime,omitempty"`
+	Manufacturer            string             `json:"Manufacturer,omitempty"`
+	Model                   string             `json:"Model,omitempty"`
+	PartNumber              string             `json:"PartNumber,omitempty"`
+	PowerState              string             `json:"PowerState,omitempty"`
+	Redundancy              []dmtf.Redundancy  `json:"Redundancy,omitempty"`
+	RemoteAccountService    *dmtf.Link         `json:"RemoteAccountService,omitempty"`
+	RemoteRedfishServiceURI string             `json:"RemoteRedfishServiceUri,omitempty"`
+	SerialNumber            string             `json:"SerialNumber,omitempty"`
+	ServiceEntryPointUUID   string             `json:"ServiceEntryPointUUID,omitempty"`
+	TimeZoneName            string             `json:"TimeZoneName,omitempty"`
+	Measurements            []*dmtf.Link       `json:"Measurements,omitempty"`
+	Location                *dmtf.Link         `json:"Location,omitempty"`
+	LocationIndicatorActive bool               `json:"LocationIndicatorActive,omitempty"`
+	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
+	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
+	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
+	Description             string             `json:"Description,omitempty"`
+	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset,omitempty"`
 }
 
 // Status struct is to define the status of the manager
 type Status struct {
-	State string `json:"State"`
+	State  string `json:"State"`
+	Health string `json:"Health"`
 }
 
 // OdataID is link
@@ -73,11 +96,12 @@ type GraphicalConsole struct {
 
 // Links to other Resources that are related to this Resource.
 type Links struct {
-	ActiveSoftwareImage OdataID   `json:"ActiveSoftwareImage"`
-	ManagerForChassis   []OdataID `json:"ManagerForChassis"`
-	ManagerForServers   []OdataID `json:"ManagerForServers"`
-	ManagerForSwitches  []OdataID `json:"ManagerForSwitches"`
-	ManagerInChassis    OdataID   `json:"ManagerInChassis"`
+	ActiveSoftwareImage *dmtf.Link   `json:"ActiveSoftwareImage,omitempty"`
+	ManagerForChassis   []*dmtf.Link `json:"ManagerForChassis,omitempty"`
+	ManagerForServers   []*dmtf.Link `json:"ManagerForServers,omitempty"`
+	ManagerForSwitches  []*dmtf.Link `json:"ManagerForSwitches,omitempty"`
+	ManagerForManagers  []*dmtf.Link `json:"ManagerForManagers,omitempty"`
+	ManagerInChassis    *dmtf.Link   `json:"ManagerInChassis,omitempty"`
 }
 
 // Actions struct for Actions to perform
@@ -92,12 +116,36 @@ type Target struct {
 
 // RAManager struct is to store odimra details into DB
 type RAManager struct {
-	ID              string `json:"ManagerID"`
-	Name            string `json:"Name"`
-	ManagerType     string `json:"ManagerType"`
-	FirmwareVersion string `json:"FirmwareVersion"`
-	UUID            string `json:"UUID"`
-	State           string `json:"State"`
+	ID              string     `json:"ManagerID"`
+	Name            string     `json:"Name"`
+	ManagerType     string     `json:"ManagerType"`
+	FirmwareVersion string     `json:"FirmwareVersion"`
+	UUID            string     `json:"UUID"`
+	State           string     `json:"State"`
+	Description     string     `json:"Description"`
+	LogServices     *dmtf.Link `json:"LogServices"`
+	Links           *Links     `json:"Links,omitempty"`
+	Health          string     `json:"Health"`
+	Model           string     `json:"Model"`
+	PowerState      string     `json:"PowerState"`
+}
+
+// VirtualMediaInsert struct is to store the insert virtual media request payload
+type VirtualMediaInsert struct {
+	Image                string `json:"Image" validate:"required"`
+	Inserted             bool   `json:"Inserted"`
+	WriteProtected       bool   `json:"WriteProtected"`
+	Password             string `json:"Password,omitempty"`
+	TransferMethod       string `json:"TransferMethod,omitempty"`
+	TransferProtocolType string `json:"TransferProtocolType,omitempty"`
+	UserName             string `json:"UserName,omitempty"`
+}
+
+// CreateBMCAccount struct is to store the create BMC account request payload
+type CreateBMCAccount struct {
+	UserName string `json:"UserName" validate:"required"`
+	Password string `json:"Password" validate:"required"`
+	RoleID   string `json:"RoleId" validate:"required"`
 }
 
 //GetResource fetches a resource from database using table and key
@@ -148,19 +196,19 @@ func GetManagerByURL(url string) (string, *errors.Error) {
 	return manager, nil
 }
 
-// UpdateManagersData will modify the current details to given changes
-func UpdateManagersData(key string, managerData map[string]interface{}) error {
+// UpdateData will modify the current details to given changes
+func UpdateData(key string, updateData map[string]interface{}, table string) error {
 
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("unable to connect DB: %v", err)
 	}
-	data, jerr := json.Marshal(managerData)
+	data, jerr := json.Marshal(updateData)
 	if jerr != nil {
-		return fmt.Errorf("unable to marshal manager data for updating: %v", jerr)
+		return fmt.Errorf("unable to marshal data for updating: %v", jerr)
 	}
-	if _, err = conn.Update("Managers", key, string(data)); err != nil {
-		return fmt.Errorf("unable to update manager details in DB: %v", err)
+	if _, err = conn.Update(table, key, string(data)); err != nil {
+		return fmt.Errorf("unable to update details in DB: %v", err)
 	}
 	return nil
 }
@@ -179,7 +227,7 @@ func GenericSave(body []byte, table string, key string) error {
 }
 
 // AddManagertoDB will add odimra Manager details to DB
-func (mgr *RAManager) AddManagertoDB() error {
+func AddManagertoDB(mgr RAManager) error {
 	key := "/redfish/v1/Managers/" + mgr.UUID
 	data, err := json.Marshal(mgr)
 	if err != nil {

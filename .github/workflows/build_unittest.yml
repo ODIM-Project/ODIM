@@ -22,22 +22,23 @@ jobs:
 
   build:
     name: Build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
 
-    - name: Set up Go 1.13.8
+    - name: Set up Go 1.17.2
       uses: actions/setup-go@v2
       with:
-        go-version: 1.13.8
+        go-version: 1.17.2
       id: go
           
     - name: Setup Redis
       run: |
         sudo apt-get install -y build-essential
-        wget -c http://download.redis.io/releases/redis-5.0.8.tar.gz -P /var/tmp
-        sudo tar -C /var/tmp -xzf /var/tmp/redis-5.0.8.tar.gz
-        cd /var/tmp/redis-5.0.8
+        wget -c http://download.redis.io/releases/redis-6.2.5.tar.gz -P /var/tmp
+        sudo tar -C /var/tmp -xzf /var/tmp/redis-6.2.5.tar.gz
+        cd /var/tmp/redis-6.2.5
         sudo make install
+        sudo sed -i 's/if \[ \"\${_pid_1_exe\#\#\*\/}\" = systemd \]/if false/' utils/install_server.sh
         sudo utils/install_server.sh << HERE
         
         
@@ -63,9 +64,33 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     
+    - name: Generate proto modules
+      run: |
+          export GOPATH=/home/runner/go
+          PROTOC_ZIP=protoc-3.19.1-linux-x86_64.zip
+          curl -OL https://github.com/google/protobuf/releases/download/v3.19.1/$PROTOC_ZIP
+          sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+          sudo unzip -o $PROTOC_ZIP -d /usr/local include/*
+          rm -f $PROTOC_ZIP
+
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1.0
+          go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
+          sudo cp $GOPATH/bin/protoc-gen-go /usr/bin
+          sudo cp $GOPATH/bin/protoc-gen-go-grpc /usr/bin
+          protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update")
+          for str in ${protos[@]}; do
+            proto_path="$(pwd)/lib-utilities/proto/$str"
+            proto_file_name="$str.proto"
+            if [ $str == 'auth' ]
+            then
+              proto_file_name="odim_auth.proto"
+            fi
+            sudo protoc --go_opt=M$proto_file_name=./ --go_out=plugins=grpc:$proto_path --proto_path=$proto_path $proto_file_name
+          done
+
     - name: Build
       run: |
-          LIST=`ls -R | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-'`
+          LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|^odimra'`
           for i in $LIST; do
             echo "Compiling $i"
             cd $i
@@ -92,7 +117,7 @@ jobs:
           echo `redis-cli -p 6380 << HERE
           keys *
           HERE`
-          LIST="plugin-redfish svc-aggregation svc-events svc-fabrics svc-managers svc-task svc-systems svc-api svc-account-session svc-update lib-utilities lib-messagebus"
+          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update lib-utilities lib-messagebus"
           echo $LIST
           for i in $LIST; do
             echo "Testing $i"
@@ -109,6 +134,3 @@ jobs:
             fi
             cd ..
           done
-            
-          
-        

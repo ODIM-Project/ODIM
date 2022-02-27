@@ -25,7 +25,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
-	"log"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -47,7 +48,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	var resp response.RPC
 
 	if !session.Privileges[common.PrivilegeConfigureUsers] {
-		errorMessage := "user " + session.UserName + " does not have the privilege to view all users"
+		errorMessage := "User " + session.UserName + " does not have the privilege to view all users"
 		resp.StatusCode = http.StatusForbidden
 		resp.StatusMessage = response.InsufficientPrivilege
 		args := response.Args{
@@ -62,28 +63,22 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	//Get all user keys
 	users, err := asmodel.GetAllUsers()
 	if err != nil {
-		errorMessage := "error while getting users: " + err.Error()
+		errorMessage := "Unable to get users: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 	//Build response body and headers
 	var accountLinks []asresponse.ListMember
 	for _, key := range users {
 		accountLink := asresponse.ListMember{
-			OdataID: "/redfish/v1/AccountService/Accounts/" + key.UserName + "/",
+			OdataID: "/redfish/v1/AccountService/Accounts/" + key.UserName,
 		}
 		accountLinks = append(accountLinks, accountLink)
 	}
@@ -92,13 +87,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "POST", "HEAD"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link": "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -126,7 +115,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 // error will be passed back.
 func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#ManagerAccount.v1_4_0.ManagerAccount",
+		OdataType:    common.ManagerAccountType,
 		OdataID:      "/redfish/v1/AccountService/Accounts/" + accountID,
 		OdataContext: "/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
 		ID:           accountID,
@@ -137,7 +126,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 
 	if !(session.Privileges[common.PrivilegeConfigureUsers]) {
 		if accountID != session.UserName || !(session.Privileges[common.PrivilegeConfigureSelf]) {
-			errorMessage := "error: " + session.UserName + " does not have the privilege to view other user's details"
+			errorMessage := session.UserName + " does not have the privilege to view other user's details"
 			resp.StatusCode = http.StatusForbidden
 			resp.StatusMessage = response.InsufficientPrivilege
 			args := response.Args{
@@ -152,17 +141,14 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = map[string]string{
-				"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-			}
-			log.Printf(errorMessage)
+			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 
 	user, err := asmodel.GetUserDetails(accountID)
 	if err != nil {
-		errorMessage := "error while trying to get  account: " + err.Error()
+		errorMessage := "Unable to get account: " + err.Error()
 		if errors.DBKeyNotFound == err.ErrNo() {
 			resp.StatusCode = http.StatusNotFound
 			resp.StatusMessage = response.ResourceNotFound
@@ -181,10 +167,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Printf(errorMessage)
+		log.Error(errorMessage)
 		return resp
 	}
 
@@ -192,13 +175,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "POST", "HEAD"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -212,7 +189,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		AccountTypes: user.AccountTypes,
 		Links: asresponse.Links{
 			Role: asresponse.Role{
-				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID + "/",
+				OdataID: "/redfish/v1/AccountService/Roles/" + user.RoleID,
 			},
 		},
 	}
@@ -228,7 +205,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 // error will be passed back.
 func GetAccountService() response.RPC {
 	commonResponse := response.Response{
-		OdataType:    "#AccountService.v1_6_0.AccountService",
+		OdataType:    common.AccountServiceType,
 		OdataID:      "/redfish/v1/AccountService",
 		OdataContext: "/redfish/v1/$metadata#AccountService.AccountService",
 		ID:           "AccountService",
@@ -250,13 +227,7 @@ func GetAccountService() response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
-		"Content-type":  "application/json; charset=utf-8",
 		"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)

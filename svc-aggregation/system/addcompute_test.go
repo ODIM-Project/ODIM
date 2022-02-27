@@ -23,7 +23,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -39,14 +38,6 @@ func GetPluginStatusForTesting(plugin agmodel.Plugin) bool {
 func mockSubscribeEMB(pluginID string, list []string) {
 	return
 }
-func testContactClientWithDelay(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
-	time.Sleep(4 * time.Second)
-	fBody := `{"Members":[{"@odata.id":"/ODIM/v1/Systems/1"}]}`
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(bytes.NewBufferString(fBody)),
-	}, nil
-}
 
 func mockContactClientForDuplicate(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
 	var bData agmodel.SaveSystem
@@ -55,7 +46,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 	host := strings.Split(url, "/ODIM")[0]
 	uid := "test1"
 	if url == "https://localhost:9091/ODIM/v1/Systems/1/Actions/ComputerSystem.Add" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -67,19 +58,19 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:9091/ODIM/v1/Registries/Base" {
-		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_0_4.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/Base.json"}],"Name":"Base Message Registry File","Registry":"Base.1.4.0"}`
+		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/Base.json"}],"Name":"Base Message Registry File","Registry":"Base.1.11.0"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:9091/ODIM/v1/Registries/SomeMember" {
-		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_0_4.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/SomeRegistry.json"}],"Name":"Base Message Registry File","Registry":"SomeRegistry"}`
+		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/SomeRegistry.json"}],"Name":"Base Message Registry File","Registry":"SomeRegistry"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if strings.Contains(url, "SomeRegistry.json") {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -213,7 +204,7 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 		}, nil
 
 	} else if strings.Contains(url, "/ODIM/v1/validate") || url == "https://localhost:9091/ODIM/v1/Sessions" || url == host+"/ODIM/v1/Sessions" {
-		body := `{"MessageId": "Base.1.0.Success"}`
+		body := `{"MessageId": "` + response.Success + `"}`
 		if bData.UserName == "incorrectusername" || bytes.Compare(bData.Password, []byte("incorrectPassword")) == 0 {
 			return &http.Response{
 				StatusCode: http.StatusUnauthorized,
@@ -235,7 +226,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	config.SetUpMockConfig(t)
 	common.MuxLock.Unlock()
 	addComputeRetrieval := config.AddComputeSkipResources{
-		SystemCollection: []string{"Chassis", "LogServices"},
+		SkipResourceListUnderSystem: []string{"Chassis", "LogServices"},
 	}
 	config.Data.AddComputeSkipResources = &addComputeRetrieval
 	defer func() {
@@ -251,6 +242,22 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	mockPluginData(t, "GRF")
 	mockPluginData(t, "XAuthPlugin")
 	mockPluginData(t, "XAuthPluginFail")
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 
 	reqSuccess := AddResourceRequest{
 		ManagerAddress: "100.0.0.1",
@@ -278,18 +285,7 @@ func TestExternalInterface_addcompute(t *testing.T) {
 		},
 	}
 
-	p := &ExternalInterface{
-		ContactClient:       mockContactClient,
-		Auth:                mockIsAuthorized,
-		CreateChildTask:     mockCreateChildTask,
-		UpdateTask:          mockUpdateTask,
-		CreateSubcription:   EventFunctionsForTesting,
-		PublishEvent:        PostEventFunctionForTesting,
-		GetPluginStatus:     GetPluginStatusForTesting,
-		EncryptPassword:     stubDevicePassword,
-		DecryptPassword:     stubDevicePassword,
-		DeleteComputeSystem: deleteComputeforTest,
-	}
+	p := getMockExternalInterface()
 	targetURI := "/redfish/v1/AggregationService/AggregationSource"
 	var percentComplete int32
 	var pluginContactRequest getResourceRequest

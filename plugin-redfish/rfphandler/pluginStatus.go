@@ -18,11 +18,12 @@ package rfphandler
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	iris "github.com/kataras/iris/v12"
 	//"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -41,7 +42,7 @@ func GetPluginStatus(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -54,6 +55,8 @@ func GetPluginStatus(ctx iris.Context) {
 		Version: pluginConfig.Data.FirmwareVersion,
 	}
 	resp.Status = rfputilities.Status
+	elapsedTime := time.Since(rfputilities.PluginStartTime)
+	resp.Status.Uptime = elapsedTime.String()
 	resp.Status.TimeStamp = time.Now().Format(time.RFC3339)
 	resp.EventMessageBus = rfpresponse.EventMessageBus{
 		EmbType: pluginConfig.Data.MessageBusConf.EmbType,
@@ -80,21 +83,30 @@ func GetPluginStartup(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
 		}
 	}
 
-	var startup []rfpmodel.Startup
+	var startup rfpmodel.StartUpData
 	err := ctx.ReadJSON(&startup)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		errMsg := "Unable to collect data from request: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errMsg)
 		return
 	}
+
+	if len(startup.Devices) <= 0 {
+		log.Info("startup devices list is empty")
+		ctx.StatusCode(http.StatusOK)
+		return
+	}
+	log.Infof("inventory update request received for %d devices", len(startup.Devices))
+
 	errorCh := make(chan error)
 	startUpResponse := make(chan map[string]string)
 	respBody := make(map[string]string)
@@ -125,11 +137,23 @@ func GetPluginStartup(ctx iris.Context) {
 			}
 		}
 	}()
-	for _, server := range startup {
-		writeWG.Add(1)
-		go checkCreateSub(server, startUpResponse, errorCh, &writeWG)
-		//go checkCreateSub(server, startUpResponse, respHeader, errorCh)
+
+	for uuid, device := range startup.Devices {
+		if device.Operation == "add" {
+			rfpmodel.AddDeviceToInventory(uuid, device)
+			log.Info("device " + uuid + " added to the inventory")
+		}
+		if device.Operation == "del" {
+			rfpmodel.DeleteDeviceInInventory(uuid)
+			log.Info("device " + uuid + " removed from the inventory")
+		}
+		if startup.ResyncEvtSubscription && startup.RequestType == "full" {
+			writeWG.Add(1)
+			log.Info("performing event subscription check for all the devices in the inventory")
+			go checkCreateSub(device, startUpResponse, errorCh, &writeWG)
+		}
 	}
+
 	writeWG.Wait()
 	quit <- true
 	ctx.StatusCode(http.StatusOK)
@@ -137,14 +161,14 @@ func GetPluginStartup(ctx iris.Context) {
 	return
 }
 
-func checkCreateSub(startup rfpmodel.Startup, startUpResponse chan map[string]string, errorCh chan error, writeWG *sync.WaitGroup) {
+func checkCreateSub(server rfpmodel.DeviceData, startUpResponse chan map[string]string, errorCh chan error, writeWG *sync.WaitGroup) {
 	var respBody = make(map[string]string)
 
 	device := &rfputilities.RedfishDevice{
-		Host:     startup.Device.Host,
-		Username: startup.Device.Username,
-		Password: string(startup.Device.Password),
-		Location: startup.Location,
+		Host:     server.Address,
+		Username: server.UserName,
+		Password: string(server.Password),
+		Location: server.EventSubscriptionInfo.Location,
 	}
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
@@ -171,7 +195,7 @@ func checkCreateSub(startup rfpmodel.Startup, startUpResponse chan map[string]st
 			return
 		}
 
-		res := reflect.DeepEqual(obj.EventTypes, startup.EventTypes)
+		res := reflect.DeepEqual(obj.EventTypes, server.EventSubscriptionInfo.EventTypes)
 		if !res {
 			//Delete Subscription details
 			resp, err := redfishClient.DeleteSubscriptionDetail(device)
@@ -184,7 +208,7 @@ func checkCreateSub(startup rfpmodel.Startup, startUpResponse chan map[string]st
 			//Create new Subscription with details in odimra
 			req := rfpmodel.EvtSubPost{
 				Destination: "https://" + pluginConfig.Data.LoadBalancerConf.Host + ":" + pluginConfig.Data.LoadBalancerConf.Port + pluginConfig.Data.EventConf.DestURI,
-				EventTypes:  startup.EventTypes,
+				EventTypes:  server.EventSubscriptionInfo.EventTypes,
 				Context:     "Event Subscription",
 				//      HTTPHeaders: reqPostBody.HTTPHeaders,
 				Protocol: "Redfish",
@@ -228,7 +252,7 @@ func checkCreateSub(startup rfpmodel.Startup, startUpResponse chan map[string]st
 		defer resp.Body.Close()
 	}
 
-	respBody[startup.Device.Host] = resp.Header.Get("location")
+	respBody[device.Host] = resp.Header.Get("location")
 	startUpResponse <- respBody
 	return
 }

@@ -1,0 +1,90 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+# 
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+#under the License.
+
+deploymentID:
+httpProxy:
+httpsProxy:
+noProxy:
+nodePasswordFilePath:
+nodes:
+  <Node1_Hostname>:
+    ip: <Node1_IPAddress>
+    username: <Node1_Username>
+    priority: 100
+  <Node2_Hostname>:
+    ip: <Node2_IPAddress>
+    username: <Node2_Username>
+    priority: 99
+  <Node3_Hostname>:
+    ip: <Node3_IPAddress>
+    username: <Node3_Username>
+    priority: 98
+odimControllerSrcPath:
+odimVaultKeyFilePath:
+odimCertsPath:
+kubernetesImagePath:
+odimraImagePath:
+odimPluginPath:
+odimra:
+  groupID: 2021
+  userID: 2021
+  namespace: odim
+  fqdn:
+  rootServiceUUID:
+  haDeploymentEnabled: True
+  connectionMethodConf:
+  - ConnectionMethodType: Redfish
+    ConnectionMethodVariant: Compute:BasicAuth:GRF_v1.0.0
+  etcHostsEntries:
+
+  appsLogPath: /var/log/odimra
+  odimraServerCertFQDNSan:
+  odimraServerCertIPSan:
+  odimraKafkaClientCertFQDNSan:
+  odimraKafkaClientCertIPSan:
+
+  apiProxyPort: 45000
+  apiNodePort: 30080
+  kafkaNodePort: 30092
+  
+  messageBusType: Kafka
+  messageBusQueue: REDFISH-EVENTS-TOPIC
+
+  etcdConfPath: /etc/etcd/conf
+  etcdDataPath: /etc/etcd/data
+  
+  kafkaConfPath: /etc/kafka/conf
+  kafkaDataPath: /etc/kafka/data
+  kafkaJKSPassword: "K@fk@_store1"
+
+  redisOndiskDataPath: /etc/redis/data/ondisk
+  redisInmemoryDataPath: /etc/redis/data/inmemory
+  
+  zookeeperConfPath: /etc/zookeeper/conf
+  zookeeperDataPath: /etc/zookeeper/data
+  zookeeperJKSPassword: "K@fk@_store1"
+
+  nginxLogPath: /var/log/nginx
+  virtualRouterID: 100
+  virtualIP:
+  
+  rootCACert:
+  odimraServerCert:
+  odimraServerKey:
+  odimraRSAPublicKey:
+  odimraRSAPrivateKey:
+  odimraKafkaClientCert:
+  odimraKafkaClientKey:
+  odimraEtcdServerCert:
+  odimraEtcdServerKey:

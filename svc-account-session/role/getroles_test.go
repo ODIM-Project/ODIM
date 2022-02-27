@@ -41,16 +41,8 @@ func createMockRole(roleID string, privileges []string, oemPrivileges []string, 
 }
 
 func TestGetRole(t *testing.T) {
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	commonResponse := response.Response{
-		OdataType: "#Role.v1_2_4.Role",
+		OdataType: common.RoleType,
 		OdataID:   "/redfish/v1/AccountService/Roles/" + common.RoleAdmin,
 		Name:      "User Role",
 		ID:        common.RoleAdmin,
@@ -80,7 +72,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to get the role",
+				ErrorMessage:  "User does not have the privilege to get the role",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -91,7 +83,7 @@ func TestGetRole(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
+				ErrorMessage:  "Error while getting the role : error while trying to get role details: no data with the with key " + common.RoleClient + " found",
 				MessageArgs:   []interface{}{"Role", common.RoleClient},
 			},
 		},
@@ -116,7 +108,6 @@ func TestGetRole(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header:        header,
 				Body: asresponse.UserRole{
 					Response:           commonResponse,
 					AssignedPrivileges: []string{common.PrivilegeConfigureUsers},
@@ -138,7 +129,6 @@ func TestGetRole(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		}, {
@@ -156,7 +146,6 @@ func TestGetRole(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        header,
 				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
@@ -177,14 +166,6 @@ func TestGetAllRoles(t *testing.T) {
 		OdataID:   "/redfish/v1/AccountService/Roles",
 		Name:      "Roles Collection",
 	}
-	header := map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	commonResponse.CreateGenericResponse(response.Success)
 	commonResponse.MessageID = ""
 	commonResponse.Message = ""
@@ -204,7 +185,7 @@ func TestGetAllRoles(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: user does not have the privilege to get the roles",
+				ErrorMessage:  "User does not have the privilege to get the roles",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -229,7 +210,6 @@ func TestGetAllRoles(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header:        header,
 				Body: asresponse.List{
 					Response:     commonResponse,
 					MembersCount: 1,
@@ -252,7 +232,6 @@ func TestGetAllRoles(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},

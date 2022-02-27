@@ -1,0 +1,61 @@
+#(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+#
+#Licensed under the Apache License, Version 2.0 (the "License"); you may
+#not use this file except in compliance with the License. You may obtain
+#a copy of the License at
+#
+#    http:#www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#License for the specific language governing permissions and limitations
+# under the License.
+
+FROM golang:1.17.2
+
+WORKDIR /ODIM/
+
+RUN apt-get update && \
+    apt-get -y install git unzip build-essential autoconf libtool
+RUN git clone https://github.com/google/protobuf.git && \
+    cd protobuf && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install && \
+    ldconfig && \
+    make clean && \
+    cd .. && \
+    rm -r protobuf
+# Get the source from GitHub
+
+# Install protoc-gen-go-grpc
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+# Install protoc-gen-go
+RUN go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
+
+COPY svc-account-session /ODIM/svc-account-session
+COPY svc-aggregation /ODIM/svc-aggregation
+COPY svc-api /ODIM/svc-api
+COPY svc-events /ODIM/svc-events
+COPY svc-fabrics /ODIM/svc-fabrics
+COPY svc-telemetry /ODIM/svc-telemetry
+COPY svc-managers /ODIM/svc-managers
+COPY svc-systems /ODIM/svc-systems
+COPY svc-task /ODIM/svc-task
+COPY svc-update /ODIM/svc-update
+COPY plugin-redfish /ODIM/plugin-redfish
+COPY plugin-dell /ODIM/plugin-dell
+COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks
+COPY plugin-lenovo /ODIM/plugin-lenovo
+COPY lib-dmtf /ODIM/lib-dmtf/
+COPY lib-messagebus /ODIM/lib-messagebus/
+COPY lib-persistence-manager /ODIM/lib-persistence-manager/
+COPY lib-rest-client /ODIM/lib-rest-client/
+COPY lib-utilities /ODIM/lib-utilities/
+COPY install/Docker/dockerfiles/scripts/add-hosts  /ODIM/add-hosts/
+
+COPY install/Docker/dockerfiles/scripts/build_odim.sh .
+RUN ./build_odim.sh
+

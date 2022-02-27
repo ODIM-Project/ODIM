@@ -1,0 +1,236 @@
+{
+    "@Redfish.Copyright": "Copyright 2019-2021 DMTF. All rights reserved.",
+    "@Redfish.License": "Creative Commons Attribution 4.0 License.  For full text see link: https://creativecommons.org/licenses/by/4.0/",
+    "@odata.type": "#MessageRegistry.v1_4_0.MessageRegistry",
+    "Id": "Composition.1.1.0",
+    "Name": "Composition Message Registry",
+    "Language": "en",
+    "Description": "This registry defines the messages for composition related events",
+    "RegistryPrefix": "Composition",
+    "RegistryVersion": "1.1.0",
+    "OwningEntity": "DMTF",
+    "Messages": {
+        "ResourceBlockChanged": {
+            "Description": "Indicates that a `ResourceBlock` has changed.  This is not used whenever there is another event message for that specific change, such as only the state has changed.",
+            "LongDescription": "This message shall be used to indicate that one or more properties of a `ResourceBlock` have changed.  This message shall not be used for cases where a more specific message could be used in its place.",
+            "Message": "The `ResourceBlock` '%1' has changed on the service.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the `ResourceBlock` that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the `ResourceBlock` that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the `ResourceBlock` to get the updated information from the service."
+        },
+        "ResourceBlockStateChanged": {
+            "Description": "Indicates that the state of a `ResourceBlock` has changed, specifically the value of the `State` property within `Status` has changed.",
+            "LongDescription": "This message shall be used to indicate that the `State` property within the `Status` object of a `ResourceBlock` has changed.",
+            "Message": "The state of the `ResourceBlock` '%1' has changed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the `ResourceBlock` that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the `ResourceBlock` that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the `ResourceBlock` to get the updated information from the service."
+        },
+        "ResourceBlockCompositionStateChanged": {
+            "Description": "Indicates that the composition state of a `ResourceBlock` has changed, specifically the value of the `CompositionState` property within `CompositionStatus` has changed.",
+            "LongDescription": "This message shall be used to indicate that the `CompositionState` property within the `CompositionStatus` object of a `ResourceBlock` has changed.",
+            "Message": "The composition status of the `ResourceBlock` '%1' has changed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the `ResourceBlock` that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the `ResourceBlock` that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the `ResourceBlock` to get the updated information from the service."
+        },
+        "ResourceZoneMembershipChanged": {
+            "Description": "Indicates that the membership of a resource zone has changed due to `ResourceBlock`s being added or removed from the resource zone.",
+            "LongDescription": "This message shall be used to indicate that entries found in the `ResourceBlocks` array within the `Links` object for a resource zone have been added or removed.",
+            "Message": "The membership of resource zone '%1' has been changed.",
+            "Severity": "OK",
+            "MessageSeverity": "OK",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource zone that has changed."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the resource zone that has changed."
+            ],
+            "Resolution": "Refresh your cached version of the resource zone to get the updated information from the service."
+        },
+        "ResourceBlockInUse": {
+            "Description": "Indicates that the composition request contains a `ResourceBlock` that is unable to participate in more compositions.",
+            "LongDescription": "This message shall be used to indicate that the composition request contains a `ResourceBlock` that is unable to participate in more compositions due to restrictions specified in its `CompositionStatus` property.  For example, the `ResourceBlock` has reached its composition limit specified by the `MaxCompositions` property.",
+            "Message": "The `ResourceBlock` with Id '%1' cannot be part of any new compositions.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the `ResourceBlock` that cannot be part of any new compositions."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the `ResourceBlock` that cannot be part of any new compositions."
+            ],
+            "Resolution": "Remove the `ResourceBlock` from the request and resubmit the request."
+        },
+        "EmptyManifest": {
+            "Description": "Indicates that the manifest contains no stanzas, or a stanza in the manifest contains no request.",
+            "LongDescription": "This message shall be used to indicate that the manifest contains no stanzas, or a stanza in the manifest contains no request.",
+            "Message": "The provided manifest is empty or a stanza in the manifest contains no request.",
+            "Severity": "Warning",
+            "MessageSeverity": "Warning",
+            "NumberOfArgs": 0,
+            "Resolution": "Provide a request content for the manifest and resubmit."
+        },
+        "UnableToProcessStanzaRequest": {
+            "Description": "Indicates that the manifest provided for the `Compose` action contains a stanza with `Content` that could not be processed.",
+            "LongDescription": "This message shall be used to indicate that the manifest provided for the `Compose` action contains a stanza with `Content` that could not be processed.",
+            "Message": "The provided manifest for the `Compose` action of type %1 contains a stanza with `Id` of value '%2' with a `Content` parameter that could not be processed.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `RequestType` of the `Compose` action.",
+                "The `Id` of the stanza."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `RequestType` parameter of the `Compose` action.",
+                "The value of this argument shall contain the value of the `Id` parameter of the stanza."
+            ],
+            "Resolution": "Add the `Content` parameter to the stanza or remove the stanza, and resubmit the request."
+        },
+        "ResourceBlockInvalid": {
+            "Description": "Indicates that the `Id` of a referenced resource block is no longer valid.",
+            "LongDescription": "This message shall be used to indicate that the `Id` of a referenced resource block is no longer valid.",
+            "Message": "Resource block '%1' is not valid.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource block."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the resource block that is no longer valid."
+            ],
+            "Resolution": "Remove the resource block and resubmit the request."
+        },
+        "ResourceBlockNotFound": {
+            "Description": "Indicates that the referenced resource block is not found.",
+            "LongDescription": "This message shall be used to indicate that the referenced resource block is not found.",
+            "Message": "Resource block '%1' is not found.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The URI of the resource block."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the URI of the resource block that is not found."
+            ],
+            "Resolution": "Remove the resource block and resubmit the request."
+        },
+        "NoResourceMatch": {
+            "Description": "Indicates that the service could not find a matching resource based on the given parameters.",
+            "LongDescription": "This message shall be used to indicate that the service could not find a matching resource based on the given parameters.",
+            "Message": "The requested resources of type '%1' are not available for allocation.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The resource type requested."
+            ],
+            "ArgLongDescriptions": [
+                "This argument shall contain the schema name of the requested resource."
+            ],
+            "Resolution": "Change parameters associated with the resource, such as quantity or performance, and resubmit the request."
+        },
+        "IncompatibleZone": {
+            "Description": "Indicates that not all referenced resource blocks are in the same resource zone.",
+            "LongDescription": "This message shall be used to indicate that not all referenced resource blocks are in the same resource zone.",
+            "Message": "The requested resource blocks span multiple resource zones.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 0,
+            "Resolution": "Request resource blocks from the same resource zone."
+        },
+        "SpecifiedResourceAlreadyReserved": {
+            "Description": "Indicates that a resource block is already reserved in response to a specific composition request.",
+            "LongDescription": "This message shall be used to indicate that a resource block is already reserved in response to a specific composition request.",
+            "Message": "Resource block '%1' is already reserved under reservation '%2'.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 2,
+            "ParamTypes": [
+                "string",
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the resource block.",
+                "The `Id` of the reservation."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the resource block that is already reserved.",
+                "The value of this argument shall contain the value of the `Id` property of the reservation containing the requested resource."
+            ],
+            "Resolution": "Delete the reservation containing the resource block or select a different resource block and resubmit the request."
+        },
+        "ConstrainedResourceAlreadyReserved": {
+            "Description": "Indicates that the requested resources are already reserved in response to a constrained composition request.",
+            "LongDescription": "This message shall be used to indicate that the requested resources are already reserved in response to a constrained composition request.",
+            "Message": "The requested resources are reserved under reservation '%1'.",
+            "Severity": "Critical",
+            "MessageSeverity": "Critical",
+            "NumberOfArgs": 1,
+            "ParamTypes": [
+                "string"
+            ],
+            "ArgDescriptions": [
+                "The `Id` of the reservation."
+            ],
+            "ArgLongDescriptions": [
+                "The value of this argument shall contain the value of the `Id` property of the reservation containing the requested resources."
+            ],
+            "Resolution": "Delete the reservation containing the resources and resubmit the request."
+        }
+    }
+}

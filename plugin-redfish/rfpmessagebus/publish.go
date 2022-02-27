@@ -18,42 +18,161 @@ package rfpmessagebus
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"net"
+	"strings"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
+	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
+	log "github.com/sirupsen/logrus"
 )
 
-// Publish ...
+// Publish function will handle events request in two originofcondition format
+// originofcondition can be with or without @odata.id
 func Publish(data interface{}) bool {
 	if data == nil {
-		log.Printf("Error: Invalid data on publishing events")
+		log.Error("Nil data passed to event publisher")
 		return false
 	}
 	event := data.(common.Events)
+	if event.EventType == "PluginStartUp" {
+		return writeToMessageBus(event)
+	}
 
-	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
+	// this map is to check what type of event is recieved.
+	// if @odata.type contains MetricReport then its of type MetricReport message objects else event message objects
+	var metricReportEventDataMap map[string]interface{}
+	err := json.Unmarshal(event.Request, &metricReportEventDataMap)
 	if err != nil {
-		fmt.Println("Unable communicate with kafka", err)
+		log.Error("Failed to unmarshal the event, got: " + err.Error())
 		return false
 	}
-	defer K.Close()
+	odatatype := metricReportEventDataMap["@odata.type"]
+	if odatatype != nil && strings.Contains(odatatype.(string), "MetricReport") {
+		event, err = formatMetricReportEventRequest(event)
+	} else {
+		event, err = formatRedfishEventRequest(event)
+	}
+	if err != nil {
+		return false
+	}
+	if !writeToMessageBus(event) {
+		return false
+	}
+	log.Info("Forwarded event: " + string(event.Request))
+	log.Info("Event Published")
+	return true
+}
+
+func formatMetricReportEventRequest(eventRequest common.Events) (common.Events, error) {
+	var event common.Events
+	// prepare the device data
+	var devices []rfpmodel.Device
+	rfpmodel.GetAllDevicesInInventory(&devices)
+
+	systemUUID := getMatchingDeviceUUID(eventRequest.IP, devices)
+	if systemUUID == "" {
+		return event, fmt.Errorf("System id is empty")
+	}
+
+	// to replace id in system
+	updatedData := strings.Replace(string(eventRequest.Request), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+systemUUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+systemUUID+".", -1)
+	// to replace id in chassis
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+systemUUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+systemUUID+".", -1)
+
+	event.Request, _ = json.Marshal(updatedData)
+	event.IP = eventRequest.IP
+	event.EventType = "MetricReport"
+
+	return event, nil
+}
+
+func formatRedfishEventRequest(eventRequest common.Events) (common.Events, error) {
 	// Since we are deleting the first event from the eventlist,
 	// processing the first event
 	var message common.MessageData
-	err = json.Unmarshal(event.Request, &message)
+	err := json.Unmarshal(eventRequest.Request, &message)
 	if err != nil {
-		log.Printf("error: Failed to unmarshal the event: %v", err)
-		return false
+		log.Error("Failed to unmarshal the event: " + err.Error())
+		return eventRequest, err
 	}
+	var messageData dmtf.Event
+	message.Context = messageData.Context
+	message.Name = messageData.Name
+	message.OdataType = messageData.ODataType
+	message.Events = make([]common.Event, 0)
+	for i := 0; i < len(messageData.Events); i++ {
+		var eventData common.Event
+		eventData.EventGroupID = messageData.Events[i].EventGroupID
+		eventData.EventID = messageData.Events[i].EventID
+		eventData.EventTimestamp = messageData.Events[i].EventTimestamp
+		eventData.EventType = messageData.Events[i].EventType
+		eventData.Message = messageData.Events[i].Message
+		eventData.MemberID = messageData.Events[i].MemberID
+		eventData.Severity = messageData.Events[i].Severity
+		eventData.Oem = messageData.Events[i].Oem
+		eventData.MessageID = messageData.Events[i].MessageID
+		eventData.OriginOfCondition = &common.Link{
+			Oid: messageData.Events[i].OriginOfCondition.Oid,
+		}
+		eventData.MessageArgs = messageData.Events[i].MessageArgs
+		message.Events = append(message.Events, eventData)
+	}
+	eventRequest.Request, _ = json.Marshal(message)
+	return eventRequest, nil
+}
+
+func getMatchingDeviceUUID(serverIP string, devices []rfpmodel.Device) string {
+	if len(devices) < 1 {
+		return ""
+	}
+
+	front := 0
+	rear := len(devices) - 1
+	for front <= rear {
+		host := getIPFromHostName(devices[front].Host)
+		if host == serverIP {
+			return devices[front].SystemID
+		}
+
+		host = getIPFromHostName(devices[rear].Host)
+		if host == serverIP {
+			return devices[rear].SystemID
+		}
+		front++
+		rear--
+	}
+	return ""
+}
+
+// getIPFromHostName - look up the ip from the fqdn
+func getIPFromHostName(fqdn string) string {
+	host, _, err := net.SplitHostPort(fqdn)
+	if err != nil {
+		host = fqdn
+	}
+	addr, err := net.LookupIP(host)
+	if err != nil || len(addr) < 1 {
+		return ""
+	}
+	return fmt.Sprintf("%v", addr[0])
+}
+
+func writeToMessageBus(events common.Events) bool {
 	topic := config.Data.MessageBusConf.EmbQueue[0]
-	if err := K.Distribute(topic, event); err != nil {
-		fmt.Println("Unable Publish events to kafka", err)
+	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageBusConfigFilePath, topic)
+	if err != nil {
+		log.Error("Unable communicate with kafka, got: " + err.Error())
 		return false
 	}
-	for _, eventMessage := range message.Events {
-		fmt.Printf("Event %v Published\n", eventMessage.EventType)
+
+	if err := K.Distribute(events); err != nil {
+		log.Error("Unable Publish events to kafka, got: " + err.Error())
+		return false
 	}
 	return true
 }

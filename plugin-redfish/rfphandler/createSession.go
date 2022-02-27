@@ -22,9 +22,9 @@ import (
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	iris "github.com/kataras/iris/v12"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -43,15 +43,15 @@ func CreateSession(ctx iris.Context) {
 	var userCreds rfpmodel.Users
 	rawBodyAsBytes, err := ioutil.ReadAll(ctx.Request().Body)
 	if err != nil {
-		errorMessage := "Error while trying to validate the credentials: " + err.Error()
-		log.Println(errorMessage)
+		errorMessage := "Unable to validate the credentials: " + err.Error()
+		log.Error(errorMessage)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.WriteString(errorMessage)
 	}
 	err = json.Unmarshal(rawBodyAsBytes, &userCreds)
 	if err != nil {
-		errorMessage := "Error while trying to unmarshal user details: " + err.Error()
-		log.Println(errorMessage)
+		errorMessage := "Unable to unmarshal user details: " + err.Error()
+		log.Error(errorMessage)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errorMessage)
 	}
@@ -61,7 +61,7 @@ func CreateSession(ctx iris.Context) {
 	validateResponse := validate(userName, password)
 	if !validateResponse {
 		errorMessage := "Invalid credentials for session creation"
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.WriteString(errorMessage)
 		return
@@ -88,7 +88,7 @@ func validate(userName, password string) bool {
 	hashSum := hash.Sum(nil)
 	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
 	if passwd != hashedPassword {
-		log.Println("username/password does not match")
+		log.Error("Username/password does not match")
 		return false
 	}
 

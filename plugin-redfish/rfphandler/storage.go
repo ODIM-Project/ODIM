@@ -16,9 +16,8 @@
 package rfphandler
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -41,7 +40,7 @@ func CreateVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -53,9 +52,10 @@ func CreateVolume(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		errMsg := "Unable to collect data from request: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errMsg)
 		return
 	}
 	device := &rfputilities.RedfishDevice{
@@ -67,30 +67,28 @@ func CreateVolume(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPost)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to create volume, got:" + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to create volume: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying to create volume: " + errorMessage)
+		body = []byte("While trying to read response body, got: " + err.Error())
+		log.Error(string(body))
 	}
-	log.Println("Response body: ", string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }
@@ -108,7 +106,7 @@ func DeleteVolume(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -120,9 +118,10 @@ func DeleteVolume(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		errMsg := "Unable to collect data from request: " + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errMsg)
 		return
 	}
 	device := &rfputilities.RedfishDevice{
@@ -134,30 +133,28 @@ func DeleteVolume(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodDelete)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to delete volume, got:" + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to delete volume: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying to delete volume: " + errorMessage)
+		body = []byte("While trying to read the response body, got: " + err.Error())
+		log.Error(string(body))
 	}
-	log.Println("Response body: ", string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }

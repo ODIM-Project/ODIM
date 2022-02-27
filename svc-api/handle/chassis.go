@@ -1,4 +1,5 @@
 //(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright 2020 Intel Corporation
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -16,13 +17,14 @@
 package handle
 
 import (
-	"log"
+	"encoding/json"
 	"net/http"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	iris "github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12"
+	log "github.com/sirupsen/logrus"
 )
 
 // ChassisRPCs defines all the RPC methods in system service
@@ -30,31 +32,80 @@ type ChassisRPCs struct {
 	GetChassisCollectionRPC func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisResourceRPC   func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
 	GetChassisRPC           func(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error)
+	CreateChassisRPC        func(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error)
+	DeleteChassisRPC        func(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error)
+	UpdateChassisRPC        func(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error)
+}
+
+//CreateChassis creates a new chassis
+func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
+	defer ctx.Next()
+	requestBody := new(json.RawMessage)
+	e := ctx.ReadJSON(requestBody)
+	if e != nil {
+		errorMessage := "error while trying to read obligatory json body: " + e.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	rpcResp, rpcErr := chassis.CreateChassisRPC(
+		chassisproto.CreateChassisRequest{
+			RequestBody:  *requestBody,
+			SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		},
+	)
+
+	if rpcErr != nil {
+		log.Error("RPC error:" + rpcErr.Error())
+		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	writeResponse(ctx, rpcResp.Header, rpcResp.StatusCode, rpcResp.Body)
+}
+
+func writeResponse(ctx iris.Context, headers map[string]string, status int32, body interface{}) {
+	common.SetResponseHeader(ctx, headers)
+	ctx.StatusCode(int(status))
+	switch v := body.(type) {
+	case []byte:
+		ctx.Write(v)
+	default:
+		ctx.JSON(v)
+	}
 }
 
 //GetChassisCollection fetches all Chassis
 func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
 	resp, err := chassis.GetChassisCollectionRPC(req)
 	if err != nil {
-		errorMessage := "error:  RPC error:" + err.Error()
-		log.Println(errorMessage)
+		errorMessage := " RPC error:" + err.Error()
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -65,28 +116,32 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
 	resp, err := chassis.GetChassisResourceRPC(req)
 	if err != nil {
-		errorMessage := "error:  RPC error:" + err.Error()
-		log.Println(errorMessage)
+		errorMessage := " RPC error:" + err.Error()
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -97,29 +152,80 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Println(errorMessage)
+		errorMessage := "no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
 	resp, err := chassis.GetChassisRPC(req)
 	if err != nil {
 		errorMessage := "RPC error:" + err.Error()
-		log.Println(errorMessage)
+		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
+}
+
+//UpdateChassis updates an existing chassis
+func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
+	defer ctx.Next()
+	requestBody := new(json.RawMessage)
+	e := ctx.ReadJSON(requestBody)
+	if e != nil {
+		errorMessage := "error while trying to read obligatory json body: " + e.Error()
+		log.Println(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	rr, rerr := chassis.UpdateChassisRPC(chassisproto.UpdateChassisRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  *requestBody,
+	})
+
+	if rerr != nil {
+		log.Println("RPC error:" + rerr.Error())
+		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rerr.Error(), nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	writeResponse(ctx, rr.Header, rr.StatusCode, rr.Body)
+
+}
+
+//DeleteChassis deletes a chassis
+func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
+	defer ctx.Next()
+	rpcResp, rpcErr := chassis.DeleteChassisRPC(chassisproto.DeleteChassisRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		URL:          ctx.Request().RequestURI,
+	})
+
+	if rpcErr != nil {
+		log.Println("RPC error:" + rpcErr.Error())
+		re := common.GeneralError(http.StatusInternalServerError, response.InternalError, rpcErr.Error(), nil, nil)
+		writeResponse(ctx, re.Header, re.StatusCode, re.Body)
+		return
+	}
+
+	writeResponse(ctx, rpcResp.Header, rpcResp.StatusCode, rpcResp.Body)
 }

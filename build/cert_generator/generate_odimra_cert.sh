@@ -81,6 +81,7 @@ authorityKeyIdentifier=keyid,issuer
 subjectAltName = @alternate_names
 [ alternate_names ]
 DNS.1 = $localhostFQDN
+DNS.2 = URP
 EOF
 ) -in  odimra_server.csr -CA  rootCA.crt -CAkey  rootCA.key  -CAcreateserial -out odimra_server.crt -days 500 -sha512
 echo
@@ -96,6 +97,9 @@ echo
 /bin/bash generate_client_crt.sh ./rootCA.crt ./rootCA.key ${localhostFQDN} "odimra Kafka Client"
 mv client.key odimra_kafka_client.key
 mv client.crt odimra_kafka_client.crt
+
+# generate etcd server certificates
+/bin/bash generate_etcd_certs.sh
 
 # cleanup temp files generated
 rm -f odimra_server.csr rootCA.srl client.csr

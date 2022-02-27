@@ -12,10 +12,22 @@ Resource Aggregator for ODIM offers Redfish `SessionService` interface for creat
 
 -   Deleting a session
 
+
+**Supported APIs**
+
+|API URI|Operation Applicable|Required privileges|
+|-------|--------------------|-------------------|
+|/redfish/v1/SessionService|GET|`Login` |
+|/redfish/v1/SessionService/Sessions|POST, GET|`Login`,|
+|redfish/v1/SessionService/Sessions/\{sessionId\}|GET, DELETE|`Login`, `ConfigureManager`, `ConfigureSelf` |
+
+>**NOTE:**
+Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error.
+
 ##  Modifying Configurations of Session and Account Service
   
-Config File of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
-Refer the section **Modifying Configurations** in the README.md to change the configurations of a odimra service
+Config file of ODIMRA is located at: **odimra/lib-utilities/config/odimra_config.json**  
+Refer to the section **Modifying Configurations** in the README.md file to change the configurations of an odimra service.
   
 **Specific configurations for Session and Account Service are:**
   
@@ -24,30 +36,36 @@ Refer the section **Modifying Configurations** in the README.md to change the co
 /var/log/ODIMRA/account_session.log
     
   
-## Supported APIs
+
+
+
+
+## Viewing the session service root
 
 |||
-|-------|--------------------|
-|/redfish/v1/SessionService|`GET`|
-|/redfish/v1/SessionService/Sessions|`POST`, `GET`|
-|redfish/v1/SessionService/Sessions/\{sessionId\}|`GET`, `DELETE`|
+|---------|---------------|
+|**Method** | `GET` |
+|**URI** |`/redfish/v1/SessionService` |
+|**Description** |This endpoint retrieves JSON schema representing the Redfish `SessionService` root.|
+|**Returns** |The properties for the Redfish `SessionService` itself and links to the actual list of sessions.|
+|**Response Code** |`200 OK` |
+|**Authentication** |No|
 
 
-
-## SessionService root
+>**curl command**
 
 ```
 curl -i GET \
               'https://{odimra_host}:{port}/redfish/v1/SessionService'
 
- ```
- 
- 
-> Sample response body
+```
+
+
+>**Sample response body**
 
 ```
 {
-   "@odata.type":"#SessionService.v1_1_6.SessionService",
+   "@odata.type":"#SessionService.v1_1_8.SessionService",
    "@odata.id":"/redfish/v1/SessionService",
    "Id":"Sessions",
    "Name":"Session Service",
@@ -64,33 +82,10 @@ curl -i GET \
 ```
 
 
-|||
-|---------|---------------|
-|**Method** | `GET` |
-|**URI** |`/redfish/v1/SessionService` |
-|**Description** |Schema representing the Redfish `SessionService` root.|
-|**Returns** |The properties for the Redfish `SessionService` itself and links to the actual list of sessions.|
-|**Response Code** |`200 OK` |
-|**Authentication** |No|
-
-
-
 
 
 
 ##  Creating a session
-
-```
-curl -i POST \
-   -H "Content-Type:application/json" \
-   -d \
-'{
-"UserName": "{username}",
-"Password": "{password}"
-}' \
- 'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
-
- ```
 
 |||
 |---------|---------------|
@@ -103,7 +98,22 @@ curl -i POST \
 
 
 
-> Sample request body
+>**curl command**
+
+```
+curl -i POST \
+   -H "Content-Type:application/json" \
+   -d \
+'{
+"UserName": "{username}",
+"Password": "{password}"
+}' \
+ 'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
+
+```
+
+
+>**Sample request body**
 
 ```
 {
@@ -116,16 +126,16 @@ curl -i POST \
 
 
 
-###  Request URI parameters
+**Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|UserName|String \(required\)|UserName of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
+|UserName|String \(required\)|Username of the user account for this session. For the first time, use the username of the default administrator account \(admin\). Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br>**NOTE:**<br> This user must have `Login` privilege.|
 |Password|String \(required\)<br> |Password of the user account for this session. For the first time, use the password of the default administrator account. Later, when you create other user accounts, you can use the credentials of those accounts to create a session.<br> |
 
 
 
-> Sample response header
+>**Sample response header**
 
 
 ```
@@ -141,34 +151,26 @@ Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
 Transfer-Encoding:chunked
 ```
 
-> Sample response body
+>**Sample response body**
 
 
 ```
 {
-	"@odata.type": "#SessionService.v1_1_6.SessionService",
+	"@odata.type": "#SessionService.v1_1_8.SessionService",
 	"@odata.id": "/redfish/v1/SessionService/Sessions/1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Id": "1a547199-0dd3-42de-9b24-1b801d4a1e63",
 	"Name": "Session Service",
 	"Message": "The resource has been created successfully",
-	"MessageId": "Base.1.6.1.Created",
+	"MessageId": "Base.1.11.0.Created",
 	"Severity": "OK",
 	"UserName": "abc"
 }
- ```
+```
 
 
 
- 
+
 ## Listing sessions
-
-```
-curl -i GET \
-               -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-              'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
-
-
-```
 
 |||
 |---------|---------------|
@@ -180,31 +182,19 @@ curl -i GET \
 |**Authentication** |Yes|
 
 
-
-
-## Viewing information about a single session
-
+>**curl command**
 
 ```
 curl -i GET \
-                -H "X-Auth-Token:{X-Auth-Token}" \
-              'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
+               -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+              'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions'
+
 
 ```
 
 
-> Sample response body
 
-```
-{
-   "@odata.type":"#Session.v1_2_1.Session",
-   "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
-   "Id":"4ee42139-22db-4e2a-97e4-020013248768",
-   "Name":"User Session",
-   "UserName":"admin"
-}
-```
-
+## Viewing information about a single session
 
 |||
 |---------|---------------|
@@ -215,19 +205,32 @@ curl -i GET \
 |**Response Code** |`200 OK` |
 |**Authentication** |Yes|
 
- 
+>**curl command**
+
+
+```
+curl -i GET \
+                -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.type":"#Session.v1_3_0.Session",
+   "@odata.id":"/redfish/v1/SessionService/Sessions/4ee42139-22db-4e2a-97e4-020013248768",
+   "Id":"4ee42139-22db-4e2a-97e4-020013248768",
+   "Name":"User Session",
+   "UserName":"admin"
+}
+```
 
 
 
 ## Deleting a session
-
-
-```
-curl -i -X DELETE \
-               -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
-              'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
-
- ```
 
 |||
 |---------|---------------|
@@ -236,3 +239,13 @@ curl -i -X DELETE \
 |**Description** |This operation terminates a specific Redfish session when the user logs out.<br>**NOTE:**<br> Users having the `ConfigureSelf` and `ConfigureComponents` privileges are allowed to delete only those sessions that they created.<br><br> Only a user with all the Redfish-defined privileges \(Redfish-defined `Administrator` role\) is authorized to delete any user session.<br> |
 |**Response Code** |`204 No Content` |
 |**Authentication** |Yes|
+
+>**curl command**
+
+
+```
+curl -i -X DELETE \
+               -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+              'https://{odimra_host}:{port}/redfish/v1/SessionService/Sessions/{sessionId}'
+
+```

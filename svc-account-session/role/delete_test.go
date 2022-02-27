@@ -78,14 +78,6 @@ func createMockUser(username, roleID string) error {
 
 func TestDelete(t *testing.T) {
 	common.SetUpMockConfig()
-	header := map[string]string{
-		"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"X-Frame-Options":   "sameorigin",
-	}
 	defer truncateDB(t)
 	token, tokenWithoutPrivilege := "someToken", "tokenWithoutPrivilege"
 	err := mockSession(token, common.RoleAdmin, true)
@@ -121,7 +113,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: the session token didn't have required privilege",
+				ErrorMessage:  "The session token doesn't have required privilege",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -132,7 +124,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error while trying to get role details: error while trying to get role details: no data with the with key xyz found",
+				ErrorMessage:  "Unable to get role details: error while trying to get role details: no data with the with key xyz found",
 				MessageArgs:   []interface{}{"Role", "xyz"},
 			},
 		},
@@ -143,7 +135,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -154,7 +146,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.InsufficientPrivilege,
-				ErrorMessage:  "error: the predifined roles cannot be deleted.",
+				ErrorMessage:  "A predefined role cannot be deleted.",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -165,7 +157,7 @@ func TestDelete(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceInUse,
-				ErrorMessage:  "error: role is assigned to a user",
+				ErrorMessage:  "Role is assigned to a user",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -189,7 +181,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusNoContent,
 				StatusMessage: response.ResourceRemoved,
-				Header:        header,
 			},
 		},
 		{
@@ -203,7 +194,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header:        header,
 				Body:          errArgsu.CreateGenericErrorResponse(),
 			},
 		},
@@ -218,7 +208,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
@@ -233,7 +222,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        header,
 				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
@@ -248,7 +236,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header:        header,
 				Body:          errArgu.CreateGenericErrorResponse(),
 			},
 		},
@@ -263,7 +250,6 @@ func TestDelete(t *testing.T) {
 			want: &response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.ResourceInUse,
-				Header:        header,
 				Body:          errArgus.CreateGenericErrorResponse(),
 			},
 		},

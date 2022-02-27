@@ -18,14 +18,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 )
 
 func TestGetExternalInterface(t *testing.T) {
@@ -50,19 +53,20 @@ func mockGetExternalInterface() *ExternalInterface {
 		Device: Device{
 			GetDeviceInfo: mockGetDeviceInfo,
 			ContactClient: mockContactClient,
+			DeviceRequest: mockDeviceRequest,
 		},
 		DB: DB{
 			GetAllKeysFromTable: mockGetAllKeysFromTable,
 			GetManagerByURL:     mockGetManagerByURL,
 			GetPluginData:       mockGetPluginData,
-			UpdateManagersData:  mockUpdateManagersData,
+			UpdateData:          mockUpdateData,
 			GetResource:         mockGetResource,
 		},
 	}
 }
 
 func mockGetAllKeysFromTable(table string) ([]string, error) {
-	return []string{"/redfish/v1/Managers/uuid:1"}, nil
+	return []string{"/redfish/v1/Managers/uuid.1"}, nil
 }
 
 func mockGetManagerByURL(url string) (string, *errors.Error) {
@@ -71,7 +75,7 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 	managerData["Status"] = `{"State":"Enabled"}}`
 	managerData["Name"] = "somePlugin"
 	switch url {
-	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL:1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
+	case "/redfish/v1/Managers/nonExistingUUID", "/redfish/v1/Managers/invalidURL.1", "/redfish/v1/Managers/invalidURL", "/redfish/v1/Managers/invalidID":
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	case "/redfish/v1/Managers/noDevice":
 		managerData["ManagerType"] = "Service"
@@ -93,6 +97,8 @@ func mockGetManagerByURL(url string) (string, *errors.Error) {
 		managerData["ManagerID"] = config.Data.RootServiceUUID
 		managerData["UUID"] = config.Data.RootServiceUUID
 		managerData["FirmwareVersion"] = "1.0"
+		managerData["Description"] = "odimra manager"
+		managerData["LogServices"] = &dmtf.Link{Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"}
 	}
 	data, _ := json.Marshal(managerData)
 	return string(data), nil
@@ -130,19 +136,42 @@ func mockGetPluginData(pluginID string) (mgrmodel.Plugin, *errors.Error) {
 	}, nil
 }
 
-func mockUpdateManagersData(key string, managerData map[string]interface{}) error {
+func mockUpdateData(key string, updateData map[string]interface{}, table string) error {
+	if key == "/redfish/v1/Managers/uuid.1/VirtualMedia/1" {
+		return nil
+	} else if key == "/redfish/v1/Managers/uuid1.1/VirtualMedia/4" {
+		return errors.PackError(errors.DBKeyNotFound, "not found")
+	}
 	return nil
 }
 
 func mockGetResource(table, key string) (string, *errors.Error) {
-	if key == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+	if key == "/redfish/v1/Managers/uuid1.1/Ethernet" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1.1/Virtual" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1.1/VirtualMedia/4" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid1.1/Logservice" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/noPlugin/EthernetInterfaces" {
+		return "", errors.PackError(errors.DBKeyNotFound, "not found")
+	} else if key == "/redfish/v1/Managers/uuid/EthernetInterfaces" {
 		return "", errors.PackError(errors.DBKeyNotFound, "not found")
 	}
 	return "body", nil
 }
 
 func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
-	if req.URL == "/redfish/v1/Managers/deviceAbsent:1" || req.URL == "/redfish/v1/Managers/uuid1:1/Ethernet" {
+	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Ethernet" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1.1/VirtualMedia/4" {
+		return "", fmt.Errorf("error")
+	} else if req.URL == "/redfish/v1/Managers/uuid1.1/Logservice" {
 		return "", fmt.Errorf("error")
 	}
 	manager := mgrmodel.Manager{
@@ -154,9 +183,35 @@ func mockGetDeviceInfo(req mgrcommon.ResourceInfoRequest) (string, error) {
 	return string(dataByte), err
 }
 
-func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+func mockDeviceRequest(req mgrcommon.ResourceInfoRequest) response.RPC {
+	var resp response.RPC
+	resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
+	if req.URL == "/redfish/v1/Managers/deviceAbsent.1" || req.URL == "/redfish/v1/Managers/uuid1.1/Virtual" || req.URL == "/redfish/v1/Managers/uuid.1/Logservice" {
 
-	if url == "https://localhost:9091/ODIM/v1/Sessions" {
+		resp.StatusCode = http.StatusNotFound
+		resp.StatusMessage = response.ResourceNotFound
+		return resp
+	}
+	manager := mgrmodel.Manager{
+		Status: &mgrmodel.Status{
+			State: "Enabled",
+		},
+	}
+	dataByte, err := json.Marshal(manager)
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	err = json.Unmarshal(dataByte, &resp.Body)
+	if err != nil {
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+	}
+	return resp
+}
+
+func mockContactClient(url, method, token string, odataID string, body interface{}, loginCredential map[string]string) (*http.Response, error) {
+	baseURI := "/redfish/v1"
+	baseURI = mgrcommon.TranslateToSouthBoundURL(baseURI)
+
+	if url == "https://localhost:9091"+baseURI+"/Sessions" {
 		body := `{"Token": "12345"}`
 		return &http.Response{
 			StatusCode: http.StatusCreated,
@@ -165,29 +220,59 @@ func mockContactClient(url, method, token string, odataID string, body interface
 				"X-Auth-Token": []string{"12345"},
 			},
 		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Sessions" {
+	} else if url == "https://localhost:9092"+baseURI+"/Sessions" {
 		body := `{"Token": ""}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}
-	if url == "https://localhost:9091/ODIM/v1/Managers/uuid/EthernetInterfaces" && token == "12345" {
+	if url == "https://localhost:9091"+baseURI+"/Managers/uuid/EthernetInterfaces" && token == "12345" {
 		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://localhost:9093/ODIM/v1/Managers/uuid1/EthernetInterfaces" {
+	} else if url == "https://localhost:9093"+baseURI+"/Managers/uuid1/EthernetInterfaces" {
 		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
-	} else if url == "https://localhost:9092/ODIM/v1/Managers/uuid/EthernetInterfaces" && token == "23456" {
+	} else if url == "https://localhost:9092"+baseURI+"/Managers/uuid/EthernetInterfaces" && token == "23456" {
 		body := `{"data": "/ODIM/v1/Managers/uuid/EthernetInterfaces"}`
 		return &http.Response{
 			StatusCode: http.StatusUnauthorized,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/VirtualMedia/1/Actions/VirtualMedia.InsertMedia" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService/Accounts" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService/Accounts/1" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService/Roles/1" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	}

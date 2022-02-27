@@ -1,0 +1,70 @@
+---
+- name: Include user defined configurations
+  include_vars: "files/odim_controller_config.yaml"
+
+- name: Stop, remove and clenup nginx, keepalived
+  block:
+    - name: Remove and cleanup nginx
+      include_tasks: roles/remove-proxy/tasks/main.yaml
+
+    - name: Remove and cleanup keepalived
+      include_tasks: roles/remove-keepalived/tasks/main.yaml
+
+    - name: Update nginx configuration on existing nodes
+      include_tasks: roles/update-proxy-conf/tasks/main.yaml
+      loop:
+        "{{ groups['kube_node'] }}"
+      loop_control:
+        loop_var: host_item
+      when: scenario is defined
+  when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Get list of plugins under plugin helm charts path
+  find:
+    paths: "{{ odimPluginPath }}"
+    file_type: "directory"
+  register: plugin_packages
+  delegate_to: localhost
+  when: odimPluginPath is defined
+
+- name: Call plugin post-uninstall scripts
+  include_tasks: roles/post-uninstall/tasks/plugins.yaml
+  loop: "{{ plugin_packages.files }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Clean-up data in odim-controller directory
+  file:
+    path: "{{ odim_controller_path }}"
+    state: absent
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Delete directories created for persisting data
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ odimra.appsLogPath }}"
+    - "{{ odimra.kafkaConfPath }}"
+    - "{{ odimra.kafkaDataPath }}"
+    - "{{ odimra.redisOndiskDataPath }}"
+    - "{{ odimra.redisInmemoryDataPath }}"
+    - "{{ odimra.zookeeperConfPath }}"
+    - "{{ odimra.zookeeperDataPath }}"
+    - "{{ odimra.etcdConfPath }}"
+    - "{{ odimra.etcdDataPath }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Get userdel bin path
+  local_action: command which userdel
+  become: false
+  register: userdel_path
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Set usrdel_bin_path fact
+  set_fact:
+    usrdel_bin_path: "{{ userdel_path.stdout }}"
+  ignore_errors: "{{ ignore_err }}"
+
+- name: Delete odimra user and group
+  command: "{{ usrdel_bin_path }} {{ odim_owner_name }}"
+  ignore_errors: "{{ ignore_err }}"

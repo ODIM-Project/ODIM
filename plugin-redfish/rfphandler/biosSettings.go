@@ -16,9 +16,8 @@
 package rfphandler
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	pluginConfig "github.com/ODIM-Project/ODIM/plugin-redfish/config"
@@ -49,7 +48,7 @@ func ChangeSettings(ctx iris.Context) {
 	if token != "" {
 		flag := TokenValidation(token)
 		if !flag {
-			log.Println("Invalid/Expired X-Auth-Token")
+			log.Error("Invalid/Expired X-Auth-Token")
 			ctx.StatusCode(http.StatusUnauthorized)
 			ctx.WriteString("Invalid/Expired X-Auth-Token")
 			return
@@ -61,9 +60,10 @@ func ChangeSettings(ctx iris.Context) {
 	//Get device details from request
 	err := ctx.ReadJSON(&deviceDetails)
 	if err != nil {
-		log.Println("Error while trying to collect data from request: ", err)
+		errorMessage := "Unable to collect data from request: " + err.Error()
+		log.Error(errorMessage)
 		ctx.StatusCode(http.StatusBadRequest)
-		ctx.WriteString("Error: bad request.")
+		ctx.WriteString(errorMessage)
 		return
 	}
 	device := &rfputilities.RedfishDevice{
@@ -75,30 +75,28 @@ func ChangeSettings(ctx iris.Context) {
 
 	redfishClient, err := rfputilities.GetRedfishClient()
 	if err != nil {
-		errMsg := "error: internal processing error: " + err.Error()
-		log.Println(errMsg)
+		errMsg := "While trying to create the redfish client, got:" + err.Error()
+		log.Error(errMsg)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.WriteString(errMsg)
 		return
 	}
 	resp, err := redfishClient.DeviceCall(device, uri, http.MethodPatch)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
+		errorMessage := "While trying to change bios settings, got: " + err.Error()
+		log.Error(errorMessage)
 		if resp == nil {
 			ctx.StatusCode(http.StatusInternalServerError)
-			ctx.WriteString("error while trying to change bios settings: " + errorMessage)
+			ctx.WriteString(errorMessage)
 			return
 		}
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errorMessage := err.Error()
-		fmt.Println(err)
-		ctx.WriteString("Error while trying to change bios settings: " + errorMessage)
+		body = []byte("While trying to change bios settings, got: " + err.Error())
+		log.Error(string(body))
 	}
-	log.Println("Response body: ", string(body))
 	ctx.StatusCode(resp.StatusCode)
 	ctx.Write(body)
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
 	"net/http"
@@ -32,6 +33,7 @@ type ExternalInterface struct {
 // Device struct to inject the contact device function into the handlers
 type Device struct {
 	GetDeviceInfo         func(mgrcommon.ResourceInfoRequest) (string, error)
+	DeviceRequest         func(mgrcommon.ResourceInfoRequest) response.RPC
 	ContactClient         func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
 	DecryptDevicePassword func([]byte) ([]byte, error)
 }
@@ -41,7 +43,7 @@ type DB struct {
 	GetAllKeysFromTable func(string) ([]string, error)
 	GetManagerByURL     func(string) (string, *errors.Error)
 	GetPluginData       func(string) (mgrmodel.Plugin, *errors.Error)
-	UpdateManagersData  func(string, map[string]interface{}) error
+	UpdateData          func(string, map[string]interface{}, string) error
 	GetResource         func(string, string) (string, *errors.Error)
 }
 
@@ -50,6 +52,7 @@ func GetExternalInterface() *ExternalInterface {
 	return &ExternalInterface{
 		Device: Device{
 			GetDeviceInfo:         mgrcommon.GetResourceInfoFromDevice,
+			DeviceRequest:         mgrcommon.DeviceCommunication,
 			ContactClient:         pmbhandle.ContactPlugin,
 			DecryptDevicePassword: common.DecryptWithPrivateKey,
 		},
@@ -57,7 +60,7 @@ func GetExternalInterface() *ExternalInterface {
 			GetAllKeysFromTable: mgrmodel.GetAllKeysFromTable,
 			GetManagerByURL:     mgrmodel.GetManagerByURL,
 			GetPluginData:       mgrmodel.GetPluginData,
-			UpdateManagersData:  mgrmodel.UpdateManagersData,
+			UpdateData:          mgrmodel.UpdateData,
 			GetResource:         mgrmodel.GetResource,
 		},
 	}

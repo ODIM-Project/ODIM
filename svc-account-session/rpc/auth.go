@@ -26,9 +26,10 @@ type Auth struct{}
 
 // IsAuthorized will accepts the request and send a request to Auth method
 // from session package, if its authorized then respond with the status code.
-func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest, resp *authproto.AuthResponse) error {
+func (a *Auth) IsAuthorized(ctx context.Context, req *authproto.AuthRequest) (*authproto.AuthResponse, error) {
+	var resp authproto.AuthResponse
 	statusCode, errorMessage := auth.Auth(req)
 	resp.StatusCode = statusCode
 	resp.StatusMessage = errorMessage
-	return nil
+	return &resp, nil
 }

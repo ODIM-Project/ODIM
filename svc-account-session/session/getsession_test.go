@@ -44,17 +44,14 @@ func TestGetSession(t *testing.T) {
 
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
 	commonResponse := response.Response{
-		OdataType: "#Session.v1_2_1.Session",
+		OdataType: common.SessionType,
 		OdataID:   "/redfish/v1/SessionService/Sessions/" + sessionID,
 		ID:        sessionID,
 		Name:      "User Session",
 	}
 	successHeader := map[string]string{
-		"Cache-Control":     "no-cache",
-		"Link":              "</redfish/v1/SessionService/Sessions/" + sessionID + "/>; rel=self",
-		"Transfer-Encoding": "chunked",
-		"X-Auth-Token":      sessionToken,
-		"Content-type":      "application/json; charset=utf-8",
+		"Link":         "</redfish/v1/SessionService/Sessions/" + sessionID + "/>; rel=self",
+		"X-Auth-Token": sessionToken,
 	}
 	errArgUnauth := &response.Args{
 		Code:    response.GeneralError,
@@ -62,7 +59,7 @@ func TestGetSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
+				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalid-token: error while trying to get the session from DB: no data with the with key invalid-token found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -73,7 +70,7 @@ func TestGetSession(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.ResourceNotFound,
-				ErrorMessage:  "error: no session with id invalid-sessionID found.",
+				ErrorMessage:  "No session with id invalid-sessionID found.",
 				MessageArgs:   []interface{}{"Session", "invalid-sessionID"},
 			},
 		},
@@ -116,7 +113,6 @@ func TestGetSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header:        getHeader(),
 				Body:          errArgUnauth.CreateGenericErrorResponse(),
 			},
 		},
@@ -131,7 +127,6 @@ func TestGetSession(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header:        getHeader(),
 				Body:          eArgs.CreateGenericErrorResponse(),
 			},
 		},
@@ -160,13 +155,13 @@ func TestGetAllActiveSessions(t *testing.T) {
 	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
 	commonResponse := response.Response{
 		OdataType:    "#SessionCollection.SessionCollection",
-		OdataID:      "/redfish/v1/SessionService/Sessions/",
+		OdataID:      "/redfish/v1/SessionService/Sessions",
 		OdataContext: "/redfish/v1/$metadata#SessionCollection.SessionCollection",
 		Name:         "Session Service",
 	}
 	var listMembers []asresponse.ListMember
 	listMembers = append(listMembers, asresponse.ListMember{
-		OdataID: "/redfish/v1/SessionService/Sessions/" + sessionID + "/",
+		OdataID: "/redfish/v1/SessionService/Sessions/" + sessionID,
 	})
 	eArgs1 := &response.Args{
 		Code:    response.GeneralError,
@@ -174,7 +169,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error: no session token found in header",
+				ErrorMessage:  "Unable to authorize session token: error: no session token found in header",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -185,7 +180,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 		ErrorArgs: []response.ErrArgs{
 			response.ErrArgs{
 				StatusMessage: response.NoValidSession,
-				ErrorMessage:  "error while authorizing session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
+				ErrorMessage:  "Unable to authorize session token: error while trying to get session details with the token invalidToken: error while trying to get the session from DB: no data with the with key invalidToken found",
 				MessageArgs:   []interface{}{},
 			},
 		},
@@ -209,7 +204,6 @@ func TestGetAllActiveSessions(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
-				Header:        getHeader(),
 				Body: asresponse.List{
 					Response:     commonResponse,
 					MembersCount: len(listMembers),
@@ -228,7 +222,6 @@ func TestGetAllActiveSessions(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header:        getHeader(),
 				Body:          eArgs1.CreateGenericErrorResponse(),
 			},
 		},
@@ -243,12 +236,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusUnauthorized,
 				StatusMessage: response.NoValidSession,
-				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Transfer-Encoding": "chunked",
-					"Content-type":      "application/json; charset=utf-8",
-				},
-				Body: errArgUnauth2.CreateGenericErrorResponse(),
+				Body:          errArgUnauth2.CreateGenericErrorResponse(),
 			},
 		},
 	}
@@ -264,7 +252,7 @@ func TestGetAllActiveSessions(t *testing.T) {
 
 func TestGetSessionService(t *testing.T) {
 	commonResponse := response.Response{
-		OdataType: "#SessionService.v1_1_6.SessionService",
+		OdataType: common.SessionServiceType,
 		OdataID:   "/redfish/v1/SessionService",
 		ID:        "Sessions",
 		Name:      "Session Service",
@@ -291,13 +279,7 @@ func TestGetSessionService(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.Success,
 				Header: map[string]string{
-					"Allow":         "GET",
-					"Cache-Control": "no-cache",
-					"Connection":    "Keep-alive",
 					"Link": "	</redfish/v1/SchemaStore/en/SessionService.json>; rel=describedby",
-					"Transfer-Encoding": "chunked",
-					"X-Frame-Options":   "sameorigin",
-					"Content-type":      "application/json; charset=utf-8",
 				},
 				Body: asresponse.SessionService{
 					Response: commonResponse,
@@ -373,9 +355,69 @@ func TestGetSessionUserName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := GetSessionUserName(tt.args.req, tt.args.resp)
+			_, err := GetSessionUserName(tt.args.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSessionUserName() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr && tt.want.Error() != err.Error() {
+				t.Errorf("Expected %v but got %v", tt.want, err)
+			}
+		})
+	}
+}
+
+func TestGetSessionUserRoleID(t *testing.T) {
+	defer func() {
+		err := common.TruncateDB(common.OnDisk)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+		err = common.TruncateDB(common.InMemory)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+	sessionID, sessionToken := createSession(t, common.RoleAdmin, "admin", []string{common.PrivilegeConfigureUsers, common.PrivilegeLogin})
+	type args struct {
+		req  *sessionproto.SessionRequest
+		resp *sessionproto.SessionUsersRoleID
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    error
+	}{
+		// TODO: Add test cases.
+		{
+			name: "successful get session user roleid",
+			args: args{
+				req: &sessionproto.SessionRequest{
+					SessionId:    sessionID,
+					SessionToken: sessionToken,
+				},
+				resp: &sessionproto.SessionUsersRoleID{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid session id",
+			args: args{
+				req: &sessionproto.SessionRequest{
+					SessionId:    sessionID,
+					SessionToken: "sessionToken",
+				},
+				resp: &sessionproto.SessionUsersRoleID{},
+			},
+			wantErr: true,
+			want:    fmt.Errorf("error while trying to get session details with the token sessionToken: error while trying to get the session from DB: no data with the with key sessionToken found"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := GetSessionUserRoleID(tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSessionUserRoleID() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.wantErr && tt.want.Error() != err.Error() {
 				t.Errorf("Expected %v but got %v", tt.want, err)

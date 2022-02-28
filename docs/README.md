@@ -1976,8 +1976,6 @@ curl -i POST \
 
 ```
 
-
-
 >**Sample request body for adding the GRF plugin**
 
 ```
@@ -2163,6 +2161,8 @@ PREREQUISITE: Generate and import certificate for the server.
    The content of the certificate file is displayed.
    
 9. Import `BMC.crt` in the BMC server.
+
+   
 
 | | |
 |-------------|---------------------|

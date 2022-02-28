@@ -320,7 +320,7 @@ The following table lists the software components and their versions that are co
 
 5. [Download and install go](#downloading-and-installing-go) on the deployment node.
 
-6. [Configure Docker proxy](#configuring-docker-proxy) on the deployment node.
+6. [Configure Docker proxy](#configuring-proxy-for-docker) on the deployment node.
 
 7. [Install Docker](#installing-docker) on the deployment node.
 

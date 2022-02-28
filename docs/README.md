@@ -10793,8 +10793,8 @@ curl -i GET \
    "Name":"Telemetry Service",
    "Status":{
       "State":"Enabled",
-      "Health":"OK"
-      "HealthRollup":"OK",
+      "Health":"OK",
+      "HealthRollup":"OK"
    },
    "ServiceEnabled":true,
    "SupportedCollectionFunctions":[

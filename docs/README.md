@@ -1752,8 +1752,7 @@ Transfer-Encoding":chunked
    "Description":"AggregationService",
    "Actions":{
       "#AggregationService.Reset":{
-         "target":"/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
-         "@Redfish.ActionInfo":"/redfish/v1/AggregationService/ResetActionInfo"
+         "target":"/redfish/v1/AggregationService/Actions/AggregationService.Reset/",     
       },
       "#AggregationService.SetDefaultBootOrder":{
          "target":"/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/"

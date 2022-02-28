@@ -1752,13 +1752,11 @@ Transfer-Encoding":chunked
    "Description":"AggregationService",
    "Actions":{
       "#AggregationService.Reset":{
-         "target":"/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
-         "@Redfish.ActionInfo":"/redfish/v1/AggregationService/ResetActionInfo"
+         "target":"/redfish/v1/AggregationService/Actions/AggregationService.Reset/",     
       },
       "#AggregationService.SetDefaultBootOrder":{
-         "target":"/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
-         "@Redfish.ActionInfo":"/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo"
-      }
+         "target":"/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/"
+         }
    },
    "Aggregates":{
       "@odata.id":"/redfish/v1/AggregationService/Aggregates"
@@ -2271,7 +2269,7 @@ curl -i GET \
 ```
 {
    "@odata.type":"#AggregationSourceCollection.AggregationSourceCollection",
-   "@odata.id":"/redfish/v1/AggregationService/AggregationSource",
+   "@odata.id":"/redfish/v1/AggregationService/AggregationSources",
    "@odata.context":"/redfish/v1/$metadata#AggregationSourceCollection.AggregationSourceCollection",
    "Name":"Aggregation Source",
    "Members@odata.count":2,
@@ -2515,30 +2513,27 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#SubTask.v1_4_2.SubTask",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6412a/SubTasks/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "@odata.context":"/redfish/v1/$metadata#SubTask.SubTask",
-   "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
-   "Severity":"OK",
-   "Members@odata.count":0,
-   "Members":null,
-   "TaskState":"Completed",
-   "StartTime":"2020-05-13T13:33:59.917329733Z",
-   "EndTime":"2020-05-13T13:34:00.320539988Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":null,
-      "HttpOperation":"POST",
-      "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
-   },
-   "Messages":null
+    "@odata.type": "#Task.v1_5_1.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "Name": "Task taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "TaskState": "Completed",
+    "StartTime": "2022-02-25T13:07:05.938018291Z",
+    "EndTime": "2022-02-25T13:07:08.108846323Z",
+    "TaskStatus": "OK",
+    "SubTasks": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3/SubTasks",
+    "TaskMonitor": "/taskmon/taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "PercentComplete": 100,
+    "Payload": {
+        "HttpHeaders": [
+        ],
+        "HttpOperation": "POST",
+        "JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":2,\"ResetType\":\"ForceRestart\"}",
+        "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.Reset"
+    },
+    "Oem": {
+    }
 }
 ```
 
@@ -2660,31 +2655,29 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#SubTask.v1_4_2.SubTask",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6412a/SubTasks/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "@odata.context":"/redfish/v1/$metadata#SubTask.SubTask",
-   "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
-   "Severity":"OK",
-   "Members@odata.count":0,
-   "Members":null,
-   "TaskState":"Completed",
-   "StartTime":"2020-05-13T13:33:59.917329733Z",
-   "EndTime":"2020-05-13T13:34:00.320539988Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":null,
-      "HttpOperation":"POST",
-      "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
-   },
-   "Messages":null
+    "@odata.type": "#Task.v1_5_1.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/taskabd8c681-a484-44fe-8ec4-e4929a44d1f2",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "taskabd8c681-a484-44fe-8ec4-e4929a44d1f2",
+    "Name": "Task taskabd8c681-a484-44fe-8ec4-e4929a44d1f2",
+    "TaskState": "Exception",
+    "StartTime": "2022-02-25T14:50:02.00265165Z",
+    "EndTime": "2022-02-25T14:50:02.987585968Z",
+    "TaskStatus": "Critical",
+    "SubTasks": "/redfish/v1/TaskService/Tasks/taskabd8c681-a484-44fe-8ec4-e4929a44d1f2/SubTasks",
+    "TaskMonitor": "/taskmon/taskabd8c681-a484-44fe-8ec4-e4929a44d1f2",
+    "PercentComplete": 100,
+    "Payload": {
+        "HttpHeaders": [
+        ],
+        "HttpOperation": "POST",
+        "JsonBody": "{\"Systems\":[{\"@odata.id\":\"/redfish/v1/Systems/a84005b0-928a-4a8d-9994-335bbe15a915.1\"},{\"@odata.id\":\"/redfish/v1/Systems/921b734b-b35e-4387-a71a-14a1fd0bdc69.1\"}]}",
+        "TargetUri": "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder"
+    },
+    "Oem": {
+    }
 }
+
 ```
 
 >**Sample response body** \(HTTP 200 status\)
@@ -2892,10 +2885,8 @@ curl -i GET \
       "@odata.id":"/redfish/v1/AggregationService/Aggregates",
       "@odata.context":"/redfish/v1/$metadata#AggregateCollection.AggregateCollection",
       "Id":"Aggregate",
+      "Description": "Aggregate collection view",
       "Name":"Aggregate",
-      "Message":"Successfully Completed Request",
-      "MessageId":"Base.1.6.1.Success",
-      "Severity":"OK",
       "Members@odata.count":1,
       "Members":[
             {
@@ -3024,7 +3015,7 @@ curl -i POST \
       "@odata.context":"/redfish/v1/$metadata#Aggregate.Aggregate",
       "Id":"c14d91b5-3333-48bb-a7b7-75f74a137d48",
       "Name":"Aggregate",
-      "Message":"The resource has been created successfully",
+      "Message":"Successfully Completed Request",
       "MessageId":"Base.1.6.1.Created",
       "Severity":"OK",
       "Elements":[
@@ -3129,30 +3120,27 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#SubTask.v1_4_2.SubTask",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591/SubTasks/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "@odata.context":"/redfish/v1/$metadata#SubTask.SubTask",
-   "Id":"task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
-   "Name":"Task task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
-   "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
-   "Severity":"OK",
-   "Members@odata.count":0,
-   "Members":null,
-   "TaskState":"Completed",
-   "StartTime":"2020-05-13T13:33:59.917329733Z",
-   "EndTime":"2020-05-13T13:34:00.320539988Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":null,
-      "HttpOperation":"POST",
-      "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
-   },
-   "Messages":null
+    "@odata.type": "#Task.v1_5_1.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "Name": "Task taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "TaskState": "Completed",
+    "StartTime": "2022-02-25T13:07:05.938018291Z",
+    "EndTime": "2022-02-25T13:07:08.108846323Z",
+    "TaskStatus": "OK",
+    "SubTasks": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3/SubTasks",
+    "TaskMonitor": "/taskmon/taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "PercentComplete": 100,
+    "Payload": {
+        "HttpHeaders": [
+        ],
+        "HttpOperation": "POST",
+        "JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":2,\"ResetType\":\"ForceRestart\"}",
+        "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.Reset"
+    },
+    "Oem": {
+    }
 }
 ```
 
@@ -3240,30 +3228,27 @@ Content-Length:491 bytes
 
 ```
 {
-   "@odata.type":"#SubTask.v1_4_2.SubTask",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/task85de4003-8757-4c7d-942f-55eaf7d6412a/SubTasks/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "@odata.context":"/redfish/v1/$metadata#SubTask.SubTask",
-   "Id":"task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "Name":"Task task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
-   "Severity":"OK",
-   "Members@odata.count":0,
-   "Members":null,
-   "TaskState":"Completed",
-   "StartTime":"2020-05-13T13:33:59.917329733Z",
-   "EndTime":"2020-05-13T13:34:00.320539988Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":null,
-      "HttpOperation":"POST",
-      "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
-   },
-   "Messages":null
+    "@odata.type": "#Task.v1_5_1.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/task94f9af7a-fbe4-4846-94c9-9d5f7b949e40",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "task94f9af7a-fbe4-4846-94c9-9d5f7b949e40",
+    "Name": "Task task94f9af7a-fbe4-4846-94c9-9d5f7b949e40",
+    "TaskState": "Exception",
+    "StartTime": "2022-02-25T13:27:29.518305955Z",
+    "EndTime": "2022-02-25T13:27:30.007624346Z",
+    "TaskStatus": "Critical",
+    "SubTasks": "/redfish/v1/TaskService/Tasks/task94f9af7a-fbe4-4846-94c9-9d5f7b949e40/SubTasks",
+    "TaskMonitor": "/taskmon/task94f9af7a-fbe4-4846-94c9-9d5f7b949e40",
+    "PercentComplete": 100,
+    "Payload": {
+        "HttpHeaders": [
+        ],
+        "HttpOperation": "POST",
+        "JsonBody": "{\"SessionToken\":\"1e2ce744-8bcb-4e97-9eb1-2b419b1e7a2c\",\"URL\":\"/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.SetDefaultBootOrder\"}",
+        "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.SetDefaultBootOrder"
+    },
+    "Oem": {
+    }
 }
 ```
 
@@ -10074,30 +10059,27 @@ Transfer-Encoding:chunked
 
 ```
 {
-   "@odata.type":"#SubTask.v1_4_2.SubTask",
-   "@odata.id":"/redfish/v1/TaskService/Tasks/taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a/SubTasks/task22a98864-5dd8-402b-bfe0-0d61e265391e",
-   "@odata.context":"/redfish/v1/$metadata#SubTask.SubTask",
-   "Id":"taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
-   "Name":"Task taskbab2e46d-2ef9-40e8-a070-4e6c87ef72a",
-   "Message":"Successfully Completed Request",
-   "MessageId":"Base.1.6.1.Success",
-   "Severity":"OK",
-   "Members@odata.count":0,
-   "Members":null,
-   "TaskState":"Completed",
-   "StartTime":"2020-05-13T13:33:59.917329733Z",
-   "EndTime":"2020-05-13T13:34:00.320539988Z",
-   "TaskStatus":"OK",
-   "SubTasks":"",
-   "TaskMonitor":"/taskmon/task22a98864-0dd8-402b-bfe0-0d61e265391e",
-   "PercentComplete":100,
-   "Payload":{
-      "HttpHeaders":null,
-      "HttpOperation":"POST",
-      "JsonBody":"",
-      "TargetUri":"/redfish/v1/Systems/97d08f36-17f5-5918-8082-f5156618f58d.1"
-   },
-   "Messages":null
+    "@odata.type": "#Task.v1_5_1.Task",
+    "@odata.id": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "@odata.context": "/redfish/v1/$metadata#Task.Task",
+    "Id": "taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "Name": "Task taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "TaskState": "Completed",
+    "StartTime": "2022-02-25T13:07:05.938018291Z",
+    "EndTime": "2022-02-25T13:07:08.108846323Z",
+    "TaskStatus": "OK",
+    "SubTasks": "/redfish/v1/TaskService/Tasks/taskd862139f-c664-4cb2-b771-3e702bde40e3/SubTasks",
+    "TaskMonitor": "/taskmon/taskd862139f-c664-4cb2-b771-3e702bde40e3",
+    "PercentComplete": 100,
+    "Payload": {
+        "HttpHeaders": [
+        ],
+        "HttpOperation": "POST",
+        "JsonBody": "{\"BatchSize\":2,\"DelayBetweenBatchesInSeconds\":2,\"ResetType\":\"ForceRestart\"}",
+        "TargetUri": "/redfish/v1/AggregationService/Aggregates/ca3f2462-15b5-4eb6-80c1-89f99ac36b12/Actions/Aggregate.Reset"
+    },
+    "Oem": {
+    }
 }
 ```
 
@@ -10489,7 +10471,9 @@ curl -i GET \
       "ComputerSystem"
    ],
    "OriginResources":[
+      {
       "@odata.id":"/redfish/v1/Systems/936f4838-9ce5-4e2a-9e2d-34a45422a389.1"
+      }
    ]
 }
 ```
@@ -10810,6 +10794,7 @@ curl -i GET \
    "Status":{
       "State":"Enabled",
       "Health":"OK"
+      "HealthRollup":"OK",
    },
    "ServiceEnabled":true,
    "SupportedCollectionFunctions":[

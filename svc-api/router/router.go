@@ -274,7 +274,6 @@ func Router() *iris.Application {
 	role.SetRegisterRule(iris.RouteSkip)
 	role.Get("/", r.GetAllRoles)
 	role.Get("/{id}", r.GetRole)
-	role.Post("/", handle.RoleMethodNotAllowed)
 	role.Patch("/{id}", r.UpdateRole)
 	role.Delete("/{id}", r.DeleteRole)
 	role.Any("/", handle.RoleMethodNotAllowed)

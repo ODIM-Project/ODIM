@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 // Delete defines deletion of an existing account.
@@ -55,9 +56,6 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -78,10 +76,7 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 
@@ -105,24 +100,11 @@ func Delete(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
 
 	resp.StatusCode = http.StatusNoContent
 	resp.StatusMessage = response.AccountRemoved
-
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-		"OData-Version":     "4.0",
-		"X-Frame-Options":   "sameorigin",
-	}
-
 	return resp
 }

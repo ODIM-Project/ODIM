@@ -18,10 +18,11 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+
+	lutilconf "github.com/ODIM-Project/ODIM/lib-utilities/config"
+	log "github.com/sirupsen/logrus"
 )
 
 // Data will have the configuration data from config file
@@ -65,9 +66,12 @@ type EventConf struct {
 
 // MessageBusConf will have configuration data of MessageBusConf
 type MessageBusConf struct {
-	MessageQueueConfigFilePath string   `json:"MessageQueueConfigFilePath"` // Message Queue Config File Path
-	EmbType                    string   `json:"MessageBusType"`
-	EmbQueue                   []string `json:"MessageBusQueue"`
+	MessageBusConfigFilePath string   `json:"MessageBusConfigFilePath"` // Message Queue Config File Path
+	MessageBusAddress        string   `json:"MessageBusAddress"`
+	MessageBusPort           string   `json:"MessageBusPort"`
+	HASet                    string   `json:"HASet"`
+	EmbType                  string   `json:"MessageBusType"`
+	EmbQueue                 []string `json:"MessageBusQueue"`
 }
 
 //KeyCertConf is for holding all security oriented configuration
@@ -206,20 +210,27 @@ func checkEventConf() error {
 
 //Check or apply default values for message bus to be used by this plugin
 func checkMessageBusConf() error {
+	log.Info("Data.MessageBusConf.EmbType", Data.MessageBusConf.EmbType)
+	log.Info("Data.MessageBusConf.EmbQueue", Data.MessageBusConf.EmbQueue)
+
 	if Data.MessageBusConf == nil {
 		return fmt.Errorf("No value found for MessageBusConf")
-	}
-	if _, err := os.Stat(Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
-		return fmt.Errorf("Value check failed for MessageQueueConfigFilePath:%s with %v", Data.MessageBusConf.MessageQueueConfigFilePath, err)
 	}
 	if Data.MessageBusConf.EmbType == "" {
 		log.Warn("No value set for MessageBusType, setting default value")
 		Data.MessageBusConf.EmbType = "Kafka"
 	}
+	if _, err := os.Stat(Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
+		return fmt.Errorf("Value check failed for MessageBusConfigFilePath:%s with %v", Data.MessageBusConf.MessageBusConfigFilePath, err)
+	}
 	if len(Data.MessageBusConf.EmbQueue) <= 0 {
 		log.Warn("No value set for MessageBusQueue, setting default value")
 		Data.MessageBusConf.EmbQueue = []string{"REDFISH-EVENTS-TOPIC"}
 	}
+	if !lutilconf.AllowedMessageBusTypes[Data.MessageBusConf.EmbType] {
+		return fmt.Errorf("error: invalid value configured for MessageBusType")
+	}
+
 	return nil
 }
 

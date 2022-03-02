@@ -69,10 +69,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	}
 
 	targetList := make(map[string][]string)
-	var applyTime []string
-	if updateRequest.RedfishOperationApplyTimeSupport != nil && updateRequest.RedfishOperationApplyTimeSupport.SupportedValues != nil {
-		applyTime = updateRequest.RedfishOperationApplyTimeSupport.SupportedValues
-	}
 	targetList, err = sortTargetList(updateRequest.Targets)
 	if err != nil {
 		errorMessage := "SystemUUID not found"
@@ -92,7 +88,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		}
 		updateRequestBody := string(marshalBody)
 		serverURI = "/redfish/v1/Systems/" + id
-		go e.sendRequest(id, taskID, serverURI, updateRequestBody, applyTime, subTaskChannel, sessionUserName)
+		go e.sendRequest(id, taskID, serverURI, updateRequestBody, updateRequest.RedfishOperationApplyTime, subTaskChannel, sessionUserName)
 	}
 
 	resp.StatusCode = http.StatusOK
@@ -141,13 +137,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 		}
 	}
 
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 	log.Info("All SimpleUpdate requests successfully completed. for more information please check SubTasks in URI: /redfish/v1/TaskService/Tasks/" + taskID)
 	resp.StatusMessage = response.Success
 	resp.StatusCode = http.StatusOK
@@ -167,7 +156,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	return resp
 }
 
-func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBody string, applyTime []string, subTaskChannel chan<- int32, sessionUserName string) {
+func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBody string, applyTime string, subTaskChannel chan<- int32, sessionUserName string) {
 	var resp response.RPC
 	subTaskURI, err := e.External.CreateChildTask(sessionUserName, taskID)
 	if err != nil {
@@ -194,7 +183,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 		return
 	}
-	if len(applyTime) != 0 {
+	if applyTime == "OnStartUpdateRequest" {
 		err := e.External.GenericSave([]byte(updateRequestBody), "SimpleUpdate", uuid)
 		if err != nil {
 			subTaskChannel <- http.StatusInternalServerError
@@ -204,7 +193,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 			return
 		}
 	}
-	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+":", "", -1)
+	updateRequestBody = strings.Replace(string(updateRequestBody), uuid+".", "", -1)
 	//replacing the reruest url with south bound translation URL
 	for key, value := range config.Data.URLTranslation.SouthBoundURL {
 		updateRequestBody = strings.Replace(updateRequestBody, key, value, -1)
@@ -271,13 +260,7 @@ func (e *ExternalInterface) sendRequest(uuid, taskID, serverURI, updateRequestBo
 		common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, errMsg, getResponse.MsgArgs, taskInfo)
 		return
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	resp.StatusCode = http.StatusOK
 	percentComplete = 100
 	subTaskChannel <- int32(getResponse.StatusCode)
@@ -297,8 +280,8 @@ func sortTargetList(Targets []string) (map[string][]string, error) {
 		requestData := strings.Split(individualTarget, "/")
 		var requestTarget []string
 		for _, data := range requestData {
-			if strings.Contains(data, ":") {
-				requestTarget = strings.Split(data, ":")
+			if strings.Contains(data, ".") {
+				requestTarget = strings.SplitN(data, ".", 2)
 			}
 		}
 		if len(requestTarget) != 2 || requestTarget[1] == "" {

@@ -24,26 +24,8 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 )
 
-func TestConsume(t *testing.T) {
-
-	tests := []struct {
-		name      string
-		topicName string
-	}{
-		{
-			name:      "posivite case",
-			topicName: "topic",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			Consume(tt.topicName)
-		})
-	}
-}
-
 func TestKafkaSubscriber(t *testing.T) {
-	In, Out = common.CreateJobQueue()
+	In, Out = common.CreateJobQueue(1)
 	eventMessage := common.MessageData{
 		Name:    "Event",
 		Context: "context",
@@ -58,11 +40,11 @@ func TestKafkaSubscriber(t *testing.T) {
 		},
 	}
 	event, _ := json.Marshal(eventMessage)
-	kafkaMessage := common.Events{
+	message := common.Events{
 		IP:      "10.1.2.3",
 		Request: event,
 	}
-	KafkaSubscriber(kafkaMessage)
+	EventSubscriber(message)
 
 	var currentData int
 
@@ -75,7 +57,6 @@ func TestKafkaSubscriber(t *testing.T) {
 		wg.Done()
 	}()
 	time.Sleep(2 * time.Second)
-	<-done
 	close(In)
 	wg.Wait()
 

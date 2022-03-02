@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -28,6 +27,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -125,6 +126,7 @@ type getResourceRequest struct {
 	UpdateFlag        bool
 	TargetURI         string
 	UpdateTask        func(common.TaskData) error
+	BMCAddress        string
 }
 
 type respHolder struct {
@@ -321,7 +323,7 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 	var key []string
 	for i, id := range str {
 		if id == systemID && (strings.EqualFold(str[i-1], "Systems") || strings.EqualFold(str[i-1], "Chassis") || strings.EqualFold(str[i-1], "Managers") || strings.EqualFold(str[i-1], "FirmwareInventory") || strings.EqualFold(str[i-1], "SoftwareInventory")) {
-			key = append(key, DeviceUUID+":"+id)
+			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
 		key = append(key, id)
@@ -670,9 +672,9 @@ func (h *respHolder) getSystemInfo(taskID string, progress int32, alottedWork in
 	searchForm := createServerSearchIndex(computeSystem, oidKey, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.UpdateIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	} else {
-		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, oidKey, computeSystemUUID, req.BMCAddress)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
@@ -712,7 +714,7 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 
 	// Read system data from DB
 	systemURI := strings.Replace(req.OID, "/Storage", "", -1)
-	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+":", -1)
+	systemURI = strings.Replace(systemURI, "/Systems/", "/Systems/"+req.DeviceUUID+".", -1)
 	data, dbErr := agmodel.GetResource("ComputerSystem", systemURI)
 	if dbErr != nil {
 		log.Error("error while getting the systems data" + dbErr.Error())
@@ -762,7 +764,7 @@ func (h *respHolder) getStorageInfo(progress int32, alottedWork int32, req getRe
 	searchForm := createServerSearchIndex(computeSystem, systemURI, req.DeviceUUID)
 	//save the final search form here
 	if req.UpdateFlag {
-		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID)
+		err = agmodel.SaveIndex(searchForm, systemURI, computeSystemUUID, req.BMCAddress)
 	}
 	if err != nil {
 		h.ErrorMessage = "error while trying save index values: " + err.Error()
@@ -815,15 +817,16 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 		storageCollection := agcommon.GetStorageResources(strings.TrimSuffix(storageCollectionOdataID, "/"))
 		storageMembers := storageCollection["Members"]
 		if storageMembers != nil {
+			var capacity []float64
+			var types []string
+			var quantity int
 			// Loop through all the storage members collection and discover all of them
 			for _, object := range storageMembers.([]interface{}) {
 				storageODataID := object.(map[string]interface{})["@odata.id"].(string)
 				storageRes := agcommon.GetStorageResources(strings.TrimSuffix(storageODataID, "/"))
 				drives := storageRes["Drives"]
 				if drives != nil {
-					quantity := len(drives.([]interface{}))
-					var capacity []float64
-					var types []string
+					quantity += len(drives.([]interface{}))
 					for _, drive := range drives.([]interface{}) {
 						driveODataID := drive.(map[string]interface{})["@odata.id"].(string)
 						driveRes := agcommon.GetStorageResources(strings.TrimSuffix(driveODataID, "/"))
@@ -838,7 +841,6 @@ func createServerSearchIndex(computeSystem map[string]interface{}, oidKey, devic
 							types = append(types, mediaType.(string))
 						}
 					}
-
 					searchForm["Storage/Drives/Quantity"] = quantity
 					searchForm["Storage/Drives/Capacity"] = capacity
 					searchForm["Storage/Drives/Type"] = types
@@ -928,8 +930,8 @@ func (h *respHolder) getResourceDetails(taskID string, progress int32, alottedWo
 
 	oidKey := req.OID
 	if strings.Contains(oidKey, "/redfish/v1/Managers/") || strings.Contains(oidKey, "/redfish/v1/Chassis/") {
-		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+":", -1)
-		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+":", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+req.DeviceUUID+".", -1)
+		oidKey = strings.Replace(oidKey, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+req.DeviceUUID+".", -1)
 	} else {
 		oidKey = keyFormation(req.OID, req.SystemID, req.DeviceUUID)
 	}
@@ -1091,7 +1093,7 @@ func updateManagerName(data []byte, pluginID string) []byte {
 func getFirmwareVersion(oid, deviceUUID string) string {
 	strArray := strings.Split(oid, "/")
 	id := strArray[len(strArray)-1]
-	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+":", -1)
+	key := strings.Replace(oid, "/"+id, "/"+deviceUUID+".", -1)
 	key = strings.Replace(key, "Systems", "Managers", -1)
 	keys, dberr := agmodel.GetAllMatchingDetails("Managers", key, common.InMemory)
 	if dberr != nil {
@@ -1173,7 +1175,7 @@ func getIDsFromURI(uri string) (string, string, error) {
 		uri = uri[:len(uri)-1]
 	}
 	uriParts := strings.Split(uri, "/")
-	ids := strings.Split(uriParts[len(uriParts)-1], ":")
+	ids := strings.SplitN(uriParts[len(uriParts)-1], ".", 2)
 	if len(ids) != 2 {
 		return "", "", fmt.Errorf("error: no system id is found in %v", uri)
 	}
@@ -1193,14 +1195,14 @@ func (e *ExternalInterface) rollbackInMemory(resourceURI string) {
 func updateResourceDataWithUUID(resourceData, uuid string) string {
 	//replacing the uuid while saving the data
 	//to replace the id of system
-	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+":", -1)
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+":", -1)
+	var updatedResourceData = strings.Replace(resourceData, "/redfish/v1/Systems/", "/redfish/v1/Systems/"+uuid+".", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+uuid+".", -1)
 	// to replace the id in managers
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Managers/", "/redfish/v1/Managers/"+uuid+".", -1)
 	// to replace id in chassis
-	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	updatedResourceData = strings.Replace(updatedResourceData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+uuid+".", -1)
 
-	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+":", -1)
+	return strings.Replace(updatedResourceData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+uuid+".", -1)
 
 }
 
@@ -1463,9 +1465,12 @@ func (e *ExternalInterface) getTeleInfo(taskID string, progress, alottedWork int
 	}
 
 	exist, dErr := e.CheckMetricRequest(req.OID)
-	if exist || dErr != nil {
-		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
-		log.Println(errMsg)
+	if dErr != nil {
+		log.Info("Unable to collect the active request details from DB: ", dErr.Error())
+		return progress
+	}
+	if exist {
+		log.Info("An active request already exists for metric request")
 		return progress
 	}
 	err = e.GenericSave(nil, "ActiveMetricRequest", req.OID)

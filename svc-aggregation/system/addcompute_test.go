@@ -58,13 +58,13 @@ func mockContactClientForDuplicate(url, method, token string, odataID string, bo
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:9091/ODIM/v1/Registries/Base" {
-		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_0_4.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/Base.json"}],"Name":"Base Message Registry File","Registry":"Base.1.4.0"}`
+		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/Base.json"}],"Name":"Base Message Registry File","Registry":"Base.1.11.0"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
 	} else if url == "https://localhost:9091/ODIM/v1/Registries/SomeMember" {
-		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_0_4.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/SomeRegistry.json"}],"Name":"Base Message Registry File","Registry":"SomeRegistry"}`
+		body := `{"@odata.context":"/redfish/v1/$metadata#MessageRegistryFile.MessageRegistryFile","@odata.etag":"W/\"0DCA67A0\"","@odata.id":"/redfish/v1/Registries/Base","@odata.type":"#MessageRegistryFile.v1_1_3.MessageRegistryFile","Id":"Base","Description":"Registry Definition File for Base","Languages":["en"],"Location":[{"Language":"en","Uri":"/redfish/v1/RegistryStore/registries/en/SomeRegistry.json"}],"Name":"Base Message Registry File","Registry":"SomeRegistry"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
@@ -242,6 +242,22 @@ func TestExternalInterface_addcompute(t *testing.T) {
 	mockPluginData(t, "GRF")
 	mockPluginData(t, "XAuthPlugin")
 	mockPluginData(t, "XAuthPluginFail")
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 
 	reqSuccess := AddResourceRequest{
 		ManagerAddress: "100.0.0.1",

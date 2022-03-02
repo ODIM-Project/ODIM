@@ -35,6 +35,7 @@ type Endpoint struct {
 	Ports                      []Link               `json:"Ports,omitempty"`
 	PciID                      *PciID               `json:"PciId,omitempty"`
 	Redundancy                 []Redundancy         `json:"Redundancy,omitempty"`
+	RedundancyCount            int                  `json:"Redundancy@odata.count,omitempty"`
 }
 
 // ConnectedEntites for Endpoint
@@ -47,6 +48,7 @@ type ConnectedEntites struct {
 	Oem               interface{}  `json:"Oem,omitempty"`
 	PciClassCode      string       `json:"PciClassCode,omitempty"`
 	PciFunctionNumber string       `json:"PciFunctionNumber,omitempty"`
+	EntityLink        *Link        `json:"EntityLink,omitempty"`
 }
 
 // EntityPciID for Endpoint
@@ -98,4 +100,6 @@ type EndpointLinks struct {
 	Ports                           []Link      `json:"Ports,omitempty"`
 	PortsCount                      int         `json:"Ports@odata.count,omitempty"`
 	Oem                             interface{} `json:"Oem,omitempty"`
+	Zones                           []*Link     `json:"Zones,omitempty"`
+	ZonesCount                      int         `json:"Zones@odata.count,omitempty"`
 }

@@ -274,7 +274,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	dbErr := testSystemIndex("123456:1", map[string]interface{}{
+	dbErr := testSystemIndex("123456.1", map[string]interface{}{
 		"UUID": "1s7sda8asd-asdas8as012",
 	})
 	if err != nil {
@@ -318,7 +318,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 	missingparamReq, _ := json.Marshal(map[string]interface{}{})
 
 	commonResponse1 := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123455",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123455",
@@ -328,14 +328,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp1.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse1.CreateGenericResponse(response.Success)
 	commonResponse1.Message = ""
 	commonResponse1.MessageID = ""
@@ -347,7 +340,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		Links:    reqManagerGRF.Links,
 	}
 	commonResponse2 := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      "/redfish/v1/AggregationService/AggregationSources/123456",
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           "123456",
@@ -357,14 +350,7 @@ func TestExternalInterface_UpdateAggregationSource(t *testing.T) {
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp2.Header = map[string]string{
-		"Allow":             `"GET","PATCH","DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	commonResponse2.CreateGenericResponse(response.Success)
 	commonResponse2.Message = ""
 	commonResponse2.MessageID = ""

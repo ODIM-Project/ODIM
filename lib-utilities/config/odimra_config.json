@@ -1,7 +1,6 @@
 {
 	"RootServiceUUID": "",
 	"LocalhostFQDN": "",
-	"MessageQueueConfigFilePath": "",
 	"SearchAndFilterSchemaPath": "",
 	"RegistryStorePath": "",
 	"KeyCertConf": {
@@ -17,6 +16,11 @@
 		"PrivateKeyPath": "",
 		"CertificatePath": ""
 	},
+	"MessageBusConf": {
+		"MessageBusConfigFilePath": "",
+	  	"MessageBusType": "Kafka",
+		"MessageBusQueue": ["REDFISH-EVENTS-TOPIC"]
+	},
 	"DBConf": {
 		"Protocol": "tcp",
 		"InMemoryHost": "localhost",
@@ -28,20 +32,19 @@
 		"RedisHAEnabled": false,
 		"InMemorySentinelPort": "26379",
 		"OnDiskSentinelPort": "26379",
-		"InMemoryMasterSet": "mymaster",
-		"OnDiskMasterSet": "mymaster"
+		"InMemoryPrimarySet": "redisSentinel",
+		"OnDiskPrimarySet": "redisSentinel"
 	},
 	"TLSConf" : {
 		"MinVersion": "TLS_1.2",
 		"MaxVersion": "TLS_1.2",
 		"VerifyPeer": true,
 		"PreferredCipherSuites": [
-			"TLS_RSA_WITH_AES_128_GCM_SHA256",
-			"TLS_RSA_WITH_AES_256_GCM_SHA384",
 			"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
 			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
 			"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+			"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
 		]
 	},
 	"FirmwareVersion": "1.0",
@@ -120,13 +123,13 @@
          "ConnectionMethodType": "Redfish",
          "ConnectionMethodVariant": "Compute:BasicAuth:GRF_v1.0.0"
       },
-      {
-         "ConnectionMethodType": "Redfish",
-         "ConnectionMethodVariant": "Storage:BasicAuth:STG_v1.0.0"
-      },
 	  {
 		  "ConnectionMethodType": "Redfish",
 		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
 	  }
-   ]
+  ],
+  "EventConf": {
+		"DeliveryRetryAttempts" : 3,
+		"DeliveryRetryIntervalSeconds" : 60,
+  }
 }

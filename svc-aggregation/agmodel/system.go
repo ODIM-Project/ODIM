@@ -74,10 +74,30 @@ type SystemOperation struct {
 
 // AggregationSource  payload of adding a AggregationSource
 type AggregationSource struct {
-	HostName string
-	UserName string
-	Password []byte
-	Links    interface{}
+	HostName     string                `json:"HostName"`
+	UserName     string                `json:"UserName,omitempty"`
+	Password     []byte                `json:"Password,omitempty"`
+	Links        interface{}           `json:"Links,omitempty"`
+	ODataContext string                `json:"@odata.context,omitempty"`
+	ODataEtag    string                `json:"@odata.etag,omitempty"`
+	ODataID      string                `json:"@odata.id"`
+	ODataType    string                `json:"@odata.type"`
+	Name         string                `json:"Name"`
+	Actions      *dmtfmodel.OemActions `json:"Actions,omitempty"`
+	Description  string                `json:"Description,omitempty"`
+	ID           string                `json:"Id"`
+	Oem          *dmtfmodel.Oem        `json:"Oem,omitempty"`
+	SNMP         *SNMP                 `json:"SNMP,omitempty"`
+}
+
+// SNMP  payload of adding a SNMP
+type SNMP struct {
+	AuthenticationKey      string `json:"AuthenticationKey,omitempty"`
+	AuthenticationKeySet   string `json:"AuthenticationKeySet,omitempty"`
+	AuthenticationProtocol string `json:"AuthenticationProtocol,omitempty"`
+	EncryptionKey          string `json:"EncryptionKey,omitempty"`
+	EncryptionKeySet       bool   `json:"EncryptionKeySet,omitempty"`
+	EncryptionProtocol     string `json:"EncryptionProtocol,omitempty"`
 }
 
 // Aggregate payload is used for perform the operations on Aggregate
@@ -315,7 +335,7 @@ func DeleteComputeSystem(index int, key string) *errors.Error {
 	var computeData, inventoryData []string
 	editedKeyList := strings.Split(key, "/")
 	editedKey := editedKeyList[len(editedKeyList)-1]
-	systemID := strings.Split(editedKey, ":")[0]
+	systemID := strings.SplitN(editedKey, ".", 2)[0]
 	if computeData, err = connPool.GetAllMatchingDetails("ComputerSystem", systemID); err != nil {
 		return errors.PackError(err.ErrNo(), "error while trying to get ComputerSystem details: ", err.Error())
 	}
@@ -387,6 +407,12 @@ func deletefilteredkeys(key string) error {
 			return fmt.Errorf("error while deleting data: " + delErr.Error())
 		}
 	}
+	delErr = conn.Del("BMCAddress", key)
+	if delErr != nil {
+		if delErr.Error() != "no data with ID found" {
+			return fmt.Errorf("error while deleting data: " + delErr.Error())
+		}
+	}
 	return nil
 }
 
@@ -431,13 +457,14 @@ func GetTarget(deviceUUID string) (*Target, error) {
 }
 
 //SaveIndex is used to create a
-func SaveIndex(searchForm map[string]interface{}, table, uuid string) error {
+func SaveIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
 	log.Info("Creating index")
 	searchForm["UUID"] = uuid
+	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.CreateIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to index the document: %v", err)
 	}
@@ -512,12 +539,15 @@ func DeleteManagersData(key string) *errors.Error {
 }
 
 //UpdateIndex is used for updating an existing index
-func UpdateIndex(searchForm map[string]interface{}, table, uuid string) error {
+func UpdateIndex(searchForm map[string]interface{}, table, uuid, bmcAddress string) error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return fmt.Errorf("error while trying to connecting to DB: %v", err)
 	}
-	searchForm["UUID"] = uuid
+	if uuid != "" {
+		searchForm["UUID"] = uuid
+	}
+	searchForm["BMCAddress"] = bmcAddress
 	if err := conn.UpdateResourceIndex(searchForm, table); err != nil {
 		return fmt.Errorf("error while trying to update index: %v", err)
 	}

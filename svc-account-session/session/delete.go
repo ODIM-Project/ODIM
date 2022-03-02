@@ -26,14 +26,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
-func getHeader() map[string]string {
-	return map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
-}
-
 // DeleteSession is a method to delete a sessiom
 // it will accepts the SessionCreateRequest which will have sessionid and sessiontoken
 // and it will check privileges to delete session and then delete the session
@@ -63,7 +55,6 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -81,7 +72,6 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 					if err != nil {
 						errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + err.Error()
 						resp.CreateInternalErrorResponse(errorMessage)
-						resp.Header = getHeader()
 						log.Error(errorMessage)
 						return resp
 					}
@@ -89,14 +79,12 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 				if err := session.Delete(); err != nil {
 					errorMessage := "Unable to get all session keys while deleting session: " + err.Error()
 					resp.CreateInternalErrorResponse(errorMessage)
-					resp.Header = getHeader()
 					log.Error(errorMessage)
 					return resp
 				}
 				log.Info("Successfully Deleted: ")
 				resp.StatusCode = http.StatusNoContent
 				resp.StatusMessage = response.ResourceRemoved
-				resp.Header = getHeader()
 				return resp
 			}
 			errorMessage := "Insufficient privileges"
@@ -104,9 +92,8 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 			resp.StatusMessage = response.InsufficientPrivilege
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
-			resp.Header = getHeader()
 			resp.Body = args.CreateGenericErrorResponse()
-			log.Error(errorMessage)
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
@@ -119,7 +106,6 @@ func DeleteSession(req *sessionproto.SessionRequest) response.RPC {
 	errorArgs[0].StatusMessage = resp.StatusMessage
 	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
-	resp.Header = getHeader()
 	return resp
 }
 

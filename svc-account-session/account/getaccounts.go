@@ -25,6 +25,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -62,10 +63,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	//Get all user keys
@@ -73,9 +71,6 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to get users: " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -92,13 +87,7 @@ func GetAllAccounts(session *asmodel.Session) response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "POST", "HEAD"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link": "</redfish/v1/SchemaStore/en/ManagerAccountCollection.json/>; rel=describedby",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -152,10 +141,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = map[string]string{
-				"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-			}
-			log.Error(errorMessage)
+			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
@@ -181,9 +167,6 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -192,13 +175,7 @@ func GetAccount(session *asmodel.Session, accountID string) response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "POST", "HEAD"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link": "</redfish/v1/SchemaStore/en/ManagerAccount.json/>; rel=describedby",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)
@@ -250,13 +227,7 @@ func GetAccountService() response.RPC {
 	resp.StatusMessage = response.Success
 
 	resp.Header = map[string]string{
-		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
-		"Content-type":  "application/json; charset=utf-8",
 		"Link": "	</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
 	}
 
 	commonResponse.CreateGenericResponse(resp.StatusMessage)

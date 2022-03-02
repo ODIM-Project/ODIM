@@ -18,7 +18,7 @@
 |SessionTimeoutInMinutes|integer|||Plugin session time out in minutes
 |LoadBalancerConf||LBHost|string|Load Balancer host address for plugin
 |LoadBalancerConf||LBPort|string|Load Balancer host address port for plugin
-|MessageBusConf||MessageQueueConfigFilePath|string|||File path to the config file which having required configuration details regarding supported message queues 
+|MessageBusConf||MessageBusConfigFilePath|string|||File path to the config file which having required configuration details regarding supported message queues 
 |MessageBusConf||MessageBusType|string|This holds information Event Message Bus Type
 |MessageBusConf||MessageBusQueue|list of strings|This holds name of all message bus Queues
 |URLTranslation|collection|||This holds the north bound and south bound urls

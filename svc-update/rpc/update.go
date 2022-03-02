@@ -25,9 +25,6 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
-// SESSAUTHFAILED string constant to raise errors
-const SESSAUTHFAILED string = "Unable to authenticate session"
-
 // GetUpdateService is an rpc handler, it gets invoked during GET on UpdateService API (/redfis/v1/UpdateService/)
 func (a *Updater) GetUpdateService(ctx context.Context, req *updateproto.UpdateRequest) (*updateproto.UpdateResponse, error) {
 	resp := &updateproto.UpdateResponse{}
@@ -40,7 +37,6 @@ func (a *Updater) GetFirmwareInventoryCollection(ctx context.Context, req *updat
 	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -53,7 +49,6 @@ func (a *Updater) GetFirmwareInventory(ctx context.Context, req *updateproto.Upd
 	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -66,7 +61,6 @@ func (a *Updater) GetSoftwareInventoryCollection(ctx context.Context, req *updat
 	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -79,7 +73,6 @@ func (a *Updater) GetSoftwareInventory(ctx context.Context, req *updateproto.Upd
 	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -92,7 +85,6 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 	resp := &updateproto.UpdateResponse{}
 	authResp := a.connector.External.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn(SESSAUTHFAILED)
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -134,8 +126,7 @@ func (a *Updater) SimepleUpdate(ctx context.Context, req *updateproto.UpdateRequ
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)
@@ -151,7 +142,6 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 	sessionToken := req.SessionToken
 	authResp := a.connector.External.Auth(sessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Warn("Unable to authenticate session")
 		fillProtoResponse(resp, authResp)
 		return resp, nil
 	}
@@ -194,8 +184,7 @@ func (a *Updater) StartUpdate(ctx context.Context, req *updateproto.UpdateReques
 		StatusCode:    http.StatusAccepted,
 		StatusMessage: response.TaskStarted,
 		Header: map[string]string{
-			"Content-type": "application/json; charset=utf-8",
-			"Location":     "/taskmon/" + taskID,
+			"Location": "/taskmon/" + taskID,
 		},
 	}
 	generateTaskRespone(taskID, taskURI, &rpcResp)

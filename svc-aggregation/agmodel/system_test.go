@@ -50,7 +50,7 @@ func mockData(t *testing.T, dbType common.DbType, table, id string, data interfa
 func mockIndex(dbType common.DbType, index, key string) {
 	connPool, _ := common.GetDBConnection(dbType)
 	form := map[string]interface{}{index: "value", index: "value2"}
-	connPool.CreateIndex(form, "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1")
+	connPool.CreateIndex(form, "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
 }
 
 func mockSystemResourceData(body []byte, table, key string) error {
@@ -474,9 +474,9 @@ func TestDeleteComputeSystem(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockData(t, common.InMemory, "ComputerSystem", "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1", dmtfmodel.ComputerSystem{ID: "someID"})
-	mockData(t, common.InMemory, "Systems", "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1", "some data")
-	mockIndex(common.InMemory, "ProcessorSummary/Model", "ef83e569-7336-492a-aaee-31c02d9db831:1")
+	mockData(t, common.InMemory, "ComputerSystem", "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1", dmtfmodel.ComputerSystem{ID: "someID"})
+	mockData(t, common.InMemory, "Systems", "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1", "some data")
+	mockIndex(common.InMemory, "ProcessorSummary/Model", "ef83e569-7336-492a-aaee-31c02d9db831.1")
 	type args struct {
 		index int
 		key   string
@@ -488,7 +488,7 @@ func TestDeleteComputeSystem(t *testing.T) {
 	}{
 		{
 			name: "remove index",
-			args: args{index: 19, key: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831:1"},
+			args: args{index: 19, key: "/redfish/v1/systems/ef83e569-7336-492a-aaee-31c02d9db831.1"},
 			want: nil,
 		},
 	}
@@ -611,7 +611,7 @@ func TestSaveIndex_WithError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := SaveIndex(tt.args.searchForm, tt.args.table, tt.args.uuid)
+			err := SaveIndex(tt.args.searchForm, tt.args.table, tt.args.uuid, "test")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SaveIndex() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -797,7 +797,7 @@ func TestUpdateIndex(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := UpdateIndex(tt.args.searchForm, tt.args.table, tt.args.uuid); (err != nil) != tt.wantErr {
+			if err := UpdateIndex(tt.args.searchForm, tt.args.table, tt.args.uuid, "test"); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateIndex() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -810,7 +810,7 @@ func TestUpdateComputeSystem(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
-	mockData(t, common.InMemory, "ComputerSystem", "/redfish/v1/systems/someID:1", dmtfmodel.ComputerSystem{ID: "someID"})
+	mockData(t, common.InMemory, "ComputerSystem", "/redfish/v1/systems/someID.1", dmtfmodel.ComputerSystem{ID: "someID"})
 	type args struct {
 		key         string
 		computeData interface{}
@@ -822,12 +822,12 @@ func TestUpdateComputeSystem(t *testing.T) {
 	}{
 		{
 			name:    "positive case",
-			args:    args{key: "/redfish/v1/systems/someID:1", computeData: dmtfmodel.ComputerSystem{ID: "someOtherID"}},
+			args:    args{key: "/redfish/v1/systems/someID.1", computeData: dmtfmodel.ComputerSystem{ID: "someOtherID"}},
 			wantErr: false,
 		},
 		{
 			name:    "not found",
-			args:    args{key: "/redfish/v1/systems/noID:1", computeData: dmtfmodel.ComputerSystem{ID: "someOtherID"}},
+			args:    args{key: "/redfish/v1/systems/noID.1", computeData: dmtfmodel.ComputerSystem{ID: "someOtherID"}},
 			wantErr: true,
 		},
 	}
@@ -898,7 +898,7 @@ func TestSystemOperation(t *testing.T) {
 	var systemOperation = SystemOperation{
 		Operation: "Rediscovery",
 	}
-	systemURI := "/redfish/v1/System/uuid:1"
+	systemURI := "/redfish/v1/System/uuid.1"
 	err := systemOperation.AddSystemOperationInfo(systemURI)
 	assert.Nil(t, err, "err should be nil")
 
@@ -931,7 +931,7 @@ func TestSystemReset(t *testing.T) {
 		}
 	}()
 	// testing  the Add SystemReset use case
-	systemURI := "/redfish/v1/System/uuid:1"
+	systemURI := "/redfish/v1/System/uuid.1"
 	err := AddSystemResetInfo(systemURI, "ForceRestart")
 	assert.Nil(t, err, "err should be nil")
 
@@ -1085,9 +1085,9 @@ func TestGetSystemByUUID(t *testing.T) {
 	}()
 	body := `{"Id":"1","Status":{"State":"Enabled"}}`
 	table := "ComputerSystem"
-	key := "/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1"
+	key := "/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26.1"
 	GenericSave([]byte(body), table, key)
-	data, _ := GetComputerSystem("/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26:1")
+	data, _ := GetComputerSystem("/redfish/v1/Systems/71200a7e-e95c-435b-bec7-926de482da26.1")
 	assert.Equal(t, data, body, "should be same")
 	_, err := GetComputerSystem("/redfish/v1/Systems/12345")
 	assert.NotNil(t, err, "There should be an error")
@@ -1105,8 +1105,8 @@ func TestCreateAggregate(t *testing.T) {
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
@@ -1133,9 +1133,9 @@ func TestGetAllKeysFromTable(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 	}()
-	var reqData = `{"Elements":["/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"]}`
+	var reqData = `{"Elements":["/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"]}`
 	table := "Aggregate"
-	key := "/redfish/v1/AggregationService/Aggregates/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1"
+	key := "/redfish/v1/AggregationService/Aggregates/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1"
 	mockSystemResourceData([]byte(reqData), table, key)
 
 	resp, err := GetAllKeysFromTable(table)
@@ -1155,8 +1155,8 @@ func TestDeleteAggregate(t *testing.T) {
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
@@ -1181,8 +1181,8 @@ func TestAddElementsToAggregate(t *testing.T) {
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
@@ -1190,7 +1190,7 @@ func TestAddElementsToAggregate(t *testing.T) {
 
 	req1 := Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/9119e175-36ad-4b27-99a6-4c3a149fc7da:1",
+			"/redfish/v1/Systems/9119e175-36ad-4b27-99a6-4c3a149fc7da.1",
 		},
 	}
 	err = AddElementsToAggregate(req1, aggregateURI)
@@ -1218,8 +1218,8 @@ func TestRemoveElementsFromAggregate(t *testing.T) {
 	aggregateURI := "/redfish/v1/AggregationService/Aggregates/71200a7e-e95c-435b-bec7-926de482da26"
 	req := Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 	err := CreateAggregate(req, aggregateURI)
@@ -1227,7 +1227,7 @@ func TestRemoveElementsFromAggregate(t *testing.T) {
 
 	req1 := Aggregate{
 		Elements: []string{
-			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48:1",
+			"/redfish/v1/Systems/c14d91b5-3333-48bb-a7b7-75f74a137d48.1",
 		},
 	}
 

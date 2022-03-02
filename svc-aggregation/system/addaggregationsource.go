@@ -18,8 +18,9 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -82,7 +83,16 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 	}
 
 	ipAddr := getKeyFromManagerAddress(addResourceRequest.ManagerAddress)
-
+	indexList, err := agmodel.GetString("BMCAddress", ipAddr)
+	if err != nil {
+		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", err.Error())
+		log.Println(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+	}
+	if len(indexList) > 0 {
+		errMsg := fmt.Sprintf("Manager address already exist %v", ipAddr)
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"ComputerSystem", "HostName", ipAddr}, taskInfo)
+	}
 	exist, dErr := e.CheckActiveRequest(ipAddr)
 	if dErr != nil {
 		errMsg := fmt.Sprintf("Unable to collect the active request details from DB: %v", dErr.Error())
@@ -99,13 +109,12 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 			Message: errMsg,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		resp.StatusCode = http.StatusConflict
 		percentComplete = 100
 		e.UpdateTask(fillTaskData(taskID, targetURI, reqBody, resp, common.Exception, common.Warning, percentComplete, http.MethodPost))
 		return resp
 	}
-	err := e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
+	err = e.GenericSave(nil, "ActiveAddBMCRequest", ipAddr)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to save the active request details from DB: %v", err.Error())
 		log.Println(errMsg)
@@ -179,20 +188,15 @@ func (e *ExternalInterface) addAggregationSource(taskID, targetURI, reqBody stri
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
 	}
 	commonResponse := response.Response{
-		OdataType:    "#AggregationSource.v1_0_0.AggregationSource",
+		OdataType:    "#AggregationSource.v1_1_0.AggregationSource",
 		OdataID:      aggregationSourceURI,
 		OdataContext: "/redfish/v1/$metadata#AggregationSource.AggregationSource",
 		ID:           aggregationSourceUUID,
 		Name:         "Aggregation Source",
 	}
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "<" + aggregationSourceURI + "/>; rel=describedby",
-		"Location":          aggregationSourceURI,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link":     "<" + aggregationSourceURI + "/>; rel=describedby",
+		"Location": aggregationSourceURI,
 	}
 	commonResponse.CreateGenericResponse(response.Created)
 	commonResponse.Message = ""

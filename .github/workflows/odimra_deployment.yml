@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Deploy
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     continue-on-error: false
     steps:
     - uses: actions/checkout@v2
@@ -16,6 +16,13 @@ jobs:
       run: |
         echo "[$(date)] -- INFO  -- Start pre req conguration"
         echo
+        
+        sudo systemctl status docker.service
+        
+        echo "=========reloading docker ================"
+        sudo service docker reload
+        echo "=========checking docker status================"
+        sudo service docker status
         
         
         echo "[$(date)] -- INFO  -- running actions as ${USER}"
@@ -60,8 +67,8 @@ jobs:
 
         echo "[$(date)] -- INFO  -- configure golang"   
         sudo rm -rf /usr/bin/go
-        wget -q https://dl.google.com/go/go1.13.7.linux-amd64.tar.gz -P /var/tmp
-        sudo tar -C /usr/local -xzf /var/tmp/go1.13.7.linux-amd64.tar.gz
+        wget -q https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz -P /var/tmp
+        sudo tar -C /usr/local -xzf /var/tmp/go1.17.2.linux-amd64.tar.gz
         export PATH=$PATH:/usr/local/go/bin
         export GO111MODULE=on
         export GOROOT=/usr/local/go
@@ -101,11 +108,7 @@ jobs:
         python3 --version
         echo
 
-        echo "[$(date)] -- INFO  -- clone ODIM respository development branch"
-        git clone https://github.com/ODIM-Project/ODIM.git -b development
-        echo
-        
-        export ODIM_SOURCE_PATH=${cur_path}/ODIM
+        export ODIM_SOURCE_PATH=${cur_path}
         export ODIM_CONTROLLER_PATH=${ODIM_SOURCE_PATH}/odim-controller
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         cp kube_deploy_nodes.yaml.tmpl kube_deploy_nodes.yaml
@@ -115,6 +118,9 @@ jobs:
         echo
         
         echo "[$(date)] -- INFO  -- build odim-vault binary"
+        export GO111MODULE=off
+        go get golang.org/x/crypto/pbkdf2
+        echo "GO111MODULE : " $GO111MODULE
         go build -ldflags "-s -w" -o odim-vault odim-vault.go
         echo
         
@@ -142,6 +148,7 @@ jobs:
         s#username:\s*<Node1_Username>#username: ${USER}#; s#.*fqdn.*#  fqdn: \"${FQDN}\"#; \
         s#.*groupID.*#  groupID: ${ODIMRA_GROUP_ID}#; s#.*userID.*#  userID: ${ODIMRA_USER_ID}#; \
         s#.*rootServiceUUID.*#  rootServiceUUID: ${rootServiceUUID}#; s#.*haDeploymentEnabled.*#  haDeploymentEnabled: false#; \
+        s#.*messageBusType.*#  messageBusType: "Kafka"#; \
         s#.*odimraServerCertFQDNSan.*#  odimraServerCertFQDNSan: \"\"#; s#.*odimraServerCertIPSan.*#  odimraServerCertIPSan: \"\"#; \
         s#.*odimraKafkaClientCertFQDNSan.*#  odimraKafkaClientCertFQDNSan: \"\"#; \
         s#.*odimraKafkaClientCertIPSan.*#  odimraKafkaClientCertIPSan: \"\"#; \
@@ -150,6 +157,23 @@ jobs:
         echo "[$(date)] -- INFO  -- configured values in kube_deploy_nodes.yaml"
         cat kube_deploy_nodes.yaml
         echo
+        
+        echo "==============updating the docker handler========="
+        cd ${ODIM_CONTROLLER_PATH}/kubespray
+        tar -xvzf kubespray-2.17.0.tar.gz
+        cd kubespray-2.17.0/roles/container-engine/docker/handlers
+        sed -i "20,30d" main.yml
+        sed -i "7,8d" main.yml
+        
+        cat main.yml
+        cd ${ODIM_CONTROLLER_PATH}/kubespray
+        tar -cvzf kubespray-2.17.0.tar.gz kubespray-2.17.0
+      
+        rm -rf kubespray-2.17.0
+        
+        ls
+        
+        
 
         cd ${ODIM_CONTROLLER_PATH}/scripts/
         echo "[$(date)] -- INFO  -- install kubernetes using odim-controller"
@@ -182,7 +206,13 @@ jobs:
                 count=$((count+1))
         done
         kubectl get pods -n odim -o wide
-        echo
+        echo "============Checking Node status================"
+        
+        kubectl get node -o wide 
+        
+        echo "===========Checking for services=============="
+        
+        kubectl get svc -n odim
            
            
         echo "$VM_IP"

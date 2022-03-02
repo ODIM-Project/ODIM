@@ -308,7 +308,6 @@ func (f *Fabrics) parseFabricsRequest(req *fabricsproto.FabricRequest) (pluginCo
 func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqURI string) response.RPC {
 	var resp response.RPC
 	var errorMessage = fmt.Sprintf("error while performing %s operation on %s: ", pluginRequest.HTTPMethodType, reqURI)
-	var header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 	//contactPlugin
 	body, _, getResponse, err := contactPlugin(pluginRequest, errorMessage)
 	if err != nil {
@@ -321,7 +320,6 @@ func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqUR
 				}
 				resp.StatusCode = getResponse.StatusCode
 				json.Unmarshal([]byte(data), &resp.Body)
-				resp.Header = header
 				return resp
 			}
 		} else {
@@ -332,7 +330,6 @@ func (f *Fabrics) parseFabricsResponse(pluginRequest pluginContactRequest, reqUR
 			}
 			resp.StatusCode = getResponse.StatusCode
 			json.Unmarshal([]byte(data), &resp.Body)
-			resp.Header = header
 			return resp
 		}
 	}
@@ -359,12 +356,7 @@ func fillResponse(body []byte, location string, method string, statusCode int32)
 	}
 
 	resp.Header = map[string]string{
-		"Allow":             `"GET", "PUT", "POST", "PATCH", "DELETE"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Allow": `"GET", "PUT", "POST", "PATCH", "DELETE"`,
 	}
 	if location != "" {
 		resp.Header["Location"] = location
@@ -404,12 +396,7 @@ func getFabricCollection() response.RPC {
 	fabricCollection.Members = members
 	fabricCollection.MembersCount = len(members)
 	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Allow": `"GET"`,
 	}
 	resp.Body = fabricCollection
 	resp.StatusCode = http.StatusOK

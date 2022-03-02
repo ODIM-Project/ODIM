@@ -78,7 +78,7 @@
 - name: Create odimra group
   shell: |
     {{ getent_bin_path }} group {{ odim_owner_name }}  > /dev/null 2>&1 &&
-    ( {{ usrdel_bin_path }} {{ odim_owner_name }} && {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) ||
+    ( {{ usrdel_bin_path }} {{ odim_owner_name }}; {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }} ) ||
     {{ grpadd_bin_path }} -r -g {{ odimra.groupID }} {{ odim_owner_name }}
 
 - name: Create odimra user
@@ -128,6 +128,7 @@
     files:
       - "{{ odimCertsPath }}/kafka.truststore.jks"
       - "{{ odimCertsPath }}/kafka.keystore.jks"
+  when: odimra.messageBusType != 'RedisStreams'
 
 - name: Copy zookeeper certificates
   copy:
@@ -141,6 +142,7 @@
     files:
       - "{{ odimCertsPath }}/zookeeper.keystore.jks"
       - "{{ odimCertsPath }}/zookeeper.truststore.jks"
+  when: odimra.messageBusType != 'RedisStreams'
 
 - name: Get list of plugins under plugin helm charts path
   find:
@@ -162,7 +164,7 @@
     - name: Update nginx configuration on existing nodes
       include_tasks: roles/update-proxy-conf/tasks/main.yaml
       loop:
-        "{{ groups['kube-node'] }}"
+        "{{ groups['kube_node'] }}"
       loop_control:
         loop_var: host_item
       when: scenario is defined
@@ -170,3 +172,19 @@
     - name: Install and configure keepalived
       include_tasks: roles/configure-keepalived/tasks/main.yaml
   when: odimra.haDeploymentEnabled is defined and odimra.haDeploymentEnabled|bool
+
+- name: Collecting temp files created
+  find:
+    path: "{{ odimControllerSrcPath }}/odimra/roles/pre-install/files/helmcharts"
+    patterns: '*.tgz'
+  register: temp
+  ignore_errors: true
+  delegate_to: localhost
+
+- name: Removing all collected temp files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ temp.files }}"
+  ignore_errors: true
+  delegate_to: localhost

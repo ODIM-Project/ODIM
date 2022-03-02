@@ -191,13 +191,8 @@ func TestUpdate(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.AccountModified,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser1",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/testUser1/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/testUser1",
 				},
 				Body: asresponse.Account{
 					Response: successResponse,
@@ -227,10 +222,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -249,10 +241,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusNotFound,
 				StatusMessage: response.ResourceNotFound,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg.CreateGenericErrorResponse(),
+				Body:          errArg.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -271,10 +260,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.GeneralError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: genArgs.CreateGenericErrorResponse(),
+				Body:          genArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -293,10 +279,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueNotInList,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg2.CreateGenericErrorResponse(),
+				Body:          errArg2.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -315,10 +298,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyValueFormatError,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg3.CreateGenericErrorResponse(),
+				Body:          errArg3.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -341,13 +321,8 @@ func TestUpdate(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.AccountModified,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/operatorUser",
 				},
 				Body: asresponse.Account{
 					Response: operatorSuccessResponse,
@@ -381,13 +356,8 @@ func TestUpdate(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.AccountModified,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/operatorUser",
 				},
 				Body: asresponse.Account{
 					Response: operatorSuccessResponse,
@@ -422,13 +392,8 @@ func TestUpdate(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.AccountModified,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/operatorUser",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/operatorUser/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/operatorUser",
 				},
 				Body: asresponse.Account{
 					Response: operatorSuccessResponse,
@@ -463,13 +428,8 @@ func TestUpdate(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.AccountModified,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser2/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser2",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/testUser2/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/testUser2",
 				},
 				Body: asresponse.Account{
 					Response: successResponse2,
@@ -503,13 +463,8 @@ func TestUpdate(t *testing.T) {
 				StatusCode:    http.StatusOK,
 				StatusMessage: response.AccountModified,
 				Header: map[string]string{
-					"Cache-Control":     "no-cache",
-					"Connection":        "keep-alive",
-					"Content-type":      "application/json; charset=utf-8",
-					"Link":              "</redfish/v1/AccountService/Accounts/testUser2/>; rel=describedby",
-					"Location":          "/redfish/v1/AccountService/Accounts/testUser2",
-					"Transfer-Encoding": "chunked",
-					"OData-Version":     "4.0",
+					"Link":     "</redfish/v1/AccountService/Accounts/testUser2/>; rel=describedby",
+					"Location": "/redfish/v1/AccountService/Accounts/testUser2",
 				},
 				Body: asresponse.Account{
 					Response: successResponse2,
@@ -542,10 +497,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs.CreateGenericErrorResponse(),
+				Body:          errArgs.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -567,10 +519,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg4.CreateGenericErrorResponse(),
+				Body:          errArg4.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -592,10 +541,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusForbidden,
 				StatusMessage: response.InsufficientPrivilege,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArgs1.CreateGenericErrorResponse(),
+				Body:          errArgs1.CreateGenericErrorResponse(),
 			},
 		},
 		{
@@ -614,10 +560,7 @@ func TestUpdate(t *testing.T) {
 			want: response.RPC{
 				StatusCode:    http.StatusBadRequest,
 				StatusMessage: response.PropertyMissing,
-				Header: map[string]string{
-					"Content-type": "application/json; charset=utf-8",
-				},
-				Body: errArg5.CreateGenericErrorResponse(),
+				Body:          errArg5.CreateGenericErrorResponse(),
 			},
 		},
 	}

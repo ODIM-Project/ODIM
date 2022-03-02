@@ -36,26 +36,16 @@ func doSessionAuthAndUpdate(resp *response.RPC, sessionToken string) (*asmodel.S
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
+			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
+			auth.CustomAuthLog(sessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = map[string]string{
-			"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
-			"Cache-Control":     "no-cache",
-			"Connection":        "keep-alive",
-			"Transfer-Encoding": "chunked",
-			"OData-Version":     "4.0",
-			"X-Frame-Options":   "sameorigin",
-		}
-		log.Error(errorMessage)
 		return nil, err
 	}
 	if errs := session.UpdateLastUsedTime(sessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session with token " + sessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return nil, errs
 	}
@@ -69,15 +59,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 	if err != nil {
 		return &resp
 	}
-	/* Populate generic headers */
-	resp.Header = map[string]string{
-		"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-		"X-Frame-Options":   "sameorigin",
-	}
+
 	if !sess.Privileges[common.PrivilegeConfigureUsers] {
 		errorMessage := "The session token doesn't have required privilege"
 		resp.StatusCode = http.StatusForbidden
@@ -94,7 +76,7 @@ func Delete(req *roleproto.DeleteRoleRequest) *response.RPC {
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		return &resp
 	}
 	users, uerr := asmodel.GetAllUsers()

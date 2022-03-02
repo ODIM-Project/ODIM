@@ -16,6 +16,8 @@ package tmessagebus
 
 import (
 	"encoding/json"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
@@ -25,26 +27,29 @@ import (
 )
 
 //Publish will takes the taskURI, messageID, Event type and publishes the data to message bus
-func Publish(taskURI string, messageID string, eventType string) {
-
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+func Publish(taskURI, messageID, eventType, taskMessage string) {
+	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Error("Unable to connect to kafka" + err.Error())
+		log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
+
 	var eventID = uuid.NewV4().String()
-	defer k.Close()
 	var event = common.Event{
-		EventID:   eventID,
-		MessageID: messageID,
-		EventType: eventType,
+		EventID:        eventID,
+		MessageID:      messageID,
+		EventTimestamp: time.Now().Format(time.RFC3339),
+		EventType:      eventType,
+		Message:        taskMessage,
 		OriginOfCondition: &common.Link{
 			Oid: taskURI,
 		},
+		Severity: "OK",
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
-		Name:      "Resource Event",
+		Name:      "Task Event",
 		Context:   "/redfish/v1/$metadata#Event.Event",
 		OdataType: common.EventType,
 		Events:    events,
@@ -55,7 +60,7 @@ func Publish(taskURI string, messageID string, eventType string) {
 		Request: data,
 	}
 
-	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
+	if err := k.Distribute(mbevent); err != nil {
 		log.Error("unable to publish the event to message bus: " + err.Error())
 		return
 	}

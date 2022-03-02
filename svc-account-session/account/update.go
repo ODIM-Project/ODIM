@@ -27,6 +27,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 	"net/http"
@@ -87,9 +88,6 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			Message: errorMessage,
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -128,9 +126,6 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 							},
 						}
 						resp.Body = args.CreateGenericErrorResponse()
-						resp.Header = map[string]string{
-							"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-						}
 						log.Error(errorMessage)
 						return resp
 					}
@@ -161,9 +156,6 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 		} else {
 			resp.CreateInternalErrorResponse(errorMessage)
 		}
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -184,10 +176,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 
@@ -212,10 +201,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = map[string]string{
-				"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-			}
-			log.Error(errorMessage)
+			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
@@ -238,10 +224,7 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = map[string]string{
-				"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-			}
-			log.Error(errorMessage)
+			auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 			return resp
 		}
 
@@ -262,9 +245,6 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 				},
 			}
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = map[string]string{
-				"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-			}
 			log.Error(errorMessage)
 			return resp
 		}
@@ -278,9 +258,6 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	if uerr := e.UpdateUserDetails(user, requestUser); uerr != nil {
 		errorMessage := "Unable to update user: " + uerr.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = map[string]string{
-			"Content-type": "application/json; charset=utf-8", // TODO: add all error headers
-		}
 		log.Error(errorMessage)
 		return resp
 	}
@@ -289,13 +266,8 @@ func (e *ExternalInterface) Update(req *accountproto.UpdateAccountRequest, sessi
 	resp.StatusMessage = response.AccountModified
 
 	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Link":              "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
-		"Location":          "/redfish/v1/AccountService/Accounts/" + user.UserName,
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
+		"Link":     "</redfish/v1/AccountService/Accounts/" + user.UserName + "/>; rel=describedby",
+		"Location": "/redfish/v1/AccountService/Accounts/" + user.UserName,
 	}
 	if requestUser.RoleID != "" {
 		user.RoleID = requestUser.RoleID

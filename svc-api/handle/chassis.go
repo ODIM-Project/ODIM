@@ -39,14 +39,15 @@ type ChassisRPCs struct {
 
 //CreateChassis creates a new chassis
 func (chassis *ChassisRPCs) CreateChassis(ctx iris.Context) {
+	defer ctx.Next()
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest)
 		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -81,14 +82,15 @@ func writeResponse(ctx iris.Context, headers map[string]string, status int32, bo
 
 //GetChassisCollection fetches all Chassis
 func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -97,11 +99,13 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 		errorMessage := " RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -112,6 +116,7 @@ func (chassis *ChassisRPCs) GetChassisCollection(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
@@ -119,9 +124,9 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -130,11 +135,13 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 		errorMessage := " RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
 
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -145,15 +152,16 @@ func (chassis *ChassisRPCs) GetChassisResource(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
+	defer ctx.Next()
 	req := chassisproto.GetChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		RequestParam: ctx.Params().Get("id"),
 		URL:          ctx.Request().RequestURI}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -162,10 +170,12 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -173,14 +183,15 @@ func (chassis *ChassisRPCs) GetChassis(ctx iris.Context) {
 
 //UpdateChassis updates an existing chassis
 func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
+	defer ctx.Next()
 	requestBody := new(json.RawMessage)
 	e := ctx.ReadJSON(requestBody)
 	if e != nil {
 		errorMessage := "error while trying to read obligatory json body: " + e.Error()
 		log.Println(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest)
 		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -203,6 +214,7 @@ func (chassis *ChassisRPCs) UpdateChassis(ctx iris.Context) {
 
 //DeleteChassis deletes a chassis
 func (chassis *ChassisRPCs) DeleteChassis(ctx iris.Context) {
+	defer ctx.Next()
 	rpcResp, rpcErr := chassis.DeleteChassisRPC(chassisproto.DeleteChassisRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		URL:          ctx.Request().RequestURI,

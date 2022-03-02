@@ -100,7 +100,6 @@ func (cha *ChassisRPC) GetChassisResource(ctx context.Context, req *chassisproto
 	sessionToken := req.SessionToken
 	authResp := cha.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeLogin}, []string{})
 	if authResp.StatusCode != http.StatusOK {
-		log.Error("error while trying to authenticate session")
 		rewrite(authResp, &resp)
 		return &resp, nil
 	}
@@ -123,7 +122,7 @@ func (cha *ChassisRPC) GetChassisCollection(_ context.Context, req *chassisproto
 	r := auth(cha.IsAuthorizedRPC, req.SessionToken, []string{common.PrivilegeLogin}, func() response.RPC {
 		return cha.GetCollectionHandler.Handle()
 	})
-	addDefaultHeaders(rewrite(r, &resp))
+	rewrite(r, &resp)
 	return &resp, nil
 }
 
@@ -139,7 +138,7 @@ func (cha *ChassisRPC) GetChassisInfo(ctx context.Context, req *chassisproto.Get
 		return cha.GetHandler.Handle(req)
 	})
 
-	addDefaultHeaders(rewrite(r, &resp))
+	rewrite(r, &resp)
 	return &resp, nil
 }
 
@@ -149,17 +148,6 @@ func rewrite(source response.RPC, target *chassisproto.GetChassisResponse) *chas
 	target.StatusMessage = source.StatusMessage
 	target.Body = jsonMarshal(source.Body)
 	return target
-}
-
-func addDefaultHeaders(target *chassisproto.GetChassisResponse) {
-	target.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
 }
 
 func jsonMarshal(input interface{}) []byte {

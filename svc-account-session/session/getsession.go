@@ -35,8 +35,6 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 	// Validating the session
 	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
 	if err != nil {
-		errorMessage := "Unable to authorize session token: " + err.Error()
-		log.Error(errorMessage)
 		return &resp, err
 	}
 
@@ -46,6 +44,25 @@ func GetSessionUserName(req *sessionproto.SessionRequest) (*sessionproto.Session
 		return &resp, errs
 	}
 	resp.UserName = currentSession.UserName
+	return &resp, nil
+}
+
+//GetSessionUserRoleID is a RPC handle to get the session user's role id from the session Token
+func GetSessionUserRoleID(req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+	var resp sessionproto.SessionUsersRoleID
+	resp.RoleID = ""
+	// Validating the session
+	currentSession, err := auth.CheckSessionTimeOut(req.SessionToken)
+	if err != nil {
+		return &resp, err
+	}
+
+	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
+		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
+		log.Error(errorMessage)
+		return &resp, errs
+	}
+	resp.RoleID = currentSession.RoleID
 	return &resp, nil
 }
 
@@ -82,18 +99,17 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		resp.StatusCode, resp.StatusMessage = err.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
+			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 		}
-		resp.Header = getHeader()
-		log.Error(errorMessage)
 		return resp
 	}
 
 	if errs := UpdateLastUsedTime(req.SessionToken); errs != nil {
 		errorMessage := "Unable to update last used time of session matching token " + req.SessionToken + ": " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -102,14 +118,13 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 	if errs != nil {
 		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
 	for _, token := range sessionTokens {
 		session, err := auth.CheckSessionTimeOut(token)
 		if err != nil {
-			log.Error("Unable to get session details with the token " + token + ": " + err.Error())
+			auth.CustomAuthLog(req.SessionToken, "Invalid session token", resp.StatusCode)
 			continue
 		}
 		if session.ID == req.SessionId {
@@ -118,11 +133,8 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 				resp.StatusCode = http.StatusOK
 				resp.StatusMessage = response.Success
 				resp.Header = map[string]string{
-					"Cache-Control":     "no-cache",
-					"Link":              "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
-					"Transfer-Encoding": "chunked",
-					"X-Auth-Token":      token,
-					"Content-type":      "application/json; charset=utf-8",
+					"Link":         "</redfish/v1/SessionService/Sessions/" + req.SessionId + "/>; rel=self",
+					"X-Auth-Token": token,
 				}
 
 				respBody := asresponse.Session{
@@ -139,21 +151,19 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 			errorArgs[0].ErrorMessage = errorMessage
 			errorArgs[0].StatusMessage = resp.StatusMessage
 			resp.Body = args.CreateGenericErrorResponse()
-			resp.Header = getHeader()
-			log.Error(errorMessage)
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 			return resp
 		}
 	}
 	sessionTokens = nil
 	errorMessage := "No session with id " + req.SessionId + " found."
-	log.Error("Status Not Found")
+	log.Error(errorMessage)
 	resp.StatusCode = http.StatusNotFound
 	resp.StatusMessage = response.ResourceNotFound
 	errorArgs[0].ErrorMessage = errorMessage
 	errorArgs[0].StatusMessage = resp.StatusMessage
 	errorArgs[0].MessageArgs = []interface{}{"Session", req.SessionId}
 	resp.Body = args.CreateGenericErrorResponse()
-	resp.Header = getHeader()
 	return resp
 }
 
@@ -191,11 +201,11 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		resp.StatusCode, resp.StatusMessage = gerr.GetAuthStatusCodeAndMessage()
 		if resp.StatusCode == http.StatusServiceUnavailable {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, []interface{}{config.Data.DBConf.InMemoryHost + ":" + config.Data.DBConf.InMemoryPort}, nil).Body
+			log.Error(errorMessage)
 		} else {
 			resp.Body = common.GeneralError(resp.StatusCode, resp.StatusMessage, errorMessage, nil, nil).Body
+			auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		}
-		resp.Header = getHeader()
-		log.Error(errorMessage)
 		return resp
 	}
 
@@ -203,7 +213,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	if err != nil {
 		errorMessage := "Unable to update last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -215,8 +224,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		errorArgs[0].ErrorMessage = errorMessage
 		errorArgs[0].StatusMessage = resp.StatusMessage
 		resp.Body = args.CreateGenericErrorResponse()
-		resp.Header = getHeader()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(req.SessionToken, errorMessage, resp.StatusCode)
 		return resp
 	}
 
@@ -224,7 +232,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 	if errs != nil {
 		errorMessage := "Unable to get all session keys in delete session: " + errs.Error()
 		resp.CreateInternalErrorResponse(errorMessage)
-		resp.Header = getHeader()
 		log.Error(errorMessage)
 		return resp
 	}
@@ -253,7 +260,6 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	resp.Header = getHeader()
 	resp.Body = respBody
 	return resp
 }
@@ -302,13 +308,7 @@ func GetSessionService(req *sessionproto.SessionRequest) response.RPC {
 		},
 	}
 	resp.Header = map[string]string{
-		"Allow":         "GET",
-		"Cache-Control": "no-cache",
-		"Connection":    "Keep-alive",
 		"Link": "	</redfish/v1/SchemaStore/en/SessionService.json>; rel=describedby",
-		"Transfer-Encoding": "chunked",
-		"X-Frame-Options":   "sameorigin",
-		"Content-type":      "application/json; charset=utf-8",
 	}
 
 	resp.Body = sessionService

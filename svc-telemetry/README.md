@@ -52,7 +52,7 @@ curl -i GET \
 ```
 {
    "@odata.id":"/redfish/v1/TelemetryService",
-   "@odata.type":"#TelemetryService.v1_2_0.TelemetryService",
+   "@odata.type":"#TelemetryService.v1_3_1.TelemetryService",
    "Id":"TelemetryService",
    "Name":"Telemetry Service",
    "Status":{
@@ -170,7 +170,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#MetricDefinition.MetricDefinition",
     "@odata.etag": "W/\"AB720077\"",
     "@odata.id": "/redfish/v1/TelemetryService/MetricDefinitions/CPUUtil",
-    "@odata.type": "#MetricDefinition.v1_0_0.MetricDefinition",
+    "@odata.type": "#MetricDefinition.v1_2_0.MetricDefinition",
     "Calculable": "NonSummable",
     "CalculationAlgorithm": "Average",
     "Description": "Metric definition for CPU Utilization",
@@ -532,7 +532,7 @@ curl -i GET \
     "@odata.context": "/redfish/v1/$metadata#Triggers.Triggers",
     "@odata.etag": "W/\"BFAAE441\"",
     "@odata.id": "/redfish/v1/TelemetryService/Triggers/CPUUtilTriggers",
-    "@odata.type": "#Triggers.v1_0_0.Triggers",
+    "@odata.type": "#Triggers.v1_2_0.Triggers",
     "Description": "Triggers for CPU Utilization",
     "Id": "CPUUtilTriggers",
     "MetricProperties": [

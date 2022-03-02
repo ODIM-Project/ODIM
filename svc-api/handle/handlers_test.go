@@ -100,26 +100,30 @@ func TestGetMetadata(t *testing.T) {
 
 //TestAsMethodNotAllowed is unittest method for AsMethodNotAllowed func.
 func TestAsMethodNotAllowed(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/AccountService", AsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Account service URL
-	e.POST("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
+	e.POST("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed).Headers().Equal(header)
 	e.PUT("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/AccountService").Expect().Status(http.StatusMethodNotAllowed)
 }
 
 //TestSsMethodNotAllowed is unittest method for SsMethodNotAllowed func.
 func TestSsMethodNotAllowed(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	router := iris.New()
 	redfishRoutes := router.Party("/redfish")
 	redfishRoutes.Any("/v1/SessionService", SsMethodNotAllowed)
 	e := httptest.New(t, router)
 
 	//Check for status code 405 for http methods which are not allowed on Account service URL
-	e.POST("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
+	e.POST("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed).Headers().Equal(header)
 	e.PUT("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
 	e.DELETE("/redfish/v1/SessionService").Expect().Status(http.StatusMethodNotAllowed)
 }
@@ -142,7 +146,7 @@ func TestSystemsMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Systems/{id}/Storage/{rid}/Volumes/{rid2}", SystemsMethodNotAllowed)
 
 	e := httptest.New(t, router)
-	systemID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
+	systemID := "74116e00-0a4a-53e6-a959-e6a7465d6358.1"
 	rID := "1"
 
 	//Check for status code 405 for http methods which are not allowed on systems URLs
@@ -232,7 +236,7 @@ func TestMethodNotAllowedForLogServices(t *testing.T) {
 	e := httptest.New(t, router)
 
 	for _, module := range []string{"/redfish/v1/Systems", "/redfish/v1/Managers"} {
-		uri := module + "/23256e00-0a4a-53e6-a959-e6a7465d2325:1/LogServices"
+		uri := module + "/23256e00-0a4a-53e6-a959-e6a7465d2325.1/LogServices"
 		func(uri string) {
 			uriForRid := uri + "/1"
 			uriForEntries := uriForRid + "/Entries"
@@ -306,7 +310,7 @@ func TestGetMessageRegistryFileID(t *testing.T) {
 		Auth: authMock,
 	}
 	message := []byte("Just Testing")
-	err = ioutil.WriteFile("/tmp/Base.1.10.0.json", message, 0644)
+	err = ioutil.WriteFile("/tmp/Base.1.11.0.json", message, 0644)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -315,9 +319,9 @@ func TestGetMessageRegistryFileID(t *testing.T) {
 	redfishRoutes.Get("/Registries/{id}", r.GetMessageRegistryFileID)
 	test := httptest.New(t, router)
 	test.GET("/redfish/v1/Registries/UnknownID").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusNotFound)
-	test.GET("/redfish/v1/Registries/Base.1.10.0").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
-	test.GET("/redfish/v1/Registries/Base.1.10.0").Expect().Status(http.StatusUnauthorized)
-	test.GET("/redfish/v1/Registries/Base.1.10.0").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/Registries/Base.1.11.0").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
+	test.GET("/redfish/v1/Registries/Base.1.11.0").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/Registries/Base.1.11.0").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 func TestGetMessageRegistryFile(t *testing.T) {
 	err := common.SetUpMockConfig()
@@ -329,7 +333,7 @@ func TestGetMessageRegistryFile(t *testing.T) {
 		Auth: authMock,
 	}
 	message := []byte("Just Testing")
-	err = ioutil.WriteFile("/tmp/Base.1.10.0.json", message, 0644)
+	err = ioutil.WriteFile("/tmp/Base.1.11.0.json", message, 0644)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -338,9 +342,9 @@ func TestGetMessageRegistryFile(t *testing.T) {
 	redfishRoutes.Get("/registries/{id}", r.GetMessageRegistryFile)
 	test := httptest.New(t, router)
 	test.GET("/redfish/v1/registries/UnknownID").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusNotFound)
-	test.GET("/redfish/v1/registries/Base.1.10.0.json").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
-	test.GET("/redfish/v1/registries/Base.1.10.0.json").Expect().Status(http.StatusUnauthorized)
-	test.GET("/redfish/v1/registries/Base.1.10.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/registries/Base.1.11.0.json").WithHeader("X-Auth-Token", "validToken").Expect().Status(http.StatusOK)
+	test.GET("/redfish/v1/registries/Base.1.11.0.json").Expect().Status(http.StatusUnauthorized)
+	test.GET("/redfish/v1/registries/Base.1.11.0.json").WithHeader("X-Auth-Token", "invalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
 //TestTsMethodNotAllowed is unittest method for TsMethodNotAllowed func.
@@ -448,7 +452,7 @@ func TestChassisMethodNotAllowed(t *testing.T) {
 	redfishRoutes.Any("/v1/Chassis/{id}/Sensors/{rid}", ChassisMethodNotAllowed)
 
 	e := httptest.New(t, router)
-	chassisID := "74116e00-0a4a-53e6-a959-e6a7465d6358:1"
+	chassisID := "74116e00-0a4a-53e6-a959-e6a7465d6358.1"
 	rID := "1"
 	//Check for status code 405 for http methods which are not allowed on systems URLs
 	e.POST("/redfish/v1/Chassis").Expect().Status(http.StatusMethodNotAllowed)

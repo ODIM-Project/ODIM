@@ -26,6 +26,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
+	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
 )
 
 //GetRole defines the viewing of a particular role which is identified by the id.
@@ -43,14 +44,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 		ID:        req.Id,
 	}
 	var resp response.RPC
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	//check for ConfigureUsers privilege in session object
 	status, perr := checkForPrivilege(session, "ConfigureUsers")
 	if perr != nil {
@@ -69,7 +63,7 @@ func GetRole(req *roleproto.GetRoleRequest, session *asmodel.Session) response.R
 			},
 		}
 		resp.Body = args.CreateGenericErrorResponse()
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		return resp
 	}
 	//Get role from database using role ID
@@ -129,14 +123,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 		OdataID:   "/redfish/v1/AccountService/Roles",
 		Name:      "Roles Collection",
 	}
-	resp.Header = map[string]string{
-		"Allow":             `"GET"`,
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	//check for ConfigureUsers privilege in session object
 	status, err := checkForPrivilege(session, "ConfigureUsers")
 	if err != nil {
@@ -154,7 +141,7 @@ func GetAllRoles(session *asmodel.Session) response.RPC {
 				},
 			},
 		}
-		log.Error(errorMessage)
+		auth.CustomAuthLog(session.Token, errorMessage, resp.StatusCode)
 		resp.Body = args.CreateGenericErrorResponse()
 		return resp
 	}

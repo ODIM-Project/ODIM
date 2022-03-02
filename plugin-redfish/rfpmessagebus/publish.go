@@ -18,14 +18,15 @@ package rfpmessagebus
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"strings"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/config"
 	"github.com/ODIM-Project/ODIM/plugin-redfish/rfpmodel"
 	log "github.com/sirupsen/logrus"
-	"net"
-	"strings"
 )
 
 // Publish function will handle events request in two originofcondition format
@@ -65,27 +66,6 @@ func Publish(data interface{}) bool {
 	return true
 }
 
-// translateOriginOfCondition changes the ilo specific uri to  redfsih std uri
-func translateOriginOfCondition(eventOriginOfCondition string) string {
-	originOfCondition := strings.Replace(eventOriginOfCondition, "systems", "Systems", -1)
-	originOfCondition = strings.Replace(originOfCondition, "bios", "Bios", -1)
-	originOfCondition = strings.Replace(originOfCondition, "settings", "Settings", -1)
-	originOfCondition = strings.Replace(originOfCondition, "SmartStorage", "Storage", -1)
-	originOfCondition = strings.Replace(originOfCondition, "DiskDrives", "Drives", -1)
-	originOfCondition = strings.Replace(originOfCondition, "LogicalDrives", "Volumes", -1)
-	originOfCondition = strings.Replace(originOfCondition, "PCIDevices", "PCIeDevices", -1)
-	return strings.Replace(originOfCondition, "/ArrayControllers/", "/ArrayControllers-", -1)
-}
-
-// translateOriginOfCondition to changes Oem block  ilo specific uri to  redfsih std uri
-func translateOemData(oem interface{}) interface{} {
-	oemData, _ := json.Marshal(oem)
-	updateData := translateOriginOfCondition(string(oemData))
-	var updateOemData interface{}
-	json.Unmarshal([]byte(updateData), updateOemData)
-	return updateOemData
-}
-
 func formatMetricReportEventRequest(eventRequest common.Events) (common.Events, error) {
 	var event common.Events
 	// prepare the device data
@@ -98,11 +78,11 @@ func formatMetricReportEventRequest(eventRequest common.Events) (common.Events, 
 	}
 
 	// to replace id in system
-	updatedData := strings.Replace(string(eventRequest.Request), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+systemUUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+systemUUID+":", -1)
+	updatedData := strings.Replace(string(eventRequest.Request), "/redfish/v1/Systems/", "/redfish/v1/Systems/"+systemUUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/systems/", "/redfish/v1/Systems/"+systemUUID+".", -1)
 	// to replace id in chassis
-	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+systemUUID+":", -1)
-	updatedData = strings.Replace(updatedData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+systemUUID+":", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/Chassis/", "/redfish/v1/Chassis/"+systemUUID+".", -1)
+	updatedData = strings.Replace(updatedData, "/redfish/v1/chassis/", "/redfish/v1/Chassis/"+systemUUID+".", -1)
 
 	event.Request, _ = json.Marshal(updatedData)
 	event.IP = eventRequest.IP
@@ -183,15 +163,14 @@ func getIPFromHostName(fqdn string) string {
 }
 
 func writeToMessageBus(events common.Events) bool {
-	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageQueueConfigFilePath)
+	topic := config.Data.MessageBusConf.EmbQueue[0]
+	K, err := dc.Communicator(dc.KAFKA, config.Data.MessageBusConf.MessageBusConfigFilePath, topic)
 	if err != nil {
 		log.Error("Unable communicate with kafka, got: " + err.Error())
 		return false
 	}
-	defer K.Close()
 
-	topic := config.Data.MessageBusConf.EmbQueue[0]
-	if err := K.Distribute(topic, events); err != nil {
+	if err := K.Distribute(events); err != nil {
 		log.Error("Unable Publish events to kafka, got: " + err.Error())
 		return false
 	}

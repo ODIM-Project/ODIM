@@ -28,7 +28,7 @@ import (
 //and also the server search index, if required.
 func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateSystemStateRequest) error {
 
-	key := fmt.Sprintf("%s/%s:%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemUUID, updateReq.SystemID)
+	key := fmt.Sprintf("%s/%s.%s", strings.TrimSuffix(updateReq.SystemURI, "/"), updateReq.SystemUUID, updateReq.SystemID)
 
 	// Getting the device info
 	target, err := agmodel.GetTarget(updateReq.SystemUUID)
@@ -100,7 +100,7 @@ func (e *ExternalInterface) UpdateSystemState(updateReq *aggregatorproto.UpdateS
 	}
 	computerSystemUUID := systemInfo["UUID"].(string)
 	searchForm := createServerSearchIndex(systemInfo, key, updateReq.SystemUUID)
-	if err := agmodel.UpdateIndex(searchForm, key, computerSystemUUID); err != nil {
+	if err := agmodel.UpdateIndex(searchForm, key, computerSystemUUID, target.ManagerAddress); err != nil {
 		return fmt.Errorf("error: updating server index failed with err %v", err)
 	}
 	return nil

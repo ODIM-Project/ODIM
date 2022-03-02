@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -37,14 +38,15 @@ type ManagersRPCs struct {
 
 //GetManagersCollection fetches all managers
 func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -53,11 +55,12 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -65,6 +68,7 @@ func (mgr *ManagersRPCs) GetManagersCollection(ctx iris.Context) {
 
 //GetManager fetches computer managers details
 func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ManagerID:    ctx.Params().Get("id"),
@@ -72,9 +76,9 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -83,11 +87,12 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -98,6 +103,7 @@ func (mgr *ManagersRPCs) GetManager(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ManagerID:    ctx.Params().Get("id"),
@@ -106,9 +112,9 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -117,11 +123,12 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -132,12 +139,14 @@ func (mgr *ManagersRPCs) GetManagersResource(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
+	defer ctx.Next()
 	var reqIn interface{}
 	err := ctx.ReadJSON(&reqIn)
 	if err != nil {
 		errorMessage := "while trying to get JSON body from the virtual media actions request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
@@ -147,6 +156,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		errorMessage := "while trying to create JSON request body: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
@@ -161,8 +171,8 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
@@ -172,6 +182,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
@@ -187,6 +198,7 @@ func (mgr *ManagersRPCs) VirtualMediaInsert(ctx iris.Context) {
 // After the RPC call the method will feed the response to the iris
 // and gives out a proper response.
 func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
+	defer ctx.Next()
 	req := managersproto.ManagerRequest{
 		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
 		ManagerID:    ctx.Params().Get("id"),
@@ -195,9 +207,9 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 	}
 	if req.SessionToken == "" {
 		errorMessage := "no X-Auth-Token found in request header"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -206,6 +218,7 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 		errorMessage := "RPC error:" + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
 		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return

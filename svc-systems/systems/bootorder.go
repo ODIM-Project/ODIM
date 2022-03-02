@@ -34,7 +34,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(systemID, ":")
+	requestData := strings.SplitN(systemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", systemID}, nil)
@@ -96,15 +96,7 @@ func (p *PluginContact) SetDefaultBootOrder(systemID string) response.RPC {
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
-	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
@@ -120,7 +112,7 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -202,18 +194,19 @@ func (p *PluginContact) ChangeBiosSettings(req *systemsproto.BiosSettingsRequest
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
 	}
-	resp.Header = map[string]string{
-		"Content-type": "application/json; charset=utf-8",
-	}
+
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	err = json.Unmarshal(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
+
+	// Adding Settings URL to the DB to fetch data from device
+	URL := fmt.Sprintf("/redfish/v1/Systems/%s/Bios/Settings", req.SystemID)
+	smodel.AddSystemResetInfo(URL, "None")
 	return resp
 }
 
@@ -222,7 +215,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	var resp response.RPC
 
 	// spliting the uuid and system id
-	requestData := strings.Split(req.SystemID, ":")
+	requestData := strings.SplitN(req.SystemID, ".", 2)
 	if len(requestData) <= 1 {
 		errorMessage := "error: SystemUUID not found"
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, []interface{}{"System", req.SystemID}, nil)
@@ -236,7 +229,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 		if ute, ok := err.(*json.UnmarshalTypeError); ok {
 			errMsg := fmt.Sprintf("UnmarshalTypeError: Expected field type %v but got %v \n", ute.Type, ute.Value)
 			log.Error(errMsg)
-			index := strings.LastIndex(string(req.RequestBody[:ute.Offset]), ":")
+			index := strings.LastIndex(string(req.RequestBody[:ute.Offset]), ".")
 			if index < 0 {
 				index = 0
 			}
@@ -314,15 +307,7 @@ func (p *PluginContact) ChangeBootOrderSettings(req *systemsproto.BootOrderSetti
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
-		resp.Header = map[string]string{"Content-type": "application/json; charset=utf-8"}
 		return resp
-	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success

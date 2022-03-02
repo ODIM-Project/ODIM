@@ -17,9 +17,11 @@ package system
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"reflect"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -56,7 +58,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 	}
 
-	requestData := strings.Split(req.URL, ":")
+	requestData := strings.SplitN(req.URL, ".", 2)
 	resource := requestData[0]
 	uuid := resource[strings.LastIndexByte(resource, '/')+1:]
 	target, terr := agmodel.GetTarget(uuid)
@@ -89,7 +91,7 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 		}
 		for _, systemURI := range systemList {
 			index := strings.LastIndexAny(systemURI, "/")
-			resp = e.deleteCompute(systemURI, index)
+			resp = e.deleteCompute(systemURI, index, target.PluginID)
 		}
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -134,14 +136,6 @@ func (e *ExternalInterface) DeleteAggregationSource(req *aggregatorproto.Aggrega
 	resp = response.RPC{
 		StatusCode:    http.StatusNoContent,
 		StatusMessage: response.ResourceRemoved,
-		Header: map[string]string{
-			"Content-type":      "application/json; charset=utf-8", // TODO: add all error headers
-			"Cache-Control":     "no-cache",
-			"Connection":        "keep-alive",
-			"Transfer-Encoding": "chunked",
-			"OData-Version":     "4.0",
-			"X-Frame-Options":   "sameorigin",
-		},
 	}
 	return resp
 }
@@ -243,11 +237,6 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 	e.EventNotification(oid, "ResourceRemoved", "ManagerCollection")
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 
@@ -259,7 +248,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	return resp
 }
 
-func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
+func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string) response.RPC {
 	var resp response.RPC
 	// check whether the any system operation is under progress
 	systemOperation, dbErr := agmodel.GetSystemOperationInfo(strings.TrimSuffix(key, "/"))
@@ -273,6 +262,31 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 			systemOperation.Operation + " operation  is under progress")
 		errMsg := systemOperation.Operation + " operation  is under progress"
 		return common.GeneralError(http.StatusNotAcceptable, response.ResourceCannotBeDeleted, errMsg, nil, nil)
+	}
+	// Get the plugin
+	var managerData map[string]interface{}
+	plugin, errs := agmodel.GetPluginData(pluginID)
+	if errs != nil {
+		errMsg := errs.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"plugin", pluginID}, nil)
+	}
+
+	managerURI := "/redfish/v1/Managers/" + plugin.ManagerUUID
+	mgrData, jerr := agmodel.GetResource("Managers", managerURI)
+	if jerr != nil {
+		errorMessage := "error while getting manager details: " + jerr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
+	}
+
+	unmarshallErr := json.Unmarshal([]byte(mgrData), &managerData)
+	if unmarshallErr != nil {
+		errorMessage := "error unmarshalling manager details: " + unmarshallErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage,
+			nil, nil)
 	}
 	systemOperation.Operation = "Delete"
 	dbErr = systemOperation.AddSystemOperationInfo(strings.TrimSuffix(key, "/"))
@@ -299,11 +313,25 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		log.Error("error while deleting the event subscription for " + key + " :" + string(subResponse.Body))
 	}
 
-	keys := strings.Split(key[index+1:], ":")
+	keys := strings.SplitN(key[index+1:], ".", 2)
 	chassisList, derr := agmodel.GetAllMatchingDetails("Chassis", keys[0], common.InMemory)
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
+	mgrResp := deleteLinkDetails(managerData, key, chassisList)
+	data, marshalErr := json.Marshal(mgrResp)
+	if marshalErr != nil {
+		errorMessage := "unable to marshal data for updating: " + marshalErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+	genericErr := agmodel.GenericSave([]byte(data), "Managers", managerURI)
+	if genericErr != nil {
+		errorMessage := "GenericSave : error while trying to add resource date to DB: " + genericErr.Error()
+		log.Error(errorMessage)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+	}
+
 	// Delete Compute System Details from InMemory
 	if derr := e.DeleteComputeSystem(index, key); derr != nil {
 		errMsg := "error while trying to delete compute system: " + derr.Error()
@@ -314,8 +342,8 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
 
-	// Split the key by : (uuid:1) so we will get [uuid 1]
-	k := strings.Split(key[index+1:], ":")
+	// Split the key by : (uuid.1) so we will get [uuid 1]
+	k := strings.SplitN(key[index+1:], ".", 2)
 	if len(k) < 2 {
 		errMsg := fmt.Sprintf("key %v doesn't have system details", key)
 		log.Error(errMsg)
@@ -337,11 +365,6 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}
 	e.EventNotification(key, "ResourceRemoved", "SystemsCollection")
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.ResourceRemoved
 	args := response.Args{
@@ -350,6 +373,39 @@ func (e *ExternalInterface) deleteCompute(key string, index int) response.RPC {
 	}
 	resp.Body = args.CreateGenericErrorResponse()
 	return resp
+}
+
+func deleteLinkDetails(managerData map[string]interface{}, systemID string, chassisList []string) map[string]interface{} {
+	if links, ok := managerData["Links"].(map[string]interface{}); ok {
+		if managerForServers, ok := links["ManagerForServers"].([]interface{}); ok {
+			for k, v := range managerForServers {
+				if reflect.DeepEqual(v.(map[string]interface{})["@odata.id"], systemID) {
+					managerForServers = append(managerForServers[:k], managerForServers[k+1:]...)
+					if len(managerForServers) != 0 {
+						links["ManagerForServers"] = managerForServers
+					} else {
+						delete(links, "ManagerForServers")
+					}
+				}
+			}
+		}
+		for _, val := range chassisList {
+			if managerForChassis, ok := links["ManagerForChassis"].([]interface{}); ok {
+				for k, v := range managerForChassis {
+					if reflect.DeepEqual(v.(map[string]interface{})["@odata.id"], val) {
+						managerForChassis = append(managerForChassis[:k], managerForChassis[k+1:]...)
+						if len(managerForChassis) != 0 {
+							links["ManagerForChassis"] = managerForChassis
+						} else {
+							delete(links, "ManagerForChassis")
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return managerData
 }
 
 // deleteWildCardValues will delete the wild card values and

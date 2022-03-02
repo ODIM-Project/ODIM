@@ -15,10 +15,13 @@
 // Package common ...
 package common
 
+// EventConst constant
 type EventConst int
 
 const (
+	// RedfishEvent constant
 	RedfishEvent EventConst = iota
+	// MetricReport constant
 	MetricReport
 )
 
@@ -116,7 +119,7 @@ const (
 	// ManagerAccountType has schema version to be returned with manager account
 	ManagerAccountType = "#ManagerAccount.v1_8_0.ManagerAccount"
 	// AccountServiceType has schema version to be returned with accountservice
-	AccountServiceType = "#AccountService.v1_9_0.AccountService"
+	AccountServiceType = "#AccountService.v1_10_0.AccountService"
 	// RoleType has schema version to be returned with Role
 	RoleType = "#Role.v1_3_1.Role"
 	// SessionServiceType has schema version to be returned with sessionservice
@@ -124,24 +127,34 @@ const (
 	// SessionType has schema version to be returned with session
 	SessionType = "#Session.v1_3_0.Session"
 	// EventType has schema version to be returned with event
-	EventType = "#Event.v1_6_1.Event"
+	EventType = "#Event.v1_7_0.Event"
 	// AggregationServiceType has schema version to be returned with Aggregationservice
 	AggregationServiceType = "#AggregationService.v1_0_1.AggregationService"
 	// TaskType has schema version to be returned with Task
 	TaskType = "#Task.v1_5_1.Task"
 	// EventDestinationType has schema version to be returned with EventDestination
-	EventDestinationType = "#EventDestination.v1_10_1.EventDestination"
+	EventDestinationType = "#EventDestination.v1_11_0.EventDestination"
 	// EventServiceType has schema version to be returned with Event Service Type
-	EventServiceType = "#EventService.v1_7_0.EventService"
+	EventServiceType = "#EventService.v1_7_2.EventService"
 	// ManagerType has schema version to be returned with Manager
-	ManagerType = "#Manager.v1_12_0.Manager"
+	ManagerType = "#Manager.v1_13_0.Manager"
 	// TaskEventType has schema version to be returned with TaskEvent
 	TaskEventType = "TaskEvent.1.0.3"
 	// UpdateServiceType has schema version to be returned with UpdateService
-	UpdateServiceType = "#UpdateService.v1_9_0.UpdateService"
+	UpdateServiceType = "#UpdateService.v1_10_0.UpdateService"
 	// SettingsType has schema version to be returned with Settings in update service
 	SettingsType = "#Settings.v1_3_3.OperationApplyTimeSupport"
+	// TelemetryServiceType has version to be returned with Telemetry Service
+	TelemetryServiceType = "#TelemetryService.v1_3_1.TelemetryService"
 )
+
+// RediscoverResources contains to get only these resource from the device when
+// reset flag is set when device is restarted.
+var RediscoverResources = []string{
+	"Bios",
+	"BootOptions",
+	"Storage",
+}
 
 // SystemResource contains the Resource name and table name
 // this map is basically to fetch the table name against the system resource name,
@@ -191,7 +204,7 @@ var ManagersResource = map[string]string{
 	"HostInterfaces":     "HostInterfacesCollection",
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
-	"SerialInterface":    "SerialInterfaceCollection",
+	"SerialInterfaces":   "SerialInterfaceCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription
@@ -247,7 +260,7 @@ var ResourceTypes = map[string]string{
 	"Role":                   "Role",
 	"SecureBoot":             "SecureBoot",
 	"Sensor":                 "Sensor",
-	"SerialInterface":        "SerialInterface",
+	"SerialInterfaces":       "SerialInterfaces",
 	"Session":                "Session",
 	"Storage":                "Storage",
 	"Switch":                 "Switch",
@@ -300,4 +313,13 @@ type DeviceSubscription struct {
 	EventHostIP     string   `json:"EventHostIP,omitempty"`
 	OriginResources []string `json:"OriginResources"`
 	Location        string   `json:"location,omitempty"`
+}
+
+// URIWithNoAuth contains the list of URI's which does not require authentication
+var URIWithNoAuth = []string{
+	"/redfish/v1",
+	"/redfish/v1/$metadata",
+	"/redfish/v1/odata",
+	"/redfish/v1/SessionService",
+	"/redfish/v1/SesssionService/Sessions",
 }

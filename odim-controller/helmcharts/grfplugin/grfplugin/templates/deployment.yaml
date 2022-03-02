@@ -17,6 +17,13 @@ spec:
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 3
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: grfplugin      
       hostname: grfplugin
       volumes:
         - name: grfplugin-config-vol
@@ -46,12 +53,14 @@ spec:
             - key: odimra_serverkey
               path: odimra_server.key
               mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt
               mode: 0444
             - key: odimra_kafka_clientkey
               path: odimra_kafka_client.key
               mode: 0444
+            {{- end }}
         - name: grfplugin-log
           persistentVolumeClaim:
             claimName: grfplugin-log-claim

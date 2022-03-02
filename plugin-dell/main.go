@@ -43,6 +43,10 @@ type TokenObject struct {
 }
 
 func main() {
+	// intializing the plugin start time
+	dputilities.PluginStartTime = time.Now()
+	log.Info("Plugin Start time:", dputilities.PluginStartTime.Format(time.RFC3339))
+
 	// verifying the uid of the user
 	if uid := os.Geteuid(); uid == 0 {
 		log.Fatal("Plugin Service should not be run as the root user")
@@ -52,13 +56,14 @@ func main() {
 		log.Fatal("While reading from config, got: " + err.Error())
 	}
 
-	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageQueueConfigFilePath); err != nil {
+	if err := dc.SetConfiguration(config.Data.MessageBusConf.MessageBusConfigFilePath); err != nil {
 		log.Fatal("While trying to set messagebus configuration, got: " + err.Error())
 	}
 
 	// CreateJobQueue defines the queue which will act as an infinite buffer
 	// In channel is an entry or input channel and the Out channel is an exit or output channel
-	dphandler.In, dphandler.Out = common.CreateJobQueue()
+	jobQueueSize := 10
+	dphandler.In, dphandler.Out = common.CreateJobQueue(jobQueueSize)
 
 	// RunReadWorkers will create a worker pool for doing a specific task
 	// which is passed to it as Publish method after reading the data from the channel.
@@ -255,7 +260,6 @@ func eventsrouters() {
 // intializePluginStatus sets plugin status
 func intializePluginStatus() {
 	dputilities.Status.Available = "yes"
-	dputilities.Status.Uptime = time.Now().Format(time.RFC3339)
 }
 
 // sendStartupEvent is for sending startup event

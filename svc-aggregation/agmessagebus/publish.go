@@ -17,6 +17,7 @@ package agmessagebus
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	dc "github.com/ODIM-Project/ODIM/lib-messagebus/datacommunicator"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -27,20 +28,31 @@ import (
 
 //Publish will takes the system id,Event type and publishes the data to message bus
 func Publish(systemID, eventType, collectionType string) {
-	k, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	k, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
-		log.Error("Unable to connect to kafka" + err.Error())
+		log.Error("Unable to connect to " + config.Data.MessageBusConf.MessageBusType + " " + err.Error())
 		return
 	}
 
-	defer k.Close()
+	var message string
+	switch eventType {
+	case "ResourceAdded":
+		message = "The resource has been created successfully."
+	case "ResourceRemoved":
+		message = "The resource has been removed successfully."
+	}
+
 	var event = common.Event{
-		EventID:   uuid.NewV4().String(),
-		MessageID: "ResourceEvent.1.0.3." + eventType,
-		EventType: eventType,
+		EventID:        uuid.NewV4().String(),
+		MessageID:      "ResourceEvent.1.2.0." + eventType,
+		EventTimestamp: time.Now().Format(time.RFC3339),
+		EventType:      eventType,
+		Message:        message,
 		OriginOfCondition: &common.Link{
 			Oid: systemID,
 		},
+		Severity: "OK",
 	}
 	var events = []common.Event{event}
 	var messageData = common.MessageData{
@@ -55,7 +67,7 @@ func Publish(systemID, eventType, collectionType string) {
 		Request: data,
 	}
 
-	if err := k.Distribute("REDFISH-EVENTS-TOPIC", mbevent); err != nil {
+	if err := k.Distribute(mbevent); err != nil {
 		log.Error("Unable Publish events to kafka" + err.Error())
 		return
 	}
@@ -65,12 +77,12 @@ func Publish(systemID, eventType, collectionType string) {
 
 // PublishCtrlMsg publishes ODIM control messages to the message bus
 func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
-	conn, err := dc.Communicator(dc.KAFKA, config.Data.MessageQueueConfigFilePath)
+	topicName := config.Data.MessageBusConf.MessageBusQueue[0]
+	conn, err := dc.Communicator(config.Data.MessageBusConf.MessageBusType, config.Data.MessageBusConf.MessageBusConfigFilePath, topicName)
 	if err != nil {
 		return fmt.Errorf("failed to get kafka connection: %s", err.Error())
 	}
 
-	defer conn.Close()
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("failed to marshal data: %s", err.Error())
@@ -79,7 +91,7 @@ func PublishCtrlMsg(msgType common.ControlMessage, msg interface{}) error {
 		MessageType: msgType,
 		Data:        data,
 	}
-	if err := conn.Distribute(common.InterCommMsgQueueName, ctrlMsg); err != nil {
+	if err := conn.Distribute(ctrlMsg); err != nil {
 		return fmt.Errorf("failed to write data to kafka: %s", err.Error())
 	}
 	return nil

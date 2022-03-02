@@ -54,6 +54,22 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 	mockPluginData(t, "GRF_v1.0.0")
 	mockPluginData(t, "XAuthPlugin_v1.0.0")
 	mockPluginData(t, "XAuthPluginFail_v1.0.0")
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
@@ -70,16 +86,6 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		UserName: "admin",
 		Password: "password",
 	})
-	reqPluginID, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
-		UserName: "admin",
-		Password: "password",
-		Links: &Links{
-			ConnectionMethod: &ConnectionMethod{
-				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
-			},
-		},
-	})
 	reqSuccessXAuth, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.2",
 		UserName: "admin",
@@ -91,7 +97,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceBasicAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.1",
+		HostName: "100.0.0.12",
 		UserName: "admin1",
 		Password: "incorrectPassword",
 		Links: &Links{
@@ -101,12 +107,22 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 		},
 	})
 	reqIncorrectDeviceXAuth, _ := json.Marshal(AggregationSource{
-		HostName: "100.0.0.2",
+		HostName: "100.0.0.13",
 		UserName: "username",
 		Password: "password",
 		Links: &Links{
 			ConnectionMethod: &ConnectionMethod{
 				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/7551386e-b9d7-4233-a963-3841adc69e17",
+			},
+		},
+	})
+	reqBMC, _ := json.Marshal(AggregationSource{
+		HostName: "100.0.0.15",
+		UserName: "admin",
+		Password: "password",
+		Links: &Links{
+			ConnectionMethod: &ConnectionMethod{
+				OdataID: "/redfish/v1/AggregationService/ConnectionMethods/2e99af48-2e99-4d78-a250-b04641e9b046",
 			},
 		},
 	})
@@ -184,7 +200,7 @@ func TestExternalInterface_AddBMC(t *testing.T) {
 				taskID: "123",
 				req: &aggregatorproto.AggregatorRequest{
 					SessionToken: "validToken",
-					RequestBody:  reqPluginID,
+					RequestBody:  reqBMC,
 				},
 			},
 			want: response.RPC{
@@ -324,7 +340,22 @@ func TestExternalInterface_AddBMCDuplicate(t *testing.T) {
 		common.TruncateDB(common.InMemory)
 	}()
 	mockPluginData(t, "GRF_v1.0.0")
-
+	mockManagersData("/redfish/v1/Managers/1s7sda8asd-asdas8as0", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1s7sda8asd-asdas8as0",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1234", map[string]interface{}{
+		"Name": "GRF_v1.0.0",
+		"UUID": "1234877451-1234",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
+		"Name": "ILO_v1.0.0",
+		"UUID": "1234877451-1233",
+	})
+	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
+		"Name": "NoStatusPlugin_v1.0.0",
+		"UUID": "1234877451-1235",
+	})
 	reqSuccess, _ := json.Marshal(AggregationSource{
 		HostName: "100.0.0.1",
 		UserName: "admin",

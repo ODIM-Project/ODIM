@@ -16,17 +16,18 @@ package model
 
 // Redundancy redfish Redundancy model according to the 2020.3 release
 type Redundancy struct {
-	Oid               string      `json:"@odata.id,omitempty"`
-	Actions           *OemActions `json:"Actions,omitempty"`
-	MaxNumSupported   int         `json:"MaxNumSupported,omitempty"`
-	MemberID          string      `json:"MemberId,omitempty"`
-	MinNumNeeded      int         `json:"MinNumNeeded,omitempty"`
-	Mode              string      `json:"Mode,omitempty"`
-	Name              string      `json:"Name,omitempty"`
-	Oem               interface{} `json:"Oem,omitempty"`
-	RedundancyEnabled bool        `json:"RedundancyEnabled,omitempty"`
-	RedundancySet     []*Link     `json:"RedundancySet,omitempty"`
-	Status            *Status     `json:"Status,omitempty"`
+	Oid                string      `json:"@odata.id,omitempty"`
+	Actions            *OemActions `json:"Actions,omitempty"`
+	MaxNumSupported    int         `json:"MaxNumSupported,omitempty"`
+	MemberID           string      `json:"MemberId,omitempty"`
+	MinNumNeeded       int         `json:"MinNumNeeded,omitempty"`
+	Mode               string      `json:"Mode,omitempty"`
+	Name               string      `json:"Name,omitempty"`
+	Oem                interface{} `json:"Oem,omitempty"`
+	RedundancyEnabled  bool        `json:"RedundancyEnabled,omitempty"`
+	RedundancySet      []*Link     `json:"RedundancySet,omitempty"`
+	Status             *Status     `json:"Status,omitempty"`
+	RedundancySetCount int         `json:"RedundancySet@odata.count,omitempty"`
 }
 
 //Identifier redfish structure

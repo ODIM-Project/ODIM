@@ -35,7 +35,6 @@ import (
 func IsAuthorized(sessionToken string, privileges, oemPrivileges []string) errResponse.RPC {
 	conn, err := ODIMService.Client(AccountSession)
 	if err != nil {
-
 		errMsg := fmt.Sprintf("Failed to create client connection: %v", err)
 		log.Error(errMsg)
 		return common.GeneralError(http.StatusInternalServerError, errResponse.InternalError, errMsg, nil, nil)
@@ -81,4 +80,47 @@ func GetSessionUserName(sessionToken string) (string, error) {
 		return "", err
 	}
 	return response.UserName, err
+}
+
+// GetSessionUserRoleID will get user name from the session token by rpc call to account-session service
+func GetSessionUserRoleID(sessionToken string) (string, error) {
+	conn, err := ODIMService.Client(AccountSession)
+	if err != nil {
+		return "", fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	asService := sessionproto.NewSessionClient(conn)
+	response, err := asService.GetSessionUserRoleID(
+		context.TODO(),
+		&sessionproto.SessionRequest{
+			SessionToken: sessionToken,
+		},
+	)
+	if err != nil && response == nil {
+		log.Error("something went wrong with rpc call: " + err.Error())
+		return "", err
+	}
+	return response.RoleID, err
+}
+
+// GetUserDetails function is used to get the session details
+func GetUserDetails(sessionToken string) (string, string) {
+	var err error
+	sessionUserName := "null"
+	sessionRoleID := "null"
+	if sessionToken != "" {
+		sessionUserName, err = GetSessionUserName(sessionToken)
+		if err != nil {
+			errMsg := "while trying to get session details: " + err.Error()
+			log.Error(errMsg)
+			return "null", "null"
+		}
+		sessionRoleID, err = GetSessionUserRoleID(sessionToken)
+		if err != nil {
+			errMsg := "while trying to get session details: " + err.Error()
+			log.Error(errMsg)
+			return sessionUserName, "null"
+		}
+	}
+	return sessionUserName, sessionRoleID
 }

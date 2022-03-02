@@ -15,6 +15,10 @@
 //Package response ...
 package response
 
+import (
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+)
+
 //User struct is used to ommit password for display purposes
 type User struct {
 	OdataContext string  `json:"@odata.context"`
@@ -47,24 +51,56 @@ type Role struct {
 
 //AccountService struct definition
 type AccountService struct {
-	OdataType                       string   `json:"@odata.type"`
-	ID                              string   `json:"Id"`
-	Name                            string   `json:"Name"`
-	Description                     string   `json:"Description"`
-	Status                          Status   `json:"Status"`
-	ServiceEnabled                  bool     `json:"ServiceEnabled"`
-	AuthFailureLoggingThreshold     int      `json:"AuthFailureLoggingThreshold"`
-	MinPasswordLength               int      `json:"MinPasswordLength"`
-	AccountLockoutThreshold         int      `json:"AccountLockoutThreshold"`
-	AccountLockoutDuration          int      `json:"AccountLockoutDuration"`
-	AccountLockoutCounterResetAfter int      `json:"AccountLockoutCounterResetAfter"`
-	Accounts                        Accounts `json:"Accounts"`
-	Roles                           Accounts `json:"Roles"`
-	OdataContext                    string   `json:"@odata.context"`
-	OdataID                         string   `json:"@odata.id"`
+	OdataType                          string           `json:"@odata.type"`
+	ID                                 string           `json:"Id"`
+	Name                               string           `json:"Name"`
+	Description                        string           `json:"Description"`
+	Status                             Status           `json:"Status"`
+	ServiceEnabled                     bool             `json:"ServiceEnabled"`
+	AuthFailureLoggingThreshold        int              `json:"AuthFailureLoggingThreshold"`
+	MinPasswordLength                  int              `json:"MinPasswordLength"`
+	AccountLockoutThreshold            int              `json:"AccountLockoutThreshold"`
+	AccountLockoutDuration             int              `json:"AccountLockoutDuration"`
+	AccountLockoutCounterResetAfter    int              `json:"AccountLockoutCounterResetAfter"`
+	Accounts                           Accounts         `json:"Accounts"`
+	Roles                              Accounts         `json:"Roles"`
+	OdataContext                       string           `json:"@odata.context"`
+	OdataID                            string           `json:"@odata.id"`
+	AccountLockoutCounterResetEnabled  bool             `json:"AccountLockoutCounterResetEnabled,omitempty"`
+	Actions                            *dmtf.Actions    `json:"Actions,omitempty"`
+	ActiveDirectory                    *ActiveDirectory `json:"ActiveDirectory,omitempty"`
+	AdditionalExternalAccountProviders *dmtf.Link       `json:"AdditionalExternalAccountProviders,omitempty"`
+	LDAP                               *LDAP            `json:"LDAP,omitempty"`
+	LocalAccountAuth                   string           `json:"LocalAccountAuth,omitempty"`
+	MaxPasswordLength                  int              `json:"MaxPasswordLength,omitempty"`
+	OAuth2                             *OAuth2          `json:"OAuth2,omitempty"`
+	Oem                                *OEM             `json:"Oem,omitempty"`
+	PasswordExpirationDays             int              `json:"PasswordExpirationDays,omitempty"`
+	PrivilegeMap                       *dmtf.Link       `json:"PrivilegeMap,omitempty"`
+	RestrictedOemPrivileges            []string         `json:"RestrictedOemPrivileges,omitempty"`
+	RestrictedPrivileges               []string         `json:"RestrictedPrivileges,omitempty"`
+	SupportedAccountTypes              []string         `json:"SupportedAccountTypes,omitempty"`
+	SupportedOEMAccountTypes           []string         `json:"SupportedOEMAccountTypes,omitempty"`
+	TACACSplus                         *TACACSplus      `json:"TACACSplus,omitempty"`
 }
 
 //Accounts struct definition
 type Accounts struct {
 	OdataID string `json:"@odata.id"`
+}
+
+//OAuth2 struct definition
+type OAuth2 struct {
+}
+
+//ActiveDirectory struct definition
+type ActiveDirectory struct {
+}
+
+//LDAP struct definition
+type LDAP struct {
+}
+
+//TACACSplus struct definition
+type TACACSplus struct {
 }

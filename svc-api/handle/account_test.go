@@ -23,6 +23,16 @@ import (
 	"github.com/kataras/iris/v12/httptest"
 )
 
+var header = map[string][]string{
+	"Connection":             {"keep-alive"},
+	"Odata-Version":          {"4.0"},
+	"X-Frame-Options":        {"sameorigin"},
+	"Content-Type":           {"application/json; charset=utf-8"},
+	"X-Content-Type-Options": {"nosniff"},
+	"Cache-Control":          {"no-cache, no-store, must-revalidate"},
+	"Transfer-Encoding":      {"chunked"},
+}
+
 func mockGetAccountServiceRPC(req accountproto.AccountRequest) (*accountproto.AccountResponse, error) {
 	if req.SessionToken == "TokenRPC" {
 		return nil, errors.New("RPC Error")
@@ -78,9 +88,10 @@ func mockDeleteAccountRPC(req accountproto.DeleteAccountRequest) (*accountproto.
 }
 
 func TestAccountRPCs_GetAccountService(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var a AccountRPCs
 	a.GetServiceRPC = mockGetAccountServiceRPC
-
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1")
 	redfishRoutes.Get("/AccountService", a.GetAccountService)
@@ -88,7 +99,8 @@ func TestAccountRPCs_GetAccountService(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
+
 	e.GET(
 		"/redfish/v1/AccountService",
 	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
@@ -105,7 +117,7 @@ func TestAccountRPCs_GetAccountServiceWithOutToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService",
-	).Expect().Status(http.StatusUnauthorized)
+	).Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 }
 
 func TestAccountRPCs_CreateAccount(t *testing.T) {
@@ -124,7 +136,7 @@ func TestAccountRPCs_CreateAccount(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/AccountService/Accounts",
-	).WithHeader("X-Auth-Token", "Token").WithJSON(body).Expect().Status(http.StatusCreated)
+	).WithHeader("X-Auth-Token", "Token").WithJSON(body).Expect().Status(http.StatusCreated).Headers().Equal(header)
 	e.POST(
 		"/redfish/v1/AccountService/Accounts",
 	).WithHeader("X-Auth-Token", "").WithJSON(body).Expect().Status(http.StatusUnauthorized)
@@ -138,6 +150,8 @@ func TestAccountRPCs_CreateAccount(t *testing.T) {
 }
 
 func TestAccountRPCs_GetAllAccounts(t *testing.T) {
+	header["Allow"] = []string{"GET, POST"}
+	defer delete(header, "Allow")
 	var a AccountRPCs
 	a.GetAllAccountsRPC = mockGetAllAccountsRPC
 
@@ -148,7 +162,7 @@ func TestAccountRPCs_GetAllAccounts(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService/Accounts",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 	e.GET(
 		"/redfish/v1/AccountService/Accounts",
 	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
@@ -158,6 +172,8 @@ func TestAccountRPCs_GetAllAccounts(t *testing.T) {
 }
 
 func TestAccountRPCs_GetAccount(t *testing.T) {
+	header["Allow"] = []string{"GET, PATCH, DELETE"}
+	defer delete(header, "Allow")
 	var a AccountRPCs
 	a.GetAccountRPC = mockGetAccountRPC
 
@@ -168,7 +184,7 @@ func TestAccountRPCs_GetAccount(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.GET(
 		"/redfish/v1/AccountService/Accounts/someID",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK).Headers().Equal(header)
 	e.GET(
 		"/redfish/v1/AccountService/Accounts/someID",
 	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)

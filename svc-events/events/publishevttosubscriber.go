@@ -33,7 +33,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	aggregatorproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/aggregator"
@@ -41,11 +40,12 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-events/evcommon"
 	"github.com/ODIM-Project/ODIM/svc-events/evmodel"
+	uuid "github.com/satori/go.uuid"
 )
 
 // addFabric will add the new fabric resource to db when an event is ResourceAdded and
 // originofcondition has fabrics odataid.
-func addFabric(requestData, host string) {
+func (p *PluginContact) addFabric(requestData, host string) {
 	var message common.MessageData
 	if err := json.Unmarshal([]byte(requestData), &message); err != nil {
 		log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
@@ -58,7 +58,7 @@ func addFabric(requestData, host string) {
 		}
 		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+			p.addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
 	}
 }
@@ -68,10 +68,10 @@ func addFabric(requestData, host string) {
 // 	data of type interface{}
 //Returns:
 //	bool: return false if any error occurred during execution, else returns true
-func PublishEventsToDestination(data interface{}) bool {
+func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 
 	if data == nil {
-		log.Info("error: invalid input params")
+		log.Info("invalid input params")
 		return false
 	}
 
@@ -96,11 +96,11 @@ func PublishEventsToDestination(data interface{}) bool {
 	}
 
 	if event.EventType == "MetricReport" {
-		return publishMetricReport(requestData)
+		return p.publishMetricReport(requestData)
 	}
 
 	var flag bool
-	var uuid string
+	var deviceUUID string
 	var message common.MessageData
 
 	if err = json.Unmarshal([]byte(requestData), &message); err != nil {
@@ -108,9 +108,9 @@ func PublishEventsToDestination(data interface{}) bool {
 		return false
 	}
 
-	addFabric(requestData, host)
+	p.addFabric(requestData, host)
 	searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)
-	deviceSubscription, err := evmodel.GetDeviceSubscriptions(searchKey)
+	deviceSubscription, err := p.GetDeviceSubscriptions(searchKey)
 	if err != nil {
 		log.Error("Failed to get the event destinations: ", err.Error())
 		return false
@@ -121,10 +121,10 @@ func PublishEventsToDestination(data interface{}) bool {
 		return false
 	}
 
-	requestData, uuid = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
+	requestData, deviceUUID = formatEvent(requestData, deviceSubscription.OriginResources[0], host)
 
 	searchKey = evcommon.GetSearchKey(host, evmodel.SubscriptionIndex)
-	subscriptions, err := evmodel.GetEvtSubscriptions(searchKey)
+	subscriptions, err := p.GetEvtSubscriptions(searchKey)
 	if err != nil {
 		return false
 	}
@@ -134,6 +134,7 @@ func PublishEventsToDestination(data interface{}) bool {
 		log.Error("failed to unmarshal the incoming event: ", requestData, " with the error: ", err.Error())
 		return false
 	}
+	eventUniqueID := uuid.NewV4().String()
 
 	eventMap := make(map[string][]common.Event)
 	for _, inEvent := range message.Events {
@@ -160,7 +161,6 @@ func PublishEventsToDestination(data interface{}) bool {
 			log.Info("event not forwared: resource type of originofcondition not supported in event with body: ", requestData)
 			continue
 		}
-
 		for _, sub := range subscriptions {
 
 			// filter and send events to destination if destination is not empty
@@ -182,18 +182,18 @@ func PublishEventsToDestination(data interface{}) bool {
 
 		if strings.EqualFold("Alert", inEvent.EventType) {
 			if strings.Contains(inEvent.MessageID, "ServerPostDiscoveryComplete") || strings.Contains(inEvent.MessageID, "ServerPostComplete") {
-				go rediscoverSystemInventory(uuid, inEvent.OriginOfCondition.Oid)
+				go rediscoverSystemInventory(deviceUUID, inEvent.OriginOfCondition.Oid)
 				flag = true
 			}
 			if strings.Contains(inEvent.MessageID, "ServerPoweredOn") || strings.Contains(inEvent.MessageID, "ServerPoweredOff") {
-				go updateSystemPowerState(uuid, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
+				go updateSystemPowerState(deviceUUID, inEvent.OriginOfCondition.Oid, inEvent.MessageID)
 				flag = true
 			}
 		} else if strings.EqualFold("ResourceAdded", message.Events[0].EventType) || strings.EqualFold("ResourceRemoved", message.Events[0].EventType) {
 			if strings.Contains(message.Events[0].OriginOfCondition.Oid, "Volumes") {
 				s := strings.Split(message.Events[0].OriginOfCondition.Oid, "/")
 				storageURI := fmt.Sprintf("/%s/%s/%s/%s/%s/", s[1], s[2], s[3], s[4], s[5])
-				go rediscoverSystemInventory(uuid, storageURI)
+				go rediscoverSystemInventory(deviceUUID, storageURI)
 				flag = true
 			}
 		}
@@ -206,18 +206,19 @@ func PublishEventsToDestination(data interface{}) bool {
 			log.Error("unable to converts event into bytes: ", err.Error())
 			continue
 		}
-		go postEvent(key, data)
+		go p.postEvent(key, eventUniqueID, data)
 	}
 	return flag
 }
 
-func publishMetricReport(requestData string) bool {
-	subscriptions, err := evmodel.GetEvtSubscriptions("MetricReport")
+func (p *PluginContact) publishMetricReport(requestData string) bool {
+	eventUniqueID := uuid.NewV4().String()
+	subscriptions, err := p.GetEvtSubscriptions("MetricReport")
 	if err != nil {
 		return false
 	}
 	for _, sub := range subscriptions {
-		go postEvent(sub.Destination, []byte(requestData))
+		go p.postEvent(sub.Destination, eventUniqueID, []byte(requestData))
 	}
 	return true
 }
@@ -251,18 +252,18 @@ func filterEventsToBeForwarded(subscription evmodel.Subscription, event common.E
 // formatEvent will format the event string according to the odimra
 // add uuid:systemid/chassisid inplace of systemid/chassisid
 func formatEvent(event, originResource, hostIP string) (string, string) {
-	uuid, _ := getUUID(originResource)
+	deviceUUID, _ := getUUID(originResource)
 	if !strings.Contains(hostIP, "Collection") {
-		str := "/redfish/v1/Systems/" + uuid + ":"
+		str := "/redfish/v1/Systems/" + deviceUUID + "."
 		event = strings.Replace(event, "/redfish/v1/Systems/", str, -1)
-		str = "/redfish/v1/systems/" + uuid + ":"
+		str = "/redfish/v1/systems/" + deviceUUID + "."
 		event = strings.Replace(event, "/redfish/v1/systems/", str, -1)
-		str = "/redfish/v1/Chassis/" + uuid + ":"
+		str = "/redfish/v1/Chassis/" + deviceUUID + "."
 		event = strings.Replace(event, "/redfish/v1/Chassis/", str, -1)
-		str = "/redfish/v1/Managers/" + uuid + ":"
+		str = "/redfish/v1/Managers/" + deviceUUID + "."
 		event = strings.Replace(event, "/redfish/v1/Managers/", str, -1)
 	}
-	return event, uuid
+	return event, deviceUUID
 }
 
 func isResourceTypeSubscribed(resourceTypes []string, originOfCondition string, subordinateResources bool) bool {
@@ -317,38 +318,82 @@ func isStringPresentInSlice(slice []string, str, message string) bool {
 }
 
 // postEvent will post the event to destination
-func postEvent(destination string, event []byte) {
+func (p *PluginContact) postEvent(destination, eventUniqueID string, event []byte) {
+	resp, err := sendEvent(destination, event)
+	if err == nil {
+		resp.Body.Close()
+		log.Info("Event is successfully forwarded")
+		if evcommon.SaveUndeliveredEventsFlag {
+			// check any undelivered events are present in db for the destination and publish those
+			go p.checkUndeliveredEvents(destination)
+		}
+		return
+	}
+	undeliveredEventID := destination + ":" + eventUniqueID
+	if evcommon.SaveUndeliveredEventsFlag {
+		serr := p.SaveUndeliveredEvents(undeliveredEventID, event)
+		if serr != nil {
+			log.Error("error while saving undelivered event: ", serr.Error())
+		}
+	}
+	go p.reAttemptEvents(destination, undeliveredEventID, event)
+	return
+}
+
+func sendEvent(destination string, event []byte) (*http.Response, error) {
 	httpConf := &config.HTTPConfig{
 		CACertificate: &config.Data.KeyCertConf.RootCACertificate,
 	}
 	httpClient, err := httpConf.GetHTTPClientObj()
 	if err != nil {
 		log.Error("failed to get http client object: ", err.Error())
-		return
+		return &http.Response{}, err
 	}
 	req, err := http.NewRequest("POST", destination, bytes.NewBuffer(event))
 	if err != nil {
 		log.Error("error while getting new http request: ", err.Error())
-		return
+		return &http.Response{}, err
 	}
 	req.Close = true
 	req.Header.Set("Content-Type", "application/json")
+	config.TLSConfMutex.RLock()
+	defer config.TLSConfMutex.RUnlock()
+	return httpClient.Do(req)
+}
+
+func (p *PluginContact) reAttemptEvents(destination, undeliveredEventID string, event []byte) {
 	var resp *http.Response
-	count := evcommon.DeliveryRetryAttempts + 1
+	var err error
+	count := config.Data.EventConf.DeliveryRetryAttempts
 	for i := 0; i < count; i++ {
-		config.TLSConfMutex.RLock()
-		resp, err = httpClient.Do(req)
-		config.TLSConfMutex.RUnlock()
+		log.Info("Retry event forwarding on destination: ", destination)
+		time.Sleep(time.Second * time.Duration(config.Data.EventConf.DeliveryRetryIntervalSeconds))
+		if evcommon.SaveUndeliveredEventsFlag {
+			// if undelivered event already published then ignore retrying
+			eventString, err := p.GetUndeliveredEvents(undeliveredEventID)
+			if err != nil || len(eventString) < 1 {
+				log.Info("Event is forwarded to destination")
+				return
+			}
+		}
+		resp, err = sendEvent(destination, event)
 		if err == nil {
 			resp.Body.Close()
-			log.Printf("event post response: %v", resp)
+			log.Info("Event is successfully forwarded")
+			if evcommon.SaveUndeliveredEventsFlag {
+				// if event is delivered then delete the same which is saved in 1st attempt
+				err = p.DeleteUndeliveredEvents(undeliveredEventID)
+				if err != nil {
+					log.Error("error while deleting undelivered events: ", err.Error())
+				}
+				// check any undelivered events are present in db for the destination and publish those
+				go p.checkUndeliveredEvents(destination)
+			}
 			return
 		}
-		log.Println("Retrying event posting")
-		time.Sleep(time.Second * evcommon.DeliveryRetryIntervalSeconds)
+
 	}
 	log.Error("error while make https call to send the event: ", err.Error())
-	return
 }
 
 // rediscoverSystemInventory will be triggered when ever the System Restart or Power On
@@ -373,11 +418,11 @@ func rediscoverSystemInventory(systemID, systemURL string) {
 		log.Info("Error while rediscoverSystemInventroy")
 		return
 	}
-	log.Info("info: rediscovery of system and chasis started.")
+	log.Info("rediscovery of system and chasis started.")
 	return
 }
 
-func addFabricRPCCall(origin, address string) {
+func (p *PluginContact) addFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
@@ -396,11 +441,8 @@ func addFabricRPCCall(origin, address string) {
 		log.Error("Error while AddFabric ", err.Error())
 		return
 	}
-	p := PluginContact{
-		ContactClient: pmbhandle.ContactPlugin,
-	}
 	p.checkCollectionSubscription(origin, "Redfish")
-	log.Info("info: Fabric Added")
+	log.Info("Fabric Added")
 	return
 }
 
@@ -415,7 +457,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 	id := systemURI[index+1:]
 
 	if strings.ContainsAny(id, ":/-") {
-		log.Info("error: event contains invalid origin of condition - ", systemURI)
+		log.Error("event contains invalid origin of condition - ", systemURI)
 		return
 	}
 	if strings.Contains(state, "ServerPoweredOn") {
@@ -443,7 +485,7 @@ func updateSystemPowerState(systemUUID, systemURI, state string) {
 		log.Error("system power state update failed with ", err.Error())
 		return
 	}
-	log.Info("info: system power state update initiated")
+	log.Info("system power state update initiated")
 	return
 }
 
@@ -471,4 +513,51 @@ func callPluginStartUp(event common.Events) {
 	}
 	log.Info("successfully sent plugin startup data to " + event.IP)
 	return
+}
+
+func (p *PluginContact) checkUndeliveredEvents(destination string) {
+	// first check any of the instance have already picked up for publishing
+	// undelivered events for the destination
+	flag, err := p.GetUndeliveredEventsFlag(destination)
+	if err != nil {
+		log.Error("error while getting undelivered events flag: ", err.Error())
+	}
+	if !flag {
+		// if flag is false then set the flag true, so other instance shouldnt have to read the undelivered events and publish
+		err = p.SetUndeliveredEventsFlag(destination)
+		if err != nil {
+			log.Error("error while setting undelivered events flag: ", err.Error())
+		}
+		destData, err := p.GetAllMatchingDetails(evmodel.UndeliveredEvents, destination, common.OnDisk)
+		if err != nil {
+			log.Error("No matching details found")
+		}
+		for _, dest := range destData {
+			event, err := p.GetUndeliveredEvents(dest)
+			if err != nil {
+				log.Error("error while getting undelivered events: ", err.Error())
+				continue
+			}
+			event = strings.Replace(event, "\\", "", -1)
+			event = strings.TrimPrefix(event, "\"")
+			event = strings.TrimSuffix(event, "\"")
+			resp, err := sendEvent(destination, []byte(event))
+			if err != nil {
+				log.Error("error while make https call to send the event: ", err.Error())
+				resp.Body.Close()
+				continue
+			}
+			resp.Body.Close()
+			log.Info("Event is successfully forwarded")
+			err = p.DeleteUndeliveredEvents(dest)
+			if err != nil {
+				log.Error("error while deleting undelivered events: ", err.Error())
+			}
+		}
+		// handle logic if inter connection fails
+		derr := p.DeleteUndeliveredEventsFlag(destination)
+		if derr != nil {
+			log.Error("error while deleting undelivered events flag: ", derr.Error())
+		}
+	}
 }

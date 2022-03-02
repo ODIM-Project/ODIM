@@ -51,13 +51,7 @@ func (e *ExternalInterface) GetAllConnectionMethods(req *aggregatorproto.Aggrega
 		OdataContext: "/redfish/v1/$metadata#ConnectionMethodCollection.ConnectionMethodCollection",
 		Name:         "Connection Methods",
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	resp.Body = agresponse.List{
 		Response:     commonResponse,
 		MembersCount: len(members),
@@ -89,13 +83,7 @@ func (e *ExternalInterface) GetConnectionMethodInfo(req *aggregatorproto.Aggrega
 		StatusCode:    http.StatusOK,
 		StatusMessage: response.Success,
 	}
-	resp.Header = map[string]string{
-		"Cache-Control":     "no-cache",
-		"Connection":        "keep-alive",
-		"Content-type":      "application/json; charset=utf-8",
-		"Transfer-Encoding": "chunked",
-		"OData-Version":     "4.0",
-	}
+
 	links := connectionmethod.Links
 	if len(links.AggregationSources) == 0 {
 		links = agmodel.Links{

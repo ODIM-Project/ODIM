@@ -15,15 +15,30 @@
 package agresponse
 
 import (
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 // AggregationSourceResponse defines the response for AggregationSource
 type AggregationSourceResponse struct {
 	response.Response
-	HostName string      `json:"HostName"`
-	UserName string      `json:"UserName"`
-	Links    interface{} `json:"Links"`
+	HostName string           `json:"HostName"`
+	UserName string           `json:"UserName"`
+	Links    interface{}      `json:"Links"`
+	Actions  *dmtf.OemActions `json:"Actions,omitempty"`
+	Oem      *dmtf.Oem        `json:"Oem,omitempty"`
+	Password string           `json:"Password,omitempty"`
+	SNMP     *SNMP            `json:"SNMP,omitempty"`
+}
+
+// SNMP defines the response for SNMP
+type SNMP struct {
+	AuthenticationKey      string `json:"AuthenticationKey,omitempty"`
+	AuthenticationKeySet   string `json:"AuthenticationKeySet,omitempty"`
+	AuthenticationProtocol string `json:"AuthenticationProtocol,omitempty"`
+	EncryptionKey          string `json:"EncryptionKey,omitempty"`
+	EncryptionKeySet       bool   `json:"EncryptionKeySet,omitempty"`
+	EncryptionProtocol     string `json:"EncryptionProtocol,omitempty"`
 }
 
 // AggregateResponse defines the response for aggregate

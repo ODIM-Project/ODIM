@@ -73,14 +73,6 @@ func (s *Session) DeleteSession(ctx context.Context, req *sessionproto.SessionRe
 	return &resp, nil
 }
 
-func getHeader() map[string]string {
-	return map[string]string{
-		"Cache-Control":     "no-cache",
-		"Transfer-Encoding": "chunked",
-		"Content-type":      "application/json; charset=utf-8",
-	}
-}
-
 // GetSession is a rpc call to get session
 // It will get all the session tokens from the db and from the session token get the session details
 // if session id is matched with recieved session id then delete the session
@@ -104,6 +96,13 @@ func (s *Session) GetSession(ctx context.Context, req *sessionproto.SessionReque
 // It will get all the session username from the session
 func (s *Session) GetSessionUserName(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUserName, error) {
 	resp, err := session.GetSessionUserName(req)
+	return resp, err
+}
+
+// GetSessionUserRoleID is a rpc call to get session user's role ID
+// It will get the session username's role id from the session
+func (s *Session) GetSessionUserRoleID(ctx context.Context, req *sessionproto.SessionRequest) (*sessionproto.SessionUsersRoleID, error) {
+	resp, err := session.GetSessionUserRoleID(req)
 	return resp, err
 }
 

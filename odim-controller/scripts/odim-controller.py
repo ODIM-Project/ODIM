@@ -64,11 +64,11 @@ def write_node_details():
 		'all': {
 			'hosts': {},
 			'children': {
-				'kube-master': {'hosts': {}},
-				'kube-node': {'hosts': {}},
+				'kube_control_plane': {'hosts': {}},
+				'kube_node': {'hosts': {}},
 				'etcd': {'hosts': {}},
-				'k8s-cluster': {'children': {'kube-master': None, 'kube-node': None}},
-				'calico-rr': {'hosts': {}}
+				'k8s_cluster': {'children': {'kube_control_plane': None, 'kube_node': None}},
+				'calico_rr': {'hosts': {}}
 			}
 		}	
 	}
@@ -80,11 +80,11 @@ def write_node_details():
 		temp_dict = {node: None}
 		if attrs["isMaster"]:
 			logger.debug("%s(%s) is marked as master node", node, attrs['ip'])
-			node_details['all']['children']['kube-master']['hosts'].update(temp_dict)
-			node_details['all']['children']['kube-node']['hosts'].update(temp_dict)
+			node_details['all']['children']['kube_control_plane']['hosts'].update(temp_dict)
+			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
 			node_details['all']['children']['etcd']['hosts'].update(temp_dict)
 		else:
-			node_details['all']['children']['kube-node']['hosts'].update(temp_dict)
+			node_details['all']['children']['kube_node']['hosts'].update(temp_dict)
 
 	# consider None as empty dictionary
 	SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
@@ -108,7 +108,7 @@ def read_conf():
 # load existing hosts.yaml that created for the deployment_id
 def load_k8s_host_conf():
 	global K8S_INVENTORY_DATA, DEPLOYMENT_SRC_DIR, K8S_INVENTORY_FILE
-	DEPLOYMENT_SRC_DIR = './inventory/k8s-cluster-' + DEPLOYMENT_ID
+	DEPLOYMENT_SRC_DIR = './inventory/k8s_cluster-' + DEPLOYMENT_ID
 	K8S_INVENTORY_FILE = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 
 	if not os.path.exists(K8S_INVENTORY_FILE):
@@ -167,7 +167,7 @@ def perform_checks(skip_opt_param_check=False):
 	DEPLOYMENT_ID = CONTROLLER_CONF_DATA['deploymentID']
 
 	if not skip_opt_param_check:
-		logger.debug("Checking if the local user matches with the configired nodes user")
+		logger.debug("Checking if the local user matches with the configured nodes user")
 		cur_user = os.getenv('USER')
 		for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
 			if cur_user != attrs['username']:
@@ -202,7 +202,7 @@ def perform_checks(skip_opt_param_check=False):
 
 	check_extract_kubespray_src()
 
-	DEPLOYMENT_SRC_DIR = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s-cluster-' + DEPLOYMENT_ID)
+	DEPLOYMENT_SRC_DIR = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID)
 	if not os.path.exists(DEPLOYMENT_SRC_DIR):
 		os.mkdir(DEPLOYMENT_SRC_DIR, 0o755)
 
@@ -218,7 +218,7 @@ def perform_checks(skip_opt_param_check=False):
 
 	if 'nodePasswordFilePath' not in CONTROLLER_CONF_DATA or \
 	CONTROLLER_CONF_DATA['nodePasswordFilePath'] == None or CONTROLLER_CONF_DATA['nodePasswordFilePath'] == "":
-		ANSIBLE_SUDO_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s-cluster-' + DEPLOYMENT_ID, '.node_pw.dat')
+		ANSIBLE_SUDO_PW_FILE = os.path.join(KUBESPRAY_SRC_PATH, 'inventory/k8s_cluster-' + DEPLOYMENT_ID, '.node_pw.dat')
 		if not os.path.exists(ANSIBLE_SUDO_PW_FILE):
 			store_password_in_vault()
 	else:
@@ -421,7 +421,7 @@ def scale_in_k8s():
 	rm_nodes = ""
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
-		if node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts']:
+		if node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts']:
 			logger.warn("%s is master node, removing of which is not allowed, skipping!!!", node)
 			continue
 		if node in K8S_INVENTORY_DATA['all']['hosts'].keys():
@@ -430,7 +430,7 @@ def scale_in_k8s():
 			nodes_list += '{hostname},'.format(hostname=node)
 			K8S_INVENTORY_DATA['all']['hosts'].pop(node)
 			K8S_INVENTORY_DATA['all']['children']['etcd']['hosts'].pop(node, 'No Key found')
-			K8S_INVENTORY_DATA['all']['children']['kube-node']['hosts'].pop(node, 'No Key found')
+			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].pop(node, 'No Key found')
 		else:
 			logger.info("%s node is not part of the existing cluster, skipped", node)
 
@@ -480,7 +480,6 @@ def scale_in_k8s():
 		else:
 			logger.info("Post-uninstall action was successful on nodes %s", nodes_list)
 
-		logger.info("Deleting k8s images")
 		delete_k8_images(K8S_INVENTORY_FILE,nodes_list)
 		# remove copy of controller config file created
 		os.remove(helm_config_file)
@@ -526,7 +525,7 @@ def scale_out_k8s():
 			temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
 			K8S_INVENTORY_DATA['all']['hosts'].update(temp_dict)
 			temp_dict = {node: None}
-			K8S_INVENTORY_DATA['all']['children']['kube-node']['hosts'].update(temp_dict)
+			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].update(temp_dict)
 
 	if no_new_nodes_to_add:
 		logger.info("No new nodes to add to cluster %s, no changes made", DEPLOYMENT_ID)
@@ -570,29 +569,30 @@ def scale_out_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		# copy controller config file
-		helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
-		odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
-		shutil.copyfile(CONTROLLER_CONF_FILE, helm_config_file)
-		shutil.copyfile(CONTROLLER_CONF_FILE, odimra_config_file)
+		if os.path.exists(os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed')):
+			# copy controller config file
+			helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/pre-install/files/helmcharts/helm_config_values.yaml')
+			odimra_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/odimra-copy-image/files/odimra_config_values.yaml')
+			shutil.copyfile(CONTROLLER_CONF_FILE, helm_config_file)
+			shutil.copyfile(CONTROLLER_CONF_FILE, odimra_config_file)
 
-		os.chdir(ODIMRA_SRC_PATH)
-		logger.info("Performing ODIMRA pre-install action nodes %s", nodes_list)
+			os.chdir(ODIMRA_SRC_PATH)
+			logger.info("Performing ODIMRA pre-install action nodes %s", nodes_list)
 
-		odimra_add_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
-				 --extra-vars "host={nodes}" pre_install.yaml'.format( \
-						 host_conf_file=K8S_INVENTORY_FILE, nodes=nodes_list)
-		ret = exec(odimra_add_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
-		if ret != 0:
-			logger.critical("ODIMRA pre-install action failed on nodes %s", nodes_list)
-			os.chdir(cur_dir)
-			exit(1)
-		else:
-			logger.info("ODIMRA pre-install action was successful on nodes %s", nodes_list)
+			odimra_add_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
+					--extra-vars "host={nodes}" pre_install.yaml'.format( \
+							host_conf_file=K8S_INVENTORY_FILE, nodes=nodes_list)
+			ret = exec(odimra_add_cmd, {'ANSIBLE_BECOME_PASS': ANSIBLE_BECOME_PASS})
+			if ret != 0:
+				logger.critical("ODIMRA pre-install action failed on nodes %s", nodes_list)
+				os.chdir(cur_dir)
+				exit(1)
+			else:
+				logger.info("ODIMRA pre-install action was successful on nodes %s", nodes_list)
 
-		# remove copy of controller config file created
-		os.remove(helm_config_file)
-		os.remove(odimra_config_file)
+			# remove copy of controller config file created
+			os.remove(helm_config_file)
+			os.remove(odimra_config_file)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster scale-out")
@@ -601,6 +601,10 @@ def scale_out_k8s():
 # in the cluster nodes when kubernetesImagePath
 # config is set
 def delete_k8_images(host_file,nodes_list):
+	if KUBERNETES_IMAGE_PATH == "":
+		return
+
+	logger.info("Removing k8s images in cluster nodes")
 	cur_dir = os.getcwd()
 	os.chdir(ODIMRA_SRC_PATH)
 	helm_config_file = os.path.join(ODIMRA_SRC_PATH, 'roles/k8-delete-image/files/helm_config_values.yaml')
@@ -620,7 +624,7 @@ def remove_k8s():
 
 	os.chdir(KUBESPRAY_SRC_PATH)
 	global DEPLOYMENT_SRC_DIR
-	DEPLOYMENT_SRC_DIR = './inventory/k8s-cluster-' + DEPLOYMENT_ID
+	DEPLOYMENT_SRC_DIR = './inventory/k8s_cluster-' + DEPLOYMENT_ID
 	host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
 
 	if not os.path.exists(host_file):
@@ -658,7 +662,6 @@ def remove_k8s():
 			os.chdir(cur_dir)
 			exit(1)
 
-		logger.info("Deleteing k8s images")
 		delete_k8_images(host_file,nodes_list)
 		logger.debug("Clearing deployment specific data of %s cluster" %(DEPLOYMENT_ID))
 		shutil.rmtree(DEPLOYMENT_SRC_DIR)
@@ -717,7 +720,7 @@ def deploy_k8s():
 		host_file_gen_cmd = 'CONFIG_FILE={host_conf_file} python3 contrib/inventory_builder/inventory.py {node_details_list}'.format( \
 				host_conf_file=host_file, node_details_list=node_ip_list)
 
-		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS_MASTERS': '3'})
+		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS': '3'})
 		if ret != 0:
 			logger.critical("k8s cluster hosts file generation failed")
 			os.chdir(cur_dir)
@@ -781,8 +784,14 @@ def load_odimra_certs(isUpgrade):
 	CONTROLLER_CONF_DATA['odimra']['rootCACert'] = read_file(os.path.join(cert_dir, 'rootCA.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerCert'] = read_file(os.path.join(cert_dir, 'odimra_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraServerKey'] = read_file(os.path.join(cert_dir, 'odimra_server.key'))
-	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
-	CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
+	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == 'RedisStreams':
+                logger.info("RedisStreams is selected as messageBusType")
+	else:
+                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientCert'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.crt'))
+	if CONTROLLER_CONF_DATA['odimra']['messageBusType'] == "RedisStreams":
+                logger.info("RedisStreams is selected as messageBusType")
+	else:
+                CONTROLLER_CONF_DATA['odimra']['odimraKafkaClientKey'] = read_file(os.path.join(cert_dir, 'odimra_kafka_client.key'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerCert'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.crt'))
 	CONTROLLER_CONF_DATA['odimra']['odimraEtcdServerKey'] = read_file(os.path.join(cert_dir, 'odimra_etcd_server.key'))
 
@@ -887,7 +896,7 @@ def operation_odimra(operation):
 
 		# as rollback of failed operation is not handled yet
 		# will try on first master node and exit on failure
-		master_node = list(K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].keys())[0]
+		master_node = list(K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].keys())[0]
 		logger.info("Starting odimra %s on master node %s", operation, master_node)
 		odimra_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 				    --extra-vars "host={master_node} helm_config_file={helm_config_file} ignore_err={ignore_err}" \
@@ -904,9 +913,15 @@ def operation_odimra(operation):
 			os.chdir(cur_dir)
 			exit(1)
 
-		if operation == "uninstall" and os.path.exists(os.path.join(CONTROLLER_CONF_DATA['odimCertsPath'], '.gen_odimra_certs.ok')):
-			logger.info("Cleaning up certificates generated for the deployment")
-			shutil.rmtree(CONTROLLER_CONF_DATA['odimCertsPath'])
+		if operation == "uninstall":
+			if os.path.exists(os.path.join(CONTROLLER_CONF_DATA['odimCertsPath'], '.gen_odimra_certs.ok')):
+				logger.info("Cleaning up certificates generated for the deployment")
+				shutil.rmtree(CONTROLLER_CONF_DATA['odimCertsPath'])
+			if os.path.exists(os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed')):
+				os.remove(os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed'))
+		if operation == "install":
+			deployed_odimra_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, '.odimra_deployed')
+			open(deployed_odimra_file, 'w').close()
 
 		logger.info("Completed ODIMRA %s operation", operation)
 
@@ -1110,7 +1125,7 @@ def check_extract_kubespray_src():
 
 def read_groupvar():
 	global GROUP_VAR_DATA
-	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all'
+	group_var_file = ODIMRA_SRC_PATH+'/group_vars/all/all.yaml'
 	if not os.path.isfile(group_var_file):
 		logger.critical("invalid group_var file %s passed, exiting!!!", group_var_file)
 		exit(1)
@@ -1279,7 +1294,7 @@ def update_helm_charts(config_map_name):
 					logger.info("ODIMRA %s success copy docker image %s", operationName, dockerImageName)
 
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting upgrade of  %s on master node %s", fullHelmChartName, master_node[0])
 			odimra_upgrade_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					     --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
@@ -1322,7 +1337,7 @@ def list_deployments():
 	load_k8s_host_conf()
 
 	list_flag = False
-	for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+	for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 		ip = K8S_INVENTORY_DATA['all']['hosts'][master_node[0]]['ip']
 		list_deps_cmd = '/usr/bin/ssh {ip} helm list -n {namespace}'.format( \
 				namespace=CONTROLLER_CONF_DATA['odimra']['namespace'], ip=ip)
@@ -1351,7 +1366,7 @@ def list_deployment_history(depName):
 	load_k8s_host_conf()
 
 	list_flag = False
-	for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+	for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 		ip = K8S_INVENTORY_DATA['all']['hosts'][master_node[0]]['ip']
 		list_history_cmd = '/usr/bin/ssh {ip} helm history {deployment} -n {namespace}'.format( \
 				ip=ip, deployment=depName, \
@@ -1385,7 +1400,7 @@ def rollback_deployment(depName, revision):
 		rollback_flag = False
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting rollback of %s deployment on master node %s", depName, master_node[0])
 			rollback_dep_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} release={depName} revision={revision}" rollback.yaml'.format( \
@@ -1433,7 +1448,7 @@ def scale_plugin(plugin_name, replica_count):
 			exit(1)
 
 		host_file = os.path.join(KUBESPRAY_SRC_PATH, DEPLOYMENT_SRC_DIR, 'hosts.yaml')
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting scaling of %s plugin on master node %s", plugin_name, master_node[0])
 			scale_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file} replicas={replicas}" scale_plugin.yaml'.format( \
@@ -1494,7 +1509,7 @@ def scale_svc_helm_chart(svc_uservice_name,replica_count,helmchartData):
 	if not DRY_RUN_SET:
 		load_password_from_vault(cur_dir)
 		scale_flag = False
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting scaling of  %s on master node %s", fullHelmChartName, master_node[0])
 			odimra_upgrade_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					     --extra-vars "host={master_node} helm_chart_name={helm_chart_name} helm_chart_name_version={helm_chart_name_version} helm_config_file={helm_config_file} replicas={replicas} ignore_err={ignore_err}" {operation_conf_file}.yaml'.format( \
@@ -1559,7 +1574,7 @@ def deploy_plugin(plugin_name):
 		plugin_count = 0
 
 		for plugin in plugin_list:
-			for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+			for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 				logger.info("Starting deployment of %s on master node %s", plugin, master_node[0])
 				deploy_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 						    --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" deploy_plugin.yaml'.format( \
@@ -1609,7 +1624,7 @@ def remove_plugin(plugin_name):
 		load_password_from_vault(cur_dir) 
 		upgrade_flag = False
 
-		for master_node in K8S_INVENTORY_DATA['all']['children']['kube-master']['hosts'].items():
+		for master_node in K8S_INVENTORY_DATA['all']['children']['kube_control_plane']['hosts'].items():
 			logger.info("Starting removal of %s plugin on master node %s", plugin_name, master_node[0])
 			remove_plugin_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root \
 					   --extra-vars "host={master_node} release_name={plugin_name} helm_chart_name={helm_chart_name} helm_config_file={helm_config_file}" remove_plugin.yaml'.format( \
@@ -1704,7 +1719,7 @@ def lockControllerInvocation():
 	except socket.error as e:
 		# OSError : [Errno 98] Address already in use
 		if e.errno == 98:
-			logger.error("An instance odim-controller is already active, another execution not allowed")
+			logger.error("An instance of odim-controller is already active, another execution is not allowed")
 		else:
 			logger.error("failed to get lock on odim-controller invocation: %s", str(e))
 			logger_f.error('%s', traceback.format_exc())

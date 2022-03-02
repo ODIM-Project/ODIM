@@ -17,8 +17,9 @@ package handle
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
@@ -40,13 +41,15 @@ type SessionRPCs struct {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) CreateSession(ctx iris.Context) {
+	defer ctx.Next()
 	var req interface{}
 	err := ctx.ReadJSON(&req)
 	if err != nil {
 		errorMessage := "error while trying to get JSON body from the session create request body: %v" + err.Error()
 		log.Printf(errorMessage)
 		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusBadRequest) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -64,7 +67,8 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -83,13 +87,14 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
+	defer ctx.Next()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 	if sessionToken == "" {
 		errorMessage := "error: session token is missing"
-		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.NoValidSession, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusUnauthorized) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
 		ctx.JSON(&response)
 		return
 	}
@@ -99,7 +104,8 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -114,6 +120,7 @@ func (s *SessionRPCs) DeleteSession(ctx iris.Context) {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) GetSession(ctx iris.Context) {
+	defer ctx.Next()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
@@ -122,7 +129,8 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
@@ -130,7 +138,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 	if resp.StatusCode == http.StatusOK {
 		resp.Header["Location"] = ctx.Request().Host + "/redfish/v1/SessionService/Sessions/" + sessionID
 	}
-
+	ctx.ResponseWriter().Header().Set("Allow", "GET, DELETE")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -141,6 +149,7 @@ func (s *SessionRPCs) GetSession(ctx iris.Context) {
 // create a rpc request and send a request to session micro service
 // and feed the response to iris
 func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
+	defer ctx.Next()
 	sessionID := ctx.Params().Get("sessionID")
 	sessionToken := ctx.Request().Header.Get("X-Auth-Token")
 
@@ -149,10 +158,13 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+
+	ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
@@ -160,15 +172,18 @@ func (s *SessionRPCs) GetAllActiveSessions(ctx iris.Context) {
 
 // GetSessionService will do the rpc call to get session service
 func (s *SessionRPCs) GetSessionService(ctx iris.Context) {
+	defer ctx.Next()
 	resp, err := s.GetSessionServiceRPC()
 	if err != nil && resp == nil {
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		ctx.StatusCode(http.StatusInternalServerError) // TODO: add error headers
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
 		ctx.JSON(&response.Body)
 		return
 	}
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

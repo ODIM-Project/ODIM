@@ -88,6 +88,8 @@ func mockGetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto
 }
 
 func TestGetSystemsCollection_ValidToken(t *testing.T) {
+	header["Allow"] = []string{"GET"}
+	defer delete(header, "Allow")
 	var sys SystemRPCs
 	sys.GetSystemsCollectionRPC = mockGetSystemsCollection
 	mockApp := iris.New()
@@ -96,7 +98,7 @@ func TestGetSystemsCollection_ValidToken(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Systems",
-	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 	test.GET(
 		"/redfish/v1/Systems",
 	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
@@ -111,7 +113,7 @@ func TestGetSystemsCollection_NoValidToken(t *testing.T) {
 	test := httptest.New(t, mockApp)
 	test.GET(
 		"/redfish/v1/Systems",
-	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 }
 
 func TestGetSystem_ValidUUid(t *testing.T) {
@@ -126,7 +128,7 @@ func TestGetSystem_ValidUUid(t *testing.T) {
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 	test.GET(
 		"/redfish/v1/Systems/1A",
-	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
+	).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError).Headers().Equal(header)
 }
 
 func TestGetSystem_InvalidUUid(t *testing.T) {
@@ -184,7 +186,7 @@ func TestSystemRPCs_GetSystemResource(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusOK)
 }
 
@@ -197,7 +199,7 @@ func TestSystemRPCs_GetSystemResourceRPCError(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -210,7 +212,7 @@ func TestSystemRPCs_GetSystemResourceWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.GET(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/SecureBoot",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/SecureBoot",
 	).Expect().Status(http.StatusUnauthorized)
 }
 
@@ -255,8 +257,8 @@ func TestChangeBiosSettingsWithValidToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Bios/Settings",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Bios/Settings",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestChangeBiosSettingsWithoutToken(t *testing.T) {
@@ -268,8 +270,8 @@ func TestChangeBiosSettingsWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Bios/Settings",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Bios/Settings",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 }
 
 func TestChangeBiosSettingsWithInvalidToken(t *testing.T) {
@@ -281,7 +283,7 @@ func TestChangeBiosSettingsWithInvalidToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Bios/Settings",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Bios/Settings",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
@@ -295,7 +297,7 @@ func TestChangeBiosSettingsNegativeTestCases(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.PATCH(
 		"/redfish/v1/Systems//Bios/Settings",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest).Headers().Equal(header)
 	e.PATCH(
 		"/redfish/v1/Systems//Bios/Settings",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
@@ -339,8 +341,8 @@ func TestChangeBootOrderSettingsWithValidToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestChangeBootOrderSettingsWithoutToken(t *testing.T) {
@@ -352,7 +354,7 @@ func TestChangeBootOrderSettingsWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 }
 
@@ -365,13 +367,13 @@ func TestChangeBootOrderSettingsNegativeTestCases(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1",
 	).WithHeader("X-Auth-Token", "Token").Expect().Status(http.StatusBadRequest)
 }
 
@@ -404,13 +406,13 @@ func TestComputerSystemResetNegativeTestCases(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Actions/ComputerSystem.Reset",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Actions/ComputerSystem.Reset",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Actions/ComputerSystem.Reset",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Actions/ComputerSystem.Reset",
 	).WithJSON("Body").WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Actions/ComputerSystem.Reset",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Actions/ComputerSystem.Reset",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -424,7 +426,7 @@ func TestComputerSystemResetWithValidData(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/Systems/123/Actions/ComputerSystem.Reset",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func mockSetDefaultBootOrder(req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
@@ -456,10 +458,10 @@ func TestMockSetDefaultBootOrderWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66:1/Actions/ComputerSystem.SetDefaultBootOrder",
+		"/redfish/v1/Systems/6d4a0a66.1/Actions/ComputerSystem.SetDefaultBootOrder",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 	e.PATCH(
-		"/redfish/v1/Systems/6d4a0a66:1/Actions/ComputerSystem.SetDefaultBootOrder",
+		"/redfish/v1/Systems/6d4a0a66.1/Actions/ComputerSystem.SetDefaultBootOrder",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }
 
@@ -472,7 +474,7 @@ func TestSetDefaultBootOrderWithValidData(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.PATCH(
-		"/redfish/v1/Systems/123:1/Actions/ComputerSystem.SetDefaultBootOrder",
+		"/redfish/v1/Systems/123.1/Actions/ComputerSystem.SetDefaultBootOrder",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 }
 
@@ -518,8 +520,8 @@ func TestCreateVolume(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestCreateVolumeWithoutToken(t *testing.T) {
@@ -531,7 +533,7 @@ func TestCreateVolumeWithoutToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusNotFound)
 }
 
@@ -544,7 +546,7 @@ func TestCreateVolumeWithInvalidToken(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
 }
 
@@ -557,10 +559,10 @@ func TestCreateVolumeNegativeTestCases(t *testing.T) {
 
 	e := httptest.New(t, mockApp)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage//Volumes",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage//Volumes",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
 	e.POST(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes",
 	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusBadRequest)
 	e.POST(
 		"/redfish/v1/Systems//Storage/ArrayControllers-0/Volumes",
@@ -609,26 +611,26 @@ func TestDeleteVolume(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	// test with valid token
 	e.DELETE(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/1",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes/1",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 
 	// test with Invalid token
 	e.DELETE(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/1",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes/1",
+	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 
 	// test without token
 	e.DELETE(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/1",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes/1",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
 
 	// test with invalid volume id
 	e.DELETE(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/2",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes/2",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusNotFound)
 
 	// test with rpc error
 	e.DELETE(
-		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e:1/Storage/ArrayControllers-0/Volumes/2",
+		"/redfish/v1/Systems/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1/Storage/ArrayControllers-0/Volumes/2",
 	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "TokenRPC").Expect().Status(http.StatusInternalServerError)
 }

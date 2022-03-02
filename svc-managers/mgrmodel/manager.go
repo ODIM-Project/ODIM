@@ -26,31 +26,53 @@ import (
 
 // Manager struct for manager deta
 type Manager struct {
-	OdataContext       string            `json:"@odata.context"`
-	Etag               string            `json:"@odata.etag,omitempty"`
-	OdataID            string            `json:"@odata.id"`
-	OdataType          string            `json:"@odata.type"`
-	Name               string            `json:"Name"`
-	ManagerType        string            `json:"ManagerType"`
-	ID                 string            `json:"Id"`
-	UUID               string            `json:"UUID"`
-	FirmwareVersion    string            `json:"FirmwareVersion"`
-	Status             *Status           `json:"Status,omitempty"`
-	HostInterfaces     *OdataID          `json:"HostInterfaces,omitempty"`
-	SerialInterface    *OdataID          `json:"SerialInterface,omitempty"`
-	EthernetInterfaces *OdataID          `json:"EthernetInterfaces,omitempty"`
-	LogServices        *OdataID          `json:"LogServices,omitempty"`
-	NetworkProtocol    *OdataID          `json:"NetworkProtocol,omitempty"`
-	VirtualMedia       *OdataID          `json:"VirtualMedia,omitempty"`
-	CommandShell       *CommandShell     `json:"CommandShell,omitempty"`
-	GraphicalConsole   *GraphicalConsole `json:"GraphicalConsole,omitempty"`
-	Links              *Links            `json:"Links,omitempty"`
-	Actions            *Actions          `json:"Actions,omitempty"`
+	OdataContext            string             `json:"@odata.context"`
+	Etag                    string             `json:"@odata.etag,omitempty"`
+	OdataID                 string             `json:"@odata.id"`
+	OdataType               string             `json:"@odata.type"`
+	Name                    string             `json:"Name"`
+	ManagerType             string             `json:"ManagerType"`
+	ID                      string             `json:"Id"`
+	UUID                    string             `json:"UUID"`
+	FirmwareVersion         string             `json:"FirmwareVersion"`
+	Status                  *Status            `json:"Status,omitempty"`
+	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
+	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
+	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
+	LogServices             *dmtf.Link         `json:"LogServices,omitempty"`
+	NetworkProtocol         *OdataID           `json:"NetworkProtocol,omitempty"`
+	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
+	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
+	GraphicalConsole        *GraphicalConsole  `json:"GraphicalConsole,omitempty"`
+	Links                   *Links             `json:"Links,omitempty"`
+	Actions                 *Actions           `json:"Actions,omitempty"`
+	AutoDSTEnabled          bool               `json:"AutoDSTEnabled,omitempty"`
+	DateTime                string             `json:"DateTime,omitempty"`
+	LastResetTime           string             `json:"LastResetTime,omitempty"`
+	Manufacturer            string             `json:"Manufacturer,omitempty"`
+	Model                   string             `json:"Model,omitempty"`
+	PartNumber              string             `json:"PartNumber,omitempty"`
+	PowerState              string             `json:"PowerState,omitempty"`
+	Redundancy              []dmtf.Redundancy  `json:"Redundancy,omitempty"`
+	RemoteAccountService    *dmtf.Link         `json:"RemoteAccountService,omitempty"`
+	RemoteRedfishServiceURI string             `json:"RemoteRedfishServiceUri,omitempty"`
+	SerialNumber            string             `json:"SerialNumber,omitempty"`
+	ServiceEntryPointUUID   string             `json:"ServiceEntryPointUUID,omitempty"`
+	TimeZoneName            string             `json:"TimeZoneName,omitempty"`
+	Measurements            []*dmtf.Link       `json:"Measurements,omitempty"`
+	Location                *dmtf.Link         `json:"Location,omitempty"`
+	LocationIndicatorActive bool               `json:"LocationIndicatorActive,omitempty"`
+	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
+	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
+	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
+	Description             string             `json:"Description,omitempty"`
+	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset,omitempty"`
 }
 
 // Status struct is to define the status of the manager
 type Status struct {
-	State string `json:"State"`
+	State  string `json:"State"`
+	Health string `json:"Health"`
 }
 
 // OdataID is link
@@ -93,12 +115,17 @@ type Target struct {
 
 // RAManager struct is to store odimra details into DB
 type RAManager struct {
-	ID              string `json:"ManagerID"`
-	Name            string `json:"Name"`
-	ManagerType     string `json:"ManagerType"`
-	FirmwareVersion string `json:"FirmwareVersion"`
-	UUID            string `json:"UUID"`
-	State           string `json:"State"`
+	ID              string     `json:"ManagerID"`
+	Name            string     `json:"Name"`
+	ManagerType     string     `json:"ManagerType"`
+	FirmwareVersion string     `json:"FirmwareVersion"`
+	UUID            string     `json:"UUID"`
+	State           string     `json:"State"`
+	Description     string     `json:"Description"`
+	LogServices     *dmtf.Link `json:"LogServices"`
+	Health          string     `json:"Health"`
+	Model           string     `json:"Model"`
+	PowerState      string     `json:"PowerState"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload

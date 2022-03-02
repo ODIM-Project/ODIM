@@ -159,6 +159,22 @@ func Router() *iris.Application {
 		UpdateTriggerRPC:                       rpc.DoUpdateTrigger,
 	}
 
+	cs := handle.CompositionServiceRPCs{
+		GetCompositionServiceRPC:      rpc.GetCompositionService,
+		GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
+		GetResourceBlockRPC:           rpc.GetResourceBlock,
+		CreateResourceBlockRPC:        rpc.CreateResourceBlock,
+		DeleteResourceBlockRPC:        rpc.DeleteResourceBlock,
+		GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
+		GetResourceZoneRPC:            rpc.GetResourceZone,
+		CreateResourceZoneRPC:         rpc.CreateResourceZone,
+		DeleteResourceZoneRPC:         rpc.DeleteResourceZone,
+		ComposeRPC:                    rpc.Compose,
+		GetActivePoolRPC:              rpc.GetActivePool,
+		GetFreePoolRPC:                rpc.GetFreePool,
+		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -605,5 +621,28 @@ func Router() *iris.Application {
 	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
 
+	// composition service
+	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)
+	compositionService.SetRegisterRule(iris.RouteSkip)
+	compositionService.Get("/", cs.GetCompositionService)
+	compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
+	compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
+	compositionService.Post("/ResourceBlocks", cs.CreateResourceBlock)
+	compositionService.Delete("/ResourceBlocks/{id}", cs.DeleteResourceBlock)
+	compositionService.Get("/ResourceZones", cs.GetResourceZoneCollection)
+	compositionService.Get("/ResourceZones/{id}", cs.GetResourceZone)
+	compositionService.Post("/ResourceZones", cs.CreateResourceZone)
+	compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
+	compositionService.Post("/Actions/CompositionService.Compose", cs.Compose)
+	compositionService.Get("/ActivePool", cs.GetActivePool)
+	compositionService.Get("/FreePool", cs.GetFreePool)
+	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
+	compositionService.Any("/", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceZones", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceZones/{id}", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/FreePool", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
 	return router
 }

@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: composition-service
+  namespace: {{ .Values.odimra.namespace }}
+  annotations:
+    secret.reloader.stakater.com/reload: "odimra-secret"
+spec:
+  replicas: {{ .Values.ReplicaCount | default 1}}
+  selector:
+    matchLabels:
+      app: composition-service
+  template:
+    metadata:
+      labels:
+        app: composition-service
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      hostname: composition-service
+      volumes:
+        - name: cs-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: cs-config
+        - name: odimra-config-vol
+          projected:
+            sources:
+            - configMap:
+                name: odimra-config
+            - configMap:
+                name: odimra-platformconfig
+        - name: configure-hosts
+          configMap:
+            name: configure-hosts
+            items:
+            - key: hosts
+              path: host.append
+              mode: 0644
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
+        - name: odimra-log
+          persistentVolumeClaim:
+            claimName: odimra-log-claim
+      securityContext:
+        fsGroup: {{ .Values.odimra.groupID }}
+      containers:
+        - name: composition-service
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+            - name: ODIM_NAMESPACE
+              value: {{ .Values.odimra.namespace | quote }}
+          image: composition-service:{{ .Values.compositionservice.imageTag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 45112
+          volumeMounts:
+            - name: cs-config-vol
+              mountPath: /etc/composition_service_config
+            - name: configure-hosts
+              mountPath: /tmp
+            - name: odimra-log
+              mountPath: /var/log/odimra_logs
+            - name: odimra-secret
+              mountPath: /etc/odimra_certs
+            - name: odimra-config-vol
+              mountPath: /etc/odimra_config

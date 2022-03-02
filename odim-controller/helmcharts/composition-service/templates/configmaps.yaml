@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cs-config
+  namespace: {{ .Values.odimra.namespace }}
+data:
+  config.json: |
+    {
+        "Host": "{{ .Values.compositionservice.host }}",
+        "Port": "45112",
+        "UserName": "{{ .Values.compositionservice.username }}",
+        "Password": "{{ .Values.compositionservice.password }}",
+        "RootServiceUUID": "{{ .Values.compositionservice.csRootServiceUUID }}",
+        "OdimURL": "https://api:45000",
+        "OdimUserName": "{{ .Values.compositionservice.odimUsername }}",
+        "OdimPassword": "{{ .Values.compositionservice.odimPassword }}",
+        "FirmwareVersion": "v1.0.0",
+        "LogLevel": "info",
+        "RedisOnDiskAddress": "redis-ondisk:6379",
+        "RedisInMemoryAddress": "redis-inmemory:6379",
+        "PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
+        "CertificatePath": "/etc/odimra_certs/odimra_server.crt",
+        "RootCAPath": "/etc/odimra_certs/rootCA.crt",
+        "RSAPrivateKeyPath": "/etc/odimra_certs/odimra_rsa.private",
+        "RSAPublicKeyPath": "/etc/odimra_certs/odimra_rsa.public"
+    }
+  

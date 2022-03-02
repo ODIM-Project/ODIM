@@ -1,0 +1,14 @@
+odimra:
+  namespace: odim
+  groupID:
+  haDeploymentEnabled: false
+compositionservice:
+  imageTag: "1.0"
+  csRootServiceUUID:
+  username: 
+  password: 
+  host: composition-service
+  odimUsername: 
+  odimPassword: 
+  sentinelMasterName: primaryset
+  logPath: 

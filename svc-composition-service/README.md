@@ -456,8 +456,7 @@ curl -i POST \
 |---------|----|-----------|
 |Name|String \(optional\) |Name for the Resource Block. |
 |Description|String \(optional\) |Description for the Resource Block. |
-|ResourceBlockType| \(required\) |This property shall contain an array of enumerated values that describe the types of resource block. "Compute", "Processor", "Memory", "Network", "Storage", "ComputerSystem", "Expansion", "IndependentResource" are ResourceBlockTypes defined in Redfish.
-|
+|ResourceBlockType| \(required\) |This property shall contain an array of enumerated values that describe the types of resource block. "Compute", "Processor", "Memory", "Network", "Storage", "ComputerSystem", "Expansion", "IndependentResource" are ResourceBlockTypes defined in Redfish. |
 |ComputerSystems\[\{| Array \(required\) | Required if ResourceBlockType is ComputerSystm. Represents an array of computer systems that are used for this ResourceBlock. |
 |@odata.id\}\]|String \(required\) | Link to a computer system. |
 

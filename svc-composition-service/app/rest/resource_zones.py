@@ -194,6 +194,7 @@ class ResourceZones():
                 code = HTTPStatus.NOT_FOUND
                 return
             res = json.loads(str(data))
+            """
             res["@Redfish.CollectionCapabilities"] = {
                 "@odata.type":
                 "#CollectionCapabilities.v1_3_0.CollectionCapabilities",
@@ -209,6 +210,7 @@ class ResourceZones():
                     }
                 }]
             }
+            """
 
             code = HTTPStatus.OK
 

@@ -176,6 +176,8 @@ class CompositonService():
                 return
 
             for rb_uri in rb_list:
+                if resource_block_uri == rb_uri:
+                    continue
                 rb_data = self.redis.get(
                     "ResourceBlocks:{block_uri}".format(block_uri=rb_uri))
                 if not rb_data:
@@ -189,6 +191,8 @@ class CompositonService():
                 rb_data = json.loads(rb_data)
                 logging.debug("ResourceBlock {id} data is: {data}".format(
                     id=rb_uri, data=rb_data))
+                if "ComputerSystem" in rb_data["ResourceBlockType"]:
+                    continue
 
                 if rb_data["CompositionStatus"]["MaxCompositions"] <= rb_data[
                         "CompositionStatus"]["NumberOfCompositions"]:
@@ -227,9 +231,7 @@ class CompositonService():
                 pipe.srem("FreePool", rb_uri)
                 pipe.sadd("ActivePool", rb_uri)
 
-                if {
-                        "@odata.id": rb_uri
-                } not in system_data["Links"]["ResourceBlocks"]:
+                if {"@odata.id": rb_uri} not in system_data["Links"]["ResourceBlocks"]:
                     system_data["Links"]["ResourceBlocks"].append(
                         {"@odata.id": rb_uri})
 
@@ -323,6 +325,8 @@ class CompositonService():
                         code = HTTPStatus.BAD_REQUEST
                         return
                     rb_data = json.loads(rb_data)
+                    if "ComputerSystem" in rb_data["ResourceBlockType"]:
+                        continue
 
                     system_uri = self.redis.get("{rb_cs}:{rb}".format(
                         rb_cs="ResourceBlocks-ComputerSystem",

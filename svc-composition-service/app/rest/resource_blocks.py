@@ -95,6 +95,13 @@ class ResourceBlocks():
 
             data['ComputerSystems'] = [{'@odata.id': system_data['@odata.id']}]
 
+            # if ResourceBlockType is ComputerSystem then created resource block becomes Active and Composed
+            data["Pool"] = "Active"
+            data["CompositionStatus"]["CompositionState"] = "Composed"
+            data["CompositionStatus"]["NumberOfCompositions"] += 1
+
+            data["Links"]= {"ComputerSystems": data['ComputerSystems']}
+
             pipe.set(
                 "{block}:{block_url}".format(block="ResourceBlocks",
                                              block_url=data['@odata.id']),
@@ -105,7 +112,7 @@ class ResourceBlocks():
                     block_system="ResourceBlocks-ComputerSystem",
                     block_url=data['@odata.id']), system_data['@odata.id'])
 
-            pipe.sadd("FreePool", data['@odata.id'])
+            pipe.sadd("ActivePool", data['@odata.id'])
 
             if system_data.get("Links"):
                 if system_data["Links"].get("ResourceBlocks"):
@@ -308,16 +315,16 @@ class ResourceBlocks():
                 code = HTTPStatus.NOT_FOUND
                 return
             rb_data = json.loads(data)
-
-            if rb_data["CompositionStatus"][
-                    "CompositionState"] != "Unused" and rb_data[""] != "Free":
-                res = {
-                    "Error":
-                    "The resouce block {rb_id} deletion is failed because the resource block is in 'active/composed' state"
-                    .format(rb_id=rb_data["Id"])
-                }
-                code = HTTPStatus.CONFLICT
-                return
+            if "ComputerSystem" not in rb_data["ResourceBlockType"]:
+                if rb_data["CompositionStatus"][
+                        "CompositionState"] != "Unused" and rb_data[""] != "Free":
+                    res = {
+                        "Error":
+                        "The resouce block {rb_id} deletion is failed because the resource block is in 'active/composed' state"
+                        .format(rb_id=rb_data["Id"])
+                    }
+                    code = HTTPStatus.CONFLICT
+                    return
 
             system_link = self.redis.get("{rb_cs}:{block_url}".format(
                 rb_cs="ResourceBlocks-ComputerSystem", block_url=url))
@@ -380,8 +387,10 @@ class ResourceBlocks():
                                                 str(json.dumps(zone_data)))
                                             break
 
-            elif rb_data["Pool"] == "Free":
+            if rb_data["Pool"] == "Free":
                 pipe.srem("FreePool", rb_data["@odata.id"])
+            elif rb_data["Pool"] == "Active":
+                pipe.srem("ActivePool", rb_data["@odata.id"])
 
             pipe.delete("ResourceBlocks:{block_uri}".format(
                 block_uri=rb_data["@odata.id"]))

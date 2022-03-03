@@ -46,12 +46,14 @@ spec:
             - key: odimra_serverkey
               path: odimra_server.key
               mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
             - key: odimra_kafka_clientcrt
               path: odimra_kafka_client.crt
               mode: 0444
             - key: odimra_kafka_clientkey
               path: odimra_kafka_client.key
               mode: 0444
+            {{- end }}
         - name: lenovoplugin-log
           persistentVolumeClaim:
             claimName: lenovoplugin-log-claim

@@ -4,10 +4,8 @@
 # Table of contents
 
 1. [Introduction](#introduction)
-   - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
    - [Resource Aggregator for ODIM Deployment overview](#resource-aggregator-for-odim-deployment-overview)
    - [Deployment considerations](#deployment-considerations)
-  
 2. [Resource Aggregator for ODIM compatibility matrix](#resource-aggregator-for-odim-compatibility-matrix)
 3. [Predeployment procedures](#predeployment-procedures)
    - [Setting up the environment](#setting-up-the-environment)
@@ -41,7 +39,13 @@
    - [Scaling down the resources and services of Resource Aggregator for ODIM](#scaling-down-the-resources-and-services-of-resource-aggregator-for-odim)
    - [Rolling back to an earlier deployment revision](#rolling-back-to-an-earlier-deployment-revision)
    - [Upgrading the Resource Aggregator for ODIM deployment](#upgrading-the-resource-aggregator-for-odim-deployment)
-8. [Appendix](#appendix)
+8. [Contributing to the open source community](#contributing-to-the-open-source-community)
+   - [Creating a PR](#creating-a-pr)
+   - [Filing Resource Aggregator for ODIM defects](#filing-resource-aggregator-for-odim-defects)
+   - [Adding new plugins and services](#adding-new-plugins-and-services)
+   - [Licensing](#licensing)
+   - [Reference links](#reference-links)
+9. [Appendix](#appendix)
    - [Setting proxy configuration](#setting-proxy-configuration)
    - [Setting up time sync across nodes](#setting-up-time-sync-across-nodes)
    - [Downloading and installing go](#downloading-and-installing-go)
@@ -93,18 +97,8 @@ Resource Aggregator for ODIM comprises the following two key components:
    -  Integration of additional third-party plugins
    
    Resource Aggregator for ODIM allows third parties to easily develop and integrate their plugins into its framework. For more information, see [Resource Aggregator for Open Distributed Infrastructure Management™ Plugin Developer's Guide](https://github.com/ODIM-Project/ODIM/blob/development/plugin-redfish/README.md).
-
-## Filing Resource Aggregator for ODIM defects 
-
-**Important**: In case of any unforeseen issues you experience while deploying or using Resource Aggregator for ODIM, log on to the following website and file your defect by clicking **Create**.
-
-**Prerequisite**: You must have valid LFN Jira credentials to create defects.
-
-- Website: https://jira.lfnetworking.org/secure/Dashboard.jspa
-- Discussion Forums: https://odim.slack.com/archives/C01DG9MH479
-- Documentation:
-  - Deployment Document- https://github.com/ODIM-Project/ODIM#readme
-  - Additional documents - https://github.com/ODIM-Project/ODIM/blob/main/docs
+   
+   
 
 ## Resource Aggregator for ODIM deployment overview
 
@@ -2108,29 +2102,37 @@ Following are the two ways of scaling up the resources and services of Resource 
      <blockquote>
      NOTE:Scaling of third-party services is not supported.
      </blockquote>
-1. To add a node, run the following command on the deployment node: 
+1. Log in to each cluster node and update all the configuration files inside `/opt/nginx/servers` with the new node details. 
+
+    <blockquote>NOTE: Refer the existing node entries and add the new node entry. </blockquote>
+    
+2. Update the `kube_deploy_nodes.yaml` file with the new node details being added.
+
+3. To add a node, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --addnode kubernetes --config \
     /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
     ```
-    
+
     Before adding a node, ensure that time on the node is same as the time on all the other existing nodes. To know how to set time sync, see [Setting up time sync across nodes](#setting-up-time-sync-across-nodes).
-    
-2. Log in to each cluster node and update all the configuration files inside `/opt/nginx/servers` with the new node details. 
-3. To scale up the resource aggregator deployments, run the following command on the deployment node: 
+
+4. To scale up the resource aggregator services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
     /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-    --scale --svc aggregation --replicas <replica_count>
+    --scale --svc <service_name> --replicas <replica_count>
     ```
 
-    Replace <deployment\_name\> with the name of the deployment which you want to scale up. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
+5. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Replace <replica\_count\> with an integer indicating the number of service instances to be added.
+    Please note, you can scale up only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, `telemetry`and `all` services. 
+    Replacing `<service_name>` with `all` will scale up all resource aggregator services.
 
-5. To scale up the plugin services, run the following command on the deployment node: 
+6. Replace <`replica_count>` with an integer indicating the number of service instances to be added.
+
+7. To scale up the plugin services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
@@ -2138,10 +2140,11 @@ Following are the two ways of scaling up the resources and services of Resource 
     kube_deploy_nodes.yaml --scale --plugin <plugin_name> --replicas <replica_count>
     ```
 
-    Replace <plugin\_name\> with the name of the plugin whose service you want to scale up.
+8. Replace `<plugin_name>` with the name of the plugin whose service you want to scale up.
+    For example: `urplugin`, `grfplugin`, `dellplugin`, `lenovoplugin`, `aciplugin`
 
-    Replace <replica\_count\> with an integer indicating the number of plugin service instances to be added.
-	
+9. Replace `<replica_count>` with an integer indicating the number of plugin service instances to be added.
+
 ## Scaling down the resources and services of Resource Aggregator for ODIM
 
 Scaling down involves removing one or more worker nodes from an existing three-node cluster where the services of Resource Aggregator for ODIM are deployed.
@@ -2149,9 +2152,9 @@ Scaling down involves removing one or more worker nodes from an existing three-n
 <blockquote>NOTE: You cannot remove controller nodes in a cluster.</blockquote>
 
 1. To remove a node, do the following: 
-    1. Open the `kube\_deploy\_nodes.yaml` file on the deployment node.
+    1. Open the `kube_deploy_nodes.yaml` file on the deployment node.
     
-    2. Remove all the node entries under nodes except for the node that  you want to remove.
+    2. Remove all the node entries under nodes except for the node that you want to remove.
     
     3. Run the following command:
     
@@ -2160,19 +2163,22 @@ Scaling down involves removing one or more worker nodes from an existing three-n
         /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml
         ```
     
-2. To scale down the resource aggregator deployments, run the following command on the deployment node: 
+2. To scale down the resource aggregator services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
     /home/${USER}/ODIM/odim-controller/scripts/kube_deploy_nodes.yaml \
-    --scale --svc aggregation --replicas <replica_count>
+    --scale --svc <service_name> --replicas <replica_count>
     ```
 
-    Replace <deployment\_name\> with the name of the deployment which you want to scale down. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
+3. Replace `<service_name>` with the name of the service which you want to scale up. To know all the complete list of supported deployment and service names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
-    Replace <replica\_count\> with an integer indicating the number of service instances to be removed.
+    Please note, you can scale down only the `account-session`, `aggregation`, `api`, `events`, `fabrics`, `managers`, `systems`, `tasks`, `update`, `telemetry`and `all` services. 
+    Replacing `<service_name>` with `all` will scale down all resource aggregator services.
 
-3. To scale down the plugin services, run the following command on the deployment node: 
+4. Replace `<replica_count>` with an integer indicating the number of service instances to be removed.
+
+5. To scale down the plugin services, run the following command on the deployment node: 
 
     ```
     python3 odim-controller.py --config \
@@ -2180,10 +2186,11 @@ Scaling down involves removing one or more worker nodes from an existing three-n
     --scale --plugin <plugin_name> --replicas <replica_count>
     ```
 
-    Replace <plugin\_name\> with the name of the plugin whose service you want to scale up.
+6. Replace `<plugin_name>` with the name of the plugin whose service you want to scale down.
+   For example: `urplugin`, `grfplugin`, `dellplugin`, `lenovoplugin`, `aciplugin`
+   
+7. Replace `<replica_count>` with an integer indicating the number of plugin service instances to be removed.
 
-    Replace <replica\_count\> with an integer indicating the number of plugin service instances to be removed.
-	
 ## Rolling back to an earlier deployment revision
 
 Rolling back the deployment of Resource Aggregator for ODIM to a particular revision restores the configuration manifest of that version.
@@ -2294,7 +2301,87 @@ NOTE: When you upgrade the Resource Aggregator for ODIM deployment, the new conf
     --upgrade odimra-config
         ```
         
+# Contributing to the open source community
+
+Welcome to the GitHub open-source community for Resource Aggregator for ODIM!
+
+If you want to contribute to the project to make it better, your help is welcome and highly appreciated. 
+Contribution is a great way of extending the understanding and value of open-source software and development models, towards a common goal. Apart from learning more about social coding on GitHub, new technologies and their ecosystems, you can keep the discussion forums active by sharing knowledge, asking right questions, finding information through effective collaborations as well as make constructive, helpful bug reports, feature requests, and the noblest of all contributions—a good, clean pull request (PR).
+All bugs or feature requests must be submitted through a PR to the development branch and are expected to have unit tests and/or integration tests with the PR. 
+
+## Creating a PR
+
+<blockquote>Prerequisite: Follow the project's contribution instructions, if any. </blockquote>
+
+1.	Create a personal fork of the project on GitHub.
+2.	Clone the fork on your local machine. Your remote repo on GitHub is called origin.
+3.	Add the original repository as a remote called upstream.
+4.	If you created your fork a while ago, be sure to pull upstream changes into your local repository.
+5.	Create a new branch to work on. Branch from development (if it exists), else from the main branch.
+6.	Implement/fix your feature, comment your code.
+7.	Follow the code style of the project, including indentation.
+8.	If the project has tests, run them!
+9.	Write or adapt tests as needed.
+10.	Add or change the documentation as needed.
+11.	Squash your commits into a single commit with git's interactive rebase. Create a new branch, if necessary.
+12.	Push your branch to your fork on GitHub, the remote origin.
+13.	From your fork, open a PR in the correct branch. Target the project's development branch if there is one, else go for main.
+14. Once the pull request is approved and merged, pull the changes from upstream to your local repository and delete your extra branch(es).
+
+    Last, but not the least, **always write your commit messages in the present tense**. Your commit message should describe what the commit is, when is it applied, and what it does to the code – not what you did to the code.
+
+
+
+## Filing Resource Aggregator for ODIM defects 
+
+In case of any unforeseen issues you experience while deploying or using Resource Aggregator for ODIM, log on to the following website and file your defect by clicking **Create**.
+
+**Prerequisite**: You must have valid LFN Jira credentials to create defects.
+
+- Website: https://jira.lfnetworking.org/secure/Dashboard.jspa
+- Discussion Forums: https://odim.slack.com/archives/C01DG9MH479
+- Documentation:
+  - Deployment Document- https://github.com/ODIM-Project/ODIM#readme
+  - Additional documents - https://github.com/ODIM-Project/ODIM/blob/main/docs
+
+
+
+## Adding new plugins and services
+
+File a defect and submit a PR for adding new plugin. Run all the integration tests with their plugins and provide the logs of the result in the PR. You will be asked to run the integration tests before each release to make sure there are no issues.
+
+We do not maintain compiled proto modules in Resource Aggregator for ODIM. They must be generated during deployment. This applies to all contributions.
+
+<blockquote>NOTE: Comply to the coding standards of the programming languages being used in the project. </blockquote>
+
+
+
+## Licensing
+
+The specification and code is licensed under the Apache 2.0 license, and is found in the LICENSE file of this repository.
+
+
+
+## Reference links
+
+If you want to make your first contribution on GitHub, refer one of the following procedures:
+
+- https://github.com/firstcontributions/first-contributions/blob/master/README.md
+
+- https://www.dataschool.io/how-to-contribute-on-github/
+
+You can also refer the following links for exploring Wiki page and slack channel for ODIM.
+
+- https://odim.io/
+
+- https://wiki.odim.io/
+
+- https://wiki.odim.io/display/HOME/TSC+channel+on+slack
+
+
+
 # Appendix
+
 ## Setting proxy configuration
 
 1. Open the `/etc/environment` file to edit. 
@@ -2666,30 +2753,33 @@ The following table lists all the configuration parameters required to deploy a 
 
 ## Resource Aggregator for ODIM deployment names
 
-| Deployment name       | Description                                                  |
-| --------------------- | ------------------------------------------------------------ |
-| odimra-config         | Deployment name of the ConfigMap which contains the configuration information required by the resource aggregator services |
-| odimra-platformconfig | Deployment name of the ConfigMap which contains the Kafka client configuration information required by the resource aggregator services |
-| configure-hosts       | Deployment name of the ConfigMap which contains the entries to be added in the `/etc/hosts` file on all the containers |
-| odimra-secret         | Deployment name of the secret which contains the certificates and keys used by the resource aggregator services |
-| kafka-secret          | Deployment name of the secret which contains the JKS password of Kafka keystore |
-| zookeeper-secret      | Deployment name of the secret which contains the JKS password of zookeeper keystore |
-| account-session       | Deployment name of the account-sessions service              |
-| aggregation           | Deployment name of the aggregation service                   |
-| api                   | Deployment name of the api service                           |
-| events                | Deployment name of the events service                        |
-| fabrics               | Deployment name of the fabrics service                       |
-| managers              | Deployment name of the managers service                      |
-| systems               | Deployment name of the systems service                       |
-| tasks                 | Deployment name of the tasks service                         |
-| update                | Deployment name of the update service                        |
-| kafka                 | Deployment name of the Kafka service                         |
-| zookeeper             | Deployment name of the zookeeper service                     |
-| redis                 | Deployment name of the Redis service                         |
-| etcd                  | Deployment name of the etcd service                          |
-| all                   | Deployment name to be used for scaling up all the resource aggregator services |
-| odimra                | Deployment name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services |
-| thirdparty            | Deployment name to be used for scaling up all the third-party ConfigMaps and secrets |
+| Deployment/Service names | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| odimra-config            | Name of the ConfigMap which contains the configuration information required by the resource aggregator services |
+| odimra-platformconfig    | Name of the ConfigMap which contains the Kafka client configuration information required by the resource aggregator services |
+| configure-hosts          | Name of the ConfigMap which contains the entries to be added in the `/etc/hosts` file on all the containers |
+| odimra-secret            | Name of the secret which contains the certificates and keys used by the resource aggregator services |
+| kafka-secret             | Name of the secret which contains the JKS password of Kafka keystore |
+| zookeeper-secret         | Name of the secret which contains the JKS password of zookeeper keystore |
+| account-session          | Name of the account-sessions service                         |
+| aggregation              | Name of the aggregation service                              |
+| api                      | Name of the api service                                      |
+| events                   | Name of the events service                                   |
+| fabrics                  | Name of the fabrics service                                  |
+| managers                 | Name of the managers service                                 |
+| systems                  | Name of the systems service                                  |
+| tasks                    | Name of the tasks service                                    |
+| update                   | Name of the update service                                   |
+| telemetry                | Name of the telemetry service                                |
+| kafka                    | Name of the Kafka service                                    |
+| zookeeper                | Name of the zookeeper service                                |
+| redis                    | Name of the Redis service                                    |
+| etcd                     | Name of the etcd service                                     |
+| all                      | Name to be used for scaling up all the resource aggregator services |
+| odimra                   | Name to be used for scaling up all ConfigMaps, secrets, and the resource aggregator services |
+| thirdparty               | Name to be used for scaling up all the third-party ConfigMaps and secrets |
+
+<blockquote>NOTE: You can scale up only the account-session, aggregation, api, events, fabrics, managers, systems, tasks, update, telemetry and all services.</blockquote>
 
 ## Using your own CA certificates and keys
 

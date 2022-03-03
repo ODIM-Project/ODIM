@@ -251,6 +251,30 @@ func mockContactClient(url, method, token string, odataID string, body interface
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
 		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService/Accounts" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService/Accounts/1" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService/Roles/1" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
+	} else if url == "https://localhost:9091"+baseURI+"/Managers/uuid/RemoteAccountService" {
+		body := `{"data": "Success"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		}, nil
 	}
 	return nil, fmt.Errorf("InvalidRequest")
 }

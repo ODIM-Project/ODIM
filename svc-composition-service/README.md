@@ -847,13 +847,7 @@ curl -i POST \
  'https://{odimra_host}:{port}/redfish/v1/CompositionService/Actions/CompositionService.Compose'
 
 ```
-HTTP/1.1 200 OK
-Connection: keep-alive
-Content-Type: application/json; charset=utf-8
-Odata-Version: 4.0
-X-Frame-Options: sameorigin
-Date: Thu, 16 Dec 2021 12:26:46 GMT
-Content-Length: 1194
+
 
 
 >**Sample response header** 

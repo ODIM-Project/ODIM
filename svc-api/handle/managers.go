@@ -29,11 +29,13 @@ import (
 
 // ManagersRPCs defines all the RPC methods in account service
 type ManagersRPCs struct {
-	GetManagersCollectionRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	GetManagersRPC           func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	GetManagersResourceRPC   func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	VirtualMediaInsertRPC    func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
-	VirtualMediaEjectRPC     func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetManagersCollectionRPC      func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetManagersRPC                func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetManagersResourceRPC        func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	VirtualMediaInsertRPC         func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	VirtualMediaEjectRPC          func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	GetRemoteAccountServiceRPC    func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	CreateRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 }
 
 //GetManagersCollection fetches all managers
@@ -224,6 +226,108 @@ func (mgr *ManagersRPCs) VirtualMediaEject(ctx iris.Context) {
 		return
 	}
 
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// GetRemoteAccountService defines the GetRemoteAccountService iris handler.
+// This method extract the session token,uuid and request url and creates the RPC request.
+// After the RPC call the method will feed the response to the iris
+// and gives out a proper response.
+func (mgr *ManagersRPCs) GetRemoteAccountService(ctx iris.Context) {
+	defer ctx.Next()
+	req := managersproto.ManagerRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		ManagerID:    ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := mgr.GetRemoteAccountServiceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	switch req.URL {
+	case "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService/Accounts":
+		ctx.ResponseWriter().Header().Set("Allow", "GET, POST")
+	case "/redfish/v1/Managers/" + req.ManagerID + "/RemoteAccountService/Accounts/" + req.ResourceID:
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	default:
+		ctx.ResponseWriter().Header().Set("Allow", "GET")
+	}
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// CreateRemoteAccountService defines the CreateRemoteAccountService iris handler.
+// This method extract the session token,uuid,request payload and url and creates the RPC request.
+// After the RPC call the method will feed the response to the iris
+// and gives out a proper response.
+func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
+	defer ctx.Next()
+	var reqIn interface{}
+	err := ctx.ReadJSON(&reqIn)
+	if err != nil {
+		errorMessage := "while trying to get JSON body from the create remote account request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(reqIn)
+	if err != nil {
+		errorMessage := "while trying to create JSON request body in create remote account: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	req := managersproto.ManagerRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		ManagerID:    ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  request,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := mgr.CreateRemoteAccountServiceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

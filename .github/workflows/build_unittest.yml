@@ -98,6 +98,11 @@ jobs:
           for i in $LIST; do
             echo "Compiling $i"
             cd $i
+            if [[ "$i" == "svc-composition-service" ]]; then
+              /bin/bash build.sh
+              cd ..
+              continue
+            fi
             go mod download
             go mod vendor
             go build -i .

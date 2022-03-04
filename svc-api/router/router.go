@@ -191,7 +191,7 @@ func Router() *iris.Application {
 					authRequired = false
 					break
 				}
-				if r.URL.Path == common.sessionURI && r.Method == http.MethodGet {
+				if r.URL.Path == common.SessionURI && r.Method == http.MethodGet {
 					authRequired = true
 					break
 				}

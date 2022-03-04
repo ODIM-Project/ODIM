@@ -1114,10 +1114,11 @@ def load_password_from_vault(cur_dir):
 # a script, after checking and if not exists, to extract
 # kubespary source bundle
 def check_extract_kubespray_src():
+	global CONTROLLER_CONF_DATA
 	if not os.path.isdir(os.path.join(KUBESPRAY_SRC_PATH, "inventory")):
 		kubespray_extract_tool = os.path.join(KUBESPRAY_SRC_PATH, 'configure-kubespray.sh')
-		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path}'.format( \
-			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH)
+		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path} {dualStatckEnabled}'.format( \
+			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH, dualStatckEnabled=CONTROLLER_CONF_DATA['dualStatckEnabled'])
 		ret = exec(kubespray_extract_cmd, {})
 		if ret != 0:
 			logger.critical("Extracting and configuring kubespray failed")

@@ -347,7 +347,7 @@ func Router() *iris.Application {
 	storage.Get("/", system.GetSystemResource)
 	storage.Get("/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
-	storage.Get("/{id2}/Controllers/", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers", system.GetSystemResource)
 	storage.Get("/{id2}/Controllers/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Controllers/{rid}/Ports", system.GetSystemResource)
 	storage.Get("/{id2}/Controllers/{rid}/Ports/{portID}", system.GetSystemResource)

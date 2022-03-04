@@ -191,6 +191,10 @@ func Router() *iris.Application {
 					authRequired = false
 					break
 				}
+				if r.URL.Path == common.sessionURI && r.Method == http.MethodGet {
+					authRequired = true
+					break
+				}
 			}
 			if authRequired {
 				logProperties := make(map[string]interface{})

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -68,7 +69,7 @@ func TestGetManager(t *testing.T) {
 	assert.Equal(t, "Service", manager.ManagerType, "Status code should be StatusOK.")
 	assert.Equal(t, req.ManagerID, manager.ID, "Status code should be StatusOK.")
 	assert.Equal(t, "1.0", manager.FirmwareVersion, "Status code should be StatusOK.")
-
+	assert.Equal(t, time.Now().Format(time.RFC3339), manager.DateTime, "Invalid DateTime format")
 }
 
 func TestGetManagerWithDeviceAbsent(t *testing.T) {

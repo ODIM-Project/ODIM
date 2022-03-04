@@ -64,11 +64,11 @@ func TestGetManager(t *testing.T) {
 	data, _ := json.Marshal(response.Body)
 	json.Unmarshal(data, &manager)
 
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
-	assert.Equal(t, "odimra", manager.Name, "Status code should be StatusOK.")
-	assert.Equal(t, "Service", manager.ManagerType, "Status code should be StatusOK.")
-	assert.Equal(t, req.ManagerID, manager.ID, "Status code should be StatusOK.")
-	assert.Equal(t, "1.0", manager.FirmwareVersion, "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK")
+	assert.Equal(t, "odimra", manager.Name, "Manager name should be odimra")
+	assert.Equal(t, "Service", manager.ManagerType, "Manager type should be Service")
+	assert.Equal(t, req.ManagerID, manager.ID, "Unexpected manager ID, should be equal to the ID in request")
+	assert.Equal(t, "1.0", manager.FirmwareVersion, "Manager firmware version should be 1.0")
 	assert.Equal(t, time.Now().Format(time.RFC3339), manager.DateTime, "Invalid DateTime format")
 }
 

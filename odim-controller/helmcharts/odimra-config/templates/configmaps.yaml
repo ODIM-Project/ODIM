@@ -131,7 +131,7 @@ data:
     		"Managers",
     		"UpdateService",
     		"TelemetryService",
-		"CompositionService"
+        "CompositionService"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],

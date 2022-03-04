@@ -186,6 +186,83 @@ func mockVirtualMediaEjectRequest(req managersproto.ManagerRequest) (*managerspr
 	}
 	return response, nil
 }
+func mockGetRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var response = &managersproto.ManagerResponse{}
+	if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "InvalidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts/1" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Roles/1" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Roles" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	}
+	return response, nil
+}
+func mockCreateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var response = &managersproto.ManagerResponse{}
+	if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    200,
+			StatusMessage: "Success",
+			Body:          []byte(`{"Response":"Success"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "InvalidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/2A/RemoteAccountService/Accounts" && req.SessionToken == "ValidToken" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    403,
+			StatusMessage: "Forbidden",
+			Body:          []byte(`{"Response":"Forbidden"}`),
+		}
+	} else if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "" {
+		response = &managersproto.ManagerResponse{
+			StatusCode:    401,
+			StatusMessage: "Unauthorized",
+			Body:          []byte(`{"Response":"Unauthorized"}`),
+		}
+	}
+	return response, nil
+}
+
 func TestGetManager_ValidManagerID(t *testing.T) {
 	header["Allow"] = []string{"GET"}
 	defer delete(header, "Allow")
@@ -341,4 +418,62 @@ func TestVirtualMediaEject(t *testing.T) {
 	test.POST(
 		"/redfish/v1/Managers/3A/VirtualMedia/1B/VirtualMedia.EjectMedia",
 	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusInternalServerError)
+}
+
+func TestGetRemoteAccountService(t *testing.T) {
+	var mgr ManagersRPCs
+	mgr.GetRemoteAccountServiceRPC = mockGetRemoteAccountService
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
+	redfishRoutes.Get("/{id}/RemoteAccountService", mgr.GetRemoteAccountService)
+	redfishRoutes.Get("/{id}/RemoteAccountService/Accounts", mgr.GetRemoteAccountService)
+	redfishRoutes.Get("/{id}/RemoteAccountService/Accounts/{rid}", mgr.GetRemoteAccountService)
+	redfishRoutes.Get("/{id}/RemoteAccountService/Roles", mgr.GetRemoteAccountService)
+	redfishRoutes.Get("/{id}/RemoteAccountService/Roles/{rid}", mgr.GetRemoteAccountService)
+	test := httptest.New(t, mockApp)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts/1",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Roles/1",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Roles",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.GET(
+		"/redfish/v1/Managers/1A/RemoteAccountService",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+}
+
+func TestCreateRemoteAccountService(t *testing.T) {
+	var mgr ManagersRPCs
+	mgr.CreateRemoteAccountServiceRPC = mockCreateRemoteAccountService
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
+	redfishRoutes.Post("/{id}/RemoteAccountService/Accounts", mgr.CreateRemoteAccountService)
+	test := httptest.New(t, mockApp)
+
+	payload := map[string]string{"UserName": "username", "Password": "Password", "RoleId": "Administrator"}
+
+	test.POST(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(payload).Expect().Status(http.StatusOK)
+	test.POST(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(payload).Expect().Status(http.StatusUnauthorized)
+	test.POST(
+		"/redfish/v1/Managers/2A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(payload).Expect().Status(http.StatusForbidden)
+	test.POST(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "").WithJSON(payload).Expect().Status(http.StatusUnauthorized)
 }

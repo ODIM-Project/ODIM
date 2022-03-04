@@ -39,7 +39,7 @@ type Manager struct {
 	HostInterfaces          *OdataID           `json:"HostInterfaces,omitempty"`
 	SerialInterfaces        *OdataID           `json:"SerialInterfaces,omitempty"`
 	EthernetInterfaces      *OdataID           `json:"EthernetInterfaces,omitempty"`
-	LogServices             *OdataID           `json:"LogServices,omitempty"`
+	LogServices             *dmtf.Link         `json:"LogServices,omitempty"`
 	NetworkProtocol         *OdataID           `json:"NetworkProtocol,omitempty"`
 	VirtualMedia            *OdataID           `json:"VirtualMedia,omitempty"`
 	CommandShell            *CommandShell      `json:"CommandShell,omitempty"`
@@ -65,11 +65,14 @@ type Manager struct {
 	RedundancyCount         int                `json:"Redundancy@odata.count,omitempty"`
 	SerialConsole           dmtf.SerialConsole `json:"SerialConsole,omitempty"`
 	SparePartNumber         string             `json:"SparePartNumber,omitempty"`
+	Description             string             `json:"Description,omitempty"`
+	DateTimeLocalOffset     string             `json:"DateTimeLocalOffset,omitempty"`
 }
 
 // Status struct is to define the status of the manager
 type Status struct {
-	State string `json:"State"`
+	State  string `json:"State"`
+	Health string `json:"Health"`
 }
 
 // OdataID is link
@@ -93,11 +96,12 @@ type GraphicalConsole struct {
 
 // Links to other Resources that are related to this Resource.
 type Links struct {
-	ActiveSoftwareImage OdataID   `json:"ActiveSoftwareImage"`
-	ManagerForChassis   []OdataID `json:"ManagerForChassis"`
-	ManagerForServers   []OdataID `json:"ManagerForServers"`
-	ManagerForSwitches  []OdataID `json:"ManagerForSwitches"`
-	ManagerInChassis    OdataID   `json:"ManagerInChassis"`
+	ActiveSoftwareImage *dmtf.Link   `json:"ActiveSoftwareImage,omitempty"`
+	ManagerForChassis   []*dmtf.Link `json:"ManagerForChassis,omitempty"`
+	ManagerForServers   []*dmtf.Link `json:"ManagerForServers,omitempty"`
+	ManagerForSwitches  []*dmtf.Link `json:"ManagerForSwitches,omitempty"`
+	ManagerForManagers  []*dmtf.Link `json:"ManagerForManagers,omitempty"`
+	ManagerInChassis    *dmtf.Link   `json:"ManagerInChassis,omitempty"`
 }
 
 // Actions struct for Actions to perform
@@ -112,12 +116,18 @@ type Target struct {
 
 // RAManager struct is to store odimra details into DB
 type RAManager struct {
-	ID              string `json:"ManagerID"`
-	Name            string `json:"Name"`
-	ManagerType     string `json:"ManagerType"`
-	FirmwareVersion string `json:"FirmwareVersion"`
-	UUID            string `json:"UUID"`
-	State           string `json:"State"`
+	ID              string     `json:"ManagerID"`
+	Name            string     `json:"Name"`
+	ManagerType     string     `json:"ManagerType"`
+	FirmwareVersion string     `json:"FirmwareVersion"`
+	UUID            string     `json:"UUID"`
+	State           string     `json:"State"`
+	Description     string     `json:"Description"`
+	LogServices     *dmtf.Link `json:"LogServices"`
+	Links           *Links     `json:"Links,omitempty"`
+	Health          string     `json:"Health"`
+	Model           string     `json:"Model"`
+	PowerState      string     `json:"PowerState"`
 }
 
 // VirtualMediaInsert struct is to store the insert virtual media request payload
@@ -129,6 +139,13 @@ type VirtualMediaInsert struct {
 	TransferMethod       string `json:"TransferMethod,omitempty"`
 	TransferProtocolType string `json:"TransferProtocolType,omitempty"`
 	UserName             string `json:"UserName,omitempty"`
+}
+
+// CreateBMCAccount struct is to store the create BMC account request payload
+type CreateBMCAccount struct {
+	UserName string `json:"UserName" validate:"required"`
+	Password string `json:"Password" validate:"required"`
+	RoleID   string `json:"RoleId" validate:"required"`
 }
 
 //GetResource fetches a resource from database using table and key

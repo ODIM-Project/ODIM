@@ -14,10 +14,14 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 
 	"github.com/sirupsen/logrus"
 
+	"fmt"
+
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -49,6 +53,7 @@ func main() {
 
 	var managerInterface = mgrcommon.DBInterface{
 		AddManagertoDBInterface: mgrmodel.AddManagertoDB,
+		GenericSave:             mgrmodel.GenericSave,
 	}
 	err := addManagertoDB(managerInterface)
 	if err != nil {
@@ -88,7 +93,31 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		ID:              config.Data.RootServiceUUID,
 		UUID:            config.Data.RootServiceUUID,
 		State:           "Enabled",
+		Health:          "OK",
+		Description:     "Odimra Manager",
+		LogServices: &dmtf.Link{
+			Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		},
+		Model:      "ODIMRA" + " " + config.Data.FirmwareVersion,
+		PowerState: "On",
 	}
-	return managerInterface.AddManagertoDBInterface(mgr)
+	managerInterface.AddManagertoDBInterface(mgr)
+	data := dmtf.Collection{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
+		ODataType:    "#LogServiceCollection.LogServiceCollection",
+		ODataEtag:    "W570254F2",
+		Description:  "Logs view",
+		Members:      []*dmtf.Link{},
+		MembersCount: 0,
+		Name:         "Logs",
+	}
+	dbdata, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("unable to marshal manager data: %v", err)
+	}
+	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
+	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
+	return nil
 
 }

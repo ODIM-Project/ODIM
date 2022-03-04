@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
@@ -126,11 +127,13 @@ func Router() *iris.Application {
 	}
 
 	manager := handle.ManagersRPCs{
-		GetManagersCollectionRPC: rpc.GetManagersCollection,
-		GetManagersRPC:           rpc.GetManagers,
-		GetManagersResourceRPC:   rpc.GetManagersResource,
-		VirtualMediaInsertRPC:    rpc.VirtualMediaInsert,
-		VirtualMediaEjectRPC:     rpc.VirtualMediaEject,
+		GetManagersCollectionRPC:      rpc.GetManagersCollection,
+		GetManagersRPC:                rpc.GetManagers,
+		GetManagersResourceRPC:        rpc.GetManagersResource,
+		VirtualMediaInsertRPC:         rpc.VirtualMediaInsert,
+		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
+		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
+		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -168,16 +171,6 @@ func Router() *iris.Application {
 	// Parses the URL and performs URL decoding for path
 	// Getting the request body copy
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		// Validating session token
-		sessionToken := r.Header.Get("X-Auth-Token")
-		if sessionToken == "" {
-			logProperties := make(map[string]interface{})
-			logProperties["SessionToken"] = sessionToken
-			logProperties["Message"] = "X-Auth-Token is missing in the request header"
-			logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
-			customLogs.AuthLog(logProperties)
-		}
-
 		rawURI := r.RequestURI
 		parsedURI, err := url.Parse(rawURI)
 		if err != nil {
@@ -188,6 +181,25 @@ func Router() *iris.Application {
 		path := strings.Replace(rawURI, parsedURI.EscapedPath(), parsedURI.Path, -1)
 		r.RequestURI = path
 		r.URL.Path = parsedURI.Path
+
+		// Validating session token
+		sessionToken := r.Header.Get("X-Auth-Token")
+		if sessionToken == "" {
+			authRequired := true
+			for _, item := range common.URIWithNoAuth {
+				if item == r.URL.Path {
+					authRequired = false
+					break
+				}
+			}
+			if authRequired {
+				logProperties := make(map[string]interface{})
+				logProperties["SessionToken"] = sessionToken
+				logProperties["Message"] = "X-Auth-Token is missing in the request header"
+				logProperties["ResponseStatusCode"] = int32(http.StatusUnauthorized)
+				customLogs.AuthLog(logProperties)
+			}
+		}
 
 		// getting the request body for audit logs
 		if r.Body != nil {
@@ -539,8 +551,8 @@ func Router() *iris.Application {
 	managers.Get("/{id}/HostInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces/{rid}", manager.GetManagersResource)
 
-	managers.Get("/{id}/SerialInterface", manager.GetManagersResource)
-	managers.Get("/{id}/SerialInterface/{rid}", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia/{rid}", manager.GetManagersResource)
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", manager.VirtualMediaEject)
@@ -550,6 +562,17 @@ func Router() *iris.Application {
 	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
+	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
+	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
+	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts/{rid}", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Roles", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Roles/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Entries", handle.ManagersMethodNotAllowed)

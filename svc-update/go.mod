@@ -90,6 +90,7 @@ replace (
 	github.com/ODIM-Project/ODIM/lib-persistence-manager => ../lib-persistence-manager
 	github.com/ODIM-Project/ODIM/lib-rest-client => ../lib-rest-client
 	github.com/ODIM-Project/ODIM/lib-utilities => ../lib-utilities
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible => github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/microcosm-cc/bluemonday v1.0.2 => github.com/microcosm-cc/bluemonday v1.0.16
 	google.golang.org/grpc v1.41.0 => google.golang.org/grpc v1.26.0
 )

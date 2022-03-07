@@ -13,6 +13,7 @@
 #under the License.
 
 deploymentID:
+dualStatckEnabled: true
 httpProxy:
 httpsProxy:
 noProxy:
@@ -20,6 +21,7 @@ nodePasswordFilePath:
 nodes:
   <Node1_Hostname>:
     ip: <Node1_IPAddress>
+    ipv6: <Node1_IPv6Address>
     username: <Node1_Username>
     priority: 100
   <Node2_Hostname>:
@@ -78,6 +80,7 @@ odimra:
   nginxLogPath: /var/log/nginx
   virtualRouterID: 100
   virtualIP:
+  virtualIPv6:
   
   rootCACert:
   odimraServerCert:

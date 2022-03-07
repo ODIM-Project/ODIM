@@ -12,7 +12,7 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG ODIMRA_USER_ID
 ARG ODIMRA_GROUP_ID

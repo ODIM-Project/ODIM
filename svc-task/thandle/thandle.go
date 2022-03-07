@@ -404,7 +404,7 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 	commonResponse := response.Response{
 		OdataContext: "/redfish/v1/$metadata#SubTasks.SubTasks",
 		OdataID:      "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks/",
-		OdataType:    "#SubTasks.SubTasks",
+		OdataType:    "#TaskCollection.TaskCollection",
 		Name:         "SubTasks",
 		Description:  "SubTasks",
 	}

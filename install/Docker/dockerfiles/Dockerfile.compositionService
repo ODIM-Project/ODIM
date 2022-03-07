@@ -16,7 +16,7 @@ FROM odim:3.0 as build-stage
 
 FROM cs:1.0 as build-stage-cs
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG ODIMRA_USER_ID
 ARG ODIMRA_GROUP_ID

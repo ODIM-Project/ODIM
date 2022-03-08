@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"testing"
 
+	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
@@ -107,6 +108,19 @@ func TestGetManagerwithValidURL(t *testing.T) {
 	response := e.GetManagers(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
+}
+
+func TestGetManagerLinkDetails(t *testing.T) {
+	e := mockGetExternalInterface()
+	var chassisLink, serverLink, managerLink []*dmtf.Link
+	chassisLink = append(chassisLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
+	serverLink = append(serverLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
+	managerLink = append(managerLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
+	response, _ := e.getManagerDetails("/redfish/v1/Managers/uuid.1")
+
+	assert.Equal(t, chassisLink, response.Links.ManagerForChassis, "ManagerForChassis should be returned.")
+	assert.Equal(t, serverLink, response.Links.ManagerForServers, "ManagerForServers should be returned.")
+	assert.Equal(t, managerLink, response.Links.ManagerForManagers, "ManagerForManagers should be returned.")
 }
 
 func TestGetManagerInvalidID(t *testing.T) {
@@ -282,5 +296,50 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
 	}
 	response = e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+}
+
+func TestGetRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+
+	config.SetUpMockConfig(t)
+
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService",
+	}
+	e := mockGetExternalInterface()
+	response := e.GetRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/1",
+	}
+	response = e.GetRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/RemoteAccountService/Roles/1",
+	}
+	response = e.GetRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+}
+
+func TestCreateRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+	e := mockGetExternalInterface()
+	config.SetUpMockConfig(t)
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody: []byte(`{"UserName":"UserName",
+                                 "Password":"Password",
+                                 "RoleId":"Administrator"}`),
+	}
+	response := e.CreateRemoteAccountService(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 }

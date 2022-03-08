@@ -96,11 +96,12 @@ type GraphicalConsole struct {
 
 // Links to other Resources that are related to this Resource.
 type Links struct {
-	ActiveSoftwareImage OdataID   `json:"ActiveSoftwareImage"`
-	ManagerForChassis   []OdataID `json:"ManagerForChassis"`
-	ManagerForServers   []OdataID `json:"ManagerForServers"`
-	ManagerForSwitches  []OdataID `json:"ManagerForSwitches"`
-	ManagerInChassis    OdataID   `json:"ManagerInChassis"`
+	ActiveSoftwareImage *dmtf.Link   `json:"ActiveSoftwareImage,omitempty"`
+	ManagerForChassis   []*dmtf.Link `json:"ManagerForChassis,omitempty"`
+	ManagerForServers   []*dmtf.Link `json:"ManagerForServers,omitempty"`
+	ManagerForSwitches  []*dmtf.Link `json:"ManagerForSwitches,omitempty"`
+	ManagerForManagers  []*dmtf.Link `json:"ManagerForManagers,omitempty"`
+	ManagerInChassis    *dmtf.Link   `json:"ManagerInChassis,omitempty"`
 }
 
 // Actions struct for Actions to perform
@@ -123,6 +124,7 @@ type RAManager struct {
 	State           string     `json:"State"`
 	Description     string     `json:"Description"`
 	LogServices     *dmtf.Link `json:"LogServices"`
+	Links           *Links     `json:"Links,omitempty"`
 	Health          string     `json:"Health"`
 	Model           string     `json:"Model"`
 	PowerState      string     `json:"PowerState"`
@@ -137,6 +139,13 @@ type VirtualMediaInsert struct {
 	TransferMethod       string `json:"TransferMethod,omitempty"`
 	TransferProtocolType string `json:"TransferProtocolType,omitempty"`
 	UserName             string `json:"UserName,omitempty"`
+}
+
+// CreateBMCAccount struct is to store the create BMC account request payload
+type CreateBMCAccount struct {
+	UserName string `json:"UserName" validate:"required"`
+	Password string `json:"Password" validate:"required"`
+	RoleID   string `json:"RoleId" validate:"required"`
 }
 
 //GetResource fetches a resource from database using table and key

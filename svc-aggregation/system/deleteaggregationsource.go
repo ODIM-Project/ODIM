@@ -318,6 +318,12 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
+
+	managersList, derr := agmodel.GetAllMatchingDetails("Managers", keys[0], common.InMemory)
+	if derr != nil {
+		log.Error("error while trying to collect the manager list: " + derr.Error())
+	}
+
 	mgrResp := deleteLinkDetails(managerData, key, chassisList)
 	data, marshalErr := json.Marshal(mgrResp)
 	if marshalErr != nil {
@@ -361,6 +367,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	}
 	e.deleteWildCardValues(key[index+1:])
 
+	for _, manager := range managersList {
+		e.EventNotification(manager, "ResourceRemoved", "ManagerCollection")
+	}
 	for _, chassis := range chassisList {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}

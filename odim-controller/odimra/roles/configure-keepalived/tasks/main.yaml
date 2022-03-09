@@ -57,10 +57,13 @@
   with_items:
     - routerID: "{{ inventory_hostname | mandatory }}"
       interfaceName: "{{ interfaceName | mandatory }}"
+      dualStackEnabled: "{{ odimra.dualStackEnabled }}"
       virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
       priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
       virtualIP: "{{ odimra.virtualIP | mandatory }}"
-
+      when: dualStackEnabled == true
+           virtualIPv6: "{{ odimra.virtualIPv6 }}"
+      
 - name: Enable keepalived systemd service
   systemd:
     name: keepalived

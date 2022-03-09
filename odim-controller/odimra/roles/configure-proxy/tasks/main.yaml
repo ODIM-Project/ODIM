@@ -81,6 +81,7 @@
 
 - set_fact:
     cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+    cur_host_ipv6: "{{ hostvars[inventory_hostname]['ansible_default_ipv6']['address'] }}"
 
 - set_fact:
     serverlist: ["server {{ cur_host_ip }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s;"]
@@ -98,10 +99,14 @@
     dest: /opt/nginx/servers/api_proxy_server.conf
   with_items:
     - selfNodeIP: "{{ cur_host_ip }}"
+      dualStackEnabled: "{{ odimra.dualStackEnabled }}"
       virtualIP: "{{ odimra.virtualIP }}"
       apiProxyPort: "{{ odimra.apiProxyPort }}"
       apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
-
+      when: dualStackEnabled == true
+           virtualIPv6: "{{ odimra.virtualIPv6 }}"
+           apiNodePort: "{{ odimra.apiNodePort }}"
+           selfNodeIPv6: "{{ cur_host_ipv6 }}
 - name: Get list of plugins under plugin helm charts path
   find:
     paths: "{{ odimPluginPath }}"

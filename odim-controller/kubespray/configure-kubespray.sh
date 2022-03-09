@@ -99,7 +99,7 @@ configure_kubespray
 
 ENABLE_DUALSTACK=$2
 
-if [[ ${ENABLE_DUALSTACK} == "True" ]]; then
+if [[ ${ENABLE_DUALSTACK} == "dualStack" ]]; then
 	enable_dualStack
 fi
 

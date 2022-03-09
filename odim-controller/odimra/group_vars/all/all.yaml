@@ -51,7 +51,7 @@ odim_svc_helmcharts:
    task: task-3.0.0
    update: update-3.0.0
    telemetry: telemetry-2.0.0
-   composition-service: composition-service-0.1.0
+   composition-service: composition-service-1.0.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation

@@ -1270,3 +1270,73 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 		})
 	}
 }
+
+func TestIncr(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	got, rerr := c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 1 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	got, rerr = c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 2 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestDecr(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+	_, rerr := c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	_, rerr = c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+
+	got, rerr := c.Decr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 1 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	got, rerr = c.Decr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 0 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}

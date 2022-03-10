@@ -45,7 +45,7 @@ func getUserDetails(sessionToken string) (string, string) {
 	return sessionUserName, sessionRoleID
 }
 
-// maskRequestBody function
+// MaskRequestBody function
 // masking the request body, making password as null
 func MaskRequestBody(reqBody map[string]interface{}) string {
 	var jsonStr []byte

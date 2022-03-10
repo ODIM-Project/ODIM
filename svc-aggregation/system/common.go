@@ -34,6 +34,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	logs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -238,11 +239,17 @@ func genError(errorMessage string, respPtr *response.RPC, httpStatusCode int32, 
 
 // UpdateTaskData update the task with the given data
 func UpdateTaskData(taskData common.TaskData) error {
+	var res map[string]interface{}
+	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
+		log.Error(err)
+	}
+	reqStr := logs.MaskRequestBody(res)
+
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      taskData.TaskRequest,
+		JSONBody:      reqStr,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
 		ResponseBody:  respBody,

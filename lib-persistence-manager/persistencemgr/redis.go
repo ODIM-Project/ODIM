@@ -1245,7 +1245,7 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
 }
 
 //Incr is for incrementing the count
-// Incr takes "key" sting as input which acts as a unique ID to increment the count and return same
+//Incr takes "key" string as input which acts as a unique ID to increment the count and return same
 func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()
@@ -1277,7 +1277,7 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 }
 
 //Decr is for decrementing the count
-// Decr takes "key" sting as input which acts as a unique ID to decrement the count and return same
+//Decr takes "key" string as input which acts as a unique ID to decrement the count and return same
 func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	readConn := p.ReadPool.Get()
 	defer readConn.Close()

@@ -19,9 +19,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -138,7 +139,7 @@ func (e *Events) GetEventService(ctx context.Context, req *eventsproto.EventSubR
 		},
 		DeliveryRetryAttempts:        config.Data.EventConf.DeliveryRetryAttempts,
 		DeliveryRetryIntervalSeconds: config.Data.EventConf.DeliveryRetryIntervalSeconds,
-		EventFormatTypes:             []string{"Event"},
+		EventFormatTypes:             []string{"Event", "MetricReport"},
 		EventTypesForSubscription: []string{
 			"StatusChange",
 			"ResourceUpdated",

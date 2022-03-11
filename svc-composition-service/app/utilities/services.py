@@ -14,10 +14,10 @@
 
 from concurrent import futures
 import grpc
-import proto.composition_service_pb2_grpc as pb2_grpc
+import proto.compositionservice.composition_service_pb2_grpc as pb2_grpc
 from rpc import CompositionService
 import logging
-from config.config import PLUGIN_CONFIG, CERTIFICATES
+from config.config import CONFIG_DATA, CERTIFICATES
 from config.cli import CL_ARGS
 import uuid
 from utilities.connection import EtcdConnection
@@ -27,7 +27,7 @@ class Services():
     def __init__(self):
         self.server_address = CL_ARGS[
             "ServerAddress"] or "{host}:{port}".format(
-                host=PLUGIN_CONFIG["Host"], port=PLUGIN_CONFIG["Port"])
+                host=CONFIG_DATA["Host"], port=CONFIG_DATA["Port"])
         self.etcd_conn = EtcdConnection()
 
     def initialize_service(self, service_name):

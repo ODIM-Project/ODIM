@@ -19,11 +19,6 @@ spec:
     spec:
       hostname: composition-service
       volumes:
-        - name: cs-config-vol
-          projected:
-            sources:
-            - configMap:
-                name: cs-config
         - name: odimra-config-vol
           projected:
             sources:
@@ -74,8 +69,6 @@ spec:
           ports:
             - containerPort: 45112
           volumeMounts:
-            - name: cs-config-vol
-              mountPath: /etc/composition_service_config
             - name: configure-hosts
               mountPath: /tmp
             - name: odimra-log

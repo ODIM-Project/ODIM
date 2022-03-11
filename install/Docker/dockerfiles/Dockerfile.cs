@@ -24,10 +24,14 @@ RUN if [ -z "$ODIMRA_USER_ID" ] || [ -z "$ODIMRA_GROUP_ID" ]; then echo "\n[$(da
     && useradd -s /bin/bash -u $ODIMRA_USER_ID -m -d /home/odimra -r -g odimra odimra
     
 
-RUN apt update -y && apt-get install redis-tools -y && apt-get install python3 -y && apt-get install python3-venv -y && apt-get install python3-dev -y
-RUN apt-get install -y binutils libc6
+RUN apt-get update -y && \
+    apt-get -y install redis-tools python3 python3-venv python3-dev python3-pip binutils libc6 && \
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install grpcio grpcio-tools
+
 
 COPY svc-composition-service /ODIM/svc-composition-service
+COPY lib-utilities /ODIM/lib-utilities
 
 COPY install/Docker/dockerfiles/scripts/build_cs.sh .
 RUN chmod 755 build_cs.sh

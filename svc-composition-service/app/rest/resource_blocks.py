@@ -16,15 +16,10 @@ import logging
 import json
 
 from db.persistant import RedisClient, RedisDb
-from utilities.client import Client
 from config import constants
-from config.config import PLUGIN_CONFIG
-from rest.resource_zones import ResourceZones
+from config.config import CONFIG_DATA
 import copy
 import uuid
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from http import HTTPStatus
 
 
@@ -32,9 +27,7 @@ class ResourceBlocks():
     def __init__(self):
         self.redis = RedisClient()  # redis-ondisk
         self.redis_inmemory = RedisDb(
-            PLUGIN_CONFIG["RedisInMemoryAddress"])  # redis-inmemory
-        self.client = Client()
-        self.resourcezone = ResourceZones()
+            CONFIG_DATA["RedisInMemoryAddress"])  # redis-inmemory
 
     """
     def initialize(self):

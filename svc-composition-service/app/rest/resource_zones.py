@@ -15,20 +15,15 @@
 import logging
 import json
 from db.persistant import RedisClient
-from utilities.client import Client
 from config import constants
 import copy
 import uuid
 from http import HTTPStatus
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class ResourceZones():
     def __init__(self):
         self.redis = RedisClient()
-        self.client = Client()
 
     def create_resource_zone(self, request_data=None):
 

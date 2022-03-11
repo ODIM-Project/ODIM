@@ -16,8 +16,8 @@ from log.logging import logger
 from config.config import set_configuraion
 from config.cli import collect_cl_args
 from config import constants
-from rest.resource_blocks import ResourceBlocks
-from rest.event_subscription import EventSubscription
+# from rest.resource_blocks import ResourceBlocks
+# from rest.event_subscription import EventSubscription
 from utilities.services import Services
 
 if __name__ == "__main__":
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     """
 
     # create subscription
-    EventSubscription()
+    #EventSubscription()
 
     services = Services()
 

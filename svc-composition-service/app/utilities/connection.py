@@ -14,7 +14,7 @@
 
 import etcd3
 import logging
-from config.config import PLUGIN_CONFIG
+from config.config import CONFIG_DATA
 from config.cli import CL_ARGS
 
 
@@ -35,16 +35,16 @@ class EtcdConnection():
             self.etcd_client = etcd3.client(
                 host=self.etcd_host,
                 port=self.etcd_port,
-                ca_cert=PLUGIN_CONFIG["RootCAPath"],
-                cert_key=PLUGIN_CONFIG["PrivateKeyPath"],
-                cert_cert=PLUGIN_CONFIG["CertificatePath"],
+                ca_cert=CONFIG_DATA["RootCAPath"],
+                cert_key=CONFIG_DATA["PrivateKeyPath"],
+                cert_cert=CONFIG_DATA["CertificatePath"],
                 timeout=self.time_out)
         else:
             # default etcd host and port
             self.etcd_client = etcd3.client(
-                ca_cert=PLUGIN_CONFIG["RootCAPath"],
-                cert_key=PLUGIN_CONFIG["PrivateKeyPath"],
-                cert_cert=PLUGIN_CONFIG["CertificatePath"],
+                ca_cert=CONFIG_DATA["RootCAPath"],
+                cert_key=CONFIG_DATA["PrivateKeyPath"],
+                cert_cert=CONFIG_DATA["CertificatePath"],
                 timeout=self.time_out)
 
     def register_service(self, service, server_address):

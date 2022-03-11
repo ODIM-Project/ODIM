@@ -12,16 +12,16 @@
 #License for the specific language governing permissions and limitations
 # under the License.
 
-EVENT_DESTINATION_URL = "/ODIM/v1/EventService/CompositionServiceEvent"
-
+# EVENT_DESTINATION_URL = "/ODIM/v1/EventService/CompositionServiceEvent"
+"""
 EVENT_TYPES = [
     "ResourceRemoved", "ResourceAdded", "ResourceUpdated", "StatusChange",
     "Alert", "MetricReport", "Other"
 ]
+"""
 
-EVENT_SUBSCRIPTION_URL = "/redfish/v1/EventService/Subscriptions"
+# EVENT_SUBSCRIPTION_URL = "/redfish/v1/EventService/Subscriptions"
 
-SYSTEMS_URL = "/redfish/v1/Systems"
 
 RESOURCE_BLOCK_TEMP = {
     "@odata.context": "/redfish/v1/$metadata#ResourceBlock.ResourceBlock.",

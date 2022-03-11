@@ -16,9 +16,8 @@ import os
 import json
 
 CONF_FILE = os.getenv("CONFIG_FILE_PATH")
-ODIM_CONF_FILE = os.getenv("ODIM_CONFIG_FILE_PATH")
 
-PLUGIN_CONFIG = {
+CONFIG_DATA = {
     "Host": "",
     "Port": "",
     "UserName": "",
@@ -27,13 +26,12 @@ PLUGIN_CONFIG = {
     "OdimURL": "",
     "OdimUserName": "",
     "OdimPassword": "",
-    "LogLevel": "",
+    "LogLevel": "info",
     "RedisOnDiskAddress": "",
     "RedisInMemoryAddress": "",
     "Db": 0,
     "SocketTimeout": 10,
     "LogPath": "",
-    "RedisAddress": "",
     "PrivateKeyPath": "",
     "CertificatePath": "",
     "RootCAPath": "",
@@ -58,31 +56,63 @@ def set_configuraion():
             except Exception:
                 pass
     if config_data:
-        for key in PLUGIN_CONFIG.keys():
-            if config_data.get(key):
-                PLUGIN_CONFIG[key] = config_data[key]
+        if config_data.get("RootServiceUUID"):
+            CONFIG_DATA["RootServiceUUID"] = config_data["RootServiceUUID"]
+
+        if config_data.get("LocalhostFQDN"):
+            CONFIG_DATA["LocalhostFQDN"] = config_data["LocalhostFQDN"]
+
+        if config_data.get("APIGatewayConf"):
+            if config_data["APIGatewayConf"].get(
+                    "Host") and config_data["APIGatewayConf"].get("Port"):
+                CONFIG_DATA["OdimURL"] = "{protocol}://{host}:{port}".format(
+                    protocol="https",
+                    host=config_data["APIGatewayConf"]["Host"],
+                    port=config_data["APIGatewayConf"]["Port"])
+
+        if config_data.get("DBConf"):
+            if config_data["DBConf"].get("InMemoryHost") and config_data[
+                    "DBConf"].get("InMemoryPort"):
+                CONFIG_DATA["RedisInMemoryAddress"] = "{host}:{port}".format(
+                    host=config_data["DBConf"]["InMemoryHost"],
+                    port=config_data["DBConf"]["InMemoryPort"])
+
+            if config_data["DBConf"].get(
+                    "OnDiskHost") and config_data["DBConf"].get("OnDiskPort"):
+                CONFIG_DATA["RedisOnDiskAddress"] = "{host}:{port}".format(
+                    host=config_data["DBConf"]["OnDiskHost"],
+                    port=config_data["DBConf"]["OnDiskPort"])
+
+        if config_data.get("KeyCertConf"):
+            if config_data["KeyCertConf"].get("RootCACertificatePath"):
+                CONFIG_DATA["RootCAPath"] = config_data["KeyCertConf"][
+                    "RootCACertificatePath"]
+            if config_data["KeyCertConf"].get("RPCPrivateKeyPath"):
+                CONFIG_DATA["PrivateKeyPath"] = config_data["KeyCertConf"][
+                    "RPCPrivateKeyPath"]
+            if config_data["KeyCertConf"].get("RPCCertificatePath"):
+                CONFIG_DATA["CertificatePath"] = config_data["KeyCertConf"][
+                    "RPCCertificatePath"]
+            if config_data["KeyCertConf"].get("RSAPublicKeyPath"):
+                CONFIG_DATA["RSAPublicKeyPath"] = config_data["KeyCertConf"][
+                    "RSAPublicKeyPath"]
+            if config_data["KeyCertConf"].get("RSAPrivateKeyPath"):
+                CONFIG_DATA["RSAPrivateKeyPath"] = config_data["KeyCertConf"][
+                    "RSAPrivateKeyPath"]
 
     # get server private key data from PrivateKeyPath
-    if os.path.exists(PLUGIN_CONFIG["PrivateKeyPath"]):
+    if os.path.exists(CONFIG_DATA["PrivateKeyPath"]):
         CERTIFICATES["server_private_key"] = _load_credential_from_file(
-            PLUGIN_CONFIG["PrivateKeyPath"])
+            CONFIG_DATA["PrivateKeyPath"])
     # get server certificate data from CertificatePath
-    if os.path.exists(PLUGIN_CONFIG["CertificatePath"]):
+    if os.path.exists(CONFIG_DATA["CertificatePath"]):
         CERTIFICATES["server_certificate"] = _load_credential_from_file(
-            PLUGIN_CONFIG["CertificatePath"])
+            CONFIG_DATA["CertificatePath"])
     # get root ca certificate data from RootCAPath
-    if os.path.exists(PLUGIN_CONFIG["RootCAPath"]):
+    if os.path.exists(CONFIG_DATA["RootCAPath"]):
         CERTIFICATES["root_ca_certificate"] = _load_credential_from_file(
-            PLUGIN_CONFIG["RootCAPath"])
+            CONFIG_DATA["RootCAPath"])
 
-    if not PLUGIN_CONFIG["LocalhostFQDN"] and ODIM_CONF_FILE and os.path.exists(ODIM_CONF_FILE):
-        with open(ODIM_CONF_FILE) as f:
-            try:
-                odim_config_data = json.load(f)
-                if odim_config_data.get("LocalhostFQDN"):
-                    PLUGIN_CONFIG["LocalhostFQDN"] = odim_config_data["LocalhostFQDN"]
-            except Exception:
-                pass
 
 def _load_credential_from_file(filepath):
     with open(filepath, 'rb') as f:

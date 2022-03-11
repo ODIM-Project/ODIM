@@ -13,7 +13,7 @@
 # under the License.
 
 from redis import StrictRedis
-from config.config import PLUGIN_CONFIG
+from config.config import CONFIG_DATA
 
 import logging
 
@@ -26,8 +26,8 @@ class RedisClient():
         self.port = None
         if redis_address and ":" in redis_address:
             self.host, self.port = redis_address.split(":")
-        elif ":" in PLUGIN_CONFIG["RedisOnDiskAddress"]:
-            self.host, self.port = PLUGIN_CONFIG["RedisOnDiskAddress"].split(
+        elif ":" in CONFIG_DATA["RedisOnDiskAddress"]:
+            self.host, self.port = CONFIG_DATA["RedisOnDiskAddress"].split(
                 ":")
         self.connection = None  # database
         self._db_connection()
@@ -41,13 +41,13 @@ class RedisClient():
                 self.connection = StrictRedis(
                     host=self.host,
                     port=self.port,
-                    db=PLUGIN_CONFIG["Db"],
-                    socket_timeout=PLUGIN_CONFIG["SocketTimeout"])
+                    db=CONFIG_DATA["Db"],
+                    socket_timeout=CONFIG_DATA["SocketTimeout"])
             else:
                 # default host = "localhost", port = 6379
                 self.connection = StrictRedis(
-                    db=PLUGIN_CONFIG["Db"],
-                    socket_timeout=PLUGIN_CONFIG["SocketTimeout"])
+                    db=CONFIG_DATA["Db"],
+                    socket_timeout=CONFIG_DATA["SocketTimeout"])
         except Exception as err:
             logging.error(
                 "Unable to connect to redis database. Error:{e}".format(e=err))

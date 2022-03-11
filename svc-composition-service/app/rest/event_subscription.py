@@ -11,8 +11,8 @@
 #WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #License for the specific language governing permissions and limitations
 # under the License.
-
-from config.config import PLUGIN_CONFIG
+"""
+from config.config import CONFIG_DATA
 import logging
 import json
 from utilities.client import Client
@@ -39,8 +39,8 @@ class EventSubscription():
             "Destination":
             "{protocol}://{host}:{port}{url}".format(
                 protocol="https",
-                host=PLUGIN_CONFIG["Host"],
-                port=PLUGIN_CONFIG["Port"],
+                host=CONFIG_DATA["Host"],
+                port=CONFIG_DATA["Port"],
                 url=constants.EVENT_DESTINATION_URL),
             "EventTypes":
             constants.EVENT_TYPES,
@@ -82,3 +82,4 @@ class EventSubscription():
             logging.error(
                 "unable to initialize the Event Subscription for Composition Service. Error: {e}"
                 .format(e=err))
+"""

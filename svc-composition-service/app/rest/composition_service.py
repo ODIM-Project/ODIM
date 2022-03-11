@@ -15,19 +15,16 @@
 import logging
 import json
 import copy
-import uuid
 from http import HTTPStatus
-from utilities.client import Client
 from db.persistant import RedisClient, RedisDb
-from config.config import PLUGIN_CONFIG
+from config.config import CONFIG_DATA
 
 
 class CompositonService():
     def __init__(self):
-        self.client = Client()
         self.redis = RedisClient()  # redis-ondisk
         self.redis_inmemory = RedisDb(
-            PLUGIN_CONFIG["RedisInMemoryAddress"])  # redis-inmemory
+            CONFIG_DATA["RedisInMemoryAddress"])  # redis-inmemory
 
     def get_cs(self):
         res = {
@@ -112,7 +109,6 @@ class CompositonService():
 
     def create_compose_system(self, req):
         res = {}
-        compose_sys = {}
         code = HTTPStatus.OK
         system_data = {}
         pipe = self.redis.pipeline()

@@ -15,8 +15,8 @@
 import json
 import grpc
 from http import HTTPStatus
-import proto.composition_service_pb2 as pb2
-import proto.composition_service_pb2_grpc as pb2_grpc
+import proto.compositionservice.composition_service_pb2 as pb2
+import proto.compositionservice.composition_service_pb2_grpc as pb2_grpc
 from rest.resource_zones import ResourceZones
 from rest.resource_blocks import ResourceBlocks
 from rest.pool import ResourcePool

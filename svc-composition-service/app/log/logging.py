@@ -13,21 +13,21 @@
 # under the License.
 
 import logging
-from config.config import PLUGIN_CONFIG
+from config.config import CONFIG_DATA
 
 
 def logger():
-    if PLUGIN_CONFIG["LogPath"]:
+    if CONFIG_DATA["LogPath"]:
         logging.basicConfig(
-            filename=PLUGIN_CONFIG["LogPath"],
+            filename=CONFIG_DATA["LogPath"],
             format='%(asctime)s | %(levelname)s | %(message)s',
             datefmt='%m/%d/%Y %I:%M:%S %p',
-            level=PLUGIN_CONFIG["LogLevel"].upper() if isinstance(
-                PLUGIN_CONFIG["LogLevel"], str) else None)
+            level=CONFIG_DATA["LogLevel"].upper() if isinstance(
+                CONFIG_DATA["LogLevel"], str) else None)
 
     else:
         logging.basicConfig(
             format='%(asctime)s | %(levelname)s | %(message)s',
             datefmt='%m/%d/%Y %I:%M:%S %p',
-            level=PLUGIN_CONFIG["LogLevel"].upper() if isinstance(
-                PLUGIN_CONFIG["LogLevel"], str) else None)
+            level=CONFIG_DATA["LogLevel"].upper() if isinstance(
+                CONFIG_DATA["LogLevel"], str) else None)

@@ -22,10 +22,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"runtime"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -42,7 +43,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 
-	var updateRequest UpdateRequestBody
+	var updateRequest SimpleUpdateRequest
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()

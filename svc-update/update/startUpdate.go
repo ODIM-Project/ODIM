@@ -20,6 +20,10 @@ package update
 //
 import (
 	"fmt"
+	"net/http"
+	"runtime"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	updateproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/update"
@@ -27,9 +31,6 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-update/ucommon"
 	"github.com/ODIM-Project/ODIM/svc-update/umodel"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"runtime"
-	"strings"
 )
 
 // StartUpdate function handler for on start update process

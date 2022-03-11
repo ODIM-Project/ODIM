@@ -20,9 +20,10 @@ package update
 // ---------------------------------------------------------------------------------------
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"

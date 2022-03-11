@@ -199,7 +199,7 @@ type Drive struct {
 	Location                      string             `json:"Location,omitempty"`
 	RotationalSpeedRpm            int                `json:"RotationalSpeedRpm,omitempty"`
 	FirmwareVersion               *FirmwareVersion   `json:"FirmwareVersion,omitempty"`
-	Certificates                  Certificates       `json:"Certificates,omitempty"`
+	Certificates                  *Certificates      `json:"Certificates,omitempty"`
 	EnvironmentMetrics            *Link              `json:"EnvironmentMetrics,omitempty"`
 	Measurements                  []*Link            `json:"Measurements,omitempty"`
 }

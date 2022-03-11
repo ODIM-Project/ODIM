@@ -10,7 +10,8 @@ import (
 )
 
 // Limit is max number of requests can be processed by ODIM at parallelly
-const Limit int = 5
+// TODO: Limit should be set proper value, after scale test
+const Limit int = 100 
 
 // RateLimiter is for limiting the requests
 // here we will check if count which is added db against the session token

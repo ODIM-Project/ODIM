@@ -58,13 +58,12 @@ func NewClientFactory(t *config.URLTranslation) ClientFactory {
 				createClient: pluginClientCreator,
 				targets:      plugins,
 			}, nil
-		} else {
-			plugin, e := smodel.GetPluginData(name)
-			if e != nil {
-				return nil, e
-			}
-			return pluginClientCreator(&plugin), nil
 		}
+		plugin, e := smodel.GetPluginData(name)
+		if e != nil {
+			return nil, e
+		}
+		return pluginClientCreator(&plugin), nil
 	}
 }
 

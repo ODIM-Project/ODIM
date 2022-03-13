@@ -18,8 +18,9 @@ package chassis
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -31,6 +32,7 @@ import (
 
 const collectionURL = "/redfish/v1/Chassis"
 
+// NewGetCollectionHandler returns an instance of GetCollection struct
 func NewGetCollectionHandler(
 	pcf plugin.ClientFactory,
 	imkp func(table string) ([]string, error)) *GetCollection {
@@ -44,10 +46,12 @@ func NewGetCollectionHandler(
 	}
 }
 
+// GetCollection struct helps
 type GetCollection struct {
 	sourcesProvider sourceProvider
 }
 
+// Handle defines the operations which handle the RPC request-response for getting chassis collection information
 func (h *GetCollection) Handle() (r response.RPC) {
 	sources, e := h.sourcesProvider.findSources()
 	if e != nil {

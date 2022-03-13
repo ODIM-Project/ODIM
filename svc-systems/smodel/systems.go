@@ -99,6 +99,7 @@ func GetResource(Table, key string) (string, *errors.Error) {
 	return resource, nil
 }
 
+// Find fetches a resource from database using table and key and store the data to an interface
 func Find(table, key string, r interface{}) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
@@ -120,6 +121,7 @@ func Find(table, key string, r interface{}) *errors.Error {
 	return nil
 }
 
+// FindAll ...
 func FindAll(table, key string) ([][]byte, error) {
 	cp, cpErr := common.GetDBConnection(common.OnDisk)
 	if cpErr != nil {

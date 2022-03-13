@@ -35,11 +35,13 @@ type Collection struct {
 	MembersNextLink      string      `json:"Members@odata.nextLink,omitempty"`
 }
 
+// AddMember adds members details to the response of System and ChassisCollection
 func (c *Collection) AddMember(m dmtf.Link) {
 	c.Members = append(c.Members, m)
 	c.MembersCount = len(c.Members)
 }
 
+// NewChassisCollection returns an instance of collection
 func NewChassisCollection() Collection {
 	return Collection{
 		OdataContext: "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",

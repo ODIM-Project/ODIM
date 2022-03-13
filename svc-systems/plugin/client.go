@@ -21,6 +21,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"reflect"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-rest-client/pmbhandle"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -29,14 +34,12 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"reflect"
-	"strings"
 )
 
+// ClientFactory ...
 type ClientFactory func(name string) (Client, *errors.Error)
 
+// NewClientFactory returns function definition for ClientFactory type
 func NewClientFactory(t *config.URLTranslation) ClientFactory {
 
 	pluginClientCreator := func(plugin *smodel.Plugin) Client {
@@ -71,12 +74,15 @@ type multiTargetClient struct {
 	targets      []*smodel.Plugin
 }
 
+// CallConfig ...
 type CallConfig struct {
 	collector Collector
 }
 
+// CallOption ...
 type CallOption func(*CallConfig)
 
+// Collector ...
 type Collector interface {
 	Collect(response.RPC) error
 	GetResult() response.RPC
@@ -99,11 +105,13 @@ func (c *returnFirst) GetResult() response.RPC {
 	return *c.resp
 }
 
+// ReturnFirstResponse returns instance of CallConfig struct
 func ReturnFirstResponse(c *CallConfig) *CallConfig {
 	c.collector = new(returnFirst)
 	return c
 }
 
+// AggregateResults ...
 func AggregateResults(c *CallConfig) {
 	c.collector = new(collectCollectionMembers)
 }
@@ -212,6 +220,7 @@ func (m *multiTargetClient) Delete(uri string) response.RPC {
 	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, "", []interface{}{"Chassis", uri}, nil)
 }
 
+// Client ...
 type Client interface {
 	Get(uri string, opts ...CallOption) response.RPC
 	Post(uri string, body *json.RawMessage) response.RPC

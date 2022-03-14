@@ -7221,7 +7221,7 @@ curl -i GET \
         "HealthRollup": "OK"
     },
     "ServiceEnabled": true,
-    "HttpPushUri": "",
+    "HTTPPushURI": "",
     "FirmwareInventory": {
         "@odata.id": "/redfish/v1/UpdateService/FirmwareInventory"
     },

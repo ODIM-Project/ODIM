@@ -82,8 +82,8 @@ type DB struct {
 	GetResource         func(string, string, common.DbType) (string, *errors.Error)
 }
 
-// UpdateRequestBody struct defines the request body for update action
-type UpdateRequestBody struct {
+// SimpleUpdateRequest struct defines the request body for update action
+type SimpleUpdateRequest struct {
 	ImageURI                  string   `json:"ImageURI"`
 	Password                  string   `json:"Password,omitempty"`
 	Targets                   []string `json:"Targets"`

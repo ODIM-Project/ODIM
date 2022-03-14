@@ -46,7 +46,7 @@ func NewGetCollectionHandler(
 	}
 }
 
-// GetCollection struct helps
+// GetCollection struct helps to get chassis collection information
 type GetCollection struct {
 	sourcesProvider sourceProvider
 }

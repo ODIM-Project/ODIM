@@ -570,7 +570,7 @@ func Router() *iris.Application {
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
 	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
-	managers.Delete("/{id}/RemoteAccountService/Accounts", manager.DeleteRemoteAccountService)
+	managers.Delete("/{id}/RemoteAccountService/Accounts/{rid}", manager.DeleteRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
 	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)

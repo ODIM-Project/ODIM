@@ -66,7 +66,7 @@ type EventServiceResponse struct {
 	DeliveryRetryIntervalSeconds      int                           `json:"DeliveryRetryIntervalSeconds"`
 	EventFormatTypes                  []string                      `json:"EventFormatTypes"`
 	EventTypesForSubscription         []string                      `json:"EventTypesForSubscription"` // Deprecated v1.3
-	RegistryPrefixes                  []string                      `json:"RegistryPrefixes"`
+	RegistryPrefixes                  []string                      `json:"RegistryPrefixes,omitempty"`
 	ResourceTypes                     []string                      `json:"ResourceTypes"`
 	ServerSentEventURI                string                        `json:"ServerSentEventUri,omitempty"`
 	ServiceEnabled                    bool                          `json:"ServiceEnabled,omitempty"`

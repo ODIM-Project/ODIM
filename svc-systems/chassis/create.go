@@ -30,6 +30,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Handle defines the operations which handle the RPC request-response for creating a chassis
 func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	mbc := new(linksManagedByCollection)
 	e := json.Unmarshal(req.RequestBody, mbc)
@@ -139,10 +140,12 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	return resp
 }
 
+// Create struct helps to create chassis
 type Create struct {
 	createPluginClient plugin.ClientFactory
 }
 
+// NewCreateHandler returns an instance of Create struct
 func NewCreateHandler(createPluginClient plugin.ClientFactory) *Create {
 	return &Create{
 		createPluginClient: createPluginClient,

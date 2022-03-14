@@ -17,6 +17,8 @@
 package chassis
 
 import (
+	"net/http"
+
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -24,10 +26,9 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
-	"net/http"
 )
 
-// GetChassisInfo is used to fetch resource data. The function is supposed to be used as part of RPC
+// Handle is used to fetch resource data. The function is supposed to be used as part of RPC
 // For getting chassis resource information, parameters need to be passed Request .
 // Request holds the Uuid and Url ,
 // Url will be parsed from that search key will created
@@ -71,12 +72,14 @@ func (h *Get) Handle(req *chassisproto.GetChassisRequest) response.RPC {
 	return resp
 }
 
+// Get struct helps to get chassis resource information
 type Get struct {
 	findInMemoryDB     func(table, key string, r interface{}) *errors.Error
 	createPluginClient plugin.ClientFactory
 	getFabricFactory   func(collection *sresponse.Collection) *fabricFactory
 }
 
+// NewGetHandler returns an instance of Get Struct
 func NewGetHandler(
 	pluginClientCreator plugin.ClientFactory,
 	inMemoryDBFinder func(table, key string, r interface{}) *errors.Error) *Get {

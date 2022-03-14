@@ -36,6 +36,7 @@ type ManagersRPCs struct {
 	VirtualMediaEjectRPC          func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 	GetRemoteAccountServiceRPC    func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 	CreateRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	DeleteRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 }
 
 //GetManagersCollection fetches all managers

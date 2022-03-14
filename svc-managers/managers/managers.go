@@ -629,7 +629,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
 
-	if resp.StatusCode == http.StatusOK || res.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		body, _ := json.Marshal(resp.Body)
 		respBody := replaceBMCAccResp(string(body), req.ManagerID)
 		var managerAcc dmtf.ManagerAccount
@@ -665,7 +665,6 @@ func replaceBMCAccResp(data, managerID string) string {
 // DeleteRemoteAccountService is used to delete the BMC account user
 func (e *ExternalInterface) DeleteRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	var requestBody = req.RequestBody
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]

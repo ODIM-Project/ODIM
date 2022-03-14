@@ -18,12 +18,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
 	"runtime"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -75,10 +76,12 @@ func (a *Aggregator) GetAggregationService(ctx context.Context, req *aggregatorp
 		OdataID:      "/redfish/v1/AggregationService",
 		Actions: agresponse.Actions{
 			Reset: agresponse.Action{
-				Target: "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
+				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.Reset/",
+				ActionInfo: "/redfish/v1/AggregationService/ResetActionInfo",
 			},
 			SetDefaultBootOrder: agresponse.Action{
-				Target: "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
+				Target:     "/redfish/v1/AggregationService/Actions/AggregationService.SetDefaultBootOrder/",
+				ActionInfo: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
 			},
 		},
 		Aggregates: agresponse.OdataID{
@@ -892,5 +895,87 @@ func (a *Aggregator) SendStartUpData(ctx context.Context, req *aggregatorproto.S
 	resp = &aggregatorproto.SendStartUpDataResponse{
 		ResponseBody: bytes,
 	}
+	return resp, nil
+}
+
+// GetAggregationService is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
+func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+	resp := &aggregatorproto.AggregatorResponse{}
+	// Fill the response header first
+	resp.Header = map[string]string{
+		"Date": time.Now().Format(http.TimeFormat),
+		"Link": "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
+	}
+	// Validate the token, if user has Login priielege then proceed.
+	//Else send 401 Unauthorised
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		generateResponse(authResp, resp)
+		return resp, nil
+	}
+	aggregationServiceResponse, _ := json.Marshal(agresponse.ActionInfo{
+		ID:        "ResetActionInfo",
+		OdataType: "#ActionInfo.v1_2_0.ActionInfo",
+		Name:      "Reset Action Info",
+		Parameters: []agresponse.Parameter{
+			{
+				Name:            "ResetType",
+				Required:        true,
+				DataType:        "string",
+				AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
+			},
+			{
+				Name:     "TargetURIs",
+				Required: true,
+				DataType: "array",
+				// AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
+			},
+		},
+		OdataID: "/redfish/v1/AggregationService/ResetActionInfo",
+	})
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	resp.Body = aggregationServiceResponse
+	return resp, nil
+}
+
+// SetDefaultBootOrderActionInfo is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
+func (a *Aggregator) GetSetDefaultBootOrderActionInfo(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
+	*aggregatorproto.AggregatorResponse, error) {
+	resp := &aggregatorproto.AggregatorResponse{}
+	// Fill the response header first
+	resp.Header = map[string]string{
+		"Date": time.Now().Format(http.TimeFormat),
+		"Link": "</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby",
+	}
+	// Validate the token, if user has Login priielege then proceed.
+	//Else send 401 Unauthorised
+	var oemprivileges []string
+	privileges := []string{common.PrivilegeLogin}
+	authResp := a.connector.Auth(req.SessionToken, privileges, oemprivileges)
+	if authResp.StatusCode != http.StatusOK {
+		generateResponse(authResp, resp)
+		return resp, nil
+	}
+	setDefaultBootOrderActionInfoResponse, _ := json.Marshal(agresponse.ActionInfo{
+		ID:        "SetDefaultBootOrderActionInfo",
+		OdataType: "#ActionInfo.v1_2_0.ActionInfo",
+		Name:      "SetDefaultBootOrder Action Info",
+		Parameters: []agresponse.Parameter{
+			{
+				Name:     "Systems",
+				Required: true,
+				DataType: "Array",
+				// AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
+			},
+		},
+		OdataID: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",
+	})
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	resp.Body = setDefaultBootOrderActionInfoResponse
 	return resp, nil
 }

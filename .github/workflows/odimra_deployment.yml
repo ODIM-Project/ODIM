@@ -262,6 +262,7 @@ jobs:
         count=0
         while [[ $(kubectl get pods -n odim -o wide | grep "Running" | wc -l) -ne 15 ]]; do
                 if [[ $count -eq 6 ]]; then
+                        echo "INSIDE WHILE"
                         break
                 fi
                 sleep 10
@@ -270,14 +271,18 @@ jobs:
         kubectl get pods -n odim -o wide | grep urplugin*
         
         sleep 30s
+        kubectl get pods -n odim -o wide | grep urplugin*
         
         urplugin=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/redfish/v1/AggregationService/ConnectionMethods/' | awk 'BEGIN{FS=":"; OFS=":"} {print $8}' | cut -d '"' -f 2`
         
+        echo "CURL connectionmethod output ***************"
         echo $urplugin
         
         urplugin_taskid=`curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"HostName":"urplugin:45007", "UserName":"admin", "Password":"Plug!n12$4", "Links":{ "ConnectionMethod": {"@odata.id": "${urplugin}" }}}'  'https://'$FQDN':30080/redfish/v1/AggregationService/AggregationSources/' | grep Location | awk '{print $2}' | cut -d '/' -f2-`
          
+        echo "CURL add plugin output ***************"
         echo $?
+        echo "CURL add plugin output ***************"
         echo $urplugin_taskid
         
         task=`curl -i -s -k -X GET -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ="  'https://'$FQDN':30080/${urplugin_taskid}' | grep -oe 202`

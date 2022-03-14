@@ -332,3 +332,38 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)
 }
+
+// DeleteRemoteAccountService defines the DeleteRemoteAccountService iris handler.
+// This method extract the session token,uuid and url and creates the RPC request.
+// After the RPC call the method will feed the response to the iris
+// and gives out a proper response.
+func (mgr *ManagersRPCs) DeleteRemoteAccountService(ctx iris.Context) {
+	defer ctx.Next()
+	req := managersproto.ManagerRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		ManagerID:    ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
+		URL:          ctx.Request().RequestURI,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := mgr.DeleteRemoteAccountServiceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}

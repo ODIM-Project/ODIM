@@ -1123,6 +1123,27 @@ def check_extract_kubespray_src():
 		if ret != 0:
 			logger.critical("Extracting and configuring kubespray failed")
 			exit(1)
+	else:
+		with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (CONTROLLER_CONF_DATA['nwPreference'] != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (CONTROLLER_CONF_DATA['nwPreference'] != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
+		with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (CONTROLLER_CONF_DATA['nwPreference'] != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (CONTROLLER_CONF_DATA['nwPreference'] != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
 
 def read_groupvar():
 	global GROUP_VAR_DATA

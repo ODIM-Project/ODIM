@@ -90,6 +90,15 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Severity:   "OK",
 					Resolution: "None",
 				})
+		case GeneralError:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    "A general error has occurred.  See Resolution for information on how to resolve the error, or @Message.ExtendedInfo if Resolution is not provided.",
+					Severity:   "Critical",
+					Resolution: "None",
+				})
 		case ResourceRemoved:
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{

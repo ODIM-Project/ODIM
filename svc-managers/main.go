@@ -108,16 +108,19 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
 		ODataEtag:    "W570254F2",
 		Description:  "Logs view",
-		Members:      []*dmtf.Link{},
-		MembersCount: 0,
+		Members: []*dmtf.Link{
+			&dmtf.Link{
+				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
+			},
+		},
+		MembersCount: 1,
 		Name:         "Logs",
 	}
 	dbdata, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("unable to marshal manager data: %v", err)
 	}
-	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
-	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
+	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL"
+	mgrmodel.GenericSave([]byte(dbdata), "LogServicesSL", key)
 	return nil
-
 }

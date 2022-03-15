@@ -192,6 +192,9 @@ func Router() *iris.Application {
 					break
 				}
 			}
+			if r.URL.Path == common.SessionURI && r.Method == http.MethodGet {
+				authRequired = true
+			}
 			if authRequired {
 				logProperties := make(map[string]interface{})
 				logProperties["SessionToken"] = sessionToken

@@ -262,7 +262,6 @@ jobs:
         count=0
         while [[ $(kubectl get pods -n odim -o wide | grep "Running" | wc -l) -ne 15 ]]; do
                 if [[ $count -eq 6 ]]; then
-                        echo "INSIDE WHILE"
                         break
                 fi
                 sleep 10

@@ -670,13 +670,8 @@ func (e *ExternalInterface) DeleteRemoteAccountService(req *managersproto.Manage
 	uuid := requestData[0]
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodDelete, nil)
-
 	if resp.StatusCode == http.StatusOK {
-		body, _ := json.Marshal(resp.Body)
-		respBody := replaceBMCAccResp(string(body), req.ManagerID)
-		var managerAcc dmtf.ManagerAccount
-		json.Unmarshal([]byte(respBody), &managerAcc)
-		resp.Body = managerAcc
+		resp.StatusCode = http.StatusNoContent
 	}
 	return resp
 }

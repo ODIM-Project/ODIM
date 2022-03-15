@@ -807,7 +807,7 @@ func (a *AggregatorRPCs) GetResetActionInfoService(ctx iris.Context) {
 	}
 	resp, err := a.GetResetActionInfoServiceRPC(req)
 	if err != nil {
-		errorMessage := "something went wrong with the RPC calls: " + err.Error()
+		errorMessage := "RPC call error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)
@@ -839,7 +839,7 @@ func (a *AggregatorRPCs) GetSetDefaultBootOrderActionInfo(ctx iris.Context) {
 	}
 	resp, err := a.GetSetDefaultBootOrderActionInfoRPC(req)
 	if err != nil {
-		errorMessage := "something went wrong with the RPC calls: " + err.Error()
+		errorMessage := "RPC call error: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)

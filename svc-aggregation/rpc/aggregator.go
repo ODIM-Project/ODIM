@@ -926,12 +926,18 @@ func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggrega
 				Required:        true,
 				DataType:        "string",
 				AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
-			},
-			{
+			}, {
 				Name:     "TargetURIs",
 				Required: true,
 				DataType: "array",
-				// AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
+			}, {
+				Name:     "BatchSize",
+				Required: false,
+				DataType: "number",
+			}, {
+				Name:     "DelayBetweenBatchesInSeconds",
+				Required: false,
+				DataType: "number",
 			},
 		},
 		OdataID: "/redfish/v1/AggregationService/ResetActionInfo",
@@ -969,7 +975,6 @@ func (a *Aggregator) GetSetDefaultBootOrderActionInfo(ctx context.Context, req *
 				Name:     "Systems",
 				Required: true,
 				DataType: "Array",
-				// AllowableValues: []string{"On", "ForceOff", "GracefulShutdown", "GracefulRestart", "ForceRestart", "Nmi", "ForceOn", "PushPowerButton"},
 			},
 		},
 		OdataID: "/redfish/v1/AggregationService/SetDefaultBootOrderActionInfo",

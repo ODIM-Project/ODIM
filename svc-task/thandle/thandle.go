@@ -250,7 +250,10 @@ func (ts *TasksRPC) DeleteTask(ctx context.Context, req *taskproto.GetTaskReques
 		PercentComplete: task.PercentComplete,
 	}
 	if task.ParentID == "" {
-		taskResponse.SubTasks = "/redfish/v1/Tasks/" + task.ID + "/SubTasks"
+		var subTask = tresponse.ListMember{
+			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
+		}
+		taskResponse.SubTasks = &subTask
 	}
 	//  return tasks in case of Success
 	//Frame the response body below to send back to the user
@@ -401,7 +404,7 @@ func (ts *TasksRPC) GetSubTasks(ctx context.Context, req *taskproto.GetTaskReque
 	commonResponse := response.Response{
 		OdataContext: "/redfish/v1/$metadata#SubTasks.SubTasks",
 		OdataID:      "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks/",
-		OdataType:    "#SubTasks.SubTasks",
+		OdataType:    "#TaskCollection.TaskCollection",
 		Name:         "SubTasks",
 		Description:  "SubTasks",
 	}
@@ -667,7 +670,10 @@ func (ts *TasksRPC) GetTasks(ctx context.Context, req *taskproto.GetTaskRequest)
 		PercentComplete: task.PercentComplete,
 	}
 	if task.ParentID == "" && len(task.ChildTaskIDs) != 0 {
-		taskResponse.SubTasks = "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks"
+		var subTask = tresponse.ListMember{
+			OdataID: "/redfish/v1/TaskService/Tasks/" + task.ID + "/SubTasks",
+		}
+		taskResponse.SubTasks = &subTask
 	}
 	// Check the state of the task
 	if task.TaskState == "Completed" || task.TaskState == "Cancelled" || task.TaskState == "Killed" || task.TaskState == "Exception" {
@@ -720,7 +726,7 @@ func (ts *TasksRPC) GetTaskService(ctx context.Context, req *taskproto.GetTaskRe
 	rsp.StatusCode = http.StatusOK
 	rsp.StatusMessage = response.Success
 	commonResponse := response.Response{
-		OdataType:    "#TaskService.v1_1_4.TaskService",
+		OdataType:    "#TaskService.v1_2_0.TaskService",
 		ID:           "TaskService",
 		Name:         "TaskService",
 		Description:  "TaskService",

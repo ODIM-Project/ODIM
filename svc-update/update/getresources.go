@@ -110,7 +110,7 @@ func (e *ExternalInterface) GetAllFirmwareInventory(req *updateproto.UpdateReque
 	firmwareCollection := uresponse.Collection{
 		OdataContext: "/redfish/v1/$metadata#FirmwareInventoryCollection.FirmwareCollection",
 		OdataID:      "/redfish/v1/UpdateService/FirmwareInventory",
-		OdataType:    "#FirmwareInventoryCollection.FirmwareInventoryCollection",
+		OdataType:    "#SoftwareInventoryCollection.SoftwareInventoryCollection",
 		Description:  "FirmwareInventory view",
 		Name:         "FirmwareInventory",
 	}

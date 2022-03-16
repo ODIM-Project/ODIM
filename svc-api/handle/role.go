@@ -149,8 +149,11 @@ func (r *RoleRPCs) GetRole(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-
-	ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	if req.Id == common.RoleAdmin || req.Id == common.RoleClient || req.Id == common.RoleMonitor {
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH")
+	} else {
+		ctx.ResponseWriter().Header().Set("Allow", "GET, PATCH, DELETE")
+	}
 	common.SetResponseHeader(ctx, resp.Header)
 	ctx.StatusCode(int(resp.StatusCode))
 	ctx.Write(resp.Body)

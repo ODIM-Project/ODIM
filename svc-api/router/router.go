@@ -127,11 +127,13 @@ func Router() *iris.Application {
 	}
 
 	manager := handle.ManagersRPCs{
-		GetManagersCollectionRPC: rpc.GetManagersCollection,
-		GetManagersRPC:           rpc.GetManagers,
-		GetManagersResourceRPC:   rpc.GetManagersResource,
-		VirtualMediaInsertRPC:    rpc.VirtualMediaInsert,
-		VirtualMediaEjectRPC:     rpc.VirtualMediaEject,
+		GetManagersCollectionRPC:      rpc.GetManagersCollection,
+		GetManagersRPC:                rpc.GetManagers,
+		GetManagersResourceRPC:        rpc.GetManagersResource,
+		VirtualMediaInsertRPC:         rpc.VirtualMediaInsert,
+		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
+		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
+		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -189,6 +191,9 @@ func Router() *iris.Application {
 					authRequired = false
 					break
 				}
+			}
+			if r.URL.Path == common.SessionURI && r.Method == http.MethodGet {
+				authRequired = true
 			}
 			if authRequired {
 				logProperties := make(map[string]interface{})
@@ -345,6 +350,10 @@ func Router() *iris.Application {
 	storage.Get("/", system.GetSystemResource)
 	storage.Get("/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers/{rid}", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers/{rid}/Ports", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers/{rid}/Ports/{portID}", system.GetSystemResource)
 	storage.Get("/{id2}/Volumes", system.GetSystemResource)
 	storage.Post("/{id2}/Volumes", system.CreateVolume)
 	storage.Delete("/{id2}/Volumes/{rid}", system.DeleteVolume)
@@ -545,8 +554,8 @@ func Router() *iris.Application {
 	managers.Get("/{id}/HostInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces/{rid}", manager.GetManagersResource)
 
-	managers.Get("/{id}/SerialInterface", manager.GetManagersResource)
-	managers.Get("/{id}/SerialInterface/{rid}", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces", manager.GetManagersResource)
+	managers.Get("/{id}/SerialInterfaces/{rid}", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia/{rid}", manager.GetManagersResource)
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", manager.VirtualMediaEject)
@@ -556,6 +565,17 @@ func Router() *iris.Application {
 	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
+	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
+	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
+	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
+	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Accounts/{rid}", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Roles", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/RemoteAccountService/Roles/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Any("/{id}/LogServices/{rid}/Entries", handle.ManagersMethodNotAllowed)

@@ -307,20 +307,20 @@ func validateSimpleUpdateRequest(requestBody []byte, taskInfo *common.TaskUpdate
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()
 		log.Warn(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo)
+		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, taskInfo)
 	}
 	if request["Targets"] != nil {
 		if reflect.TypeOf(request["Targets"]).Kind() != reflect.Slice {
 			errMsg := "'Targets' parameter should be of type string array"
 			log.Warn(errMsg)
-			return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
+			return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"Targets"}, taskInfo)
 		}
 		target := request["Targets"].([]interface{})
 		for _, k := range target {
 			if reflect.TypeOf(k).Kind() != reflect.String {
 				errMsg := "'Targets' parameter should be of type string array"
 				log.Warn(errMsg)
-				return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"Targets"}, taskInfo)
+				return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"Targets"}, taskInfo)
 			}
 		}
 	}
@@ -332,7 +332,7 @@ func validateSimpleUpdateRequest(requestBody []byte, taskInfo *common.TaskUpdate
 	if reflect.TypeOf(request["ImageURI"]).Kind() != reflect.String {
 		errMsg := "'ImageURI' parameter should be of type string"
 		log.Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ImageURI"}, taskInfo)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"ImageURI"}, taskInfo)
 	}
 	if request["ImageURI"] != nil {
 		URI := request["ImageURI"]
@@ -340,7 +340,7 @@ func validateSimpleUpdateRequest(requestBody []byte, taskInfo *common.TaskUpdate
 		if err != nil {
 			errMsg := "Provided ImageURI is Invalid"
 			log.Warn(errMsg)
-			return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ImageURI"}, taskInfo)
+			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", err), "ImageURI"}, taskInfo)
 		}
 	}
 	return response.RPC{StatusCode: http.StatusOK}

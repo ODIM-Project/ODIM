@@ -120,7 +120,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	if err != nil {
 		return fmt.Errorf("unable to marshal manager data: %v", err)
 	}
-	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL"
-	mgrmodel.GenericSave([]byte(dbdata), "LogServicesSL", key)
+	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
+	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
 	return nil
 }

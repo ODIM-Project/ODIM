@@ -58,6 +58,7 @@ type Port struct {
 	SFP                     SFP                  `json:"SFP,omitempty"`
 }
 
+// SFP redfish structure
 type SFP struct {
 	FiberConnectionType string   `json:"FiberConnectionType,omitempty"`
 	Manufacturer        string   `json:"Manufacturer,omitempty"`
@@ -69,6 +70,7 @@ type SFP struct {
 	Type                string   `json:"Type,omitempty"`
 }
 
+// FunctionBandwidth redfish structure
 type FunctionBandwidth struct {
 	AllocationPercent     int   `json:"AllocationPercent,omitempty"`
 	NetworkDeviceFunction *Link `json:"NetworkDeviceFunctions,omitempty"`
@@ -87,6 +89,7 @@ type PortEthernet struct {
 	AssociatedMACAddresses        []string `json:"AssociatedMACAddresses,omitempty"`
 }
 
+// LLDP redfish structure
 type LLDP struct {
 	ChassisId             string `json:"ChassisId,omitempty"`
 	ChassisIdSubtype      string `json:"ChassisIdSubtype,omitempty"`

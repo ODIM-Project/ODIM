@@ -68,6 +68,7 @@ type ProtocolFeaturesSupported struct {
 	SelectQuery     bool         `json:"SelectQuery"`
 }
 
+// ExpandQuery redfish structure
 type ExpandQuery struct {
 	ExpandAll bool `json:"ExpandAll"`
 	Levels    bool `json:"Levels"`

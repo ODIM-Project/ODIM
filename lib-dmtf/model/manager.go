@@ -59,12 +59,14 @@ type Manager struct {
 	SparePartNumber         string            `json:"SparePartNumber,omitempty"`
 }
 
+// CommandShell redfish structure
 type CommandShell struct {
 	ConnectTypesSupported []string `json:"ConnectTypesSupported"`
 	MaxConcurrentSessions int      `json:"MaxConcurrentSessions"`
 	ServiceEnabled        bool     `json:"ServiceEnabled"`
 }
 
+// GraphicalConsole redfish structure
 type GraphicalConsole struct {
 	ConnectTypesSupported []string `json:"ConnectTypesSupported"`
 	MaxConcurrentSessions int      `json:"MaxConcurrentSessions"`
@@ -117,6 +119,7 @@ type VirtualMedia struct {
 	Certificates         Certificates        `json:"Certificates,omitempty"`
 }
 
+// ClientCertificates redfish structure
 type ClientCertificates struct {
 	OdataID string `json:"@odata.id"`
 }

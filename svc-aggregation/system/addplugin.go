@@ -229,10 +229,10 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 
 	}
-	key1 := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL"
-	dbErr2 := agmodel.SavePluginManagerInfo([]byte(dbLogEntrydata), "LogServices", key1)
-	if dbErr2 != nil {
-		errMsg := dbErr2.Error()
+	key= "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL"
+	dbErr:= agmodel.SavePluginManagerInfo([]byte(dbLogEntrydata), "LogServices", key)
+	if dbErr != nil {
+		errMsg := dbErr.Error()
 		log.Error(errMsg)
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
@@ -257,8 +257,8 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 	}
 	key = "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries"
-	dbErr1 = agmodel.SavePluginManagerInfo([]byte(dbentriesdata), "EntriesCollection", key)
-	if dbErr1 != nil {
+	dbErr= agmodel.SavePluginManagerInfo([]byte(dbentriesdata), "EntriesCollection", key)
+	if dbErr != nil {
 		errMsg := dbErr1.Error()
 		log.Error(errMsg)
 
@@ -286,7 +286,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	plugin.Password = ciphertext
 	plugin.ManagerUUID = managerUUID
 	// saving the pluginData
-	dbErr := agmodel.SavePluginData(plugin)
+	dbErr = agmodel.SavePluginData(plugin)
 	if dbErr != nil {
 		errMsg := "error: while saving the plugin data: " + dbErr.Error()
 		log.Error(errMsg)

@@ -215,7 +215,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		Oetag:       "W570254F2",
 		Otype:       "#LogService.v1_3_0.LogService",
 		Description: "Logs view",
-		Entries: model.Entries{
+		Entries: &model.Entries{
 			Oid:"/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
 		},
 		ID:              "SL",

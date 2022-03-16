@@ -172,7 +172,7 @@ type Boot struct {
 	UefiTargetBootSourceOverride    string       `json:"UefiTargetBootSourceOverride,omitempty"`
 	AutomaticRetryAttempts          int          `json:"AutomaticRetryAttempts,omitempty"`
 	AutomaticRetryConfig            string       `json:"AutomaticRetryConfig,omitempty"`
-	HttpBootUri                     string       `json:"HttpBootUri,omitempty"`
+	HTTPBootURI                     string       `json:"HttpBootUri,omitempty"`
 	RemainingAutomaticRetryAttempts int          `json:"RemainingAutomaticRetryAttempts,omitempty"`
 	StopBootOnFault                 string       `json:"StopBootOnFault,omitempty"`
 	TrustedModuleRequiredToBoot     string       `json:"TrustedModuleRequiredToBoot,omitempty"`
@@ -393,7 +393,7 @@ type OperatingSpeedRangeMHz struct {
 	AllowableMin           float32   `json:"AllowableMin,omitempty"`
 	AllowableNumericValues []float32 `json:"AllowableNumericValues,omitempty"`
 	ControlMode            string    `json:"ControlMode,omitempty"`
-	DataSourceUri          string    `json:"DataSourceUri,omitempty"`
+	DataSourceURI          string    `json:"DataSourceUri,omitempty"`
 	Reading                float32   `json:"Reading,omitempty"`
 	ReadingUnits           string    `json:"ReadingUnits,omitempty"`
 	SettingMax             float32   `json:"SettingMax,omitempty"`

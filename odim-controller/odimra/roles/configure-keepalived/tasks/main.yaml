@@ -47,7 +47,7 @@
     force_apt_get: yes
   environment: "{{ proxy_env }}"
 
-- name: Copy keepalived configuration file
+- name: Copy keepalived configuration file for nwPreference ipv4
   template:
     src: "roles/configure-keepalived/templates/keepalived.conf.j2"
     dest: /etc/keepalived/keepalived.conf
@@ -57,13 +57,30 @@
   with_items:
     - routerID: "{{ inventory_hostname | mandatory }}"
       interfaceName: "{{ interfaceName | mandatory }}"
-      dualStackEnabled: "{{ odimra.dualStackEnabled }}"
+      dualStack: false
       virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
       priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
       virtualIP: "{{ odimra.virtualIP | mandatory }}"
-      when: dualStackEnabled == true
-           virtualIPv6: "{{ odimra.virtualIPv6 }}"
-      
+      virtualIPv6: ""
+  when: nwPreference == 'ipv4'
+
+- name: Copy keepalived configuration file for nwPreference dualStack
+  template:
+    src: "roles/configure-keepalived/templates/keepalived.conf.j2"
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - routerID: "{{ inventory_hostname | mandatory }}"
+      interfaceName: "{{ interfaceName | mandatory }}"
+      dualStack: true
+      virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
+      priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
+      virtualIP: "{{ odimra.virtualIP | mandatory }}"
+      virtualIPv6: "{{ odimra.virtualIPv6 | mandatory }}"
+  when: nwPreference  == 'dualStack'
+
 - name: Enable keepalived systemd service
   systemd:
     name: keepalived

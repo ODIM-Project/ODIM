@@ -89,11 +89,13 @@ type ComputerSystem struct {
 	VirtualMediaConfig      *VirtualMediaConfig `json:"VirtualMediaConfig,omitempty"`
 }
 
+// VirtualMediaConfig redfish structure
 type VirtualMediaConfig struct {
 	Port           int  `json:"Port,omitempty"`
 	ServiceEnabled bool `json:"ServiceEnabled,omitempty"`
 }
 
+// SerialConsole redfish structure
 type SerialConsole struct {
 	IPMI                  interface{} `json:"IPMI,omitempty"`
 	MaxConcurrentSessions int         `json:"MaxConcurrentSessions,omitempty"`
@@ -101,6 +103,7 @@ type SerialConsole struct {
 	Telnet                interface{} `json:"Telnet,omitempty"`
 }
 
+// BootProgress redfish structure
 type BootProgress struct {
 	LastState     string `json:"LastState,omitempty"`
 	LastStateTime string `json:"LastStateTime,omitempty"`
@@ -108,21 +111,26 @@ type BootProgress struct {
 	OemLastState  string `json:"OemLastState,omitempty"`
 }
 
+// KeyManagement redfish structure
 type KeyManagement struct {
 	KMIPCertificates *KMIPCertificates `json:"KMIPCertificates,omitempty"`
 	KMIPServers      []*KMIPServers    `json:"KMIPServers,omitempty"`
 }
 
+// KMIPCertificates redfish structure
 type KMIPCertificates struct {
 	Oid string `json:"@odata.id"`
 }
 
+// KMIPServers redfish structure
 type KMIPServers struct {
 	Address  string `json:"Address,omitempty"`
 	Password string `json:"Password,omitempty"`
 	Port     int    `json:"Port,omitempty"`
 	Username string `json:"Username,omitempty"`
 }
+
+// IdlePowerSaver redfish structure
 type IdlePowerSaver struct {
 	Enabled                 bool    `json:"Enabled,omitempty"`
 	EnterDwellTimeSeconds   int     `json:"EnterDwellTimeSeconds,omitempty"`
@@ -379,6 +387,7 @@ type Memory struct {
 	SparePartNumber                         string                  `json:"SparePartNumber,omitempty"`
 }
 
+// OperatingSpeedRangeMHz redfish structure
 type OperatingSpeedRangeMHz struct {
 	AllowableMax           float32   `json:"AllowableMax,omitempty"`
 	AllowableMin           float32   `json:"AllowableMin,omitempty"`
@@ -647,12 +656,14 @@ type Processors struct {
 	Version                 string                  `json:"Version,omitempty"`
 }
 
+// SystemInterface redfish structure
 type SystemInterface struct {
 	Ethernet      Ethernet      `json:"Ethernet,omitempty"`
 	InterfaceType string        `json:"InterfaceType,omitempty"`
 	PCIe          PCIeInterface `json:"PCIe,omitempty"`
 }
 
+// MemorySummaryDetails in place object
 type MemorySummaryDetails struct {
 	ECCModeEnabled     bool    `json:"ECCModeEnabled,omitempty"`
 	Metrics            Metrics `json:"Metrics,omitempty"`

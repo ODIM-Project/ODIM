@@ -38,7 +38,6 @@ import (
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
-		CreateRoleRPC:  rpc.CreateRole,
 		GetRoleRPC:     rpc.GetRole,
 		UpdateRoleRPC:  rpc.UpdateRole,
 		DeleteRoleRPC:  rpc.DeleteRole,

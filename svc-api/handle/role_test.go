@@ -108,48 +108,6 @@ func TestRoleRPCs_GetAllRolesWithoutToken(t *testing.T) {
 	).Expect().Status(http.StatusUnauthorized).Headers().Equal(header)
 }
 
-func TestRoleRPCs_CreateRole(t *testing.T) {
-	var r RoleRPCs
-	r.CreateRoleRPC = mockCreateRoleRPC
-	body := map[string]interface{}{
-		"RoleId":             "someRole",
-		"AssignedPrivileges": []string{"SomePrivilege"},
-	}
-
-	mockApp := iris.New()
-	redfishRoutes := mockApp.Party("/redfish/v1")
-	redfishRoutes.Post("/AccountService/Roles", r.CreateRole)
-
-	e := httptest.New(t, mockApp)
-	e.POST(
-		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").WithJSON(body).Expect().Status(http.StatusCreated).Headers().Equal(header)
-	e.POST(
-		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").Expect().Status(http.StatusBadRequest)
-	e.POST(
-		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "").WithJSON(body).Expect().Status(http.StatusUnauthorized)
-}
-
-func TestRoleRPCs_CreateRoleWithRPCError(t *testing.T) {
-	var r RoleRPCs
-	r.CreateRoleRPC = mockCreateRoleRPCWithRPCError
-	body := map[string]interface{}{
-		"RoleId":             "someRole",
-		"AssignedPrivileges": []string{"SomePrivilege"},
-	}
-
-	mockApp := iris.New()
-	redfishRoutes := mockApp.Party("/redfish/v1")
-	redfishRoutes.Post("/AccountService/Roles", r.CreateRole)
-
-	e := httptest.New(t, mockApp)
-	e.POST(
-		"/redfish/v1/AccountService/Roles",
-	).WithHeader("X-Auth-Token", "token").WithJSON(body).Expect().Status(http.StatusInternalServerError)
-}
-
 func TestRoleRPCs_GetRole(t *testing.T) {
 	header["Allow"] = []string{"GET, PATCH, DELETE"}
 	defer delete(header, "Allow")

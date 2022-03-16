@@ -462,11 +462,11 @@ jobs:
        
         echo "========================= Session Checked=================================="
         
-        echo "POST Admin creating account - (args - username, password, roleID)"
+        echo "POST Admin creating account - (args - username, password)"
         
         
         
-        run2=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://'$FQDN':30080/redfish/v1/AccountService/Accounts' | head -1 | awk '{print $2}')
+        run2=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45"}' 'https://'$FQDN':30080/redfish/v1/AccountService/Accounts' | head -1 | awk '{print $2}')
         
         
         

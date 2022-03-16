@@ -68,7 +68,7 @@ func mockDeleteRoleRPC(roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, er
 }
 
 func TestRoleRPCs_GetAllRoles(t *testing.T) {
-	header["Allow"] = []string{"GET, POST"}
+	header["Allow"] = []string{"GET"}
 	defer delete(header, "Allow")
 	var r RoleRPCs
 	r.GetAllRolesRPC = mockGetAllRolesRPC

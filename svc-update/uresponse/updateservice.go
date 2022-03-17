@@ -76,16 +76,16 @@ type UpdateService struct {
 	response.Response
 	Status                        Status                    `json:"Status"`
 	ServiceEnabled                bool                      `json:"ServiceEnabled"`
-	HTTPPushURI                   string                    `json:"HTTPPushURI"`
+	HTTPPushURI                   string                    `json:"HttpPushUri"`
 	FirmwareInventory             FirmwareInventory         `json:"FirmwareInventory"`
 	SoftwareInventory             SoftwareInventory         `json:"SoftwareInventory"`
 	Actions                       Actions                   `json:"Actions"`
 	OEM                           *OEM                      `json:"Oem,omitempty"`
 	ClientCertificates            *ClientCertificates       `json:"ClientCertificates,omitempty"`
-	HTTPPushURIOptions            *HTTPPushURIOptions       `json:"HTTPPushURIOptions,omitempty"`
-	HTTPPushURIiOptionsBusy       bool                      `json:"HTTPPushURIiOptionsBusy,omitempty"`
-	HTTPPushURITargets            []string                  `json:"HTTPPushURITargets,omitempty"`
-	HTTPPushURITargetsBusy        bool                      `json:"HTTPPushURITargetsBusy,omitempty"`
+	HTTPPushURIOptions            *HTTPPushURIOptions       `json:"HttpPushUriOptions,omitempty"`
+	HTTPPushURIiOptionsBusy       bool                      `json:"HttpPushUriOptionsBusy,omitempty"`
+	HTTPPushURITargets            []string                  `json:"HttpPushUriTargets,omitempty"`
+	HTTPPushURITargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
 	MaxImageSizeBytes             int                       `json:"MaxImageSizeBytes,omitempty"`
 	MultipartHTTPPushURI          string                    `json:"MultipartHTTPPushURI,omitempty"`
 	VerifyRemoteServerCertificate bool                      `json:"VerifyRemoteServerCertificate,omitempty"`

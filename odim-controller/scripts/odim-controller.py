@@ -733,7 +733,7 @@ def deploy_k8s():
 
 		# update proxy info in ansible conf
 		update_ansible_conf()
-                # Copy K8 images if absolute path for images is provided
+        # Copy K8 images if absolute path for images is provided
 		copy_k8_images(host_file,nodes_list)
 
 		k8s_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root cluster.yml'.format(host_conf_file=host_file)

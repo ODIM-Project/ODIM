@@ -106,8 +106,8 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
-		ODataEtag:    "W570254F2",
-		Description:  "Logs view",
+		//ODataEtag:    "W570254F2",
+		Description: "Logs view",
 		Members: []*dmtf.Link{
 			&dmtf.Link{
 				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",

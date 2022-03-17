@@ -255,7 +255,7 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	mockLogServicesCollectionData("/redfish/v1/Managers/1234877451-1233/LogServices", map[string]interface{}{
 		"ODataContext": "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		"ODataID":      "/redfish/v1/Managers/1234877451-1233/LogServices",
-		"ODataEtag":    "W570254F2",
+		//"ODataEtag":    "W570254F2",
 		"ODataType":    "#LogServiceCollection.LogServiceCollection",
 		"Description":  "Logs view",
 		"Members":      map[string]interface{}{},

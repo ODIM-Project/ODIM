@@ -699,6 +699,10 @@ def deploy_k8s():
 	node_ip_list = ""
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+                        if attrs['ipv6']=="":
+                                logger.critical("ipV6 address is not provided in configuarion")
+                                exit(1)
 		node_ip_list += "%s,%s,%s " %(node, attrs['ip'], attrs['ip'])
 		nodes_list += '{hostname},'.format(hostname=node)
 	nodes_list = nodes_list.rstrip(',')
@@ -718,7 +722,8 @@ def deploy_k8s():
 
 		logger.info("Generating hosts file required for k8s cluster deployment")
 		host_file_gen_cmd = 'CONFIG_FILE={host_conf_file} python3 contrib/inventory_builder/inventory.py {node_details_list}'.format( \
-				host_conf_file=host_file, node_details_list=node_ip_list)
+			host_conf_file=host_file, node_details_list=node_ip_list)
+
 
 		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS': '3'})
 		if ret != 0:
@@ -728,7 +733,7 @@ def deploy_k8s():
 
 		# update proxy info in ansible conf
 		update_ansible_conf()
-                # Copy K8 images if absolute path for images is provided
+        # Copy K8 images if absolute path for images is provided
 		copy_k8_images(host_file,nodes_list)
 
 		k8s_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root cluster.yml'.format(host_conf_file=host_file)
@@ -737,6 +742,15 @@ def deploy_k8s():
 			logger.critical("k8s cluster deployment failed")
 			os.chdir(cur_dir)
 			exit(1)
+		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+		# load existing hosts.yaml created for the deployment_id
+		    load_k8s_host_conf()
+		#update the ipv6 address in hosts.yaml
+		    for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+			    K8S_INVENTORY_DATA['all']['hosts'][node].update({"ipv6":attrs['ipv6']})
+		    SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
+		    with open(K8S_INVENTORY_FILE, 'w') as f:
+			    yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster deployment")

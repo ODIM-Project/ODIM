@@ -259,20 +259,20 @@ func validateSimpleUpdateRequest(requestBody []byte) response.RPC {
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()
 		log.Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, nil)
+		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, nil, nil)
 	}
 	if request["Targets"] != nil {
 		if reflect.TypeOf(request["Targets"]).Kind() != reflect.Slice {
 			errMsg := "'Targets' parameter should be of type string array"
 			log.Warn(errMsg)
-			return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"Targets"}, nil)
+			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{"", "Targets"}, nil)
 		}
 		target := request["Targets"].([]interface{})
 		for _, k := range target {
 			if reflect.TypeOf(k).Kind() != reflect.String {
 				errMsg := "'Targets' parameter should be of type string array"
 				log.Warn(errMsg)
-				return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"Targets"}, nil)
+				return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", k), "Targets"}, nil)
 			}
 		}
 	}
@@ -284,7 +284,7 @@ func validateSimpleUpdateRequest(requestBody []byte) response.RPC {
 	if reflect.TypeOf(request["ImageURI"]).Kind() != reflect.String {
 		errMsg := "'ImageURI' parameter should be of type string"
 		log.Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"ImageURI"}, nil)
+		return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{"", "ImageURI"}, nil)
 	}
 	if request["ImageURI"] != nil {
 		URI := request["ImageURI"]

@@ -185,7 +185,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		ODataEtag:    "W570254F2",
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
 		Description:  "Logs view",
-		Members:      []*model.Link{
+		Members: []*model.Link{
 			&model.Link{
 				Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
 			},
@@ -201,9 +201,9 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 	}
 	key := "/redfish/v1/Managers/" + managerUUID + "/LogServices"
-	dbErr1 := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
-	if dbErr1 != nil {
-		errMsg := dbErr1.Error()
+	dbEr := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
+	if dbEr != nil {
+		errMsg := dbEr.Error()
 		log.Error(errMsg)
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
@@ -216,7 +216,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		Otype:       "#LogService.v1_3_0.LogService",
 		Description: "Logs view",
 		Entries: &model.Entries{
-			Oid:"/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
+			Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
 		},
 		ID:              "SL",
 		Name:            "Security Log",
@@ -229,15 +229,15 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 
 	}
-	key= "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL"
-	dbErr:= agmodel.SavePluginManagerInfo([]byte(dbLogEntrydata), "LogServices", key)
-	if dbErr != nil {
-		errMsg := dbErr.Error()
+	lkey := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL"
+	logdbErr := agmodel.SavePluginManagerInfo([]byte(dbLogEntrydata), "LogServices", lkey)
+	if logdbErr != nil {
+		errMsg := logdbErr.Error()
 		log.Error(errMsg)
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
 	}
-	
+
 	// adding empty logservice entry collection
 	entriesdata := model.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
@@ -256,10 +256,10 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
 
 	}
-	key = "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries"
-	dbErr= agmodel.SavePluginManagerInfo([]byte(dbentriesdata), "EntriesCollection", key)
-	if dbErr != nil {
-		errMsg := dbErr1.Error()
+	entrieskey := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries"
+	entriesdbErr := agmodel.SavePluginManagerInfo([]byte(dbentriesdata), "EntriesCollection", entrieskey)
+	if entriesdbErr != nil {
+		errMsg := entriesdbErr.Error()
 		log.Error(errMsg)
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
@@ -286,7 +286,7 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	plugin.Password = ciphertext
 	plugin.ManagerUUID = managerUUID
 	// saving the pluginData
-	dbErr = agmodel.SavePluginData(plugin)
+	dbErr := agmodel.SavePluginData(plugin)
 	if dbErr != nil {
 		errMsg := "error: while saving the plugin data: " + dbErr.Error()
 		log.Error(errMsg)

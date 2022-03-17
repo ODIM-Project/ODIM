@@ -1,7 +1,3 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
-
-//
-
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 
 //not use this file except in compliance with the License. You may obtain
@@ -91,6 +87,7 @@ func mockManagersData(id string, data map[string]interface{}) error {
 	if err = connPool.Create("Managers", id, string(reqData)); err != nil {
 		return fmt.Errorf("error while trying to create new %v resource: %v", "Managaers", err.Error())
 	}
+
 	return nil
 }
 
@@ -112,6 +109,19 @@ func mockSystemOperationInfo() *errors.Error {
 	return systemOperation.AddSystemOperationInfo("/redfish/v1/Systems/ef83e569-7336-492a-aaee-31c02d9db831.1")
 }
 
+func mockLogServicesCollectionData(id string, data map[string]interface{}) error {
+	reqData, _ := json.Marshal(data)
+
+	connPool, err := common.GetDBConnection(common.InMemory)
+	if err != nil {
+		return fmt.Errorf("error while trying to connecting to DB: %v", err.Error())
+	}
+
+	if err = connPool.Create("LogServicesCollection", id, string(reqData)); err != nil {
+		return fmt.Errorf("error while trying to create new %v resource: %v", "LogServicesCollectionData", err.Error())
+	}
+	return nil
+}
 func TestDeleteAggregationSourceWithRediscovery(t *testing.T) {
 	d := getMockExternalInterface()
 	type args struct {
@@ -238,7 +248,21 @@ func TestExternalInterface_DeleteAggregationSourceManager(t *testing.T) {
 	mockManagersData("/redfish/v1/Managers/1234877451-1233", map[string]interface{}{
 		"Name": "ILO_v1.0.0",
 		"UUID": "1234877451-1233",
+		"LogService": map[string]interface{}{
+			"@odata.id": "/redfish/v1/Managers/1234877451-1233/LogServices",
+		},
 	})
+	mockLogServicesCollectionData("/redfish/v1/Managers/1234877451-1233/LogServices", map[string]interface{}{
+		"ODataContext": "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		"ODataID":      "/redfish/v1/Managers/1234877451-1233/LogServices",
+		"ODataEtag":    "W570254F2",
+		"ODataType":    "#LogServiceCollection.LogServiceCollection",
+		"Description":  "Logs view",
+		"Members":      map[string]interface{}{},
+		"MembersCount": 0,
+		"Name":         "Logs",
+	})
+
 	mockManagersData("/redfish/v1/Managers/1234877451-1235", map[string]interface{}{
 		"Name": "NoStatusPlugin_v1.0.0",
 		"UUID": "1234877451-1235",

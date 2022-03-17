@@ -23,8 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
-	"reflect"
 	"runtime"
 	"strings"
 
@@ -44,10 +42,6 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 	targetURI := "/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate"
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
-	errResp := validateSimpleUpdateRequest(req.RequestBody, taskInfo)
-	if errResp.StatusCode != http.StatusOK {
-		return errResp
-	}
 
 	var updateRequest UpdateRequestBody
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
@@ -299,49 +293,4 @@ func sortTargetList(Targets []string) (map[string][]string, error) {
 		returnList[uuid] = append(returnList[uuid], individualTarget)
 	}
 	return returnList, nil
-}
-
-func validateSimpleUpdateRequest(requestBody []byte, taskInfo *common.TaskUpdateInfo) response.RPC {
-	var request map[string]interface{}
-	err := json.Unmarshal(requestBody, &request)
-	if err != nil {
-		errMsg := "Unable to parse the simple update request" + err.Error()
-		log.Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.InternalError, errMsg, nil, taskInfo)
-	}
-	if request["Targets"] != nil {
-		if reflect.TypeOf(request["Targets"]).Kind() != reflect.Slice {
-			errMsg := "'Targets' parameter should be of type string array"
-			log.Warn(errMsg)
-			return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"Targets"}, taskInfo)
-		}
-		target := request["Targets"].([]interface{})
-		for _, k := range target {
-			if reflect.TypeOf(k).Kind() != reflect.String {
-				errMsg := "'Targets' parameter should be of type string array"
-				log.Warn(errMsg)
-				return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"Targets"}, taskInfo)
-			}
-		}
-	}
-	if request["ImageURI"] == nil {
-		errMsg := "'ImageURI' parameter cannot be empty"
-		log.Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, errMsg, []interface{}{"ImageURI"}, taskInfo)
-	}
-	if reflect.TypeOf(request["ImageURI"]).Kind() != reflect.String {
-		errMsg := "'ImageURI' parameter should be of type string"
-		log.Warn(errMsg)
-		return common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errMsg, []interface{}{"ImageURI"}, taskInfo)
-	}
-	if request["ImageURI"] != nil {
-		URI := request["ImageURI"]
-		_, err = url.ParseRequestURI(URI.(string))
-		if err != nil {
-			errMsg := "Provided ImageURI is Invalid"
-			log.Warn(errMsg)
-			return common.GeneralError(http.StatusBadRequest, response.PropertyValueTypeError, errMsg, []interface{}{fmt.Sprintf("%v", err), "ImageURI"}, taskInfo)
-		}
-	}
-	return response.RPC{StatusCode: http.StatusOK}
 }

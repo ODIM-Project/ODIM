@@ -60,10 +60,8 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 		},
 	}
-	request1 := []byte(`{"ImageURI":"/abc/def","Targets":["/redfish/v1/Systems/uuid./target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
-	request2 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
-	request3 := []byte(`{"ImageURI":"/abc/def","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
-	request4 := []byte(`{"ImageURI":"/abc/def","Targets":[],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	request1 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid./target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
+	request3 := []byte(`{"ImageURI":"abc","Targets":["/redfish/v1/Systems/uuid.1/target1"],"@Redfish.OperationApplyTime": "OnStartUpdateRequest"}`)
 	tests := []struct {
 		name string
 		args args
@@ -80,32 +78,6 @@ func TestSimpleUpdate(t *testing.T) {
 			},
 			want: response.RPC{
 				StatusCode: http.StatusOK,
-			},
-		},
-		{
-			name: "invalid Image URI",
-			args: args{
-				taskID: "someID", sessionUserName: "someUser",
-				req: &updateproto.UpdateRequest{
-					SessionToken: "validToken",
-					RequestBody:  request2,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
-			},
-		},
-		{
-			name: "Empty Target",
-			args: args{
-				taskID: "someID", sessionUserName: "someUser",
-				req: &updateproto.UpdateRequest{
-					SessionToken: "validToken",
-					RequestBody:  request4,
-				},
-			},
-			want: response.RPC{
-				StatusCode: http.StatusBadRequest,
 			},
 		},
 		{

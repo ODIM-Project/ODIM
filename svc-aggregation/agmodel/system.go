@@ -515,24 +515,24 @@ func GetAllSystems() ([]Target, *errors.Error) {
 }
 
 //DeletePluginData will delete the plugin entry from the database based on the uuid
-func DeletePluginData(key string) *errors.Error {
+func DeletePluginData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {
 		return err
 	}
-	if err = conn.Delete("Plugin", key); err != nil {
+	if err = conn.Delete(table, key); err != nil {
 		return err
 	}
 	return nil
 }
 
-//DeleteManagersData will delete the Managers entry from the database based on the uuid
-func DeleteManagersData(key string) *errors.Error {
+//DeleteManagersData will delete the table entry from the database based on the uuid
+func DeleteManagersData(key, table string) *errors.Error {
 	conn, err := common.GetDBConnection(common.InMemory)
 	if err != nil {
 		return err
 	}
-	if err = conn.Delete("Managers", key); err != nil {
+	if err = conn.Delete(table, key); err != nil {
 		return err
 	}
 	return nil

@@ -182,11 +182,15 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	ldata := model.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices",
-		ODataEtag:    "W570254F2",
-		ODataType:    "#LogServiceCollection.LogServiceCollection",
-		Description:  "Logs view",
-		Members:      []*model.Link{},
-		MembersCount: 0,
+		//ODataEtag:    "W570254F2",
+		ODataType:   "#LogServiceCollection.LogServiceCollection",
+		Description: "Logs view",
+		Members: []*model.Link{
+			&model.Link{
+				Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
+			},
+		},
+		MembersCount: 1,
 		Name:         "Logs",
 	}
 	dbdata, err := json.Marshal(ldata)
@@ -197,9 +201,65 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 
 	}
 	key := "/redfish/v1/Managers/" + managerUUID + "/LogServices"
-	dbErr1 := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
-	if dbErr1 != nil {
-		errMsg := dbErr1.Error()
+	dbEr := agmodel.SavePluginManagerInfo([]byte(dbdata), "LogServicesCollection", key)
+	if dbEr != nil {
+		errMsg := dbEr.Error()
+		log.Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
+	//adding LogEntries Colelction
+	logEntrydata := model.LogServices{
+		Ocontext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		Oid:      "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
+		//Oetag:       "W570254F2",
+		Otype:       "#LogService.v1_3_0.LogService",
+		Description: "Logs view",
+		Entries: &model.Entries{
+			Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
+		},
+		ID:              "SL",
+		Name:            "Security Log",
+		OverWritePolicy: "WrapsWhenFull",
+	}
+	dbLogEntrydata, err := json.Marshal(logEntrydata)
+	if err != nil {
+		errMsg := "unable to marshal manager data: %v" + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+	}
+	lkey := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL"
+	logdbErr := agmodel.SavePluginManagerInfo([]byte(dbLogEntrydata), "LogServices", lkey)
+	if logdbErr != nil {
+		errMsg := logdbErr.Error()
+		log.Error(errMsg)
+
+		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil
+	}
+
+	// adding empty logservice entry collection
+	entriesdata := model.Collection{
+		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries",
+		//ODataEtag:    "W570254F2",
+		ODataType:    "#LogEntryCollection.LogEntryCollection",
+		Description:  "Security Logs view",
+		Members:      []*model.Link{},
+		MembersCount: 0,
+		Name:         "Security Logs",
+	}
+	dbentriesdata, err := json.Marshal(entriesdata)
+	if err != nil {
+		errMsg := "unable to marshal manager data: %v" + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, taskInfo), "", nil
+
+	}
+	entrieskey := "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL/Entries"
+	entriesdbErr := agmodel.SavePluginManagerInfo([]byte(dbentriesdata), "EntriesCollection", entrieskey)
+	if entriesdbErr != nil {
+		errMsg := entriesdbErr.Error()
 		log.Error(errMsg)
 
 		return common.GeneralError(http.StatusConflict, response.ResourceAlreadyExists, errMsg, []interface{}{"Plugin", "PluginID", plugin.ID}, taskInfo), "", nil

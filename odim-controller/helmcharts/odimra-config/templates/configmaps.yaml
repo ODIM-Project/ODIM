@@ -19,7 +19,7 @@ data:
     		"RSAPrivateKeyPath": "/etc/odimra_certs/odimra_rsa.private"
     	},
     	"APIGatewayConf": {
-    		"Host": {{ .Values.odimra.apiGatewayHost | quote }},
+    		"Host": "",
     		"Port": "45000",
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"

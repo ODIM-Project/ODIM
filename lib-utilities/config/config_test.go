@@ -154,8 +154,7 @@ func TestSetConfiguration(t *testing.T) {
 		],
     "EventConf": {
   		"DeliveryRetryAttempts" : 1,
-  		"DeliveryRetryIntervalSeconds" : 1,
-  		"RetentionOfUndeliveredEventsInMinutes" : 1
+  		"DeliveryRetryIntervalSeconds" : 1
     }
 }`
 

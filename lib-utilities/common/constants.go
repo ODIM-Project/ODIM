@@ -321,5 +321,7 @@ var URIWithNoAuth = []string{
 	"/redfish/v1/$metadata",
 	"/redfish/v1/odata",
 	"/redfish/v1/SessionService",
-	"/redfish/v1/SesssionService/Sessions",
+	"/redfish/v1/SessionService/Sessions",
 }
+
+var SessionURI = "/redfish/v1/SessionService/Sessions"

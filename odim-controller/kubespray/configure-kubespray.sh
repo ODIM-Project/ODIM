@@ -63,6 +63,15 @@ configure_kubespray()
 	s/kube_kubeadm_apiserver_extra_args:.*/kube_kubeadm_apiserver_extra_args: {default-not-ready-toleration-seconds: '5', default-unreachable-toleration-seconds: '5'}/" ${k8s_master_defaults_file}
 }
 
+enable_dualStack()
+{
+        kubespray_defaults_file=${KUBESPRAY_SRC_PATH}/roles/kubespray-defaults/defaults/main.yaml
+        sed -i "s/enable_dual_stack_networks: false/enable_dual_stack_networks: true/" ${kubespray_defaults_file}
+
+	kubespray_k8s_cluster=${KUBESPRAY_SRC_PATH}/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml
+	sed -i "s/enable_dual_stack_networks: false/enable_dual_stack_networks: true/" ${kubespray_k8s_cluster}
+}
+
 usage()
 {
         echo -e "$(basename $BASH_SOURCE) <kubespray_src_path>"
@@ -73,7 +82,7 @@ usage()
 ###############  MAIN  #######################
 ##############################################
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -lt 1 ]]; then
         usage
 fi
 
@@ -87,5 +96,12 @@ fi
 unpack_kubespray_bundle
 
 configure_kubespray
+
+ENABLE_DUALSTACK=$2
+
+if [[ ${ENABLE_DUALSTACK} == "dualStack" ]]; then
+	enable_dualStack
+fi
+
 
 exit 0

@@ -404,9 +404,6 @@ func checkAPIGatewayConf() error {
 	if Data.APIGatewayConf == nil {
 		return fmt.Errorf("error: APIGatewayConf is not provided")
 	}
-	if Data.APIGatewayConf.Host == "" {
-		return fmt.Errorf("error: no value set for GatewayHost")
-	}
 	if Data.APIGatewayConf.Port == "" {
 		return fmt.Errorf("error: no value set for GatewayPort")
 	}

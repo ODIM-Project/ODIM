@@ -38,7 +38,6 @@ import (
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
-		CreateRoleRPC:  rpc.CreateRole,
 		GetRoleRPC:     rpc.GetRole,
 		UpdateRoleRPC:  rpc.UpdateRole,
 		DeleteRoleRPC:  rpc.DeleteRole,
@@ -277,7 +276,6 @@ func Router() *iris.Application {
 	role.SetRegisterRule(iris.RouteSkip)
 	role.Get("/", r.GetAllRoles)
 	role.Get("/{id}", r.GetRole)
-	role.Post("/", r.CreateRole)
 	role.Patch("/{id}", r.UpdateRole)
 	role.Delete("/{id}", r.DeleteRole)
 	role.Any("/", handle.RoleMethodNotAllowed)

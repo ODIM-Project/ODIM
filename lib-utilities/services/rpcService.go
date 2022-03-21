@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	//"github.com/coreos/etcd/clientv3"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"

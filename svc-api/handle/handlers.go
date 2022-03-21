@@ -151,7 +151,6 @@ func GetOdata(ctx iris.Context) {
 			Odata.Value = append(Odata.Value, &models.Value{Name: service, Kind: "Singleton", URL: serviceURL})
 		}
 	}
-	//ctx.GZIP(true)
 	var odataheaders = map[string]string{
 		"Allow": "GET",
 	}
@@ -742,7 +741,6 @@ func GetMetadata(ctx iris.Context) {
 			},
 		},
 	}
-	//ctx.Gzip(true)
 
 	var headers = map[string]string{
 		"Allow":        "GET",

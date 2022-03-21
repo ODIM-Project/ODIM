@@ -130,6 +130,6 @@
   ],
   "EventConf": {
 		"DeliveryRetryAttempts" : 3,
-		"DeliveryRetryIntervalSeconds" : 60,
+		"DeliveryRetryIntervalSeconds" : 60
   }
 }

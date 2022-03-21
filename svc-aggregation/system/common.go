@@ -49,6 +49,12 @@ const (
 	SystemUUID = "SystemID"
 	// ChassisUUID is used to replace with chassis id in wildcard property
 	ChassisUUID = "ChassisID"
+	// ManagersTable is used to replace with table id Managers
+	ManagersTable = "Managers"
+	// PluginTable is used to replace with table id PluginTable
+	PluginTable = "Plugin"
+	//LogServiceCollection is used to replace with table id LogServicesCollection
+	LogServiceCollection = "LogServicesCollection"
 )
 
 // WildCard is used to reduce the size the of list of metric properties

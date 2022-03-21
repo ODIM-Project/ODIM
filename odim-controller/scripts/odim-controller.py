@@ -1114,14 +1114,36 @@ def load_password_from_vault(cur_dir):
 # a script, after checking and if not exists, to extract
 # kubespary source bundle
 def check_extract_kubespray_src():
+	global CONTROLLER_CONF_DATA
 	if not os.path.isdir(os.path.join(KUBESPRAY_SRC_PATH, "inventory")):
 		kubespray_extract_tool = os.path.join(KUBESPRAY_SRC_PATH, 'configure-kubespray.sh')
-		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path}'.format( \
-			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH)
+		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path} {dualStatckEnabled}'.format( \
+			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH, dualStatckEnabled=CONTROLLER_CONF_DATA['nwPreference'])
 		ret = exec(kubespray_extract_cmd, {})
 		if ret != 0:
 			logger.critical("Extracting and configuring kubespray failed")
 			exit(1)
+	else:
+		with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (CONTROLLER_CONF_DATA['nwPreference'] != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (CONTROLLER_CONF_DATA['nwPreference'] != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
+		with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (CONTROLLER_CONF_DATA['nwPreference'] != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (CONTROLLER_CONF_DATA['nwPreference'] != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
 
 def read_groupvar():
 	global GROUP_VAR_DATA

@@ -196,7 +196,13 @@ func TestSimpleUpdateWithValidToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithJSON(map[string]interface{}{
+		"ImageURI": "/abc/abc",
+		"Targets": []interface{}{
+			"/redfish/v1/Systems/0356b6f0-5a20-4614-b04a-809c956fe751:1",
+		},
+		"@Redfish.OperationApplyTime": "OnStartUpdateRequest",
+	}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 }
 
 func TestSimpleUpdateWithoutToken(t *testing.T) {
@@ -209,7 +215,13 @@ func TestSimpleUpdateWithoutToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	).WithJSON(map[string]interface{}{
+		"ImageURI": "/abc/abc",
+		"Targets": []interface{}{
+			"/redfish/v1/Systems/0356b6f0-5a20-4614-b04a-809c956fe751:1",
+		},
+		"@Redfish.OperationApplyTime": "OnStartUpdateRequest",
+	}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
 }
 
 func TestSimpleUpdateWithInvalidToken(t *testing.T) {
@@ -222,7 +234,13 @@ func TestSimpleUpdateWithInvalidToken(t *testing.T) {
 	e := httptest.New(t, mockApp)
 	e.POST(
 		"/redfish/v1/UpdateService/Actions/UpdateService.SimpleUpdate",
-	).WithJSON(map[string]string{"Sample": "Body"}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
+	).WithJSON(map[string]interface{}{
+		"ImageURI": "/abc/abc",
+		"Targets": []interface{}{
+			"/redfish/v1/Systems/0356b6f0-5a20-4614-b04a-809c956fe751:1",
+		},
+		"@Redfish.OperationApplyTime": "OnStartUpdateRequest",
+	}).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK).Headers().Equal(header)
 }
 
 func TestSimpleUpdateNegativeTestCases(t *testing.T) {

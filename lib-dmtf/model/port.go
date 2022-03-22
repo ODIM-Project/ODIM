@@ -91,14 +91,14 @@ type PortEthernet struct {
 
 // LLDP redfish structure
 type LLDP struct {
-	ChassisId             string `json:"ChassisId,omitempty"`
-	ChassisIdSubtype      string `json:"ChassisIdSubtype,omitempty"`
+	ChassisID             string `json:"ChassisId,omitempty"`
+	ChassisIDSubtype      string `json:"ChassisIdSubtype,omitempty"`
 	ManagementAddressIPv4 string `json:"ManagementAddressIPv4,omitempty"`
 	ManagementAddressIPv6 string `json:"ManagementAddressIPv6,omitempty"`
 	ManagementAddressMAC  string `json:"ManagementAddressMAC,omitempty"`
-	ManagementVlanId      int    `json:"ManagementVlanId,omitempty"`
-	PortId                string `json:"PortId,omitempty"`
-	PortIdSubtype         string `json:"PortIdSubtype,omitempty"`
+	ManagementVlanID      int    `json:"ManagementVlanId,omitempty"`
+	PortID                string `json:"PortId,omitempty"`
+	PortIDSubtype         string `json:"PortIdSubtype,omitempty"`
 }
 
 //FibreChannel redfish model

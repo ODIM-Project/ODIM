@@ -5,6 +5,7 @@
       https_proxy: "{{ httpsProxy | default('') }}"
       no_proxy: "{{ noProxy | default('') }}"
 
+     
 - name: Install packages required by nginx
   apt:
     pkg: "{{ nginx_dep_pkgs }}"
@@ -81,7 +82,7 @@
 
 - set_fact:
     cur_host_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
-
+   
 - set_fact:
     serverlist: ["server {{ cur_host_ip }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s;"]
 
@@ -92,16 +93,36 @@
     server: "server {{ hostvars[item].ansible_host }}:{{ odimra.apiNodePort }} max_fails=2 fail_timeout=10s backup;"
   when: hostvars[item].ansible_host != cur_host_ip
 
-- name: Prepare and copy proxy conf for API service
+- name: Prepare and copy proxy conf for API service for ipv4
+  template:
+    src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
+    dest: /opt/nginx/servers/api_proxy_server.conf
+  with_items:
+    - selfNodeIP: "{{ cur_host_ip }}"      
+      virtualIP: "{{ odimra.virtualIP }}"
+      dualStack: false
+      apiProxyPort: "{{ odimra.apiProxyPort }}"
+      apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"     
+      virtualIPv6: ""
+      apiNodePort: "{{ odimra.apiNodePort }}"
+      selfNodeIPv6: ""
+  when: nwPreference == 'ipv4'    
+
+- name: Prepare and copy proxy conf for API service for dualStack
   template:
     src: "roles/configure-proxy/templates/api_proxy_server.conf.j2"
     dest: /opt/nginx/servers/api_proxy_server.conf
   with_items:
     - selfNodeIP: "{{ cur_host_ip }}"
       virtualIP: "{{ odimra.virtualIP }}"
+      dualStack: true
       apiProxyPort: "{{ odimra.apiProxyPort }}"
       apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
-
+      virtualIPv6: "{{ odimra.virtualIPv6 }}"
+      apiNodePort: "{{ odimra.apiNodePort }}"
+      selfNodeIPv6: "{{ hostvars[inventory_hostname].ipv6 }}"
+  when: nwPreference == 'dualStack'
+  
 - name: Get list of plugins under plugin helm charts path
   find:
     paths: "{{ odimPluginPath }}"

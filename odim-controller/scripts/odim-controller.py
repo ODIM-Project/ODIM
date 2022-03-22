@@ -699,6 +699,10 @@ def deploy_k8s():
 	node_ip_list = ""
 	nodes_list = ""
 	for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+                        if attrs['ipv6']=="":
+                                logger.critical("ipV6 address is not provided in configuarion")
+                                exit(1)
 		node_ip_list += "%s,%s,%s " %(node, attrs['ip'], attrs['ip'])
 		nodes_list += '{hostname},'.format(hostname=node)
 	nodes_list = nodes_list.rstrip(',')
@@ -718,7 +722,8 @@ def deploy_k8s():
 
 		logger.info("Generating hosts file required for k8s cluster deployment")
 		host_file_gen_cmd = 'CONFIG_FILE={host_conf_file} python3 contrib/inventory_builder/inventory.py {node_details_list}'.format( \
-				host_conf_file=host_file, node_details_list=node_ip_list)
+			host_conf_file=host_file, node_details_list=node_ip_list)
+
 
 		ret = exec(host_file_gen_cmd, {'KUBE_MASTERS': '3'})
 		if ret != 0:
@@ -728,7 +733,7 @@ def deploy_k8s():
 
 		# update proxy info in ansible conf
 		update_ansible_conf()
-                # Copy K8 images if absolute path for images is provided
+        # Copy K8 images if absolute path for images is provided
 		copy_k8_images(host_file,nodes_list)
 
 		k8s_deploy_cmd = 'ansible-playbook -i {host_conf_file} --become --become-user=root cluster.yml'.format(host_conf_file=host_file)
@@ -737,6 +742,15 @@ def deploy_k8s():
 			logger.critical("k8s cluster deployment failed")
 			os.chdir(cur_dir)
 			exit(1)
+		if CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+		# load existing hosts.yaml created for the deployment_id
+		    load_k8s_host_conf()
+		#update the ipv6 address in hosts.yaml
+		    for node, attrs in CONTROLLER_CONF_DATA['nodes'].items():
+			    K8S_INVENTORY_DATA['all']['hosts'][node].update({"ipv6":attrs['ipv6']})
+		    SafeDumper.add_representer(type(None),lambda dumper, value: dumper.represent_scalar(u'tag:yaml.org,2002:null', ''))
+		    with open(K8S_INVENTORY_FILE, 'w') as f:
+			    yaml.safe_dump(K8S_INVENTORY_DATA, f, default_flow_style=False)
 
 	os.chdir(cur_dir)
 	logger.info("Completed k8s cluster deployment")
@@ -1114,14 +1128,36 @@ def load_password_from_vault(cur_dir):
 # a script, after checking and if not exists, to extract
 # kubespary source bundle
 def check_extract_kubespray_src():
+	global CONTROLLER_CONF_DATA
 	if not os.path.isdir(os.path.join(KUBESPRAY_SRC_PATH, "inventory")):
 		kubespray_extract_tool = os.path.join(KUBESPRAY_SRC_PATH, 'configure-kubespray.sh')
-		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path}'.format( \
-			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH)
+		kubespray_extract_cmd = '/bin/bash {kubespray_extract_tool} {kubespray_src_path} {dualStatckEnabled}'.format( \
+			kubespray_extract_tool=kubespray_extract_tool, kubespray_src_path=KUBESPRAY_SRC_PATH, dualStatckEnabled=CONTROLLER_CONF_DATA['nwPreference'])
 		ret = exec(kubespray_extract_cmd, {})
 		if ret != 0:
 			logger.critical("Extracting and configuring kubespray failed")
 			exit(1)
+	else:
+		with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (CONTROLLER_CONF_DATA['nwPreference'] != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (CONTROLLER_CONF_DATA['nwPreference'] != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/roles/kubespray-defaults/defaults/main.yaml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
+		with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml") as defaultMain:
+			data_loaded = yaml.safe_load(defaultMain)
+			if (data_loaded['enable_dual_stack_networks'] == False) and (CONTROLLER_CONF_DATA['nwPreference'] != 'ipv4'):
+				data_loaded['enable_dual_stack_networks'] = True
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", w) as defaultMainWrite:
+					yaml.dump(data_loaded, defaultMainWrite)
+			elif (data_loaded['enable_dual_stack_networks'] == True) and (CONTROLLER_CONF_DATA['nwPreference'] != 'dualStack'):
+				data_loaded['enable_dual_stack_networks'] = False
+				with open(KUBESPRAY_SRC_PATH + "/inventory/sample/group_vars/k8s_cluster/k8s-cluster.yml", "w") as data_save:
+					yaml.dump(data_loaded, data_save)
 
 def read_groupvar():
 	global GROUP_VAR_DATA

@@ -136,7 +136,6 @@ data:
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],
       "EventConf": {
                  "DeliveryRetryAttempts" : 3,
-                 "DeliveryRetryIntervalSeconds" : 60,
-                 "RetentionOfUndeliveredEventsInMinutes" : 10
+                 "DeliveryRetryIntervalSeconds" : 60
       }
     }

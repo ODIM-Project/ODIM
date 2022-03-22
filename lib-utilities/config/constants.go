@@ -94,8 +94,6 @@ const (
 	DefaultDeliveryRetryAttempts = 3
 	// DefaultDeliveryRetryIntervalSeconds - default DeliveryRetryIntervalSeconds value
 	DefaultDeliveryRetryIntervalSeconds = 60
-	// DefaultRetentionOfUndeliveredEventsInMinutes - default RetentionOfUndeliveredEventsInMinutes value
-	DefaultRetentionOfUndeliveredEventsInMinutes = 10
 )
 
 var (

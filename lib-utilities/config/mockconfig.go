@@ -334,7 +334,6 @@ func SetUpMockConfig(t *testing.T) error {
 	Data.EventConf = &EventConf{
 		DeliveryRetryAttempts:                 1,
 		DeliveryRetryIntervalSeconds:          1,
-		RetentionOfUndeliveredEventsInMinutes: 1,
 	}
 	SetVerifyPeer(Data.TLSConf.VerifyPeer)
 	SetTLSMinVersion(Data.TLSConf.MinVersion)

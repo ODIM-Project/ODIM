@@ -84,7 +84,6 @@ func registerHandlers() {
 
 	managersproto.RegisterManagersServer(services.ODIMService.Server(), manager)
 }
-
 func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	mgr := mgrmodel.RAManager{
 		Name:            "odimra",
@@ -101,8 +100,9 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		Model:      "ODIMRA" + " " + config.Data.FirmwareVersion,
 		PowerState: "On",
 	}
-	//adding LogeSrvice Collection
 	managerInterface.AddManagertoDBInterface(mgr)
+
+	//adding LogeSrvice Collection
 	data := dmtf.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
@@ -117,6 +117,12 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		MembersCount: 1,
 		Name:         "Logs",
 	}
+	dbdata, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("unable to marshal manager data: %v", err)
+	}
+	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
+	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
 
 	//adding LogService Members
 	logEntrydata := dmtf.LogServices{
@@ -156,11 +162,6 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	}
 	key = "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL/Entries"
 	mgrmodel.GenericSave([]byte(dbentriesdata), "EntriesCollection", key)
-	dbdata, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("unable to marshal manager data: %v", err)
-	}
-	key := "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices"
-	mgrmodel.GenericSave([]byte(dbdata), "LogServicesCollection", key)
+
 	return nil
 }

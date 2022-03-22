@@ -107,8 +107,7 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices",
 		ODataType:    "#LogServiceCollection.LogServiceCollection",
-		//ODataEtag:    "W570254F2",
-		Description: "Logs view",
+		Description:  "Logs view",
 		Members: []*dmtf.Link{
 			&dmtf.Link{
 				Oid: "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
@@ -126,9 +125,8 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 
 	//adding LogService Members
 	logEntrydata := dmtf.LogServices{
-		Ocontext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
-		Oid:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
-		//Oetag:       "W570254F2",
+		Ocontext:    "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		Oid:         "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL",
 		Otype:       "#LogService.v1_3_0.LogService",
 		Description: "Logs view",
 		Entries: &dmtf.Entries{
@@ -149,7 +147,6 @@ func addManagertoDB(managerInterface mgrcommon.DBInterface) error {
 	entriesdata := dmtf.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + config.Data.RootServiceUUID + "/LogServices/SL/Entries",
-		//ODataEtag:    "W570254F2",
 		ODataType:    "#LogEntryCollection.LogEntryCollection",
 		Description:  "Security Logs view",
 		Members:      []*dmtf.Link{},

@@ -87,7 +87,7 @@ type UpdateService struct {
 	HTTPPushURITargets            []string                  `json:"HttpPushUriTargets,omitempty"`
 	HTTPPushURITargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
 	MaxImageSizeBytes             int                       `json:"MaxImageSizeBytes,omitempty"`
-	MultipartHTTPPushURI          string                    `json:"MultipartHTTPPushURI,omitempty"`
+	MultipartHTTPPushURI          string                    `json:"MultipartHttpPushUri,omitempty"`
 	VerifyRemoteServerCertificate bool                      `json:"VerifyRemoteServerCertificate,omitempty"`
 	RemoteServerCertificates      *RemoteServerCertificates `json:"RemoteServerCertificates,omitempty"`
 }

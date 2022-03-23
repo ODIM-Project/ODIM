@@ -138,6 +138,7 @@ type CommonBGPProperties struct {
 	SendCommunityEnabled bool             `json:"SendCommunityEnabled,omitempty"`
 }
 
+// MACRange redfish model
 type MACRange struct {
 	Lower string `json:"Lower,omitempty"`
 	Upper string `json:"Upper,omitempty"`

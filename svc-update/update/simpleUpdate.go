@@ -43,7 +43,7 @@ func (e *ExternalInterface) SimpleUpdate(taskID string, sessionUserName string, 
 
 	taskInfo := &common.TaskUpdateInfo{TaskID: taskID, TargetURI: targetURI, UpdateTask: e.External.UpdateTask, TaskRequest: string(req.RequestBody)}
 
-	var updateRequest UpdateRequestBody
+	var updateRequest SimpleUpdateRequest
 	err := json.Unmarshal(req.RequestBody, &updateRequest)
 	if err != nil {
 		errMsg := "Unable to parse the simple update request" + err.Error()

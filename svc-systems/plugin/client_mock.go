@@ -24,10 +24,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// ClientMock helps to mock response APIs
 type ClientMock struct {
 	mock.Mock
 }
 
+// Get mocks response of GET APis
 func (c *ClientMock) Get(uri string, opts ...CallOption) response.RPC {
 	args := c.Called(uri, opts)
 
@@ -38,6 +40,7 @@ func (c *ClientMock) Get(uri string, opts ...CallOption) response.RPC {
 	return r
 }
 
+// Post mocks response of POST APIs
 func (c *ClientMock) Post(uri string, body *json.RawMessage) response.RPC {
 	// TODO: Implement this
 	return response.RPC{
@@ -45,6 +48,7 @@ func (c *ClientMock) Post(uri string, body *json.RawMessage) response.RPC {
 	}
 }
 
+// Delete mocks response of Delete APIs
 func (c *ClientMock) Delete(uri string) response.RPC {
 	// TODO: Implement this
 	return response.RPC{
@@ -52,6 +56,7 @@ func (c *ClientMock) Delete(uri string) response.RPC {
 	}
 }
 
+// Patch mocks response of Patch APIs
 func (c *ClientMock) Patch(uri string, body *json.RawMessage) response.RPC {
 	// TODO: Implement this
 	return response.RPC{

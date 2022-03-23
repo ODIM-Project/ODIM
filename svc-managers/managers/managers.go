@@ -596,7 +596,7 @@ func convertToRedfishModel(uri, data string) interface{} {
 	return resource
 }
 
-// CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+// CreateRemoteAccountService is used to create BMC account user
 func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	var requestBody = req.RequestBody
@@ -644,7 +644,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		body, _ := json.Marshal(resp.Body)
 		respBody := replaceBMCAccResp(string(body), req.ManagerID)
 		var managerAcc dmtf.ManagerAccount
@@ -675,4 +675,18 @@ func replaceBMCAccReq(uri, managerID string) string {
 func replaceBMCAccResp(data, managerID string) string {
 	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
 	return data
+}
+
+// DeleteRemoteAccountService is used to delete the BMC account user
+func (e *ExternalInterface) DeleteRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodDelete, nil)
+	if resp.StatusCode == http.StatusOK {
+		resp.StatusCode = http.StatusNoContent
+	}
+	return resp
 }

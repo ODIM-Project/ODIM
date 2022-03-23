@@ -19,5 +19,10 @@ vrrp_instance ODIM_VI {
         virtual_ipaddress {
 		{{ item.virtualIP }}
         }
+        {% if '{{ item.dualStack }}' %}
+        virtual_ipaddress_excluded {
+                {{ item.virtualIPv6 }}/64
+        }
+        {% endif %}
         notify /opt/keepalived/bin/action_script.sh
 }

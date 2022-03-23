@@ -16,8 +16,9 @@
 package session
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -113,7 +114,7 @@ func GetSession(req *sessionproto.SessionRequest) response.RPC {
 		log.Error(errorMessage)
 		return resp
 	}
-
+	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
 	sessionTokens, errs := asmodel.GetAllSessionKeys()
 	if errs != nil {
 		errorMessage := "Unable to get all session keys while deleting session: " + errs.Error()
@@ -216,7 +217,7 @@ func GetAllActiveSessions(req *sessionproto.SessionRequest) response.RPC {
 		log.Error(errorMessage)
 		return resp
 	}
-
+	auth.CustomAuthLog(req.SessionToken, "Authorization is successful", http.StatusOK)
 	if !currentSession.Privileges[common.PrivilegeConfigureSelf] && !currentSession.Privileges[common.PrivilegeConfigureUsers] {
 		errorMessage := "Insufficient privileges: " + err.Error()
 		resp.StatusCode = http.StatusForbidden

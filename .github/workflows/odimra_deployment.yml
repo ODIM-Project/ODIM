@@ -462,29 +462,11 @@ jobs:
        
         echo "========================= Session Checked=================================="
         
-        echo "User with ConfigureUser privilege creates a role having ConfigureSelf and Login privilege"
-        
-            
-        run1=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"RoleId":"RoleSanity", "OemPrivileges":[], "AssignedPrivileges":["Login","ConfigureSelf"]}' 'https://'$FQDN':30080/redfish/v1/AccountService/Roles' | head -1 | awk '{print $2}')
-        
-
-        if [[ $run1 -eq 201 ]];
-        then 
-            echo "Role Created Sucessfully"
-            echo "---------------------------"
-        else
-            echo "Role Creation Failed with status code $run1"
-            echo "-------------------------------------------"
-            flag=1
-        fi
-        
-        echo "========================Role Checked==================================="
-        
         echo "POST Admin creating account - (args - username, password, roleID)"
         
         
         
-        run2=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"RoleSanity"}' 'https://'$FQDN':30080/redfish/v1/AccountService/Accounts' | head -1 | awk '{print $2}')
+        run2=$(curl -i -s -k -X POST -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" -H "Content-Type:application/json" -d '{"UserName":"SanityUser","Password":"San!ty123$45","RoleId":"Administrator"}' 'https://'$FQDN':30080/redfish/v1/AccountService/Accounts' | head -1 | awk '{print $2}')
         
         
         

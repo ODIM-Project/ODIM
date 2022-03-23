@@ -22,6 +22,7 @@ service Managers {
     rpc VirtualMediaEject(ManagerRequest) returns (ManagerResponse) {}
     rpc GetRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
     rpc CreateRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
+    rpc UpdateRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
 }
 
 message ManagerRequest {

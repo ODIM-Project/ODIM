@@ -127,3 +127,16 @@ func CreateRemoteAccountService(req managersproto.ManagerRequest) (*managersprot
 	}
 	return resp, nil
 }
+func UpdateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	conn, err := services.ODIMService.Client(services.Managers)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	mService := managersproto.NewManagersClient(conn)
+	resp, err := mService.UpdateRemoteAccountService(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("RPC error: %v", err)
+	}
+	return resp, nil
+}

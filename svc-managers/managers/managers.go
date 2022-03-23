@@ -19,9 +19,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
-  "regexp"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -660,4 +660,54 @@ func replaceBMCAccReq(uri, managerID string) string {
 func replaceBMCAccResp(data, managerID string) string {
 	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
 	return data
+}
+
+// UpdateRemoteAccountService is used to update BMC account
+func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var requestBody = req.RequestBody
+	var bmcAccReq mgrmodel.CreateBMCAccount
+	// Updating the default values
+	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
+	if err != nil {
+		errorMessage := "while unmarshaling the create remote account service request: " + err.Error()
+		log.Error(errorMessage)
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		return resp
+	}
+
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
+	if err != nil {
+		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response
+	}
+
+	requestBody, err = json.Marshal(bmcAccReq)
+	if err != nil {
+		log.Error("while marshalling the create BMC account request: " + err.Error())
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return resp
+	}
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPatch, requestBody)
+
+	if resp.StatusCode == 200 {
+		body, _ := json.Marshal(resp.Body)
+		respBody := replaceBMCAccResp(string(body), req.ManagerID)
+		var managerAcc dmtf.ManagerAccount
+		json.Unmarshal([]byte(respBody), &managerAcc)
+		resp.Body = managerAcc
+	}
+	return resp
 }

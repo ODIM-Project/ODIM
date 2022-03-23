@@ -19,9 +19,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
-  "regexp"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -545,10 +545,7 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
 	if err != nil {
-		errorMessage := "unable to get resource details from device: " + err.Error()
-		log.Error(errorMessage)
-		errArgs := []interface{}{}
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+		return handleRemoteAccountServiceError(req.URL, req.ManagerID, err)
 	}
 	// Replace response body to BMC manager
 	data = replaceBMCAccResp(data, req.ManagerID)
@@ -557,6 +554,24 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+func handleRemoteAccountServiceError(uri, managerID string, err error) response.RPC {
+	errorMessage := "unable to get resource details from device: " + err.Error()
+	log.Error(errorMessage)
+	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+	if URIRegexAcc.MatchString(uri) {
+		accID := uri[strings.LastIndex(uri, "/")+1:]
+		errArgs := []interface{}{"Accounts", accID}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	} else if URIRegexRoles.MatchString(uri) {
+		roleID := uri[strings.LastIndex(uri, "/")+1:]
+		errArgs := []interface{}{"Roles", roleID}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	}
+	errArgs := []interface{}{"Managers", managerID}
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 }
 
 func convertToRedfishModel(uri, data string) interface{} {

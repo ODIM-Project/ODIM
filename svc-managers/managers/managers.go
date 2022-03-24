@@ -545,10 +545,7 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
 	if err != nil {
-		errorMessage := "unable to get resource details from device: " + err.Error()
-		log.Error(errorMessage)
-		errArgs := []interface{}{}
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+		return handleRemoteAccountServiceError(req.URL, req.ManagerID, err)
 	}
 	// Replace response body to BMC manager
 	data = replaceBMCAccResp(data, req.ManagerID)
@@ -557,6 +554,24 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+func handleRemoteAccountServiceError(uri, managerID string, err error) response.RPC {
+	errorMessage := "unable to get resource details from device: " + err.Error()
+	log.Error(errorMessage)
+	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+	if URIRegexAcc.MatchString(uri) {
+		accID := uri[strings.LastIndex(uri, "/")+1:]
+		errArgs := []interface{}{"Accounts", accID}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	} else if URIRegexRoles.MatchString(uri) {
+		roleID := uri[strings.LastIndex(uri, "/")+1:]
+		errArgs := []interface{}{"Roles", roleID}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	}
+	errArgs := []interface{}{"Managers", managerID}
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 }
 
 func convertToRedfishModel(uri, data string) interface{} {
@@ -581,7 +596,7 @@ func convertToRedfishModel(uri, data string) interface{} {
 	return resource
 }
 
-// CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+// CreateRemoteAccountService is used to create BMC account user
 func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	var requestBody = req.RequestBody
@@ -629,7 +644,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		body, _ := json.Marshal(resp.Body)
 		respBody := replaceBMCAccResp(string(body), req.ManagerID)
 		var managerAcc dmtf.ManagerAccount
@@ -661,53 +676,70 @@ func replaceBMCAccResp(data, managerID string) string {
 	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
 	return data
 }
+func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
+	defer ctx.Next()
+	var reqIn interface{}
+	err := ctx.ReadJSON(&reqIn)
+	if err != nil {
+		errorMessage := "while trying to get JSON body from the update remote account request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(reqIn)
+	if err != nil {
+		errorMessage := "while trying to create JSON request body in create remote account: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
 
-// UpdateRemoteAccountService is used to update BMC account
-func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	req := managersproto.ManagerRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		ManagerID:    ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  request,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := mgr.UpdateRemoteAccountServiceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// DeleteRemoteAccountService is used to delete the BMC account user
+func (e *ExternalInterface) DeleteRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	var requestBody = req.RequestBody
-	var bmcAccReq mgrmodel.CreateBMCAccount
-	// Updating the default values
-	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
-	if err != nil {
-		errorMessage := "while unmarshaling the create remote account service request: " + err.Error()
-		log.Error(errorMessage)
-		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
-		return resp
-	}
-
-	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
-	if err != nil {
-		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
-		log.Error(errMsg)
-		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
-	} else if invalidProperties != "" {
-		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
-		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
-		return response
-	}
-
-	requestBody, err = json.Marshal(bmcAccReq)
-	if err != nil {
-		log.Error("while marshalling the create BMC account request: " + err.Error())
-		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
-		return resp
-	}
 	// splitting managerID to get uuid
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
 	uuid := requestData[0]
-
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
-	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPatch, requestBody)
-
-	if resp.StatusCode == 200 {
-		body, _ := json.Marshal(resp.Body)
-		respBody := replaceBMCAccResp(string(body), req.ManagerID)
-		var managerAcc dmtf.ManagerAccount
-		json.Unmarshal([]byte(respBody), &managerAcc)
-		resp.Body = managerAcc
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodDelete, nil)
+	if resp.StatusCode == http.StatusOK {
+		resp.StatusCode = http.StatusNoContent
 	}
 	return resp
 }

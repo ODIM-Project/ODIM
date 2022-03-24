@@ -30,6 +30,7 @@ import (
 	"github.com/ODIM-Project/ODIM/svc-systems/sresponse"
 )
 
+// Handle defines the operations which handle the RPC request-response for updating a chassis
 func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	pc, e := h.createPluginClient("URP*")
 	if e != nil && e.ErrNo() == errors.DBKeyNotFound {
@@ -58,11 +59,13 @@ func (h *Update) Handle(req *chassis.UpdateChassisRequest) response.RPC {
 	return resp
 }
 
+// Update struct helps to update chassis
 type Update struct {
 	createPluginClient plugin.ClientFactory
 	getFabricFactory   func(collection *sresponse.Collection) *fabricFactory
 }
 
+// NewUpdateHandler returns an instance of Update struct
 func NewUpdateHandler(pluginClientFactory plugin.ClientFactory) *Update {
 	return &Update{
 		createPluginClient: pluginClientFactory,

@@ -23,6 +23,7 @@ service Managers {
     rpc GetRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
     rpc CreateRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
     rpc UpdateRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
+    rpc DeleteRemoteAccountService(ManagerRequest) returns (ManagerResponse) {}
 }
 
 message ManagerRequest {

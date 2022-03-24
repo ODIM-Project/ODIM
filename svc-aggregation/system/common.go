@@ -55,6 +55,10 @@ const (
 	PluginTable = "Plugin"
 	//LogServiceCollection is used to replace with table id LogServicesCollection
 	LogServiceCollection = "LogServicesCollection"
+	//LogServices is used to replace with table id LogServices
+	LogServices = "LogServices"
+	//EntriesCollection is used to replace with table id EntriesCollection
+	EntriesCollection = "EntriesCollection"
 )
 
 // WildCard is used to reduce the size the of list of metric properties

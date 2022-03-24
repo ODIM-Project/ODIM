@@ -16,6 +16,14 @@
 package middleware
 
 import (
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
@@ -35,4 +43,40 @@ func SessionDelMiddleware(ctx iris.Context) {
 			return
 		}
 	}
+}
+
+// ResourceRateLimiter will Limit the get on resource untill previous get completed the task
+func ResourceRateLimiter(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+	for _, val := range config.Data.ResourceRateLimit {
+		resourceLimit := strings.Split(val, ":")
+		if len(resourceLimit) > 1 && resourceLimit[1] != "" {
+			rLimit, _ := strconv.Atoi(resourceLimit[1])
+			resource := strings.Replace(resourceLimit[0], "{id}", "[a-zA-Z0-9._-]+", -1)
+			regex := regexp.MustCompile(resource)
+			if regex.MatchString(uri) {
+				conn, err := common.GetDBConnection(common.InMemory)
+				if err != nil {
+					log.Error(err.Error())
+					response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+					common.SetResponseHeader(ctx, response.Header)
+					ctx.StatusCode(http.StatusInternalServerError)
+					ctx.JSON(&response.Body)
+					return
+				}
+				// convert millisecond to second
+				expiretime := rLimit / 1000
+				if err = conn.SetExpire("ResourceRateLimit", uri, "", expiretime); err != nil {
+					errorMessage := "too many requests, retry after some time"
+					log.Error(errorMessage)
+					response := common.GeneralError(http.StatusTooManyRequests, response.GeneralError, errorMessage, nil, nil)
+					common.SetResponseHeader(ctx, response.Header)
+					ctx.StatusCode(http.StatusTooManyRequests)
+					ctx.JSON(&response.Body)
+					return
+				}
+			}
+		}
+	}
+	ctx.Next()
 }

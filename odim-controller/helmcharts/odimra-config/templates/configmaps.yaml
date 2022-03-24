@@ -137,5 +137,6 @@ data:
       "EventConf": {
                  "DeliveryRetryAttempts" : 3,
                  "DeliveryRetryIntervalSeconds" : 60
-      }
+      },
+      "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }}
     }

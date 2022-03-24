@@ -18,13 +18,14 @@ package persistencemgr
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 	"unsafe"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -1238,5 +1239,42 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
 	if err != nil {
 		return fmt.Errorf("Error while updating index: %v", err)
 	}
+	return nil
+}
+
+// SetExpire key to hold the string value and set key to timeout after a given number of seconds
+/* Create takes the following keys as input:
+1."table" is a string which is used identify what kind of data we are storing.
+2."data" is of type interface and is the userdata sent to be stored in DB.
+3."key" is a string which acts as a unique ID to the data entry.
+*/
+func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		log.Info("Create : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "Create : WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+
+	value, readErr := p.Read(table, key)
+	if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
+		return errors.PackError(readErr.ErrNo(), "error: db connection failed")
+	}
+	if value != "" {
+		return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
+	}
+	saveID := table + ":" + key
+
+	jsondata, err := json.Marshal(data)
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+	}
+	_, createErr := writeConn.Do("SETEX", saveID, expiretime, jsondata)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
 	return nil
 }

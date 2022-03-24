@@ -100,6 +100,7 @@ type LogServices struct {
 	SyslogFilters       *SysLog     `json:"SyslogFilters,omitempty"`
 }
 
+// SysLog redfish structure
 type SysLog struct {
 	LogFacilities  []string `json:"LogFacilities,omitempty"`
 	LowestSeverity string   `json:"LowestSeverity,omitempty"`

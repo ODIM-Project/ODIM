@@ -151,8 +151,8 @@ type CreateBMCAccount struct {
 // UpdateBMCAccount struct is to store the update BMC account request payload
 
 type UpdateBMCAccount struct {
-	Password string `json:"Password"`
-	RoleID   string `json:"RoleId"`
+	Password string `json:"Password,omitempty"`
+	RoleID   string `json:"RoleId,omitempty"`
 }
 
 //GetResource fetches a resource from database using table and key

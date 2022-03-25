@@ -676,58 +676,67 @@ func replaceBMCAccResp(data, managerID string) string {
 	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
 	return data
 }
-func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
-	defer ctx.Next()
-	var reqIn interface{}
-	err := ctx.ReadJSON(&reqIn)
+
+// UpdateRemoteAccountService is used to update BMC account
+func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	var requestBody = req.RequestBody
+	var bmcAccReq mgrmodel.UpdateBMCAccount
+
+	// Updating the default values
+	err := json.Unmarshal(req.RequestBody, &bmcAccReq)
 	if err != nil {
-		errorMessage := "while trying to get JSON body from the update remote account request body: " + err.Error()
+		errorMessage := "while unmarshaling the update remote account service request: " + err.Error()
 		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusBadRequest)
-		ctx.JSON(&response.Body)
-		return
-	}
-	request, err := json.Marshal(reqIn)
-	if err != nil {
-		errorMessage := "while trying to create JSON request body in create remote account: " + err.Error()
-		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		resp = common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, []interface{}{}, nil)
+		return resp
 	}
 
-	req := managersproto.ManagerRequest{
-		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
-		ManagerID:    ctx.Params().Get("id"),
-		ResourceID:   ctx.Params().Get("rid"),
-		URL:          ctx.Request().RequestURI,
-		RequestBody:  request,
-	}
-	if req.SessionToken == "" {
-		errorMessage := "error: no X-Auth-Token found in request header"
-		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusUnauthorized)
-		ctx.JSON(&response.Body)
-		return
-	}
-	resp, err := mgr.UpdateRemoteAccountServiceRPC(req)
+	// Validating the request JSON properties for case sensitive
+	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
 	if err != nil {
-		errorMessage := "error:  RPC error:" + err.Error()
+		errMsg := "while validating request parameters for updating BMC account: " + err.Error()
+		log.Error(errMsg)
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+	} else if invalidProperties != "" {
+		errorMessage := "one or more properties given in the request body are not valid, ensure properties are listed in uppercamelcase "
 		log.Error(errorMessage)
-		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
-		common.SetResponseHeader(ctx, response.Header)
-		ctx.StatusCode(http.StatusInternalServerError)
-		ctx.JSON(&response.Body)
-		return
+		response := common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, errorMessage, []interface{}{invalidProperties}, nil)
+		return response
 	}
-	common.SetResponseHeader(ctx, resp.Header)
-	ctx.StatusCode(int(resp.StatusCode))
-	ctx.Write(resp.Body)
+
+	requestBody, err = json.Marshal(bmcAccReq)
+	if err != nil {
+		log.Error("while marshalling the create BMC account request: " + err.Error())
+		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+		return resp
+	}
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPatch, requestBody)
+
+	if resp.StatusCode == http.StatusOK {
+		data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
+		if err != nil {
+			errorMessage := "unable to get resource details from device: " + err.Error()
+			log.Error(errorMessage)
+			errArgs := []interface{}{}
+			return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+		}
+		// Replace response body to BMC manager
+		data = replaceBMCAccResp(data, req.ManagerID)
+		resource := convertToRedfishModel(req.URL, data)
+		resp.Body = resource
+		resp.StatusCode = http.StatusOK
+		resp.StatusMessage = response.Success
+		//return resp
+
+	}
+	return resp
+
 }
 
 // DeleteRemoteAccountService is used to delete the BMC account user

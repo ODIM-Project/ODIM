@@ -230,17 +230,26 @@ func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managers
 	return &resp, nil
 }
 
-//DeleteRemoteAccountService will do the rpc call to delete an existing BMC account
-func DeleteRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
-	conn, err := services.ODIMService.Client(services.Managers)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+//DeleteRemoteAccountService defines the operations which handles the RPC request response
+// The functionality retrieves the request and return backs the response to
+// RPC according to the protoc file defined in the lib-util package.
+// The function uses IsAuthorized of lib-util to validate the session token
+// which is present in the request.
+func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return &resp, nil
 	}
-	defer conn.Close()
-	mService := managersproto.NewManagersClient(conn)
-	resp, err := mService.DeleteRemoteAccountService(context.TODO(), &req)
-	if err != nil {
-		return nil, fmt.Errorf("RPC error: %v", err)
-	}
-	return resp, nil
+	data := m.EI.DeleteRemoteAccountService(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return &resp, nil
 }

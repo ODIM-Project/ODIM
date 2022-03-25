@@ -148,6 +148,13 @@ type CreateBMCAccount struct {
 	RoleID   string `json:"RoleId" validate:"required"`
 }
 
+// UpdateBMCAccount struct is to store the update BMC account request payload
+
+type UpdateBMCAccount struct {
+	Password string `json:"Password"`
+	RoleID   string `json:"RoleId"`
+}
+
 //GetResource fetches a resource from database using table and key
 func GetResource(Table, key string) (string, *errors.Error) {
 	conn, err := common.GetDBConnection(common.InMemory)

@@ -312,6 +312,15 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Severity:   "Warning",
 					Resolution: "Add properties in the JSON object and resubmit the request.",
 				})
+		case RateLimitExceeded:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    errArg.ErrorMessage,
+					Severity:   "Critical",
+					Resolution: "Retry after some time",
+				})
 		}
 	}
 	return e

@@ -2736,6 +2736,8 @@ To run curl commands on a different server, perform the following steps to provi
 
 <blockquote> NOTE: 
 - To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file available in this path: `/etc/ssl/certs/ca-certificates.crt`. You can access the base URL using a REST client. To access it using a REST client, add the rootCA.crt file of HPE Resource Aggregator for ODIM to the browser where the REST client is launched.</blockquote>
+
+
 ## Plugin configuration parameters
 
 The following table lists all the configuration parameters required to deploy a plugin service:

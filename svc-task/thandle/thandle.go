@@ -59,6 +59,8 @@ type TasksRPC struct {
 	PublishToMessageBus              func(taskURI string, taskEvenMessageID string, eventType string, taskMessage string)
 }
 
+var taskCollection = make(map[string]bool)
+
 //CreateTask is a rpc handler which intern call actual CreatTask to create new task
 func (ts *TasksRPC) CreateTask(ctx context.Context, req *taskproto.CreateTaskRequest) (*taskproto.CreateTaskResponse, error) {
 	var rsp taskproto.CreateTaskResponse
@@ -1102,6 +1104,10 @@ func (ts *TasksRPC) updateTaskUtil(taskID string, taskState string, taskStatus s
 	// Notify the user about task state change by sending statuschange event
 	//	notifyTaskStateChange(task.URI, taskEvenMessageID)
 	eventType := "StatusChange"
-	ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
+	runningTask := taskID + fmt.Sprintf("%v", percentComplete)
+	if _, ok := taskCollection[runningTask]; !ok {
+		taskCollection[runningTask] = true
+		ts.PublishToMessageBus(task.URI, taskEvenMessageID, eventType, taskMessage)
+	}
 	return err
 }

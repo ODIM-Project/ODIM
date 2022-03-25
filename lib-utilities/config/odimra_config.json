@@ -138,10 +138,5 @@
 	   "DeliveryRetryAttempts": 3,
 	   "DeliveryRetryIntervalSeconds": 60
 	},
-	"ResourceRateLimit": [
-	   "/redfish/v1/Systems/{id}/Logservice/SL/Entries:",
-	   "/redfish/v1/Systems/{id}/Logservice/IML/Entries:",
-	   "/redfish/v1/Managers/{id}/Logservice/SL/Entries:",
-	   "/redfish/v1/Managers/{id}/Logservice/IML/Entries:"
-	]
+	"ResourceRateLimit": []
  }

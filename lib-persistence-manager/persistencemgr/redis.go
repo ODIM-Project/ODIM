@@ -1243,16 +1243,17 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
 }
 
 // SetExpire key to hold the string value and set key to timeout after a given number of seconds
-/* Create takes the following keys as input:
+/* SetExpire takes the following keys as input:
 1."table" is a string which is used identify what kind of data we are storing.
 2."data" is of type interface and is the userdata sent to be stored in DB.
 3."key" is a string which acts as a unique ID to the data entry.
+4. "expiretime" is of type int, which acts as expiry time for the key
 */
 func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int) *errors.Error {
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		log.Info("Create : WritePool nil")
-		return errors.PackError(errors.UndefinedErrorType, "Create : WritePool is nil ")
+		log.Info("SetExpire : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "SetExpire : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()

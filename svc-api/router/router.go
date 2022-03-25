@@ -69,6 +69,8 @@ func Router() *iris.Application {
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
 		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
+		GetResetActionInfoServiceRPC:            rpc.DoGetResetActionInfoService,
+		GetSetDefaultBootOrderActionInfoRPC:     rpc.DoGetSetDefaultBootOrderActionInfo,
 	}
 
 	s := handle.SessionRPCs{
@@ -386,6 +388,8 @@ func Router() *iris.Application {
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
+	aggregation.Get("/ResetActionInfo", pc.GetResetActionInfoService)
+	aggregation.Get("/SetDefaultBootOrderActionInfo", pc.GetSetDefaultBootOrderActionInfo)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
@@ -562,8 +566,8 @@ func Router() *iris.Application {
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries", manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)

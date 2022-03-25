@@ -60,7 +60,8 @@ type Status struct {
 
 //Action struct definition
 type Action struct {
-	Target string `json:"target"`
+	Target     string `json:"target"`
+	ActionInfo string `json:"@Redfish.ActionInfo,omitempty"`
 }
 
 //OdataID struct definition for @odata.id
@@ -74,4 +75,21 @@ type ConnectionMethodResponse struct {
 	ConnectionMethodType    string      `json:"ConnectionMethodType"`
 	ConnectionMethodVariant string      `json:"ConnectionMethodVariant"`
 	Links                   interface{} `json:"Links"`
+}
+
+// ActionInfo Struct defination for action
+type ActionInfo struct {
+	ID         string      `json:"Id"`
+	Name       string      `json:"Name"`
+	Parameters []Parameter `json:"Parameters"`
+	Oem        *dmtf.Oem   `json:"Oem,omitempty"`
+	OdataID    string      `json:"@odata.id"`
+	OdataType  string      `json:"@odata.type"`
+}
+
+type Parameter struct {
+	Name            string   `json:"Name"`
+	Required        bool     `json:"Required"`
+	DataType        string   `json:"DataType"`
+	AllowableValues []string `json:"AllowableValues,omitempty"`
 }

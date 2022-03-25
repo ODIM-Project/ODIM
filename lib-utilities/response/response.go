@@ -79,6 +79,8 @@ const (
 	PropertyValueConflict = BaseVersion + "PropertyValueConflict"
 	// NoOperation  defines the status message at the time of of there is no opeartion need to be performed.
 	NoOperation = BaseVersion + "NoOperation"
+	// RateLimitExceded  defines exceded the number of requests/resources.
+	RateLimitExceded = BaseVersion + "GeneralError"
 )
 
 // Response holds the generic response from odimra

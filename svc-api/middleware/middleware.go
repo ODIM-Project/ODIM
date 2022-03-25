@@ -69,7 +69,7 @@ func ResourceRateLimiter(ctx iris.Context) {
 				if err = conn.SetExpire("ResourceRateLimit", uri, "", expiretime); err != nil {
 					errorMessage := "too many requests, retry after some time"
 					log.Error(errorMessage)
-					response := common.GeneralError(http.StatusTooManyRequests, response.RateLimitExceded, errorMessage, nil, nil)
+					response := common.GeneralError(http.StatusTooManyRequests, response.RateLimitExceeded, errorMessage, nil, nil)
 					common.SetResponseHeader(ctx, response.Header)
 					ctx.StatusCode(http.StatusTooManyRequests)
 					ctx.JSON(&response.Body)

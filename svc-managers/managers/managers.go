@@ -710,7 +710,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.Manage
 
 	requestBody, err = json.Marshal(bmcAccReq)
 	if err != nil {
-		log.Error("while marshalling the create BMC account request: " + err.Error())
+		log.Error("while marshalling the update BMC account request: " + err.Error())
 		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 		return resp
 	}

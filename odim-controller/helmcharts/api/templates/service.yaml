@@ -6,9 +6,15 @@ metadata:
   labels:
     app: api
 spec:
-  type: NodePort
+  {{ if eq .Values.nwPreference "dualStack" }}
+  ipFamilies:
+  - IPv4
+  - IPv6
+  ipFamilyPolicy: PreferDualStack
+  {{ end }}
   ports:
-    - port: 45000
-      nodePort: {{ .Values.odimra.apiNodePort }}
+  - nodePort: {{ .Values.odimra.apiNodePort }}
+    port: 45000
   selector:
     app: api
+  type: NodePort

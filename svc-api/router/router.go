@@ -40,7 +40,6 @@ import (
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
-		CreateRoleRPC:  rpc.CreateRole,
 		GetRoleRPC:     rpc.GetRole,
 		UpdateRoleRPC:  rpc.UpdateRole,
 		DeleteRoleRPC:  rpc.DeleteRole,
@@ -72,6 +71,8 @@ func Router() *iris.Application {
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
 		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
+		GetResetActionInfoServiceRPC:            rpc.DoGetResetActionInfoService,
+		GetSetDefaultBootOrderActionInfoRPC:     rpc.DoGetSetDefaultBootOrderActionInfo,
 	}
 
 	s := handle.SessionRPCs{
@@ -136,6 +137,7 @@ func Router() *iris.Application {
 		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
 		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
 		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
+		DeleteRemoteAccountServiceRPC: rpc.DeleteRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -193,6 +195,9 @@ func Router() *iris.Application {
 					authRequired = false
 					break
 				}
+			}
+			if r.URL.Path == common.SessionURI && r.Method == http.MethodGet {
+				authRequired = true
 			}
 			if authRequired {
 				logProperties := make(map[string]interface{})
@@ -290,7 +295,6 @@ func Router() *iris.Application {
 	role.SetRegisterRule(iris.RouteSkip)
 	role.Get("/", r.GetAllRoles)
 	role.Get("/{id}", r.GetRole)
-	role.Post("/", r.CreateRole)
 	role.Patch("/{id}", r.UpdateRole)
 	role.Delete("/{id}", r.DeleteRole)
 	role.Any("/", handle.RoleMethodNotAllowed)
@@ -399,6 +403,8 @@ func Router() *iris.Application {
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
+	aggregation.Get("/ResetActionInfo", pc.GetResetActionInfoService)
+	aggregation.Get("/SetDefaultBootOrderActionInfo", pc.GetSetDefaultBootOrderActionInfo)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
@@ -575,13 +581,14 @@ func Router() *iris.Application {
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries", manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
 	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Delete("/{id}/RemoteAccountService/Accounts/{rid}", manager.DeleteRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
 	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)

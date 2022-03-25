@@ -34,6 +34,7 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	logs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
 	eventsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/events"
 	taskproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/task"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -48,6 +49,16 @@ const (
 	SystemUUID = "SystemID"
 	// ChassisUUID is used to replace with chassis id in wildcard property
 	ChassisUUID = "ChassisID"
+	// ManagersTable is used to replace with table id Managers
+	ManagersTable = "Managers"
+	// PluginTable is used to replace with table id PluginTable
+	PluginTable = "Plugin"
+	//LogServiceCollection is used to replace with table id LogServicesCollection
+	LogServiceCollection = "LogServicesCollection"
+	//LogServices is used to replace with table id LogServices
+	LogServices = "LogServices"
+	//EntriesCollection is used to replace with table id EntriesCollection
+	EntriesCollection = "EntriesCollection"
 )
 
 // WildCard is used to reduce the size the of list of metric properties
@@ -238,11 +249,17 @@ func genError(errorMessage string, respPtr *response.RPC, httpStatusCode int32, 
 
 // UpdateTaskData update the task with the given data
 func UpdateTaskData(taskData common.TaskData) error {
+	var res map[string]interface{}
+	if err := json.Unmarshal([]byte(taskData.TaskRequest), &res); err != nil {
+		log.Error(err)
+	}
+	reqStr := logs.MaskRequestBody(res)
+
 	respBody, _ := json.Marshal(taskData.Response.Body)
 	payLoad := &taskproto.Payload{
 		HTTPHeaders:   taskData.Response.Header,
 		HTTPOperation: taskData.HTTPMethod,
-		JSONBody:      taskData.TaskRequest,
+		JSONBody:      reqStr,
 		StatusCode:    taskData.Response.StatusCode,
 		TargetURI:     taskData.TargetURI,
 		ResponseBody:  respBody,

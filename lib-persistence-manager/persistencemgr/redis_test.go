@@ -480,7 +480,7 @@ func TestTransaction(t *testing.T) {
 		go func(status string, t *testing.T) {
 			defer wg.Done()
 			if err := updateTransaction("key", status); err != nil {
-				t.Fatal("error: update transaction failed")
+				t.Error("error: update transaction failed")
 
 			}
 		}(status, t)

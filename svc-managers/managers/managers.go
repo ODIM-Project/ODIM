@@ -652,6 +652,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 		var managerAcc dmtf.ManagerAccount
 		json.Unmarshal([]byte(respBody), &managerAcc)
 		resp.Body = managerAcc
+		resp.StatusCode = http.StatusCreated
 	}
 	return resp
 }

@@ -419,7 +419,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	var resp = &managersproto.ManagerResponse{}
 	resp, err := mgr.CreateRemoteAccountService(ctx, req)
 	assert.Nil(t, err, "The two words should be the same.")
-	assert.Equal(t, int(resp.StatusCode), http.StatusOK, "Status code should be StatusOK.")
+	assert.Equal(t, int(resp.StatusCode), http.StatusCreated, "Status code should be StatusCreated.")
 
 	// Invalid
 	req = &managersproto.ManagerRequest{

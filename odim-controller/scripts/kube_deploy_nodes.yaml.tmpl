@@ -20,16 +20,20 @@ nodePasswordFilePath:
 nodes:
   <Node1_Hostname>:
     ip: <Node1_IPAddress>
+    ipv6: <Node1_IPv6Address>
     username: <Node1_Username>
     priority: 100
   <Node2_Hostname>:
     ip: <Node2_IPAddress>
+    ipv6: <Node2_IPv6Address>
     username: <Node2_Username>
     priority: 99
   <Node3_Hostname>:
     ip: <Node3_IPAddress>
+    ipv6: <Node3_IPv6Address>
     username: <Node3_Username>
     priority: 98
+nwPreference: ipv4
 odimControllerSrcPath:
 odimVaultKeyFilePath:
 odimCertsPath:
@@ -78,6 +82,7 @@ odimra:
   nginxLogPath: /var/log/nginx
   virtualRouterID: 100
   virtualIP:
+  virtualIPv6:
   
   rootCACert:
   odimraServerCert:

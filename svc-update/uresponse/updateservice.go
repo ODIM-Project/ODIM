@@ -36,10 +36,12 @@ type SoftwareInventory struct {
 	OdataID string `json:"@odata.id"`
 }
 
+// ClientCertificates defines client identity certificates provided to the server referenced by the Destination property
 type ClientCertificates struct {
 	OdataID string `json:"@odata.id"`
 }
 
+// RemoteServerCertificates define server certificates for the server referenced by the ImageURI property in SimpleUpdate
 type RemoteServerCertificates struct {
 	OdataID string `json:"@odata.id"`
 }
@@ -74,27 +76,29 @@ type UpdateService struct {
 	response.Response
 	Status                        Status                    `json:"Status"`
 	ServiceEnabled                bool                      `json:"ServiceEnabled"`
-	HttpPushUri                   string                    `json:"HttpPushUri"`
+	HTTPPushURI                   string                    `json:"HttpPushUri"`
 	FirmwareInventory             FirmwareInventory         `json:"FirmwareInventory"`
 	SoftwareInventory             SoftwareInventory         `json:"SoftwareInventory"`
 	Actions                       Actions                   `json:"Actions"`
 	OEM                           *OEM                      `json:"Oem,omitempty"`
 	ClientCertificates            *ClientCertificates       `json:"ClientCertificates,omitempty"`
-	HttpPushUriOptions            *HttpPushUriOptions       `json:"HttpPushUriOptions,omitempty"`
-	HttpPushUriOptionsBusy        bool                      `json:"HttpPushUriOptionsBusy,omitempty"`
-	HttpPushUriTargets            []string                  `json:"HttpPushUriTargets,omitempty"`
-	HttpPushUriTargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
+	HTTPPushURIOptions            *HTTPPushURIOptions       `json:"HttpPushUriOptions,omitempty"`
+	HTTPPushURIiOptionsBusy       bool                      `json:"HttpPushUriOptionsBusy,omitempty"`
+	HTTPPushURITargets            []string                  `json:"HttpPushUriTargets,omitempty"`
+	HTTPPushURITargetsBusy        bool                      `json:"HttpPushUriTargetsBusy,omitempty"`
 	MaxImageSizeBytes             int                       `json:"MaxImageSizeBytes,omitempty"`
-	MultipartHttpPushUri          string                    `json:"MultipartHttpPushUri,omitempty"`
+	MultipartHTTPPushURI          string                    `json:"MultipartHttpPushUri,omitempty"`
 	VerifyRemoteServerCertificate bool                      `json:"VerifyRemoteServerCertificate,omitempty"`
 	RemoteServerCertificates      *RemoteServerCertificates `json:"RemoteServerCertificates,omitempty"`
 }
 
-type HttpPushUriOptions struct {
-	HttpPushUriApplyTime *HttpPushUriApplyTime `json:"HttpPushUriApplyTime,omitempty"`
+// HTTPPushURIOptions defines the options for HttpPushUri-provided software updates
+type HTTPPushURIOptions struct {
+	HTTPPushURIApplyTime *HTTPPushURIApplyTime `json:"HTTPPushURIApplyTime,omitempty"`
 }
 
-type HttpPushUriApplyTime struct {
+// HTTPPushURIApplyTime defines the settings for when toapply HttpPushUri-provided firmware.
+type HTTPPushURIApplyTime struct {
 	ApplyTime                          string `json:"ApplyTime,omitempty"`
 	MaintenanceWindowDurationInSeconds int    `json:"MaintenanceWindowDurationInSeconds,omitempty"`
 	MaintenanceWindowStartTime         string `json:"MaintenanceWindowStartTime,omitempty"`

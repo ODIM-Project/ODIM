@@ -344,3 +344,15 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	response := e.CreateRemoteAccountService(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 }
+
+func TestDeleteRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+	e := mockGetExternalInterface()
+	config.SetUpMockConfig(t)
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/5",
+	}
+	response := e.DeleteRemoteAccountService(req)
+	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+}

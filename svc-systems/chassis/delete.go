@@ -30,6 +30,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Handle defines the operations which handle the RPC request-response for deleting a chassis
 func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 	e := d.findInMemory("Chassis", req.URL, new(json.RawMessage))
 	if e == nil {
@@ -107,6 +108,7 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 	return c.Delete(req.URL)
 }
 
+// NewDeleteHandler returns an instance of Delete struct
 func NewDeleteHandler(createPluginClient plugin.ClientFactory, finder func(Table string, key string, r interface{}) *errors.Error) *Delete {
 	return &Delete{
 		createPluginClient: createPluginClient,
@@ -114,6 +116,7 @@ func NewDeleteHandler(createPluginClient plugin.ClientFactory, finder func(Table
 	}
 }
 
+// Delete struct helps to delete chassis
 type Delete struct {
 	createPluginClient plugin.ClientFactory
 	findInMemory       func(Table string, key string, r interface{}) *errors.Error

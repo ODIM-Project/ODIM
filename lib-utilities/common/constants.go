@@ -205,6 +205,7 @@ var ManagersResource = map[string]string{
 	"VirtualMedia":       "VirtualMediaCollection",
 	"LogServices":        "LogServicesCollection",
 	"SerialInterfaces":   "SerialInterfaceCollection",
+	"Entries":            "EntriesCollection",
 }
 
 // ResourceTypes specifies the map  of valid resource types that can be used for an event subscription
@@ -321,5 +322,7 @@ var URIWithNoAuth = []string{
 	"/redfish/v1/$metadata",
 	"/redfish/v1/odata",
 	"/redfish/v1/SessionService",
-	"/redfish/v1/SesssionService/Sessions",
+	"/redfish/v1/SessionService/Sessions",
 }
+
+var SessionURI = "/redfish/v1/SessionService/Sessions"

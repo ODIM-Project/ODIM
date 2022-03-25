@@ -88,18 +88,19 @@ type LogServices struct {
 	Name                string      `json:"Name"`
 	DateTime            string      `json:"DateTime,omitempty"`
 	DateTimeLocalOffset string      `json:"DateTimeLocalOffset,omitempty"`
-	Entries             Entries     `json:"Entries,omitempty"`
+	Entries             *Entries    `json:"Entries,omitempty"`
 	LogEntryType        string      `json:"LogEntryType,omitempty"`
 	MaxNumberOfRecords  int         `json:"MaxNumberOfRecords,omitempty"`
 	OverWritePolicy     string      `json:"OverWritePolicy,omitempty"`
 	ServiceEnabled      bool        `json:"ServiceEnabled,omitempty"`
-	Status              Status      `json:"Status,omitempty"`
+	Status              *Status     `json:"Status,omitempty"`
 	AutoDSTEnabled      bool        `json:"AutoDSTEnabled,omitempty"`
 	Actions             *OemActions `json:"Actions,omitempty"`
 	Oem                 *Oem        `json:"Oem,omitempty"`
 	SyslogFilters       *SysLog     `json:"SyslogFilters,omitempty"`
 }
 
+// SysLog redfish structure
 type SysLog struct {
 	LogFacilities  []string `json:"LogFacilities,omitempty"`
 	LowestSeverity string   `json:"LowestSeverity,omitempty"`

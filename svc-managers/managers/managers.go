@@ -19,9 +19,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
-  "regexp"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
@@ -259,14 +259,17 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	var tableName string
+	var resourceName string
 	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
-
 	urlData := strings.Split(req.URL, "/")
 	if len(requestData) <= 1 {
-		resourceName := urlData[len(urlData)-1]
-
-		tableName = common.ManagersResource[resourceName]
+		if req.ResourceID == "" {
+			resourceName = urlData[len(urlData)-1]
+			tableName = common.ManagersResource[resourceName]
+		} else {
+			tableName = urlData[len(urlData)-2]
+		}
 		data, err := e.DB.GetResource(tableName, req.URL)
 		if err != nil {
 			if req.ManagerID != config.Data.RootServiceUUID {
@@ -293,7 +296,6 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	} else {
 		tableName = urlData[len(urlData)-2]
 	}
-
 	data, err := e.DB.GetResource(tableName, req.URL)
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {
@@ -545,10 +547,7 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	data, err := e.getResourceInfoFromDevice(uri, uuid, requestData[1])
 	if err != nil {
-		errorMessage := "unable to get resource details from device: " + err.Error()
-		log.Error(errorMessage)
-		errArgs := []interface{}{}
-		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+		return handleRemoteAccountServiceError(req.URL, req.ManagerID, err)
 	}
 	// Replace response body to BMC manager
 	data = replaceBMCAccResp(data, req.ManagerID)
@@ -557,6 +556,24 @@ func (e *ExternalInterface) GetRemoteAccountService(req *managersproto.ManagerRe
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
 	return resp
+}
+
+func handleRemoteAccountServiceError(uri, managerID string, err error) response.RPC {
+	errorMessage := "unable to get resource details from device: " + err.Error()
+	log.Error(errorMessage)
+	URIRegexAcc := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Accounts\/[a-zA-Z0-9._-]+[\/]?$`)
+	URIRegexRoles := regexp.MustCompile(`^\/redfish\/v1\/Managers\/[a-zA-Z0-9._-]+\/RemoteAccountService\/Roles\/[a-zA-Z0-9._-]+[\/]?$`)
+	if URIRegexAcc.MatchString(uri) {
+		accID := uri[strings.LastIndex(uri, "/")+1:]
+		errArgs := []interface{}{"Accounts", accID}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	} else if URIRegexRoles.MatchString(uri) {
+		roleID := uri[strings.LastIndex(uri, "/")+1:]
+		errArgs := []interface{}{"Roles", roleID}
+		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
+	}
+	errArgs := []interface{}{"Managers", managerID}
+	return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errorMessage, errArgs, nil)
 }
 
 func convertToRedfishModel(uri, data string) interface{} {
@@ -581,7 +598,7 @@ func convertToRedfishModel(uri, data string) interface{} {
 	return resource
 }
 
-// CreateRemoteAccountService is used to perform action on VirtualMedia. For insert and eject of virtual media this function is used
+// CreateRemoteAccountService is used to create BMC account user
 func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	var requestBody = req.RequestBody
@@ -629,7 +646,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 	uri := replaceBMCAccReq(req.URL, req.ManagerID)
 	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodPost, requestBody)
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
 		body, _ := json.Marshal(resp.Body)
 		respBody := replaceBMCAccResp(string(body), req.ManagerID)
 		var managerAcc dmtf.ManagerAccount
@@ -660,4 +677,18 @@ func replaceBMCAccReq(uri, managerID string) string {
 func replaceBMCAccResp(data, managerID string) string {
 	data = strings.Replace(data, "v1/AccountService", "v1/Managers/"+managerID+"/RemoteAccountService", -1)
 	return data
+}
+
+// DeleteRemoteAccountService is used to delete the BMC account user
+func (e *ExternalInterface) DeleteRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
+	var resp response.RPC
+	// splitting managerID to get uuid
+	requestData := strings.SplitN(req.ManagerID, ".", 2)
+	uuid := requestData[0]
+	uri := replaceBMCAccReq(req.URL, req.ManagerID)
+	resp = e.deviceCommunication(uri, uuid, requestData[1], http.MethodDelete, nil)
+	if resp.StatusCode == http.StatusOK {
+		resp.StatusCode = http.StatusNoContent
+	}
+	return resp
 }

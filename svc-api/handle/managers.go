@@ -354,7 +354,7 @@ func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
 	}
 	request, err := json.Marshal(reqIn)
 	if err != nil {
-		errorMessage := "while trying to create JSON request body in create remote account: " + err.Error()
+		errorMessage := "while trying to update JSON request body in update remote account: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
 		common.SetResponseHeader(ctx, response.Header)

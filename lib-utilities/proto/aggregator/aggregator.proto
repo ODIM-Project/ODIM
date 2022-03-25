@@ -36,6 +36,8 @@ service Aggregator {
     rpc GetAllConnectionMethods(AggregatorRequest) returns (AggregatorResponse) {}
     rpc GetConnectionMethod(AggregatorRequest) returns (AggregatorResponse) {}
     rpc SendStartUpData(SendStartUpDataRequest) returns (SendStartUpDataResponse) {}
+    rpc GetResetActionInfoService(AggregatorRequest) returns (AggregatorResponse) {}
+    rpc GetSetDefaultBootOrderActionInfo(AggregatorRequest) returns (AggregatorResponse) {}    
   }
 
 message AggregatorRequest {

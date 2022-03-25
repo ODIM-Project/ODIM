@@ -259,14 +259,17 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
 	var tableName string
+	var resourceName string
 	var resource map[string]interface{}
 	requestData := strings.SplitN(req.ManagerID, ".", 2)
-
 	urlData := strings.Split(req.URL, "/")
 	if len(requestData) <= 1 {
-		resourceName := urlData[len(urlData)-1]
-
-		tableName = common.ManagersResource[resourceName]
+		if req.ResourceID == "" {
+			resourceName = urlData[len(urlData)-1]
+			tableName = common.ManagersResource[resourceName]
+		} else {
+			tableName = urlData[len(urlData)-2]
+		}
 		data, err := e.DB.GetResource(tableName, req.URL)
 		if err != nil {
 			if req.ManagerID != config.Data.RootServiceUUID {
@@ -293,7 +296,6 @@ func (e *ExternalInterface) GetManagersResource(req *managersproto.ManagerReques
 	} else {
 		tableName = urlData[len(urlData)-2]
 	}
-
 	data, err := e.DB.GetResource(tableName, req.URL)
 	if err != nil {
 		if errors.DBKeyNotFound == err.ErrNo() {

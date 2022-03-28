@@ -16,33 +16,33 @@ package model
 
 // NetworkPort is the redfish network port model
 type NetworkPort struct {
-	ODataContext                  string                    `json:"@odata.context,omitempty"`
-	ODataEtag                     string                    `json:"@odata.etag,omitempty"`
-	ODataID                       string                    `json:"@odata.id"`
-	ODataType                     string                    `json:"@odata.type"`
-	ID                            string                    `json:"Id"`
-	Name                          string                    `json:"Name"`
-	ActiveLinkTechnology          string                    `json:"ActiveLinkTechnology,omitempty"`
-	AssociatedNetworkAddresses    []string                  `json:"AssociatedNetworkAddresses",omitempty`
-	CurrentLinkSpeedMbps          int                       `json:"CurrentLinkSpeedMbps",omitempty`
-	EEEEnabled                    bool                      `json:"EEEEnabled",omitempty`
-	FCFabricName                  string                    `json:"FCFabricName",omitempty`
-	FCPortConnectionType          string                    `json:"FCPortConnectionType",omitempty`
-	FlowControlConfiguration      string                    `json:"FlowControlConfiguration",omitempty`
-	FlowControlStatus             string                    `json:"FlowControlStatus",omitempty`
-	LinkStatus                    string                    `json:"LinkStatus",omitempty`
-	MaxFrameSize                  int                       `json:"MaxFrameSize",omitempty`
-	NetDevFuncMaxBWAlloc          []NetDevFuncMaxBWAlloc    `json:"NetDevFuncMaxBWAlloc",omitempty`
-	NetDevFuncMinBWAlloc          []NetDevFuncMinBWAlloc    `json:"NetDevFuncMinBWAlloc",omitempty`
-	NumberDiscoveredRemotePorts   int                       `json:"NumberDiscoveredRemotePorts",omitempty`
-	PhysicalPortNumber            string                    `json:"PhysicalPortNumber",omitempty`
-	PortMaximumMTU                int                       `json:"PortMaximumMTU",omitempty`
-	SignalDetected                bool                      `json:"SignalDetected",omitempty`
-	Status                        *Status                   `json:"Status",omitempty`
-	SupportedEthernetCapabilities []string                  `json:"SupportedEthernetCapabilities",omitempty`
-	SupportedLinkCapabilities     SupportedLinkCapabilities `json:"SupportedLinkCapabilities",omitempty`
-	VendorID                      string                    `json:"VendorId",omitempty`
-	WakeOnLANEnabled              bool                      `json:"WakeOnLANEnabled",omitempty`
+	ODataContext                  string                      `json:"@odata.context,omitempty"`
+	ODataEtag                     string                      `json:"@odata.etag,omitempty"`
+	ODataID                       string                      `json:"@odata.id"`
+	ODataType                     string                      `json:"@odata.type"`
+	ID                            string                      `json:"Id"`
+	Name                          string                      `json:"Name"`
+	ActiveLinkTechnology          string                      `json:"ActiveLinkTechnology,omitempty"`
+	AssociatedNetworkAddresses    []string                    `json:"AssociatedNetworkAddresses",omitempty`
+	CurrentLinkSpeedMbps          int                         `json:"CurrentLinkSpeedMbps",omitempty`
+	EEEEnabled                    bool                        `json:"EEEEnabled",omitempty`
+	FCFabricName                  string                      `json:"FCFabricName",omitempty`
+	FCPortConnectionType          string                      `json:"FCPortConnectionType",omitempty`
+	FlowControlConfiguration      string                      `json:"FlowControlConfiguration",omitempty`
+	FlowControlStatus             string                      `json:"FlowControlStatus",omitempty`
+	LinkStatus                    string                      `json:"LinkStatus",omitempty`
+	MaxFrameSize                  int                         `json:"MaxFrameSize",omitempty`
+	NetDevFuncMaxBWAlloc          []NetDevFuncMaxBWAlloc      `json:"NetDevFuncMaxBWAlloc",omitempty`
+	NetDevFuncMinBWAlloc          []NetDevFuncMinBWAlloc      `json:"NetDevFuncMinBWAlloc",omitempty`
+	NumberDiscoveredRemotePorts   int                         `json:"NumberDiscoveredRemotePorts",omitempty`
+	PhysicalPortNumber            string                      `json:"PhysicalPortNumber",omitempty`
+	PortMaximumMTU                int                         `json:"PortMaximumMTU",omitempty`
+	SignalDetected                bool                        `json:"SignalDetected",omitempty`
+	Status                        *Status                     `json:"Status",omitempty`
+	SupportedEthernetCapabilities []string                    `json:"SupportedEthernetCapabilities",omitempty`
+	SupportedLinkCapabilities     []SupportedLinkCapabilities `json:"SupportedLinkCapabilities",omitempty`
+	VendorID                      string                      `json:"VendorId",omitempty`
+	WakeOnLANEnabled              bool                        `json:"WakeOnLANEnabled",omitempty`
 }
 
 // NetDevFuncMaxBWAlloc contains the information of maximum bandwidth allocation percentages for the

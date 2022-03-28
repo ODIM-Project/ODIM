@@ -135,6 +135,7 @@ func Router() *iris.Application {
 		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
 		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
 		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
+		UpdateRemoteAccountServiceRPC: rpc.UpdateRemoteAccountService,
 		DeleteRemoteAccountServiceRPC: rpc.DeleteRemoteAccountService,
 	}
 
@@ -572,6 +573,7 @@ func Router() *iris.Application {
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
 	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Patch("/{id}/RemoteAccountService/Accounts/{rid}", manager.UpdateRemoteAccountService)
 	managers.Delete("/{id}/RemoteAccountService/Accounts/{rid}", manager.DeleteRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)

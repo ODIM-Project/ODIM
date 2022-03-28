@@ -28,9 +28,9 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	clientv3 "go.etcd.io/etcd/client/v3"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

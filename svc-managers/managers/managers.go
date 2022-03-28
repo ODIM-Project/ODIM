@@ -683,7 +683,7 @@ func replaceBMCAccResp(data, managerID string) string {
 // UpdateRemoteAccountService is used to update BMC account
 func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	var requestBody = req.RequestBody
+	//var requestBody = req.RequestBody
 	var bmcAccReq mgrmodel.UpdateBMCAccount
 
 	// Updating the default values
@@ -708,7 +708,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.Manage
 		return response
 	}
 
-	requestBody, err = json.Marshal(bmcAccReq)
+	requestBody, err := json.Marshal(bmcAccReq)
 	if err != nil {
 		log.Error("while marshalling the update BMC account request: " + err.Error())
 		resp = common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)

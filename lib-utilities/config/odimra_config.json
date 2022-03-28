@@ -131,12 +131,14 @@
 	   },
 	   {
 		  "ConnectionMethodType": "Redfish",
-		  "ConnectionMethodVariant": "Compute:BasicAuth:URP_v1.0.0"
-	   }
-	],
-	"EventConf": {
-	   "DeliveryRetryAttempts": 3,
-	   "DeliveryRetryIntervalSeconds": 60
-	},
-	"ResourceRateLimit": []
- }
+		  "ConnectionMethodVariant":"Compute:BasicAuth:URP_v1.0.0"
+	  }
+  ],
+  "EventConf": {
+		"DeliveryRetryAttempts" : 3,
+		"DeliveryRetryIntervalSeconds" : 60
+  },
+  "ResourceRateLimit": [],
+  "RequestLimitPerSession":0,
+  "SessionLimitPerUser":0
+}

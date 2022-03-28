@@ -17,14 +17,30 @@ package rpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
+	"github.com/ODIM-Project/ODIM/svc-api/ratelimiter"
 )
 
 // DoSessionCreationRequest will do the rpc calls for the auth
 func DoSessionCreationRequest(req sessionproto.SessionCreateRequest) (*sessionproto.SessionCreateResponse, error) {
+	if config.Data.SessionLimitCountPerUser > 0 {
+		request := make(map[string]interface{})
+		err := json.Unmarshal(req.RequestBody, &request)
+		if err != nil {
+			return nil, err
+		}
+		rerr := ratelimiter.SessionRateLimiter(request["UserName"].(string))
+		if rerr != nil {
+			fmt.Println("Error in session rate limit: ", rerr)
+			return nil, rerr
+		}
+		defer ratelimiter.DecrementCounter(request["UserName"].(string), ratelimiter.UserRateLimit)
+	}
 	conn, err := services.ODIMService.Client(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)

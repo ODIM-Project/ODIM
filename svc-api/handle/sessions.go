@@ -18,6 +18,7 @@ package handle
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -62,8 +63,14 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 	}
 
 	resp, err := s.CreateSessionRPC(createRequest)
-
 	if err != nil && resp == nil {
+		if strings.Contains(err.Error(), "too many requests") {
+			response := common.GeneralError(http.StatusTooManyRequests, response.SessionLimitExceeded, err.Error(), nil, nil)
+			common.SetResponseHeader(ctx, response.Header)
+			ctx.StatusCode(http.StatusTooManyRequests)
+			ctx.JSON(&response.Body)
+			return
+		}
 		errorMessage := "error: something went wrong with the RPC calls: " + err.Error()
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)

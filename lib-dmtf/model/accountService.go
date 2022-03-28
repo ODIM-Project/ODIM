@@ -53,7 +53,7 @@ type ManagerAccount struct {
 	PasswordExpiration     string       `json:"PasswordExpiration,omitempty"`
 	AccountExpiration      string       `json:"AccountExpiration,omitempty"`
 	Links                  AccountLinks `json:"Links,omitempty"`
-	AccountTypes           string       `json:"AccountTypes"`
+	AccountTypes           string       `json:"AccountTypes,omitempty"`
 }
 
 //AccountLinks struct definition

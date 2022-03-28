@@ -23,46 +23,46 @@ type NetworkPort struct {
 	ID                            string                      `json:"Id"`
 	Name                          string                      `json:"Name"`
 	ActiveLinkTechnology          string                      `json:"ActiveLinkTechnology,omitempty"`
-	AssociatedNetworkAddresses    []string                    `json:"AssociatedNetworkAddresses",omitempty`
-	CurrentLinkSpeedMbps          int                         `json:"CurrentLinkSpeedMbps",omitempty`
-	EEEEnabled                    bool                        `json:"EEEEnabled",omitempty`
-	FCFabricName                  string                      `json:"FCFabricName",omitempty`
-	FCPortConnectionType          string                      `json:"FCPortConnectionType",omitempty`
-	FlowControlConfiguration      string                      `json:"FlowControlConfiguration",omitempty`
-	FlowControlStatus             string                      `json:"FlowControlStatus",omitempty`
-	LinkStatus                    string                      `json:"LinkStatus",omitempty`
-	MaxFrameSize                  int                         `json:"MaxFrameSize",omitempty`
-	NetDevFuncMaxBWAlloc          []NetDevFuncMaxBWAlloc      `json:"NetDevFuncMaxBWAlloc",omitempty`
-	NetDevFuncMinBWAlloc          []NetDevFuncMinBWAlloc      `json:"NetDevFuncMinBWAlloc",omitempty`
-	NumberDiscoveredRemotePorts   int                         `json:"NumberDiscoveredRemotePorts",omitempty`
-	PhysicalPortNumber            string                      `json:"PhysicalPortNumber",omitempty`
-	PortMaximumMTU                int                         `json:"PortMaximumMTU",omitempty`
-	SignalDetected                bool                        `json:"SignalDetected",omitempty`
-	Status                        *Status                     `json:"Status",omitempty`
-	SupportedEthernetCapabilities []string                    `json:"SupportedEthernetCapabilities",omitempty`
-	SupportedLinkCapabilities     []SupportedLinkCapabilities `json:"SupportedLinkCapabilities",omitempty`
-	VendorID                      string                      `json:"VendorId",omitempty`
-	WakeOnLANEnabled              bool                        `json:"WakeOnLANEnabled",omitempty`
+	AssociatedNetworkAddresses    []string                    `json:"AssociatedNetworkAddresses,omitempty"`
+	CurrentLinkSpeedMbps          int                         `json:"CurrentLinkSpeedMbps,omitempty"`
+	EEEEnabled                    bool                        `json:"EEEEnabled,omitempty"`
+	FCFabricName                  string                      `json:"FCFabricName,omitempty"`
+	FCPortConnectionType          string                      `json:"FCPortConnectionType,omitempty"`
+	FlowControlConfiguration      string                      `json:"FlowControlConfiguration,omitempty"`
+	FlowControlStatus             string                      `json:"FlowControlStatus,omitempty"`
+	LinkStatus                    string                      `json:"LinkStatus,omitempty"`
+	MaxFrameSize                  int                         `json:"MaxFrameSize,omitempty"`
+	NetDevFuncMaxBWAlloc          []NetDevFuncMaxBWAlloc      `json:"NetDevFuncMaxBWAlloc,omitempty"`
+	NetDevFuncMinBWAlloc          []NetDevFuncMinBWAlloc      `json:"NetDevFuncMinBWAlloc,omitempty"`
+	NumberDiscoveredRemotePorts   int                         `json:"NumberDiscoveredRemotePorts,omitempty"`
+	PhysicalPortNumber            string                      `json:"PhysicalPortNumber,omitempty"`
+	PortMaximumMTU                int                         `json:"PortMaximumMTU,omitempty"`
+	SignalDetected                bool                        `json:"SignalDetected,omitempty"`
+	Status                        *Status                     `json:"Status,omitempty"`
+	SupportedEthernetCapabilities []string                    `json:"SupportedEthernetCapabilities,omitempty"`
+	SupportedLinkCapabilities     []SupportedLinkCapabilities `json:"SupportedLinkCapabilities,omitempty"`
+	VendorID                      string                      `json:"VendorId,omitempty"`
+	WakeOnLANEnabled              bool                        `json:"WakeOnLANEnabled,omitempty"`
 }
 
 // NetDevFuncMaxBWAlloc contains the information of maximum bandwidth allocation percentages for the
 // network device functions associated with the newtwork port.
 type NetDevFuncMaxBWAlloc struct {
-	MaxBWAllocPercent     int   `json:"MaxBWAllocPercent",omitempty`
-	NetworkDeviceFunction *Link `json:"NetworkDeviceFunction",omitempty`
+	MaxBWAllocPercent     int   `json:"MaxBWAllocPercent,omitempty"`
+	NetworkDeviceFunction *Link `json:"NetworkDeviceFunction,omitempty"`
 }
 
 // NetDevFuncMinBWAlloc contains the information of minimum bandwidth allocation percentages for the
 // network device functions associated with the newtwork port.
 type NetDevFuncMinBWAlloc struct {
-	MinBWAllocPercent     int   `json:"MinBWAllocPercent",omitempty`
-	NetworkDeviceFunction *Link `json:"NetworkDeviceFunction",omitempty`
+	MinBWAllocPercent     int   `json:"MinBWAllocPercent,omitempty"`
+	NetworkDeviceFunction *Link `json:"NetworkDeviceFunction,omitempty"`
 }
 
 // SupportedLinkCapabilities contains the information of Ethernet capabilities that the network port support
 type SupportedLinkCapabilities struct {
-	AutoSpeedNegotiation  bool   `json:"AutoSpeedNegotiation",omitempty`
-	CapableLinkSpeedMbps  []int  `json:"CapableLinkSpeedMbps",omitempty`
-	LinkNetworkTechnology string `json:"LinkNetworkTechnology",omitempty`
-	LinkSpeedMbps         int    `json:"LinkSpeedMbps",omitempty`
+	AutoSpeedNegotiation  bool   `json:"AutoSpeedNegotiation,omitempty"`
+	CapableLinkSpeedMbps  []int  `json:"CapableLinkSpeedMbps,omitempty"`
+	LinkNetworkTechnology string `json:"LinkNetworkTechnology,omitempty"`
+	LinkSpeedMbps         int    `json:"LinkSpeedMbps,omitempty"`
 }

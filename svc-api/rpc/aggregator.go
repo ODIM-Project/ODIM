@@ -364,3 +364,38 @@ func DoGetConnectionMethod(req aggregatorproto.AggregatorRequest) (*aggregatorpr
 
 	return resp, err
 }
+
+// DoGetResetActionInfoService defines the RPC call function for
+// the GetResetActionInfoService from aggregator micro service
+func DoGetResetActionInfoService(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	resp, err := aggregator.GetResetActionInfoService(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+
+	return resp, err
+}
+
+// DoGetSetDefaultBootOrderActionInfo defines the RPC call function for
+// the GetSetDefaultBootOrderActionInfo from aggregator micro service
+func DoGetSetDefaultBootOrderActionInfo(req aggregatorproto.AggregatorRequest) (*aggregatorproto.AggregatorResponse, error) {
+	conn, err := services.ODIMService.Client(services.Aggregator)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create client connection: %v", err)
+	}
+	defer conn.Close()
+	aggregator := aggregatorproto.NewAggregatorClient(conn)
+
+	resp, err := aggregator.GetSetDefaultBootOrderActionInfo(context.TODO(), &req)
+	if err != nil {
+		return nil, fmt.Errorf("error: RPC error: %v", err)
+	}
+	return resp, err
+}

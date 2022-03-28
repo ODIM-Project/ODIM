@@ -1340,3 +1340,68 @@ func TestDecr(t *testing.T) {
 	}()
 
 }
+
+func TestSetExpire(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+	if cerr := c.SetExpire("table", "key", "sample", 1); cerr != nil {
+		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+	}
+
+}
+
+func TestSetExpire_invalidData(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	defer func() {
+		c.Delete("table", "key")
+	}()
+
+	if cerr := c.SetExpire("table", "key", math.Inf(1), 1); cerr != nil {
+		if !(strings.Contains(cerr.Error(), "unsupported")) {
+			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		}
+	}
+
+}
+
+func TestSetExpire_existingData(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB coonection:", err)
+	}
+	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
+	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
+		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
+			t.Errorf("Data already exists")
+		}
+	}
+
+	data = sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
+	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
+		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
+			t.Errorf("Data already exists")
+		}
+	}
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}

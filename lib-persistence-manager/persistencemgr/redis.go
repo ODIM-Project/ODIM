@@ -1307,3 +1307,41 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	}
 	return count, nil
 }
+
+// SetExpire key to hold the string value and set key to timeout after a given number of seconds
+/* SetExpire takes the following keys as input:
+1."table" is a string which is used identify what kind of data we are storing.
+2."data" is of type interface and is the userdata sent to be stored in DB.
+3."key" is a string which acts as a unique ID to the data entry.
+4. "expiretime" is of type int, which acts as expiry time for the key
+*/
+func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		log.Info("SetExpire : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "SetExpire : WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+
+	value, readErr := p.Read(table, key)
+	if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
+		return errors.PackError(readErr.ErrNo(), "error: db connection failed")
+	}
+	if value != "" {
+		return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
+	}
+	saveID := table + ":" + key
+
+	jsondata, err := json.Marshal(data)
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+	}
+	_, createErr := writeConn.Do("SETEX", saveID, expiretime, jsondata)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
+	return nil
+}

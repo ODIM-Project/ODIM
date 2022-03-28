@@ -330,6 +330,15 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Severity:   "Critical",
 					Resolution: "Retry after some time",
 				})
+		case SessionLimitExceeded:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    "The session establishment failed due to the number of simultaneous sessions exceeding the limit of the implementation.",
+					Severity:   "Critical",
+					Resolution: "Reduce the number of other sessions before trying to establish the session or increase the limit of simultaneous sessions, if supported.",
+				})
 		}
 	}
 	return e

@@ -527,8 +527,8 @@ func TestValidateConfigurationForEventConf(t *testing.T) {
 			Data.EventConf = &EventConf{}
 		case 1:
 			Data.EventConf = &EventConf{
-				DeliveryRetryAttempts:                 0,
-				DeliveryRetryIntervalSeconds:          0,
+				DeliveryRetryAttempts:        0,
+				DeliveryRetryIntervalSeconds: 0,
 			}
 		}
 		t.Run(tt.name, func(t *testing.T) {

@@ -81,6 +81,8 @@ const (
 	NoOperation = BaseVersion + "NoOperation"
 	// RateLimitExceded  defines exceded the number of requests/resources.
 	RateLimitExceeded = BaseVersion + "RateLimitExceeded"
+	// SessionLimitExceeded Indicates that a session establishment has been requested but the operation failed due to the number of simultaneous sessions exceeding the limit of the implementation.
+	SessionLimitExceeded = BaseVersion + "SessionLimitExceeded"
 )
 
 // Response holds the generic response from odimra

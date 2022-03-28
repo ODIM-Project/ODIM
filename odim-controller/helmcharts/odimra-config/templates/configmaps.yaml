@@ -138,5 +138,7 @@ data:
                  "DeliveryRetryAttempts" : 3,
                  "DeliveryRetryIntervalSeconds" : 60
       },
-      "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }}
+      "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
+      "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
+      "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}
     }

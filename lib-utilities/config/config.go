@@ -56,6 +56,8 @@ type configModel struct {
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
 	ResourceRateLimit              []string                 `json:"ResourceRateLimit"`
+	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
+	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
 }
 
 // DBConf holds all DB related configurations
@@ -179,6 +181,7 @@ func SetConfiguration() error {
 	if err != nil {
 		return fmt.Errorf("Failed to read the config file: %v", err)
 	}
+	log.Info("Config---: ", string(configData))
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal config data: %v", err)

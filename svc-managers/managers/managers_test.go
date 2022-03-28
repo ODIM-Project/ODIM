@@ -342,7 +342,7 @@ func TestCreateRemoteAccountService(t *testing.T) {
                                  "RoleId":"Administrator"}`),
 	}
 	response := e.CreateRemoteAccountService(req)
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusCreated, int(response.StatusCode), "Status code should be StatusCreated.")
 }
 
 func TestDeleteRemoteAccountService(t *testing.T) {

@@ -36,6 +36,7 @@ type ManagersRPCs struct {
 	VirtualMediaEjectRPC          func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 	GetRemoteAccountServiceRPC    func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 	CreateRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
+	UpdateRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 	DeleteRemoteAccountServiceRPC func(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error)
 }
 
@@ -320,6 +321,64 @@ func (mgr *ManagersRPCs) CreateRemoteAccountService(ctx iris.Context) {
 		return
 	}
 	resp, err := mgr.CreateRemoteAccountServiceRPC(req)
+	if err != nil {
+		errorMessage := "error:  RPC error:" + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+	common.SetResponseHeader(ctx, resp.Header)
+	ctx.StatusCode(int(resp.StatusCode))
+	ctx.Write(resp.Body)
+}
+
+// UpdateRemoteAccountService defines the UpdateRemoteAccountService iris handler.
+// This method extract the session token,uuid,request payload and url and creates the RPC request.
+// After the RPC call the method will feed the response to the iris
+// and gives out a proper response.
+func (mgr *ManagersRPCs) UpdateRemoteAccountService(ctx iris.Context) {
+	defer ctx.Next()
+	var reqIn interface{}
+	err := ctx.ReadJSON(&reqIn)
+	if err != nil {
+		errorMessage := "while trying to get JSON body from the update remote account request body: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusBadRequest, response.MalformedJSON, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusBadRequest)
+		ctx.JSON(&response.Body)
+		return
+	}
+	request, err := json.Marshal(reqIn)
+	if err != nil {
+		errorMessage := "while trying to update JSON request body in update remote account: " + err.Error()
+		log.Error(errorMessage)
+		response := common.GeneralError(http.StatusInternalServerError, response.InternalError, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusInternalServerError)
+		ctx.JSON(&response.Body)
+		return
+	}
+
+	req := managersproto.ManagerRequest{
+		SessionToken: ctx.Request().Header.Get("X-Auth-Token"),
+		ManagerID:    ctx.Params().Get("id"),
+		ResourceID:   ctx.Params().Get("rid"),
+		URL:          ctx.Request().RequestURI,
+		RequestBody:  request,
+	}
+	if req.SessionToken == "" {
+		errorMessage := "error: no X-Auth-Token found in request header"
+		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
+		common.SetResponseHeader(ctx, response.Header)
+		ctx.StatusCode(http.StatusUnauthorized)
+		ctx.JSON(&response.Body)
+		return
+	}
+	resp, err := mgr.UpdateRemoteAccountServiceRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)

@@ -181,7 +181,6 @@ func SetConfiguration() error {
 	if err != nil {
 		return fmt.Errorf("Failed to read the config file: %v", err)
 	}
-	log.Info("Config---: ", string(configData))
 	err = json.Unmarshal(configData, &Data)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal config data: %v", err)

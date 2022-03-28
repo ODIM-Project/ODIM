@@ -70,7 +70,7 @@ type StorageControllers struct {
 	PCIeInterface                *PCIeInterface            `json:"PCIeInterface,omitempty"`
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
-	Certificates                 Certificates              `json:"Certificates,omitempty"`
+	Certificates                 *Certificates             `json:"Certificates,omitempty"`
 	Measurements                 []*Link                   `json:"Measurements,omitempty"`
 }
 

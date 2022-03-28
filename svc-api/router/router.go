@@ -69,6 +69,8 @@ func Router() *iris.Application {
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
 		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
+		GetResetActionInfoServiceRPC:            rpc.DoGetResetActionInfoService,
+		GetSetDefaultBootOrderActionInfoRPC:     rpc.DoGetSetDefaultBootOrderActionInfo,
 	}
 
 	s := handle.SessionRPCs{
@@ -314,8 +316,8 @@ func Router() *iris.Application {
 	systems.Get("/{id}/BootOptions/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices", system.GetSystemResource)
 	systems.Get("/{id}/LogServices/{rid}", system.GetSystemResource)
-	systems.Get("/{id}/LogServices/{rid}/Entries", system.GetSystemResource)
-	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", system.GetSystemResource)
+	systems.Get("/{id}/LogServices/{rid}/Entries", middleware.ResourceRateLimiter, system.GetSystemResource)
+	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", middleware.ResourceRateLimiter, system.GetSystemResource)
 	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Get("/{id}/PCIeDevices/{rid}", system.GetSystemResource)
@@ -385,6 +387,8 @@ func Router() *iris.Application {
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
+	aggregation.Get("/ResetActionInfo", pc.GetResetActionInfoService)
+	aggregation.Get("/SetDefaultBootOrderActionInfo", pc.GetSetDefaultBootOrderActionInfo)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
@@ -459,8 +463,8 @@ func Router() *iris.Application {
 	chassis.Any("/{id}/Sensors/{rid}", handle.ChassisMethodNotAllowed)
 	chassis.Get("/{id}/LogServices", cha.GetChassisResource)
 	chassis.Get("/{id}/LogServices/{rid}", cha.GetChassisResource)
-	chassis.Get("/{id}/LogServices/{rid}/Entries", cha.GetChassisResource)
-	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries", middleware.ResourceRateLimiter, cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", middleware.ResourceRateLimiter, cha.GetChassisResource)
 	// TODO
 	// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", cha.GetChassisResource)
 	chassis.Any("/{id}/LogServices", handle.ChassisMethodNotAllowed)
@@ -561,8 +565,8 @@ func Router() *iris.Application {
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries", middleware.ResourceRateLimiter, manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", middleware.ResourceRateLimiter, manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)

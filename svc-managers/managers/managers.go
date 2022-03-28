@@ -683,7 +683,6 @@ func replaceBMCAccResp(data, managerID string) string {
 // UpdateRemoteAccountService is used to update BMC account
 func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.ManagerRequest) response.RPC {
 	var resp response.RPC
-	//var requestBody = req.RequestBody
 	var bmcAccReq mgrmodel.UpdateBMCAccount
 
 	// Updating the default values

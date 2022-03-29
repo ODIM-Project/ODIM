@@ -25,6 +25,7 @@ type NetworkPort struct {
 	ActiveLinkTechnology          string                      `json:"ActiveLinkTechnology,omitempty"`
 	AssociatedNetworkAddresses    []string                    `json:"AssociatedNetworkAddresses,omitempty"`
 	CurrentLinkSpeedMbps          int                         `json:"CurrentLinkSpeedMbps,omitempty"`
+	Description                   string                      `json:"Description,omitempty`
 	EEEEnabled                    bool                        `json:"EEEEnabled,omitempty"`
 	FCFabricName                  string                      `json:"FCFabricName,omitempty"`
 	FCPortConnectionType          string                      `json:"FCPortConnectionType,omitempty"`
@@ -35,14 +36,15 @@ type NetworkPort struct {
 	NetDevFuncMaxBWAlloc          []NetDevFuncMaxBWAlloc      `json:"NetDevFuncMaxBWAlloc,omitempty"`
 	NetDevFuncMinBWAlloc          []NetDevFuncMinBWAlloc      `json:"NetDevFuncMinBWAlloc,omitempty"`
 	NumberDiscoveredRemotePorts   int                         `json:"NumberDiscoveredRemotePorts,omitempty"`
+	Oem                           *Oem                        `json:"Oem,omitempty"`
 	PhysicalPortNumber            string                      `json:"PhysicalPortNumber,omitempty"`
 	PortMaximumMTU                int                         `json:"PortMaximumMTU,omitempty"`
-	SignalDetected                bool                        `json:"SignalDetected,omitempty"`
+	SignalDetected                *bool                       `json:"SignalDetected,omitempty"`
 	Status                        *Status                     `json:"Status,omitempty"`
 	SupportedEthernetCapabilities []string                    `json:"SupportedEthernetCapabilities,omitempty"`
 	SupportedLinkCapabilities     []SupportedLinkCapabilities `json:"SupportedLinkCapabilities,omitempty"`
 	VendorID                      string                      `json:"VendorId,omitempty"`
-	WakeOnLANEnabled              bool                        `json:"WakeOnLANEnabled,omitempty"`
+	WakeOnLANEnabled              *bool                       `json:"WakeOnLANEnabled,omitempty"`
 }
 
 // NetDevFuncMaxBWAlloc contains the information of maximum bandwidth allocation percentages for the
@@ -61,7 +63,7 @@ type NetDevFuncMinBWAlloc struct {
 
 // SupportedLinkCapabilities contains the information of Ethernet capabilities that the network port support
 type SupportedLinkCapabilities struct {
-	AutoSpeedNegotiation  bool   `json:"AutoSpeedNegotiation,omitempty"`
+	AutoSpeedNegotiation  *bool  `json:"AutoSpeedNegotiation,omitempty"`
 	CapableLinkSpeedMbps  []int  `json:"CapableLinkSpeedMbps,omitempty"`
 	LinkNetworkTechnology string `json:"LinkNetworkTechnology,omitempty"`
 	LinkSpeedMbps         int    `json:"LinkSpeedMbps,omitempty"`

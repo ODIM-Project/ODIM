@@ -51,6 +51,7 @@ func main() {
 		}
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
+
 		if basicAuth != "" {
 			var urlNoBasicAuth = []string{"/redfish/v1", "/redfish/v1/SessionService"}
 			var authRequired bool
@@ -58,7 +59,7 @@ func main() {
 			for _, item := range urlNoBasicAuth {
 				if item == path {
 					authRequired = false
-					log.Warn("Basic auth is provided but not used as URL is: " + path)
+					log.Warn("Basic auth is provided but not used as URL is: " + string(path))
 					break
 				}
 			}

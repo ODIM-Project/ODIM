@@ -25,10 +25,13 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
+	"github.com/ODIM-Project/ODIM/svc-api/ratelimiter"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
@@ -222,11 +225,27 @@ func Router() *iris.Application {
 				}
 			}
 		}
+		if config.Data.RequestLimitCountPerSession > 0 {
+			err = ratelimiter.RequestRateLimiter(sessionToken)
+			if err != nil {
+				common.SetCommonHeaders(w)
+				w.WriteHeader(http.StatusTooManyRequests)
+				body, _ := json.Marshal(common.GeneralError(http.StatusTooManyRequests, response.GeneralError, err.Error(), nil, nil).Body)
+				w.Write([]byte(body))
+				return
+			}
+		}
 		next(w, r)
+
 	})
 	router.Done(func(ctx iris.Context) {
 		customLogs.AuditLog(ctx, reqBody)
 		reqBody = make(map[string]interface{})
+		// before returning response, decrement the session limit counter
+		sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+		if sessionToken != "" && config.Data.RequestLimitCountPerSession > 0 {
+			ratelimiter.DecrementCounter(sessionToken, ratelimiter.SessionRateLimit)
+		}
 	})
 	taskmon := router.Party("/taskmon")
 	taskmon.SetRegisterRule(iris.RouteSkip)

@@ -56,6 +56,8 @@ type configModel struct {
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
 	ResourceRateLimit              []string                 `json:"ResourceRateLimit"`
+	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
+	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
 }
 
 // DBConf holds all DB related configurations

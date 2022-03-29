@@ -229,8 +229,8 @@ func Router() *iris.Application {
 			err = ratelimiter.RequestRateLimiter(sessionToken)
 			if err != nil {
 				common.SetCommonHeaders(w)
-				w.WriteHeader(http.StatusTooManyRequests)
-				body, _ := json.Marshal(common.GeneralError(http.StatusTooManyRequests, response.GeneralError, err.Error(), nil, nil).Body)
+				w.WriteHeader(http.StatusServiceUnavailable)
+				body, _ := json.Marshal(common.GeneralError(http.StatusServiceUnavailable, response.GeneralError, err.Error(), nil, nil).Body)
 				w.Write([]byte(body))
 				return
 			}
@@ -336,8 +336,8 @@ func Router() *iris.Application {
 	systems.Get("/{id}/BootOptions/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices", system.GetSystemResource)
 	systems.Get("/{id}/LogServices/{rid}", system.GetSystemResource)
-	systems.Get("/{id}/LogServices/{rid}/Entries", middleware.ResourceRateLimiter, system.GetSystemResource)
-	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", middleware.ResourceRateLimiter, system.GetSystemResource)
+	systems.Get("/{id}/LogServices/{rid}/Entries", ratelimiter.ResourceRateLimiter, system.GetSystemResource)
+	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", ratelimiter.ResourceRateLimiter, system.GetSystemResource)
 	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Get("/{id}/PCIeDevices/{rid}", system.GetSystemResource)
@@ -483,8 +483,8 @@ func Router() *iris.Application {
 	chassis.Any("/{id}/Sensors/{rid}", handle.ChassisMethodNotAllowed)
 	chassis.Get("/{id}/LogServices", cha.GetChassisResource)
 	chassis.Get("/{id}/LogServices/{rid}", cha.GetChassisResource)
-	chassis.Get("/{id}/LogServices/{rid}/Entries", middleware.ResourceRateLimiter, cha.GetChassisResource)
-	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", middleware.ResourceRateLimiter, cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries", ratelimiter.ResourceRateLimiter, cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", ratelimiter.ResourceRateLimiter, cha.GetChassisResource)
 	// TODO
 	// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", cha.GetChassisResource)
 	chassis.Any("/{id}/LogServices", handle.ChassisMethodNotAllowed)
@@ -585,8 +585,8 @@ func Router() *iris.Application {
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{id2}/Entries", middleware.ResourceRateLimiter, manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", middleware.ResourceRateLimiter, manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)

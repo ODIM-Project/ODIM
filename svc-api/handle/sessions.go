@@ -65,9 +65,9 @@ func (s *SessionRPCs) CreateSession(ctx iris.Context) {
 	resp, err := s.CreateSessionRPC(createRequest)
 	if err != nil && resp == nil {
 		if strings.Contains(err.Error(), "too many requests") {
-			response := common.GeneralError(http.StatusTooManyRequests, response.SessionLimitExceeded, err.Error(), nil, nil)
+			response := common.GeneralError(http.StatusServiceUnavailable, response.SessionLimitExceeded, err.Error(), nil, nil)
 			common.SetResponseHeader(ctx, response.Header)
-			ctx.StatusCode(http.StatusTooManyRequests)
+			ctx.StatusCode(http.StatusServiceUnavailable)
 			ctx.JSON(&response.Body)
 			return
 		}

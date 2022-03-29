@@ -1405,3 +1405,28 @@ func TestSetExpire_existingData(t *testing.T) {
 	}()
 
 }
+
+func TestTTL(t *testing.T) {
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	rerr := c.SetExpire("table", "key", "", 2)
+	if rerr != nil {
+		t.Errorf("Error while setting data: %v\n", rerr.Error())
+	}
+	time, rerr := c.TTL("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while TTL jey: %v\n", rerr.Error())
+	}
+	if time < 0 {
+		t.Errorf("Time should not be elapsed")
+	}
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}

@@ -1345,3 +1345,27 @@ func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int
 
 	return nil
 }
+
+//TTL is for getting singular data
+// TTL takes "key" sting as input which acts as a unique ID to fetch time left
+func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	value, err := readConn.Do("TTL", table+":"+key)
+
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return 0, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return 0, errs
+		}
+		return 0, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+	time, err := redis.Int(value, err)
+	if err != nil {
+		return 0, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+	}
+	return time, nil
+}

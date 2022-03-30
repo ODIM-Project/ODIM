@@ -325,7 +325,7 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
 					OdataType:  ErrorMessageOdataType,
-					MessageID:  errArg.StatusMessage,
+					MessageID:  GeneralError,
 					Message:    errArg.ErrorMessage,
 					Severity:   "Critical",
 					Resolution: "Retry after some time",

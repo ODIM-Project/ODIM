@@ -80,7 +80,7 @@ const (
 	// NoOperation  defines the status message at the time of of there is no opeartion need to be performed.
 	NoOperation = BaseVersion + "NoOperation"
 	// RateLimitExceded  defines exceded the number of requests/resources.
-	RateLimitExceeded = BaseVersion + "RateLimitExceeded"
+	RateLimitExceeded = "RateLimitExceeded"
 	// SessionLimitExceeded Indicates that a session establishment has been requested but the operation failed due to the number of simultaneous sessions exceeding the limit of the implementation.
 	SessionLimitExceeded = BaseVersion + "SessionLimitExceeded"
 )

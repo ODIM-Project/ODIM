@@ -12,7 +12,6 @@
 //License for the specific language governing permissions and limitations
 // under the License.
 
-
 //Package handle ...
 package handle
 
@@ -27,7 +26,6 @@ import (
 	compositionserviceproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/compositionservice"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	iris "github.com/kataras/iris/v12"
 )
 
@@ -56,6 +54,7 @@ func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
+		log.Error("##############")
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)
@@ -93,7 +92,7 @@ func (cs *CompositionServiceRPCs) GetResourceBlockCollection(ctx iris.Context) {
 		ctx.JSON(&response.Body)
 		return
 	}
-	resp, err := rpc.GetResourceBlockCollection(req)
+	resp, err := cs.GetResourceBlockCollectionRPC(req)
 	if err != nil {
 		errorMessage := "error:  RPC error:" + err.Error()
 		log.Error(errorMessage)

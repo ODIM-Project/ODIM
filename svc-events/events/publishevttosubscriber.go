@@ -158,7 +158,7 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 		}
 
 		if !resTypePresent {
-			log.Info("event not forwared: resource type of originofcondition not supported in event with body: ", requestData)
+			log.Info("event not forwarded: resource type of originofcondition not supported in event with body: ", requestData)
 			continue
 		}
 		collectionSubscriptions := p.getCollectionSubscriptionInfoForOID(inEvent.OriginOfCondition.Oid, host)

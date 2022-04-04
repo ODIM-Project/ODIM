@@ -45,6 +45,9 @@ type Storage struct {
 //StorageControllers redfish structure
 type StorageControllers struct {
 	Oid                          string                    `json:"@odata.id"`
+	ODataContext                 string                    `json:"@odata.context,omitempty"`
+	ODataEtag                    string                    `json:"@odata.etag,omitempty"`
+	ODataType                    string                    `json:"@odata.type"`
 	AssetTag                     string                    `json:"AssetTag,omitempty"`
 	FirmwareVersion              string                    `json:"FirmwareVersion,omitempty"`
 	Manufacturer                 string                    `json:"Manufacturer,omitempty"`

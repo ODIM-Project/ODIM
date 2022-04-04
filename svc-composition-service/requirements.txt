@@ -10,4 +10,3 @@ protobuf==3.19.1
 tenacity==8.0.1
 etcd3==0.12.0
 pycryptodome==3.9.4
-pytest==7.1.1

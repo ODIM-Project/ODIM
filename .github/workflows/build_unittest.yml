@@ -31,6 +31,10 @@ jobs:
         go-version: 1.17.2
       id: go
           
+    - name: Set up Python 3
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
     - name: Setup Redis
       run: |
         sudo apt-get install -y build-essential
@@ -92,6 +96,32 @@ jobs:
             sudo protoc --go_opt=M$proto_file_name=./ --go_out=plugins=grpc:$proto_path --proto_path=$proto_path $proto_file_name
           done
 
+    - name: Generate python proto modules
+      run: |
+          sudo apt-get -y install redis-tools python3-venv python3-dev python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install grpcio grpcio-tools
+          protos=("auth" "compositionservice")
+          for str in ${protos[@]}; do
+            proto_path="$(pwd)/lib-utilities/proto/$str"
+            proto_out_path="$(pwd)/svc-composition-service/app/proto/$str" 
+            proto_file_name="$str.proto"
+            if [ $str == 'auth' ]
+            then
+              proto_file_name="odim_auth.proto"
+            fi
+            if [ $str == 'compositionservice' ]
+            then
+              proto_file_name="composition_service.proto"
+            fi
+            python3 -m grpc_tools.protoc -I$proto_path --python_out=$proto_out_path --grpc_python_out=$proto_out_path $proto_file_name
+            proto_grpc_file_name="${proto_file_name/.proto/"_pb2_grpc.py"}"
+            protoc_pb2_name="${proto_file_name/.proto/"_pb2"}"
+            proto_grpc_file=$proto_out_path/$proto_grpc_file_name
+            if [[ -f "$proto_grpc_file" ]]; then
+              sed -i 's/import '$protoc_pb2_name'/import proto.'$str'.'$protoc_pb2_name'/gI' $proto_grpc_file
+            fi
+          done 
     - name: Build
       run: |
           LIST=`ls | grep -v 'lib-rest-client' | grep -E '^svc-|^plugin-|^odimra'`
@@ -126,12 +156,16 @@ jobs:
           echo `redis-cli -p 6380 << HERE
           keys *
           HERE`
-          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update lib-utilities lib-messagebus"
+          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-composition-service lib-utilities lib-messagebus"
           echo $LIST
           for i in $LIST; do
             echo "Testing $i"
             cd $i
+            if [[ "$i" == "svc-composition-service" ]]; then
+              /bin/bash build_test.sh
+            else
             GORACE=history_size=7 go test ./... --cover
+            fi
             echo "Test Done"
             if [ $? -eq 0 ]; then
               echo Unit Testing for odimra service/lib dependencies $i is Successful !!!!

@@ -60,7 +60,7 @@ class Auth():
                 "Unable to authorize rpc call. Error: {e}".format(e=rpc_error))
             resp["status_code"] = HTTPStatus.BAD_REQUEST
             resp["status_message"] = {
-                "Error": "Failed to connect to gRPC server"
+                "error": "Failed to connect to gRPC server"
             }
         finally:
             return resp

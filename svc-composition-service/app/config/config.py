@@ -47,10 +47,10 @@ CERTIFICATES = {
 }
 
 
-def set_configuraion():
+def set_configuraion(conf_file=CONF_FILE):
     config_data = {}
-    if CONF_FILE and os.path.exists(CONF_FILE):
-        with open(CONF_FILE) as f:
+    if conf_file and os.path.exists(conf_file):
+        with open(conf_file) as f:
             try:
                 config_data = json.load(f)
             except Exception:

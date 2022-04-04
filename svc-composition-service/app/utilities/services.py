@@ -15,12 +15,12 @@
 from concurrent import futures
 import grpc
 import proto.compositionservice.composition_service_pb2_grpc as pb2_grpc
-from rpc import CompositionService
 import logging
 from config.config import CONFIG_DATA, CERTIFICATES
 from config.cli import CL_ARGS
 import uuid
 from utilities.connection import EtcdConnection
+from rpc.composition_service import CompositionServiceRpc
 
 
 class Services():
@@ -42,7 +42,7 @@ class Services():
     def serve_secure(self):
         logging.info("initialize secure service")
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-        pb2_grpc.add_CompositionServicer_to_server(CompositionService(),
+        pb2_grpc.add_CompositionServicer_to_server(CompositionServiceRpc(),
                                                    server)
         # Loading credentials
         server_credentials = grpc.ssl_server_credentials(((

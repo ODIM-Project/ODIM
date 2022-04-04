@@ -54,7 +54,6 @@ func (cs *CompositionServiceRPCs) GetCompositionService(ctx iris.Context) {
 		URL:          ctx.Request().RequestURI,
 	}
 	if req.SessionToken == "" {
-		log.Error("##############")
 		errorMessage := "error: no X-Auth-Token found in request header"
 		log.Error(errorMessage)
 		response := common.GeneralError(http.StatusUnauthorized, response.NoValidSession, errorMessage, nil, nil)

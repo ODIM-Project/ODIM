@@ -139,7 +139,8 @@ func TestSetConfiguration(t *testing.T) {
                 "TaskService",
                 "EventService",
                 "Fabrics",
-                "Managers"
+                "Managers",
+		"CompositionService"
 		],
 		"SupportedPluginTypes" : ["Compute", "Fabric", "Storage"],
 		"ConnectionMethodConf":[

@@ -578,7 +578,7 @@ func (p *PluginContact) getCollectionSubscriptionInfoForOID(oid, host string) []
 		return []evmodel.Subscription{}
 	}
 
-	searchKey = evcommon.GetSearchKey(key, evmodel.SubscriptionIndex)
+	searchKey := evcommon.GetSearchKey(key, evmodel.SubscriptionIndex)
 	subscriptions, _ := p.GetEvtSubscriptions(searchKey)
 	return subscriptions
 }

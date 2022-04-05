@@ -2,12 +2,18 @@ package ratelimiter
 
 import (
 	"fmt"
+	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	iris "github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 )
 
 const (
@@ -17,6 +23,9 @@ const (
 
 	// UserRateLimit is table name to limit the number of sessions per user
 	UserRateLimit = "UserRateLimit"
+
+	// ResourceRateLimit is table name to limit the resource on time bound
+	ResourceRateLimit = "ResourceRateLimit"
 )
 
 // RequestRateLimiter is for limiting number of requests per session
@@ -54,6 +63,46 @@ func SessionRateLimiter(userid string) error {
 		//IncrementCounter(userid, UserRateLimit)
 	}
 	return nil
+}
+
+// ResourceRateLimiter will Limit the get on resource untill previous get completed the task
+func ResourceRateLimiter(ctx iris.Context) {
+	uri := ctx.Request().RequestURI
+	for _, val := range config.Data.ResourceRateLimit {
+		resourceLimit := strings.Split(val, ":")
+		if len(resourceLimit) > 1 && resourceLimit[1] != "" {
+			rLimit, _ := strconv.Atoi(resourceLimit[1])
+			resource := strings.Replace(resourceLimit[0], "{id}", "[a-zA-Z0-9._-]+", -1)
+			regex := regexp.MustCompile(resource)
+			if regex.MatchString(uri) {
+				conn, err := common.GetDBConnection(common.InMemory)
+				if err != nil {
+					log.Error(err.Error())
+					response := common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
+					common.SetResponseHeader(ctx, response.Header)
+					ctx.StatusCode(http.StatusInternalServerError)
+					ctx.JSON(&response.Body)
+					return
+				}
+				// convert millisecond to second
+				expiretime := rLimit / 1000
+				if err = conn.SetExpire("ResourceRateLimit", uri, "", expiretime); err != nil {
+					errorMessage := "too many requests, retry after some time"
+					log.Error(errorMessage)
+					response := common.GeneralError(http.StatusServiceUnavailable, response.RateLimitExceeded, errorMessage, nil, nil)
+					remainTime, _ := conn.TTL(ResourceRateLimit, uri)
+					if remainTime > 0 {
+						ctx.ResponseWriter().Header().Set("Retry-After", strconv.Itoa(remainTime))
+					}
+					common.SetResponseHeader(ctx, response.Header)
+					ctx.StatusCode(http.StatusServiceUnavailable)
+					ctx.JSON(&response.Body)
+					return
+				}
+			}
+		}
+	}
+	ctx.Next()
 }
 
 // IncrementCounter will increment the count

@@ -127,6 +127,8 @@ func CreateRemoteAccountService(req managersproto.ManagerRequest) (*managersprot
 	}
 	return resp, nil
 }
+
+// UpdateRemoteAccountService will do rpc call to update BMC account
 func UpdateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	conn, err := services.ODIMService.Client(services.Managers)
 	if err != nil {

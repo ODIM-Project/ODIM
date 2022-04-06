@@ -218,6 +218,7 @@ func (p *PluginContact) CreateEventSubscription(taskID string, sessionUserName s
 	var wg, taskCollectionWG sync.WaitGroup
 	var result = &evresponse.MutexLock{
 		Response: make(map[string]evresponse.EventResponse),
+		Hosts:    make(map[string]string),
 		Lock:     &sync.Mutex{},
 	}
 
@@ -1280,13 +1281,7 @@ func (p *PluginContact) checkCollectionSubscription(origin, protocol string) {
 	if response.StatusCode != http.StatusCreated {
 		return
 	}
-	for _, evtSubscription := range collectionSubscription {
-		evtSubscription.Hosts = append(evtSubscription.Hosts, host)
-		err = p.UpdateEventSubscription(evtSubscription)
-		if err != nil {
-			log.Error("Error while Updating event subscription : " + err.Error())
-		}
-	}
+
 	// Get Device Subscription Details if collection is bmc and update chassis and managers uri
 	if bmcFlag {
 		searchKey := evcommon.GetSearchKey(host, evmodel.DeviceSubscriptionIndex)

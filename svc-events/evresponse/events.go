@@ -17,6 +17,7 @@
 package evresponse
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
@@ -52,7 +53,6 @@ type ListMember struct {
 	OdataID string `json:"@odata.id"`
 }
 
-//EventServiceResponse is used to return response
 type EventServiceResponse struct {
 	OdataContext                      string                        `json:"@odata.context,omitempty"`
 	Etag                              string                        `json:"@odata.etag,omitempty"`
@@ -135,7 +135,7 @@ type Oem struct {
 // MutexLock is a struct for mutex lock and Response and hosts
 type MutexLock struct {
 	Lock     *sync.Mutex
-	Hosts    []string
+	Hosts    map[string]string
 	Response map[string]EventResponse
 }
 
@@ -145,7 +145,7 @@ func (r *MutexLock) AddResponse(origin, host string, response EventResponse) {
 	defer r.Lock.Unlock()
 	r.Response[origin] = response
 	if response.StatusCode == 201 {
-		r.Hosts = append(r.Hosts, host)
+		r.Hosts[host] = origin
 	}
 }
 
@@ -162,6 +162,27 @@ func (r *MutexLock) ReadResponse(subscriptionID string) (response.RPC, []string)
 		}
 		rpcResponse.Body = resp.Response
 	}
-	hosts := r.Hosts
+	hosts := getHostsData(r.Hosts)
 	return rpcResponse, hosts
+}
+func getHostsData(data map[string]string) []string {
+	hosts := make([]string, 0)
+	deleteDuplicateHostData(data, "SystemsCollection", "Systems")
+	deleteDuplicateHostData(data, "ChassisCollection", "Chassis")
+	deleteDuplicateHostData(data, "ManagerCollection", "Managers")
+	deleteDuplicateHostData(data, "FabricsCollection", "Fabrics")
+	for host := range data {
+		hosts = append(hosts, host)
+	}
+	return hosts
+}
+
+func deleteDuplicateHostData(data map[string]string, collectionKey, pattern string) {
+	if _, ok := data[collectionKey]; ok {
+		for key, value := range data {
+			if strings.Contains(value, pattern) && key != collectionKey {
+				delete(data, key)
+			}
+		}
+	}
 }

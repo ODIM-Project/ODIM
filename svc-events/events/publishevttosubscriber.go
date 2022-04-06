@@ -158,16 +158,18 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 		}
 
 		if !resTypePresent {
-			log.Info("event not forwared: resource type of originofcondition not supported in event with body: ", requestData)
+			log.Info("event not forwarded: resource type of originofcondition not supported in event with body: ", requestData)
 			continue
 		}
+		collectionSubscriptions := p.getCollectionSubscriptionInfoForOID(inEvent.OriginOfCondition.Oid, host)
+		subscriptions = append(subscriptions, collectionSubscriptions...)
 		for _, sub := range subscriptions {
 
 			// filter and send events to destination if destination is not empty
 			// in case of default event subscription destination will be empty
 			if sub.Destination != "" {
 				// check if hostip present in the hosts slice to make sure that it doesn't filter with the destination ip
-				if isHostPresent(sub.Hosts, host) {
+				if isHostPresentInEventForward(sub.Hosts, host) {
 					if filterEventsToBeForwarded(sub, inEvent, deviceSubscription.OriginResources) {
 						eventMap[sub.Destination] = append(eventMap[sub.Destination], inEvent)
 						flag = true
@@ -560,4 +562,42 @@ func (p *PluginContact) checkUndeliveredEvents(destination string) {
 			log.Error("error while deleting undelivered events flag: ", derr.Error())
 		}
 	}
+}
+
+func (p *PluginContact) getCollectionSubscriptionInfoForOID(oid, host string) []evmodel.Subscription {
+	var key string
+	if strings.Contains(oid, "Systems") && host != "SystemsCollection" {
+		key = "SystemsCollection"
+	} else if strings.Contains(oid, "Chassis") && host != "ChassisCollection" {
+		key = "ChassisCollection"
+	} else if strings.Contains(oid, "Managers") && host != "ManagerCollection" {
+		key = "ManagerCollection"
+	} else if strings.Contains(oid, "Fabrics") && host != "FabricsCollection" {
+		key = "FabricsCollection"
+	} else {
+		return []evmodel.Subscription{}
+	}
+
+	searchKey := evcommon.GetSearchKey(key, evmodel.SubscriptionIndex)
+	subscriptions, _ := p.GetEvtSubscriptions(searchKey)
+	return subscriptions
+}
+
+// isHostPresentInEventForward will check if hostip present in the hosts slice
+func isHostPresentInEventForward(hosts []string, hostip string) bool {
+
+	if len(hosts) < 1 {
+		return false
+	}
+
+	front := 0
+	rear := len(hosts) - 1
+	for front <= rear {
+		if hosts[front] == hostip || hosts[rear] == hostip || strings.Contains(hosts[rear], "Collection") || strings.Contains(hosts[front], "Collection") {
+			return true
+		}
+		front++
+		rear--
+	}
+	return false
 }

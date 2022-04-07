@@ -36,4 +36,6 @@ const (
 	Update = "svc.update"
 	// Telemetry holds the name for the Telemetry Micro Service
 	Telemetry = "svc.telemetry"
+	// CompositonService holds the name for the CompositonService Micro Service
+	CompositionService = "svc.composition.service"
 )

@@ -51,6 +51,7 @@ odim_svc_helmcharts:
    task: task-3.0.0
    update: update-3.0.0
    telemetry: telemetry-2.0.0
+   composition-service: composition-service-1.0.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation
@@ -68,6 +69,7 @@ odim_docker_images:
    redis: redis
    stakater_reloader: stakater/reloader
    busybox: busybox
+   composition-service: composition-service
 kubernetes_images:
    quay.io/calico/cni: quay.io_calico_cni
    quay.io/calico/kube-controllers: quay.io_calico_kube-controllers

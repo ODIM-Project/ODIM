@@ -45,6 +45,9 @@ type Storage struct {
 //StorageControllers redfish structure
 type StorageControllers struct {
 	Oid                          string                    `json:"@odata.id"`
+	ODataContext                 string                    `json:"@odata.context,omitempty"`
+	ODataEtag                    string                    `json:"@odata.etag,omitempty"`
+	ODataType                    string                    `json:"@odata.type"`
 	AssetTag                     string                    `json:"AssetTag,omitempty"`
 	FirmwareVersion              string                    `json:"FirmwareVersion,omitempty"`
 	Manufacturer                 string                    `json:"Manufacturer,omitempty"`
@@ -70,7 +73,7 @@ type StorageControllers struct {
 	PCIeInterface                *PCIeInterface            `json:"PCIeInterface,omitempty"`
 	Ports                        *Link                     `json:"Ports,omitempty"`
 	Status                       *StorageStatus            `json:"Status,omitempty"`
-	Certificates                 Certificates              `json:"Certificates,omitempty"`
+	Certificates                 *Certificates             `json:"Certificates,omitempty"`
 	Measurements                 []*Link                   `json:"Measurements,omitempty"`
 }
 
@@ -167,18 +170,18 @@ type Drive struct {
 	Description                   string             `json:"Description,omitempty"`
 	EncryptionAbility             string             `json:"EncryptionAbility,omitempty"`
 	EncryptionStatus              string             `json:"EncryptionStatus,omitempty"`
-	FailurePredicted              bool               `json:"FailurePredicted,omitempty"`
+	FailurePredicted              *bool              `json:"FailurePredicted,omitempty"`
 	HotspareReplacementMode       string             `json:"HotspareReplacementMode,omitempty"`
 	HotspareType                  string             `json:"HotspareType,omitempty"`
 	ID                            string             `json:"Id"`
 	Identifiers                   []*Identifier      `json:"Identifiers,omitempty"`
 	IndicatorLED                  string             `json:"IndicatorLED,omitempty"`
 	Links                         *DriveLinks        `json:"Links,omitempty"`
-	LocationIndicatorActive       bool               `json:"LocationIndicatorActive,omitempty"`
+	LocationIndicatorActive       *bool              `json:"LocationIndicatorActive,omitempty"`
 	Manufacturer                  string             `json:"Manufacturer,omitempty"`
 	MediaType                     string             `json:"MediaType,omitempty"`
 	Model                         string             `json:"Model,omitempty"`
-	Multipath                     bool               `json:"Multipath,omitempty"`
+	Multipath                     *bool              `json:"Multipath,omitempty"`
 	Name                          string             `json:"Name"`
 	NegotiatedSpeedGbs            float32            `json:"NegotiatedSpeedGbs,omitempty"`
 	Oem                           *Oem               `json:"Oem,omitempty"`
@@ -187,19 +190,19 @@ type Drive struct {
 	PhysicalLocation              *PhysicalLocation  `json:"PhysicalLocation,omitempty"`
 	PredictedMediaLifeLeftPercent float32            `json:"PredictedMediaLifeLeftPercent,omitempty"`
 	Protocol                      string             `json:"Protocol,omitempty"`
-	ReadyToRemove                 bool               `json:"ReadyToRemove,omitempty"`
+	ReadyToRemove                 *bool              `json:"ReadyToRemove,omitempty"`
 	Revision                      string             `json:"Revision,omitempty"`
 	RotationSpeedRPM              float32            `json:"RotationSpeedRPM,omitempty"`
 	SKU                           string             `json:"SKU,omitempty"`
 	SerialNumber                  string             `json:"SerialNumber,omitempty"`
 	Status                        *StorageStatus     `json:"Status,omitempty"`
 	StatusIndicator               string             `json:"StatusIndicator,omitempty"`
-	WriteCacheEnabled             bool               `json:"WriteCacheEnabled,omitempty"`
+	WriteCacheEnabled             *bool              `json:"WriteCacheEnabled,omitempty"`
 	CapacityMiB                   int                `json:"CapacityMiB,omitempty"`
 	Location                      string             `json:"Location,omitempty"`
 	RotationalSpeedRpm            int                `json:"RotationalSpeedRpm,omitempty"`
 	FirmwareVersion               *FirmwareVersion   `json:"FirmwareVersion,omitempty"`
-	Certificates                  Certificates       `json:"Certificates,omitempty"`
+	Certificates                  *Certificates      `json:"Certificates,omitempty"`
 	EnvironmentMetrics            *Link              `json:"EnvironmentMetrics,omitempty"`
 	Measurements                  []*Link            `json:"Measurements,omitempty"`
 }

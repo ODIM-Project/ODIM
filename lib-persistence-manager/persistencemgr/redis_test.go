@@ -480,7 +480,7 @@ func TestTransaction(t *testing.T) {
 		go func(status string, t *testing.T) {
 			defer wg.Done()
 			if err := updateTransaction("key", status); err != nil {
-				t.Fatal("error: update transaction failed")
+				t.Error("error: update transaction failed")
 
 			}
 		}(status, t)
@@ -1269,4 +1269,164 @@ func TestGetDBConnection_HAEnabled(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIncr(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	got, rerr := c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 1 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	got, rerr = c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 2 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestDecr(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+	_, rerr := c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	_, rerr = c.Incr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+
+	got, rerr := c.Decr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 1 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	got, rerr = c.Decr("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while incrementing data: %v\n", rerr.Error())
+	}
+	if got != 0 {
+		t.Errorf("Mismatch in fetched data")
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestSetExpire(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+	if cerr := c.SetExpire("table", "key", "sample", 1); cerr != nil {
+		t.Errorf("Error while making data entry: %v\n", cerr.Error())
+	}
+
+}
+
+func TestSetExpire_invalidData(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	defer func() {
+		c.Delete("table", "key")
+	}()
+
+	if cerr := c.SetExpire("table", "key", math.Inf(1), 1); cerr != nil {
+		if !(strings.Contains(cerr.Error(), "unsupported")) {
+			t.Errorf("Error while making data entry: %v\n", cerr.Error())
+		}
+	}
+
+}
+
+func TestSetExpire_existingData(t *testing.T) {
+
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB coonection:", err)
+	}
+	data := sample{Data1: "Value1", Data2: "Value2", Data3: "Value3"}
+	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
+		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
+			t.Errorf("Data already exists")
+		}
+	}
+
+	data = sample{Data1: "Value4", Data2: "Value5", Data3: "Value6"}
+	if cerr := c.SetExpire("table", "key", data, 1); cerr != nil {
+		if errors.DBKeyAlreadyExist != cerr.ErrNo() {
+			t.Errorf("Data already exists")
+		}
+	}
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
+}
+
+func TestTTL(t *testing.T) {
+	c, err := MockDBConnection()
+	if err != nil {
+		t.Fatal("Error while making mock DB connection:", err)
+	}
+
+	rerr := c.SetExpire("table", "key", "", 2)
+	if rerr != nil {
+		t.Errorf("Error while setting data: %v\n", rerr.Error())
+	}
+	time, rerr := c.TTL("table", "key")
+	if rerr != nil {
+		t.Errorf("Error while TTL jey: %v\n", rerr.Error())
+	}
+	if time < 0 {
+		t.Errorf("Time should not be elapsed")
+	}
+	defer func() {
+		if derr := c.Delete("table", "key"); derr != nil {
+			t.Errorf("Error while deleting Data: %v\n", derr.Error())
+		}
+	}()
+
 }

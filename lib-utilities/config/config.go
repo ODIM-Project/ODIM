@@ -18,10 +18,13 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"strconv"
+	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 )
@@ -52,6 +55,9 @@ type configModel struct {
 	SupportedPluginTypes           []string                 `json:"SupportedPluginTypes"`
 	ConnectionMethodConf           []ConnectionMethodConf   `json:"ConnectionMethodConf"`
 	EventConf                      *EventConf               `json:"EventConf"`
+	ResourceRateLimit              []string                 `json:"ResourceRateLimit"`
+	RequestLimitCountPerSession    int                      `json:"RequestLimitCountPerSession"`
+	SessionLimitCountPerUser       int                      `json:"SessionLimitCountPerUser"`
 }
 
 // DBConf holds all DB related configurations
@@ -161,9 +167,8 @@ type ConnectionMethodConf struct {
 
 // EventConf stores all inforamtion related to event delivery configurations
 type EventConf struct {
-	DeliveryRetryAttempts                 int `json:"DeliveryRetryAttempts"`                 // holds value of retrying event posting to destination
-	DeliveryRetryIntervalSeconds          int `json:"DeliveryRetryIntervalSeconds"`          // holds value of retrying events posting in interval
-	RetentionOfUndeliveredEventsInMinutes int `json:"RetentionOfUndeliveredEventsInMinutes"` // holds value of how long we can retain the events
+	DeliveryRetryAttempts        int `json:"DeliveryRetryAttempts"`        // holds value of retrying event posting to destination
+	DeliveryRetryIntervalSeconds int `json:"DeliveryRetryIntervalSeconds"` // holds value of retrying events posting in interval
 }
 
 // SetConfiguration will extract the config data from file
@@ -212,6 +217,9 @@ func ValidateConfiguration() error {
 		return err
 	}
 	if err = checkEventConf(); err != nil {
+		return err
+	}
+	if err = checkResourceRateLimit(); err != nil {
 		return err
 	}
 	checkAuthConf()
@@ -404,9 +412,6 @@ func checkAPIGatewayConf() error {
 	if Data.APIGatewayConf == nil {
 		return fmt.Errorf("error: APIGatewayConf is not provided")
 	}
-	if Data.APIGatewayConf.Host == "" {
-		return fmt.Errorf("error: no value set for GatewayHost")
-	}
 	if Data.APIGatewayConf.Port == "" {
 		return fmt.Errorf("error: no value set for GatewayPort")
 	}
@@ -589,6 +594,19 @@ func checkEventConf() error {
 	if Data.EventConf.DeliveryRetryIntervalSeconds <= 0 {
 		log.Warn("No value found for DeliveryRetryIntervalSeconds, setting default value")
 		Data.EventConf.DeliveryRetryIntervalSeconds = DefaultDeliveryRetryIntervalSeconds
+	}
+	return nil
+}
+
+func checkResourceRateLimit() error {
+	for _, val := range Data.ResourceRateLimit {
+		resourceLimit := strings.Split(val, ":")
+		if len(resourceLimit) > 1 && resourceLimit[1] != "" {
+			_, err := strconv.Atoi(resourceLimit[1])
+			if err != nil {
+				return fmt.Errorf("time should be in integer format: %v", err.Error())
+			}
+		}
 	}
 	return nil
 }

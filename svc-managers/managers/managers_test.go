@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
@@ -63,12 +64,12 @@ func TestGetManager(t *testing.T) {
 	data, _ := json.Marshal(response.Body)
 	json.Unmarshal(data, &manager)
 
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
-	assert.Equal(t, "odimra", manager.Name, "Status code should be StatusOK.")
-	assert.Equal(t, "Service", manager.ManagerType, "Status code should be StatusOK.")
-	assert.Equal(t, req.ManagerID, manager.ID, "Status code should be StatusOK.")
-	assert.Equal(t, "1.0", manager.FirmwareVersion, "Status code should be StatusOK.")
-
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK")
+	assert.Equal(t, "odimra", manager.Name, "Manager name should be odimra")
+	assert.Equal(t, "Service", manager.ManagerType, "Manager type should be Service")
+	assert.Equal(t, req.ManagerID, manager.ID, "Unexpected manager ID, should be equal to the ID in request")
+	assert.Equal(t, "1.0", manager.FirmwareVersion, "Manager firmware version should be 1.0")
+	assert.Equal(t, time.Now().Format(time.RFC3339), manager.DateTime, "Invalid DateTime format")
 }
 
 func TestGetManagerWithDeviceAbsent(t *testing.T) {
@@ -341,5 +342,17 @@ func TestCreateRemoteAccountService(t *testing.T) {
                                  "RoleId":"Administrator"}`),
 	}
 	response := e.CreateRemoteAccountService(req)
-	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+	assert.Equal(t, http.StatusCreated, int(response.StatusCode), "Status code should be StatusCreated.")
+}
+
+func TestDeleteRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+	e := mockGetExternalInterface()
+	config.SetUpMockConfig(t)
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/5",
+	}
+	response := e.DeleteRemoteAccountService(req)
+	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
 }

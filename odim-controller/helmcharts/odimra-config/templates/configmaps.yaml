@@ -19,7 +19,7 @@ data:
     		"RSAPrivateKeyPath": "/etc/odimra_certs/odimra_rsa.private"
     	},
     	"APIGatewayConf": {
-    		"Host": {{ .Values.odimra.apiGatewayHost | quote }},
+    		"Host": "",
     		"Port": "45000",
     		"PrivateKeyPath": "/etc/odimra_certs/odimra_server.key",
     		"CertificatePath": "/etc/odimra_certs/odimra_server.crt"
@@ -137,7 +137,9 @@ data:
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],
       "EventConf": {
                  "DeliveryRetryAttempts" : 3,
-                 "DeliveryRetryIntervalSeconds" : 60,
-                 "RetentionOfUndeliveredEventsInMinutes" : 10
-      }
+                 "DeliveryRetryIntervalSeconds" : 60
+      },
+      "ResourceRateLimit": {{ .Values.odimra.resourceRateLimit | toJson }},
+      "RequestLimitCountPerSession": {{ .Values.odimra.requestLimitPerSession | default 0 }},
+      "SessionLimitCountPerUser": {{ .Values.odimra.sessionLimitPerUser | default 0 }}
     }

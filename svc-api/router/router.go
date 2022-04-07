@@ -25,10 +25,13 @@ import (
 	"strings"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	customLogs "github.com/ODIM-Project/ODIM/lib-utilities/logs"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	srv "github.com/ODIM-Project/ODIM/lib-utilities/services"
 	"github.com/ODIM-Project/ODIM/svc-api/handle"
 	"github.com/ODIM-Project/ODIM/svc-api/middleware"
+	"github.com/ODIM-Project/ODIM/svc-api/ratelimiter"
 	"github.com/ODIM-Project/ODIM/svc-api/rpc"
 	"github.com/kataras/iris/v12"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +41,6 @@ import (
 func Router() *iris.Application {
 	r := handle.RoleRPCs{
 		GetAllRolesRPC: rpc.GetAllRoles,
-		CreateRoleRPC:  rpc.CreateRole,
 		GetRoleRPC:     rpc.GetRole,
 		UpdateRoleRPC:  rpc.UpdateRole,
 		DeleteRoleRPC:  rpc.DeleteRole,
@@ -70,6 +72,8 @@ func Router() *iris.Application {
 		SetDefaultBootOrderAggregateElementsRPC: rpc.DoSetDefaultBootOrderAggregateElements,
 		GetAllConnectionMethodsRPC:              rpc.DoGetAllConnectionMethods,
 		GetConnectionMethodRPC:                  rpc.DoGetConnectionMethod,
+		GetResetActionInfoServiceRPC:            rpc.DoGetResetActionInfoService,
+		GetSetDefaultBootOrderActionInfoRPC:     rpc.DoGetSetDefaultBootOrderActionInfo,
 	}
 
 	s := handle.SessionRPCs{
@@ -134,6 +138,8 @@ func Router() *iris.Application {
 		VirtualMediaEjectRPC:          rpc.VirtualMediaEject,
 		GetRemoteAccountServiceRPC:    rpc.GetRemoteAccountService,
 		CreateRemoteAccountServiceRPC: rpc.CreateRemoteAccountService,
+		UpdateRemoteAccountServiceRPC: rpc.UpdateRemoteAccountService,
+		DeleteRemoteAccountServiceRPC: rpc.DeleteRemoteAccountService,
 	}
 
 	update := handle.UpdateRPCs{
@@ -208,6 +214,9 @@ func Router() *iris.Application {
 					break
 				}
 			}
+			if r.URL.Path == common.SessionURI && r.Method == http.MethodGet {
+				authRequired = true
+			}
 			if authRequired {
 				logProperties := make(map[string]interface{})
 				logProperties["SessionToken"] = sessionToken
@@ -232,11 +241,27 @@ func Router() *iris.Application {
 				}
 			}
 		}
+		if config.Data.RequestLimitCountPerSession > 0 {
+			err = ratelimiter.RequestRateLimiter(sessionToken)
+			if err != nil {
+				common.SetCommonHeaders(w)
+				w.WriteHeader(http.StatusServiceUnavailable)
+				body, _ := json.Marshal(common.GeneralError(http.StatusServiceUnavailable, response.GeneralError, err.Error(), nil, nil).Body)
+				w.Write([]byte(body))
+				return
+			}
+		}
 		next(w, r)
+
 	})
 	router.Done(func(ctx iris.Context) {
 		customLogs.AuditLog(ctx, reqBody)
 		reqBody = make(map[string]interface{})
+		// before returning response, decrement the session limit counter
+		sessionToken := ctx.Request().Header.Get("X-Auth-Token")
+		if sessionToken != "" && config.Data.RequestLimitCountPerSession > 0 {
+			ratelimiter.DecrementCounter(sessionToken, ratelimiter.SessionRateLimit)
+		}
 	})
 	taskmon := router.Party("/taskmon")
 	taskmon.SetRegisterRule(iris.RouteSkip)
@@ -290,7 +315,6 @@ func Router() *iris.Application {
 	role.SetRegisterRule(iris.RouteSkip)
 	role.Get("/", r.GetAllRoles)
 	role.Get("/{id}", r.GetRole)
-	role.Post("/", r.CreateRole)
 	role.Patch("/{id}", r.UpdateRole)
 	role.Delete("/{id}", r.DeleteRole)
 	role.Any("/", handle.RoleMethodNotAllowed)
@@ -328,8 +352,8 @@ func Router() *iris.Application {
 	systems.Get("/{id}/BootOptions/{rid}", system.GetSystemResource)
 	systems.Get("/{id}/LogServices", system.GetSystemResource)
 	systems.Get("/{id}/LogServices/{rid}", system.GetSystemResource)
-	systems.Get("/{id}/LogServices/{rid}/Entries", system.GetSystemResource)
-	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", system.GetSystemResource)
+	systems.Get("/{id}/LogServices/{rid}/Entries", ratelimiter.ResourceRateLimiter, system.GetSystemResource)
+	systems.Get("/{id}/LogServices/{rid}/Entries/{rid2}", ratelimiter.ResourceRateLimiter, system.GetSystemResource)
 	systems.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", system.GetSystemResource)
 	systems.Patch("/{id}", system.ChangeBootOrderSettings)
 	systems.Get("/{id}/PCIeDevices/{rid}", system.GetSystemResource)
@@ -363,6 +387,10 @@ func Router() *iris.Application {
 	storage.Get("/", system.GetSystemResource)
 	storage.Get("/{rid}", system.GetSystemResource)
 	storage.Get("/{id2}/Drives/{rid}", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers/{rid}", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers/{rid}/Ports", system.GetSystemResource)
+	storage.Get("/{id2}/Controllers/{rid}/Ports/{portID}", system.GetSystemResource)
 	storage.Get("/{id2}/Volumes", system.GetSystemResource)
 	storage.Post("/{id2}/Volumes", system.CreateVolume)
 	storage.Delete("/{id2}/Volumes/{rid}", system.DeleteVolume)
@@ -395,6 +423,8 @@ func Router() *iris.Application {
 	aggregation := v1.Party("/AggregationService", middleware.SessionDelMiddleware)
 	aggregation.SetRegisterRule(iris.RouteSkip)
 	aggregation.Get("/", pc.GetAggregationService)
+	aggregation.Get("/ResetActionInfo", pc.GetResetActionInfoService)
+	aggregation.Get("/SetDefaultBootOrderActionInfo", pc.GetSetDefaultBootOrderActionInfo)
 	aggregation.Post("/Actions/AggregationService.Reset/", pc.Reset)
 	aggregation.Any("/Actions/AggregationService.Reset/", handle.AggMethodNotAllowed)
 	aggregation.Post("/Actions/AggregationService.SetDefaultBootOrder/", pc.SetDefaultBootOrder)
@@ -469,8 +499,8 @@ func Router() *iris.Application {
 	chassis.Any("/{id}/Sensors/{rid}", handle.ChassisMethodNotAllowed)
 	chassis.Get("/{id}/LogServices", cha.GetChassisResource)
 	chassis.Get("/{id}/LogServices/{rid}", cha.GetChassisResource)
-	chassis.Get("/{id}/LogServices/{rid}/Entries", cha.GetChassisResource)
-	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries", ratelimiter.ResourceRateLimiter, cha.GetChassisResource)
+	chassis.Get("/{id}/LogServices/{rid}/Entries/{rid2}", ratelimiter.ResourceRateLimiter, cha.GetChassisResource)
 	// TODO
 	// chassis.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", cha.GetChassisResource)
 	chassis.Any("/{id}/LogServices", handle.ChassisMethodNotAllowed)
@@ -571,13 +601,15 @@ func Router() *iris.Application {
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.InsertMedia", manager.VirtualMediaInsert)
 	managers.Get("/{id}/LogServices", manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{rid}", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries", manager.GetManagersResource)
-	managers.Get("/{id}/LogServices/{rid}/Entries/{rid2}", manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
+	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)
 	managers.Post("/{id}/RemoteAccountService/Accounts", manager.CreateRemoteAccountService)
+	managers.Patch("/{id}/RemoteAccountService/Accounts/{rid}", manager.UpdateRemoteAccountService)
+	managers.Delete("/{id}/RemoteAccountService/Accounts/{rid}", manager.DeleteRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Roles/{rid}", manager.GetRemoteAccountService)
 	managers.Any("/{id}/RemoteAccountService", handle.ManagersMethodNotAllowed)

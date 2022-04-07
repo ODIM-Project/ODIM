@@ -233,7 +233,7 @@ func mockGetRemoteAccountService(req managersproto.ManagerRequest) (*managerspro
 	}
 	return response, nil
 }
-func mockCreateRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+func mockRemoteAccountService(req managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
 	var response = &managersproto.ManagerResponse{}
 	if req.URL == "/redfish/v1/Managers/1A/RemoteAccountService/Accounts" && req.SessionToken == "ValidToken" {
 		response = &managersproto.ManagerResponse{
@@ -456,7 +456,7 @@ func TestGetRemoteAccountService(t *testing.T) {
 
 func TestCreateRemoteAccountService(t *testing.T) {
 	var mgr ManagersRPCs
-	mgr.CreateRemoteAccountServiceRPC = mockCreateRemoteAccountService
+	mgr.CreateRemoteAccountServiceRPC = mockRemoteAccountService
 	mockApp := iris.New()
 	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
 	redfishRoutes.Post("/{id}/RemoteAccountService/Accounts", mgr.CreateRemoteAccountService)
@@ -474,6 +474,52 @@ func TestCreateRemoteAccountService(t *testing.T) {
 		"/redfish/v1/Managers/2A/RemoteAccountService/Accounts",
 	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(payload).Expect().Status(http.StatusForbidden)
 	test.POST(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "").WithJSON(payload).Expect().Status(http.StatusUnauthorized)
+}
+
+func TestDeleteRemoteAccountService(t *testing.T) {
+	var mgr ManagersRPCs
+	mgr.DeleteRemoteAccountServiceRPC = mockRemoteAccountService
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
+	redfishRoutes.Delete("/{id}/RemoteAccountService/Accounts", mgr.DeleteRemoteAccountService)
+	test := httptest.New(t, mockApp)
+
+	test.DELETE(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusOK)
+	test.DELETE(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "InvalidToken").Expect().Status(http.StatusUnauthorized)
+	test.DELETE(
+		"/redfish/v1/Managers/2A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").Expect().Status(http.StatusForbidden)
+	test.DELETE(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "").Expect().Status(http.StatusUnauthorized)
+}
+
+func TestUpdateRemoteAccountService(t *testing.T) {
+	var mgr ManagersRPCs
+	mgr.UpdateRemoteAccountServiceRPC = mockRemoteAccountService
+	mockApp := iris.New()
+	redfishRoutes := mockApp.Party("/redfish/v1/Managers")
+	redfishRoutes.Patch("/{id}/RemoteAccountService/Accounts", mgr.UpdateRemoteAccountService)
+	test := httptest.New(t, mockApp)
+
+	payload := map[string]string{"Password": "Password", "RoleId": "Administrator"}
+
+	test.PATCH(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(payload).Expect().Status(http.StatusOK)
+	test.PATCH(
+		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "InvalidToken").WithJSON(payload).Expect().Status(http.StatusUnauthorized)
+	test.PATCH(
+		"/redfish/v1/Managers/2A/RemoteAccountService/Accounts",
+	).WithHeader("X-Auth-Token", "ValidToken").WithJSON(payload).Expect().Status(http.StatusForbidden)
+	test.PATCH(
 		"/redfish/v1/Managers/1A/RemoteAccountService/Accounts",
 	).WithHeader("X-Auth-Token", "").WithJSON(payload).Expect().Status(http.StatusUnauthorized)
 }

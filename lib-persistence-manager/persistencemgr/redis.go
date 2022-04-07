@@ -18,13 +18,14 @@ package persistencemgr
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"math/big"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 	"unsafe"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
@@ -1068,12 +1069,14 @@ func (p *ConnPool) DeleteEvtSubscriptions(index, removeKey string) error {
 	writeConn := writePool.Get()
 	defer writeConn.Close()
 
-	value, err := p.GetEvtSubscriptions(index, removeKey)
+	matchKey := strings.Replace(removeKey, "[", "\\[", -1)
+	matchKey = strings.Replace(matchKey, "]", "\\]", -1)
+	value, err := p.GetEvtSubscriptions(index, matchKey)
 	if err != nil {
 		return err
 	}
 	if len(value) < 1 {
-		return fmt.Errorf("No data found for the key: %v", removeKey)
+		return fmt.Errorf("No data found for the key: %v", matchKey)
 	}
 	for _, data := range value {
 		delErr := writeConn.Send("ZREM", index, data)
@@ -1239,4 +1242,130 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
 		return fmt.Errorf("Error while updating index: %v", err)
 	}
 	return nil
+}
+
+//Incr is for incrementing the count
+//Incr takes "key" string as input which acts as a unique ID to increment the count and return same
+func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	var (
+		value interface{}
+		err   error
+	)
+	var count int
+	value, err = readConn.Do("Incr", table+":"+key)
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return count, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return count, errs
+		}
+		return count, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+
+	if value == nil {
+		return count, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+	}
+	count, err = redis.Int(value, err)
+	if err != nil {
+		return count, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+	}
+	return count, nil
+}
+
+//Decr is for decrementing the count
+//Decr takes "key" string as input which acts as a unique ID to decrement the count and return same
+func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	var (
+		value interface{}
+		err   error
+	)
+	var count int
+	value, err = readConn.Do("Decr", table+":"+key)
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return count, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return count, errs
+		}
+		return count, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+
+	if value == nil {
+		return count, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+	}
+	count, err = redis.Int(value, err)
+	if err != nil {
+		return count, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+	}
+	return count, nil
+}
+
+// SetExpire key to hold the string value and set key to timeout after a given number of seconds
+/* SetExpire takes the following keys as input:
+1."table" is a string which is used identify what kind of data we are storing.
+2."data" is of type interface and is the userdata sent to be stored in DB.
+3."key" is a string which acts as a unique ID to the data entry.
+4. "expiretime" is of type int, which acts as expiry time for the key
+*/
+func (p *ConnPool) SetExpire(table, key string, data interface{}, expiretime int) *errors.Error {
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		log.Info("SetExpire : WritePool nil")
+		return errors.PackError(errors.UndefinedErrorType, "SetExpire : WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
+
+	value, readErr := p.Read(table, key)
+	if readErr != nil && readErr.ErrNo() == errors.DBConnFailed {
+		return errors.PackError(readErr.ErrNo(), "error: db connection failed")
+	}
+	if value != "" {
+		return errors.PackError(errors.DBKeyAlreadyExist, "error: data with key ", key, " already exists")
+	}
+	saveID := table + ":" + key
+
+	jsondata, err := json.Marshal(data)
+	if err != nil {
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB in json form failed: "+err.Error())
+	}
+	_, createErr := writeConn.Do("SETEX", saveID, expiretime, jsondata)
+	if createErr != nil {
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool)), nil)
+		return errors.PackError(errors.UndefinedErrorType, "Write to DB failed : "+createErr.Error())
+	}
+
+	return nil
+}
+
+//TTL is for getting singular data
+// TTL takes "key" sting as input which acts as a unique ID to fetch time left
+func (p *ConnPool) TTL(table, key string) (int, *errors.Error) {
+	readConn := p.ReadPool.Get()
+	defer readConn.Close()
+	value, err := readConn.Do("TTL", table+":"+key)
+
+	if err != nil {
+
+		if err.Error() == "redigo: nil returned" {
+			return 0, errors.PackError(errors.DBKeyNotFound, "no data with the with key ", key, " found")
+		}
+		if errs, aye := isDbConnectError(err); aye {
+			return 0, errs
+		}
+		return 0, errors.PackError(errors.DBKeyFetchFailed, errorCollectingData, err)
+	}
+	time, err := redis.Int(value, err)
+	if err != nil {
+		return 0, errors.PackError(errors.UndefinedErrorType, "error while trying to convert the data into int: ", err)
+	}
+	return time, nil
 }

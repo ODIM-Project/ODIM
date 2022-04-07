@@ -217,7 +217,7 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 	}
 
 	// deleting the manager info
-	dberr = agmodel.DeleteManagersData(oid)
+	dberr = agmodel.DeleteManagersData(oid, ManagersTable)
 	if dberr != nil {
 		errMsg := derr.Error()
 		log.Error(errMsg)
@@ -226,8 +226,42 @@ func (e *ExternalInterface) deletePlugin(oid string) response.RPC {
 		}
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
 	}
+
+	//deleting logservice empty collection
+	if resource["LogService"] != nil {
+		lkey := oid + "/LogServices"
+		dberr = agmodel.DeleteManagersData(lkey, LogServiceCollection)
+		if dberr != nil {
+			errMsg := derr.Error()
+			log.Error(errMsg)
+			if errors.DBKeyNotFound == derr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"LogServiceCollection", lkey}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		SLKey := oid + "/LogServices/SL"
+		dberr = agmodel.DeleteManagersData(SLKey, LogServices)
+		if dberr != nil {
+			errMsg := derr.Error()
+			log.Error(errMsg)
+			if errors.DBKeyNotFound == derr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"LogServices", lkey}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+		logEntriesKey := oid + "/LogServices/SL/Entries"
+		dberr = agmodel.DeleteManagersData(logEntriesKey, EntriesCollection)
+		if dberr != nil {
+			errMsg := derr.Error()
+			log.Error(errMsg)
+			if errors.DBKeyNotFound == derr.ErrNo() {
+				return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, errMsg, []interface{}{"EntriesCollection", lkey}, nil)
+			}
+			return common.GeneralError(http.StatusInternalServerError, response.InternalError, errMsg, nil, nil)
+		}
+	}
 	// deleting the plugin if  zero devices are managed
-	dberr = agmodel.DeletePluginData(pluginID)
+	dberr = agmodel.DeletePluginData(pluginID, PluginTable)
 	if dberr != nil {
 		errMsg := derr.Error()
 		log.Error(errMsg)
@@ -318,6 +352,12 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	if derr != nil {
 		log.Error("error while trying to collect the chassis list: " + derr.Error())
 	}
+
+	managersList, derr := agmodel.GetAllMatchingDetails("Managers", keys[0], common.InMemory)
+	if derr != nil {
+		log.Error("error while trying to collect the manager list: " + derr.Error())
+	}
+
 	mgrResp := deleteLinkDetails(managerData, key, chassisList)
 	data, marshalErr := json.Marshal(mgrResp)
 	if marshalErr != nil {
@@ -361,6 +401,9 @@ func (e *ExternalInterface) deleteCompute(key string, index int, pluginID string
 	}
 	e.deleteWildCardValues(key[index+1:])
 
+	for _, manager := range managersList {
+		e.EventNotification(manager, "ResourceRemoved", "ManagerCollection")
+	}
 	for _, chassis := range chassisList {
 		e.EventNotification(chassis, "ResourceRemoved", "ChassisCollection")
 	}

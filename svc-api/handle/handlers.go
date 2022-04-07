@@ -154,7 +154,6 @@ func GetOdata(ctx iris.Context) {
 			Odata.Value = append(Odata.Value, &models.Value{Name: service, Kind: "Singleton", URL: serviceURL})
 		}
 	}
-	ctx.Gzip(true)
 	var odataheaders = map[string]string{
 		"Allow": "GET",
 	}
@@ -762,7 +761,6 @@ func GetMetadata(ctx iris.Context) {
 			},
 		},
 	}
-	ctx.Gzip(true)
 
 	var headers = map[string]string{
 		"Allow":        "GET",
@@ -869,7 +867,7 @@ func (r *Registry) GetMessageRegistryFileID(ctx iris.Context) {
 			regFileID = strArray[len(strArray)-1]
 		}
 	}
-
+	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)
@@ -963,6 +961,7 @@ func (r *Registry) GetMessageRegistryFile(ctx iris.Context) {
 			regFileID = strArray[len(strArray)-1]
 		}
 	}
+	regFileID = strings.Replace(regFileID, "#", "%23", -1)
 	if sessionToken == "" {
 		errorMessage := "error: no X-Auth-Token found in request header"
 		response := common.GeneralError(http.StatusUnauthorized, errResponse.NoValidSession, errorMessage, nil, nil)

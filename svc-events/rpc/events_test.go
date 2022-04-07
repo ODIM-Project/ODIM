@@ -77,6 +77,8 @@ func TestGetEventService(t *testing.T) {
 	assert.True(t, eventServiceResp.ServiceEnabled, "Service should be Enabled ")
 	assert.Equal(t, eventServiceResp.Status.State, "Enabled", "serviceState should be Enabled.")
 	assert.Equal(t, eventServiceResp.Status.Health, "OK", "Health Status should be OK.")
+	assert.Equal(t, eventServiceResp.EventFormatTypes, []string{"Event", "MetricReport"},
+		"EventFormatTypes: Possible values are Event and MetricReport")
 
 	req = &eventsproto.EventSubRequest{
 		SessionToken: "InValidToken",

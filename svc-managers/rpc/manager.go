@@ -17,8 +17,9 @@ package rpc
 import (
 	"context"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
@@ -198,6 +199,54 @@ func (m *Managers) CreateRemoteAccountService(ctx context.Context, req *managers
 		return &resp, nil
 	}
 	data := m.EI.CreateRemoteAccountService(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return &resp, nil
+}
+
+// UpdateRemoteAccountService defines the operations which handles the RPC request response
+// The functionality retrieves the request and return backs the response to
+// RPC according to the protoc file defined in the lib-util package.
+// The function uses IsAuthorized of lib-util to validate the session token
+// which is present in the request.
+func (m *Managers) UpdateRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return &resp, nil
+	}
+	data := m.EI.UpdateRemoteAccountService(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return &resp, nil
+}
+
+//DeleteRemoteAccountService defines the operations which handles the RPC request response
+// The functionality retrieves the request and return backs the response to
+// RPC according to the protoc file defined in the lib-util package.
+// The function uses IsAuthorized of lib-util to validate the session token
+// which is present in the request.
+func (m *Managers) DeleteRemoteAccountService(ctx context.Context, req *managersproto.ManagerRequest) (*managersproto.ManagerResponse, error) {
+	var resp managersproto.ManagerResponse
+	sessionToken := req.SessionToken
+	authResp := m.IsAuthorizedRPC(sessionToken, []string{common.PrivilegeConfigureUsers}, []string{})
+	if authResp.StatusCode != http.StatusOK {
+		resp.StatusCode = authResp.StatusCode
+		resp.StatusMessage = authResp.StatusMessage
+		resp.Body = generateResponse(authResp.Body)
+		resp.Header = authResp.Header
+		return &resp, nil
+	}
+	data := m.EI.DeleteRemoteAccountService(req)
 	resp.Header = data.Header
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage

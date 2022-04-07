@@ -90,6 +90,15 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Severity:   "OK",
 					Resolution: "None",
 				})
+		case GeneralError:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    "A general error has occurred.  See Resolution for information on how to resolve the error, or @Message.ExtendedInfo if Resolution is not provided.",
+					Severity:   "Critical",
+					Resolution: "None",
+				})
 		case ResourceRemoved:
 			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
 				Msg{
@@ -311,6 +320,24 @@ func (a *Args) CreateGenericErrorResponse() CommonError {
 					Message:    "The request body submitted contain no data to act upon and no changes to the resource took place.",
 					Severity:   "Warning",
 					Resolution: "Add properties in the JSON object and resubmit the request.",
+				})
+		case RateLimitExceeded:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  GeneralError,
+					Message:    errArg.ErrorMessage,
+					Severity:   "Critical",
+					Resolution: "Retry after some time",
+				})
+		case SessionLimitExceeded:
+			e.Error.MessageExtendedInfo = append(e.Error.MessageExtendedInfo,
+				Msg{
+					OdataType:  ErrorMessageOdataType,
+					MessageID:  errArg.StatusMessage,
+					Message:    "The session establishment failed due to the number of simultaneous sessions exceeding the limit of the implementation.",
+					Severity:   "Critical",
+					Resolution: "Reduce the number of other sessions before trying to establish the session or increase the limit of simultaneous sessions, if supported.",
 				})
 		}
 	}

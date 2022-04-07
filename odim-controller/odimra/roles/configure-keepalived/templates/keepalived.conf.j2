@@ -19,8 +19,9 @@ vrrp_instance ODIM_VI {
         virtual_ipaddress {
 		{{ item.virtualIP }}
         }
-        {% if '{{ item.dualStack }}' %}
-        virtual_ipaddress_excluded {
+
+	{% if item.dualStack  == "True" %}
+	virtual_ipaddress_excluded {
                 {{ item.virtualIPv6 }}/64
         }
         {% endif %}

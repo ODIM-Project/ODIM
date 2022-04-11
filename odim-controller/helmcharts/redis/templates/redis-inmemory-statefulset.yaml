@@ -22,6 +22,33 @@ spec:
         - name: redis-data
           persistentVolumeClaim:
             claimName: redis-inmemory-data-claim
+        - name: odimra-secret
+          secret:
+            secretName: odimra-secret
+            items:
+            - key: rootCAcrt
+              path: rootCA.crt
+              mode: 0444
+            - key: odimra_servercrt
+              path: odimra_server.crt
+              mode: 0444
+            - key: odimra_serverkey
+              path: odimra_server.key
+              mode: 0444
+            - key: odimra_rsapublic
+              path: odimra_rsa.public
+              mode: 0444
+            - key: odimra_rsaprivate
+              path: odimra_rsa.private
+              mode: 0444
+            {{- if eq .Values.odimra.messageBusType "Kafka" }}
+            - key: odimra_kafka_clientcrt
+              path: odimra_kafka_client.crt
+              mode: 0444
+            - key: odimra_kafka_clientkey
+              path: odimra_kafka_client.key
+              mode: 0444
+            {{- end }}
       restartPolicy: Always
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
@@ -35,6 +62,8 @@ spec:
           - mountPath: "/redis-data"
             name: redis-data
             readOnly: false
+          - name: odimra-secret
+            mountPath: /etc/odimra_certs
         env:
         - name: MASTER
           value: "true"

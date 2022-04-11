@@ -16,8 +16,11 @@
 package persistencemgr
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"strconv"
 	"strings"
@@ -234,6 +237,10 @@ func GetDBConnection(dbFlag DbType) (*ConnPool, *errors.Error) {
 //getPool is used is utility function to get the Connection Pool from DB.
 func getPool(host, port string) (*redis.Pool, error) {
 	protocol := config.Data.DBConf.Protocol
+	tlsConfig, err := getTLSConfig()
+	if err != nil {
+		return nil, err
+	}
 	p := &redis.Pool{
 		// Maximum number of idle connections in the pool.
 		MaxIdle: config.Data.DBConf.MaxIdleConns,
@@ -242,7 +249,10 @@ func getPool(host, port string) (*redis.Pool, error) {
 		// Dial is an application supplied function for creating and
 		// configuring a connection.
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial(protocol, host+":"+port)
+			c, err := redis.Dial(protocol, host+":"+port,
+				redis.DialUseTLS(true),
+				redis.DialTLSConfig(tlsConfig),
+			)
 			return c, err
 		},
 		/*TestOnBorrow is an optional application supplied function to
@@ -261,6 +271,25 @@ func getPool(host, port string) (*redis.Pool, error) {
 		},
 	}
 	return p, nil
+}
+
+func getTLSConfig() (*tls.Config, error) {
+	caCert, err := ioutil.ReadFile(config.Data.KeyCertConf.RootCACertificatePath)
+	if err != nil {
+		panic(err)
+	}
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(caCert)
+	cert, err := tls.LoadX509KeyPair(config.Data.APIGatewayConf.CertificatePath, config.Data.APIGatewayConf.PrivateKeyPath)
+	if err != nil {
+		return nil, err
+	}
+	cfg := &tls.Config{
+		RootCAs:      pool,
+		MinVersion:   tls.VersionTLS12,
+		Certificates: []tls.Certificate{cert},
+	}
+	return cfg, nil
 }
 
 // Connection returns connection pool

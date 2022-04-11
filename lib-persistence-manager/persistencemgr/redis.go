@@ -1247,14 +1247,19 @@ func (p *ConnPool) UpdateResourceIndex(form map[string]interface{}, uuid string)
 //Incr is for incrementing the count
 //Incr takes "key" string as input which acts as a unique ID to increment the count and return same
 func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
-	readConn := p.ReadPool.Get()
-	defer readConn.Close()
+	var count int
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		log.Info("Incr : WritePool nil")
+		return count, errors.PackError(errors.UndefinedErrorType, "Incr : WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
 	var (
 		value interface{}
 		err   error
 	)
-	var count int
-	value, err = readConn.Do("Incr", table+":"+key)
+	value, err = writeConn.Do("Incr", table+":"+key)
 	if err != nil {
 
 		if err.Error() == "redigo: nil returned" {
@@ -1279,14 +1284,19 @@ func (p *ConnPool) Incr(table, key string) (int, *errors.Error) {
 //Decr is for decrementing the count
 //Decr takes "key" string as input which acts as a unique ID to decrement the count and return same
 func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
-	readConn := p.ReadPool.Get()
-	defer readConn.Close()
+	var count int
+	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
+	if writePool == nil {
+		log.Info("Incr : WritePool nil")
+		return count, errors.PackError(errors.UndefinedErrorType, "Incr : WritePool is nil ")
+	}
+	writeConn := writePool.Get()
+	defer writeConn.Close()
 	var (
 		value interface{}
 		err   error
 	)
-	var count int
-	value, err = readConn.Do("Decr", table+":"+key)
+	value, err = writeConn.Do("Decr", table+":"+key)
 	if err != nil {
 
 		if err.Error() == "redigo: nil returned" {

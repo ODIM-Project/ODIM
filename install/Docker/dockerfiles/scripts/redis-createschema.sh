@@ -20,7 +20,7 @@ RETURN=`/checkdb.sh | grep '0' > /dev/null`
 if [ $? -eq 0 ]; then
 	  echo "Updating the db with default entries"
   if [[ -n ${REDIS_DEFAULT_PASSWORD} ]]; then
-    redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt <<HERE
+    redis-cli -a ${REDIS_DEFAULT_PASSWORD} -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} <<HERE
 Set  "registry:assignedprivileges"  '{"List":["Login", "ConfigureManager", "ConfigureUsers", "ConfigureSelf", "ConfigureComponents"]}'
 Set "roles:redfishdefined"  '{"List":["Administrator", "Operator", "ReadOnly"]}'
 Set "User:admin"  '{"UserName":"admin","Password":"O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==","RoleId":"Administrator", "AccountTypes":["Redfish"]}'
@@ -31,7 +31,7 @@ keys *
 SAVE
 HERE
   else
-      redis-cli -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert /etc/odimra_certs/odimra_server.crt --key /etc/odimra_certs/odimra_server.key --cacert /etc/odimra_certs/rootCA.crt <<HERE
+      redis-cli -h ${master} -p ${REDIS_HA_REDIS_SERVICE_PORT} --tls --cert ${TLS_CERT_FILE} --key ${TLS_KEY_FILE} --cacert ${TLS_CA_CERT_FILE} <<HERE
 Set  "registry:assignedprivileges"  '{"List":["Login", "ConfigureManager", "ConfigureUsers", "ConfigureSelf", "ConfigureComponents"]}'
 Set "roles:redfishdefined"  '{"List":["Administrator", "Operator", "ReadOnly"]}'
 Set "User:admin"  '{"UserName":"admin","Password":"O01bKrP7Tzs7YoO3YvQt4pRa2J_R6HI34ZfP4MxbqNIYAVQVt2ewGXmhjvBfzMifM7bHFccXKGmdHvj3hY44Hw==","RoleId":"Administrator", "AccountTypes":["Redfish"]}'

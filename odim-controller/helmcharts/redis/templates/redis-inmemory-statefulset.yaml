@@ -69,6 +69,12 @@ spec:
           value: "true"
         - name: REDIS_ONDISK_DB 
           value: "false"
+        - name: TLS_CERT_FILE
+          value: "/etc/odimra_certs/odimra_server.crt"
+        - name: TLS_KEY_FILE
+          value: "/etc/odimra_certs/odimra_server.key"
+        - name: TLS_CA_CERT_FILE
+          value: "/etc/odimra_certs/rootCA.crt"
         - name: REDIS_HA_REDIS_SERVICE_HOST 
           value: "redis-inmemory"
         - name: REDIS_HA_REDIS_SERVICE_PORT

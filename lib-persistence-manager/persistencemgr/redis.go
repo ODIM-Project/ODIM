@@ -1287,8 +1287,8 @@ func (p *ConnPool) Decr(table, key string) (int, *errors.Error) {
 	var count int
 	writePool := (*redis.Pool)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&p.WritePool))))
 	if writePool == nil {
-		log.Info("Incr : WritePool nil")
-		return count, errors.PackError(errors.UndefinedErrorType, "Incr : WritePool is nil ")
+		log.Info("Decr : WritePool nil")
+		return count, errors.PackError(errors.UndefinedErrorType, "Decr : WritePool is nil ")
 	}
 	writeConn := writePool.Get()
 	defer writeConn.Close()

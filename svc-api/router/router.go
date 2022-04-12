@@ -381,6 +381,9 @@ func Router() *iris.Application {
 	systems.Patch("/{id}/Bios/Settings", system.ChangeBiosSettings)
 	systems.Any("/{id}/Bios", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Processors/{rid}", handle.SystemsMethodNotAllowed)
+	systems.Any("{id}/Bios/Settings/Actions/Bios.ChangePasswords", handle.SystemsMethodNotAllowed)
+	systems.Any("{id}/Bios/Settings/Actions/Bios.ResetBios/", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Memory/{rid}", handle.SystemsMethodNotAllowed)
 
 	storage := v1.Party("/Systems/{id}/Storage", middleware.SessionDelMiddleware)
 	storage.SetRegisterRule(iris.RouteSkip)

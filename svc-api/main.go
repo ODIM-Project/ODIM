@@ -44,6 +44,7 @@ func main() {
 	//WrapRouter method removes the trailing slash from the URL if present in the request and convert the URL to lower case.
 	router.WrapRouter(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		path := r.URL.Path
+		path = strings.Replace(strings.Replace(path, "\n", "", -1), "\r", "", -1)
 		if len(path) > 1 && path[len(path)-1] == '/' && path[len(path)-2] != '/' {
 			path = path[:len(path)-1]
 			r.RequestURI = path
@@ -51,6 +52,7 @@ func main() {
 		}
 		basicAuth := r.Header.Get("Authorization")
 		var basicAuthToken string
+
 		if basicAuth != "" {
 			var urlNoBasicAuth = []string{"/redfish/v1", "/redfish/v1/SessionService"}
 			var authRequired bool

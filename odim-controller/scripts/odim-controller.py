@@ -523,6 +523,8 @@ def scale_out_k8s():
 			new_nodes += '{hostname}\n'.format(hostname=node)
 			nodes_list += '{hostname},'.format(hostname=node)
 			temp_dict = {node : {'ansible_host': attrs['ip'], 'ip':attrs['ip'], 'access_ip':attrs['ip']}}
+			if  CONTROLLER_CONF_DATA['nwPreference']=='dualStack':
+				temp_dict[node].update({"ipv6":attrs['ipv6']})
 			K8S_INVENTORY_DATA['all']['hosts'].update(temp_dict)
 			temp_dict = {node: None}
 			K8S_INVENTORY_DATA['all']['children']['kube_node']['hosts'].update(temp_dict)

@@ -611,7 +611,6 @@ func Router() *iris.Application {
 	managers.Get("/{id}/LogServices/{id2}/Entries", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
 	managers.Get("/{id}/LogServices/{id2}/Entries/{rid}", ratelimiter.ResourceRateLimiter, manager.GetManagersResource)
 	managers.Post("/{id}/LogServices/{rid}/Actions/LogService.ClearLog", manager.GetManagersResource)
-
 	managers.Get("/{id}/RemoteAccountService", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts", manager.GetRemoteAccountService)
 	managers.Get("/{id}/RemoteAccountService/Accounts/{rid}", manager.GetRemoteAccountService)

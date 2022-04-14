@@ -100,7 +100,7 @@
   with_items:
     - selfNodeIP: "{{ cur_host_ip }}"      
       virtualIP: "{{ odimra.virtualIP }}"
-      dualStack: false
+      dualStack: "False"
       apiProxyPort: "{{ odimra.apiProxyPort }}"
       apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"     
       virtualIPv6: ""
@@ -115,7 +115,7 @@
   with_items:
     - selfNodeIP: "{{ cur_host_ip }}"
       virtualIP: "{{ odimra.virtualIP }}"
-      dualStack: true
+      dualStack: "True"
       apiProxyPort: "{{ odimra.apiProxyPort }}"
       apiServerList: "{{ serverlist|join('\n')|indent(8, True) }}"
       virtualIPv6: "{{ odimra.virtualIPv6 }}"

@@ -150,10 +150,12 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 
 		var resTypePresent bool
 		originofCond := strings.Split(strings.TrimSuffix(inEvent.OriginOfCondition.Oid, "/"), "/")
-		resType := originofCond[len(originofCond)-2]
-		for _, value := range common.ResourceTypes {
-			if strings.Contains(resType, value) {
-				resTypePresent = true
+		if len(originofCond) > 2 {
+			resType := originofCond[len(originofCond)-2]
+			for _, value := range common.ResourceTypes {
+				if strings.Contains(resType, value) {
+					resTypePresent = true
+				}
 			}
 		}
 

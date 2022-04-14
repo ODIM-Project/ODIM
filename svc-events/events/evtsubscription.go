@@ -665,62 +665,24 @@ func (p *PluginContact) IsEventsSubscribed(token, origin string, subscription *e
 		if isHostPresent(evtSubscriptions.Hosts, host) {
 			subscriptionPresent = true
 
-			dest := evtSubscriptions.Destination
-			if dest == subscription.Destination {
-				eventTypes := evtSubscriptions.EventTypes
-
-				// check if user tries to subscribe for same events
-				resp, err = checkEqual(subscription.EventTypes, eventTypes)
-				if err != nil {
-					return resp, err
-				}
-				//if EventTypes are not same then delete subscription
-
-				// if there is only one host in Hosts entry then
-				// delete the subscription from redis
-				if len(evtSubscriptions.Hosts) == 1 {
-					err = p.DeleteEvtSubscription(evtSubscriptions.SubscriptionID)
-					if err != nil {
-						errorMessage := "Error while Updating event subscription : " + err.Error()
-						evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
-							[]interface{}{"Subscription", "invalid value " + origin}, &resp)
-						log.Error(errorMessage)
-						return resp, err
-					}
-				} else {
-					// Delete the host and origin resource from the respective entry
-					evtSubscriptions.Hosts = removeElement(evtSubscriptions.Hosts, host)
-					evtSubscriptions.OriginResources = removeElement(evtSubscriptions.OriginResources, originResource)
-					err = p.UpdateEventSubscription(evtSubscriptions)
-					if err != nil {
-						errorMessage := "Error while Updating event subscription : " + err.Error()
-						evcommon.GenErrorResponse(errorMessage, errResponse.ResourceNotFound, http.StatusBadRequest,
-							[]interface{}{"Subscription", "invalid value " + origin}, &resp)
-						log.Error(errorMessage)
-						return resp, err
-					}
-				}
-
+			if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
+				eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
 			} else {
-				// Ignore the event types from the same destination, since we are trying modify the subscription
-				if len(evtSubscriptions.EventTypes) > 0 && (index == 0 || len(eventTypes) > 0) {
-					eventTypes = append(eventTypes, evtSubscriptions.EventTypes...)
-				} else {
-					eventTypes = []string{}
-				}
-
-				if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
-					messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
-				} else {
-					messageIDs = []string{}
-				}
-
-				if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
-					resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
-				} else {
-					resourceTypes = []string{}
-				}
+				eventTypes = []string{}
 			}
+
+			if len(evtSubscriptions.MessageIds) > 0 && (index == 0 || len(messageIDs) > 0) {
+				messageIDs = append(messageIDs, evtSubscriptions.MessageIds...)
+			} else {
+				messageIDs = []string{}
+			}
+
+			if len(evtSubscriptions.ResourceTypes) > 0 && (index == 0 || len(resourceTypes) > 0) {
+				resourceTypes = append(resourceTypes, evtSubscriptions.ResourceTypes...)
+			} else {
+				resourceTypes = []string{}
+			}
+
 		}
 	}
 	if !subscriptionPresent {

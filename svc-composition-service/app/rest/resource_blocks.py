@@ -137,9 +137,8 @@ class ResourceBlocks():
             logging.error(
                 "Unable to create Computer system Resource Block. Error: {e}".
                 format(e=err))
-        finally:
-            pipe.reset()
-            return res
+        pipe.reset()
+        return res
 
     def get_resource_block_collection(self, url):
 
@@ -181,8 +180,7 @@ class ResourceBlocks():
                     e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def get_resource_block(self, url):
         res = {}
@@ -196,7 +194,7 @@ class ResourceBlocks():
             if not data:
                 res["Error"] = "The URI {uri} is not found".format(uri=url)
                 code = HTTPStatus.NOT_FOUND
-                return
+                return res, code
             res = json.loads(data)
             code = HTTPStatus.OK
             logging.debug("Get Resource Block: {rb_data}".format(rb_data=res))
@@ -209,8 +207,7 @@ class ResourceBlocks():
                 "Unable to get Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def create_resource_block(self, request):
         res = {}
@@ -223,7 +220,7 @@ class ResourceBlocks():
                     "The property 'ResourceBlockType' is missing from post body"
                 }
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             if "ComputerSystem" in request["ResourceBlockType"]:
                 sys_urls = []
@@ -240,18 +237,18 @@ class ResourceBlocks():
                         "The property 'ComputerSystems' is missing from post body"
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
                 elif not len(request["ComputerSystems"]):
                     res = {"Error": "The property 'ComputerSystems' is empty"}
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
                 elif len(request["ComputerSystems"]) > 1:
                     res = {
                         "Error":
                         "Request body has more than one computer system, Resource Block will be created with only one computer system"
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
 
                 if request["ComputerSystems"][0]["@odata.id"] in sys_urls:
                     res = {
@@ -260,7 +257,7 @@ class ResourceBlocks():
                             sys=request["ComputerSystems"][0]["@odata.id"])
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
 
                 system_res = self.redis_inmemory.get(
                     "ComputerSystem:{sys_uri}".format(
@@ -272,7 +269,7 @@ class ResourceBlocks():
                     logging.info(
                         "successfully Created Computer system Resource Block.")
                     code = HTTPStatus.CREATED
-                    return
+                    return res, code
                 else:
                     res = {
                         "Error":
@@ -280,7 +277,7 @@ class ResourceBlocks():
                             uri=request["ComputerSystems"][0]["@odata.id"])
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
         except Exception as err:
             logging.error(
                 "Unable to Create Resource Block. Error: {e}".format(e=err))
@@ -289,8 +286,7 @@ class ResourceBlocks():
                 "Unable to Create Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def delete_resource_block(self, url):
         res = {}
@@ -306,7 +302,7 @@ class ResourceBlocks():
             if not data:
                 res["Error"] = "The URI {uri} is not found".format(uri=url)
                 code = HTTPStatus.NOT_FOUND
-                return
+                return res, code
             rb_data = json.loads(data)
             if "ComputerSystem" not in rb_data["ResourceBlockType"]:
                 if rb_data["CompositionStatus"][
@@ -317,7 +313,7 @@ class ResourceBlocks():
                         .format(rb_id=rb_data["Id"])
                     }
                     code = HTTPStatus.CONFLICT
-                    return
+                    return res, code
 
             system_link = self.redis.get("{rb_cs}:{block_url}".format(
                 rb_cs="ResourceBlocks-ComputerSystem", block_url=url))
@@ -405,7 +401,6 @@ class ResourceBlocks():
                 "Unable to get Resource Block. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            pipe.reset()
-            inmemory_pipe.reset()
-            return res, code
+        pipe.reset()
+        inmemory_pipe.reset()
+        return res, code

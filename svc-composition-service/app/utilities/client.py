@@ -53,8 +53,7 @@ class Client():
             logging.error(
                 "Unable to Process GET Request for uri {url}. Error: {e}".
                 format(url=uri, e=err))
-        finally:
-            return res
+        return res
 
     def process_post_request(self, uri, payload):
         response = None
@@ -72,5 +71,4 @@ class Client():
             logging.error(
                 "Unable to Process POST Request for uri {url}. Error: {e}".
                 format(url=uri, e=err))
-        finally:
-            return response
+        return response

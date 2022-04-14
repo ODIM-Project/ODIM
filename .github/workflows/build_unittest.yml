@@ -78,7 +78,7 @@ jobs:
           go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
           sudo cp $GOPATH/bin/protoc-gen-go /usr/bin
           sudo cp $GOPATH/bin/protoc-gen-go-grpc /usr/bin
-          protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update")
+          protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "compositionservice")
           for str in ${protos[@]}; do
             proto_path="$(pwd)/lib-utilities/proto/$str"
             proto_file_name="$str.proto"
@@ -86,8 +86,43 @@ jobs:
             then
               proto_file_name="odim_auth.proto"
             fi
+            if [ $str == 'compositionservice' ]
+            then
+              proto_file_name="composition_service.proto"
+            fi
             sudo protoc --go_opt=M$proto_file_name=./ --go_out=plugins=grpc:$proto_path --proto_path=$proto_path $proto_file_name
           done
+
+    - name: setup python dependencies
+      run: |
+          sudo apt-get -y install python3 python3-venv python3-dev python3-pip python3-pytest redis-tools
+          python3 -m pip install --upgrade pip
+          sudo pip3 install redis==3.3.8 grpcio==1.42.0 grpcio-tools==1.42.0 protobuf==3.19.1 tenacity==8.0.1 etcd3==0.12.0
+
+    - name: Generate python proto modules
+      run: |
+          protos=("auth" "compositionservice")
+          for str in ${protos[@]}; do
+            proto_path="$(pwd)/lib-utilities/proto/$str"
+            proto_out_path="$(pwd)/svc-composition-service/app/proto/$str" 
+            proto_file_name="$str.proto"
+            if [ $str == 'auth' ]
+            then
+              proto_file_name="odim_auth.proto"
+            fi
+            if [ $str == 'compositionservice' ]
+            then
+              proto_file_name="composition_service.proto"
+            fi
+            python3 -m grpc_tools.protoc -I$proto_path --python_out=$proto_out_path --grpc_python_out=$proto_out_path $proto_file_name
+
+            proto_grpc_file_name="${proto_file_name/.proto/"_pb2_grpc.py"}"
+            protoc_pb2_name="${proto_file_name/.proto/"_pb2"}"
+            proto_grpc_file=$proto_out_path/$proto_grpc_file_name
+            if [[ -f "$proto_grpc_file" ]]; then
+              sed -i 's/import '$protoc_pb2_name'/import proto.'$str'.'$protoc_pb2_name'/gI' $proto_grpc_file
+            fi
+          done 
 
     - name: Build
       run: |
@@ -95,6 +130,11 @@ jobs:
           for i in $LIST; do
             echo "Compiling $i"
             cd $i
+            if [[ "$i" == "svc-composition-service" ]]; then
+              /bin/bash build.sh
+              cd ..
+              continue
+            fi
             go mod download
             go mod vendor
             go build -i .
@@ -118,12 +158,19 @@ jobs:
           echo `redis-cli -p 6380 << HERE
           keys *
           HERE`
-          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update lib-utilities lib-messagebus"
+          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-composition-service lib-utilities lib-messagebus"
           echo $LIST
           for i in $LIST; do
             echo "Testing $i"
             cd $i
-            GORACE=history_size=7 go test ./... --cover
+            if [[ "$i" == "svc-composition-service" ]]; then
+              cd app
+              python3 -m pytest
+              cd ..
+            else
+              GORACE=history_size=7 go test ./... --cover
+            fi
+            
             echo "Test Done"
             if [ $? -eq 0 ]; then
               echo Unit Testing for odimra service/lib dependencies $i is Successful !!!!

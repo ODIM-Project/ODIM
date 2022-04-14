@@ -130,7 +130,8 @@ data:
     		"Fabrics",
     		"Managers",
     		"UpdateService",
-    		"TelemetryService"
+    		"TelemetryService",
+        	"CompositionService"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],

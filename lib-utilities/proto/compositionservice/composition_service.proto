@@ -1,0 +1,61 @@
+//(C) Copyright [2022] American Megatrends International LLC
+//
+//Licensed under the Apache License, Version 2.0 (the "License"); you may
+//not use this file except in compliance with the License. You may obtain
+//a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+//WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+//License for the specific language governing permissions and limitations
+// under the License.
+
+syntax = "proto3";
+
+service Composition {
+    rpc GetCompositionService(GetCompositionServiceRequest) returns(CompositionServiceResponse) {}
+    rpc GetCompositionResource(GetCompositionResourceRequest) returns(CompositionServiceResponse) {}
+    rpc CreateCompositionResource(CreateCompositionResourceRequest) returns(CompositionServiceResponse) {}
+    rpc DeleteCompositionResource(DeleteCompositionResourceRequest) returns(CompositionServiceResponse) {}
+    rpc Compose(ComposeRequest) returns(CompositionServiceResponse) {}
+
+}
+
+message GetCompositionServiceRequest {
+    string SessionToken=1;
+    string RequestParam=2;
+    string URL=3;
+}
+
+message GetCompositionResourceRequest {
+    string SessionToken=1;
+    string RequestParam=2;
+    string URL=3;
+    string ResourceID=4;
+}
+
+message CreateCompositionResourceRequest{
+    string SessionToken = 1;
+    string URL = 2;
+    bytes RequestBody = 3;
+}
+
+message DeleteCompositionResourceRequest{
+    string SessionToken = 1;
+    string URL = 2;
+}
+
+message ComposeRequest {
+    string SessionToken=1;
+    string URL = 2;
+    bytes RequestBody = 3;
+} 
+
+message CompositionServiceResponse {
+    int32 StatusCode = 1;
+    string StatusMessage = 2;
+    map<string, string> Header=3;
+    bytes Body = 4;  
+}

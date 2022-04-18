@@ -16,6 +16,7 @@
 package asmodel
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -41,6 +42,9 @@ func TestCreate(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	err := CreateUser(user)
 	assert.Nil(t, err, "There should be no error")
 }
@@ -51,6 +55,9 @@ func TestGetAllUsers(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	mockData(common.OnDisk, "User", "successID", User{UserName: "successID"})
 	_, err := GetAllUsers()
 	assert.Nil(t, err, "There should be no error")
@@ -67,15 +74,30 @@ func TestGetUserDetails(t *testing.T) {
 		key string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    User
-		wantErr bool
+		name                string
+		args                args
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		want                User
+		wantErr             bool
 	}{
+		{
+			name: "Db conn error",
+			args: args{
+				key: "successID",
+			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			want:    User{},
+			wantErr: true,
+		},
 		{
 			name: "success case",
 			args: args{
 				key: "successID",
+			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
 			},
 			want:    User{UserName: "successID"},
 			wantErr: false,
@@ -85,11 +107,13 @@ func TestGetUserDetails(t *testing.T) {
 			args: args{
 				key: "InvalidID",
 			},
-			want:    User{},
-			wantErr: true,
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) { return nil, &errors.Error{} },
+			want:                User{},
+			wantErr:             true,
 		},
 	}
 	for _, tt := range tests {
+		GetDBConnectionFunc = tt.GetDBConnectionFunc
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GetUserDetails(tt.args.key)
 			if (err != nil) != tt.wantErr {
@@ -114,14 +138,28 @@ func TestDeleteUser(t *testing.T) {
 		key string
 	}
 	tests := []struct {
-		name string
-		args args
-		want *errors.Error
+		name                string
+		args                args
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		want                *errors.Error
 	}{
+		{
+			name: "Db conn error",
+			args: args{
+				key: "successID",
+			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			want: &errors.Error{},
+		},
 		{
 			name: "success case",
 			args: args{
 				key: "successID",
+			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
 			},
 			want: nil,
 		},
@@ -130,10 +168,14 @@ func TestDeleteUser(t *testing.T) {
 			args: args{
 				key: "InvalidID",
 			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			want: errors.PackError(errors.DBKeyNotFound, "no data with the with key InvalidID found"),
 		},
 	}
 	for _, tt := range tests {
+		GetDBConnectionFunc = tt.GetDBConnectionFunc
 		t.Run(tt.name, func(t *testing.T) {
 			if got := DeleteUser(tt.args.key); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DeleteUser() = %v, want %v", got, tt.want)
@@ -179,37 +221,62 @@ func TestUpdateUserDetails(t *testing.T) {
 		userData User
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name                string
+		args                args
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		wantErr             bool
 	}{
 		{
-			name:    "positive case",
-			args:    args{userData: User{UserName: "successID"}},
+			name: "Db conn error",
+			args: args{userData: User{UserName: "successID"}},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			wantErr: true,
+		},
+		{
+			name: "positive case",
+			args: args{userData: User{UserName: "successID"}},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			wantErr: false,
 		},
 		{
-			name:    "positive case1",
-			args:    args{userData: user1},
+			name: "positive case1",
+			args: args{userData: user1},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			wantErr: false,
 		},
 		{
-			name:    "positive case2",
-			args:    args{userData: user2},
+			name: "positive case2",
+			args: args{userData: user2},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			wantErr: false,
 		},
 		{
-			name:    "positive case3",
-			args:    args{userData: user3},
+			name: "positive case3",
+			args: args{userData: user3},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			wantErr: false,
 		},
 		{
-			name:    "positive case4",
-			args:    args{userData: user4},
+			name: "positive case4",
+			args: args{userData: user4},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
+		GetDBConnectionFunc = tt.GetDBConnectionFunc
 		t.Run(tt.name, func(t *testing.T) {
 			if err := UpdateUserDetails(user, tt.args.userData); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateUserDetails() error = %v, wantErr %v", err, tt.wantErr)
@@ -229,4 +296,45 @@ func TestUpdateUserDetailsNegativeTestCase(t *testing.T) {
 	userData := User{UserName: "successID"}
 	err := UpdateUserDetails(user, userData)
 	assert.NotNil(t, err, "There should be an error")
+}
+
+func TestCreateUser(t *testing.T) {
+	type args struct {
+		user User
+	}
+	tests := []struct {
+		name                string
+		args                args
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		want                *errors.Error
+	}{
+		{
+			name: "Db conn error",
+			args: args{User{
+				UserName:     "fakeUser",
+				Password:     "fakePass",
+				RoleID:       "fakeRole",
+				AccountTypes: []string{"fake"},
+			}},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			want: &errors.Error{},
+		},
+	}
+	for _, tt := range tests {
+		GetDBConnectionFunc = tt.GetDBConnectionFunc
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, CreateUser(tt.args.user), "CreateUser(%v)", tt.args.user)
+		})
+	}
+}
+
+func TestGetAllUsersDBError(t *testing.T) {
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	got, got1 := GetAllUsers()
+	assert.Equalf(t, []User(nil), got, "GetAllUsers()")
+	assert.Equalf(t, &errors.Error{}, got1, "GetAllUsers()")
 }

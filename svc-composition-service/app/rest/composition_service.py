@@ -104,8 +104,7 @@ class CompositonService():
                     e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def create_compose_system(self, req):
         res = {}
@@ -122,7 +121,7 @@ class CompositonService():
                     and any(req["Links"]["ResourceBlocks"])):
                 res = {"Error": "Unable to find ResourceBlocks Links"}
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             logging.debug(
                 "Create Compose system request body is: {req}".format(req=req))
@@ -139,7 +138,7 @@ class CompositonService():
                     "Compose system accepts two or more resource blocks. Resubmit the request with two or more resource Blocks"
                 }
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             # find the computer system from resource blocks
 
@@ -155,7 +154,7 @@ class CompositonService():
                     "Atleast one ComputerSystem Type Resource Block must present. Resubmit with valid request"
                 }
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
             system_key = "ComputerSystem:{sys_uri}".format(sys_uri=system_uri)
             system_data = self.redis_inmemory.get(system_key)
             if system_data is not None:
@@ -169,7 +168,7 @@ class CompositonService():
                     .format(sys_uri=system_uri, ruri=resource_block_uri)
                 }
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             for rb_uri in rb_list:
                 if resource_block_uri == rb_uri:
@@ -183,7 +182,7 @@ class CompositonService():
                             uri=rb_uri)
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
                 rb_data = json.loads(rb_data)
                 logging.debug("ResourceBlock {id} data is: {data}".format(
                     id=rb_uri, data=rb_data))
@@ -198,7 +197,7 @@ class CompositonService():
                         .format(uri=rb_uri)
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
 
                 if (rb_data["Pool"] != "Free") or (
                         rb_data["CompositionStatus"]["CompositionState"] !=
@@ -209,7 +208,7 @@ class CompositonService():
                         .format(uri=rb_uri)
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
 
                 rb_data["Pool"] = "Active"
                 rb_data["CompositionStatus"]["CompositionState"] = "Composed"
@@ -252,10 +251,10 @@ class CompositonService():
                 "Unable to create composed system. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            pipe.reset()
-            inmemory_pipe.reset()
-            return res, code
+            
+        pipe.reset()
+        inmemory_pipe.reset()
+        return res, code
 
     def decompose_system(self, req):
         res = {}
@@ -273,7 +272,7 @@ class CompositonService():
                     "ComputerSystems Links is empty. Provide the ComputerSystem link and resubmit the request"
                 }
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             logging.debug(
                 "DecomposeSystem request body: {req}".format(req=req))
@@ -289,7 +288,7 @@ class CompositonService():
                             sys_id=system_id["@odata.id"])
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
                 system_data = json.loads(system_data)
                 if isinstance(system_data, str):
                     system_data = json.loads(system_data)
@@ -302,7 +301,7 @@ class CompositonService():
                         "Decompose System failed because No Resource Blocks linked to system"
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
                 system_rb_links = copy.deepcopy(
                     system_data["Links"]["ResourceBlocks"])
                 for rb_uri in system_data["Links"]["ResourceBlocks"]:
@@ -319,7 +318,7 @@ class CompositonService():
                             format(uri=rb_uri["@odata.id"])
                         }
                         code = HTTPStatus.BAD_REQUEST
-                        return
+                        return res, code
                     rb_data = json.loads(rb_data)
                     if "ComputerSystem" in rb_data["ResourceBlockType"]:
                         continue
@@ -373,10 +372,10 @@ class CompositonService():
                     e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            pipe.reset()
-            inmemory_pipe.reset()
-            return res, code
+        
+        pipe.reset()
+        inmemory_pipe.reset()
+        return res, code
 
     def get_composition_reservations_collection(self, url):
 
@@ -416,5 +415,4 @@ class CompositonService():
                 .format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code

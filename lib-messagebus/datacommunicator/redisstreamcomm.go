@@ -16,6 +16,7 @@ package datacommunicator
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"strings"
 	"time"
@@ -35,17 +36,25 @@ type RedisStreamsPacket struct {
 func getDBConnection() *redis.Client {
 	var dbConn *redis.Client
 
+	tlsConfig, e := TLS(MQ.RedisStreams.RedisCertFile, MQ.RedisStreams.RedisKeyFile, MQ.RedisStreams.RedisCAFile)
+	if e != nil {
+		log.Error(e.Error())
+		return nil
+	}
+
+	tlsConfig.MinVersion = tls.VersionTLS12
+
 	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{
 			MasterName:    MQ.RedisStreams.SentinalAddress,
 			SentinelAddrs: []string{fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort)},
 			MaxRetries:    -1,
+			TLSConfig:     tlsConfig,
 		})
 	} else {
 		dbConn = redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
-			Password: "", // no password set
-			DB:       0,  // use default DB
+			Addr:      fmt.Sprintf("%s:%s", MQ.RedisStreams.RedisServerAddress, MQ.RedisStreams.RedisServerPort),
+			TLSConfig: tlsConfig,
 		})
 	}
 	return dbConn

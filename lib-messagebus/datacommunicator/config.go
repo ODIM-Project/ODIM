@@ -78,6 +78,9 @@ type RedisStreams struct {
 	RedisServerAddress string `toml:"RedisServerAddress"`
 	RedisServerPort    string `toml:"RedisServerPort"`
 	SentinalAddress    string `toml:"SentinalAddress"`
+	RedisCertFile      string `toml:"RedisCertFile"`
+	RedisKeyFile       string `toml:"RedisKeyFile"`
+	RedisCAFile        string `toml:"RedisCAFile"`
 }
 
 // MQ Create both MQF and KafkaPacket Objects. MQF will be used to store

@@ -103,8 +103,7 @@ class RedisClient():
             logging.error(
                 "unable to smembers key {key} in redis db. Error:{e}".format(
                     key=key, e=err))
-        finally:
-            return decoded_value
+        return decoded_value
 
     def keys(self, pattern=None):
         decoded_keys = []
@@ -117,8 +116,7 @@ class RedisClient():
             logging.error(
                 "unable to get redis keys for pattern {pat} in redis db. Error:{e}"
                 .format(pat=pattern, e=err))
-        finally:
-            return decoded_keys
+        return decoded_keys
 
     def delete(self, *keys):
         try:
@@ -147,8 +145,7 @@ class RedisClient():
             logging.error(
                 "unable to exists keys {key} in redis db. Error:{e}".format(
                     key=keys, e=err))
-        finally:
-            return exists
+        return exists
 
     def pipeline(self):
         pipe = None
@@ -159,8 +156,7 @@ class RedisClient():
             logging.error(
                 "Unable to create a pipeline in redis db. Error: {e}".format(
                     e=err))
-        finally:
-            return pipe
+        return pipe
 
 
 RedisDb = RedisClient

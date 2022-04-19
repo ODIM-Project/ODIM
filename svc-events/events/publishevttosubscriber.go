@@ -158,12 +158,12 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 				}
 			}
 		} else {
-			log.Info("event not forwarded as originofcondition is not valid. Incoming event: ", requestData)
+			log.Info("event not forwarded as originofcondition is empty in ncoming event: ", requestData)
 			continue
 		}
 
 		if !resTypePresent {
-			log.Info("event not forwarded as resource type of originofcondition not supported. Incoming event: ", requestData)
+			log.Info("event not forwarded as resource type of originofcondition not supported in incoming event: ", requestData)
 			continue
 		}
 		collectionSubscriptions := p.getCollectionSubscriptionInfoForOID(inEvent.OriginOfCondition.Oid, host)

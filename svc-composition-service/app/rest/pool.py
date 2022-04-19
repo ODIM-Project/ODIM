@@ -55,8 +55,7 @@ class ResourcePool():
                 "Unable to get Free Pool Collection. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def get_active_pool_collection(self, url):
 
@@ -94,5 +93,4 @@ class ResourcePool():
                     e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code

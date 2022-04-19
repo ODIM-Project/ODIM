@@ -57,7 +57,7 @@
   with_items:
     - routerID: "{{ inventory_hostname | mandatory }}"
       interfaceName: "{{ interfaceName | mandatory }}"
-      dualStack: false
+      dualStack: "False"
       virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
       priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
       virtualIP: "{{ odimra.virtualIP | mandatory }}"
@@ -74,7 +74,7 @@
   with_items:
     - routerID: "{{ inventory_hostname | mandatory }}"
       interfaceName: "{{ interfaceName | mandatory }}"
-      dualStack: true
+      dualStack: "True"
       virtualRouterID: "{{ odimra.virtualRouterID | mandatory }}"
       priority: "{{ nodes[inventory_hostname].priority | mandatory }}"
       virtualIP: "{{ odimra.virtualIP | mandatory }}"

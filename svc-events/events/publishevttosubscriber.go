@@ -139,12 +139,12 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 	eventMap := make(map[string][]common.Event)
 	for _, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil {
-			log.Info("event not forwarded : Originofcondition is empty in incoming event with body: ", requestData)
+			log.Info("event not forwarded as Originofcondition is empty in incoming event: ", requestData)
 			continue
 		}
 
 		if len(inEvent.OriginOfCondition.Oid) < 1 {
-			log.Info("event not forwarded : Originofcondition is empty in incoming event with body: ", requestData)
+			log.Info("event not forwarded as Originofcondition is empty in incoming event: ", requestData)
 			continue
 		}
 
@@ -157,10 +157,13 @@ func (p *PluginContact) PublishEventsToDestination(data interface{}) bool {
 					resTypePresent = true
 				}
 			}
+		} else {
+			log.Info("event not forwarded as originofcondition is not valid. Incoming event: ", requestData)
+			continue
 		}
 
 		if !resTypePresent {
-			log.Info("event not forwarded: resource type of originofcondition not supported in event with body: ", requestData)
+			log.Info("event not forwarded as resource type of originofcondition not supported. Incoming event: ", requestData)
 			continue
 		}
 		collectionSubscriptions := p.getCollectionSubscriptionInfoForOID(inEvent.OriginOfCondition.Oid, host)

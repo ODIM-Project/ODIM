@@ -2419,7 +2419,7 @@ You can also refer the following links for exploring Wiki page and slack channel
 
 ## Setting up time sync across nodes
 
-This procedure shows how to set up time synchronization across all the nodes \(deployment node and cluster nodes) of a Kubernetes cluster using Network Transfer Protocol \(NTP\).
+This procedure shows how to set up time synchronization across all the nodes (deployment node and cluster nodes) of a Kubernetes cluster using Network Transfer Protocol \(NTP\).
 
 1. Type the following command: 
 

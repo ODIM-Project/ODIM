@@ -48,20 +48,20 @@ class ResourceZones():
                 # logging.error("The Property Name is missing")
                 res = {"Error": "The Property 'Name' is missing."}
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             zone['Name'] = request_data['Name']
 
             if request_data.get('Links') is None:
                 res = {"Error": "The Property 'Links' is missing."}
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
             if request_data['Links'].get('ResourceBlocks') is None:
                 res = {
                     "Error": "The Property 'Links.ResourceBlocks' is missing."
                 }
                 code = HTTPStatus.BAD_REQUEST
-                return
+                return res, code
 
             resource_block_list = request_data['Links']['ResourceBlocks']
             for resource_block in resource_block_list:
@@ -106,7 +106,7 @@ class ResourceZones():
                         .format(rs_block=resource_block['@odata.id'])
                     }
                     code = HTTPStatus.BAD_REQUEST
-                    return
+                    return res, code
 
             pipe.set(
                 "{zones}:{zone_uri}".format(zones="ResourceZones",
@@ -127,9 +127,9 @@ class ResourceZones():
                 "Unable to create Resource Zone. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            pipe.reset()
-            return res, code
+
+        pipe.reset()
+        return res, code
 
     def get_resource_zone_collection(self, url):
 
@@ -170,8 +170,7 @@ class ResourceZones():
                     e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def get_resource_zone(self, url):
 
@@ -187,7 +186,7 @@ class ResourceZones():
             if not data:
                 res["Error"] = "The URI {uri} is not found".format(uri=url)
                 code = HTTPStatus.NOT_FOUND
-                return
+                return res, code
             res = json.loads(str(data))
             """
             res["@Redfish.CollectionCapabilities"] = {
@@ -217,8 +216,7 @@ class ResourceZones():
                 "Unable to Get Resource Zone. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            return res, code
+        return res, code
 
     def delete_resource_zone(self, url):
 
@@ -233,7 +231,7 @@ class ResourceZones():
             if not data:
                 res["Error"] = "The URI {uri} is not found".format(uri=url)
                 code = HTTPStatus.NOT_FOUND
-                return
+                return res, code
 
             data = json.loads(data)
             logging.debug("ResourceZone data: {data}".format(data=data))
@@ -303,6 +301,6 @@ class ResourceZones():
                 "Unable to delete the Resource Zone. Error: {e}".format(e=err)
             }
             code = HTTPStatus.INTERNAL_SERVER_ERROR
-        finally:
-            pipe.reset()
-            return res, code
+            
+        pipe.reset()
+        return res, code

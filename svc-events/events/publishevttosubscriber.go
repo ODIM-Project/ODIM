@@ -51,6 +51,7 @@ func (p *PluginContact) addFabric(requestData, host string) {
 		log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
 		return
 	}
+	fmt.Printf("incoming Event  %+v \n", message)
 	for _, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
 			log.Info("event not forwarded : Originofcondition is empty in incoming event")
@@ -59,6 +60,10 @@ func (p *PluginContact) addFabric(requestData, host string) {
 		if strings.EqualFold(inEvent.EventType, "ResourceAdded") &&
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
 			p.addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+		}
+		if strings.EqualFold(inEvent.EventType, "ResourceRemoved") &&
+			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+			p.removeFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
 	}
 }
@@ -445,6 +450,30 @@ func (p *PluginContact) addFabricRPCCall(origin, address string) {
 	}
 	p.checkCollectionSubscription(origin, "Redfish")
 	log.Info("Fabric Added")
+	return
+}
+func (p *PluginContact) removeFabricRPCCall(origin, address string) {
+	fmt.Println("Remove RPC is caaled ", origin, " address ", address)
+	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
+		return
+	}
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		log.Error("Error while RemoveFabric ", err.Error())
+		return
+	}
+	defer conn.Close()
+	fab := fabricproto.NewFabricsClient(conn)
+	_, err = fab.RemoveFabric(context.TODO(), &fabricproto.AddFabricRequest{
+		OriginResource: origin,
+		Address:        address,
+	})
+	if err != nil {
+		log.Error("Error while RemoveFabric ", err.Error())
+		return
+	}
+	p.checkCollectionSubscription(origin, "Redfish")
+	log.Info("Fabric Removed")
 	return
 }
 

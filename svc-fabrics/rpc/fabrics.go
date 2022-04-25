@@ -81,6 +81,17 @@ func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequ
 
 }
 
+// AddFabric defines  the operation which handles the RPC request response for Add fabric
+func (f *Fabrics) RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) (*fabricsproto.FabricResponse, error) {
+	resp := &fabricsproto.FabricResponse{}
+	data := fabrics.RemoveFabric(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return resp, nil
+}
+
 // DeleteFabricResource defines the operation which handled the RPC request response
 // for deleting the specified fabric resource information
 func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.FabricRequest) (*fabricsproto.FabricResponse, error) {

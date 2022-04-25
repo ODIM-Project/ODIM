@@ -46,8 +46,7 @@ class Crypt():
                 encode_text = base64.b64encode(encrypted_text)
         except Exception as err:
             logging.error("Unable to encrypt text. Error: {e}".format(e=err))
-        finally:
-            return encode_text
+        return encode_text
 
     def decrypt(self, decrypt_text):
         result = ""
@@ -63,5 +62,4 @@ class Crypt():
                     result = result.decode('utf-8')
         except Exception as err:
             logging.error("Unable to Decrypt text. Error: {e}".format(e=err))
-        finally:
-            return result
+        return result

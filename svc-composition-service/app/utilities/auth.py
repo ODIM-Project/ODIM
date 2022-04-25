@@ -62,5 +62,4 @@ class Auth():
             resp["status_message"] = {
                 "error": "Failed to connect to gRPC server"
             }
-        finally:
-            return resp
+        return resp

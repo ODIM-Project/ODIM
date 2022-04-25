@@ -50,6 +50,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 	// if southbound entities are behind a proxy, then
 	// originator address is expected to be in X-Forwarded-For header
 	forwardedFor := r.Header.Get("X-Forwarded-For")
+	forwardedFor = strings.Replace(strings.Replace(forwardedFor, "\n", "", -1), "\r", "", -1)
 	if forwardedFor != "" {
 		log.Info("Request contains X-Forwarded-For: " + forwardedFor + "; RemoteAddr: " + remoteAddr)
 		addrList := strings.Split(forwardedFor, ",")
@@ -58,6 +59,7 @@ func RedfishEvents(w http.ResponseWriter, r *http.Request) {
 		remoteAddr = addrList[0]
 	}
 	ip, _, err := net.SplitHostPort(remoteAddr)
+	ip = strings.Replace(strings.Replace(ip, "\n", "", -1), "\r", "", -1)
 	if err != nil {
 		ip = remoteAddr
 	}

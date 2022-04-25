@@ -33,7 +33,7 @@ class ClientService():
 
         return _channel
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         if self._channel:
             self._channel.close()
 

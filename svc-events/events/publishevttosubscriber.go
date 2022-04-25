@@ -51,7 +51,6 @@ func (p *PluginContact) addFabric(requestData, host string) {
 		log.Error("failed to unmarshal the incoming event: " + requestData + " with the error: " + err.Error())
 		return
 	}
-	fmt.Printf("incoming Event  %+v \n", message)
 	for _, inEvent := range message.Events {
 		if inEvent.OriginOfCondition == nil || len(inEvent.OriginOfCondition.Oid) < 1 {
 			log.Info("event not forwarded : Originofcondition is empty in incoming event")
@@ -453,13 +452,12 @@ func (p *PluginContact) addFabricRPCCall(origin, address string) {
 	return
 }
 func (p *PluginContact) removeFabricRPCCall(origin, address string) {
-	fmt.Println("Remove RPC is caaled ", origin, " address ", address)
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}
 	conn, err := services.ODIMService.Client(services.Fabrics)
 	if err != nil {
-		log.Error("Error while RemoveFabric ", err.Error())
+		log.Error("Error while Remove Fabric ", err.Error())
 		return
 	}
 	defer conn.Close()

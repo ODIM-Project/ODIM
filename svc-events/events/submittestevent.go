@@ -35,16 +35,16 @@ import (
 )
 
 // SubmitTestEvent is a helper method to handle the submit test event request.
-func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
+func (e *ExternalInterfaces) SubmitTestEvent(req *eventsproto.EventSubRequest) response.RPC {
 	var resp response.RPC
-	authResp := p.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
+	authResp := e.Auth(req.SessionToken, []string{common.PrivilegeConfigureComponents}, []string{})
 	if authResp.StatusCode != http.StatusOK {
 		log.Error("error while trying to authenticate session: status code: " +
 			string(authResp.StatusCode) + ", status message: " + authResp.StatusMessage)
 		return authResp
 	}
 	// First get the UserName from SessionToken
-	sessionUserName, err := p.GetSessionUserName(req.SessionToken)
+	sessionUserName, err := e.GetSessionUserName(req.SessionToken)
 	if err != nil {
 		// handle the error case with appropriate response body
 		errMsg := "error while trying to authenticate session: " + err.Error()
@@ -81,7 +81,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 	}
 
 	// Find out all the subscription destinations of the requesting user
-	subscriptions, err := p.GetEvtSubscriptions(sessionUserName)
+	subscriptions, err := e.GetEvtSubscriptions(sessionUserName)
 	if err != nil {
 		// Internall error
 		errMsg := "error while trying to find the event destination"
@@ -99,7 +99,7 @@ func (p *PluginContact) SubmitTestEvent(req *eventsproto.EventSubRequest) respon
 			if sub.Destination != "" {
 				if filterEventsToBeForwarded(sub, message.Events[0], []string{origin}) {
 					log.Info("Destination: " + sub.Destination)
-					go p.postEvent(sub.Destination, eventUniqueID, messageBytes)
+					go e.postEvent(sub.Destination, eventUniqueID, messageBytes)
 				}
 			}
 		}

@@ -470,7 +470,6 @@ func (p *PluginContact) removeFabricRPCCall(origin, address string) {
 		log.Error("Error while RemoveFabric ", err.Error())
 		return
 	}
-	p.checkCollectionSubscription(origin, "Redfish")
 	log.Info("Fabric Removed")
 	return
 }

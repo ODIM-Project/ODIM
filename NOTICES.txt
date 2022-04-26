@@ -1,5 +1,5 @@
 ************************************************************
-Notices for the 3rd party packages used in ODIM V4.0
+Notices for the 3rd party packages used in ODIM
 ************************************************************
 
 ODIM (Apache-2.0)

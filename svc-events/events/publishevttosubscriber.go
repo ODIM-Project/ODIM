@@ -62,7 +62,7 @@ func (e *ExternalInterfaces) addFabric(requestData, host string) {
 		}
 		if strings.EqualFold(inEvent.EventType, "ResourceRemoved") &&
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
-			p.removeFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+			e.removeFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
 	}
 }
@@ -456,7 +456,7 @@ func (e *ExternalInterfaces) addFabricRPCCall(origin, address string) {
 	log.Info("Fabric Added")
 	return
 }
-func (p *PluginContact) removeFabricRPCCall(origin, address string) {
+func (e *ExternalInterfaces) removeFabricRPCCall(origin, address string) {
 	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
 		return
 	}

@@ -276,7 +276,7 @@ func getPool(host, port string) (*redis.Pool, error) {
 func getTLSConfig() (*tls.Config, error) {
 	caCert, err := ioutil.ReadFile(config.Data.KeyCertConf.RootCACertificatePath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	pool := x509.NewCertPool()
 	pool.AppendCertsFromPEM(caCert)

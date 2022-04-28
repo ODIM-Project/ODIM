@@ -15,19 +15,19 @@ odim_pv_pvc_secrets_helmcharts:
    odimra-config: odimra-config-2.0.0
    odimra-platformconfig: odimra-platformconfig-0.1.0
    odimra-secret: odimra-secret-2.0.0
-   kafka-secret: kafka-secret-0.1.0
-   zookeeper-secret: zookeeper-secret-0.1.0
+   kafka-secret: kafka-secret-0.2.0
+   zookeeper-secret: zookeeper-secret-0.2.0
    configure-hosts: configure-hosts-0.1.0
    odimra-k8s-access-config: odimra-k8s-access-config-1.0.0
 odim_third_party_helmcharts:
-   zookeeper: zookeeper-2.5.0-0.1.0
+   zookeeper: zookeeper-3.7.0-0.2.0
    redis: redis-6.2.5-2.0.0
-   kafka: kafka-2.5.0-0.1.0
+   kafka: kafka-3.1.0-0.2.0
    etcd: etcd-1.0.0
 odim_Kafka_helmcharts:
-   zookeeper: zookeeper-2.5.0-0.1.0
+   zookeeper: zookeeper-3.7.0-0.2.0
    redis: redis-6.2.5-2.0.0
-   kafka: kafka-2.5.0-0.1.0
+   kafka: kafka-3.1.0-0.2.0
    etcd: etcd-1.0.0
 odim_Redis_helmcharts:
    redis: redis-6.2.5-2.0.0
@@ -36,9 +36,9 @@ odim_third_party_har_helmcharts:
    redis: redis-ha-6.2.5-2.0.0
    etcd: etcd-ha-1.0.0
 odim_third_party_ha_helmcharts:
-   zookeeper: zookeeper-ha-2.5.0-0.1.0
+   zookeeper: zookeeper-ha-3.7.0-0.2.0
    redis: redis-ha-6.2.5-2.0.0
-   kafka: kafka-ha-2.5.0-0.1.0
+   kafka: kafka-ha-3.1.0-0.2.0
    etcd: etcd-ha-1.0.0
 odim_svc_helmcharts:
    account-session: account-session-3.0.0
@@ -51,6 +51,7 @@ odim_svc_helmcharts:
    task: task-3.0.0
    update: update-3.0.0
    telemetry: telemetry-2.0.0
+   composition-service: composition-service-1.0.0
 odim_docker_images:
    account-session: account-session
    aggregation: aggregation
@@ -68,6 +69,7 @@ odim_docker_images:
    redis: redis
    stakater_reloader: stakater/reloader
    busybox: busybox
+   composition-service: composition-service
 kubernetes_images:
    quay.io/calico/cni: quay.io_calico_cni
    quay.io/calico/kube-controllers: quay.io_calico_kube-controllers

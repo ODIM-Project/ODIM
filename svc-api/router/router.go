@@ -165,6 +165,22 @@ func Router() *iris.Application {
 		UpdateTriggerRPC:                       rpc.DoUpdateTrigger,
 	}
 
+	cs := handle.CompositionServiceRPCs{
+		GetCompositionServiceRPC:      rpc.GetCompositionService,
+		GetResourceBlockCollectionRPC: rpc.GetResourceBlockCollection,
+		GetResourceBlockRPC:           rpc.GetResourceBlock,
+		CreateResourceBlockRPC:        rpc.CreateResourceBlock,
+		DeleteResourceBlockRPC:        rpc.DeleteResourceBlock,
+		GetResourceZoneCollectionRPC:  rpc.GetResourceZoneCollection,
+		GetResourceZoneRPC:            rpc.GetResourceZone,
+		CreateResourceZoneRPC:         rpc.CreateResourceZone,
+		DeleteResourceZoneRPC:         rpc.DeleteResourceZone,
+		ComposeRPC:                    rpc.Compose,
+		GetActivePoolRPC:              rpc.GetActivePool,
+		GetFreePoolRPC:                rpc.GetFreePool,
+		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -347,6 +363,7 @@ func Router() *iris.Application {
 	systems.Any("/{id}/EthernetInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/EthernetInterfaces/{rid}", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/SecureBoot", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/SecureBoot/Actions/SecureBoot.ResetKeys", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/MemoryDomains", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/NetworkInterfaces", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Memory", handle.SystemsMethodNotAllowed)
@@ -365,6 +382,9 @@ func Router() *iris.Application {
 	systems.Patch("/{id}/Bios/Settings", system.ChangeBiosSettings)
 	systems.Any("/{id}/Bios", handle.SystemsMethodNotAllowed)
 	systems.Any("/{id}/Processors/{rid}", handle.SystemsMethodNotAllowed)
+	systems.Any("{id}/Bios/Settings/Actions/Bios.ChangePasswords", handle.SystemsMethodNotAllowed)
+	systems.Any("{id}/Bios/Settings/Actions/Bios.ResetBios/", handle.SystemsMethodNotAllowed)
+	systems.Any("/{id}/Memory/{rid}", handle.SystemsMethodNotAllowed)
 
 	storage := v1.Party("/Systems/{id}/Storage", middleware.SessionDelMiddleware)
 	storage.SetRegisterRule(iris.RouteSkip)
@@ -572,13 +592,20 @@ func Router() *iris.Application {
 	managers.Get("/{id}", manager.GetManager)
 	managers.Get("/{id}/EthernetInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/EthernetInterfaces/{rid}", manager.GetManagersResource)
+	managers.Any("/{id}/EthernetInterfaces", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/EthernetInterfaces/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Get("/{id}/NetworkProtocol", manager.GetManagersResource)
 	managers.Get("/{id}/NetworkProtocol/{rid}", manager.GetManagersResource)
+	managers.Any("/{id}/NetworkProtocol", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/NetworkProtocol/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Get("/{id}/HostInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/HostInterfaces/{rid}", manager.GetManagersResource)
-
+	managers.Any("/{id}/HostInterfaces", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/HostInterfaces/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Get("/{id}/SerialInterfaces", manager.GetManagersResource)
 	managers.Get("/{id}/SerialInterfaces/{rid}", manager.GetManagersResource)
+	managers.Any("/{id}/SerialInterfaces", handle.ManagersMethodNotAllowed)
+	managers.Any("/{id}/SerialInterfaces/{rid}", handle.ManagersMethodNotAllowed)
 	managers.Get("/{id}/VirtualMedia", manager.GetManagersResource)
 	managers.Get("/{id}/VirtualMedia/{rid}", manager.GetManagersResource)
 	managers.Post("/{id}/VirtualMedia/{rid}/Actions/VirtualMedia.EjectMedia", manager.VirtualMediaEject)
@@ -637,5 +664,28 @@ func Router() *iris.Application {
 	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
 
+	// composition service
+	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)
+	compositionService.SetRegisterRule(iris.RouteSkip)
+	compositionService.Get("/", cs.GetCompositionService)
+	compositionService.Get("/ResourceBlocks", cs.GetResourceBlockCollection)
+	compositionService.Get("/ResourceBlocks/{id}", cs.GetResourceBlock)
+	compositionService.Post("/ResourceBlocks", cs.CreateResourceBlock)
+	compositionService.Delete("/ResourceBlocks/{id}", cs.DeleteResourceBlock)
+	compositionService.Get("/ResourceZones", cs.GetResourceZoneCollection)
+	compositionService.Get("/ResourceZones/{id}", cs.GetResourceZone)
+	compositionService.Post("/ResourceZones", cs.CreateResourceZone)
+	compositionService.Delete("/ResourceZones/{id}", cs.DeleteResourceZone)
+	compositionService.Post("/Actions/CompositionService.Compose", cs.Compose)
+	compositionService.Get("/ActivePool", cs.GetActivePool)
+	compositionService.Get("/FreePool", cs.GetFreePool)
+	compositionService.Get("/CompositionReservations", cs.GetCompositionReservations)
+	compositionService.Any("/", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceBlocks/{id}", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceZones", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ResourceZones/{id}", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/FreePool", handle.CompositionServiceMethodNotAllowed)
+	compositionService.Any("/ActivePool", handle.CompositionServiceMethodNotAllowed)
 	return router
 }

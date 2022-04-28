@@ -1,0 +1,6 @@
+odimra:
+  namespace: odim
+  groupID:
+  haDeploymentEnabled: false
+compositionservice:
+  imageTag: "1.0"

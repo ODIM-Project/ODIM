@@ -49,11 +49,14 @@ eval_cmd_exec()
 # base image for building ODIMRA services image
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.odim -t odim:3.0 ." "odim"
 
+# base image for building composition service Image
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.cs -t cs:1.0 ." "cs"
+
 # third party docker images
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.etcd -t etcd:1.16 ." "etcd"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.redis -t redis:2.0 ." "redis"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.kafka -t kafka:1.0 ." "kafka"
-eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.zookeeper -t zookeeper:1.0 ." "zookeeper"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.kafka -t kafka:2.0 ." "kafka"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.zookeeper -t zookeeper:2.0 ." "zookeeper"
 
 # ODIMRA services image
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.accountSession -t account-session:3.0 ." "account session"
@@ -66,6 +69,7 @@ eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.ma
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.systems -t systems:3.0 ." "systems"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.task -t task:3.0 ." "task"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.update -t update:3.0 ." "update"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.compositionService -t composition-service:1.0 ." "composition service"
 
 # ODIMRA plugins image
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t urplugin:3.0 ." "urplugin"

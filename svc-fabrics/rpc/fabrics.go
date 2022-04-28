@@ -76,9 +76,19 @@ func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequ
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-
 	return resp, nil
 
+}
+
+// AddFabric defines  the operation which handles the RPC request response for Add fabric
+func (f *Fabrics) RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) (*fabricsproto.FabricResponse, error) {
+	resp := &fabricsproto.FabricResponse{}
+	data := fabrics.RemoveFabric(req)
+	resp.Header = data.Header
+	resp.StatusCode = data.StatusCode
+	resp.StatusMessage = data.StatusMessage
+	resp.Body = generateResponse(data.Body)
+	return resp, nil
 }
 
 // DeleteFabricResource defines the operation which handled the RPC request response
@@ -94,7 +104,6 @@ func (f *Fabrics) DeleteFabricResource(ctx context.Context, req *fabricsproto.Fa
 	resp.StatusCode = data.StatusCode
 	resp.StatusMessage = data.StatusMessage
 	resp.Body = generateResponse(data.Body)
-
 	return resp, nil
 }
 

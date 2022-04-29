@@ -1,5 +1,5 @@
 odimra:
   namespace:
   groupID:
-  kafkaImageTag: "1.0"
+  kafkaImageTag: "2.0"
   kafkaNodePort:

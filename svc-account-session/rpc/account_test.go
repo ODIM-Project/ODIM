@@ -15,419 +15,574 @@ package rpc
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
-	"testing"
-	"time"
-
+	e "errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
+	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
-	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
-	"golang.org/x/crypto/sha3"
+	"reflect"
+	"testing"
 )
 
-func mockSession(token string, roleID string) error {
-	currentTime := time.Now()
-	session := asmodel.Session{
-		ID:       "id",
-		Token:    token,
-		UserName: "admin",
-		RoleID:   roleID,
-		Privileges: map[string]bool{
-			common.PrivilegeConfigureUsers: true,
-		},
-		CreatedTime:  currentTime,
-		LastUsedTime: currentTime,
-	}
-	if err := session.Persist(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func createMockUser(username, roleID string) error {
-	hash := sha3.New512()
-	hash.Write([]byte("P@$$w0rd"))
-	hashSum := hash.Sum(nil)
-	hashedPassword := base64.URLEncoding.EncodeToString(hashSum)
-	user := asmodel.User{
-		UserName: username,
-		Password: hashedPassword,
-		RoleID:   roleID,
-	}
-	if err := asmodel.CreateUser(user); err != nil {
-		return err
-	}
-	return nil
-}
-
-func truncateDB(t *testing.T) {
-	err := common.TruncateDB(common.OnDisk)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	err = common.TruncateDB(common.InMemory)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-}
 
 func TestAccount_Create(t *testing.T) {
-	defer truncateDB(t)
-	auth.Lock.Lock()
-	common.SetUpMockConfig()
-	auth.Lock.Unlock()
-
-	token := "token"
-	err := mockSession(token, common.RoleClient)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	reqBodyCreateUser, _ := json.Marshal(asmodel.Account{
-		UserName: "testUser",
-		Password: "Password@123",
-		RoleID:   "admin",
-	})
-
 	type args struct {
-		ctx  context.Context
-		req  *accountproto.CreateAccountRequest
-		resp *accountproto.AccountResponse
+		ctx context.Context
+		req *accountproto.CreateAccountRequest
 	}
+	common.SetUpMockConfig()
 	tests := []struct {
-		name    string
-		a       *Account
-		args    args
-		wantErr bool
+		name                    string
+		args                    args
+		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(token string) error
+		MarshalFunc             func(v any) ([]byte, error)
+		want                    *accountproto.AccountResponse
+		wantErr                 bool
 	}{
 		{
-			name: "create user",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.CreateAccountRequest{
-					RequestBody:  reqBodyCreateUser,
-					SessionToken: token,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 401(not valid session)",
+			args: args{context.TODO(), &accountproto.CreateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:                false,
 		},
 		{
-			name: "create user with invalid session",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.CreateAccountRequest{
-					RequestBody:  reqBodyCreateUser,
-					SessionToken: "invalidSession",
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 504(Service unavailable)",
+			args: args{context.TODO(), &accountproto.CreateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "UpdateLastUsedTime error",
+			args: args{context.TODO(), &accountproto.CreateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "Marshall error",
+			args: args{context.TODO(), &accountproto.CreateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for create account: fakeError"},
+			wantErr:                false,
+		},
+		{
+			name: "Pass case",
+			args: args{context.TODO(), &accountproto.CreateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError"},
+			wantErr:                false,
 		},
 	}
 	for _, tt := range tests {
+		CheckSessionTimeOutFunc = tt.CheckSessionTimeOutFunc
+		UpdateLastUsedTimeFunc = tt.UpdateLastUsedTimeFunc
+		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.a.Create(tt.args.ctx, tt.args.req)
+			a := &Account{}
+			got, err := a.Create(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Account.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Create() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
-
 }
 
 func TestAccount_GetAllAccounts(t *testing.T) {
-	defer truncateDB(t)
-	auth.Lock.Lock()
-	common.SetUpMockConfig()
-	auth.Lock.Unlock()
-	token := "token"
-	err := mockSession(token, common.RoleClient)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
 	type args struct {
-		ctx  context.Context
-		req  *accountproto.AccountRequest
-		resp *accountproto.AccountResponse
+		ctx context.Context
+		req *accountproto.AccountRequest
 	}
+	common.SetUpMockConfig()
 	tests := []struct {
-		name    string
-		a       *Account
-		args    args
-		wantErr bool
+		name                    string
+		args                    args
+		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(token string) error
+		GetAllAccountsFunc      func(session *asmodel.Session) response.RPC
+		MarshalFunc             func(v any) ([]byte, error)
+		want                    *accountproto.AccountResponse
+		wantErr                 bool
 	}{
 		{
-			name: "get all accounts",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.AccountRequest{
-					SessionToken: token,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 401(not valid session)",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:                false,
 		},
 		{
-			name: "get all accounts with invalid session",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.AccountRequest{
-					SessionToken: "invalidSession",
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 504(Service unavailable)",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "UpdateLastUsedTime error",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
+			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "Marshall error",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get all accounts: fakeError"},
+			wantErr:                true,
+		},
+		{
+			name: "Pass case",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAllAccountsFunc:     func(session *asmodel.Session) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{},
+			wantErr:                false,
 		},
 	}
 	for _, tt := range tests {
+		CheckSessionTimeOutFunc = tt.CheckSessionTimeOutFunc
+		UpdateLastUsedTimeFunc = tt.UpdateLastUsedTimeFunc
+		GetAllAccountsFunc = tt.GetAllAccountsFunc
+		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.a.GetAllAccounts(tt.args.ctx, tt.args.req)
+			a := &Account{}
+			got, err := a.GetAllAccounts(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Account.GetAllAccounts() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetAllAccounts() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAllAccounts() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestAccount_GetAccount(t *testing.T) {
-	defer truncateDB(t)
-	auth.Lock.Lock()
-	common.SetUpMockConfig()
-	auth.Lock.Unlock()
-	token, accountID := "token", "testUser"
-	err := mockSession(token, common.RoleClient)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	err = createMockUser(accountID, common.RoleAdmin)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user %v", err)
-	}
 	type args struct {
-		ctx  context.Context
-		req  *accountproto.GetAccountRequest
-		resp *accountproto.AccountResponse
+		ctx context.Context
+		req *accountproto.GetAccountRequest
 	}
+	common.SetUpMockConfig()
 	tests := []struct {
-		name    string
-		a       *Account
-		args    args
-		wantErr bool
+		name                    string
+		args                    args
+		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(token string) error
+		GetAccountFunc          func(session *asmodel.Session, accountID string) response.RPC
+		MarshalFunc             func(v any) ([]byte, error)
+		want                    *accountproto.AccountResponse
+		wantErr                 bool
 	}{
 		{
-			name: "get account",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.GetAccountRequest{
-					SessionToken: token,
-					AccountID:    accountID,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 401(not valid session)",
+			args: args{context.TODO(), &accountproto.GetAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:                false,
 		},
 		{
-			name: "get account with invalid session",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.GetAccountRequest{
-					SessionToken: "invalidSession",
-					AccountID:    accountID,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 504(Service unavailable)",
+			args: args{context.TODO(), &accountproto.GetAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "UpdateLastUsedTime error",
+			args: args{context.TODO(), &accountproto.GetAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
+			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "Marshall error",
+			args: args{context.TODO(), &accountproto.GetAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get account details: fakeError"},
+			wantErr:                true,
+		},
+		{
+			name: "Pass case",
+			args: args{context.TODO(), &accountproto.GetAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountFunc:         func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{},
+			wantErr:                false,
 		},
 	}
 	for _, tt := range tests {
+		CheckSessionTimeOutFunc = tt.CheckSessionTimeOutFunc
+		UpdateLastUsedTimeFunc = tt.UpdateLastUsedTimeFunc
+		GetAccountFunc = tt.GetAccountFunc
+		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.a.GetAccount(tt.args.ctx, tt.args.req)
+			a := &Account{}
+			got, err := a.GetAccount(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Account.GetAccount() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetAccount() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAccount() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestAccount_GetAccountServices(t *testing.T) {
-	defer truncateDB(t)
-	auth.Lock.Lock()
-	common.SetUpMockConfig()
-	auth.Lock.Unlock()
-	token := "token"
-	err := mockSession(token, common.RoleClient)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
 	type args struct {
-		ctx  context.Context
-		req  *accountproto.AccountRequest
-		resp *accountproto.AccountResponse
+		ctx context.Context
+		req *accountproto.AccountRequest
 	}
+	common.SetUpMockConfig()
 	tests := []struct {
-		name    string
-		a       *Account
-		args    args
-		wantErr bool
+		name                    string
+		args                    args
+		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(token string) error
+		GetAccountServiceFunc   func() response.RPC
+		MarshalFunc             func(v any) ([]byte, error)
+		want                    *accountproto.AccountResponse
+		wantErr                 bool
 	}{
 		{
-			name: "get account service",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.AccountRequest{
-					SessionToken: token,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 401(not valid session)",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:                false,
 		},
 		{
-			name: "get account service with invalid session",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.AccountRequest{
-					SessionToken: "invalidSession",
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 504(Service unavailable)",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "UpdateLastUsedTime error",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
+			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "Marshall error",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for get account details: fakeError"},
+			wantErr:                true,
+		},
+		{
+			name: "Pass case",
+			args: args{context.TODO(), &accountproto.AccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			GetAccountServiceFunc:  func() response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{},
+			wantErr:                false,
 		},
 	}
 	for _, tt := range tests {
+		CheckSessionTimeOutFunc = tt.CheckSessionTimeOutFunc
+		UpdateLastUsedTimeFunc = tt.UpdateLastUsedTimeFunc
+		GetAccountServiceFunc = tt.GetAccountServiceFunc
+		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.a.GetAccountServices(tt.args.ctx, tt.args.req)
+			a := &Account{}
+			got, err := a.GetAccountServices(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Account.GetAccountServices() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetAccountServices() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAccountServices() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestAccount_Update(t *testing.T) {
-	defer truncateDB(t)
-	auth.Lock.Lock()
-	common.SetUpMockConfig()
-	auth.Lock.Unlock()
-	token, accountID := "token", "testUser"
-	err := mockSession(token, common.RoleClient)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	err = createMockUser(accountID, common.RoleMonitor)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user %v", err)
-	}
-
-	reqBodyRoleIDReadOnly, _ := json.Marshal(asmodel.Account{
-		RoleID: common.RoleClient,
-	})
-
 	type args struct {
-		ctx  context.Context
-		req  *accountproto.UpdateAccountRequest
-		resp *accountproto.AccountResponse
+		ctx context.Context
+		req *accountproto.UpdateAccountRequest
 	}
+	common.SetUpMockConfig()
 	tests := []struct {
-		name    string
-		a       *Account
-		args    args
-		wantErr bool
+		name                    string
+		args                    args
+		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(token string) error
+		MarshalFunc             func(v any) ([]byte, error)
+		want                    *accountproto.AccountResponse
+		wantErr                 bool
 	}{
 		{
-			name: "update account",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.UpdateAccountRequest{
-					SessionToken: token,
-					AccountID:    accountID,
-					RequestBody:  reqBodyRoleIDReadOnly,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 401(not valid session)",
+			args: args{context.TODO(), &accountproto.UpdateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:                false,
 		},
 		{
-			name: "update account with invalid session",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.UpdateAccountRequest{
-					SessionToken: "invalidSession",
-					AccountID:    accountID,
-					RequestBody:  reqBodyRoleIDReadOnly,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 504(Service unavailable)",
+			args: args{context.TODO(), &accountproto.UpdateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "UpdateLastUsedTime error",
+			args: args{context.TODO(), &accountproto.UpdateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "Marshall error",
+			args: args{context.TODO(), &accountproto.UpdateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying to marshal the response body for create account: fakeError"},
+			wantErr:                false,
+		},
+		{
+			name: "Pass case",
+			args: args{context.TODO(), &accountproto.UpdateAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError"},
+			wantErr:                false,
 		},
 	}
 	for _, tt := range tests {
+		CheckSessionTimeOutFunc = tt.CheckSessionTimeOutFunc
+		UpdateLastUsedTimeFunc = tt.UpdateLastUsedTimeFunc
+		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.a.Update(tt.args.ctx, tt.args.req)
+			a := &Account{}
+			got, err := a.Update(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Account.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Update() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestAccount_Delete(t *testing.T) {
-	defer truncateDB(t)
-	auth.Lock.Lock()
-	common.SetUpMockConfig()
-	auth.Lock.Unlock()
-	token, accountID := "token", "testUser"
-	err := mockSession(token, common.RoleClient)
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	err = createMockUser(accountID, common.RoleMonitor)
-	if err != nil {
-		t.Fatalf("Error in creating mock admin user %v", err)
-	}
 	type args struct {
-		ctx  context.Context
-		req  *accountproto.DeleteAccountRequest
-		resp *accountproto.AccountResponse
+		ctx context.Context
+		req *accountproto.DeleteAccountRequest
 	}
+	common.SetUpMockConfig()
 	tests := []struct {
-		name    string
-		a       *Account
-		args    args
-		wantErr bool
+		name                    string
+		args                    args
+		CheckSessionTimeOutFunc func(sessionToken string) (*asmodel.Session, *errors.Error)
+		UpdateLastUsedTimeFunc  func(token string) error
+		AccDeleteFunc           func(session *asmodel.Session, accountID string) response.RPC
+		MarshalFunc             func(v any) ([]byte, error)
+		want                    *accountproto.AccountResponse
+		wantErr                 bool
 	}{
 		{
-			name: "delete account",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.DeleteAccountRequest{
-					SessionToken: token,
-					AccountID:    accountID,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 401(not valid session)",
+			args: args{context.TODO(), &accountproto.DeleteAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(errors.InvalidAuthToken, "error: invalid token ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 401, StatusMessage: "Base.1.11.0.NoValidSession", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.NoValidSession\",\"Message\":\"There is no valid session established with the implementation.error while authorizing session token: error: invalid token \",\"Severity\":\"Critical\",\"Resolution\":\"Establish a session before attempting any operations.\"}]}}")},
+			wantErr:                false,
 		},
 		{
-			name: "delete account with invalid session",
-			a:    &Account{},
-			args: args{
-				req: &accountproto.DeleteAccountRequest{
-					SessionToken: "invalidSession",
-					AccountID:    accountID,
-				},
-				resp: &accountproto.AccountResponse{},
+			name: "Session Timeout Error for 504(Service unavailable)",
+			args: args{context.TODO(), &accountproto.DeleteAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, errors.PackError(5, "error: Service unavailable ", sessionToken)
 			},
-			wantErr: false,
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 503, StatusMessage: "Base.1.11.0.CouldNotEstablishConnection", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.CouldNotEstablishConnection\",\"Message\":\"The service failed to establish a connection with the URI 127.0.0.1:6379. error while authorizing session token: error: Service unavailable \",\"Severity\":\"Critical\",\"MessageArgs\":[\"127.0.0.1:6379\"],\"Resolution\":\"Ensure that the URI contains a valid and reachable node name, protocol information and other URI components.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "UpdateLastUsedTime error",
+			args: args{context.TODO(), &accountproto.DeleteAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return e.New("fakeError") },
+			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "Base.1.11.0.InternalError", Body: []byte("{\"error\":{\"code\":\"Base.1.11.0.GeneralError\",\"message\":\"An error has occurred. See ExtendedInfo for more information.\",\"@Message.ExtendedInfo\":[{\"@odata.type\":\"#Message.v1_1_2.Message\",\"MessageId\":\"Base.1.11.0.InternalError\",\"Message\":\"The request failed due to an internal service error.  The service is still operational.error while updating last used time of session with token : fakeError\",\"Severity\":\"Critical\",\"Resolution\":\"Resubmit the request.  If the problem persists, consider resetting the service.\"}]}}")},
+			wantErr:                false,
+		},
+		{
+			name: "Marshall error",
+			args: args{context.TODO(), &accountproto.DeleteAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, e.New("fakeError") },
+			want:                   &accountproto.AccountResponse{StatusCode: 500, StatusMessage: "error while trying marshal the response body for delete account: fakeError"},
+			wantErr:                false,
+		},
+		{
+			name: "Pass case",
+			args: args{context.TODO(), &accountproto.DeleteAccountRequest{}},
+			CheckSessionTimeOutFunc: func(sessionToken string) (*asmodel.Session, *errors.Error) {
+				return nil, nil
+			},
+			UpdateLastUsedTimeFunc: func(token string) error { return nil },
+			AccDeleteFunc:          func(session *asmodel.Session, accountID string) response.RPC { return response.RPC{} },
+			MarshalFunc:            func(v any) ([]byte, error) { return nil, nil },
+			want:                   &accountproto.AccountResponse{},
+			wantErr:                false,
 		},
 	}
 	for _, tt := range tests {
+		CheckSessionTimeOutFunc = tt.CheckSessionTimeOutFunc
+		UpdateLastUsedTimeFunc = tt.UpdateLastUsedTimeFunc
+		AccDeleteFunc = tt.AccDeleteFunc
+		MarshalFunc = tt.MarshalFunc
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := tt.a.Delete(tt.args.ctx, tt.args.req)
+			a := &Account{}
+			got, err := a.Delete(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Account.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Delete() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

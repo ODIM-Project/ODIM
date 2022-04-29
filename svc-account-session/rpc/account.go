@@ -28,11 +28,17 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
-	"github.com/ODIM-Project/ODIM/svc-account-session/session"
 )
 
 // Account struct helps to register service
 type Account struct{}
+
+var (
+	GetAllAccountsFunc    = account.GetAllAccounts
+	GetAccountFunc        = account.GetAccount
+	GetAccountServiceFunc = account.GetAccountService
+	AccDeleteFunc         = account.Delete
+)
 
 // Create defines the operations which handles the RPC request response
 // for the create account service of account-session micro service.
@@ -55,7 +61,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		ErrorArgs: errorArgs,
 	}
 
-	sess, errs := auth.CheckSessionTimeOut(req.SessionToken)
+	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
@@ -68,7 +74,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 		}
 		return &resp, nil
 	}
-	err := session.UpdateLastUsedTime(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -83,7 +89,7 @@ func (a *Account) Create(ctx context.Context, req *accountproto.CreateAccountReq
 	acc := account.GetExternalInterface()
 	data, err := acc.Create(req, sess)
 	var jsonErr error // jsonErr is created to protect the data in err
-	resp.Body, jsonErr = json.Marshal(data.Body)
+	resp.Body, jsonErr = MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for create account: " + jsonErr.Error()
@@ -117,7 +123,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	sess, errs := auth.CheckSessionTimeOut(req.SessionToken)
+	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
@@ -131,7 +137,7 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		return &resp, nil
 	}
 
-	err := session.UpdateLastUsedTime(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -143,8 +149,8 @@ func (a *Account) GetAllAccounts(ctx context.Context, req *accountproto.AccountR
 		return &resp, nil
 	}
 
-	data := account.GetAllAccounts(sess)
-	resp.Body, err = json.Marshal(data.Body)
+	data := GetAllAccountsFunc(sess)
+	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get all accounts: " + err.Error()
@@ -178,7 +184,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	sess, errs := auth.CheckSessionTimeOut(req.SessionToken)
+	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
@@ -192,7 +198,7 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		return &resp, nil
 	}
 
-	err := session.UpdateLastUsedTime(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -204,8 +210,8 @@ func (a *Account) GetAccount(ctx context.Context, req *accountproto.GetAccountRe
 		return &resp, nil
 	}
 
-	data := account.GetAccount(sess, req.AccountID)
-	resp.Body, err = json.Marshal(data.Body)
+	data := GetAccountFunc(sess, req.AccountID)
+	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
@@ -239,7 +245,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	_, errs := auth.CheckSessionTimeOut(req.SessionToken)
+	_, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
@@ -253,7 +259,7 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		return &resp, nil
 	}
 
-	err := session.UpdateLastUsedTime(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -265,8 +271,8 @@ func (a *Account) GetAccountServices(ctx context.Context, req *accountproto.Acco
 		return &resp, nil
 	}
 
-	data := account.GetAccountService()
-	resp.Body, err = json.Marshal(data.Body)
+	data := GetAccountServiceFunc()
+	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for get account details: " + err.Error()
@@ -300,7 +306,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	sess, errs := auth.CheckSessionTimeOut(req.SessionToken)
+	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
@@ -314,7 +320,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 		return &resp, nil
 	}
 
-	err := session.UpdateLastUsedTime(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -329,7 +335,7 @@ func (a *Account) Update(ctx context.Context, req *accountproto.UpdateAccountReq
 	acc := account.GetExternalInterface()
 
 	data := acc.Update(req, sess)
-	resp.Body, err = json.Marshal(data.Body)
+	resp.Body, err = MarshalFunc(data.Body)
 	if err != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying to marshal the response body for create account: " + err.Error()
@@ -363,7 +369,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		Message:   "",
 		ErrorArgs: errorArgs,
 	}
-	sess, errs := auth.CheckSessionTimeOut(req.SessionToken)
+	sess, errs := CheckSessionTimeOutFunc(req.SessionToken)
 	if errs != nil {
 		errorMessage := "error while authorizing session token: " + errs.Error()
 		resp.StatusCode, resp.StatusMessage = errs.GetAuthStatusCodeAndMessage()
@@ -377,7 +383,7 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		return &resp, nil
 	}
 
-	err := session.UpdateLastUsedTime(req.SessionToken)
+	err := UpdateLastUsedTimeFunc(req.SessionToken)
 	if err != nil {
 		errorMessage := "error while updating last used time of session with token " + req.SessionToken + ": " + err.Error()
 		resp.StatusCode = http.StatusInternalServerError
@@ -389,9 +395,9 @@ func (a *Account) Delete(ctx context.Context, req *accountproto.DeleteAccountReq
 		return &resp, nil
 	}
 
-	data := account.Delete(sess, req.AccountID)
+	data := AccDeleteFunc(sess, req.AccountID)
 	var jsonErr error // jsonErr is created to protect the data in err
-	resp.Body, jsonErr = json.Marshal(data.Body)
+	resp.Body, jsonErr = MarshalFunc(data.Body)
 	if jsonErr != nil {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.StatusMessage = "error while trying marshal the response body for delete account: " + jsonErr.Error()

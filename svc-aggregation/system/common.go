@@ -1245,11 +1245,20 @@ func getTranslationURL(translationURL string) map[string]string {
 func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest, cmVariants connectionMethodVariants, taskInfo *common.TaskUpdateInfo) (response.RPC, int32, []string) {
 
 	var queueList = make([]string, 0)
-	ipData := strings.Split(req.ManagerAddress, ":")
 	var ip, port string
-	ip = ipData[0]
-	if len(ipData) > 1 {
-		port = ipData[1]
+	if strings.Count(req.ManagerAddress, ":") > 2 {
+		if !strings.Contains(req.ManagerAddress, "[") {
+			ip = fmt.Sprintf("[%s]", req.ManagerAddress)
+
+		} else {
+			index := strings.LastIndex(req.ManagerAddress, ":")
+			ip = req.ManagerAddress[:index]
+			port = req.ManagerAddress[index+1:]
+		}
+	} else {
+		index := strings.LastIndex(req.ManagerAddress, ":")
+		ip = req.ManagerAddress[:index]
+		port = req.ManagerAddress[index+1:]
 	}
 	var plugin = agmodel.Plugin{
 		IP:                ip,

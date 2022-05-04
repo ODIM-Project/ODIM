@@ -33,7 +33,7 @@ type Role struct {
 // Create method is to insert the role details into database
 func (r *Role) Create() *errors.Error {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (r *Role) Create() *errors.Error {
 // GetRoleDetailsByID retrives the privileges for a role from database
 func GetRoleDetailsByID(roleID string) (Role, *errors.Error) {
 	var role Role
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return role, err
 	}
@@ -65,7 +65,7 @@ func GetRoleDetailsByID(roleID string) (Role, *errors.Error) {
 //UpdateRoleDetails will modify the current details to given changes
 func (r *Role) UpdateRoleDetails() *errors.Error {
 
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (r *Role) UpdateRoleDetails() *errors.Error {
 
 //GetAllRoles gets all the roles from the db
 func GetAllRoles() ([]Role, *errors.Error) {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func GetAllRoles() ([]Role, *errors.Error) {
 
 //Delete will delete the role entry from the database based on the uuid
 func (r *Role) Delete() *errors.Error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}

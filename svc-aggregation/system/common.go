@@ -1256,9 +1256,11 @@ func checkStatus(pluginContactRequest getResourceRequest, req AddResourceRequest
 			port = req.ManagerAddress[index+1:]
 		}
 	} else {
-		index := strings.LastIndex(req.ManagerAddress, ":")
-		ip = req.ManagerAddress[:index]
-		port = req.ManagerAddress[index+1:]
+		ipData := strings.Split(req.ManagerAddress, ":")
+		ip = ipData[0]
+		if len(ipData) > 1 {
+			port = ipData[1]
+		}
 	}
 	var plugin = agmodel.Plugin{
 		IP:                ip,

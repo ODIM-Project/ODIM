@@ -898,7 +898,7 @@ func (a *Aggregator) SendStartUpData(ctx context.Context, req *aggregatorproto.S
 	return resp, nil
 }
 
-// GetAggregationService is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
+// GetResetActionInfoService is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
 func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
 	resp := &aggregatorproto.AggregatorResponse{}
@@ -948,7 +948,7 @@ func (a *Aggregator) GetResetActionInfoService(ctx context.Context, req *aggrega
 	return resp, nil
 }
 
-// SetDefaultBootOrderActionInfo is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
+// GetSetDefaultBootOrderActionInfo is an rpc handler, it gets invoked during GET on AggregationService API (/redfis/v1/AggregationService/)
 func (a *Aggregator) GetSetDefaultBootOrderActionInfo(ctx context.Context, req *aggregatorproto.AggregatorRequest) (
 	*aggregatorproto.AggregatorResponse, error) {
 	resp := &aggregatorproto.AggregatorResponse{}

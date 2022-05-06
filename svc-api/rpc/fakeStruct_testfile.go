@@ -235,6 +235,9 @@ func (fakeStruct) AddFabric(ctx context.Context, in *fabricsproto.AddFabricReque
 func (fakeStruct) DeleteFabricResource(ctx context.Context, in *fabricsproto.FabricRequest, opts ...grpc.CallOption) (*fabricsproto.FabricResponse, error) {
 	return nil, errors.New("fakeError")
 }
+func (fakeStruct) RemoveFabric(ctx context.Context, in *fabricsproto.AddFabricRequest, opts ...grpc.CallOption) (*fabricsproto.FabricResponse, error) {
+	return nil, errors.New("fakeError")
+}
 
 //-----------------------------------MANAGERS-----------------------------------------------
 
@@ -298,31 +301,31 @@ func (fakeStruct) UpdateRole(ctx context.Context, in *roleproto.UpdateRoleReques
 
 //-------------------------------------SESSIONS---------------------------------------------
 
-func (fakeStruct)CreateSession(ctx context.Context, in *sessionproto.SessionCreateRequest, opts ...grpc.CallOption) (*sessionproto.SessionCreateResponse, error){
+func (fakeStruct) CreateSession(ctx context.Context, in *sessionproto.SessionCreateRequest, opts ...grpc.CallOption) (*sessionproto.SessionCreateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)DeleteSession(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error){
+func (fakeStruct) DeleteSession(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetAllActiveSessions(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error){
+func (fakeStruct) GetAllActiveSessions(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSession(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error){
+func (fakeStruct) GetSession(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSessionUserName(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionUserName, error){
+func (fakeStruct) GetSessionUserName(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionUserName, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSessionService(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error){
+func (fakeStruct) GetSessionService(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSessionUserRoleID(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionUsersRoleID, error){
+func (fakeStruct) GetSessionUserRoleID(ctx context.Context, in *sessionproto.SessionRequest, opts ...grpc.CallOption) (*sessionproto.SessionUsersRoleID, error) {
 	return nil, errors.New("fakeError")
 }
 
@@ -366,113 +369,114 @@ func (fakeStruct2) DeleteVolume(ctx context.Context, in *systemsproto.VolumeRequ
 
 //-----------------------------------------TASK------------------------------------------
 
-func (fakeStruct)DeleteTask(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) DeleteTask(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetTasks(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) GetTasks(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSubTasks(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) GetSubTasks(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSubTask(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) GetSubTask(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)TaskCollection(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) TaskCollection(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetTaskService(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) GetTaskService(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetTaskMonitor(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error){
+func (fakeStruct) GetTaskMonitor(ctx context.Context, in *taskproto.GetTaskRequest, opts ...grpc.CallOption) (*taskproto.TaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)CreateTask(ctx context.Context, in *taskproto.CreateTaskRequest, opts ...grpc.CallOption) (*taskproto.CreateTaskResponse, error){
+func (fakeStruct) CreateTask(ctx context.Context, in *taskproto.CreateTaskRequest, opts ...grpc.CallOption) (*taskproto.CreateTaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)CreateChildTask(ctx context.Context, in *taskproto.CreateTaskRequest, opts ...grpc.CallOption) (*taskproto.CreateTaskResponse, error){
+func (fakeStruct) CreateChildTask(ctx context.Context, in *taskproto.CreateTaskRequest, opts ...grpc.CallOption) (*taskproto.CreateTaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)UpdateTask(ctx context.Context, in *taskproto.UpdateTaskRequest, opts ...grpc.CallOption) (*taskproto.UpdateTaskResponse, error){
+func (fakeStruct) UpdateTask(ctx context.Context, in *taskproto.UpdateTaskRequest, opts ...grpc.CallOption) (*taskproto.UpdateTaskResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
 //------------------------------------------TELEMETRY---------------------------------------
 
-func (fakeStruct) GetTelemetryService(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetTelemetryService(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetMetricDefinitionCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetMetricDefinitionCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetMetricReportDefinitionCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetMetricReportDefinitionCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetMetricReportCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetMetricReportCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetTriggerCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetTriggerCollection(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetMetricDefinition(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetMetricDefinition(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetMetricReportDefinition(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetMetricReportDefinition(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetMetricReport(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetMetricReport(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetTrigger(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) GetTrigger(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)UpdateTrigger(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error){
+func (fakeStruct) UpdateTrigger(ctx context.Context, in *teleproto.TelemetryRequest, opts ...grpc.CallOption) (*teleproto.TelemetryResponse, error) {
 	return nil, errors.New("fakeError")
 }
+
 //--------------------------------------------UPDATE----------------------------------------
 
-func (fakeStruct)GetUpdateService(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) GetUpdateService(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetFirmwareInventory(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) GetFirmwareInventory(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetFirmwareInventoryCollection(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) GetFirmwareInventoryCollection(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSoftwareInventory(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) GetSoftwareInventory(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)GetSoftwareInventoryCollection(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) GetSoftwareInventoryCollection(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)SimepleUpdate(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) SimepleUpdate(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }
 
-func (fakeStruct)StartUpdate(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error){
+func (fakeStruct) StartUpdate(ctx context.Context, in *updateproto.UpdateRequest, opts ...grpc.CallOption) (*updateproto.UpdateResponse, error) {
 	return nil, errors.New("fakeError")
 }

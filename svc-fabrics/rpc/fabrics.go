@@ -80,7 +80,7 @@ func (f *Fabrics) AddFabric(ctx context.Context, req *fabricsproto.AddFabricRequ
 
 }
 
-// AddFabric defines  the operation which handles the RPC request response for Add fabric
+// RemoveFabric defines  the operation which handles the RPC request response for Remove fabric
 func (f *Fabrics) RemoveFabric(ctx context.Context, req *fabricsproto.AddFabricRequest) (*fabricsproto.FabricResponse, error) {
 	resp := &fabricsproto.FabricResponse{}
 	data := fabrics.RemoveFabric(req)

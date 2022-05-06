@@ -100,7 +100,7 @@ func (fabric *Fabric) AddFabricData(fabuuid string) error {
 	return nil
 }
 
-// AddFabricData will add the fabric uuid and pluginid details into ondisk
+// RemoveFabricData will remove the fabric uuid and pluginid details into ondisk
 func (fabric *Fabric) RemoveFabricData(fabuuid string) error {
 	conn, err := common.GetDBConnection(common.OnDisk)
 	if err != nil {

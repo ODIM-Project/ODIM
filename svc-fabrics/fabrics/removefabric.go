@@ -26,9 +26,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//DeleteFabricResource holds the logic for deleting specfic fabric resource
-// It accepts url and contacts the configured CFM plugin
-// and deletes the metioned fabric resoure such as Endpoints,Ports
+// RemoveFabric holds the logic for deleting specfic fabric resource
 func RemoveFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 	var resp response.RPC
 	origin := req.OriginResource

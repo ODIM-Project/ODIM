@@ -87,6 +87,7 @@ type ActionInfo struct {
 	OdataType  string      `json:"@odata.type"`
 }
 
+// Parameter Struct defination for parameter
 type Parameter struct {
 	Name            string   `json:"Name"`
 	Required        bool     `json:"Required"`

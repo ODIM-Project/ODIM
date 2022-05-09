@@ -24,92 +24,101 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+var(
+	NewChassisClientFunc = chassisproto.NewChassisClient
+)
 //GetChassisCollection will do the rpc call to collect all chassis
 func GetChassisCollection(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := chassisproto.NewChassisClient(conn)
+
+	asService := NewChassisClientFunc(conn)
 	resp, err := asService.GetChassisCollection(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 //GetChassisResource will do the rpc call to collect Chassis Resource
 func GetChassisResource(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := chassisproto.NewChassisClient(conn)
+
+	asService := NewChassisClientFunc(conn)
 	resp, err := asService.GetChassisResource(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 //GetChassis will do the rpc call to  System Resource
 func GetChassis(req chassisproto.GetChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := chassisproto.NewChassisClient(conn)
+
+	asService := NewChassisClientFunc(conn)
 	resp, err := asService.GetChassisInfo(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 //CreateChassis will do the rpc call to create a Chassis
 func CreateChassis(req chassisproto.CreateChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	service := chassisproto.NewChassisClient(conn)
+	
+	service := NewChassisClientFunc(conn)
 	resp, err := service.CreateChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 //DeleteChassis will do the rpc call to delete a chassis
 func DeleteChassis(req chassisproto.DeleteChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	service := chassisproto.NewChassisClient(conn)
+
+	service := NewChassisClientFunc(conn)
 	resp, err := service.DeleteChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 //UpdateChassis will do the rpc call to update a chassis
 func UpdateChassis(req chassisproto.UpdateChassisRequest) (*chassisproto.GetChassisResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	service := chassisproto.NewChassisClient(conn)
+
+	service := NewChassisClientFunc(conn)
 	resp, err := service.UpdateChassis(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }

@@ -17,14 +17,15 @@ package fabrics
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+	"strings"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
 	log "github.com/sirupsen/logrus"
-	"net"
-	"net/http"
-	"strings"
 )
 
 //AddFabric holds the logic for Adding fabric

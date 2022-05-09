@@ -53,6 +53,7 @@ type ListMember struct {
 	OdataID string `json:"@odata.id"`
 }
 
+// EventServiceResponse is struct for event service response
 type EventServiceResponse struct {
 	OdataContext                      string                        `json:"@odata.context,omitempty"`
 	Etag                              string                        `json:"@odata.etag,omitempty"`
@@ -166,7 +167,7 @@ func (r *MutexLock) ReadResponse(subscriptionID string) (response.RPC, []string)
 	return rpcResponse, hosts
 }
 func getHostsData(data map[string]string) []string {
-	hosts := make([]string, 0)
+	var hosts []string
 	deleteDuplicateHostData(data, "SystemsCollection", "Systems")
 	deleteDuplicateHostData(data, "ChassisCollection", "Chassis")
 	deleteDuplicateHostData(data, "ManagerCollection", "Managers")

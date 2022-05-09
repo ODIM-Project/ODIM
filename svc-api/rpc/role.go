@@ -23,69 +23,72 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+var(
+	NewRolesClientFunc = roleproto.NewRolesClient
+)
 // GetRole defines the RPC call function for
 // the GetRole from account-session micro service
 func GetRole(req roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
-	conn, err := services.ODIMService.Client(services.AccountSession)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := roleproto.NewRolesClient(conn)
+	
+	asService := NewRolesClientFunc(conn)
 	resp, err := asService.GetRole(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
 // GetAllRoles defines the RPC call function for
 // the GetAllRoles from account-session micro service
 func GetAllRoles(req roleproto.GetRoleRequest) (*roleproto.RoleResponse, error) {
-	conn, err := services.ODIMService.Client(services.AccountSession)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := roleproto.NewRolesClient(conn)
+
+	asService := NewRolesClientFunc(conn)
 	resp, err := asService.GetAllRoles(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
 // UpdateRole defines the RPC call function for
 // the UpdateRole from account-session micro service
 func UpdateRole(req roleproto.UpdateRoleRequest) (*roleproto.RoleResponse, error) {
-	conn, err := services.ODIMService.Client(services.AccountSession)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := roleproto.NewRolesClient(conn)
+
+	asService := NewRolesClientFunc(conn)
 	resp, err := asService.UpdateRole(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }
 
 // DeleteRole defines the RPC call function for the DeleteRole from account-session microservice
 func DeleteRole(req roleproto.DeleteRoleRequest) (*roleproto.RoleResponse, error) {
-	conn, err := services.ODIMService.Client(services.AccountSession)
+	conn, err := ClientFunc(services.AccountSession)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := roleproto.NewRolesClient(conn)
+
+	asService := NewRolesClientFunc(conn)
 	resp, err := asService.DeleteRole(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
-
+	defer conn.Close()
 	return resp, err
 }

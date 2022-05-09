@@ -10646,14 +10646,23 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#MessageRegistryFileCollection.MessageRegistryFileCollection",
-   "@odata.id":"/redfish/v1/Registries/",
+   "@odata.id":"/redfish/v1/Registries",
    "@odata.type":"#MessageRegistryFileCollection.MessageRegistryFileCollection",
    "Name":"Registry File Repository",
    "Description":"Registry Repository",
-   "Members@odata.count":27,
+   "Members@odata.count":49,
    "Members":[
       {
          "@odata.id":"/redfish/v1/Registries/Base.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.10.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.10.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.11.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/Base.1.2.0"
@@ -10677,7 +10686,46 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/Base.1.6.1"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/Base.1.7.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.9.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/Composition.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.0.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.1.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/EthernetFabric.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Fabric.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/JobEvent.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.1"
       },
       {
          "@odata.id":"/redfish/v1/Registries/Redfish_1.0.1_PrivilegeRegistry"
@@ -10692,6 +10740,9 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/Redfish_1.0.4_PrivilegeRegistry"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.1.0_PrivilegeRegistry"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.0"
       },
       {
@@ -10701,32 +10752,55 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.2"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.3"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.0.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryA40.v1_1_46"
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.3"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Update.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/iLO.2.13.0"
+         "@odata.id":"/redfish/v1/Registries/iLOeRS.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.1.0"
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU56.v1_1_42"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_00"
+         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU30.v1_2_00"
+         "@odata.id":"/redfish/v1/Registries/iLO.2.14.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_32"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.3.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
       }
    ]
-}
-	
+}	
 ```
 
 

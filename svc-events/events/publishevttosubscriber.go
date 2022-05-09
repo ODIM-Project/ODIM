@@ -60,6 +60,10 @@ func (e *ExternalInterfaces) addFabric(requestData, host string) {
 			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
 			e.addFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
 		}
+		if strings.EqualFold(inEvent.EventType, "ResourceRemoved") &&
+			strings.HasPrefix(inEvent.OriginOfCondition.Oid, "/redfish/v1/Fabrics") {
+			e.removeFabricRPCCall(inEvent.OriginOfCondition.Oid, host)
+		}
 	}
 }
 
@@ -450,6 +454,28 @@ func (e *ExternalInterfaces) addFabricRPCCall(origin, address string) {
 	}
 	e.checkCollectionSubscription(origin, "Redfish")
 	log.Info("Fabric Added")
+	return
+}
+func (e *ExternalInterfaces) removeFabricRPCCall(origin, address string) {
+	if strings.Contains(origin, "Zones") || strings.Contains(origin, "Endpoints") || strings.Contains(origin, "AddressPools") {
+		return
+	}
+	conn, err := services.ODIMService.Client(services.Fabrics)
+	if err != nil {
+		log.Error("Error while Remove Fabric ", err.Error())
+		return
+	}
+	defer conn.Close()
+	fab := fabricproto.NewFabricsClient(conn)
+	_, err = fab.RemoveFabric(context.TODO(), &fabricproto.AddFabricRequest{
+		OriginResource: origin,
+		Address:        address,
+	})
+	if err != nil {
+		log.Error("Error while RemoveFabric ", err.Error())
+		return
+	}
+	log.Info("Fabric Removed")
 	return
 }
 

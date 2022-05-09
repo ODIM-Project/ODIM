@@ -1,4 +1,4 @@
-//(C) Copyright [2020] Hewlett Packard Enterprise Development LP
+//(C) Copyright [2022] Hewlett Packard Enterprise Development LP
 //
 //Licensed under the Apache License, Version 2.0 (the "License"); you may
 //not use this file except in compliance with the License. You may obtain
@@ -17,22 +17,32 @@ package fabrics
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
+	"github.com/ODIM-Project/ODIM/svc-fabrics/fabmodel"
+	log "github.com/sirupsen/logrus"
 )
 
-//DeleteFabricResource holds the logic for deleting specfic fabric resource
-// It accepts url and contacts the configured CFM plugin
-// and deletes the metioned fabric resoure such as Endpoints,Ports
-func (f *Fabrics) DeleteFabricResource(req *fabricsproto.FabricRequest) response.RPC {
+// RemoveFabric holds the logic for deleting specfic fabric resource
+func RemoveFabric(req *fabricsproto.AddFabricRequest) response.RPC {
 	var resp response.RPC
-	var contactRequest pluginContactRequest
-	req.Method = http.MethodDelete
+	origin := req.OriginResource
+	uuid := origin[strings.LastIndexByte(origin, '/')+1:]
 	var err error
-	contactRequest, resp, err = f.parseFabricsRequest(req)
-	if err != nil {
-		return resp
+	fab := fabmodel.Fabric{
+		FabricUUID: uuid,
 	}
-	return f.parseFabricsResponse(contactRequest, req.URL)
+	err = fab.RemoveFabricData(uuid)
+	if err != nil {
+		log.Error(err.Error())
+		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(),
+			[]interface{}{}, nil)
+	}
+	log.Info("Fabric Removed ", uuid)
+	resp.StatusCode = http.StatusOK
+	resp.StatusMessage = response.Success
+	return resp
 }

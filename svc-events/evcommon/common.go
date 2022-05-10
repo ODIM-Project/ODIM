@@ -484,6 +484,7 @@ func GetIPFromHostName(fqdn string) (string, string) {
 		if err != nil {
 			errorMessage = "Can't lookup the ip from host name" + err.Error()
 		}
+		return "", errorMessage
 	}
 	return fmt.Sprintf("%v", addr[0]), errorMessage
 }

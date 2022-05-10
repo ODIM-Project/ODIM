@@ -88,7 +88,7 @@ services:
           http_proxy: $http_proxy
           https_proxy: $https_proxy
     container_name: odim_zookeeper
-    image: odim_zookeeper:1.0
+    image: odim_zookeeper:2.0
     hostname: zookeeper
     restart: on-failure
     ports:
@@ -122,7 +122,7 @@ services:
           http_proxy: $http_proxy
           https_proxy: $https_proxy
     container_name: odim_kafka
-    image: odim_kafka:1.0
+    image: odim_kafka:2.0
     hostname: kafka
     ports:
       - '9092:9092'

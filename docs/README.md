@@ -4,6 +4,7 @@
 - [Introduction](#introduction)
   * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
+- [IPV6 support](#ipv6-support)
 - [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
@@ -328,6 +329,53 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
         ```
 
 >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
+
+
+
+# IPv6 support
+
+The `nwPreferences` parameter in the HPE Resource Aggregator for ODIM deployment configuration file
+(`kube_deploy_nodes.yaml`) is set to `ipv4` as the default value. This means the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests via both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
+
+### Sample APIs with IPv6 address
+
+- Curl command to view a collection of systems
+
+  ```
+  curl -i GET \
+  -H "X-Auth-Token:{X-Auth-Token}" \
+  'https://[fc00:1024:2401::112]:{port}/redfish/v1/Systems'
+  ```
+
+- Curl command to add a server
+
+  ```
+  curl -i -X POST \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  -H "Content-Type:application/json" \
+  -d \
+  '{
+    "HostName":"192.168.256.256",
+    "UserName":"admin",
+    "Password":"HP1nvent",
+    "Links":{
+       "ConnectionMethod":{
+       "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/e9fec4a3-a9f7-4d4e-b65f-8d9316e7f0d9"
+    }
+   }
+  }' \
+  'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/AggregationSources'
+  ```
+
+- curl command to view the connection method
+
+  ```
+  curl -i -X GET \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/ConnectionMethods/'
+  ```
+
+  
 
 # Support for URL Encoding
 
@@ -6906,21 +6954,41 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0",
    "@odata.type":"#Manager.v1_13_0.Manager",
    "Name":"odimra",
    "ManagerType":"Service",
-   "Id":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
-   "UUID":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "Id":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
+   "UUID":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
    "FirmwareVersion":"1.0",
    "Status":{
       "State":"Enabled",
       "Health":"OK"
    },
    "LogServices":{
-      "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c/LogServices"
+      "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0/LogServices"
    },
-   "DateTime":"2022-02-22 09:48:42.652994406 +0000 UTC",
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         }
+      ],
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         }
+      ],
+      "ManagerForManagers":[
+         {
+            "@odata.id":"/redfish/v1/Managers/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         },
+         {
+            "@odata.id":"/redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fd"
+         }
+      ]
+   },
+   "DateTime":"2022-04-07T10:27:40Z",
    "Model":"ODIMRA 1.0",
    "PowerState":"On",
    "SerialConsole":{
@@ -10646,14 +10714,23 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#MessageRegistryFileCollection.MessageRegistryFileCollection",
-   "@odata.id":"/redfish/v1/Registries/",
+   "@odata.id":"/redfish/v1/Registries",
    "@odata.type":"#MessageRegistryFileCollection.MessageRegistryFileCollection",
    "Name":"Registry File Repository",
    "Description":"Registry Repository",
-   "Members@odata.count":27,
+   "Members@odata.count":49,
    "Members":[
       {
          "@odata.id":"/redfish/v1/Registries/Base.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.10.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.10.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.11.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/Base.1.2.0"
@@ -10677,7 +10754,46 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/Base.1.6.1"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/Base.1.7.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.9.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/Composition.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.0.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.1.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/EthernetFabric.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Fabric.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/JobEvent.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.1"
       },
       {
          "@odata.id":"/redfish/v1/Registries/Redfish_1.0.1_PrivilegeRegistry"
@@ -10692,6 +10808,9 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/Redfish_1.0.4_PrivilegeRegistry"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.1.0_PrivilegeRegistry"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.0"
       },
       {
@@ -10701,32 +10820,55 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.2"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.3"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.0.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryA40.v1_1_46"
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.3"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Update.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/iLO.2.13.0"
+         "@odata.id":"/redfish/v1/Registries/iLOeRS.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.1.0"
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU56.v1_1_42"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_00"
+         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU30.v1_2_00"
+         "@odata.id":"/redfish/v1/Registries/iLO.2.14.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_32"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.3.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
       }
    ]
-}
-	
+}	
 ```
 
 

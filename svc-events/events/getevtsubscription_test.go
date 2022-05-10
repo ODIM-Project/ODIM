@@ -31,33 +31,37 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getMockMethods() PluginContact {
-	return PluginContact{
-		ContactClient:                    evcommon.MockContactClient,
-		Auth:                             evcommon.MockIsAuthorized,
-		CreateChildTask:                  evcommon.MockCreateChildTask,
-		UpdateTask:                       evcommon.MockUpdateTask,
-		GetSessionUserName:               evcommon.MockGetSessionUserName,
-		GetTarget:                        evcommon.MockGetTarget,
-		GetPluginData:                    evcommon.MockGetPluginData,
-		GetFabricData:                    evcommon.MockGetFabricData,
-		GetEvtSubscriptions:              evcommon.MockGetEvtSubscriptions,
-		GetDeviceSubscriptions:           evcommon.MockGetDeviceSubscriptions,
-		SaveEventSubscription:            evcommon.MockSaveEventSubscription,
-		UpdateEventSubscription:          evcommon.MockUpdateEventSubscription,
-		DeleteDeviceSubscription:         evcommon.MockDeleteDeviceSubscription,
-		DeleteEvtSubscription:            evcommon.MockDeleteEvtSubscription,
-		UpdateDeviceSubscriptionLocation: evcommon.MockUpdateDeviceSubscriptionLocation,
-		GetAllKeysFromTable:              evcommon.MockGetAllKeysFromTable,
-		GetAllFabrics:                    evcommon.MockGetAllFabrics,
-		GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
-		SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
-		SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
-		GetUndeliveredEvents:             evcommon.MockGetUndeliveredEvents,
-		GetUndeliveredEventsFlag:         evcommon.MockGetUndeliveredEventsFlag,
-		SetUndeliveredEventsFlag:         evcommon.MockSetUndeliveredEventsFlag,
-		DeleteUndeliveredEventsFlag:      evcommon.MockDeleteUndeliveredEventsFlag,
-		DeleteUndeliveredEvents:          evcommon.MockDeleteUndeliveredEvents,
+func getMockMethods() ExternalInterfaces {
+	return ExternalInterfaces{
+		External: External{
+			ContactClient:   evcommon.MockContactClient,
+			Auth:            evcommon.MockIsAuthorized,
+			CreateChildTask: evcommon.MockCreateChildTask,
+			UpdateTask:      evcommon.MockUpdateTask,
+		},
+		DB: DB{
+			GetSessionUserName:               evcommon.MockGetSessionUserName,
+			GetTarget:                        evcommon.MockGetTarget,
+			GetPluginData:                    evcommon.MockGetPluginData,
+			GetFabricData:                    evcommon.MockGetFabricData,
+			GetEvtSubscriptions:              evcommon.MockGetEvtSubscriptions,
+			GetDeviceSubscriptions:           evcommon.MockGetDeviceSubscriptions,
+			SaveEventSubscription:            evcommon.MockSaveEventSubscription,
+			UpdateEventSubscription:          evcommon.MockUpdateEventSubscription,
+			DeleteDeviceSubscription:         evcommon.MockDeleteDeviceSubscription,
+			DeleteEvtSubscription:            evcommon.MockDeleteEvtSubscription,
+			UpdateDeviceSubscriptionLocation: evcommon.MockUpdateDeviceSubscriptionLocation,
+			GetAllKeysFromTable:              evcommon.MockGetAllKeysFromTable,
+			GetAllFabrics:                    evcommon.MockGetAllFabrics,
+			GetAllMatchingDetails:            evcommon.MockGetAllMatchingDetails,
+			SaveUndeliveredEvents:            evcommon.MockSaveUndeliveredEvents,
+			SaveDeviceSubscription:           evcommon.MockSaveDeviceSubscription,
+			GetUndeliveredEvents:             evcommon.MockGetUndeliveredEvents,
+			GetUndeliveredEventsFlag:         evcommon.MockGetUndeliveredEventsFlag,
+			SetUndeliveredEventsFlag:         evcommon.MockSetUndeliveredEventsFlag,
+			DeleteUndeliveredEventsFlag:      evcommon.MockDeleteUndeliveredEventsFlag,
+			DeleteUndeliveredEvents:          evcommon.MockDeleteUndeliveredEvents,
+		},
 	}
 }
 func TestGetEventSubscriptionsCollection(t *testing.T) {

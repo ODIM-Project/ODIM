@@ -29,11 +29,12 @@ package fabrics
 import (
 	"bytes"
 	"fmt"
-	"gotest.tools/assert"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"gotest.tools/assert"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"

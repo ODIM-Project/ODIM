@@ -38,38 +38,42 @@ import (
 
 //Events struct helps to register service
 type Events struct {
-	Connector *events.PluginContact
+	Connector *events.ExternalInterfaces
 }
 
 // GetPluginContactInitializer intializes all the required connection functions for the events execution
 func GetPluginContactInitializer() *Events {
-	connector := &events.PluginContact{
-		ContactClient:                    pmbhandle.ContactPlugin,
-		Auth:                             services.IsAuthorized,
-		CreateTask:                       services.CreateTask,
-		UpdateTask:                       events.UpdateTaskData,
-		CreateChildTask:                  services.CreateChildTask,
-		GetSessionUserName:               services.GetSessionUserName,
-		GetEvtSubscriptions:              evmodel.GetEvtSubscriptions,
-		SaveEventSubscription:            evmodel.SaveEventSubscription,
-		GetPluginData:                    evmodel.GetPluginData,
-		GetDeviceSubscriptions:           evmodel.GetDeviceSubscriptions,
-		GetTarget:                        evmodel.GetTarget,
-		GetAllKeysFromTable:              evmodel.GetAllKeysFromTable,
-		GetAllFabrics:                    evmodel.GetAllFabrics,
-		GetAllMatchingDetails:            evmodel.GetAllMatchingDetails,
-		UpdateDeviceSubscriptionLocation: evmodel.UpdateDeviceSubscriptionLocation,
-		GetFabricData:                    evmodel.GetFabricData,
-		DeleteEvtSubscription:            evmodel.DeleteEvtSubscription,
-		UpdateEventSubscription:          evmodel.UpdateEventSubscription,
-		DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
-		SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
-		SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
-		GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
-		GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
-		SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
-		DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
-		DeleteUndeliveredEvents:          evmodel.DeleteUndeliveredEvents,
+	connector := &events.ExternalInterfaces{
+		External: events.External{
+			ContactClient:   pmbhandle.ContactPlugin,
+			Auth:            services.IsAuthorized,
+			CreateTask:      services.CreateTask,
+			UpdateTask:      events.UpdateTaskData,
+			CreateChildTask: services.CreateChildTask,
+		},
+		DB: events.DB{
+			GetSessionUserName:               services.GetSessionUserName,
+			GetEvtSubscriptions:              evmodel.GetEvtSubscriptions,
+			SaveEventSubscription:            evmodel.SaveEventSubscription,
+			GetPluginData:                    evmodel.GetPluginData,
+			GetDeviceSubscriptions:           evmodel.GetDeviceSubscriptions,
+			GetTarget:                        evmodel.GetTarget,
+			GetAllKeysFromTable:              evmodel.GetAllKeysFromTable,
+			GetAllFabrics:                    evmodel.GetAllFabrics,
+			GetAllMatchingDetails:            evmodel.GetAllMatchingDetails,
+			UpdateDeviceSubscriptionLocation: evmodel.UpdateDeviceSubscriptionLocation,
+			GetFabricData:                    evmodel.GetFabricData,
+			DeleteEvtSubscription:            evmodel.DeleteEvtSubscription,
+			UpdateEventSubscription:          evmodel.UpdateEventSubscription,
+			DeleteDeviceSubscription:         evmodel.DeleteDeviceSubscription,
+			SaveUndeliveredEvents:            evmodel.SaveUndeliveredEvents,
+			SaveDeviceSubscription:           evmodel.SaveDeviceSubscription,
+			GetUndeliveredEvents:             evmodel.GetUndeliveredEvents,
+			GetUndeliveredEventsFlag:         evmodel.GetUndeliveredEventsFlag,
+			SetUndeliveredEventsFlag:         evmodel.SetUndeliveredEventsFlag,
+			DeleteUndeliveredEventsFlag:      evmodel.DeleteUndeliveredEventsFlag,
+			DeleteUndeliveredEvents:          evmodel.DeleteUndeliveredEvents,
+		},
 	}
 	return &Events{
 		Connector: connector,

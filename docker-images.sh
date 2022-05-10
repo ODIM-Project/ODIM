@@ -22,14 +22,14 @@ declare -A images_list=(\
 		["etcd"]="1.16" \
 		["events"]="3.0" \
 		["fabrics"]="3.0" \
-		["kafka"]="1.0" \
+		["kafka"]="2.0" \
 		["managers"]="3.0" \
 		["redis"]="2.0" \
 		["systems"]="3.0" \
 		["task"]="3.0" \
 		["telemetry"]="2.0"\
 		["update"]="3.0" \
-		["zookeeper"]="1.0" \
+		["zookeeper"]="2.0" \
 		["composition-service"]="1.0" \
 		)
 

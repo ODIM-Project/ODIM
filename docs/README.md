@@ -574,7 +574,6 @@ curl -i GET 'https://{odimra_host}:{port}/redfish/v1'
 
 ```
 Allow:GET
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=UTF-8
 Link:</redfish/v1/SchemaStore/en/ServiceRoot.json/>; rel=describedby
@@ -956,7 +955,6 @@ curl -i POST \
 
 
 ```
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/SessionService/Sessions/2d2e8ebc-4e7c-433a-bfd6-74dc420886d0/>; rel=self
@@ -1113,7 +1111,6 @@ curl -i GET \
 
 ```
 Allow:GET
-Cache-Control:no-cache
 Connection:Keep-alive
 Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby
@@ -1501,7 +1498,6 @@ curl -i POST \
 >**Sample response header**
 
 ```
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/AccountService/Accounts/monitor32/>; rel=describedby
@@ -1649,7 +1645,6 @@ curl -i -X PATCH \
 >**Sample response header**
 
 ```
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/AccountService/Accounts/monitor32/>; rel=describedby
@@ -1777,7 +1772,6 @@ curl -i GET \
 
 ```
 Allow:GET
-Cache-Control:no-cache
 Connection:Keep-alive
 Content-Type:application/json; charset=utf-8
 Date:Sun,17 May 2020 14:26:49 GMT+5m 14s
@@ -2080,7 +2074,6 @@ Content-Length:491 bytes
 >**Sample response header \(HTTP 201 status\)**
 
 ```
-"cache-control":"no-cache
 connection":"keep-alive
 content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
@@ -2309,7 +2302,6 @@ Content-Length:491 bytes
 >**Sample response header \(HTTP 201 status\)**
 
 ```
-"cache-control":"no-cache
 connection":"keep-alive
 content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
@@ -2942,7 +2934,6 @@ curl -i POST \
 >**Sample response header**
 
 ```
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48/>; rel=self
@@ -8531,7 +8522,6 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf
@@ -8718,7 +8708,6 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d
@@ -8860,7 +8849,6 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98
@@ -9001,7 +8989,6 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97
@@ -9158,7 +9145,6 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow: "GET", "PUT", "POST", "PATCH", "DELETE"
-Cache-Control: no-cache
 Connection: keep-alive
 Content-Type: application/json; charset=utf-8
 Location: /redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f
@@ -9468,7 +9454,6 @@ curl -i GET \
 
 ```
 Allow:GET
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Date:Sun,17 May 2020 15:11:12 GMT+5m 13s
@@ -9782,7 +9767,6 @@ curl -i GET \
 
 ```
 Allow:GET
-Cache-Control:no-cache
 Connection:Keep-alive
 Content-Type:application/json; charset=utf-8
 Link:/v1/SchemaStore/en/EventService.json>; rel=describedby
@@ -10162,7 +10146,6 @@ Content-Length:0 byte
 >**Sample response header** \(HTTP 201 status\) 
 
 ```
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/EventService/Subscriptions/76088e1c-4654-4eec-a3f6-60bc33b77cdb
@@ -10326,7 +10309,6 @@ curl -i POST \
 >**Sample response header** 
 
 ```
-Cache-Control:no-cache
 Connection:keep-alive
 Content-Type:application/json; charset=utf-8
 Odata-Version:4.0

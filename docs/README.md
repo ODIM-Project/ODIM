@@ -6954,21 +6954,41 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0",
    "@odata.type":"#Manager.v1_13_0.Manager",
    "Name":"odimra",
    "ManagerType":"Service",
-   "Id":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
-   "UUID":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "Id":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
+   "UUID":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
    "FirmwareVersion":"1.0",
    "Status":{
       "State":"Enabled",
       "Health":"OK"
    },
    "LogServices":{
-      "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c/LogServices"
+      "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0/LogServices"
    },
-   "DateTime":"2022-02-22 09:48:42.652994406 +0000 UTC",
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         }
+      ],
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         }
+      ],
+      "ManagerForManagers":[
+         {
+            "@odata.id":"/redfish/v1/Managers/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         },
+         {
+            "@odata.id":"/redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fd"
+         }
+      ]
+   },
+   "DateTime":"2022-04-07T10:27:40Z",
    "Model":"ODIMRA 1.0",
    "PowerState":"On",
    "SerialConsole":{

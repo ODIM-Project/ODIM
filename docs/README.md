@@ -4,6 +4,7 @@
 - [Introduction](#introduction)
   * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
+- [IPV6 support](#ipv6-support)
 - [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
@@ -328,6 +329,53 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
         ```
 
 >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
+
+
+
+# IPv6 support
+
+The `nwPreferences` parameter in the HPE Resource Aggregator for ODIM deployment configuration file
+(`kube_deploy_nodes.yaml`) is set to `ipv4` as the default value. This means the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests via both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
+
+### Sample APIs with IPv6 address
+
+- Curl command to view a collection of systems
+
+  ```
+  curl -i GET \
+  -H "X-Auth-Token:{X-Auth-Token}" \
+  'https://[fc00:1024:2401::112]:{port}/redfish/v1/Systems'
+  ```
+
+- Curl command to add a server
+
+  ```
+  curl -i -X POST \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  -H "Content-Type:application/json" \
+  -d \
+  '{
+    "HostName":"192.168.256.256",
+    "UserName":"admin",
+    "Password":"HP1nvent",
+    "Links":{
+       "ConnectionMethod":{
+       "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/e9fec4a3-a9f7-4d4e-b65f-8d9316e7f0d9"
+    }
+   }
+  }' \
+  'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/AggregationSources'
+  ```
+
+- curl command to view the connection method
+
+  ```
+  curl -i -X GET \
+  -H "Authorization:Basic YWRtaW46T2QhbTEyJDQ=" \
+  'https://[fc00:1024:2401::112]:{port}/redfish/v1/AggregationService/ConnectionMethods/'
+  ```
+
+  
 
 # Support for URL Encoding
 
@@ -6906,21 +6954,41 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#Manager.Manager",
-   "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0",
    "@odata.type":"#Manager.v1_13_0.Manager",
    "Name":"odimra",
    "ManagerType":"Service",
-   "Id":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
-   "UUID":"c04c8d22-a2a5-4a77-ae89-257a6660571c",
+   "Id":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
+   "UUID":"1df3248f-5ddd-4b62-868d-74f33c4a89d0",
    "FirmwareVersion":"1.0",
    "Status":{
       "State":"Enabled",
       "Health":"OK"
    },
    "LogServices":{
-      "@odata.id":"/redfish/v1/Managers/c04c8d22-a2a5-4a77-ae89-257a6660571c/LogServices"
+      "@odata.id":"/redfish/v1/Managers/1df3248f-5ddd-4b62-868d-74f33c4a89d0/LogServices"
    },
-   "DateTime":"2022-02-22 09:48:42.652994406 +0000 UTC",
+   "Links":{
+      "ManagerForChassis":[
+         {
+            "@odata.id":"/redfish/v1/Chassis/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         }
+      ],
+      "ManagerForServers":[
+         {
+            "@odata.id":"/redfish/v1/Systems/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         }
+      ],
+      "ManagerForManagers":[
+         {
+            "@odata.id":"/redfish/v1/Managers/573bbf22-6b28-48ce-9e22-2a55c9d1adde.1"
+         },
+         {
+            "@odata.id":"/redfish/v1/Managers/386710f8-3a38-4938-a986-5f1048f487fd"
+         }
+      ]
+   },
+   "DateTime":"2022-04-07T10:27:40Z",
    "Model":"ODIMRA 1.0",
    "PowerState":"On",
    "SerialConsole":{

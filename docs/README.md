@@ -7442,7 +7442,7 @@ curl -i PATCH \
 ```
 {
 "RoleId":"Operator",
-"Password": "HP1nvent1"
+"Password": "Password@123"
 }
 ```
 
@@ -9971,7 +9971,7 @@ curl -i GET \
          "OData-Version: 4.0"
       ],
       "HttpOperation":"POST",
-      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\",\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
+      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\",\"Password\":\"Password123\",\"UserName\":\"admin\"}",
       "TargetUri":"/redfish/v1/AggregationService/AggregationSources"
    },
    "Messages":[

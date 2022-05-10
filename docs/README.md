@@ -7442,7 +7442,7 @@ curl -i PATCH \
 ```
 {
 "RoleId":"Operator",
-"Password": "Password@123"
+"Password": "Pwd@12345"
 }
 ```
 

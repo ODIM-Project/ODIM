@@ -22,11 +22,12 @@ import (
 
 // MockDBConnection provides a mock db for unit testing
 func MockDBConnection() (*ConnPool, *errors.Error) {
-	config, err := GetMockDBConfig()
+	config.SetupMockConfigForRedis()
+	cfg, err := GetMockDBConfig()
 	if err != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock db: ", err)
 	}
-	return config.Connection()
+	return cfg.Connection()
 }
 
 // GetMockDBConfig will initiate mock db and will provide the config file

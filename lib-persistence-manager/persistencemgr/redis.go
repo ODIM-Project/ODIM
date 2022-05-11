@@ -20,7 +20,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"strconv"
 	"strings"
@@ -274,13 +273,9 @@ func getPool(host, port string) (*redis.Pool, error) {
 }
 
 func getTLSConfig() (*tls.Config, error) {
-	caCert, err := ioutil.ReadFile(config.Data.KeyCertConf.RootCACertificatePath)
-	if err != nil {
-		return nil, err
-	}
 	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(caCert)
-	cert, err := tls.LoadX509KeyPair(config.Data.APIGatewayConf.CertificatePath, config.Data.APIGatewayConf.PrivateKeyPath)
+	pool.AppendCertsFromPEM(config.Data.KeyCertConf.RootCACertificate)
+	cert, err := tls.X509KeyPair(config.Data.KeyCertConf.RPCCertificate, config.Data.KeyCertConf.RPCPrivateKey)
 	if err != nil {
 		return nil, err
 	}

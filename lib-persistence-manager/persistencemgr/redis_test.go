@@ -22,12 +22,10 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	redisSentinel "github.com/go-redis/redis"
-	"github.com/gomodule/redigo/redis"
 )
 
 type sample struct {
@@ -37,6 +35,7 @@ type sample struct {
 }
 
 func TestConnection(t *testing.T) {
+	config.SetupMockConfigForRedis()
 	persistConfig, err := GetMockDBConfig()
 	if err != nil {
 		t.Fatal("Error while initializing config:", err)

@@ -16,6 +16,7 @@ package model
 
 import "net/http"
 
+// PluginContactRequest ...
 type PluginContactRequest struct {
 	Token          string
 	OID            string
@@ -27,12 +28,14 @@ type PluginContactRequest struct {
 	HTTPMethodType string
 }
 
+// ResponseStatus ...
 type ResponseStatus struct {
 	StatusCode    int32
 	StatusMessage string
 	MsgArgs       []interface{}
 }
 
+// Plugin ...
 type Plugin struct {
 	IP                string
 	Port              string
@@ -43,6 +46,7 @@ type Plugin struct {
 	PreferredAuthType string
 }
 
+// Target ...
 type Target struct {
 	ManagerAddress string `json:"ManagerAddress"`
 	Password       []byte `json:"Password"`

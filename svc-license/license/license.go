@@ -26,6 +26,7 @@ import (
 	"github.com/micro/go-micro/util/log"
 )
 
+// GetLicenseService to get license service
 func (e *ExternalInterface) GetLicenseService(req *licenseproto.GetLicenseServiceRequest) response.RPC {
 	var resp response.RPC
 	license := dmtf.LicenseService{
@@ -43,6 +44,7 @@ func (e *ExternalInterface) GetLicenseService(req *licenseproto.GetLicenseServic
 	return resp
 }
 
+// GetLicenseCollection to get license collection
 func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseRequest) response.RPC {
 	var resp response.RPC
 	licenseCollection := dmtf.LicenseCollection{
@@ -70,6 +72,7 @@ func (e *ExternalInterface) GetLicenseCollection(req *licenseproto.GetLicenseReq
 	return resp
 }
 
+// GetLicenseResource to get license resource
 func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResourceRequest) response.RPC {
 	var resp response.RPC
 	licenseResp := dmtf.License{}

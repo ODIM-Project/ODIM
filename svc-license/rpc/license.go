@@ -22,6 +22,7 @@ import (
 	licenseproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/license"
 )
 
+// GetLicenseService to get license service details
 func (l *License) GetLicenseService(ctx context.Context, req *licenseproto.GetLicenseServiceRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
 	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -33,6 +34,7 @@ func (l *License) GetLicenseService(ctx context.Context, req *licenseproto.GetLi
 	return resp, nil
 }
 
+// GetLicenseCollection to get license collection
 func (l *License) GetLicenseCollection(ctx context.Context, req *licenseproto.GetLicenseRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
 	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})
@@ -44,6 +46,7 @@ func (l *License) GetLicenseCollection(ctx context.Context, req *licenseproto.Ge
 	return resp, nil
 }
 
+// GetLicenseResource to get license resource
 func (l *License) GetLicenseResource(ctx context.Context, req *licenseproto.GetLicenseResourceRequest) (*licenseproto.GetLicenseResponse, error) {
 	resp := &licenseproto.GetLicenseResponse{}
 	authResp := l.connector.External.Auth(req.SessionToken, []string{common.PrivilegeLogin}, []string{})

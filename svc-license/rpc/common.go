@@ -28,7 +28,7 @@ type License struct {
 	connector *license.ExternalInterface
 }
 
-// GetTele intializes all the required connection functions for the telemetry execution
+// GetLicense intializes all the required connection
 func GetLicense() *License {
 	return &License{
 		connector: license.GetExternalInterface(),

@@ -17,14 +17,16 @@ package rpc
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-systems/chassis"
 	"github.com/ODIM-Project/ODIM/svc-systems/plugin"
 	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
-	"net/http"
-	"testing"
 
 	chassisproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/chassis"
 )
@@ -47,6 +49,7 @@ func mockIsAuthorized(sessionToken string, privileges, oemPrivileges []string) r
 }
 
 func TestChassisRPC_GetChassisResource(t *testing.T) {
+	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
 	defer func() {
 		err := common.TruncateDB(common.InMemory)

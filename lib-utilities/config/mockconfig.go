@@ -214,16 +214,6 @@ acl5jRgKpUnN5bp581jXxPOzQXgJOAKVcxhlOT2WtTmksXH7yIiCwLlF63vziro1
 -----END RSA PRIVATE KEY-----`)
 )
 
-func SetupMockConfigForRedis() {
-	Data.KeyCertConf = &KeyCertConf{
-		RootCACertificate: hostCA,
-		RPCPrivateKey:     hostPrivKey,
-		RPCCertificate:    hostCert,
-		RSAPublicKey:      hostPubKey,
-		RSAPrivateKey:     hostRSAPrivKey,
-	}
-}
-
 // SetUpMockConfig set ups a mock ration for unit testing
 func SetUpMockConfig(t *testing.T) error {
 	workingDir, _ := os.Getwd()

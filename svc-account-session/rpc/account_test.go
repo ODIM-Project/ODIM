@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
 	"github.com/ODIM-Project/ODIM/svc-account-session/auth"
@@ -74,6 +75,7 @@ func truncateDB(t *testing.T) {
 }
 
 func TestAccount_Create(t *testing.T) {
+	config.SetUpMockConfig(t)
 	defer truncateDB(t)
 	auth.Lock.Lock()
 	common.SetUpMockConfig()

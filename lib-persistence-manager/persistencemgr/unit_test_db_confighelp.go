@@ -16,13 +16,15 @@
 package persistencemgr
 
 import (
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
 // MockDBConnection provides a mock db for unit testing
-func MockDBConnection() (*ConnPool, *errors.Error) {
-	config.SetupMockConfigForRedis()
+func MockDBConnection(t *testing.T) (*ConnPool, *errors.Error) {
+	config.SetUpMockConfig(t)
 	cfg, err := GetMockDBConfig()
 	if err != nil {
 		return nil, errors.PackError(errors.UndefinedErrorType, "error while trying to initiate mock db: ", err)

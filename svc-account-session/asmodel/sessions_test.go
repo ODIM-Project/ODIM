@@ -16,11 +16,13 @@
 package asmodel
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 )
 
@@ -106,6 +108,7 @@ func TestGetSession(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	config.SetUpMockConfig(t)
 	common.SetUpMockConfig()
 	defer func() {
 		common.TruncateDB(common.OnDisk)

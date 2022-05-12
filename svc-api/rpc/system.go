@@ -22,137 +22,150 @@ import (
 	"github.com/ODIM-Project/ODIM/lib-utilities/services"
 )
 
+var(
+	NewSystemsClientFunc = systemsproto.NewSystemsClient
+)
+
 //GetSystemsCollection will do the rpc call to collect Systems from odimra
 func GetSystemsCollection(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.GetSystemsCollection(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // GetSystemRequestRPC will do the rpc calls for the svc-systems
 func GetSystemRequestRPC(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.GetSystems(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 //GetSystemResource will do the rpc call to collect System Resource
 func GetSystemResource(req systemsproto.GetSystemsRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.GetSystemResource(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // ComputerSystemReset will do the rpc call to reset the computer system
 func ComputerSystemReset(req systemsproto.ComputerSystemResetRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.ComputerSystemReset(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // SetDefaultBootOrder will do the rpc call to set the default boot order of computer system
 func SetDefaultBootOrder(req systemsproto.DefaultBootOrderRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.SetDefaultBootOrder(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // ChangeBiosSettings will do the rpc call to change bios settings
 func ChangeBiosSettings(req systemsproto.BiosSettingsRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.ChangeBiosSettings(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // ChangeBootOrderSettings will do the rpc call to change Boot Order settings
 func ChangeBootOrderSettings(req systemsproto.BootOrderSettingsRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.ChangeBootOrderSettings(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // CreateVolume will do the rpc call to create a volume under storage
 func CreateVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.CreateVolume(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }
 
 // DeleteVolume will do the rpc call to DeleteVolume a volume under storage
 func DeleteVolume(req systemsproto.VolumeRequest) (*systemsproto.SystemsResponse, error) {
-	conn, err := services.ODIMService.Client(services.Systems)
+	conn, err := ClientFunc(services.Systems)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create client connection: %v", err)
 	}
-	defer conn.Close()
-	asService := systemsproto.NewSystemsClient(conn)
+	
+	asService := NewSystemsClientFunc(conn)
 	resp, err := asService.DeleteVolume(context.TODO(), &req)
 	if err != nil {
 		return nil, fmt.Errorf("error: RPC error: %v", err)
 	}
+	defer conn.Close()
 	return resp, nil
 }

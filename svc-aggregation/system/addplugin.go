@@ -182,8 +182,8 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	ldata := model.Collection{
 		ODataContext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
 		ODataID:      "/redfish/v1/Managers/" + managerUUID + "/LogServices",
-		ODataType:   "#LogServiceCollection.LogServiceCollection",
-		Description: "Logs view",
+		ODataType:    "#LogServiceCollection.LogServiceCollection",
+		Description:  "Logs view",
 		Members: []*model.Link{
 			&model.Link{
 				Oid: "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
@@ -209,8 +209,8 @@ func (e *ExternalInterface) addPluginData(req AddResourceRequest, taskID, target
 	}
 	//adding LogEntries Colelction
 	logEntrydata := model.LogServices{
-		Ocontext: "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
-		Oid:      "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
+		Ocontext:    "/redfish/v1/$metadata#LogServiceCollection.LogServiceCollection",
+		Oid:         "/redfish/v1/Managers/" + managerUUID + "/LogServices/SL",
 		Otype:       "#LogService.v1_3_0.LogService",
 		Description: "Logs view",
 		Entries: &model.Entries{

@@ -31,6 +31,7 @@ declare -A images_list=(\
 		["update"]="3.0" \
 		["zookeeper"]="2.0" \
 		["composition-service"]="1.0" \
+		["license"]="1.0" \
 		)
 
 eval_cmd_exec()

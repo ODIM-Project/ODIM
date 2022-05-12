@@ -181,6 +181,12 @@ func Router() *iris.Application {
 		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
 	}
 
+	license := handle.LicenseRPCs{
+		GetLicenseServiceRPC:    rpc.GetLicenseService,
+		GetLicenseCollectionRPC: rpc.GetLicenseCollection,
+		GetLicenseResourceRPC:   rpc.GetLicenseResource,
+	}
+
 	registryFile := handle.Registry{
 		Auth: srv.IsAuthorized,
 	}
@@ -663,6 +669,12 @@ func Router() *iris.Application {
 	telemetryService.Get("/MetricReports/{id}", telemetry.GetMetricReport)
 	telemetryService.Get("/Triggers/{id}", telemetry.GetTrigger)
 	telemetryService.Patch("/Triggers/{id}", telemetry.UpdateTrigger)
+
+	licenseService := v1.Party("/LicenseService", middleware.SessionDelMiddleware)
+	licenseService.SetRegisterRule(iris.RouteSkip)
+	licenseService.Get("/", license.GetLicenseService)
+	licenseService.Get("/Licenses", license.GetLicenseCollection)
+	licenseService.Get("/Licenses/{id}", license.GetLicenseResource)
 
 	// composition service
 	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)

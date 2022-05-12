@@ -126,12 +126,13 @@ data:
     		"Systems",
     		"Chassis",
     		"TaskService",
-    		"EventService",
+        "EventService",
     		"Fabrics",
     		"Managers",
     		"UpdateService",
     		"TelemetryService",
-        "CompositionService"
+        "CompositionService",
+        "License"
     	],
       "ConnectionMethodConf": {{ .Values.odimra.connectionMethodConf | toJson }},
     	"SupportedPluginTypes": ["Compute", "Fabric", "Storage"],

@@ -77,7 +77,7 @@ jobs:
           go install github.com/golang/protobuf/protoc-gen-go@v1.3.2
           sudo cp $GOPATH/bin/protoc-gen-go /usr/bin
           sudo cp $GOPATH/bin/protoc-gen-go-grpc /usr/bin
-          protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "compositionservice")
+          protos=("account" "aggregator" "auth" "chassis" "events" "fabrics" "managers" "role" "session" "systems" "task" "telemetry" "update" "compositionservice" "license")
           for str in ${protos[@]}; do
             proto_path="$(pwd)/lib-utilities/proto/$str"
             proto_file_name="$str.proto"
@@ -157,7 +157,7 @@ jobs:
           echo `redis-cli -p 6380 << HERE
           keys *
           HERE`
-          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-composition-service lib-utilities lib-messagebus"
+          LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-composition-service svc-license lib-utilities lib-messagebus"
           echo $LIST
           for i in $LIST; do
             echo "Testing $i"

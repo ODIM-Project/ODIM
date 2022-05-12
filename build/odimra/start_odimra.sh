@@ -22,7 +22,7 @@ export logFolder="/var/log/odimra_logs"
 
 cd /bin
 
-for i in api account_session aggregation event systems task fabrics telemetry managers update
+for i in api account_session aggregation event systems task fabrics telemetry managers update license
 do
         systemctl enable $i
         while [ $? -ne 0 ]

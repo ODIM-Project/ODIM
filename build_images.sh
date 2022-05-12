@@ -70,6 +70,7 @@ eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.sy
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.task -t task:3.0 ." "task"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.update -t update:3.0 ." "update"
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.compositionService -t composition-service:1.0 ." "composition service"
+eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.license -t license:1.0 ." "license"
 
 # ODIMRA plugins image
 eval_cmd_exec "/usr/bin/docker build -f install/Docker/dockerfiles/Dockerfile.urplugin -t urplugin:3.0 ." "urplugin"

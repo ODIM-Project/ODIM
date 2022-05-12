@@ -370,6 +370,12 @@ func GetEnabledServiceList() map[string]bool {
 			if err == nil && len(resp.Kvs) > 0 {
 				data[microService] = true
 			}
+
+		case "License":
+			resp, err := kv.Get(context.TODO(), License, clientv3.WithPrefix())
+			if err == nil && len(resp.Kvs) > 0 {
+				data[microService] = true
+			}
 		}
 	}
 	return data

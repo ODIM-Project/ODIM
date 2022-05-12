@@ -343,6 +343,10 @@ func keyFormation(oid, systemID, DeviceUUID string) string {
 			key = append(key, DeviceUUID+"."+id)
 			continue
 		}
+		if i != 0 && strings.EqualFold(str[i-1], "Licenses") {
+			key = append(key, DeviceUUID+"."+id)
+			continue
+		}
 		key = append(key, id)
 	}
 	return strings.Join(key, "/")

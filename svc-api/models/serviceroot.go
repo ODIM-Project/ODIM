@@ -37,6 +37,7 @@ type ServiceRoot struct {
 	Managers                  *Service     `json:"Managers,omitempty"`
 	UpdateService             *Service     `json:"UpdateService,omitempty"`
 	TelemetryService          *Service     `json:"TelemetryService,omitempty"`
+	License                   *Service     `json:"License,omitempty"`
 	Links                     Links        `json:"Links"`
 	Name                      string       `json:"Name"`
 	OEM                       OEM          `json:"Oem"`

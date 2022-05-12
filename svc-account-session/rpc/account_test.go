@@ -16,14 +16,14 @@ package rpc
 import (
 	"context"
 	e "errors"
+	"reflect"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	accountproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/account"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asmodel"
-	"reflect"
-	"testing"
 )
 
 func TestAccount_Create(t *testing.T) {

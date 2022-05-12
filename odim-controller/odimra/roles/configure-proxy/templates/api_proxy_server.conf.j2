@@ -5,10 +5,10 @@ upstream api_server  {
 server {
 	listen {{ item.selfNodeIP }}:{{ item.apiProxyPort }} ssl;
 	listen {{ item.virtualIP }}:{{ item.apiProxyPort }} ssl;
-    {% if '{{ item.dualStack }}' %}
-        listen [{{ item.selfNodeIPv6 }}]:{{ item.apiNodePort }} ssl;
-	listen [{{ item.virtualIPv6 }}]:{{ item.apiNodePort }} ssl;
-    {% endif %}  
+	{% if item.dualStack   == "True"%}
+	listen [{{ item.selfNodeIPv6 }}]:{{ item.apiNodePort }} ssl; 
+	listen [{{ item.virtualIPv6 }}]:{{ item.apiNodePort }} ssl; 
+    	{% endif %}  
 	
 	server_name odimra.proxy.net;
 	ssl_session_timeout  5m;

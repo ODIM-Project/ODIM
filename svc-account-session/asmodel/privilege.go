@@ -30,7 +30,7 @@ type Privileges struct {
 //GetPrivilegeRegistry retrives the privileges from database
 func GetPrivilegeRegistry() (Privileges, *errors.Error) {
 	var privileges Privileges
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return privileges, err
 	}
@@ -46,8 +46,8 @@ func GetPrivilegeRegistry() (Privileges, *errors.Error) {
 
 // Create method is to insert the privileges list to database
 func (p *Privileges) Create() *errors.Error {
-
-	conn, err := common.GetDBConnection(common.OnDisk)
+	
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ type OEMPrivileges struct {
 //GetOEMPrivileges retrives the privileges from database
 func GetOEMPrivileges() (OEMPrivileges, *errors.Error) {
 	var oemPrivileges OEMPrivileges
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return oemPrivileges, err
 	}
@@ -82,7 +82,7 @@ func GetOEMPrivileges() (OEMPrivileges, *errors.Error) {
 
 // Create method is to insert the oemprivileges list to database
 func (p *OEMPrivileges) Create() *errors.Error {
-	conn, err := common.GetDBConnection(common.OnDisk)
+	conn, err := GetDBConnectionFunc(common.OnDisk)
 	if err != nil {
 		return err
 	}

@@ -299,11 +299,11 @@ jobs:
           		  
     - name: Test
       run: |
-          redis-cli -p 6380 << HERE
+          redis-cli -p 6380 --tls --cert /etc/redis/redis.crt --key /etc/redis/redis.key --cacert /etc/redis/ca.crt << HERE
           set roles:redfishdefined '{"List":["Administrator", "Operator", "ReadOnly"]}'
           HERE
           echo "-----" 
-          echo `redis-cli -p 6380 << HERE
+          echo `redis-cli -p 6380 --tls --cert /etc/redis/redis.crt --key /etc/redis/redis.key --cacert /etc/redis/ca.crt << HERE
           keys *
           HERE`
           LIST="plugin-redfish plugin-dell plugin-lenovo svc-aggregation svc-events svc-fabrics svc-telemetry svc-managers svc-task svc-systems svc-api svc-account-session svc-update svc-composition-service lib-utilities lib-messagebus"

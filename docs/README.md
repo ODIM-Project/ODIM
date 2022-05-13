@@ -9,6 +9,7 @@
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
 - [HTTP request methods, responses, headers and status codes](#http-request-methods-responses-headers-and-status-codes)
+- [Rate limits](#rate-limits)
 - [Authentication and authorization](#authentication-and-authorization)
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
   * [Role-based authorization](#role-based-authorization)
@@ -709,6 +710,105 @@ Following are the HTTP status codes with their descriptions:
 This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
+
+# Rate limits
+
+Shared services need to protect themselves from excessive use—whether intended or unintended—to maintain service availability. Rate limiting is used to control the rate of requests being sent or received in a network, which prevents the frequency of an operation from exceeding specific limits.
+In Resource Aggregator for ODIM, you can specify time (in milliseconds) to limit resources from being sent for the same requests multiple times. These resources include the log service entries that take more retrieval time from the BMC servers. You can limit the number of API requests being sent per session. Additionally, you can limit the number of sessions per user.
+Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the
+`kube_deploy_nodes.yaml` deployment configuration file as required. By default, the values of these parameters are empty, meaning there's no limit on these numbers, unless specified.
+
+### Examples:
+
+- **resourceRateLimit**: Specify values for the parameter in the following format:
+
+  ```
+  "resourceRateLimit": [
+  "/redfish/v1/Systems/{id}/LogServices/SL/Entries:10000",
+  "/redfish/v1/Systems/{id}/LogServices/IML/Entries:8000",
+  "/redfish/v1/Systems/{id}/LogServices/IEL/Entries:6000"
+  ]
+  ```
+
+  In case of multiple requests for these resources, the 503 error code is returned for the specified time (in milliseconds). The response header for this request consists of a property Retry-after which gives time (in seconds). After this time, requests are processed with the 200 status code.
+
+  > **Sample response body**
+
+  ```
+  {
+     "error":{
+        "code":"Base.1.11.0.GeneralError",
+        "message":"An error has occurred. See ExtendedInfo for more information.",
+        "@Message.ExtendedInfo":[
+           {
+              "@odata.type":"#Message.v1_1_2.Message",
+              "MessageId":"Base.1.11.0.GeneralError",
+              "Message":"too many requests, retry after some time",
+              "Severity":"Critical",
+              "Resolution":"Retry after some time"
+           }
+        ]
+     }
+  }
+  ```
+
+  > **Sample response header**
+
+  ```
+  Retry-After: 1
+  ```
+
+- **requestLimitPerSession**: Specify the number of concurrent API requests that can be sent per session. If you specify 15 as the value for this parameter, 15 API requests are processed with successful status code and the remaining concurrent requests triggered from your session return the 503 error code.
+
+  > **Sample response body**
+
+  ```
+  {
+     "error":{
+        "code":"Base.1.11.0.GeneralError",
+        "message":"An error has occurred. See ExtendedInfo for more information.",
+        "@Message.ExtendedInfo":[
+           {
+              "@odata.type":"#Message.v1_1_2.Message",
+              "MessageId":"Base.1.11.0.GeneralError",
+              "Message":"A general error has occurred. See Resolution for
+  information on how to resolve the error, or @Message.ExtendedInfo if
+  Resolution is not provided.",
+              "Severity":"Critical",
+              "Resolution":"None"
+           }
+        ]
+     }
+  }
+  ```
+
+- **sessionLimitPerUser**: Specify the number of active sessions a user can have. If you specify 10 as the value for this parameter, you can create 10 sessions for a particular user and you get 201 status code. Beyond this, the 503 error code is returned.
+
+  > **Sample response body**
+
+  ```
+  {
+     "error":{
+        "code":"Base.1.11.0.GeneralError",
+        "message":"An error has occurred. See ExtendedInfo for more
+  information.",
+        "@Message.ExtendedInfo":[
+           {
+              "@odata.type":"#Message.v1_1_2.Message",
+              "MessageId":"Base.1.11.0.SessionLimitExceeded",
+              "Message":"The session establishment failed due to the number of
+  simultaneous sessions exceeding the limit of the implementation.",
+              "Severity":"Critical",
+              "Resolution":"Reduce the number of other sessions before trying
+  to establish the session or increase the limit of simultaneous sessions, if
+  supported."
+           }
+        ]
+     }
+  }
+  ```
+
+  
 
 # Authentication and authorization
 

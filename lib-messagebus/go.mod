@@ -3,24 +3,23 @@ module github.com/ODIM-Project/ODIM/lib-messagebus
 go 1.17
 
 require (
-	github.com/BurntSushi/toml v0.3.1
+	github.com/BurntSushi/toml v1.0.0
+	github.com/ODIM-Project/ODIM/lib-utilities v0.0.0-20220426104855-9b203a83173f
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.4.31
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.8.1
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/klauspost/compress v1.14.2 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
+	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
-	github.com/onsi/gomega v1.16.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
-	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
-	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
-	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
+	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 )
 
 replace (

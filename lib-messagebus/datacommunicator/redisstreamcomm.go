@@ -16,11 +16,11 @@ package datacommunicator
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -42,7 +42,7 @@ func getDBConnection() *redis.Client {
 		return nil
 	}
 
-	tlsConfig.MinVersion = tls.VersionTLS12
+	tlsConfig.MinVersion = config.DefaultTLSMinVersion
 
 	if len(MQ.RedisStreams.SentinalAddress) > 0 {
 		dbConn = redis.NewFailoverClient(&redis.FailoverOptions{

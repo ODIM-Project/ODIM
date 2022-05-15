@@ -281,7 +281,7 @@ func getTLSConfig() (*tls.Config, error) {
 	}
 	cfg := &tls.Config{
 		RootCAs:      pool,
-		MinVersion:   tls.VersionTLS12,
+		MinVersion:   config.DefaultTLSMinVersion,
 		Certificates: []tls.Certificate{cert},
 	}
 	return cfg, nil

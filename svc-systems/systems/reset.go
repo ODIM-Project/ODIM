@@ -17,9 +17,10 @@ package systems
 
 import (
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	systemsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/systems"

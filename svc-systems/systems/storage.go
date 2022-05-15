@@ -33,6 +33,15 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
+var (
+	StringContain                  = strings.Contains
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+	StringsEqualFold               = strings.EqualFold
+	ContactPluginFunc              = scommon.ContactPlugin
+	JsonUnMarshalFunc              = json.Unmarshal
+	StringTrimSpace                = strings.TrimSpace
+)
+
 // ExternalInterface holds all the external connections managers package functions uses
 type ExternalInterface struct {
 	ContactClient   func(string, string, string, string, interface{}, map[string]string) (*http.Response, error)
@@ -92,7 +101,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	err := json.Unmarshal(req.RequestBody, &volume)
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
-		if strings.Contains(err.Error(), "smodel.OdataIDLink") {
+		if StringContain(err.Error(), "smodel.OdataIDLink") {
 			errorMessage = "Error processing create volume request: @odata.id key(s) is missing in Drives list"
 		}
 		log.Error(errorMessage)
@@ -101,7 +110,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, volume)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, volume)
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
 		log.Error(errMsg)
@@ -138,7 +147,8 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
 	contactRequest.GetPluginStatus = e.GetPluginStatus
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+
+	if StringsEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -165,7 +175,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = fmt.Sprintf("/ODIM/v1/Systems/%s/Storage/%s/Volumes", requestData[1], req.StorageInstance)
 
-	body, _, getResponse, err := scommon.ContactPlugin(contactRequest, "error while creating a volume: ")
+	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while creating a volume: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -173,7 +183,7 @@ func (e *ExternalInterface) CreateVolume(req *systemsproto.VolumeRequest) respon
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
+	err = JsonUnMarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -290,7 +300,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 
 	var volume smodel.Volume
 	// unmarshalling the volume
-	err := json.Unmarshal(req.RequestBody, &volume)
+	err := JsonUnMarshalFunc(req.RequestBody, &volume)
 	if err != nil {
 		errorMessage := "Error while unmarshaling the create volume request: " + err.Error()
 		log.Error(errorMessage)
@@ -310,13 +320,13 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 		return common.GeneralError(http.StatusNotFound, response.ResourceNotFound, gerr.Error(), []interface{}{"System", uuid}, nil)
 	}
 	// Validating the storage instance
-	if strings.TrimSpace(req.VolumeID) == "" {
+	if StringTrimSpace(req.VolumeID) == "" {
 		errorMessage := "error: Volume id is not found"
 		return common.GeneralError(http.StatusBadRequest, response.ResourceNotFound, errorMessage, []interface{}{"Volume", req.VolumeID}, nil)
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, volume)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, volume)
 	if err != nil {
 		errMsg := "error while validating request parameters for volume creation: " + err.Error()
 		log.Error(errMsg)
@@ -366,7 +376,7 @@ func (e *ExternalInterface) DeleteVolume(req *systemsproto.VolumeRequest) respon
 	contactRequest.ContactClient = e.ContactClient
 	contactRequest.Plugin = plugin
 	contactRequest.GetPluginStatus = e.GetPluginStatus
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{

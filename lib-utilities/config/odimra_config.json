@@ -118,7 +118,7 @@
 	   "Managers",
 	   "UpdateService",
 	   "TelemetryService",
-	   "License"
+	   "Licenses"
 	],
 	"SupportedPluginTypes": [
 	   "Compute",

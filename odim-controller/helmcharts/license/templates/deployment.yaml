@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: license
+  name: licenses
   namespace: {{ .Values.odimra.namespace }}
   annotations:
     secret.reloader.stakater.com/reload: "odimra-secret"
@@ -9,11 +9,11 @@ spec:
   replicas: {{ .Values.ReplicaCount | default 1 }}
   selector:
     matchLabels:
-      app: license
+      app: licenses
   template:
     metadata:
       labels:
-        app: license
+        app: licenses
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
@@ -23,8 +23,8 @@ spec:
           whenUnsatisfiable: ScheduleAnyway
           labelSelector:
             matchLabels:
-              app: license      
-      hostname: license
+              app: licenses      
+      hostname: licenses
       volumes:
         - name: odimra-config-vol
           projected:
@@ -73,7 +73,7 @@ spec:
       securityContext:
         fsGroup: {{ .Values.odimra.groupID }}
       containers:
-        - name: license
+        - name: licenses
           env:
             - name: GET_HOSTS_FROM
               value: dns
@@ -81,7 +81,7 @@ spec:
               value: {{ .Values.odimra.haDeploymentEnabled | quote }}
             - name: ODIM_NAMESPACE
               value: {{ .Values.odimra.namespace | quote }}
-          image: license:{{ .Values.odimra.licenseImageTag }}
+          image: licenses:{{ .Values.odimra.licensesImageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 45113

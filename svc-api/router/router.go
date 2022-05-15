@@ -181,7 +181,7 @@ func Router() *iris.Application {
 		GetCompositionReservationsRPC: rpc.GetCompositionReservations,
 	}
 
-	license := handle.LicenseRPCs{
+	licenses := handle.LicenseRPCs{
 		GetLicenseServiceRPC:    rpc.GetLicenseService,
 		GetLicenseCollectionRPC: rpc.GetLicenseCollection,
 		GetLicenseResourceRPC:   rpc.GetLicenseResource,
@@ -672,9 +672,9 @@ func Router() *iris.Application {
 
 	licenseService := v1.Party("/LicenseService", middleware.SessionDelMiddleware)
 	licenseService.SetRegisterRule(iris.RouteSkip)
-	licenseService.Get("/", license.GetLicenseService)
-	licenseService.Get("/Licenses", license.GetLicenseCollection)
-	licenseService.Get("/Licenses/{id}", license.GetLicenseResource)
+	licenseService.Get("/", licenses.GetLicenseService)
+	licenseService.Get("/Licenses", licenses.GetLicenseCollection)
+	licenseService.Get("/Licenses/{id}", licenses.GetLicenseResource)
 
 	// composition service
 	compositionService := v1.Party("/CompositionService", middleware.SessionDelMiddleware)

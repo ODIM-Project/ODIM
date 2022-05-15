@@ -38,6 +38,6 @@ const (
 	Telemetry = "svc.telemetry"
 	// CompositonService holds the name for the CompositonService Micro Service
 	CompositionService = "svc.composition.service"
-	// License holds the name for the License Micro Service
-	License = "svc.license"
+	// Licenses holds the name for the Licenses Micro Service
+	Licenses = "svc.licenses"
 )

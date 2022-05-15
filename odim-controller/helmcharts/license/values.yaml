@@ -2,4 +2,4 @@ odimra:
   namespace:
   groupID:
   haDeploymentEnabled:        
-  licenseImageTag: "1.0"
+  licensesImageTag: "1.0"

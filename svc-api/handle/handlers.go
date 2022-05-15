@@ -110,8 +110,8 @@ func getService(microServices []string, uuid string) models.ServiceRoot {
 		case "CompositionService":
 			serviceRoot.CompositionService = &models.Service{OdataID: servicePath}
 
-		case "License":
-			serviceRoot.License = &models.Service{OdataID: servicePath}
+		case "Licenses":
+			serviceRoot.Licenses = &models.Service{OdataID: servicePath}
 
 		}
 	}

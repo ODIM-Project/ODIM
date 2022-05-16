@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	sessionproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/session"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-account-session/asresponse"
-	"reflect"
-	"testing"
 )
 
 type any = interface{}

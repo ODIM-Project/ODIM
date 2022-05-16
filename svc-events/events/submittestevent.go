@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -153,7 +154,13 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 	if val, ok := req["EventTimestamp"]; ok {
 		switch v := val.(type) {
 		case string:
+			_, err := time.Parse(time.RFC3339, v)
+			if err != nil {
+				return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
+
+			}
 			testEvent.EventTimestamp = v
+
 		default:
 			return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
 		}

@@ -156,7 +156,7 @@ func validAndGenSubTestReq(reqBody []byte) (*common.Event, string, string, []int
 		case string:
 			_, err := time.Parse(time.RFC3339, v)
 			if err != nil {
-				return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of type string", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
+				return nil, response.PropertyValueTypeError, "error: optional parameter EventTimestamp must be of valid date time format", []interface{}{fmt.Sprintf("%v", v), "EventTimestamp"}
 
 			}
 			testEvent.EventTimestamp = v

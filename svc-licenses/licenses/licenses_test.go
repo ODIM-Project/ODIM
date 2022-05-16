@@ -31,7 +31,7 @@ var licenseServiceResponse = dmtf.LicenseService{
 	Description:    "License Service",
 	Name:           "License Service",
 	ServiceEnabled: true,
-	ID:             "",
+	ID:             "License Service",
 	Licenses:       &dmtf.Link{Oid: "/redfish/v1/LicenseService/Licenses"},
 }
 

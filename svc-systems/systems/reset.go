@@ -36,13 +36,17 @@ type PluginContact struct {
 	GetPluginStatus func(smodel.Plugin) bool
 }
 
+var (
+	JsonUnMarshal = json.Unmarshal
+)
+
 // ComputerSystemReset performs a reset action on the requeseted computer system with the specified ResetType
 func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemResetRequest) response.RPC {
 	var resp response.RPC
 
 	// parsing the ResetComputerSystem
 	var resetCompSys ResetComputerSystem
-	err := json.Unmarshal(req.RequestBody, &resetCompSys)
+	err := JsonUnMarshal(req.RequestBody, &resetCompSys)
 	if err != nil {
 		errMsg := "error: unable to parse the computer system reset request" + err.Error()
 		log.Error(errMsg)
@@ -50,7 +54,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, resetCompSys)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, resetCompSys)
 	if err != nil {
 		errMsg := "error while validating request parameters: " + err.Error()
 		log.Error(errMsg)
@@ -92,7 +96,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	contactRequest.ContactClient = p.ContactClient
 	contactRequest.Plugin = plugin
 
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
+	if StringsEqualFold(plugin.PreferredAuthType, "XAuthToken") {
 		var err error
 		contactRequest.HTTPMethodType = http.MethodPost
 		contactRequest.DeviceInfo = map[string]interface{}{
@@ -100,7 +104,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 			"Password": string(plugin.Password),
 		}
 		contactRequest.OID = "/ODIM/v1/Sessions"
-		_, token, getResponse, err := scommon.ContactPlugin(contactRequest, "error while creating session with the plugin: ")
+		_, token, getResponse, err := ContactPluginFunc(contactRequest, "error while creating session with the plugin: ")
 
 		if err != nil {
 			return common.GeneralError(getResponse.StatusCode, getResponse.StatusMessage, err.Error(), nil, nil)
@@ -120,7 +124,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	contactRequest.HTTPMethodType = http.MethodPost
 	contactRequest.DeviceInfo = target
 	contactRequest.OID = "/ODIM/v1/Systems/" + requestData[1] + "/Actions/ComputerSystem.Reset"
-	body, _, getResponse, err := scommon.ContactPlugin(contactRequest, "error while reseting the computer system: ")
+	body, _, getResponse, err := ContactPluginFunc(contactRequest, "error while reseting the computer system: ")
 	if err != nil {
 		resp.StatusCode = getResponse.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -128,7 +132,7 @@ func (p *PluginContact) ComputerSystemReset(req *systemsproto.ComputerSystemRese
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
+	err = JsonUnMarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}

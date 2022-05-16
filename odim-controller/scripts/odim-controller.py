@@ -1250,6 +1250,7 @@ def update_helm_charts(config_map_name):
 		"systems":"odim_svc_helmcharts",
                 "task":"odim_svc_helmcharts",
 		"update":"odim_svc_helmcharts",
+		"licenses":"odim_svc_helmcharts",
 		"kafka":"odim_third_party_helmcharts",
 		"zookeeper":"odim_third_party_helmcharts",
 		"redis":"odim_third_party_helmcharts",

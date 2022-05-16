@@ -81,10 +81,13 @@ func init() {
 }
 
 func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
+	tlsConfig, err := getTLSConfig()
+	if err != nil {
+		log.Error("error while trying to get tls configuration : ", err.Error())
+	}
 	rdb := redisExtCalls.newSentinelClient(&redisSentinel.Options{
-		Addr:     dbConfig.Host + ":" + dbConfig.SentinelPort,
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:      dbConfig.Host + ":" + dbConfig.SentinelPort,
+		TLSConfig: tlsConfig,
 	})
 	return rdb
 }

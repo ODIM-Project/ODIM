@@ -87,6 +87,7 @@ func sentinelNewClient(dbConfig *Config) *redisSentinel.SentinelClient {
 	}
 	rdb := redisExtCalls.newSentinelClient(&redisSentinel.Options{
 		Addr:      dbConfig.Host + ":" + dbConfig.SentinelPort,
+		DB:        0, // use default DB
 		TLSConfig: tlsConfig,
 	})
 	return rdb

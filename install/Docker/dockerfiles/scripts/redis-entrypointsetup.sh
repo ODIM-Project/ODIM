@@ -39,8 +39,6 @@ function launchmaster() {
   sed -i "s/%replica-announce-ip%/${hostname}/" /redis-master/redis.conf
   sed -i "s/%master-port%/${REDIS_HA_REDIS_SERVICE_PORT}/" /redis-master/redis.conf
 
-  sed -n 871p /redis-master/redis.conf
-  sed -n 874p /redis-master/redis.conf
   redis-server /redis-master/redis.conf --protected-mode no
 }
 

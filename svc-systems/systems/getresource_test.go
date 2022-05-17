@@ -463,8 +463,6 @@ func TestGetAllSystems(t *testing.T) {
 		return nil, &errors.Error{}
 	}
 	resp := GetSystemsCollection(&req)
-
-	fmt.Println("Response is **** ", resp)
 	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Status code should be StatusInternalServerError")
 
 }

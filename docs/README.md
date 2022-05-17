@@ -2387,7 +2387,7 @@ curl -i -X POST \
 {
    "HostName":"fc00:1024:2400::154",
    "UserName":"admin",
-   "Password":"HP1nvent",
+   "Password":"{BMC_password}",
    "Links":{
       "ConnectionMethod":{
          "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/ae910e17-4953-4495-95a9-436bf35fe8e4"

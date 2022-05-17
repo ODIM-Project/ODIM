@@ -11690,8 +11690,7 @@ Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/LinceseService'
-
+ 'https://{odimra_host}:{port}/redfish/v1/LicenseService'
 
 ```
 
@@ -11704,7 +11703,7 @@ curl -i GET \
    "@odata.id":"/redfish/v1/LicenseService",
    "@odata.type":"#LicenseService.v1_0_0.LicenseService",
    "Description":"License Service",
-   "Id":"",
+   "Id":"LicenseService",
    "Name":"License Service",
    "Licenses":{
       "@odata.id":"/redfish/v1/LicenseService/Licenses"
@@ -11731,7 +11730,7 @@ curl -i GET \
 ```
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
- 'https://{odimra_host}:{port}/redfish/v1/LinceseService/Licenses/'
+ 'https://{odimra_host}:{port}/redfish/v1/LicenseService/Licenses/'
 ```
 
 
@@ -11785,8 +11784,11 @@ curl -i GET \
    "@odata.type":"#License.v1_0_0.License",
    "Id":"8dd3fb4d-0429-4262-989f-906df092aefd.1.1",
    "Name":"iLO License",
-   "Description":"License",
-   "LicenseType":"Perpetual"
+   "Description":"iLO License View",
+   "LicenseType":"Perpetual",
+   "InstallDate":"24Nov2021",
+   "SerialNumber":"CN704614C4",
+   "ExpirationDate":"24Nov2022"
 }
 ```
 

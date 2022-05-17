@@ -4,6 +4,15 @@
 - [Introduction](#introduction)
   * [Resource Aggregator for ODIM logical architecture](#resource-aggregator-for-odim-logical-architecture)
 - [API usage and access guidelines](#api-usage-and-access-guidelines)
+  - [HTTP headers](#http-headers)
+  - [Base URL](#base-url)
+  - [Curl command](#curl-command)
+  - [Curl command options (flags)](#curl-command-options)
+  - [Including HTTP certificate](#including-http-certificate)
+  - [HTTP request methods](#http-request-methods)
+  - [Responses](#Responses)
+  - [Common response headers](#common-response-headers)
+  - [Status codes](#status-codes)
 - [IPV6 support](#ipv6-support)
 - [Support for URL Encoding](#support-for-url-encoding)
 - [List of supported APIs](#list-of-supported-apis)
@@ -259,7 +268,7 @@ This guide contains sample request and response payloads. For information on res
 > **IMPORTANT:**
 The response codes and the JSON request and response parameters provided in this guide may vary for systems depending on the vendor, model, and firmware versions.
 
-**HTTP headers**
+## **HTTP headers**
 
 Include the following HTTP headers:
 
@@ -267,7 +276,7 @@ Include the following HTTP headers:
     format.
 - Authentication header (BasicAuth or XAuthToken) for all RESTful API operations except for HTTP GET on the Redfish service root and HTTP POST on sessions.
 
-**Base URL**
+## **Base URL**
 
 Use the following URL in all HTTP requests that you send to the resource aggregator:
 
@@ -281,14 +290,13 @@ Use the following URL in all HTTP requests that you send to the resource aggrega
 - {port} is the port where the services of the resource aggregator are running. The default port is 45000. If you have changed the default port in the `/etc/odimra_config/odimra_config.json` file, use that as the port.
 >**NOTE**: To access the base URL using a REST client, replace `{odimra_host}` with the IP address of the system where the resource aggregator is installed. To use FQDN in place of `{odimra_host}`, add the Resource Aggregator for ODIM server certificate to the browser where the REST client is launched.
 
-
-**curl usage**
+## Curl command
 
 The examples shown in this guide use curl to make HTTP requests.
 
 [curl](https://curl.haxx.se) is a command-line tool which helps you get or send information through URLs using supported protocols. The resource aggregator for ODIM supports HTTPS.
 
-**curl command options (flags):**
+## Curl command options
 
 - `--cacert` <file_path> includes a specified X.509 root certificate.
 - `-H` passes on custom headers.
@@ -305,7 +313,7 @@ For a complete list of curl flags, see information provided at [https://curl.hax
     export no_proxy="127.0.0.1,localhost,{odimra_host}"
      ```
 
-**Including HTTP certificate**
+## **Including HTTP certificate**
 
 Without CA certificate, curl fails to verify that HTTP connections are secure and curl commands may fail with the SSL certificate problem. Provide the root CA certificate to curl for secure SSL communication.
 
@@ -329,6 +337,71 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
         ```
 
 >**NOTE:** To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file located in this path:<br> `/etc/ssl/certs/ca-certificates.crt`.
+
+## HTTP request methods
+
+Following are the Redfish-defined HTTP methods that you can use to implement various actions:
+
+| HTTP Request Methods          | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| `GET` \[Read Requests\]       | Use this method to request a representation of a specified resource \(single resource or collection\). |
+| `PATCH` \[Update\]            | Use this method to apply partial modifications to a resource. |
+| `POST` \[Create\] \[Actions\] | Use this method to create a resource. Submit this request to the resource collection to which you want to add the new resource. You can also use this method to initiate operations on a resource or a collection of resources. |
+| `PUT` \[Replace\]             | Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource. |
+| `DELETE` \[Delete\]           | Use this method to delete a resource.                        |
+
+## Responses 
+
+Resource Aggregator for ODIM supports the following responses:
+
+| Responses                     | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| Metadata responses            | Describes the resources and types exposed by the service to generic clients. |
+| Resource responses            | Response in JSON format for an individual resource.          |
+| Resource collection responses | Response in JSON format for a collection of resources.       |
+| Error responses               | If there is an HTTP error, a high-level JSON response is provided with additional information. |
+
+## Common response headers
+
+Here's the list of headers that are common across responses.
+
+```
+"Connection": "keep-alive",
+"OData-Version": "4.0",
+"X-Frame-Options": "sameorigin",
+"X-Content-Type-Options":"nosniff",
+"Content-type":"application/json; charset=utf-8",
+"Cache-Control":"no-cache, no-store, must-revalidate",
+"Transfer-Encoding":"chunked",
+```
+
+## Status codes
+
+Following are the HTTP status codes with their descriptions:
+
+| Success code<br> | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| 200 OK           | Successful completion of the request with representation in the body. |
+| 201 Created      | A new resource is successfully created with the `Location` header set to well-defined URI for the newly created resource. The response body may include the representation of the newly created resource. |
+| 202 Accepted     | The request has been accepted for processing but not processed. The `Location` header is set to URI of a task monitor that can be queried later for the status of the operation. |
+| 204 No Content   | The request succeeded, but no content is being returned in the body of the response. |
+
+| Error code<br>            | Description                                                  |
+| ------------------------- | ------------------------------------------------------------ |
+| 301 Moved Permanently     | The requested resource resides in a different URI given by the `Location` headers. |
+| 400 Bad Request           | The request could not be performed due to missing or invalid information. An extended error message is returned in the response body. |
+| 401 Unauthorized          | Missing or invalid authentication credentials included with a request. |
+| 403 Forbidden             | The server recognizes the credentials to be not having the necessary authorization to perform the operation. |
+| 404 Not Found             | The request specified the URI of a nonexisting resource.     |
+| 405 Method Not Allowed    | When the HTTP verb specified in the request \(GET, PATCH, DELETE, and so on\) is not supported for a particular request URI. The response includes `Allow` header that lists the supported methods. |
+| 409 Conflict              | A creation or an update cannot be completed because it would conflict with the current state of the resources supported by the platform. |
+| 500 Internal Server Error | When the server encounters an unexpected condition that prevents it from fulfilling the request. |
+| 501 Not Implemented       | When the server has not implemented the method for the resource. |
+| 503 Service Unavailable   | When the server is unable to service the request due to temporary overloading or maintenance. |
+
+
+>**NOTE:**
+>This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
 
@@ -574,14 +647,8 @@ curl -i GET 'https://{odimra_host}:{port}/redfish/v1'
 
 ```
 Allow:GET
-Connection:keep-alive
-Content-Type:application/json; charset=UTF-8
 Link:</redfish/v1/SchemaStore/en/ServiceRoot.json/>; rel=describedby
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date":Fri,15 May 2020 13:55:53 GMT+5m 11s
-Transfer-Encoding:chunked
-
 ```
 
 >**Sample response body**
@@ -639,73 +706,6 @@ Transfer-Encoding:chunked
    "UUID": "a64fc187-e0e9-4f68-82a8-67a616b84b1d"
 }
 ```
-
-
-
-#  HTTP request methods responses headers and status codes
-
-Following are the Redfish-defined HTTP methods that you can use to implement various actions:
-
-|HTTP Request Methods|Description|
-|--------------------|-----------|
-|`GET` \[Read Requests\]|Use this method to request a representation of a specified resource \(single resource or collection\).|
-|`PATCH` \[Update\]|Use this method to apply partial modifications to a resource.|
-|`POST` \[Create\] \[Actions\]|Use this method to create a resource. Submit this request to the resource collection to which you want to add the new resource. You can also use this method to initiate operations on a resource or a collection of resources.|
-|`PUT` \[Replace\]|Use this method to replace the property values of a resource completely. It is used to both create and update the state of a resource.|
-|`DELETE` \[Delete\]|Use this method to delete a resource.|
-
-
-
-Resource Aggregator for ODIM supports the following responses:
-
-|Responses|Description|
-|---------|-----------|
-|Metadata responses|Describes the resources and types exposed by the service to generic clients.|
-|Resource responses|Response in JSON format for an individual resource.|
-|Resource collection responses|Response in JSON format for a collection of resources.|
-|Error responses|If there is an HTTP error, a high-level JSON response is provided with additional information.|
-
-
-
-Here's the list of headers that are common across responses.
-
-```
-"Connection": "keep-alive",
-"OData-Version": "4.0",
-"X-Frame-Options": "sameorigin",
-"X-Content-Type-Options":"nosniff",
-"Content-type":"application/json; charset=utf-8",
-"Cache-Control":"no-cache, no-store, must-revalidate",
-"Transfer-Encoding":"chunked",
-```
-
-
-
-Following are the HTTP status codes with their descriptions:
-
-| Success code<br> |Description|
-|-----------------|-----------|
-|200 OK|Successful completion of the request with representation in the body.|
-|201 Created|A new resource is successfully created with the `Location` header set to well-defined URI for the newly created resource. The response body may include the representation of the newly created resource.|
-|202 Accepted|The request has been accepted for processing but not processed. The `Location` header is set to URI of a task monitor that can be queried later for the status of the operation.|
-|204 No Content|The request succeeded, but no content is being returned in the body of the response.|
-
-| Error code<br> |Description|
-|-----------------|-----------|
-|301 Moved Permanently|The requested resource resides in a different URI given by the `Location` headers.|
-|400 Bad Request|The request could not be performed due to missing or invalid information. An extended error message is returned in the response body.|
-|401 Unauthorized|Missing or invalid authentication credentials included with a request.|
-|403 Forbidden|The server recognizes the credentials to be not having the necessary authorization to perform the operation.|
-|404 Not Found|The request specified the URI of a nonexisting resource.|
-|405 Method Not Allowed|When the HTTP verb specified in the request \(GET, PATCH, DELETE, and so on\) is not supported for a particular request URI. The response includes `Allow` header that lists the supported methods.|
-|409 Conflict|A creation or an update cannot be completed because it would conflict with the current state of the resources supported by the platform.|
-|500 Internal Server Error|When the server encounters an unexpected condition that prevents it from fulfilling the request.|
-|501 Not Implemented|When the server has not implemented the method for the resource.|
-|503 Service Unavailable|When the server is unable to service the request due to temporary overloading or maintenance.|
-
-
->**NOTE:**
-This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
 
@@ -955,15 +955,10 @@ curl -i POST \
 
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/SessionService/Sessions/2d2e8ebc-4e7c-433a-bfd6-74dc420886d0/>; rel=self
 Location:{odimra_host}:{port}/redfish/v1/SessionService/Sessions/2d2e8ebc-4e7c-433a-bfd6-74dc420886d0
-Odata-Version:4.0
 X-Auth-Token:15d0f639-f394-4be7-a8ef-ef9d1df07288
-X-Frame-Options:sameorigin
 Date:Fri,15 May 2020 14:08:55 GMT+5m 11s
-Transfer-Encoding:chunked
 ```
 
 >**Sample response body**
@@ -1103,21 +1098,14 @@ Before accessing these endpoints, ensure that the user has the required privileg
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/AccountService'
-
-
 ```
 
 >**Sample response header**
 
 ```
 Allow:GET
-Connection:Keep-alive
-Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/SchemaStore/en/AccountService.json>; rel=describedby
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Fri,15 May 2020 14:32:09 GMT+5m 12s
-Transfer-Encoding:chunked
 ```
 
 
@@ -1498,14 +1486,9 @@ curl -i POST \
 >**Sample response header**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/AccountService/Accounts/monitor32/>; rel=describedby
 Location:/redfish/v1/AccountService/Accounts/monitor32/
-Odata-Version:4.0
-X-Frame-Options:"sameorigin
 Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
-Transfer-Encoding:chunked
 ```
 
 >**Sample response body**
@@ -1645,15 +1628,9 @@ curl -i -X PATCH \
 >**Sample response header**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/AccountService/Accounts/monitor32/>; rel=describedby
 Location:/redfish/v1/AccountService/Accounts/monitor32/
-Odata-Version:4.0
-X-Frame-Options:"sameorigin
 Date":Fri,15 May 2020 14:36:14 GMT+5m 11s
-Transfer-Encoding:chunked
-
 ```
 
 >**Sample response body**
@@ -1772,14 +1749,8 @@ curl -i GET \
 
 ```
 Allow:GET
-Connection:Keep-alive
-Content-Type:application/json; charset=utf-8
 Date:Sun,17 May 2020 14:26:49 GMT+5m 14s
 Link:</redfish/v1/SchemaStore/en/AggregationService.json>; rel=describedby
-Odata-Version:4.0
-X-Frame-Options:sameorigin
-Transfer-Encoding":chunked
-
 ```
 
 >**Sample response body** 
@@ -2061,27 +2032,17 @@ curl -i POST \
 >**Sample response header \(HTTP 202 status\)**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task85de4003-8757-4c7d-942f-55eaf7d6812a
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response header \(HTTP 201 status\)**
 
 ```
-connection":"keep-alive
-content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
 link:/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1/>; rel=describedby
 location:/redfish/v1/AggregationService/AggregationSources/be626e78-7a8a-4b99-afd2-b8ed45ef3d5a.1
-odata-version:4.0
-transfer-encoding:"chunked
-x-frame-options":"sameorigin"
 ```
 
 >**Sample response body \(HTTP 202 status\)**
@@ -2289,27 +2250,17 @@ curl -i -X POST \
 >**Sample response header \(HTTP 202 status\)**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response header \(HTTP 201 status\)**
 
 ```
-connection":"keep-alive
-content-type":application/json; charset=utf-8
 date:"Wed",02 Sep 2020 06:50:43 GMT+7m 2s
 link:/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad39-71e3c9f8280e/>; rel=describedby
 location:/redfish/v1/AggregationService/AggregationSources/0102a4b5-03db-40be-ad39-71e3c9f8280e
-odata-version:4.0
-transfer-encoding:"chunked
-x-frame-options":"sameorigin"
 ```
 
 >**Sample response body \(HTTP 202 status\)**
@@ -2589,14 +2540,9 @@ curl -i POST \
 >**Sample response header** \(HTTP 202 status\)
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task85de4103-8757-4c7d-942f-55eaf7d6412a
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body** \(HTTP 202 status\)
@@ -2731,14 +2677,9 @@ curl -i POST \
 >**Sample response header** \(HTTP 202 status\)
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task85de4003-8057-4c7d-942f-55eaf7d6412a
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body** \(HTTP 202 status\)
@@ -2837,14 +2778,9 @@ curl -i DELETE \
 >**Sample response header** \(HTTP 202 status\)
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task85de4003-8757-2c7d-942f-55eaf7d6412a
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body** \(HTTP 202 status\)
@@ -2934,14 +2870,9 @@ curl -i POST \
 >**Sample response header**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Link:</redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48/>; rel=self
 Location:/redfish/v1/AggregationService/Aggregates/c14d91b5-3333-48bb-a7b7-75f74a137d48
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Fri,21 August 2020 14:08:55 GMT+5m 11s
-Transfer-Encoding:chunked
 ```
 
 >**Sample response body**
@@ -3195,14 +3126,9 @@ curl -i POST \
 >**Sample response header** \(HTTP 202 status\)
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task8cf1ed8b-bb83-431a-9fa6-1f8d349a8591
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body** \(HTTP 202 status\)
@@ -3296,21 +3222,14 @@ curl -i POST \
    -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
    -H "Content-Type:application/json" \
  'https://{odim_host}:{port}/redfish/v1/AggregationService/Aggregates/{AggregateId}/Actions/Aggregate.SetDefaultBootOrder'
-
-
 ```
 
 >**Sample response header** \(HTTP 202 status\)
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task85de4003-8057-4c7d-942f-55eaf7d6412a
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body** \(HTTP 202 status\)
@@ -5658,12 +5577,8 @@ curl -i POST \
 >**Sample response header**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=UTF-8
 Date:Wed,06 Jan 2021 09:37:43 GMT+15m 26s
 **Location:/redfish/v1/Chassis/c2459269-011c-58d3-a217-ef914c4c295d**
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Content-Length:462 bytes
 ```
 
@@ -5777,12 +5692,8 @@ curl -i POST \
 >**Sample response header**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=UTF-8
 Date:Wed,06 Jan 2021 09:37:43 GMT+15m 26s
 **Location:/redfish/v1/Chassis/b6766cb7-5721-5077-ae0e-3bf3683ad6e2**
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Content-Length:462 bytes
 ```
 
@@ -7585,14 +7496,9 @@ curl -i POST \
 >**Sample response header \(HTTP 202 status\)**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body \(HTTP 202 status\)**
@@ -7658,14 +7564,9 @@ None
 >**Sample response header \(HTTP 202 status\)**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/task4aac9e1e-df58-4fff-b781-52373fcb5699
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
-
 ```
 
 >**Sample response body \(HTTP 202 status\)**
@@ -8515,24 +8416,16 @@ curl -i POST \
 |AnycastGatewayIPAddress\}|String \(required\)<br> | A single active gateway IP address for the IP interface.<br> |
 | | | |
 
-
-
 >**Sample response header**
 
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/e2ec196d-4b55-44b3-b928-8273de9fb8bf
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Thu, 14 May 2020 16:18:54 GMT
-Transfer-Encoding:chunked
-
 ```
 
->- **Sample response body**
+>**Sample response body**
 
 ```
 {
@@ -8708,14 +8601,8 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/AddressPools/84766158-cbac-4f69-8ed5-fa5f2b331b9d
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Thu, 14 May 2020 16:18:58 GMT
-Transfer-Encoding:chunked
-
 ```
 
 >**Sample response body**
@@ -8839,7 +8726,7 @@ curl -i POST \
 |---------|-----|-----------|
 |Name|String \(optional\)<br> |Name for the zone.|
 |Description|String \(optional\)<br> |Description for the zone.|
-|ZoneType|String|The type of the zone to be created. Options include: `ZoneofZones` and `ZoneofEndpoints`<br> The type of the zone for a zone of zones is `ZoneofZones`.<br> |
+|ZoneType|String|The type of the zone to be created. Options include: `ZoneofZones` and `ZoneofEndpoints`<br> The type of the zone for a zone of zones is `ZoneofZones`. |
 |Links\{| \(optional\)<br> | |
 |AddressPools|Array \(optional\)<br> | `AddressPool` links supported for the Zone of Zones \(`AddressPool` links created for `ZoneofZones`\).<br> |
 
@@ -8849,13 +8736,8 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/a2dc8760-ea05-4cab-8f95-866c1c380f98
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Thu, 14 May 2020 16:19:00 GMT
-Transfer-Encoding:chunked
 ```
 
 >**Sample response body**
@@ -8989,14 +8871,8 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow:"GET", "PUT", "POST", "PATCH", "DELETE"
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Endpoints/fe34aff2-e81f-4167-a0c3-9bf5a67e2a97
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Thu, 14 May 2020 16:19:02 GMT
-Transfer-Encoding:chunked
-
 ```
 
 >**Sample response body**
@@ -9145,14 +9021,8 @@ curl -i POST \
 ```
 HTTP/1.1 201 Created
 Allow: "GET", "PUT", "POST", "PATCH", "DELETE"
-Connection: keep-alive
-Content-Type: application/json; charset=utf-8
 Location: /redfish/v1/Fabrics/995c85a6-3de7-477f-af6f-b52de671abd5/Zones/06d344bb-cce1-4b0c-8414-6f6df1ea373f
-Odata-Version: 4.0
-X-Frame-Options: sameorigin
 Date: Thu, 14 May 2020 16:19:37 GMT
-Transfer-Encoding: chunked
-
 ```
 
 >**Sample response body**
@@ -9448,24 +9318,15 @@ curl -i GET \
 
 ```
 
- 
-
->**Sample response header** 
+ **Sample response header** 
 
 ```
 Allow:GET
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Date:Sun,17 May 2020 15:11:12 GMT+5m 13s
 Link:</redfish/v1/SchemaStore/en/TaskService.json>; rel=describedby
-Odata-Version:4.0
-X-Frame-Options:sameorigin
-Transfer-Encoding":chunked
 ```
 
- 
-
->**Sample response body** 
+ **Sample response body** 
 
 ```
 {
@@ -9623,18 +9484,13 @@ curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
    -H "Content-Type:application/json" \
  'https://{odimra_host}:{port}/taskmon/{TaskID}'
-
 ```
 
 
 >**Sample response header**
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/taskfbd5cdb0-5d33-4ad4-8682-cab90534ba70
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Sun,17 May 2020 14:35:32 GMT+5m 13s
 Content-Length:491 bytes
 ```
@@ -9759,22 +9615,14 @@ Before accessing these endpoints, ensure that the user has the required privileg
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/EventService'
-
-
 ```
 
 >**Sample response header** 
 
 ```
 Allow:GET
-Connection:Keep-alive
-Content-Type:application/json; charset=utf-8
 Link:/v1/SchemaStore/en/EventService.json>; rel=describedby
-Odata-Version:4.0
-X-Frame-Options:"sameorigin
 Date:Fri,15 May 2020 10:10:15 GMT+5m 11s
-Transfer-Encoding:chunked
-
 ```
 
 >**Sample response body** 
@@ -10133,26 +9981,16 @@ curl -i POST \
 >**Sample response header** \(HTTP 202 status\) 
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/taskmon/taska9702e20-884c-41e2-bd9c-d779a4dd2e6e
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Fri, 08 Nov 2019 07:49:42 GMT+7m 9s
 Content-Length:0 byte
-
 ```
 
 >**Sample response header** \(HTTP 201 status\) 
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
 Location:/redfish/v1/EventService/Subscriptions/76088e1c-4654-4eec-a3f6-60bc33b77cdb
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Thu,14 May 2020 09:48:23 GMT+5m 10s
-Transfer-Encoding:chunked
 ```
 
 >**Sample response body** \(HTTP 202 status\) 
@@ -10309,13 +10147,7 @@ curl -i POST \
 >**Sample response header** 
 
 ```
-Connection:keep-alive
-Content-Type:application/json; charset=utf-8
-Odata-Version:4.0
-X-Frame-Options:sameorigin
 Date:Fri,15 May 2020 07:42:59 GMT+5m 11s
-Transfer-Encoding:chunked
-
 ```
 
  
@@ -10848,7 +10680,6 @@ curl -i GET \
 curl -i GET \
    -H "X-Auth-Token:{X-Auth-Token}" \
  'https://{odimra_host}:{port}/redfish/v1/registries/{jsonFileId}'
-
 ```
 
 

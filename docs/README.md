@@ -2280,7 +2280,7 @@ PREREQUISITE: Generate and import certificate for the server.
    IP.1 = <Server IP 1>
    ```
    
-4. In this file, update the CSR details obtained in step 2 and ensure the DNS and IP addresses of the BMC are configured in `[alt_names]`.
+4. In this file, update the CSR details obtained in step 2 and ensure the DNS and IP addresses (IPv4 or IPv6) of the BMC are configured in `[alt_names]`.
 
 5. Run the following command to generate the certificate.
 
@@ -2366,13 +2366,11 @@ curl -i -X POST \
 
 ```
 
-
-
 >**Sample request body**
 
 ```
 {
-   "HostName":"10.24.0.4",
+   "HostName":"192.168.256.256",
    "UserName":"admin",
    "Password":"{BMC_password}",
    "Links":{
@@ -2383,11 +2381,28 @@ curl -i -X POST \
 }
 ```
 
+>**Sample request body**
+
+```
+{
+   "HostName":"fc00:1024:2400::154",
+   "UserName":"admin",
+   "Password":"HP1nvent",
+   "Links":{
+      "ConnectionMethod":{
+         "@odata.id":"/redfish/v1/AggregationService/ConnectionMethods/ae910e17-4953-4495-95a9-436bf35fe8e4"
+      }
+   }
+}
+```
+
+
+
 **Request parameters**
 
 |Parameter|Type|Description|
 |---------|----|-----------|
-|HostName|String \(required\)<br> |A valid IP address or hostname of a baseboard management controller \(BMC\).|
+|HostName|String \(required\)<br> |A valid IPv4 or IPv6 address, or hostname of a baseboard management controller \(BMC\).|
 |UserName|String \(required\)<br> |The username of the BMC administrator account.|
 |Password|String \(required\)<br> |The password of the BMC administrator account.|
 |Links \{|Object \(required\)<br> |Links to other resources that are related to this resource.|
@@ -2420,7 +2435,7 @@ transfer-encoding:"chunked
 x-frame-options":"sameorigin"
 ```
 
->**Sample response body \(HTTP 202 status\)**
+>**Sample response body (HTTP 202 status)**
 
 ```
 {
@@ -2439,9 +2454,7 @@ x-frame-options":"sameorigin"
 }
 ```
 
-
-
->** Sample response body \(HTTP 201 status\)**
+>**Sample response body (HTTP 201 status)**
 ```
  {
    "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
@@ -2449,7 +2462,7 @@ x-frame-options":"sameorigin"
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "Name":"Aggregation Source",
-   "HostName":"10.24.0.4",
+   "HostName":"192.168.256.256",
    "UserName":"admin",
     "Links":{
       "ConnectionMethod": {
@@ -2458,6 +2471,26 @@ x-frame-options":"sameorigin"
    }
 }
 ```
+
+>**Sample response body (HTTP 201 status) - IPv6 address**
+
+```
+ {
+   "@odata.type":"#AggregationSource.v1_1_0.AggregationSource",
+   "@odata.id":"/redfish/v1/AggregationService/AggregationSources/26562c7b-060b-4fd8-977e-94b1a535f3fb",
+   "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
+   "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
+   "Name":"Aggregation Source",
+   "HostName":"fc00:1024:2400::154",
+   "UserName":"admin",
+    "Links":{
+      "ConnectionMethod": {
+         "@odata.id": "/redfish/v1/AggregationService/ConnectionMethods/d172e66c-b4a8-437c-981b-1c07ddfeacaa"
+      }
+   }
+}
+```
+
 
 
 ## Viewing a collection of aggregation sources

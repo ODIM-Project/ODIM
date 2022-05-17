@@ -31,7 +31,7 @@ var licenseServiceResponse = dmtf.LicenseService{
 	Description:    "License Service",
 	Name:           "License Service",
 	ServiceEnabled: true,
-	ID:             "License Service",
+	ID:             "LicenseService",
 	Licenses:       &dmtf.Link{Oid: "/redfish/v1/LicenseService/Licenses"},
 }
 
@@ -58,7 +58,6 @@ var licenseResourceResponse = dmtf.License{
 	OdataType:    "#License.v1_0_0.License",
 	ID:           "uuid.1.1",
 	Name:         "iLO License",
-	Description:  "License",
 	LicenseType:  "Perpetual",
 }
 

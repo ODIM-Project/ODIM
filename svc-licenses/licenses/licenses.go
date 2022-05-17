@@ -34,7 +34,7 @@ func (e *ExternalInterface) GetLicenseService(req *licenseproto.GetLicenseServic
 		OdataContext:   "/redfish/v1/$metadata#LicenseService.LicenseService",
 		OdataID:        "/redfish/v1/LicenseService",
 		OdataType:      "#LicenseService.v1_0_0.LicenseService",
-		ID:             "License Service",
+		ID:             "LicenseService",
 		Description:    "LicenseService",
 		Name:           "License Service",
 		ServiceEnabled: true,
@@ -96,7 +96,6 @@ func (e *ExternalInterface) GetLicenseResource(req *licenseproto.GetLicenseResou
 	}
 	licenseResp.OdataContext = "/redfish/v1/$metadata#License.License"
 	licenseResp.OdataType = "#License.v1_0_0.License"
-	licenseResp.Description = "License"
 	licenseResp.OdataID = uri
 	licenseResp.ID = ID[len(ID)-1]
 

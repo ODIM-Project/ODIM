@@ -45,6 +45,7 @@ COPY svc-managers /ODIM/svc-managers
 COPY svc-systems /ODIM/svc-systems
 COPY svc-task /ODIM/svc-task
 COPY svc-update /ODIM/svc-update
+COPY svc-licenses /ODIM/svc-licenses
 COPY plugin-redfish /ODIM/plugin-redfish
 COPY plugin-dell /ODIM/plugin-dell
 COPY plugin-unmanaged-racks /ODIM/plugin-unmanaged-racks

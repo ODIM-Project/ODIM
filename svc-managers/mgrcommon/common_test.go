@@ -17,13 +17,15 @@ package mgrcommon
 import (
 	"bytes"
 	"fmt"
-	"github.com/ODIM-Project/ODIM/lib-utilities/common"
-	"github.com/ODIM-Project/ODIM/lib-utilities/config"
-	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
+	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
+	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+	"github.com/stretchr/testify/assert"
 )
 
 func getEncryptedKey(t *testing.T, key []byte) []byte {
@@ -193,6 +195,17 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	}
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
+
+	var req1 = ResourceInfoRequest{
+		URL:                   "/redfish/v1/Managers/uuid.1/EthernetInterfaces",
+		UUID:                  "",
+		SystemID:              "1",
+		ContactClient:         mockContactClient,
+		DecryptDevicePassword: stubDevicePassword,
+	}
+	_, err = GetResourceInfoFromDevice(req1)
+	assert.Equal(t, err.Error(), "error while trying to get compute details: no data with the with key  found", "No data with the with empty key")
+
 	req.UUID = "uuid1"
 	req.URL = "/redfish/v1/Managers/uuid1.1/EthernetInterfaces"
 	_, err = GetResourceInfoFromDevice(req)
@@ -202,6 +215,16 @@ func TestGetResourceInfoFromDevice(t *testing.T) {
 	req.URL = "/redfish/v1/Managers/uuid.1/VirtualMedia/1"
 	_, err = GetResourceInfoFromDevice(req)
 	assert.Nil(t, err, "There should be no error getting data")
+
+	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+		err = &errors.Error{}
+		return
+	}
+	_, err = GetResourceInfoFromDevice(req)
+	assert.NotNil(t, err, "There should be no error getting data")
+	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+		return mgrmodel.GetPluginData(pluginID)
+	}
 }
 
 func TestGetResourceInfoFromDeviceInvalidPlugin(t *testing.T) {
@@ -336,4 +359,56 @@ func TestDeviceCommunication(t *testing.T) {
 	}
 	response = DeviceCommunication(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+		err = &errors.Error{}
+		return data, &errors.Error{}
+	}
+	response = DeviceCommunication(req)
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
+
+	GetPluginDataFunc = func(pluginID string) (data mgrmodel.Plugin, err *errors.Error) {
+
+		return mgrmodel.GetPluginData(pluginID)
+	}
+
+	GetPluginTokenFunc = func(req PluginContactRequest) string {
+		return ""
+	}
+	response = DeviceCommunication(req)
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
+
+	StringEqualFold = func(s, t string) bool {
+		return false
+	}
+	response = DeviceCommunication(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	ContactPluginFunc = func(req PluginContactRequest, errorMessage string) (data []byte, data1 string, data2 ResponseStatus, err error) {
+		err = &errors.Error{}
+		return
+	}
+	response = DeviceCommunication(req)
+	assert.NotNil(t, "There should get  error")
+
+	JSON_UnmarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	response = DeviceCommunication(req)
+	assert.NotNil(t, "There should get error")
+
+	GetPluginTokenFunc = func(req PluginContactRequest) string {
+		return GetPluginToken(req)
+	}
+	req = ResourceInfoRequest{
+		URL:                   "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.EjectMedia",
+		UUID:                  "",
+		SystemID:              "1",
+		ContactClient:         mockContactClient,
+		DecryptDevicePassword: stubDevicePassword,
+		HTTPMethod:            http.MethodPost,
+		RequestBody:           []byte(`{"Image":"http://10.1.1.1/ISO"}`),
+	}
+	response = DeviceCommunication(req)
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
 }

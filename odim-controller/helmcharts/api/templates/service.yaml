@@ -7,12 +7,10 @@ metadata:
     app: api
 spec:
   {{ if  eq .Values.nwPreference "dualStack" }}
-  {{ if not .Values.odimra.haDeploymentEnabled   }}
   ipFamilies:
   - IPv4
   - IPv6
   ipFamilyPolicy: PreferDualStack
-  {{ end }}
   {{ end }}
   ports:
   - nodePort: {{ .Values.odimra.apiNodePort }}

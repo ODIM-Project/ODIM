@@ -16,9 +16,10 @@
 package fabrics
 
 import (
+	"net/http"
+
 	fabricsproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/fabrics"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
-	"net/http"
 )
 
 //DeleteFabricResource holds the logic for deleting specfic fabric resource

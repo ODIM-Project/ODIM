@@ -16,6 +16,7 @@
 package asmodel
 
 import (
+	"github.com/ODIM-Project/ODIM/lib-persistence-manager/persistencemgr"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -37,6 +38,9 @@ func TestCreateRole(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	err := role.Create()
 	assert.Nil(t, err, "There should be no error")
 }
@@ -47,6 +51,9 @@ func TestGetAllRoles(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	mockData(common.OnDisk, "role", role.ID, role)
 	_, err := GetAllRoles()
 	assert.Nil(t, err, "There should be no error")
@@ -63,15 +70,30 @@ func TestGetRole(t *testing.T) {
 		key string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    Role
-		wantErr bool
+		name                string
+		args                args
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		want                Role
+		wantErr             bool
 	}{
+		{
+			name: "Db conn error",
+			args: args{
+				key: role.ID,
+			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			want:    Role{},
+			wantErr: true,
+		},
 		{
 			name: "success case",
 			args: args{
 				key: role.ID,
+			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
 			},
 			want:    role,
 			wantErr: false,
@@ -81,11 +103,15 @@ func TestGetRole(t *testing.T) {
 			args: args{
 				key: "InvalidID",
 			},
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			want:    Role{},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
+		GetDBConnectionFunc = tt.GetDBConnectionFunc
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GetRoleDetailsByID(tt.args.key)
 			if (err != nil) != tt.wantErr {
@@ -108,19 +134,34 @@ func TestDeleteRole(t *testing.T) {
 	}()
 	mockData(common.OnDisk, "role", role.ID, role)
 	tests := []struct {
-		name string
-		want *errors.Error
+		name                string
+		GetDBConnectionFunc func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error)
+		want                *errors.Error
 	}{
 		{
+			name: "Db conn error",
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return nil, &errors.Error{}
+			},
+			want: &errors.Error{},
+		},
+		{
 			name: "success case",
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			want: nil,
 		},
 		{
 			name: "not found case",
+			GetDBConnectionFunc: func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+				return common.GetDBConnection(dbFlag)
+			},
 			want: errors.PackError(errors.DBKeyNotFound, "no data with the with key someID found"),
 		},
 	}
 	for _, tt := range tests {
+		GetDBConnectionFunc = tt.GetDBConnectionFunc
 		t.Run(tt.name, func(t *testing.T) {
 			err := role.Delete()
 			if !reflect.DeepEqual(err, tt.want) {
@@ -137,6 +178,9 @@ func TestUpdateRoleDetails(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	mockData(common.OnDisk, "role", role.ID, role)
 	err := role.UpdateRoleDetails()
 	assert.Nil(t, err, "There should be no error")
@@ -148,7 +192,35 @@ func TestUpdateRoleNegativeTestCase(t *testing.T) {
 		common.TruncateDB(common.OnDisk)
 		common.TruncateDB(common.InMemory)
 	}()
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return common.GetDBConnection(dbFlag)
+	}
 	mockData(common.OnDisk, "role", role.ID, "role")
 	err := invalidRole.UpdateRoleDetails()
 	assert.NotNil(t, err, "There should be an error")
+}
+
+func TestUpdateRoleDetailsDBError(t *testing.T) {
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err := role.UpdateRoleDetails()
+	assert.Equalf(t, &errors.Error{}, err, "UpdateRoleDetails() ")
+}
+
+func TestGetAllRolesDBError(t *testing.T) {
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	role, err := GetAllRoles()
+	assert.Equalf(t, []Role(nil), role, "GetAllRoles() ")
+	assert.Equalf(t, &errors.Error{}, err, "GetAllRoles() ")
+}
+
+func TestCreateRoleDBError(t *testing.T) {
+	GetDBConnectionFunc = func(dbFlag common.DbType) (*persistencemgr.ConnPool, *errors.Error) {
+		return nil, &errors.Error{}
+	}
+	err := role.Create()
+	assert.Equalf(t, &errors.Error{}, err, "Create() ")
 }

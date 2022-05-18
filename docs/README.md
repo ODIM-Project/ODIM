@@ -180,6 +180,7 @@
   * [Collection of Triggers](#collection-of-triggers)
   * [Single Trigger](#single-trigger)
   * [Updating a trigger](#updating-a-trigger)
+- [License Service](#license-service)
 - [Audit Logging](#audit-logging)
 - [Security logging](#security-logging)
 
@@ -11653,6 +11654,143 @@ curl -i -X PATCH \
 }
 ```
 
+
+
+# License Service
+
+Resource Aggregator for ODIM offers `LicenseService` APIs to view the BMC server licenses.
+
+**Supported APIs**
+
+| API URI                                         | Operation Applicable | Required privileges |
+| ----------------------------------------------- | -------------------- | ------------------- |
+| /redfish/v1/LicenseService                      | GET                  | `Login`             |
+| /redfish/v1/LicenseService/Licenses/            | GET                  | `Login`             |
+| /redfish/v1/LicenseService/Licenses/{LicenseID} | GET                  | `Login`             |
+
+
+>**NOTE:**
+>To access Redfish message registries, ensure that you have a minimum privilege of `Login`. If you do not have the necessary privileges, you will receive an HTTP `403 Forbidden` error.
+
+
+
+## Viewing the license service root
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/LicenseService`                                 |
+| **Description**    | This endpoint fetches JSON schema representing the Redfish `LicenseService` root. |
+| **Returns**        | Properties for viewing the service and links to the actual collections of manager licenses. |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/LicenseService'
+
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#LicenseService.LicenseService",
+   "@odata.id":"/redfish/v1/LicenseService",
+   "@odata.type":"#LicenseService.v1_0_0.LicenseService",
+   "Description":"License Service",
+   "Id":"LicenseService",
+   "Name":"License Service",
+   "Licenses":{
+      "@odata.id":"/redfish/v1/LicenseService/Licenses"
+   },
+   "ServiceEnabled":true
+}
+```
+
+
+
+## Viewing the license collection
+
+|                    |                                                              |
+| ------------------ | ------------------------------------------------------------ |
+| **Method**         | `GET`                                                        |
+| **URI**            | `/redfish/v1/LicenseService/Licenses/`                       |
+| **Description**    | This endpoint fetches JSON schema representing the available License collections. |
+| **Returns**        | Links to the licenses collection.                            |
+| **Response Code**  | `200 OK`                                                     |
+| **Authentication** | Yes                                                          |
+
+>**curl command**
+
+```
+curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+ 'https://{odimra_host}:{port}/redfish/v1/LicenseService/Licenses/'
+```
+
+
+>**Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#LicenseCollection.LicenseCollection",
+   "@odata.id":"/redfish/v1/LicenseService/Licenses",
+   "@odata.type":"#LicenseCollection.v1_0_0.LicenseCollection",
+   "Description":"License Collection",
+   "Name":"License Collection",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/LicenseService/Licenses/8dd3fb4d-0429-4262-989f-906df092aefd.1.1"
+      }
+   ],
+   "Members@odata.count":1
+}
+```
+
+
+
+## Viewing single license
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | /redfish/v1/LicenseService/Licenses/{LicenseID}              |
+| <strong>Description</strong>    | This endpoint retrieves information about a specific license of a server. |
+| <strong>Returns</strong>        | JSON schema representing the single license.                 |
+| <strong>Response code</strong>  | On success, `200 OK`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+
+>**curl command**
+
+
+```
+curl -i GET \
+             -H "X-Auth-Token:{X-Auth-Token}" \
+              'https://{odim_host}:{port}/redfish/v1/LicenseService/Licenses/{LicenseID}'
+```
+
+>**Sample response body** 
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#License.License",
+   "@odata.id":"/redfish/v1/LicenseService/Licenses/8dd3fb4d-0429-4262-989f-906df092aefd.1.1",
+   "@odata.type":"#License.v1_0_0.License",
+   "Id":"8dd3fb4d-0429-4262-989f-906df092aefd.1.1",
+   "Name":"iLO License",
+   "Description":"iLO License View",
+   "LicenseType":"Perpetual",
+   "InstallDate":"24Nov2021",
+   "SerialNumber":"CN704614C4",
+   "ExpirationDate":"24Nov2022"
+}
+```
 
 
 

@@ -1,5 +1,5 @@
 odimra:
-  redisImageTag: "2.0"
+  redisImageTag: "2.1"
   namespace:
   groupID:
   redisOndiskDataPath:

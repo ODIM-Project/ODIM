@@ -1177,7 +1177,7 @@ func TsMethodNotAllowed(ctx iris.Context) {
 	return
 }
 
-// UpdateServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
+// UpdateServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Update Service URLs and returns 405 error.
 func UpdateServiceMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")

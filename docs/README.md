@@ -209,7 +209,7 @@ ODIMRA framework comprises the following two components.
   
 - One or more plugins
 
-  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. HPE Resource Aggregator for ODIM supports:
+  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. Resource Aggregator for ODIM supports:
 
 
   - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
@@ -344,7 +344,7 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
 
 # IPv6 support
 
-The `nwPreferences` parameter in the HPE Resource Aggregator for ODIM deployment configuration file
+The `nwPreferences` parameter in the Resource Aggregator for ODIM deployment configuration file
 (`kube_deploy_nodes.yaml`) is set to `ipv4` as the default value. This means the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests via both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
 
 ### Sample APIs with IPv6 address

@@ -1143,7 +1143,6 @@ func CompositionServiceMethodNotAllowed(ctx iris.Context) {
 	return
 }
 
-
 // ManagersMethodNotAllowed holds builds reponse for the unallowed http operation on Managers URLs and returns 405 error.
 func ManagersMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
@@ -1172,6 +1171,14 @@ func ManagersMethodNotAllowed(ctx iris.Context) {
 
 // TsMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
 func TsMethodNotAllowed(ctx iris.Context) {
+	defer ctx.Next()
+	ctx.ResponseWriter().Header().Set("Allow", "GET")
+	fillMethodNotAllowedErrorResponse(ctx)
+	return
+}
+
+// UpdateServiceMethodNotAllowed holds builds reponse for the unallowed http operation on Task Service URLs and returns 405 error.
+func UpdateServiceMethodNotAllowed(ctx iris.Context) {
 	defer ctx.Next()
 	ctx.ResponseWriter().Header().Set("Allow", "GET")
 	fillMethodNotAllowedErrorResponse(ctx)

@@ -17,18 +17,27 @@ package mgrcommon
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
 	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	"github.com/ODIM-Project/ODIM/lib-utilities/response"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
+)
+
+var (
+	GetPluginTokenFunc = GetPluginToken
+	GetPluginDataFunc  = mgrmodel.GetPluginData
+	StringEqualFold    = strings.EqualFold
+	ContactPluginFunc  = ContactPlugin
+	JSON_UnmarshalFunc = json.Unmarshal
 )
 
 //PluginContactRequest  hold the request of contact plugin
@@ -96,15 +105,15 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	// Get the Plugin info
-	plugin, gerr := mgrmodel.GetPluginData(target.PluginID)
+	plugin, gerr := GetPluginDataFunc(target.PluginID)
 	if gerr != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, gerr.Error(), nil, nil)
 	}
 	var contactRequest PluginContactRequest
 	contactRequest.ContactClient = req.ContactClient
 	contactRequest.Plugin = plugin
-	if strings.EqualFold(plugin.PreferredAuthType, "XAuthToken") {
-		token := GetPluginToken(contactRequest)
+	if StringEqualFold(plugin.PreferredAuthType, "XAuthToken") {
+		token := GetPluginTokenFunc(contactRequest)
 		if token == "" {
 			var errorMessage = "error: Unable to create session with plugin " + plugin.ID
 			return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf(errorMessage), nil, nil)
@@ -131,7 +140,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 	contactRequest.OID = strings.Replace(req.URL, req.UUID+"."+req.SystemID, req.SystemID, -1)
 	contactRequest.HTTPMethodType = req.HTTPMethod
 	//target.PostBody = req.RequestBody
-	body, _, getResp, err := ContactPlugin(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
+	body, _, getResp, err := ContactPluginFunc(contactRequest, "error while performing virtual media actions "+contactRequest.OID+": ")
 	if err != nil {
 		resp.StatusCode = getResp.StatusCode
 		json.Unmarshal(body, &resp.Body)
@@ -139,7 +148,7 @@ func DeviceCommunication(req ResourceInfoRequest) response.RPC {
 	}
 	resp.StatusCode = http.StatusOK
 	resp.StatusMessage = response.Success
-	err = json.Unmarshal(body, &resp.Body)
+	err = JSON_UnmarshalFunc(body, &resp.Body)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}
@@ -153,7 +162,7 @@ func GetResourceInfoFromDevice(req ResourceInfoRequest) (string, error) {
 		return "", gerr
 	}
 	// Get the Plugin info
-	plugin, gerr := mgrmodel.GetPluginData(target.PluginID)
+	plugin, gerr := GetPluginDataFunc(target.PluginID)
 	if gerr != nil {
 		return "", gerr
 	}

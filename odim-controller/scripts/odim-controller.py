@@ -1131,11 +1131,7 @@ def load_password_from_vault(cur_dir):
 # kubespary source bundle
 def check_extract_kubespray_src():
 	global CONTROLLER_CONF_DATA
-	nwPreference = ""
-	if len(CONTROLLER_CONF_DATA['nodes'])>1 and CONTROLLER_CONF_DATA['nwPreference'] == 'dualStack':
-		nwPreference ='ipv4'
-	else:
-		nwPreference= CONTROLLER_CONF_DATA['nwPreference']
+	nwPreference= CONTROLLER_CONF_DATA['nwPreference']
                 
 	if not os.path.isdir(os.path.join(KUBESPRAY_SRC_PATH, "inventory")):
 		kubespray_extract_tool = os.path.join(KUBESPRAY_SRC_PATH, 'configure-kubespray.sh')

@@ -1206,12 +1206,12 @@ Kubernetes cluster is set up and the resource aggregator is successfully deploye
     Run the following command and copy the output:
 
     ```
-    echo -n '<HPE ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
+    echo -n '<ODIMRA password>' |openssl pkeyutl -encrypt -inkey <odimCertsPath>/odimra_rsa.private -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha512|openssl base64 -A
     ```
 
     In this command, replace:
 
-    -  <HPE ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
+    -  <ODIMRA password> with the password of Resource Aggregator for ODIM \(default administrator account password\).
     -  <odimCertsPath> with the path you specified for the `<odimCertsPath>` parameter in the `kube_deploy_nodes.yaml` file.
 
     Example output:
@@ -2216,7 +2216,7 @@ Rolling back the deployment of Resource Aggregator for ODIM to a particular revi
     history --dep <deployment_name>
     ```
 
-    Replace <deployment\_name\> with the name of the deployment for which you want to list the revision history. To know all the supported deployment names, see [HPE Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
+    Replace <deployment\_name\> with the name of the deployment for which you want to list the revision history. To know all the supported deployment names, see [Resource Aggregator for ODIM deployment names](#resource-aggregator-for-odim-deployment-names).
 
     You will receive a list of revisions along with the revision numbers.
 
@@ -2780,7 +2780,8 @@ To run curl commands on a different server, perform the following steps to provi
    ```
 
 <blockquote> NOTE: 
-- To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file available in this path: `/etc/ssl/certs/ca-certificates.crt`. You can access the base URL using a REST client. To access it using a REST client, add the rootCA.crt file of HPE Resource Aggregator for ODIM to the browser where the REST client is launched.</blockquote>
+- To avoid using the `--cacert` flag in every curl command, add `rootCA.crt` in the `ca-certificates.crt` file available in this path: `/etc/ssl/certs/ca-certificates.crt`. You can access the base URL using a REST client. To access it using a REST client, add the rootCA.crt file of Resource Aggregator for ODIM to the browser where the REST client is launched.</blockquote>
+
 
 
 ## Plugin configuration parameters
@@ -3495,7 +3496,7 @@ Example:
 
 
 3. Perform the following steps on the deployment node: 
-    1. Remove the existing worker node. To know how to remove a node, see step 1 in [Scaling down the resources and services of HPE Resource Aggregator for ODIM](#). 
+    1. Remove the existing worker node. To know how to remove a node, see step 1 in [Scaling down the resources and services of Resource Aggregator for ODIM](#Scaling-down-the-resources-and-services-of-Resource-Aggregator-for-ODIM). 
     2. Edit `$\{K8S\_INVENTORY\_FILE\}` to add the removed worker node as a new controller node with required details under the following sections. 
 
         - etcd

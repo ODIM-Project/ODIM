@@ -480,6 +480,11 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}| `GET`  |
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.InsertMedia|`POST`|
 |/redfish/v1/Managers/{ManagerId}/VirtualMedia/{VirtualMediaID}/Actions/VirtualMedia.EjectMedia|`POST`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService|`GET`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts|`GET`, `POST`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}|`GET`, `PATCH`, `DELETE`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles|`GET`|
+|/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{Roleid}|`GET`|
 
 |UpdateService||
 |-------|--------------------|
@@ -497,6 +502,12 @@ Resource Aggregator for ODIM supports the following Redfish APIs:
 |/redfish/v1/EventService/Subscriptions|`POST`, `GET`|
 |/redfish/v1/EventService/Actions/EventService.SubmitTestEvent|`POST`|
 |/redfish/v1/EventService/Subscriptions/\{subscriptionId\}|`GET`, `DELETE`|
+
+|LicenseService||
+|-------|--------------------|
+|/redfish/v1/LicenseService|`GET`|
+|/redfish/v1/LicenseService/Licenses/|`GET`|
+|/redfish/v1/LicenseService/Licenses/{LicenseId}|`GET`|
 
 |Fabrics||
 |-------|--------------------|
@@ -605,6 +616,9 @@ Transfer-Encoding:chunked
    },
    "EventService": {
       "@odata.id": "/redfish/v1/EventService"
+   },
+   "LicenseService": {
+      "@odata.id": "/redfish/v1/LicenseService"
    },
    "Tasks": {
       "@odata.id": "/redfish/v1/TaskService"

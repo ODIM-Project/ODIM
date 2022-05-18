@@ -9,6 +9,7 @@
 - [List of supported APIs](#list-of-supported-apis)
   * [Viewing the list of supported Redfish services](#viewing-the-list-of-supported-redfish-services)
 - [HTTP request methods, responses, headers and status codes](#http-request-methods-responses-headers-and-status-codes)
+- [Rate limits](#rate-limits)
 - [Authentication and authorization](#authentication-and-authorization)
   * [Authentication methods for Redfish APIs](#authentication-methods-for-redfish-apis)
   * [Role-based authorization](#role-based-authorization)
@@ -113,6 +114,15 @@
     + [Viewing a VirtualMedia Instance](#viewing-a-virtualmedia-instance)
     + [Inserting VirtualMedia](#inserting-virtualmedia)
     + [Ejecting VirtualMedia](#ejecting-virtualmedia)
+  * [Remote BMC accounts and roles](#remote-bmc-accounts-and-roles)
+    * [Viewing the remote account service root](#viewing-the-remote-account-service-root)
+    * [Collection of BMC user accounts](#collection-of-bmc-user-accounts)
+    * [Single BMC user account](#single-bmc-user-account)
+    * [Creating a BMC account](#creating-a-bmc-account)
+    * [Updating a BMC account](#updating-a-bmc-account)
+    * [Deleting a BMC account](#deleting-a-bmc-account)
+    * [Collection of BMC roles](#collection-of-bmc-roles)
+    * [Single role](#single-role)
 - [Software and firmware inventory](#software-and-firmware-inventory)
   * [Viewing the update service root](#viewing-the-update-service-root)
   * [Viewing the firmware inventory](#viewing-the-firmware-inventory)
@@ -199,7 +209,7 @@ ODIMRA framework comprises the following two components.
   
 - One or more plugins
 
-  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. HPE Resource Aggregator for ODIM supports:
+  The plugins abstract, translate, and expose southbound resource information to the resource aggregator through RESTful APIs. Resource Aggregator for ODIM supports:
 
 
   - Generic Redfish (GRF) plugin for ODIM: Plugin that can be used for any Redfish-compliant device
@@ -334,7 +344,7 @@ Without CA certificate, curl fails to verify that HTTP connections are secure an
 
 # IPv6 support
 
-The `nwPreferences` parameter in the HPE Resource Aggregator for ODIM deployment configuration file
+The `nwPreferences` parameter in the Resource Aggregator for ODIM deployment configuration file
 (`kube_deploy_nodes.yaml`) is set to `ipv4` as the default value. This means the Resource Aggregator for ODIM API service requests can be sent only via IPv4 addresses. To send the API service requests via both the IPv4 and the IPv6 addresses, set the parameter value to `dualStack`.
 
 ### Sample APIs with IPv6 address
@@ -723,6 +733,105 @@ Following are the HTTP status codes with their descriptions:
 This guide provides success codes (200, 201, 202, 204) for all referenced API operations. For failed operations, refer to the error codes listed in this section.
 
 
+
+# Rate limits
+
+Shared services need to protect themselves from excessive use—whether intended or unintended—to maintain service availability. Rate limiting is used to control the rate of requests being sent or received in a network, which prevents the frequency of an operation from exceeding specific limits.
+In Resource Aggregator for ODIM, you can specify time (in milliseconds) to limit resources from being sent for the same requests multiple times. These resources include the log service entries that take more retrieval time from the BMC servers. You can limit the number of API requests being sent per session. Additionally, you can limit the number of sessions per user.
+Specify values for `resourceRateLimit`, `requestLimitPerSession`, and `sessionLimitPerUser` in the
+`kube_deploy_nodes.yaml` deployment configuration file as required. By default, the values of these parameters are empty, meaning there's no limit on these numbers, unless specified.
+
+### Examples:
+
+- **resourceRateLimit**: Specify values for the parameter in the following format:
+
+  ```
+  "resourceRateLimit": [
+  "/redfish/v1/Systems/{id}/LogServices/SL/Entries:10000",
+  "/redfish/v1/Systems/{id}/LogServices/IML/Entries:8000",
+  "/redfish/v1/Systems/{id}/LogServices/IEL/Entries:6000"
+  ]
+  ```
+
+  In case of multiple requests for these resources, the 503 error code is returned for the specified time (in milliseconds). The response header for this request consists of a property Retry-after which gives time (in seconds). After this time, requests are processed with the 200 status code.
+
+  > **Sample response body**
+
+  ```
+  {
+     "error":{
+        "code":"Base.1.11.0.GeneralError",
+        "message":"An error has occurred. See ExtendedInfo for more information.",
+        "@Message.ExtendedInfo":[
+           {
+              "@odata.type":"#Message.v1_1_2.Message",
+              "MessageId":"Base.1.11.0.GeneralError",
+              "Message":"too many requests, retry after some time",
+              "Severity":"Critical",
+              "Resolution":"Retry after some time"
+           }
+        ]
+     }
+  }
+  ```
+
+  > **Sample response header**
+
+  ```
+  Retry-After: 1
+  ```
+
+- **requestLimitPerSession**: Specify the number of concurrent API requests that can be sent per session. If you specify 15 as the value for this parameter, 15 API requests are processed with successful status code and the remaining concurrent requests triggered from your session return the 503 error code.
+
+  > **Sample response body**
+
+  ```
+  {
+     "error":{
+        "code":"Base.1.11.0.GeneralError",
+        "message":"An error has occurred. See ExtendedInfo for more information.",
+        "@Message.ExtendedInfo":[
+           {
+              "@odata.type":"#Message.v1_1_2.Message",
+              "MessageId":"Base.1.11.0.GeneralError",
+              "Message":"A general error has occurred. See Resolution for
+  information on how to resolve the error, or @Message.ExtendedInfo if
+  Resolution is not provided.",
+              "Severity":"Critical",
+              "Resolution":"None"
+           }
+        ]
+     }
+  }
+  ```
+
+- **sessionLimitPerUser**: Specify the number of active sessions a user can have. If you specify 10 as the value for this parameter, you can create 10 sessions for a particular user and you get 201 status code. Beyond this, the 503 error code is returned.
+
+  > **Sample response body**
+
+  ```
+  {
+     "error":{
+        "code":"Base.1.11.0.GeneralError",
+        "message":"An error has occurred. See ExtendedInfo for more
+  information.",
+        "@Message.ExtendedInfo":[
+           {
+              "@odata.type":"#Message.v1_1_2.Message",
+              "MessageId":"Base.1.11.0.SessionLimitExceeded",
+              "Message":"The session establishment failed due to the number of
+  simultaneous sessions exceeding the limit of the implementation.",
+              "Severity":"Critical",
+              "Resolution":"Reduce the number of other sessions before trying
+  to establish the session or increase the limit of simultaneous sessions, if
+  supported."
+           }
+        ]
+     }
+  }
+  ```
+
+  
 
 # Authentication and authorization
 
@@ -7148,7 +7257,7 @@ curl -i GET \
 }
 ```
 
-## Inserting VirtualMedia
+### Inserting VirtualMedia
 
 | **Method**         | `POST`                                                       |
 | ------------------ | ------------------------------------------------------------ |
@@ -7191,7 +7300,7 @@ curl -i POST \
  
 ```
 
-## Ejecting VirtualMedia
+### Ejecting VirtualMedia
 
 | **Method**         | `POST`                                                       |
 | ------------------ | ------------------------------------------------------------ |
@@ -7238,6 +7347,430 @@ curl -i POST \
 | Image          | String (Required)  | Image path            |
 | Inserted       | Boolean (Optional) | Default value is true |
 | WriteProtected | Boolean (Optional) | Default value is true |
+
+
+
+## Remote BMC accounts and roles
+
+Resource Aggregator for ODIM exposes `RemoteAccountService` APIs to manage BMC accounts and roles. You can:
+
+- View, create, update and delete an individual BMC server account
+- View a collection of BMC server accounts
+- View individual and collection of BMC server roles
+
+**Supported APIs**:
+
+| API URI                                                      | Operation Applicable | Required privileges            |
+| ------------------------------------------------------------ | -------------------- | ------------------------------ |
+| /redfish/v1/Managers/{ManagerId}/RemoteAccountService        | GET                  | `Login`                        |
+| /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts | GET, POST            | `Login`, `ConfigureComponents` |
+| /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountId} | GET, PATCH, DELETE   | `Login`, `ConfigureComponents` |
+| /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles  | GET                  | `Login`                        |
+| /redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{roleid} | GET                  | `Login`                        |
+
+<blockquote> NOTE: Before accessing these endpoints, ensure that the user has the required privileges. If you access these endpoints without necessary privileges, you will receive an HTTP `403 Forbidden` error. </blockquote>
+
+
+
+### Viewing the remote account service root
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerID}/RemoteAccountService`      |
+| <strong>Description</strong>    | This operation retrieves JSON schema representing the Redfish `RemoteAccountService` root. |
+| <strong>Returns</strong>        | The properties common to all remote BMC accounts and links to the collections of BMC accounts and roles. |
+| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i GET \
+-H "X-Auth-Token:{X-Auth-Token}" \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerID}/RemoteAccountService'
+```
+
+
+> **Sample response header**
+
+```
+Allow: GET
+Cache-Control: no-cache, no-store, must-revalidate
+Connection: keep-alive
+Content-Type: application/json; charset=utf-8
+Odata-Version: 4.0
+X-Content-Type-Options: nosniff
+X-Frame-Options: sameorigin
+Date: Tue, 12 Apr 2022 06:15:41 GMT-1s
+Transfer-Encoding: chunked
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#AccountService.AccountService",
+   "@odata.etag":"W/\"8F1B1B4B\"",
+   "@odata.id":"/redfish/v1/Managers/bdcc9c30-d062-4239-9a1a-3dc87b4913c7.1/RemoteAccountService",
+   "@odata.type":"#AccountService.v1_5_0.AccountService",
+   "Id":"AccountService",
+   "Name":"Account Service",
+   "Description":"iLO User Accounts",
+   "Status":{
+      
+   },
+   "Accounts":{
+      "@odata.id":"/redfish/v1/Managers/bdcc9c30-d062-4239-9a1a-3dc87b4913c7.1/RemoteAccountService/Accounts"
+   },
+   "Roles":{
+      "@odata.id":"/redfish/v1/Managers/bdcc9c30-d062-4239-9a1a-3dc87b4913c7.1/RemoteAccountService/Roles"
+   },
+   "MinPasswordLength":8,
+   "LocalAccountAuth":"Enabled"
+}
+```
+
+
+
+### Collection of BMC user accounts
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts` |
+| <strong>Description</strong>    | A collection of BMC user accounts                            |
+| <strong>Returns</strong>        | Links to the BMC user account instances                      |
+| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i GET \
+-H "X-Auth-Token:{X-Auth-Token}" \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts'
+```
+
+
+
+> **Sample response body**
+
+```
+{
+"@odata.context":"/redfish/v1/$metadata#ManagerAccountCollection.ManagerAccountCollection",
+   "@odata.etag":"W/\"21C260DB\"",
+   "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts",
+   "@odata.type":"#ManagerAccountCollection.ManagerAccountCollection",
+   "Description":"iLO User Accounts",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/8"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/7"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/5"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/6"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/2"
+      }
+   ],
+   "Members@odata.count":6,
+   "Name":"Accounts"
+}
+```
+
+
+
+### Single BMC user account
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}` |
+| <strong>Description</strong>    | This operation retrieves information about a single BMC user account. |
+| <strong>Returns</strong>        | JSON schema representing this user account.                  |
+| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i GET \
+-H "X-Auth-Token:{X-Auth-Token}" \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}'
+```
+
+
+
+> **Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
+   "@odata.etag":"W/\"226E6C7B\"",
+   "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/1",
+   "@odata.type":"#ManagerAccount.v1_3_0.ManagerAccount",
+   "Id":"1",
+   "Name":"User Account",
+   "Description":"iLO User Account",
+   "UserName":"Administrator",
+   "RoleId":"Administrator",
+   "Links":{
+      "Role":{
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
+      }
+   },
+   "AccountTypes":""
+}
+```
+
+
+
+### Creating a BMC account
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `POST`                                                       |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts` |
+| <strong>Description</strong>    | This operation creates a BMC user account.                   |
+| <strong>Returns</strong>        | JSON schema representing the created user account.           |
+| <strong>Response code</strong>  | On success, `201 Created`                                    |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i POST \
+ -H "X-Auth-Token:{X-Auth-Token}" \
+ -d \
+'{
+  "UserName":"User1",
+  "Password":"Pwd@12345",
+  "RoleId":"Administrator"
+}' \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts
+```
+
+> **Sample request body**
+
+```
+{
+  "UserName":"User1",
+  "Password":"Pwd@12345",
+  "RoleId":"Administrator"
+}
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
+   "@odata.etag":"W/\"A2973884\"",
+   "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Accounts/13",
+   "@odata.type":"#ManagerAccount.v1_3_0.ManagerAccount",
+   "Id":"13",
+   "Name":"User Account",
+   "Description":"iLO User Account",
+   "UserName":"User1",
+   "RoleId":"Administrator",
+   "Links":{
+      "Role":{
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
+      }
+   },
+   "AccountTypes":""
+}
+```
+
+
+
+### Updating a BMC account
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `PATCH`                                                      |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}` |
+| <strong>Description</strong>    | This operation updates a BMC user account.                   |
+| <strong>Returns</strong>        | JSON schema representing the updated user account.           |
+| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i PATCH \
+ -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+ -d \
+'{
+  "Password":"Pwd@12345",
+  "RoleId":"Administrator"
+}' \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}
+```
+
+
+> **Sample request body**
+
+```
+{
+"RoleId":"Operator",
+"Password": "Pwd@12345"
+}
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#ManagerAccount.ManagerAccount",
+   "@odata.etag":"W/\"FC5BE4C2\"",
+   "@odata.id":"/redfish/v1/Managers/4dbb506c-b0b6-4da3-87f0-9c70e37bf7b5.1/RemoteAccountService/Accounts/16",
+   "@odata.type":"#ManagerAccount.v1_3_0.ManagerAccount",
+   "Id":"16",
+   "Name":"User Account",
+   "Description":"BMC User Account",
+   "UserName":"admin",
+   "RoleId":"Administrator",
+   "Links":{
+      "Role":{
+         "@odata.id":"/redfish/v1/Managers/{ManagerID}/RemoteAccountService/Roles/Administrator"
+      }
+   }
+}
+```
+
+
+
+### Deleting a BMC account
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `DELETE`                                                     |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Accounts/{AccountID}` |
+| <strong>Description</strong>    | This operation deletes a BMC user account.                   |
+| <strong>Returns</strong>        | JSON schema representing this user account.                  |
+| <strong>Response code</strong>  | On success, `204 No Content`                                 |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i -X DELETE \
+               -H 'Authorization:Basic {base64_encoded_string_of_[username:password]}' \
+              'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerID}/RemoteAccountService/Accounts/{AccountID}'
+```
+
+
+
+### Collection of BMC roles
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles` |
+| <strong>Description</strong>    | A collection of user roles.                                  |
+| <strong>Returns</strong>        | Links to the user role instances.                            |
+| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i GET \
+    -H "X-Auth-Token:{X-Auth-Token}" \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles'
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#RoleCollection.RoleCollection",
+   "@odata.etag":"W/\"08A22FCA\"",
+   "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/
+RemoteAccountService/Roles",
+   "@odata.type":"#RoleCollection.RoleCollection",
+   "Description":"iLO Roles Collection",
+   "Members":[
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-
+a3b8293774ba.1/RemoteAccountService/Roles/Administrator"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-
+a3b8293774ba.1/RemoteAccountService/Roles/Operator"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-
+a3b8293774ba.1/RemoteAccountService/Roles/ReadOnly"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-
+a3b8293774ba.1/RemoteAccountService/Roles/dirgroupb3d8954f6ebbe735764e9f7c"
+      },
+      {
+         "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-
+a3b8293774ba.1/RemoteAccountService/Roles/dirgroup9d4546a03a03bb977c03086a"
+      }
+   ],
+   "Members@odata.count":5,
+   "Name":"Roles"
+}
+```
+
+
+
+### Single role
+
+|                                 |                                                              |
+| ------------------------------- | ------------------------------------------------------------ |
+| <strong>Method</strong>         | `GET`                                                        |
+| <strong>URI</strong>            | `/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{roleid}` |
+| <strong>Description</strong>    | This operation retrieves information about a single user role. |
+| <strong>Returns</strong>        | JSON schema representing this user role.                     |
+| <strong>Response code</strong>  | On success, `200 Ok`                                         |
+| <strong>Authentication</strong> | Yes                                                          |
+
+> **curl command**
+
+```
+curl -i GET \
+   -H "X-Auth-Token:{X-Auth-Token}" \
+'https://{odim_host}:{port}/redfish/v1/Managers/{ManagerId}/RemoteAccountService/Roles/{roleid}'
+```
+
+> **Sample response body**
+
+```
+{
+   "@odata.context":"/redfish/v1/$metadata#Role.Role",
+   "@odata.etag":"W/\"B60B0A30\"",
+   "@odata.id":"/redfish/v1/Managers/4c7d1c54-4aea-4197-9892-a3b8293774ba.1/RemoteAccountService/Roles/Administrator",
+   "@odata.type":"#Role.v1_2_1.Role",
+   "Id":"Administrator",
+   "Name":"User Role",
+   "Description":"iLO User Role",
+   "AssignedPrivileges":[
+      "Login",
+      "ConfigureManager",
+      "ConfigureUsers",
+      "ConfigureSelf",
+      "ConfigureComponents"
+   ],
+   "IsPredefined":true,
+   "RoleId":"Administrator"
+}
+```
 
 
 
@@ -9620,7 +10153,7 @@ curl -i GET \
          "OData-Version: 4.0"
       ],
       "HttpOperation":"POST",
-      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\",\"Password\":\"HP1nvent\",\"UserName\":\"admin\"}",
+      "JsonBody":"{\"HostName\":\"10.24.0.4\",\"Links\":{\"ConnectionMethod\":{\"@odata.id\":\"/redfish/v1/AggregationService/ConnectionMethods/c31a079c-4b69-4b78-b7d5-41d64bed8ea8\",\"Password\":\"Password123\",\"UserName\":\"admin\"}",
       "TargetUri":"/redfish/v1/AggregationService/AggregationSources"
    },
    "Messages":[
@@ -10728,14 +11261,23 @@ curl -i GET \
 ```
 {
    "@odata.context":"/redfish/v1/$metadata#MessageRegistryFileCollection.MessageRegistryFileCollection",
-   "@odata.id":"/redfish/v1/Registries/",
+   "@odata.id":"/redfish/v1/Registries",
    "@odata.type":"#MessageRegistryFileCollection.MessageRegistryFileCollection",
    "Name":"Registry File Repository",
    "Description":"Registry Repository",
-   "Members@odata.count":27,
+   "Members@odata.count":49,
    "Members":[
       {
          "@odata.id":"/redfish/v1/Registries/Base.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.10.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.10.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.11.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/Base.1.2.0"
@@ -10759,7 +11301,46 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/Base.1.6.1"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/Base.1.7.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.8.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Base.1.9.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/Composition.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.0.1"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Composition.1.1.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/EthernetFabric.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Fabric.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/JobEvent.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/LogService.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/NetworkDevice.1.0.1"
       },
       {
          "@odata.id":"/redfish/v1/Registries/Redfish_1.0.1_PrivilegeRegistry"
@@ -10774,6 +11355,9 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/Redfish_1.0.4_PrivilegeRegistry"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/Redfish_1.1.0_PrivilegeRegistry"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.0"
       },
       {
@@ -10783,32 +11367,55 @@ curl -i GET \
          "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.2"
       },
       {
+         "@odata.id":"/redfish/v1/Registries/ResourceEvent.1.0.3"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/StorageDevice.1.0.0"
+      },
+      {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.1"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryA40.v1_1_46"
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.2"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/TaskEvent.1.0.3"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/Update.1.0.0"
       },
       {
          "@odata.id":"/redfish/v1/Registries/%23SmartStorageMessages.v2_0_1.SmartStorageMessages"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/iLO.2.13.0"
+         "@odata.id":"/redfish/v1/Registries/iLOeRS.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.1.0"
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU56.v1_1_42"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_00"
+         "@odata.id":"/redfish/v1/Registries/HpeDcpmmDiags.1.0.0"
       },
       {
-         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU30.v1_2_00"
+         "@odata.id":"/redfish/v1/Registries/iLO.2.14.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeCommon.2.0.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/BiosAttributeRegistryU32.v1_2_32"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/iLOEvents.2.3.0"
+      },
+      {
+         "@odata.id":"/redfish/v1/Registries/HpeBiosMessageRegistry.v1_0_0"
       }
    ]
-}
-	
+}	
 ```
 
 

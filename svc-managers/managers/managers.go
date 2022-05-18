@@ -36,6 +36,11 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
+var (
+	JsonUnMarshalFunc              = json.Unmarshal
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+)
+
 // GetManagersCollection will get the all the managers(odimra, Plugins, Servers)
 func (e *ExternalInterface) GetManagersCollection(req *managersproto.ManagerRequest) (response.RPC, error) {
 	var resp response.RPC
@@ -186,7 +191,7 @@ func (e *ExternalInterface) getManagerDetails(id string) (mgrmodel.Manager, erro
 		return mgr, fmt.Errorf("unable to retrieve manager information: %v", err)
 	}
 
-	if err := json.Unmarshal([]byte(data), &mgrData); err != nil {
+	if err := JsonUnMarshalFunc([]byte(data), &mgrData); err != nil {
 		return mgr, fmt.Errorf("unable to marshal manager information: %v", err)
 	}
 
@@ -341,7 +346,7 @@ func (e *ExternalInterface) VirtualMediaActions(req *managersproto.ManagerReques
 		}
 
 		// Validating the request JSON properties for case sensitive
-		invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, vmiReq)
+		invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, vmiReq)
 		if err != nil {
 			errMsg := "while validating request parameters for virtual media insert: " + err.Error()
 			log.Error(errMsg)
@@ -613,7 +618,7 @@ func (e *ExternalInterface) CreateRemoteAccountService(req *managersproto.Manage
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
 	if err != nil {
 		errMsg := "while validating request parameters for creating BMC account: " + err.Error()
 		log.Error(errMsg)
@@ -695,7 +700,7 @@ func (e *ExternalInterface) UpdateRemoteAccountService(req *managersproto.Manage
 	}
 
 	// Validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(req.RequestBody, bmcAccReq)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(req.RequestBody, bmcAccReq)
 	if err != nil {
 		errMsg := "while validating request parameters for updating BMC account: " + err.Error()
 		log.Error(errMsg)

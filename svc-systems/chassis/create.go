@@ -30,6 +30,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	GetDbConnectFunc = common.GetDBConnection
+)
+
 // Handle defines the operations which handle the RPC request-response for creating a chassis
 func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 	mbc := new(linksManagedByCollection)
@@ -42,11 +46,10 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusBadRequest, response.PropertyMissing, "", []interface{}{"Links.ManagedBy[0]"}, nil)
 	}
 
-	inMemoryConn, dbErr := common.GetDBConnection(common.InMemory)
+	inMemoryConn, dbErr := GetDbConnectFunc(common.InMemory)
 	if dbErr != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("cannot acquire database connection: %v", dbErr), nil, nil)
 	}
-
 	managingManager, e := inMemoryConn.FindOrNull("Managers", mbc.Links.ManagedBy[0].Oid)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, fmt.Sprintf("error occured during database access: %v", e), nil, nil)

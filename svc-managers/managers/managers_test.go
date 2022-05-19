@@ -21,7 +21,9 @@ import (
 	"time"
 
 	dmtf "github.com/ODIM-Project/ODIM/lib-dmtf/model"
+	"github.com/ODIM-Project/ODIM/lib-utilities/common"
 	"github.com/ODIM-Project/ODIM/lib-utilities/config"
+	"github.com/ODIM-Project/ODIM/lib-utilities/errors"
 	managersproto "github.com/ODIM-Project/ODIM/lib-utilities/proto/managers"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrcommon"
 	"github.com/ODIM-Project/ODIM/svc-managers/mgrmodel"
@@ -114,6 +116,7 @@ func TestGetManagerwithValidURL(t *testing.T) {
 func TestGetManagerLinkDetails(t *testing.T) {
 	e := mockGetExternalInterface()
 	var chassisLink, serverLink, managerLink []*dmtf.Link
+
 	chassisLink = append(chassisLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
 	serverLink = append(serverLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
 	managerLink = append(managerLink, &dmtf.Link{Oid: "/redfish/v1/Managers/uuid.1"})
@@ -122,6 +125,13 @@ func TestGetManagerLinkDetails(t *testing.T) {
 	assert.Equal(t, chassisLink, response.Links.ManagerForChassis, "ManagerForChassis should be returned.")
 	assert.Equal(t, serverLink, response.Links.ManagerForServers, "ManagerForServers should be returned.")
 	assert.Equal(t, managerLink, response.Links.ManagerForManagers, "ManagerForManagers should be returned.")
+
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	response, err := e.getManagerDetails("/redfish/v1/Managers/uuid.1")
+	assert.NotNil(t, err, "Invalid Json .")
+
 }
 
 func TestGetManagerInvalidID(t *testing.T) {
@@ -132,6 +142,12 @@ func TestGetManagerInvalidID(t *testing.T) {
 	response := e.GetManagers(req)
 
 	assert.Equal(t, http.StatusNotFound, int(response.StatusCode), "Status code should be StatusNotFound")
+	JsonUnMarshalFunc = func(data []byte, v interface{}) error {
+		return &errors.Error{}
+	}
+	response = e.GetManagers(req)
+	assert.NotNil(t, response, "Status code should be StatusNotFound")
+
 }
 
 func TestGetManagerResourcewithBadManagerID(t *testing.T) {
@@ -291,6 +307,12 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 	response := e.VirtualMediaActions(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
 
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "test", &errors.Error{}
+	}
+	response = e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusOK.")
+
 	req = &managersproto.ManagerRequest{
 		ManagerID:  "uuid1.1",
 		ResourceID: "1",
@@ -298,6 +320,40 @@ func TestVirtualMediaActionsResource(t *testing.T) {
 	}
 	response = e.VirtualMediaActions(req)
 	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:   "uuid1.1",
+		ResourceID:  "1",
+		URL:         "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		RequestBody: []byte("dummydata"),
+	}
+	response = e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		RequestBody: []byte(`{"image":"http://10.1.1.1/ISO",
+		"writeProtected":true,
+		"inserted":true}`),
+	}
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+	response = e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:  "uuid1.1",
+		ResourceID: "1",
+		URL:        "/redfish/v1/Managers/uuid.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia",
+		RequestBody: []byte(`{
+		"WriteProtected":true
+		}`),
+	}
+	response = e.VirtualMediaActions(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+
 }
 
 func TestGetRemoteAccountService(t *testing.T) {
@@ -343,6 +399,42 @@ func TestCreateRemoteAccountService(t *testing.T) {
 	}
 	response := e.CreateRemoteAccountService(req)
 	assert.Equal(t, http.StatusCreated, int(response.StatusCode), "Status code should be StatusCreated.")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", &errors.Error{}
+	}
+	response = e.CreateRemoteAccountService(req)
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+	}
+	response = e.CreateRemoteAccountService(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody: []byte(`{"userName":"UserName",
+                                 "password":"Password",
+                                 "roleId":"Administrator"}`),
+	}
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return common.RequestParamsCaseValidator(rawRequestBody, reqStruct)
+	}
+
+	response = e.CreateRemoteAccountService(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID:   "uuid.1",
+		URL:         "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody: []byte(`{}`),
+	}
+	response = e.CreateRemoteAccountService(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+
 }
 
 func TestDeleteRemoteAccountService(t *testing.T) {
@@ -355,4 +447,54 @@ func TestDeleteRemoteAccountService(t *testing.T) {
 	}
 	response := e.DeleteRemoteAccountService(req)
 	assert.Equal(t, http.StatusNoContent, int(response.StatusCode), "Status code should be StatusNoContent.")
+}
+
+func TestUpdateRemoteAccountService(t *testing.T) {
+	mgrcommon.Token.Tokens = make(map[string]string)
+	e := mockGetExternalInterface()
+	config.SetUpMockConfig(t)
+	req := &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+	}
+	response := e.UpdateRemoteAccountService(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody: []byte(`{"password":"Password",
+                                 "roleId":"Administrator"}`),
+	}
+	response = e.UpdateRemoteAccountService(req)
+	assert.Equal(t, http.StatusBadRequest, int(response.StatusCode), "Status code should be StatusBadRequest.")
+
+	req = &managersproto.ManagerRequest{
+		ManagerID: "uuid.1",
+		URL:       "/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts",
+		RequestBody: []byte(`{"Password":"Password",
+	                           "RoleId":"Administrator"}`),
+	}
+	response = e.UpdateRemoteAccountService(req)
+	assert.Equal(t, http.StatusOK, int(response.StatusCode), "Status code should be StatusOK.")
+
+	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
+		return "", &errors.Error{}
+	}
+	response = e.UpdateRemoteAccountService(req)
+	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Status code should be StatusInternalServerError")
+
+}
+
+func TestHandleRemoteAccountServiceError(t *testing.T) {
+
+	resp := handleRemoteAccountServiceError("/redfish/v1/Managers/uuid.1/RemoteAccountService/Accounts/1", "uuid1.1", fmt.Errorf("Dummy Error "))
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound.")
+
+	resp = handleRemoteAccountServiceError("/redfish/v1/Managers/uuid.1/RemoteAccountService/Test/1", "uuid1.1", fmt.Errorf("Dummy Error "))
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound.")
+
+	resp = handleRemoteAccountServiceError("/redfish/v1/Managers/uuid.1/RemoteAccountService/Roles/1", "uuid1.1", fmt.Errorf("Dummy Error "))
+	assert.Equal(t, http.StatusNotFound, int(resp.StatusCode), "Status code should be StatusNotFound.")
+
 }

@@ -113,11 +113,11 @@ func Test_convertToString(t *testing.T) {
 		return json.Marshal(v)
 	}
 	status := is2xx(200)
-	assert.True(t, true, "there should be no error ", status)
+	assert.True(t, true, "There should be no error ", status)
 	status = is4xx(400)
-	assert.True(t, true, "there should be no error ", status)
+	assert.True(t, true, "There should be no error ", status)
 	status = hasToBeSkipped("Content-Length")
-	assert.True(t, true, "there should be no error ", status)
+	assert.True(t, true, "There should be no error ", status)
 }
 
 func Test_findAllPlugins(t *testing.T) {
@@ -243,7 +243,7 @@ func Test_multiTargetClient_Delete(t *testing.T) {
 				IP:                "localhost",
 				Port:              "9093",
 				Username:          "admin",
-				Password:          []byte("asxasxszxzzZ"),
+				Password:          []byte("dummy"),
 				ID:                "ILO",
 				PreferredAuthType: "Basic-Auth",
 			},

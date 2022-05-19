@@ -214,14 +214,14 @@ func Test_client_Get(t *testing.T) {
 		}},
 	}
 	resp := client.Get("/redis/v1/session")
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "there should be error ")
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
 	resp = client.Delete("/redis/v1/session")
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "there should be error ")
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
 
 	resp = client.Patch("/redis/v1/session", &json.RawMessage{})
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "there should be error ")
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
 	resp = client.Post("/redis/v1/session", &json.RawMessage{})
-	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "there should be error ")
+	assert.Equal(t, http.StatusInternalServerError, int(resp.StatusCode), "Response status should be StatusInternalServerError")
 }
 
 func Test_multiTargetClient_Delete(t *testing.T) {
@@ -298,13 +298,13 @@ func Test_returnFirst_Collect(t *testing.T) {
 		errored:    false,
 	}
 	collectionRes := collectCollectionMembers.Collect(response.RPC{})
-	assert.NotNil(t, collectionRes, "There should be error ")
+	assert.NotNil(t, collectionRes, "There should be an error ")
 
 	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
 		return fmt.Errorf("")
 	}
 	collectionRes = collectCollectionMembers.Collect(response.RPC{StatusCode: 200, Body: []byte(`{"Members":[{"@@odata.id":"/redish/v1/session/1"}]}`)})
-	assert.NotNil(t, collectionRes, "There should be error ")
+	assert.NotNil(t, collectionRes, "There should be an error ")
 
 	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
@@ -313,12 +313,12 @@ func Test_returnFirst_Collect(t *testing.T) {
 	assert.Nil(t, collectionRes, "There should be no error ")
 
 	resultRes := collectCollectionMembers.GetResult()
-	assert.NotNil(t, resultRes, "There should be error ")
+	assert.NotNil(t, resultRes, "There should be an error ")
 	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, errors.New("")
 	}
 	res3 := collectCollectionMembers.GetResult()
-	assert.NotNil(t, res3, "There should be error ")
+	assert.NotNil(t, res3, "There should be an error ")
 	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}

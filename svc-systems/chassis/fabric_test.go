@@ -118,3 +118,9 @@ func contactClientMock(url, method, token string, odataID string, body interface
 
 	return resp, nil
 }
+
+func Test_getPluginStatus(t *testing.T) {
+	// Token.Tokens = make(map[string]string)
+	// config.SetUpMockConfig(t)
+	// getPluginStatus(smodel.Plugin{})
+}

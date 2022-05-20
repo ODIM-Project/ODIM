@@ -14,34 +14,33 @@
 package chassis
 
 import (
-	"reflect"
 	"testing"
-
-	"github.com/ODIM-Project/ODIM/svc-systems/smodel"
 )
 
 func Test_findAllPlugins(t *testing.T) {
-	type args struct {
-		key string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantRes []*smodel.Plugin
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotRes, err := findAllPlugins(tt.args.key)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("findAllPlugins() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotRes, tt.wantRes) {
-				t.Errorf("findAllPlugins() = %v, want %v", gotRes, tt.wantRes)
-			}
-		})
-	}
+	// common.SetUpMockConfig()
+	// mngr := RAManager{
+	// 	Name:            "Manager",
+	// 	ManagerType:     "Service",
+	// 	FirmwareVersion: "1.0",
+	// 	ID:              "1",
+	// 	UUID:            "1",
+	// 	State:           "Enabled",
+	// }
+	// mocAddManagertoDB(mngr)
+
+	// defer func() {
+	// 	err := common.TruncateDB(common.InMemory)
+	// 	if err != nil {
+	// 		t.Fatalf("error: %v", err)
+	// 	}
+	// }()
+
+	// delete := NewDeleteHandler(plugin.NewClientFactory(&config.URLTranslation{NorthBoundURL: map[string]string{
+	// 	"ODIM": "redfish",
+	// },
+	// 	SouthBoundURL: map[string]string{
+	// 		"redfish": "ODIM",
+	// 	}}))
+
 }

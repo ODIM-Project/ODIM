@@ -26,6 +26,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	JsonUnmarshalFunc = json.Unmarshal
+)
+
 // updateFabricChassisResource will collect the all available fabric plugins available
 // in the DB and communicates with each one of them concurrently to update the resource
 func (f *fabricFactory) updateFabricChassisResource(url string, body *json.RawMessage) response.RPC {

@@ -76,3 +76,20 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 		})
 	}
 }
+
+func Test_validateReqParamsCase(t *testing.T) {
+	// config.SetUpMockConfig(t)
+
+	// dummyData := []byte(`{"IP": "localhost"}`)
+	// source := (*json.RawMessage)(&dummyData)
+
+	// JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	// 	return errors.New("")
+	// }
+	// res := validateReqParamsCase(source)
+	// assert.NotNil(t, res, "There should be an error ")
+	// JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	// 	return json.Unmarshal(data, v)
+	// }
+	// assert.Equal(t, http.StatusOK, int(res.StatusCode), "Status code should be StatusOK")
+}

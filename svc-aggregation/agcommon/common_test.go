@@ -76,10 +76,25 @@ func stubGetConnectionMethod(key string) (agmodel.ConnectionMethod, *errors.Erro
 }
 
 func stubAddConnectionMethod(data agmodel.ConnectionMethod, key string) *errors.Error {
+	ConnectionMethod := agmodel.ConnectionMethod{
+		ConnectionMethodType:    "Redfish",
+		ConnectionMethodVariant: "Compute:BasicAuth:GRF:1.0.0",
+		Links: agmodel.Links{
+			AggregationSources: []agmodel.OdataID{},
+		},
+	}
+	connectionMethodURI := "/redfish/v1/AggregationService/ConnectionMethods/" + uuid.NewV4().String()
 
+	connPool, err := common.GetDBConnection(common.OnDisk)
+	if err != nil {
+		return  errors.PackError(err.ErrNo(), "error while trying to connecting to DB: ", err.Error())
+	
+	}
+	if err = connPool.Create("ConnectionMethod", connectionMethodURI, connectionMethod); err != nil {
+		return  errors.PackError(err.ErrNo(), "error while trying to create new  resource :ConnectionMethod  ", err.Error())
+		}
 	return nil
 }
-
 func stubDeleteConnectionMethod(table, key string, dbtype common.DbType) *errors.Error {
 
 	return nil

@@ -16,6 +16,7 @@ package chassis
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -38,12 +39,22 @@ func Test_sourceProviderImpl_findFabricChassis(t *testing.T) {
 	tests := []struct {
 		name string
 		c    *sourceProviderImpl
+
 		args args
 	}{
 		{
 			name: "multiple fabric chassis collection available for multiple plugins",
 			c: &sourceProviderImpl{
 				getFabricFactory: getFabricFactoryMock,
+			},
+			args: args{
+				collection: &col,
+			},
+		},
+		{
+			name: "Invalid Data",
+			c: &sourceProviderImpl{
+				getFabricFactory: getFabricFactoryErrorMock,
 			},
 			args: args{
 				collection: &col,
@@ -69,6 +80,17 @@ func getFabricFactoryMock(collection *sresponse.Collection) *fabricFactory {
 		contactClient:     contactClientMock,
 	}
 }
+func getFabricFactoryErrorMock(collection *sresponse.Collection) *fabricFactory {
+	chassisMap := make(map[string]bool)
+	return &fabricFactory{
+		collection:        collection,
+		chassisMap:        chassisMap,
+		wg:                &sync.WaitGroup{},
+		mu:                &sync.RWMutex{},
+		getFabricManagers: getFabricManagersErrorMock,
+		contactClient:     contactClientMock,
+	}
+}
 
 func getFabricManagersMock() ([]smodel.Plugin, error) {
 	return []smodel.Plugin{
@@ -85,6 +107,9 @@ func getFabricManagersMock() ([]smodel.Plugin, error) {
 			Password:          []byte("password"),
 		},
 	}, nil
+}
+func getFabricManagersErrorMock() ([]smodel.Plugin, error) {
+	return nil, errors.New("")
 }
 
 func contactClientMock(url, method, token string, odataID string, body interface{}, credentials map[string]string) (*http.Response, error) {
@@ -115,12 +140,17 @@ func contactClientMock(url, method, token string, odataID string, body interface
 		resp.Body = ioutil.NopCloser(bytes.NewBufferString(notFound))
 		resp.StatusCode = http.StatusNotFound
 	}
-
 	return resp, nil
 }
 
 func Test_getPluginStatus(t *testing.T) {
-	// Token.Tokens = make(map[string]string)
-	// config.SetUpMockConfig(t)
-	// getPluginStatus(smodel.Plugin{})
+	Token.Tokens = make(map[string]string)
+	config.SetUpMockConfig(t)
+	getPluginStatus(smodel.Plugin{})
+}
+
+func Test_contactPlugin(t *testing.T) {
+	req := smodel.Plugin{}
+	res := getPluginStatus(req)
+	assert.NotNil(t, res, "There should be an error")
 }

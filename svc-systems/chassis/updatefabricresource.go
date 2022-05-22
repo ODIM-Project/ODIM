@@ -88,20 +88,24 @@ func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r res
 	return
 }
 
+var (
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
+)
+
 // validating if request properties are in uppercamelcase or not
 func validateReqParamsCase(req *json.RawMessage) *response.RPC {
 	var errResp response.RPC
 	var chassisRequest dmtfmodel.Chassis
 
 	// parsing the fabricRequest
-	err := json.Unmarshal(*req, &chassisRequest)
+	err := JsonUnmarshalFunc(*req, &chassisRequest)
 	if err != nil {
 		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
 		return &errResp
 	}
 
 	// validating the request JSON properties for case sensitive
-	invalidProperties, err := common.RequestParamsCaseValidator(*req, chassisRequest)
+	invalidProperties, err := RequestParamsCaseValidatorFunc(*req, chassisRequest)
 	if err != nil {
 		errResp = common.GeneralError(http.StatusInternalServerError, response.InternalError, "error while validating request parameters: "+err.Error(), nil, nil)
 		return &errResp

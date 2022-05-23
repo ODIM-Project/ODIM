@@ -31,15 +31,24 @@ import (
 )
 
 var (
-	GetDbConnectFunc   = common.GetDBConnection
-	GenericSaveFunc    = smodel.GenericSave
-	JsonUnmarshalFunc1 = json.Unmarshal
-	JsonUnmarshalFunc2 = json.Unmarshal
-	JsonUnmarshalFunc3 = json.Unmarshal
-	JsonUnmarshalFunc4 = json.Unmarshal
-	StrconvUnquote     = strconv.Unquote
-	JsonMarshalFunc    = json.Marshal
-	GetResourceFunc    = smodel.GetResource
+	//GetDbConnectFunc ...
+	GetDbConnectFunc = common.GetDBConnection
+	//GenericSaveFunc ...
+	GenericSaveFunc = smodel.GenericSave
+	//JSONUnmarshalFunc1  ...
+	JSONUnmarshalFunc1 = json.Unmarshal
+	//JSONUnmarshalFunc2  ...
+	JSONUnmarshalFunc2 = json.Unmarshal
+	//JSONUnmarshalFunc3  ...
+	JSONUnmarshalFunc3 = json.Unmarshal
+	//JSONUnmarshalFunc4  ...
+	JSONUnmarshalFunc4 = json.Unmarshal
+	//StrconvUnquote ...
+	StrconvUnquote = strconv.Unquote
+	//JSONMarshalFunc ...
+	JSONMarshalFunc = json.Marshal
+	//GetResourceFunc  ...
+	GetResourceFunc = smodel.GetResource
 )
 
 // Handle defines the operations which handle the RPC request-response for creating a chassis
@@ -73,7 +82,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 	var managingMgrData map[string]interface{}
-	unmarshalErr := JsonUnmarshalFunc1([]byte(managingManager), &managingMgrData)
+	unmarshalErr := JSONUnmarshalFunc1([]byte(managingManager), &managingMgrData)
 	if unmarshalErr != nil {
 		errorMessage := "error unmarshalling managing manager details: " + unmarshalErr.Error()
 		log.Error(errorMessage)
@@ -90,7 +99,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 			nil, nil)
 	}
 
-	err := JsonUnmarshalFunc2([]byte(data), &managerData)
+	err := JSONUnmarshalFunc2([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
 		log.Error(errorMessage)
@@ -98,13 +107,13 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 			nil, nil)
 	}
 	pluginManagingManager := new(nameCarrier)
-	e = JsonUnmarshalFunc4([]byte(managingManager), pluginManagingManager)
+	e = JSONUnmarshalFunc4([]byte(managingManager), pluginManagingManager)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
 
 	body := new(json.RawMessage)
-	e = JsonUnmarshalFunc3(req.RequestBody, body)
+	e = JSONUnmarshalFunc3(req.RequestBody, body)
 	if e != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, e.Error(), nil, nil)
 	}
@@ -131,7 +140,7 @@ func (h *Create) Handle(req *chassisproto.CreateChassisRequest) response.RPC {
 		managerLinks["ManagerForChassis"] = chassisLink
 		managerData["Links"] = managerLinks
 	}
-	mgrData, err := JsonMarshalFunc(managerData)
+	mgrData, err := JSONMarshalFunc(managerData)
 	if err != nil {
 		fmt.Println("Error occured ", managerData)
 		errorMessage := "unable to marshal data for updating: " + err.Error()

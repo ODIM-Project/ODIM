@@ -82,7 +82,7 @@ func Test_fabricFactory_updateFabricChassisResource(t *testing.T) {
 func Test_validateReqParamsCase(t *testing.T) {
 	// config.SetUpMockConfig(t)
 
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error { return nil }
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error { return nil }
 
 	RequestParamsCaseValidatorFunc = func(rawRequestBody []byte, reqStruct interface{}) (string, error) {
 		return "", errors.New("")

@@ -27,7 +27,10 @@ import (
 )
 
 var (
-	JsonUnmarshalFunc = json.Unmarshal
+	//JSONUnmarshalFunc ...
+	JSONUnmarshalFunc = json.Unmarshal
+	//RequestParamsCaseValidatorFunc ...
+	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
 )
 
 // updateFabricChassisResource will collect the all available fabric plugins available
@@ -88,17 +91,13 @@ func patchResource(f *fabricFactory, pluginRequest *pluginContactRequest) (r res
 	return
 }
 
-var (
-	RequestParamsCaseValidatorFunc = common.RequestParamsCaseValidator
-)
-
 // validating if request properties are in uppercamelcase or not
 func validateReqParamsCase(req *json.RawMessage) *response.RPC {
 	var errResp response.RPC
 	var chassisRequest dmtfmodel.Chassis
 
 	// parsing the fabricRequest
-	err := JsonUnmarshalFunc(*req, &chassisRequest)
+	err := JSONUnmarshalFunc(*req, &chassisRequest)
 	if err != nil {
 		errResp = common.GeneralError(http.StatusBadRequest, response.PropertyUnknown, err.Error(), nil, nil)
 		return &errResp

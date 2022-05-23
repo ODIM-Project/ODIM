@@ -36,8 +36,6 @@ func Test_findAllPlugins(t *testing.T) {
 	managerDetails := []byte(`{"@odata.context":"/redfish/v1/$metadata#Manager.Manager","@odata.etag":"WAA6D42B0","@odata.id":"/redfish/v1/Managers/3ccb5c71-0e00-4d14-93bb-8d125c030f27","@odata.type":"#Manager.v1_13_0.Manager","Certificates":{"@odata.id":""},"Description":"Plugin Manager","FirmwareVersion":"v1.0.0","Id":"3ccb5c71-0e00-4d14-93bb-8d125c030f27","Links":{"ManagerForChassis":[{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1"}],"ManagerForServers":[{"@odata.id":"/redfish/v1/Systems/ba06875a-a292-445d-89ef-90e984e806ed.1"}]},"LogServices":{"@odata.id":"/redfish/v1/Managers/3ccb5c71-0e00-4d14-93bb-8d125c030f27/LogServices"},"ManagerType":"Service","Model":"ILO v1.0.0","Name":"ILO_v1.0.0","PowerState":"On","Status":{"Health":"OK","State":"Enabled"},"UUID":"3ccb5c71-0e00-4d14-93bb-8d125c030f27"}`)
 	mocAddManagertoDB("Managers", "/redfish/v1/Managers/3ccb5c71-0e00-4d14-93bb-8d125c030f27", managerDetails, common.InMemory)
 
-	// addChasis := []byte(`{"@odata.context":"/redfish/v1/$metadata#Chassis.Chassis","@odata.etag":"W59209823","@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1","@odata.type":"#Chassis.v1_17_0.Chassis","AssetTag":null,"ChassisType":"RackMount","Id":"1","IndicatorLED":"Off","Links":{"ComputerSystems":[{"@odata.id":"/redfish/v1/Systems/ba06875a-a292-445d-89ef-90e984e806ed.1"}],"ManagedBy":[{"@odata.id":"/redfish/v1/Managers/ba06875a-a292-445d-89ef-90e984e806ed.1"}]},"Manufacturer":"HPE","Model":"ProLiant DL360 Gen10","Name":"Computer System Chassis","NetworkAdapters":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/NetworkAdapters"},"Oem":{"Hpe":{"@odata.context":"/redfish/v1/$metadata#HpeServerChassis.HpeServerChassis","@odata.type":"#HpeServerChassis.v2_3_1.HpeServerChassis","Actions":{"#HpeServerChassis.DisableMCTPOnServer":{"target":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Actions/Oem/Hpe/HpeServerChassis.DisableMCTPOnServer"},"#HpeServerChassis.FactoryResetMCTP":{"target":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Actions/Oem/Hpe/HpeServerChassis.FactoryResetMCTP"}},"ElConfigOverride":false,"Firmware":{"PlatformDefinitionTable":{"Current":{"VersionString":"9.8.0 Build 15"}},"PowerManagementController":{"Current":{"VersionString":"1.0.7"}},"PowerManagementControllerBootloader":{"Current":{"Family":"25","VersionString":"1.1"}},"SPSFirmwareVersionData":{"Current":{"VersionString":"4.1.4.601"}},"SystemProgrammableLogicDevice":{"Current":{"VersionString":"0x2A"}}},"Links":{"Devices":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Devices"}},"SmartStorageBattery":[{"ChargeLevelPercent":99,"FirmwareVersion":"0.70","Index":1,"MaximumCapWatts":96,"Model":"875241-B21","ProductName":"HPE Smart Storage Battery ","RemainingChargeTimeSeconds":48,"SerialNumber":"6WQXL0CB2BX63Z","SparePartNumber":"878643-001","Status":{"Health":"OK","State":"Enabled"}}],"SystemMaintenanceSwitches":{"Sw1":"Off","Sw10":"Off","Sw11":"Off","Sw12":"Off","Sw2":"Off","Sw3":"Off","Sw4":"Off","Sw5":"Off","Sw6":"Off","Sw7":"Off","Sw8":"Off","Sw9":"Off"}}},"PCIeDevices":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/PCIeDevices"},"PCIeSlots":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/PCIeSlots"},"PartNumber":null,"Power":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Power"},"PowerState":"On","SKU":"867959-B21","SerialNumber":"MXQ91100T6","Status":{"Health":"OK","State":"Starting"},"Thermal":{"@odata.id":"/redfish/v1/Chassis/ba06875a-a292-445d-89ef-90e984e806ed.1/Thermal"}}`)
-	// mocAddManagertoDB("Chassis", "/redfish/v1/Managers/ba06875a-a292-445d-89ef-90e984e806ed.1", addChasis, common.InMemory)
 	defer func() {
 		err := common.TruncateDB(common.InMemory)
 		if err != nil {
@@ -97,22 +95,22 @@ func Test_findAllPlugins(t *testing.T) {
 		return smodel.GetResource(Table, key)
 	}
 
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	response = delete.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response = delete.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response status code should be StatusInternalServerError")
 
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 	GenericSaveFunc = func(body []byte, table, key string) error {
@@ -159,12 +157,12 @@ func TestFindAllPlugins(t *testing.T) {
 	SmodelFindAllFunc = func(table, key string) ([][]byte, error) {
 		return smodel.FindAll(table, key)
 	}
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	_, err = findAllPlugins("ILO_v1.0.0")
 	assert.NotNil(t, err, "There should be an error")
-	JsonUnmarshalFunc = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 }

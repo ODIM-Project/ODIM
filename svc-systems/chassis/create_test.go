@@ -140,12 +140,12 @@ func TestNewCreateHandler(t *testing.T) {
 	GenericSaveFunc = func(body []byte, table, key string) error {
 		return smodel.GenericSave(body, table, key)
 	}
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return nil, &errors.Error{}
 	}
 	response = create.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError   ")
-	JsonMarshalFunc = func(v interface{}) ([]byte, error) {
+	JSONMarshalFunc = func(v interface{}) ([]byte, error) {
 		return json.Marshal(v)
 	}
 	GetResourceFunc = func(Table, key string) (string, *errors.Error) {
@@ -157,39 +157,39 @@ func TestNewCreateHandler(t *testing.T) {
 		return smodel.GetResource(Table, key)
 	}
 
-	JsonUnmarshalFunc1 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc1 = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError   ")
-	JsonUnmarshalFunc1 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc1 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 
-	JsonUnmarshalFunc2 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc2 = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError   ")
-	JsonUnmarshalFunc2 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc2 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 
-	JsonUnmarshalFunc3 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc3 = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError   ")
-	JsonUnmarshalFunc3 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc3 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 
-	JsonUnmarshalFunc4 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc4 = func(data []byte, v interface{}) error {
 		return &errors.Error{}
 	}
 	response = create.Handle(&req)
 	assert.Equal(t, http.StatusInternalServerError, int(response.StatusCode), "Response Status code StatusInternalServerError   ")
-	JsonUnmarshalFunc4 = func(data []byte, v interface{}) error {
+	JSONUnmarshalFunc4 = func(data []byte, v interface{}) error {
 		return json.Unmarshal(data, v)
 	}
 

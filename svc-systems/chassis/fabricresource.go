@@ -28,6 +28,7 @@ import (
 )
 
 var (
+	//ContactPluginFunc ...
 	ContactPluginFunc = contactPlugin
 )
 
@@ -90,7 +91,7 @@ func collectChassisResource(f *fabricFactory, pluginRequest *pluginContactReques
 	}
 
 	var resp dmtfmodel.Chassis
-	err = JsonUnmarshalFunc([]byte(data), &resp)
+	err = JSONUnmarshalFunc([]byte(data), &resp)
 	if err != nil {
 		return common.GeneralError(http.StatusInternalServerError, response.InternalError, err.Error(), nil, nil)
 	}

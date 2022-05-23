@@ -31,7 +31,9 @@ import (
 )
 
 var (
-	SmodelFindAllFunc  = smodel.FindAll
+	//SmodelFindAllFunc ...
+	SmodelFindAllFunc = smodel.FindAll
+	//FindAllPluginsFunc ...
 	FindAllPluginsFunc = findAllPlugins
 )
 
@@ -72,7 +74,7 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 			nil, nil)
 	}
 	var managerData map[string]interface{}
-	err = JsonUnmarshalFunc([]byte(data), &managerData)
+	err = JSONUnmarshalFunc([]byte(data), &managerData)
 	if err != nil {
 		errorMessage := "error unmarshalling manager details: " + err.Error()
 		log.Error(errorMessage)
@@ -96,7 +98,7 @@ func (d *Delete) Handle(req *chassisproto.DeleteChassisRequest) response.RPC {
 			}
 		}
 	}
-	detail, marshalErr := JsonMarshalFunc(managerData)
+	detail, marshalErr := JSONMarshalFunc(managerData)
 	if marshalErr != nil {
 		errorMessage := "unable to marshal data for updating: " + marshalErr.Error()
 		log.Error(errorMessage)
@@ -135,7 +137,7 @@ func findAllPlugins(key string) (res []*smodel.Plugin, err error) {
 
 	for _, bytes := range pluginsAsBytesSlice {
 		plugin := new(smodel.Plugin)
-		err = JsonUnmarshalFunc(bytes, plugin)
+		err = JSONUnmarshalFunc(bytes, plugin)
 		if err != nil {
 			return nil, err
 		}

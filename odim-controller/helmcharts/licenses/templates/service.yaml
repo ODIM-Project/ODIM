@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: licenses
+  namespace: {{ .Values.odimra.namespace }}
+  labels:
+    app: licenses
+spec:
+  ports:
+    - port: 45113
+  selector:
+    app: licenses

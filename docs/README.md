@@ -2370,7 +2370,7 @@ curl -i -X POST \
 
 ```
 {
-   "HostName":"192.168.256.256",
+   "HostName":"17.5.7.8",
    "UserName":"admin",
    "Password":"{BMC_password}",
    "Links":{
@@ -2462,7 +2462,7 @@ x-frame-options":"sameorigin"
    "@odata.context":"/redfish/v1/$metadata#AggregationSource.AggregationSource",
    "Id":"26562c7b-060b-4fd8-977e-94b1a535f3fb",
    "Name":"Aggregation Source",
-   "HostName":"192.168.256.256",
+   "HostName":"17.5.7.8",
    "UserName":"admin",
     "Links":{
       "ConnectionMethod": {

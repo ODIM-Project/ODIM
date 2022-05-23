@@ -180,6 +180,19 @@ func (e *ExternalInterface) addCompute(taskID, targetURI, pluginID string, perce
 	// Discover telemetry service
 	percentComplete = e.getTelemetryService(taskID, targetURI, percentComplete, pluginContactRequest, resp, saveSystem)
 
+	// Populate the data for license service
+	pluginContactRequest.DeviceInfo = getSystemBody
+	pluginContactRequest.OID = "/redfish/v1/LicenseService/Licenses/"
+	pluginContactRequest.DeviceUUID = saveSystem.DeviceUUID
+	pluginContactRequest.HTTPMethodType = http.MethodGet
+
+	progress = percentComplete
+	licenseEstimatedWork := int32(5)
+	progress = h.getAllRootInfo(taskID, progress, licenseEstimatedWork, pluginContactRequest, config.Data.AddComputeSkipResources.SkipResourceListUnderOthers)
+	percentComplete = progress
+	task = fillTaskData(taskID, targetURI, pluginContactRequest.TaskRequest, resp, common.Running, common.OK, percentComplete, http.MethodPost)
+	e.UpdateTask(task)
+
 	// Lets Discover/gather registry files of this server and store them in DB
 
 	pluginContactRequest.DeviceInfo = getSystemBody

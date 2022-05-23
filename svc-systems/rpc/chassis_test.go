@@ -326,10 +326,7 @@ func TestChassisRPC_CreateChassis(t *testing.T) {
 		}
 	}()
 	reqData := []byte(`\"@odata.id\":\"/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1\"`)
-	// err := mockResourceData(reqData, "chassis", "/redfish/v1/Chassis/6d4a0a66-7efa-578e-83cf-44dc68d2874e.1")
-	// if err != nil {
-	// 	t.Fatalf("Error in creating mock resource data :%v", err)
-	// }
+
 	cha := new(ChassisRPC)
 	cha.IsAuthorizedRPC = mockIsAuthorized
 	cha.CreateHandler = chassis.NewCreateHandler(

@@ -658,6 +658,12 @@ func Router() *iris.Application {
 	updateService.Get("/FirmwareInventory/{firmwareInventory_id}", update.GetFirmwareInventory)
 	updateService.Get("/SoftwareInventory", update.GetSoftwareInventoryCollection)
 	updateService.Get("/SoftwareInventory/{softwareInventory_id}", update.GetSoftwareInventory)
+	updateService.Any("/FirmwareInventory", handle.UpdateServiceMethodNotAllowed)
+	updateService.Any("/FirmwareInventory/{firmwareInventory_id}", handle.UpdateServiceMethodNotAllowed)
+	updateService.Any("/SoftwareInventory", handle.UpdateServiceMethodNotAllowed)
+	updateService.Any("/SoftwareInventory/{softwareInventory_id}", handle.UpdateServiceMethodNotAllowed)
+	updateService.Any("/Actions/UpdateService.SimpleUpdate", handle.UpdateServiceMethodNotAllowed)
+	updateService.Any("/Actions/UpdateService.StartUpdate", handle.UpdateServiceMethodNotAllowed)
 
 	telemetryService := v1.Party("/TelemetryService", middleware.SessionDelMiddleware)
 	telemetryService.SetRegisterRule(iris.RouteSkip)
